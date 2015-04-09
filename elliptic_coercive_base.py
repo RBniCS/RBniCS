@@ -144,7 +144,7 @@ class EllipticCoerciveBase:
     #  @{
     
     # Perform an online solve
-    def online_solve(self,mu):
+    def online_solve(self,mu,with_plot=False):
         self.load_red_matrices()
         self.setmu(mu)
         self.compute_theta_a()
@@ -156,7 +156,8 @@ class EllipticCoerciveBase:
             sol += self.Z[:, i]*un
             i+=1
         self.rb.vector()[:] = sol
-        plot(self.rb, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+        if with_plot == True:
+            plot(self.rb, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
     
     # Perform an online solve (internal)
     def rb_solve(self):
