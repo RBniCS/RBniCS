@@ -144,7 +144,7 @@ class EllipticCoerciveBase:
     #  @{
     
     # Perform an online solve
-    def online_solve(self,mu,with_plot=False):
+    def online_solve(self,mu,with_plot=True):
         self.load_red_matrices()
         self.setmu(mu)
         self.theta_a = self.compute_theta_a()
