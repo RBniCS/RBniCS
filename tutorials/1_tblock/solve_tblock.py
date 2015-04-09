@@ -52,7 +52,7 @@ class Tblock(EllipticCoerciveBase):
         self.theta_f = (self.mu[1],)
     
     ## Set matrices resulting from the truth discretization of a.
-    def compute_truth_a(self):
+    def assemble_truth_a(self):
         u = self.u
         v = self.v
         dx = self.dx
@@ -70,7 +70,7 @@ class Tblock(EllipticCoerciveBase):
         self.A_vec = (A0, A1)
     
     ## Set vectors resulting from the truth discretization of f.
-    def compute_truth_f(self):
+    def assemble_truth_f(self):
         v = self.v
         dx = self.dx
         ds = self.ds

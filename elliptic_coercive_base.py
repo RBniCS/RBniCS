@@ -518,16 +518,23 @@ class EllipticCoerciveBase:
         sys.exit("Plase define function compute_theta_f()!")
         
     ## Set matrices resulting from the truth discretization of a.
+    # example of implementation:
+    #    a0 = inner(grad(u),grad(v))*dx
+    #    A0 = assemble(a0)
+    #    self.A_vec = (A0,)
     def assemble_truth_a(self):
         print "The function assemble_truth_a() is problem-specific and needs to be overwritten."
         print "Abort program."
         sys.exit("Plase define function assemble_truth_a()!")
 
     ## Set vectors resulting from the truth discretization of f.
+    #    f0 = v*ds(1)
+    #    F0 = assemble(f0)
+    #    self.F_vec = (F0,)
     def assemble_truth_f(self):
         print "The function compute_truth_f() is problem-specific and needs to be overwritten."
         print "Abort program."
-        sys.exit("Plase define function compute_truth_f()!")
+        sys.exit("Plase define function assemble_truth_f()!")
     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
