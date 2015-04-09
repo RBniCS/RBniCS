@@ -1,0 +1,8 @@
+*~
+*.bak
+*.pyc
+basis
+dual
+pp
+rb_matr
+shapshots
