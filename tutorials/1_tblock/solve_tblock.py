@@ -47,11 +47,11 @@ class Tblock(EllipticCoerciveBase):
         mu2 = self.mu[1]
         theta_a0 = mu1
         theta_a1 = 1.
-        self.theta_a = (theta_a0, theta_a1)
+        return (theta_a0, theta_a1)
     
     ## Set theta multiplicative terms of the affine expansion of f.
     def compute_theta_f(self):
-        self.theta_f = (self.mu[1],)
+        return (self.mu[1],)
     
     ## Set matrices resulting from the truth discretization of a.
     def assemble_truth_a(self):
@@ -68,8 +68,8 @@ class Tblock(EllipticCoerciveBase):
         self.bc.apply(A0)
         self.bc.apply(A1)
         self.bc.zero(A1)
-        # Save
-        self.A_vec = (A0, A1)
+        # Return
+        return (A0, A1)
     
     ## Set vectors resulting from the truth discretization of f.
     def assemble_truth_f(self):
@@ -81,8 +81,8 @@ class Tblock(EllipticCoerciveBase):
         F0 = assemble(f0)
         # Apply BCs
         self.bc.apply(F0)
-        # Save
-        self.F_vec = (F0,)
+        # Return
+        return (F0,)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 

@@ -147,8 +147,8 @@ class EllipticCoerciveBase:
     def online_solve(self,mu,with_plot=False):
         self.load_red_matrices()
         self.setmu(mu)
-        self.compute_theta_a()
-        self.compute_theta_f()
+        self.theta_a = self.compute_theta_a()
+        self.theta_f = self.compute_theta_f()
         self.rb_solve()
         sol = self.Z[:, 0]*self.uN[0]
         i=1
@@ -314,10 +314,10 @@ class EllipticCoerciveBase:
         if os.path.exists(self.pp_folder):
             shutil.rmtree(self.pp_folder)
         os.makedirs(self.pp_folder)
-        self.assemble_truth_a()
-        self.assemble_truth_f()
-        self.compute_theta_a()
-        self.compute_theta_f()
+        self.A_vec = self.assemble_truth_a()
+        self.F_vec = self.assemble_truth_f()
+        self.theta_a = self.compute_theta_a()
+        self.theta_f = self.compute_theta_f()
         self.Qa = len(self.theta_a)
         self.Qf = len(self.theta_f)
         for run in range(self.Nmax):
@@ -354,8 +354,8 @@ class EllipticCoerciveBase:
             if self.N < self.Nmax:
                 print "find next mu"
                 self.greedy()
-                self.compute_theta_a()
-                self.compute_theta_f()
+                self.theta_a = self.compute_theta_a()
+                self.theta_f = self.compute_theta_f()
             else:
                 self.greedy()
 
@@ -367,8 +367,8 @@ class EllipticCoerciveBase:
         count = 1
         for mu in self.xi_train:
             self.setmu(mu)
-            self.compute_theta_a()
-            self.compute_theta_f()
+            self.theta_a = self.compute_theta_a()
+            self.theta_f = self.compute_theta_f()
             self.rb_solve()
             delta = self.get_delta()
             if delta > delta_max:
@@ -498,7 +498,7 @@ class EllipticCoerciveBase:
     #    theta_a0 = m1
     #    theta_a1 = m2
     #    theta_a2 = m1*m2+m3/7.0
-    #    self.theta_a = (theta_a0, theta_a1, theta_a2)
+    #    return (theta_a0, theta_a1, theta_a2)
     def compute_theta_a(self):
         print "The function compute_theta_a() is problem-specific and needs to be overwritten."
         print "Abort program."
@@ -512,7 +512,7 @@ class EllipticCoerciveBase:
     #    theta_f0 = m1
     #    theta_f1 = m2
     #    theta_f2 = m1*m2+m3/7.0
-    #    self.theta_f = (theta_f0, theta_f1, theta_f2)
+    #    return (theta_f0, theta_f1, theta_f2)
     def compute_theta_f(self):
         print "The function compute_theta_f() is problem-specific and needs to be overwritten."
         print "Abort program."
@@ -522,7 +522,7 @@ class EllipticCoerciveBase:
     # example of implementation:
     #    a0 = inner(grad(u),grad(v))*dx
     #    A0 = assemble(a0)
-    #    self.A_vec = (A0,)
+    #    return (A0,)
     def assemble_truth_a(self):
         print "The function assemble_truth_a() is problem-specific and needs to be overwritten."
         print "Abort program."
@@ -531,7 +531,7 @@ class EllipticCoerciveBase:
     ## Set vectors resulting from the truth discretization of f.
     #    f0 = v*ds(1)
     #    F0 = assemble(f0)
-    #    self.F_vec = (F0,)
+    #    return (F0,)
     def assemble_truth_f(self):
         print "The function compute_truth_f() is problem-specific and needs to be overwritten."
         print "Abort program."
