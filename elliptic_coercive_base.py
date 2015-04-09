@@ -374,7 +374,7 @@ class EllipticCoerciveBase:
             if delta > delta_max:
                 delta_max = delta
                 munew = mu
-        print "absolute delta_max = ", delta_max
+        print "absolute delta max = ", delta_max
         if os.path.isfile(self.pp_folder + "delta_max.npy") == True:
             d = np.load(self.pp_folder + "delta_max.npy")
             
