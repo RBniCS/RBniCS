@@ -30,7 +30,9 @@ class Tblock(EllipticCoerciveBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
+    	# Call the standard initialization
         EllipticCoerciveBase.__init__(self, V)
+        # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
         self.bc = DirichletBC(V, 0.0, bound, 3)
@@ -98,10 +100,10 @@ tb = Tblock(V, subd, bound)
 # 4. Choose PETSc solvers as linear algebra backend
 parameters.linear_algebra_backend = 'PETSc'
 
-# 5. Set mu range, eta_train and Nmax
+# 5. Set mu range, xi_train and Nmax
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
 tb.setmu_range(mu_range)
-tb.seteta_train(1000)
+tb.setxi_train(1000)
 tb.setNmax(4)
 
 # 6. Perform the offline phase

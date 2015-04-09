@@ -72,7 +72,7 @@ class EllipticCoerciveBase:
         # 2. Parameter ranges and training set
         self.mu_range = []
         self.mu = []
-        self.eta_train = []
+        self.xi_train = []
         # 3c. Matrices/vectors resulting from the truth discretization
         self.A_vec = []
         self.F_vec = []
@@ -122,7 +122,7 @@ class EllipticCoerciveBase:
         self.mu_range = mu_range
     
     ## OFFLINE: set the elements in the training set \eta, from a random uniform distribution
-    def seteta_train(self, ntrain):
+    def setxi_train(self, ntrain):
         ss = "[("
         for i in range(len(self.mu_range)):
             ss += "np.random.uniform(self.mu_range[" + str(i) + "][0],self.mu_range[" + str(i) + "][1])"
@@ -130,7 +130,7 @@ class EllipticCoerciveBase:
                 ss += ", "
             else:
                 ss += ") for _ in range(" + str(ntrain) +")]"
-        self.eta_train = eval(ss)
+        self.xi_train = eval(ss)
 
     ## ONLINE: set the current value of the parameter
     def setmu(self, mu ):
@@ -364,7 +364,7 @@ class EllipticCoerciveBase:
     def greedy(self):
         delta_max = 0.0
         count = 1
-        for mu in self.eta_train:
+        for mu in self.xi_train:
             self.setmu(mu)
             self.compute_theta_a()
             self.compute_theta_f()
