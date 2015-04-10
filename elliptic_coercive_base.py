@@ -25,8 +25,6 @@
 from dolfin import *
 import numpy as np
 import scipy.linalg # for reduced problem solution
-import os # for path and makedir
-import shutil # for rm
 import sys # for exit
 import itertools # for equispaced grid generation
 from parametrized_problem import *
@@ -45,7 +43,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## Default initialization of members
     def __init__(self, V):
     	# Call to parent
-    	ParametrizedProblem.__init__(V)
+    	ParametrizedProblem.__init__(self, V)
     	
     	# $$ ONLINE DATA STRUCTURES $$ #
         # 3a. Number of terms in the affine expansion

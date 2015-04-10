@@ -22,8 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from elliptic_coercive_base import *
 import scipy.linalg # for eigenvalue computation
+import os # for path and makedir
+import shutil # for rm
+from elliptic_coercive_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveBase

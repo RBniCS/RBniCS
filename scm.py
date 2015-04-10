@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import os # for path and makedir
+import shutil # for rm
 import glpk # for LB computation
 import sys # for sys.float_info.max
 from parametrized_problem import *

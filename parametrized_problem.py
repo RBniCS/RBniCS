@@ -22,13 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import *
 import numpy as np
-import scipy.linalg # for reduced problem solution
-import os # for path and makedir
-import shutil # for rm
-import sys # for exit
-import itertools # for equispaced grid generation
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParametrizedProblem
