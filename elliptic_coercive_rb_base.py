@@ -39,7 +39,22 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     def __init__(self, V):
     	# Call the parent initialization
         EllipticCoerciveBase.__init__(self, V)
-        # nothing else to be done in this case
+        
+    	# $$ ONLINE DATA STRUCTURES $$ #
+        # 4. Residual terms
+        self.Cf = []
+        self.CC = []
+        self.CL = []
+        self.LL = []
+        self.lnq = []
+        
+    	# $$ OFFLINE DATA STRUCTURES $$ #
+        # 9. I/O
+        self.snap_folder = "snapshots/"
+        self.basis_folder = "basis/"
+        self.dual_folder = "dual/"
+        self.red_matrices_folder = "red_matr/"
+        self.pp_folder = "pp/" # post processing
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################

@@ -29,13 +29,14 @@ import os # for path and makedir
 import shutil # for rm
 import sys # for exit
 import itertools # for equispaced grid generation
+from parametrized_problem import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems
-class EllipticCoerciveBase:
+class EllipticCoerciveBase(ParametrizedProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -43,11 +44,10 @@ class EllipticCoerciveBase:
     
     ## Default initialization of members
     def __init__(self, V):
+    	# Call to parent
+    	ParametrizedProblem.__init__(V)
+    	
     	# $$ ONLINE DATA STRUCTURES $$ #
-    	# 1. Online reduced space dimension
-        self.N = 0
-        # 2. Current parameter
-        self.mu = []
         # 3a. Number of terms in the affine expansion
         self.Qa = 0
         self.Qf = 0
@@ -57,23 +57,10 @@ class EllipticCoerciveBase:
         # 3c. Reduced order matrices/vectors
         self.red_A = []
         self.red_F = []
-        # 4. Residual terms
-        self.Cf = []
-        self.CC = []
-        self.CL = []
-        self.LL = []
-        self.lnq = []
-        # 5. Online solution
+        # 4. Online solution
         self.uN = 0 # vector of dimension N storing the reduced order solution
         
     	# $$ OFFLINE DATA STRUCTURES $$ #
-    	# 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
-        self.Nmax = 10
-        self.tol = 1.e-15
-        # 2. Parameter ranges and training set
-        self.mu_range = []
-        self.mu = []
-        self.xi_train = []
         # 3c. Matrices/vectors resulting from the truth discretization
         self.truth_A = []
         self.truth_F = []
@@ -92,64 +79,9 @@ class EllipticCoerciveBase:
         self.snap = Function(self.V) # temporary vector for storage of a truth solution
         self.red = Function(self.V) # temporary vector for storage of the reduced solution
         self.er = Function(self.V) # temporary vector for storage of the error
-        # 9. I/O
-        self.snap_folder = "snapshots/"
-        self.basis_folder = "basis/"
-        self.dual_folder = "dual/"
-        self.red_matrices_folder = "red_matr/"
-        self.pp_folder = "pp/" # post processing
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
-    
-    ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-    def setNmax(self, nmax):
-        self.Nmax = nmax
-        
-    ## OFFLINE: set tolerance of the offline phase (stopping criterion)
-    def settol(self, tol):
-        self.tol = tol
-    
-    ## OFFLINE: set the range of the parameters
-    def setmu_range(self, mu_range):
-        self.mu_range = mu_range
-    
-    ## OFFLINE: set the elements in the training set \xi_train, from a random uniform distribution
-    # If the optional argument is equal to "random", ntrain parameters are drawn from a random uniform distribution
-    # Else, if the optional argument is equal to "linspace", (approximately) ntrain parameters are obtained from a cartesian grid
-    def setxi_train(self, ntrain, sampling="random"):
-        if sampling == "random":
-            ss = "[("
-            for i in range(len(self.mu_range)):
-                ss += "np.random.uniform(self.mu_range[" + str(i) + "][0],self.mu_range[" + str(i) + "][1])"
-                if i < len(self.mu_range)-1:
-                    ss += ", "
-                else:
-                    ss += ") for _ in range(" + str(ntrain) +")]"
-            self.xi_train = eval(ss)
-        elif sampling == "linspace":
-            ntrain_P_root = ceil(ntrain**(1./len(self.mu_range)))
-            ss = "itertools.product("
-            for i in range(len(self.mu_range)):
-                ss += "[np.linspace(self.mu_range[" + str(i) + "][0],self.mu_range[" + str(i) + "][1]]"
-                if i < len(self.mu_range)-1:
-                    ss += ", "
-                else:
-                    ss += ")"
-            self.xi_train = eval(ss)
-        else:
-            sys.exit("Invalid sampling mode.")
-
-    ## OFFLINE/ONLINE: set the current value of the parameter
-    def setmu(self, mu):
-        self.mu = mu
-    
-    #  @}
-    ########################### end - SETTERS - end ########################### 
     
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage

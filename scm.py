@@ -24,31 +24,35 @@
 
 import glpk # for LB computation
 import sys # for sys.float_info.max
-from elliptic_coercive_rb_base import *
+from parametrized_problem import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class SCM
 #
 # Successive constraint method for the approximation of the coercivity constant
-class SCM(EllipticCoerciveRBBase):
+class SCM(ParametrizedProblem):
 
     ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced basis object
+    ## @defgroup Constructors Methods related to the construction of the SCM object
     #  @{
     
     ## Default initialization of members
     def __init__(self, RB_problem):
     	# Call the parent initialization
-        EllipticCoerciveRBBase.__init__(self, RB_problem.V)
+        ParametrizedProblem.__init__(self, RB_problem.V)
         # Store the reduced basis object
         self.RB_problem = RB_problem
+        
+    	# $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for SCM
         B_min = [] # minimum values of the bounding box mathcal{B}. Vector of size Qa
         B_max = [] # maximum values of the bounding box mathcal{B}. Vector of size Qa
         C_K = [] # vector storing the greedily select parameters during the training phase
         alpha_K = [] # vector storing the truth coercivity constants at the greedy parameters in C_K
         UB_vectors_K = [] # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_K
-        # Overwrite folder names
+        
+    	# $$ OFFLINE DATA STRUCTURES $$ #
+        # 9. I/O
         self.snap_folder = "snapshots__scm/"
         self.basis_folder = "basis__scm/"
         self.dual_folder = "dual__scm/" # never used
@@ -286,24 +290,3 @@ class SCM(EllipticCoerciveRBBase):
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
-    def get_alpha_lb(self):
-        sys.exit("The method get_alpha_lb(self) should never be used in SCM!")
-        
-    def compute_theta_a(self):
-        sys.exit("The method compute_theta_a(self) should never be used in SCM!")
-    
-    def compute_theta_f(self):
-        sys.exit("The method compute_theta_f(self) should never be used in SCM!")
-        
-    def assemble_truth_a(self):
-        sys.exit("The method assemble_truth_a(self) should never be used in SCM!")
-
-    def assemble_truth_f(self):
-        sys.exit("The method assemble_truth_f(self) should never be used in SCM!")
-        
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 

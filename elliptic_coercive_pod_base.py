@@ -40,9 +40,11 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     def __init__(self, V):
     	# Call the parent initialization
         EllipticCoerciveBase.__init__(self, V)
-        # Declare a new matrix to store the snapshots
+        
+    	# $$ OFFLINE DATA STRUCTURES $$ #
+        # 6bis. Declare a new matrix to store the snapshots
         self.snapshot_matrix = np.array([])
-        # Suffix the I/O folders name by 'pod'
+        # 9. I/O
         self.snap_folder = "snapshots__pod/"
         self.basis_folder = "basis__pod/"
         self.dual_folder = "dual__pod/" # never used
