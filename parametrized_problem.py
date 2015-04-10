@@ -35,15 +35,15 @@ class ParametrizedProblem:
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
-    	# $$ ONLINE DATA STRUCTURES $$ #
-    	# 1. Online reduced space dimension
+    def __init__(self):
+        # $$ ONLINE DATA STRUCTURES $$ #
+        # 1. Online reduced space dimension
         self.N = 0
         # 2. Current parameter
         self.mu = []
         
-    	# $$ OFFLINE DATA STRUCTURES $$ #
-    	# 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
+        # $$ OFFLINE DATA STRUCTURES $$ #
+        # 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
         self.Nmax = 10
         self.tol = 1.e-15
         # 2. Parameter ranges and training set

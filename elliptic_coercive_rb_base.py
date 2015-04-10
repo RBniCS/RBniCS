@@ -40,10 +40,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     
     ## Default initialization of members
     def __init__(self, V):
-    	# Call the parent initialization
+        # Call the parent initialization
         EllipticCoerciveBase.__init__(self, V)
         
-    	# $$ ONLINE DATA STRUCTURES $$ #
+        # $$ ONLINE DATA STRUCTURES $$ #
         # 4. Residual terms
         self.Cf = []
         self.CC = []
@@ -51,8 +51,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.LL = []
         self.lnq = []
         
-    	# $$ OFFLINE DATA STRUCTURES $$ #
+        # $$ OFFLINE DATA STRUCTURES $$ #
         # 9. I/O
+        self.name = "RB "
         self.snap_folder = "snapshots/"
         self.basis_folder = "basis/"
         self.dual_folder = "dual/"
@@ -132,7 +133,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## Perform the offline phase of the reduced order model
     def offline(self):
         print "=============================================================="
-        print "=             Offline phase begins                           ="
+        print "=             ",self.name," offline phase begins                           ="
         print "=============================================================="
         print ""
         if os.path.exists(self.pp_folder):
@@ -150,7 +151,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.Qf = len(self.theta_f)
         
         for run in range(self.Nmax):
-            print "############################## run = ", run, " ######################################"
+            print "############################## ",self.name," run = ", run, " ######################################"
             
             print "truth solve for mu = ", self.mu
             self.truth_solve()
@@ -182,7 +183,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             print ""
             
         print "=============================================================="
-        print "=             Offline phase ends                             ="
+        print "=             ",self.name," offline phase ends                             ="
         print "=============================================================="
         print ""
         
@@ -242,7 +243,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         Qf = self.Qf
         Qa = self.Qa
         if self.N == 1 :
-        	
+            
             # CC (does not depend on N, so we compute it only once)
             self.Cf = self.compute_f_dual()
             if Qf > 1:

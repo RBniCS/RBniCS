@@ -42,10 +42,10 @@ class EllipticCoerciveBase(ParametrizedProblem):
     
     ## Default initialization of members
     def __init__(self, V):
-    	# Call to parent
-    	ParametrizedProblem.__init__(self, V)
-    	
-    	# $$ ONLINE DATA STRUCTURES $$ #
+        # Call to parent
+        ParametrizedProblem.__init__(self)
+        
+        # $$ ONLINE DATA STRUCTURES $$ #
         # 3a. Number of terms in the affine expansion
         self.Qa = 0
         self.Qf = 0
@@ -58,7 +58,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         # 4. Online solution
         self.uN = 0 # vector of dimension N storing the reduced order solution
         
-    	# $$ OFFLINE DATA STRUCTURES $$ #
+        # $$ OFFLINE DATA STRUCTURES $$ #
         # 3c. Matrices/vectors resulting from the truth discretization
         self.truth_A = []
         self.truth_F = []

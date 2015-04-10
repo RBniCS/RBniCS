@@ -39,19 +39,19 @@ class SCM(ParametrizedProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, RB_problem):
+    def __init__(self, parametrized_problem):
     	# Call the parent initialization
-        ParametrizedProblem.__init__(self, RB_problem.V)
-        # Store the reduced basis object
-        self.RB_problem = RB_problem
+        ParametrizedProblem.__init__(self)
+        # Store the parametrized problem object
+        self.parametrized_problem = parametrized_problem
         
     	# $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for SCM
-        B_min = [] # minimum values of the bounding box mathcal{B}. Vector of size Qa
-        B_max = [] # maximum values of the bounding box mathcal{B}. Vector of size Qa
-        C_K = [] # vector storing the greedily select parameters during the training phase
-        alpha_K = [] # vector storing the truth coercivity constants at the greedy parameters in C_K
-        UB_vectors_K = [] # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_K
+        self.B_min = [] # minimum values of the bounding box mathcal{B}. Vector of size Qa
+        self.B_max = [] # maximum values of the bounding box mathcal{B}. Vector of size Qa
+        self.C_K = [] # vector storing the greedily select parameters during the training phase
+        self.alpha_K = [] # vector storing the truth coercivity constants at the greedy parameters in C_K
+        self.UB_vectors_K = [] # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_K
         
     	# $$ OFFLINE DATA STRUCTURES $$ #
         # 9. I/O
@@ -71,7 +71,7 @@ class SCM(ParametrizedProblem):
     def get_alpha_LB(self, mu):
         lp = glpk.glp_prob()
         glpk.glp_set_obj_dir(lp, glpk.GLP_MIN);
-        Qa = self.RB_problem.Qa
+        Qa = self.parametrized_problem.Qa
         N = self.N
         
         # 1. Linear program unknowns: Qa variables, y_1, ..., y_{Q_a}
@@ -95,8 +95,8 @@ class SCM(ParametrizedProblem):
         for k in range(N):
             # Overwrite parameter values
             omega = self.C_K[k]
-            self.setmu(omega)
-            current_theta_a = self.RB_problem.compute_theta_a()
+            self.parametrized_problem.setmu(omega)
+            current_theta_a = self.parametrized_problem.compute_theta_a()
             
             # Assemble the LHS of the constraint
             for qa in range(Qa):
@@ -109,8 +109,8 @@ class SCM(ParametrizedProblem):
             glpk.glp_set_row_bnds(lp, k+1, GLP_LO, alpha_K[k], 0.);
         
         # 4. Add cost function coefficients
-        self.setmu(mu)
-        current_theta_a = self.RB_problem.compute_theta_a()
+        self.parametrized_problem.setmu(mu)
+        current_theta_a = self.parametrized_problem.compute_theta_a()
         for qa in range(Qa):
             glpk.glp_set_obj_coef(lp, qa+1, current_theta_a[qa])
         
@@ -126,7 +126,7 @@ class SCM(ParametrizedProblem):
         return alpha_LB;
     
     def get_alpha_UB(self, mu):
-        Qa = self.RB_problem.Qa
+        Qa = self.parametrized_problem.Qa
         N = self.N
         UB_vectors_K = self.UB_vectors_K
         
@@ -135,8 +135,8 @@ class SCM(ParametrizedProblem):
         for k in range(N):
             # Overwrite parameter values
             omega = self.C_K[k]
-            self.setmu(omega)
-            current_theta_a = self.RB_problem.compute_theta_a()
+            self.parametrized_problem.setmu(omega)
+            current_theta_a = self.parametrized_problem.compute_theta_a()
             UB_vector = UB_vectors[k]
             
             # Compute the cost function for fixed omega
@@ -169,10 +169,9 @@ class SCM(ParametrizedProblem):
             if not os.path.exists(f):
                 os.makedirs(f)
         
-        # Assemble matrices related to the LHS A of the RB problem
-        self.truth_A = self.RB_problem.assemble_truth_a()
-        self.theta_a = self.RB_problem.compute_theta_a()
-        self.Qa = len(self.theta_A)
+        # Assemble matrices related to the LHS A of the parametrized problem
+        self.parametrized_problem.truth_A = self.parametrized_problem.assemble_truth_a()
+        self.parametrized_problem.Qa = len(self.parametrized_problem.truth_A)
         
         # Compute the bounding box \mathcal{B}
         self.compute_bounding_box();
@@ -192,7 +191,6 @@ class SCM(ParametrizedProblem):
 			if self.N < self.Nmax:
                 print "find next mu"
                 self.greedy()
-		        self.theta_a = self.RB_problem.compute_theta_a()
             else:
                 self.greedy()
         
@@ -204,14 +202,15 @@ class SCM(ParametrizedProblem):
     # Compute the bounding box \mathcal{B}
     def compute_bounding_box(self):
         # Resize the bounding box storage
-        self.B_min = np.zeros((self.Qa))
-        self.B_max = np.zeros((self.Qa))
+        Qa = self.parametrized_problem.Qa
+        self.B_min = np.zeros((Qa))
+        self.B_max = np.zeros((Qa))
         
         # RHS matrix
-        S = self.RB_problem.S
+        S = self.parametrized_problem.S
         
         for qa in range(Qa):
-            A = self.truth_A[qa]
+            A = self.parametrized_problem.truth_A[qa]
             
             eigensolver = SLEPcEigenSolver(A, S)
             eigensolver.parameters["problem_type"] = "gen_hermitian"
@@ -234,8 +233,9 @@ class SCM(ParametrizedProblem):
         
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
-        A = self.aff_assemble_truth_sym(self.truth_A, self.theta_a)
-        S = self.RB_problem.S
+		current_theta_a = self.parametrized_problem.compute_theta_a()
+        A = self.aff_assemble_truth_sym(self.parametrized_problem.truth_A, current_theta_a)
+        S = self.parametrized_problem.S
         
         eigensolver = SLEPcEigenSolver(A, S)
         eigensolver.parameters["problem_type"] = "gen_hermitian"
@@ -246,7 +246,7 @@ class SCM(ParametrizedProblem):
         self.alpha_k += (r,)
         
         rv_f = Function(self.V, rv)
-        UB_vector = compute_UB_vector(self.truth_A, S, rv_f)
+        UB_vector = compute_UB_vector(self.parametrized_problem.truth_A, S, rv_f)
         self.UB_vectors_K += (UB_vector,)
         
     ## Assemble the symmetric part of the matrix A
@@ -267,11 +267,11 @@ class SCM(ParametrizedProblem):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         delta_max = -1.0
-        for mu in self.xi_train:
-            self.setmu(mu)
-            LB = self.get_alpha_LB(mu) # notice that only ...
-            UB = self.get_alpha_UB(mu) # ... these three line ...
-            delta = (UB - LB)/UB   # ... have been changed
+        for mu in self.xi_train:       # similar to the one in ...
+            self.setmu(mu)             # ... elliptic_coercive_rb: ...
+            LB = self.get_alpha_LB(mu) # ... notice that only ...  [1]
+            UB = self.get_alpha_UB(mu) # ... these three lines ... [2]
+            delta = (UB - LB)/UB       # ... have been changed     [3]
             if delta > delta_max:
                 delta_max = delta
                 munew = mu

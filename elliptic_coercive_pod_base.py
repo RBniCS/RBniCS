@@ -40,10 +40,10 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     
     ## Default initialization of members
     def __init__(self, V):
-    	# Call the parent initialization
+        # Call the parent initialization
         EllipticCoerciveBase.__init__(self, V)
         
-    	# $$ OFFLINE DATA STRUCTURES $$ #
+        # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a new matrix to store the snapshots
         self.snapshot_matrix = np.array([])
         # 9. I/O
