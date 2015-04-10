@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file elliptic_coercive_base.py
-#  @brief Implementation of the reduced basis method for elliptic coervice problems
+#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
@@ -24,7 +24,6 @@
 
 from dolfin import *
 import numpy as np
-from scipy.sparse import csr_matrix
 import scipy.linalg
 import os as os
 import shutil
@@ -38,7 +37,7 @@ import sys
 class EllipticCoerciveBase:
     
     ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced basis object
+    ## @defgroup Constructors Methods related to the construction of the reduced order model object
     #  @{
     
     ## Default initialization of members
@@ -101,10 +100,6 @@ class EllipticCoerciveBase:
         self.dual_folder = "dual/"
         self.rb_matrices_folder = "rb_matr/"
         self.pp_folder = "pp/" # post processing
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.rb_matrices_folder)
-        for f in folders:
-            if not os.path.exists(f):
-                os.makedirs(f)
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -313,7 +308,10 @@ class EllipticCoerciveBase:
         print ""
         if os.path.exists(self.pp_folder):
             shutil.rmtree(self.pp_folder)
-        os.makedirs(self.pp_folder)
+        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.rb_matrices_folder)
+        for f in folders:
+            if not os.path.exists(f):
+                os.makedirs(f)
         self.A_vec = self.assemble_truth_a()
         self.F_vec = self.assemble_truth_f()
         self.theta_a = self.compute_theta_a()
