@@ -119,7 +119,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         print ""
         if os.path.exists(self.pp_folder):
             shutil.rmtree(self.pp_folder)
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.red_matrices_folder)
+        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.red_matrices_folder, self.pp_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -148,7 +148,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             np.save(self.red_matrices_folder + "red_F", self.red_F)
             
             print "solve rb"
-            self.red_solve()
+            self.red_solve(self.N)
             
             print "build matrices for error estimation (it may take a while)"
             self.compute_dual_terms()
@@ -185,9 +185,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         last = basis.shape[1]-1
         b = basis[:, last].copy()
         for i in range(last):
-            proj = np.dot(np.dot(b,self.L2*basis[:, i])/np.dot(basis[:, i],self.S*basis[:, i]),basis[:, i])
+            proj = np.dot(np.dot(b,self.S*basis[:, i])/np.dot(basis[:, i],self.S*basis[:, i]),basis[:, i])
             b = b - proj 
-        basis[:, last] = b/np.sqrt(np.dot(b,self.L2*b))
+        basis[:, last] = b/np.sqrt(np.dot(b,self.S*b))
         return basis
         
     ## Choose the next parameter in the offline stage in a greedy fashion
@@ -198,7 +198,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.setmu(mu)
             self.theta_a = self.compute_theta_a()
             self.theta_f = self.compute_theta_f()
-            self.red_solve()
+            self.red_solve(self.N)
             delta = self.get_delta()
             if delta > delta_max:
                 delta_max = delta
@@ -311,7 +311,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         c = ()
         for F in self.truth_F:
             solve (self.S, riez.vector(), F)
-            c += (c.copy(True),)
+            c += (riez.copy(True),)
         return c
         
     #  @}

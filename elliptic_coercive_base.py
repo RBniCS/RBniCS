@@ -155,8 +155,10 @@ class EllipticCoerciveBase:
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
     
-    # Perform an online solve
-    def online_solve(self, mu, N, with_plot=True):
+    # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
+    def online_solve(self, mu, N=None, with_plot=True):
+        if N is None:
+            N = self.N
         self.load_red_matrices()
         self.setmu(mu)
         self.theta_a = self.compute_theta_a()

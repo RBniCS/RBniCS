@@ -24,14 +24,17 @@
 
 from dolfin import *
 from elliptic_coercive_rb_base import *
+#from elliptic_coercive_pod_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: THERMAL BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class Tblock(EllipticCoerciveRBBase):
+#class Tblock(EllipticCoercivePODBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
     	# Call the standard initialization
         EllipticCoerciveRBBase.__init__(self, V)
+#        EllipticCoercivePODBase.__init__(self, V)
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
@@ -103,7 +106,7 @@ parameters.linear_algebra_backend = 'PETSc'
 # 5. Set mu range, xi_train and Nmax
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
 tb.setmu_range(mu_range)
-tb.setxi_train(1000)
+tb.setxi_train(500)
 tb.setNmax(4)
 
 # 6. Perform the offline phase
