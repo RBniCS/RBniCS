@@ -30,15 +30,26 @@ from elliptic_coercive_rb_base import *
 class Tblock(EllipticCoerciveRBBase):
 #class Tblock(EllipticCoercivePODBase):
     
+    ###########################     CONSTRUCTORS     ########################### 
+    ## @defgroup Constructors Methods related to the construction of the reduced order model object
+    #  @{
+    
     ## Default initialization of members
     def __init__(self, V, subd, bound):
-    	# Call the standard initialization
+        # Call the standard initialization
         EllipticCoerciveRBBase.__init__(self, V)
 #        EllipticCoercivePODBase.__init__(self, V)
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
         self.bc = DirichletBC(V, 0.0, bound, 3)
+    
+    #  @}
+    ########################### end - CONSTRUCTORS - end ########################### 
+    
+    ###########################     PROBLEM SPECIFIC     ########################### 
+    ## @defgroup ProblemSpecific Problem specific methods
+    #  @{
     
     ## Return the alpha_lower bound.
     def get_alpha_lb(self):
@@ -86,6 +97,9 @@ class Tblock(EllipticCoerciveRBBase):
         self.bc.apply(F0)
         # Return
         return (F0,)
+        
+    #  @}
+    ########################### end - PROBLEM SPECIFIC - end ########################### 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
