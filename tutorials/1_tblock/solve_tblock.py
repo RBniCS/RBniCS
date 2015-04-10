@@ -23,15 +23,15 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from elliptic_coercive_base import *
+from elliptic_coercive_rb_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: THERMAL BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Tblock(EllipticCoerciveBase):
+class Tblock(EllipticCoerciveRBBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
     	# Call the standard initialization
-        EllipticCoerciveBase.__init__(self, V)
+        EllipticCoerciveRBBase.__init__(self, V)
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]

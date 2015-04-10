@@ -24,15 +24,16 @@
 
 from dolfin import *
 import numpy as np
-import scipy.linalg
-import os as os
-import shutil
-import sys
+import scipy.linalg # for reduced problem solution
+import os # for path and makedir
+import shutil # for rm
+import sys # for exit
+import itertools # for equispaced grid generation
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveBase
 #
-# Base class containing the interface of the RB method
+# Base class containing the interface of a projection based ROM
 # for elliptic coercive problems
 class EllipticCoerciveBase:
     
@@ -66,8 +67,9 @@ class EllipticCoerciveBase:
         self.uN = 0 # vector of dimension N storing the reduced order solution
         
     	# $$ OFFLINE DATA STRUCTURES $$ #
-    	# 1. Maximum reduced basis space dimension
+    	# 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
         self.Nmax = 10
+        self.tol = 1.e-15
         # 2. Parameter ranges and training set
         self.mu_range = []
         self.mu = []
@@ -88,42 +90,61 @@ class EllipticCoerciveBase:
         self.S = assemble(scalar) # H^1 inner product matrix
         # 8. Auxiliary functions
         self.snap = Function(self.V) # temporary vector for storage of a truth solution
-        self.rb = Function(self.V) # temporary vector for storage of the reduced solution
+        self.red = Function(self.V) # temporary vector for storage of the reduced solution
         self.er = Function(self.V) # temporary vector for storage of the error
         # 9. I/O
         self.snap_folder = "snapshots/"
         self.basis_folder = "basis/"
         self.dual_folder = "dual/"
-        self.rb_matrices_folder = "rb_matr/"
+        self.red_matrices_folder = "red_matr/"
         self.pp_folder = "pp/" # post processing
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
     
     ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of this object
+    ## @defgroup Setters Set properties of the reduced order approximation
     #  @{
     
-    ## OFFLINE: set maximum reduced basis space dimension
+    ## OFFLINE: set maximum reduced space dimension (stopping criterion)
     def setNmax(self, nmax):
         self.Nmax = nmax
+        
+    ## OFFLINE: set tolerance of the offline phase (stopping criterion)
+    def settol(self, tol):
+        self.tol = tol
     
     ## OFFLINE: set the range of the parameters
     def setmu_range(self, mu_range):
         self.mu_range = mu_range
     
-    ## OFFLINE: set the elements in the training set \eta, from a random uniform distribution
-    def setxi_train(self, ntrain):
-        ss = "[("
-        for i in range(len(self.mu_range)):
-            ss += "np.random.uniform(self.mu_range[" + str(i) + "][0],self.mu_range[" + str(i) + "][1])"
-            if i < len(self.mu_range)-1:
-                ss += ", "
-            else:
-                ss += ") for _ in range(" + str(ntrain) +")]"
-        self.xi_train = eval(ss)
+    ## OFFLINE: set the elements in the training set \xi_train, from a random uniform distribution
+    # If the optional argument is equal to "random", ntrain parameters are drawn from a random uniform distribution
+    # Else, if the optional argument is equal to "linspace", (approximately) ntrain parameters are obtained from a cartesian grid
+    def setxi_train(self, ntrain, sampling="random"):
+        if sampling == "random":
+            ss = "[("
+            for i in range(len(self.mu_range)):
+                ss += "np.random.uniform(self.mu_range[" + str(i) + "][0],self.mu_range[" + str(i) + "][1])"
+                if i < len(self.mu_range)-1:
+                    ss += ", "
+                else:
+                    ss += ") for _ in range(" + str(ntrain) +")]"
+            self.xi_train = eval(ss)
+        elif sampling == "linspace":
+            ntrain_P_root = ceil(ntrain**(1./len(self.mu_range)))
+            ss = "itertools.product("
+            for i in range(len(self.mu_range)):
+                ss += "[np.linspace(self.mu_range[" + str(i) + "][0],self.mu_range[" + str(i) + "][1]]"
+                if i < len(self.mu_range)-1:
+                    ss += ", "
+                else:
+                    ss += ")"
+            self.xi_train = eval(ss)
+        else:
+            sys.exit("Invalid sampling mode.")
 
-    ## ONLINE: set the current value of the parameter
+    ## OFFLINE/ONLINE: set the current value of the parameter
     def setmu(self, mu):
         self.mu = mu
     
@@ -140,24 +161,24 @@ class EllipticCoerciveBase:
         self.setmu(mu)
         self.theta_a = self.compute_theta_a()
         self.theta_f = self.compute_theta_f()
-        self.rb_solve(N)
+        self.red_solve(N)
         sol = self.Z[:, 0]*self.uN[0]
         i=1
         for un in self.uN[1:]:
             sol += self.Z[:, i]*un
             i+=1
-        self.rb.vector()[:] = sol
+        self.red.vector()[:] = sol
         if with_plot == True:
-            plot(self.rb, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+            plot(self.red, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
     
     # Perform an online solve (internal)
-    def rb_solve(self, N):
-        rb_A = self.aff_assemble_red(self.red_A, self.theta_a, N, N)
-        rb_F = self.aff_assemble_red(self.red_F, self.theta_f, N, 1)
-        if isinstance(rb_A, float) == True:
-            uN = rb_F/rb_A
+    def red_solve(self, N):
+        assembled_red_A = self.aff_assemble_red(self.red_A, self.theta_a, N, N)
+        assembled_red_F = self.aff_assemble_red(self.red_F, self.theta_f, N, 1)
+        if isinstance(assembled_red_A, float) == True:
+            uN = assembled_red_F/assembled_red_A
         else:
-            uN = np.linalg.solve(rb_A, rb_F)
+            uN = np.linalg.solve(assembled_red_A, assembled_red_F)
         self.uN = uN
         
     ## Assemble the reduced affine expansion (matrix/vector)
@@ -167,62 +188,6 @@ class EllipticCoerciveBase:
             A_ += vec[i]*theta_v[i]
         return A_
     
-    ## Return an error bound for the current solution
-    def get_delta(self):
-        eps2 = self.get_eps2()
-        alpha = self.get_alpha_lb()
-        return np.sqrt(np.abs(eps2)/alpha)
-    
-    ## Return the numerator of the error bound for the current solution
-    def get_eps2 (self):
-        theta_a = self.theta_a
-        theta_f = self.theta_f
-        Qf = self.Qf
-        Qa = self.Qa
-        uN = self.uN
-        
-        eps2 = 0.0
-        
-        CC = self.CC
-        if Qf > 1 :
-            for qf in range(Qf):
-                for qfp in range(Qf):
-                    eps2 += theta_f[qf]*theta_f[qfp]*CC[qf,qfp]
-        else:
-            eps2 += theta_f[0]*theta_f[0]*CC
-        
-        CL = self.CL
-        LL = self.LL
-        if self.N == 1:
-            for qf in range(Qf):
-                for qa in range(Qa):
-                    eps2 += 2.0*theta_f[qf]*uN*theta_a[qa]*CL[0][qf,qa]
-    
-    
-            for qa in range(Qa):
-                for qap in range(Qa):
-                    eps2 += theta_a[qa]*uN*uN*theta_a[qap]*LL[0,0,qa,qap]
-            
-        else:
-            n=0
-            for un in self.uN:
-                for qf in range(Qf):
-                    for qa in range(Qa):
-                        eps2 += 2.0* theta_f[qf]*theta_a[qa]*un*CL[n][qf,qa]
-                n += 1
-
-            n = 0
-            for un in uN:
-                for qa in range(Qa):
-                    np = 0
-                    for unp in uN:
-                        for qap in range(Qa):
-                            eps2 += theta_a[qa]*un*theta_a[qap]*unp*LL[n,np,qa,qap]
-                        np += 1
-                n += 1
-        
-        return eps2    
-    
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
     
@@ -230,223 +195,25 @@ class EllipticCoerciveBase:
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
     
+    ## Perform the offline phase of the reduced order model
     def offline(self):
-        print "=============================================================="
-        print "=             Offline phase begins                           ="
-        print "=============================================================="
-        print ""
-        if os.path.exists(self.pp_folder):
-            shutil.rmtree(self.pp_folder)
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.rb_matrices_folder)
-        for f in folders:
-            if not os.path.exists(f):
-                os.makedirs(f)
-        
-        self.truth_A = self.assemble_truth_a()
-        self.truth_F = self.assemble_truth_f()
-        self.theta_a = self.compute_theta_a()
-        self.theta_f = self.compute_theta_f()
-        self.Qa = len(self.theta_a)
-        self.Qf = len(self.theta_f)
-        
-        for run in range(self.Nmax):
-            print "############################## run = ", run, " ######################################"
-            
-            print "truth solve for mu = ", self.mu
-            self.truth_solve()
-            
-            print "update basis matrix"
-            self.update_basis_matrix()            
-            np.save(self.basis_folder + "basis", self.Z)
-            
-            print "build rb matrices"
-            self.build_rb_matrices()
-            self.build_rb_vectors()
-            np.save(self.rb_matrices_folder + "red_A", self.red_A)
-            np.save(self.rb_matrices_folder + "red_F", self.red_F)
-            
-            print "solve rb"
-            self.rb_solve()
-            
-            print "build matrices for error estimation (it may take a while)"
-            self.compute_dual_terms()
-            
-            if self.N < self.Nmax:
-                print "find next mu"
-                self.greedy()
-                self.theta_a = self.compute_theta_a()
-                self.theta_f = self.compute_theta_f()
-            else:
-                self.greedy()
-
-            print ""
-            
-        print "=============================================================="
-        print "=             Offline phase ends                             ="
-        print "=============================================================="
-        print ""
+        sys.exit("Please implement the offline phase of the reduced order model.")
 
     ## Perform a truth solve
     def truth_solve(self):
-        A = self.aff_assemble_truth(self.truth_A, self.theta_a)
-        F = self.aff_assemble_truth(self.truth_F, self.theta_f)
-        solve(A, self.snap.vector(), F)
-    
-    ## Update basis matrix
-    def update_basis_matrix(self):
-        if self.N == 0:
-            self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
-            self.Z /= np.sqrt(np.dot(self.Z[:, 0],self.S*self.Z[:, 0]))
-    
-        else:
-            self.Z = np.hstack((self.Z,self.snap.vector())) # add new basis functions as column vectors
-            self.Z = self.GS()
-        self.N += 1
-    
-    ## Choose the next parameter in the offline stage in a greedy fashion
-    def greedy(self):
-        delta_max = 0.0
-        count = 1
-        for mu in self.xi_train:
-            self.setmu(mu)
-            self.theta_a = self.compute_theta_a()
-            self.theta_f = self.compute_theta_f()
-            self.rb_solve()
-            delta = self.get_delta()
-            if delta > delta_max:
-                delta_max = delta
-                munew = mu
-        print "absolute delta max = ", delta_max
-        if os.path.isfile(self.pp_folder + "delta_max.npy") == True:
-            d = np.load(self.pp_folder + "delta_max.npy")
-            
-            np.save(self.pp_folder + "delta_max", np.append(d, delta_max))
-    
-            m = np.load(self.pp_folder + "mu_greedy.npy")
-            np.save(self.pp_folder + "mu_greedy", np.append(m, munew))
-        else:
-            np.save(self.pp_folder + "delta_max", delta_max)
-            np.save(self.pp_folder + "mu_greedy", np.array(munew))
-
-        self.setmu(munew)
-    
+        assembled_truth_A = self.aff_assemble_truth(self.truth_A, self.theta_a)
+        assembled_truth_F = self.aff_assemble_truth(self.truth_F, self.theta_f)
+        solve(assembled_truth_A, self.snap.vector(), assembled_truth_F)
+        
     ## Assemble the truth affine expansion (matrix/vector)
     def aff_assemble_truth(self, vec, theta_v):
         A_ = vec[0]*theta_v[0]
         for i in range(1,len(vec)):
             A_ += vec[i]*theta_v[i]
         return A_
-    
-    ## Compute dual terms
-    def compute_dual_terms(self):
-        N = self.N
-        RBu = Function(self.V)
-        
-        Qf = self.Qf
-        Qa = self.Qa
-        if self.N == 1 :
-        	
-            # CC (does not depend on N, so we compute it only once)
-            self.Cf = self.compute_f_dual()
-            if Qf > 1:
-                self.CC = np.zeros((Qf,Qf))
-                for qf in range(0,Qf):
-                    for qfp in range(qf,Qf):
-                        self.CC[qf,qfp] = self.compute_scalar(self.Cf[qf],self.Cf[qfp],self.S)
-                        if qf != qfp:
-                            self.CC[qfp,qf] = self.CC[qf,qfp]
-            else:
-                self.CC = self.compute_scalar(self.Cf[0],self.Cf[0],self.S)
-            np.save(self.dual_folder + "CC", self.CC)
-    
-            RBu.vector()[:] = self.Z[:, 0]
-            
-            self.lnq = (self.compute_a_dual(RBu),)
-    
-            la = Function(self.V)
-            lap = Function(self.V)
-            self.CL = np.zeros((Qf,Qa))
-
-            # CL
-            for qf in range(0,Qf):
-                for qa in range(0,Qa):
-                    la.vector()[:] = self.lnq[0][:, qa]
-                    self.CL[qf,qa] = self.compute_scalar(la,self.Cf[qf],self.S)
-            self.CL = (self.CL,)
-            np.save(self.dual_folder + "CL", self.CL)
-            
-            # LL
-            self.LL = np.zeros((self.Nmax,self.Nmax,self.Qa,self.Qa))
-            for qa in range(0,Qa):
-                la.vector()[:] = self.lnq[0][:, qa]
-                for qap in range(qa,Qa):
-                    lap.vector()[:] = self.lnq[0][:, qap]
-                    self.LL[0,0,qa,qap] = self.compute_scalar(la,lap,self.S)
-                    if qa != qap:
-                        self.LL[0,0,qap,qa] = self.LL[0,0,qa,qap]
-            np.save(self.dual_folder + "LL", self.LL)
-        else:
-            RBu.vector()[:] = self.Z[:, N-1]
-            self.lnq += (self.compute_a_dual(RBu),)
-            la = Function(self.V)
-            lap = Function(self.V)
-            cl = np.zeros((Qf,Qa))
-
-            # CL
-            for qf in range(0,Qf):
-                for qa in range(0,Qa):
-                    la.vector()[:] = self.lnq[N-1][:, qa]
-                    cl[qf,qa] = self.compute_scalar(self.Cf[qf],la,self.S)
-            self.CL += (cl,)
-            np.save(self.dual_folder + "CL", self.CL)
-    
-            # LL
-            n = self.N-1
-            for qa in range(0,Qa):
-                la.vector()[:] = self.lnq[n][:, qa]
-                for nn in range(0,N):
-                    for qap in range(0,Qa):
-                        lap.vector()[:] = self.lnq[nn][:, qap]
-                        self.LL[n,nn,qa,qap] = self.compute_scalar(la,lap,self.S)
-                        if n != nn:
-                            self.LL[nn,n,qa,qap] = self.LL[n,nn,qa,qap]
-            np.save(self.dual_folder + "LL", self.LL)
-    
-    ## Compute the dual of a
-    def compute_a_dual(self, RBu):
-        riez = Function(self.V)
-        i = 0
-        for A in self.truth_A:
-            solve (self.S,riez.vector(), A*RBu.vector()*(-1.0))
-            if i != 0:
-                l = np.hstack((l,riez.vector()))
-            else:
-                l = np.array(riez.vector()).reshape(-1, 1) # as column vector
-                i = 1
-        return l
-    
-    ## Compute the dual of f
-    def compute_f_dual(self):
-        riez = Function(self.V)
-        c = ()
-        for F in self.truth_F:
-            solve (self.S, riez.vector(), F)
-            c += (c.copy(True),)
-        return c
-    
-    ## Perform Gram Schmidt orthonormalization
-    def GS(self):
-        basis = self.Z
-        last = basis.shape[1]-1
-        b = basis[:, last].copy()
-        for i in range(last):
-            proj = np.dot(np.dot(b,self.L2*basis[:, i])/np.dot(basis[:, i],self.S*basis[:, i]),basis[:, i])
-            b = b - proj 
-        basis[:, last] = b/np.sqrt(np.dot(b,self.L2*b))
-        return basis
         
     ## Assemble the reduced order affine expansion (matrix)
-    def build_rb_matrices(self):
+    def build_red_matrices(self):
         dim = self.dim
         red_A = ()
         i = 0
@@ -461,7 +228,7 @@ class EllipticCoerciveBase:
         self.red_A = red_A
     
     ## Assemble the reduced order affine expansion (rhs)
-    def build_rb_vectors(self):
+    def build_red_vectors(self):
         dim = self.dim
         red_F = ()
         i = 0
@@ -471,7 +238,7 @@ class EllipticCoerciveBase:
             red_F += (red_f,)
         self.red_F = red_F
     
-    ## Auxiliary method to computed the scalar product (v1, M*v2)
+    ## Auxiliary internal method to computed the scalar product (v1, M*v2)
     def compute_scalar(self,v1,v2,M):
         return v1.vector().inner(M*v2.vector())
     
@@ -486,8 +253,8 @@ class EllipticCoerciveBase:
         if not self.red_A and not self.red_F and not self.Z and \
                               not self.CC and not self.CL and \
                               not self.LL: # avoid loading multiple times
-            self.red_A = np.load(self.rb_matrices_folder + "red_A.npy")
-            self.red_F = np.load(self.rb_matrices_folder + "red_F.npy")
+            self.red_A = np.load(self.red_matrices_folder + "red_A.npy")
+            self.red_F = np.load(self.red_matrices_folder + "red_F.npy")
             self.Z = np.load(self.basis_folder + "basis.npy")
             self.CC = np.load(self.dual_folder + "CC.npy")
             self.CL = np.load(self.dual_folder + "CL.npy")
@@ -500,15 +267,7 @@ class EllipticCoerciveBase:
     ## @defgroup ProblemSpecific Problem specific methods
     #  @{
 
-    ## Return the alpha_lower bound.
-    # example of implementation:
-    #    return 1.0
-    def get_alpha_lb(self):
-        print "The function get_alpha_lb(self) is problem-specific and needs to be overwritten."
-        print "Abort program."
-        sys.exit("Plase define function get_alpha_lb(self)!")
-
-    ## Set theta multiplicative terms of the affine expansion of a.
+    ## Return theta multiplicative terms of the affine expansion of a.
     # example of implementation:
     #    m1 = self.mu[0]
     #    m2 = self.mu[1]
@@ -522,7 +281,7 @@ class EllipticCoerciveBase:
         print "Abort program."
         sys.exit("Plase define function compute_theta_a(self)!")
     
-    ## Set theta multiplicative terms of the affine expansion of f.
+    ## Return theta multiplicative terms of the affine expansion of f.
     # example of implementation:
     #    m1 = self.mu[0]
     #    m2 = self.mu[1]
@@ -536,7 +295,7 @@ class EllipticCoerciveBase:
         print "Abort program."
         sys.exit("Plase define function compute_theta_f(self)!")
         
-    ## Set matrices resulting from the truth discretization of a.
+    ## Return matrices resulting from the truth discretization of a.
     # example of implementation:
     #    a0 = inner(grad(u),grad(v))*dx
     #    A0 = assemble(a0)
@@ -546,7 +305,7 @@ class EllipticCoerciveBase:
         print "Abort program."
         sys.exit("Plase define function assemble_truth_a(self)!")
 
-    ## Set vectors resulting from the truth discretization of f.
+    ## Return vectors resulting from the truth discretization of f.
     #    f0 = v*ds(1)
     #    F0 = assemble(f0)
     #    return (F0,)
