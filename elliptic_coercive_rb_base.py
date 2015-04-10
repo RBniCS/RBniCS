@@ -193,7 +193,6 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         delta_max = -1.0
-        count = 1
         for mu in self.xi_train:
             self.setmu(mu)
             self.theta_a = self.compute_theta_a()
