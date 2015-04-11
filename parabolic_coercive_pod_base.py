@@ -61,12 +61,16 @@ class ParabolicCoercivePODBase(ParabolicCoerciveBase,EllipticCoercivePODBase):
 
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
-        if self.snapshot_matrix.size == 0: # for the first snapshot
-            self.snapshot_matrix = np.array(self.snap) # as column vectors
-        else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, self.snap)) # add new snapshots as column vectors
-            
+        self.POD.store_multiple_snapshots(self.snap)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
 
+    ###########################     PROBLEM SPECIFIC     ########################### 
+    ## @defgroup ProblemSpecific Problem specific methods
+    #  @{
+    
+    # Nothing to be added in this case
+    
+    #  @}
+    ########################### end - PROBLEM SPECIFIC - end ########################### 

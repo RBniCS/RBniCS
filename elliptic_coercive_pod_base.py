@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import scipy.linalg # for eigenvalue computation
 import os # for path and makedir
 import shutil # for rm
+from proper_orthogonal_decomposition import *
 from elliptic_coercive_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -44,8 +44,8 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         EllipticCoerciveBase.__init__(self, V)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 6bis. Declare a new matrix to store the snapshots
-        self.snapshot_matrix = np.array([])
+        # 6bis. Declare a POD object
+        self.POD = ProperOrthogonalDecomposition
         # 9. I/O
         self.snap_folder = "snapshots__pod/"
         self.basis_folder = "basis__pod/"
@@ -103,7 +103,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             run += 1
             
         print "############################## perform POD ######################################"
-        self.N = self.pod()
+        (self.Z, self.N) = self.POD.apply(self.S, pp_folder + "eigs", self.Nmax, self.tol)
         
         print ""
         print "build reduced matrices"
@@ -115,49 +115,11 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print "=             Offline phase ends                             ="
         print "=============================================================="
         print ""
-
+        
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
-        if self.snapshot_matrix.size == 0: # for the first snapshot
-            self.snapshot_matrix = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
-        else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, self.snap.vector())) # add new snapshots as column vectors
-            
-    ## Perform POD on the snapshots previously computed, and store the first
-    #  POD modes in the basis functions matrix
-    def pod(self):
-        dim = self.dim
-        S = self.S
-        S = as_backend_type(S)
-        corr = np.matrix(np.dot(self.snapshot_matrix.T,np.matrix(np.dot(S.mat().getValues(range(dim),range(dim)),self.snapshot_matrix))))
-        eigs, eigv = scipy.linalg.eig(corr)
-        idx = eigs.argsort()
-        idx = idx[::-1]
-        eigs = eigs[idx]
-   
-        eigv = eigv[:,idx]
-        np.save(self.pp_folder + "eigs",eigs)
+        self.POD.store_single_snapshot(self.snap)
         
-        # Remove (negigible) complex parts
-        eigs = np.real(eigs)
-        eigv = np.real(eigv)
-        
-        tot = np.sum(eigs)
-        eigs_norm = eigs/tot
-        
-        for i in range(self.Nmax):
-            print "lambda_",i," = ",eigs[i]
-            if i==0:
-                p = np.dot(self.snapshot_matrix,eigv[:,i])
-                p /= np.sqrt(np.dot(p, self.S*p))
-                self.Z = p.reshape(-1, 1) # as column vector
-            else:
-                p = np.dot(self.snapshot_matrix,eigv[:,i])
-                p /= np.sqrt(np.dot(p, self.S*p))
-                self.Z = np.hstack((self.Z, p.reshape(-1, 1))) # add new basis functions as column vectors
-        
-        return self.Nmax
-    
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
