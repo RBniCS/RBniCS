@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from dolfin import *
 import os # for path and makedir
 import shutil # for rm
 import glpk # for LB computation
@@ -41,13 +42,18 @@ class EIM(EllipticCoerciveRBBase):
     ## Default initialization of members
     def __init__(self, parametrized_problem):
         # Call the parent initialization
-        # TODO: parametrized_problem.V potrebbe essere vettoriale: come faccio
-        #       a dire prendi lo spazio scalare analogo a parametrized problem.V?
-        EllipticCoerciveRBBase.__init__(self, parametrized_problem.V)
+        # Note: parametrized_problem.V may be a VectorFunctionSpace, but here
+        #       we are interested in the interpolation of a scalar function.
+        #       Create therefore a new (scalar) FunctionSpace, which will be
+        #       saved in self.V
+        scalar_V = FunctionSpace(V.___mesh, V.___family, V.___degree)
+        EllipticCoerciveRBBase.__init__(self, scalar_V)
         # Store the parametrized problem object
         self.parametrized_problem = parametrized_problem
         # Store a string containing the parametrized function, to be assigned by the user
-        self.parametrized_function = None
+        # Please use x[0], x[1], x[2] to denote physical coordinates {note: brackets, zero based!}, and
+        #            mu_1, mu_2, mu_3 to denote parameters           {note: underscores, one based!}
+        self.parametrized_function = "invalid"
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for EIM
@@ -84,6 +90,13 @@ class EIM(EllipticCoerciveRBBase):
     ## TODO
     def compute_interpolated_theta(self):
         # TODO
+        
+    ## Evaluate the parametrized function f(x; mu)
+    def evaluate_parametrized_function_at_mu_and_x(self, mu, x):
+        expression = self.evaluate_parametrized_function_at_mu(mu)
+        out = np.array([0.])
+        expression.eval(out, x)
+        return out[0]
     
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
@@ -112,7 +125,7 @@ class EIM(EllipticCoerciveRBBase):
             
             print "evaluate parametrized function"
             self.setmu(self.xi_train[run])
-            f = Expression(self.parametrized_function, self.xi_train[run])
+            f = evaluate_parametrized_function_at_mu(self.xi_train[run])
             self.snap = Interpolate(f, self.V)
             
             print "update snapshot matrix"
@@ -148,7 +161,7 @@ class EIM(EllipticCoerciveRBBase):
         # Make sure to handle also the case where mu was not found: for instance,
         # this may happen if we use truth_solve in the error computation
         print "(computing ...)"
-        f = Expression(self.parametrized_function, mu)
+        f = evaluate_parametrized_function_at_mu(mu)
         self.snap = Interpolate(f, self.V)
         
     ## Assemble the reduced order affine expansion (matrix). Overridden 
@@ -156,7 +169,7 @@ class EIM(EllipticCoerciveRBBase):
     def build_red_matrices(self):
         red_A.resize((self.N,self.N)) # TODO check se esiste
         for j in range(self.N):
-            red_A[self.N - 1, j] = Expression(self.parametrized_function, mu, self.interpolation_points[j])
+            red_A[self.N - 1, j] = evaluate_parametrized_function_at_mu_and_x(mu, self.interpolation_points[j])
     
     ## Assemble the reduced order affine expansion (rhs)
     def build_red_vectors(self):
@@ -170,6 +183,15 @@ class EIM(EllipticCoerciveRBBase):
     ## TODO
     def assemble_mu_independent_interpolated_function(self):
         # TODO
+        
+    ## Evaluate the parametrized function f(.; mu)
+    def evaluate_parametrized_function_at_mu(self, mu):
+        expression_s = "Expression(\"" + parametrized_function + "\""
+        for i in range(len(mu)):
+            expression_s += ", mu_" + str(i+1) + "=" + str(mu[i])
+        expression_s += ")"
+        expression = eval(expression_s)
+        return expression
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
