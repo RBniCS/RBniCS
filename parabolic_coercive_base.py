@@ -155,11 +155,11 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # Assemble the reduced matrix A, as in parent
         EllipticCoerciveBase.build_red_matrices()
         # Moreover, assemble also the reduced matrix M
-        dim = self.dim
         red_M = ()
         i = 0
         for M in self.truth_M:
             M = as_backend_type(M)
+            dim = M.size(0) # = M.size(1)
             if self.N == 1:
                 red_M += (np.dot(self.Z.T,M.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
             else:

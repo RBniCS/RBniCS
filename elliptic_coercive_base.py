@@ -70,7 +70,6 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.Z = []
         # 7. Truth space, functions and inner products
         self.V = V
-        self.dim = self.V.dim()
         self.u = TrialFunction(self.V)
         self.v = TestFunction(self.V)
         u = self.u
@@ -148,11 +147,11 @@ class EllipticCoerciveBase(ParametrizedProblem):
         
     ## Assemble the reduced order affine expansion (matrix)
     def build_red_matrices(self):
-        dim = self.dim
         red_A = ()
         i = 0
         for A in self.truth_A:
             A = as_backend_type(A)
+            dim = A.size(0) # = A.size(1)
             if self.N == 1:
                 red_A += (np.dot(self.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
             else:
@@ -164,11 +163,11 @@ class EllipticCoerciveBase(ParametrizedProblem):
     
     ## Assemble the reduced order affine expansion (rhs)
     def build_red_vectors(self):
-        dim = self.dim
         red_F = ()
         i = 0
         for F in self.truth_F:
             F = as_backend_type(F)
+            dim = F.size()
             red_f = np.dot(self.Z.T, F.vec().getValues(range(dim)) )
             red_F += (red_f,)
         self.red_F = red_F
