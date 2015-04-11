@@ -62,6 +62,10 @@ class EllipticCoerciveBase(ParametrizedProblem):
         # 3c. Matrices/vectors resulting from the truth discretization
         self.truth_A = []
         self.truth_F = []
+        # 4. Offline solutions
+        self.snap = Function(self.V) # temporary vector for storage of a truth solution
+        self.red = Function(self.V) # temporary vector for storage of the FE reconstruction of the reduced solution
+        self.er = Function(self.V) # temporary vector for storage of the error
         # 6. Basis functions matrix
         self.Z = []
         # 7. Truth space, functions and inner products
@@ -73,10 +77,6 @@ class EllipticCoerciveBase(ParametrizedProblem):
         v = self.v
         scalar = inner(u,v)*dx + inner(grad(u),grad(v))*dx # H^1 inner product
         self.S = assemble(scalar) # H^1 inner product matrix
-        # 8. Auxiliary functions
-        self.snap = Function(self.V) # temporary vector for storage of a truth solution
-        self.red = Function(self.V) # temporary vector for storage of the reduced solution
-        self.er = Function(self.V) # temporary vector for storage of the error
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -91,8 +91,6 @@ class EllipticCoerciveBase(ParametrizedProblem):
             N = self.N
         self.load_red_matrices()
         self.setmu(mu)
-        self.theta_a = self.compute_theta_a()
-        self.theta_f = self.compute_theta_f()
         self.red_solve(N)
         sol = self.Z[:, 0]*self.uN[0]
         i=1
@@ -105,6 +103,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
     
     # Perform an online solve (internal)
     def red_solve(self, N):
+        self.theta_a = self.compute_theta_a()
+        self.theta_f = self.compute_theta_f()
         assembled_red_A = self.aff_assemble_red(self.red_A, self.theta_a, N, N)
         assembled_red_F = self.aff_assemble_red(self.red_F, self.theta_f, N, 1)
         if isinstance(assembled_red_A, float) == True:
@@ -133,6 +133,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
 
     ## Perform a truth solve
     def truth_solve(self):
+        self.theta_a = self.compute_theta_a()
+        self.theta_f = self.compute_theta_f()
         assembled_truth_A = self.aff_assemble_truth(self.truth_A, self.theta_a)
         assembled_truth_F = self.aff_assemble_truth(self.truth_F, self.theta_f)
         solve(assembled_truth_A, self.snap.vector(), assembled_truth_F)
@@ -158,6 +160,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
                 red_A += (red,)
                 i += 1
         self.red_A = red_A
+        np.save(self.red_matrices_folder + "red_A", self.red_A)
     
     ## Assemble the reduced order affine expansion (rhs)
     def build_red_vectors(self):
@@ -169,6 +172,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
             red_f = np.dot(self.Z.T, F.vec().getValues(range(dim)) )
             red_F += (red_f,)
         self.red_F = red_F
+        np.save(self.red_matrices_folder + "red_F", self.red_F)
     
     ## Auxiliary internal method to computed the scalar product (v1, M*v2)
     def compute_scalar(self,v1,v2,M):
@@ -181,19 +185,17 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## @defgroup IO Input/output methods
     #  @{
     
+    ## Load reduced order data structures
     def load_red_matrices(self):
-        if not self.red_A and not self.red_F and not self.Z and \
-                              not self.CC and not self.CL and \
-                              not self.LL: # avoid loading multiple times
+        if not self.red_A: # avoid loading multiple times
             self.red_A = np.load(self.red_matrices_folder + "red_A.npy")
+        if not self.red_F: # avoid loading multiple times
             self.red_F = np.load(self.red_matrices_folder + "red_F.npy")
+        if not self.Z: # avoid loading multiple times
             self.Z = np.load(self.basis_folder + "basis.npy")
-            self.CC = np.load(self.dual_folder + "CC.npy")
-            self.CL = np.load(self.dual_folder + "CL.npy")
-            self.LL = np.load(self.dual_folder + "LL.npy")
     
     #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
+    ########################### end - I/O - end ########################### 
 
     ###########################     PROBLEM SPECIFIC     ########################### 
     ## @defgroup ProblemSpecific Problem specific methods

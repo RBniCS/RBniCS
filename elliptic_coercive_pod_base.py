@@ -28,7 +28,7 @@ import shutil # for rm
 from elliptic_coercive_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveBase
+## @class EllipticCoercivePODBase
 #
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
@@ -92,8 +92,6 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             print "############################## run = ", run, " ######################################"
             
             self.setmu(self.xi_train[run])
-            self.theta_a = self.compute_theta_a()
-            self.theta_f = self.compute_theta_f()
             
             print "truth solve for mu = ", self.mu
             self.truth_solve()
@@ -111,8 +109,6 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print "build reduced matrices"
         self.build_red_matrices()
         self.build_red_vectors()
-        np.save(self.red_matrices_folder + "red_A", self.red_A)
-        np.save(self.red_matrices_folder + "red_F", self.red_F)
         
         print ""
         print "=============================================================="

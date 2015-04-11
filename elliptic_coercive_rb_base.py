@@ -145,10 +145,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
         self.truth_A = self.assemble_truth_a()
         self.truth_F = self.assemble_truth_f()
-        self.theta_a = self.compute_theta_a()
-        self.theta_f = self.compute_theta_f()
-        self.Qa = len(self.theta_a)
-        self.Qf = len(self.theta_f)
+        self.Qa = len(self.truth_a)
+        self.Qf = len(self.truth_f)
         
         for run in range(self.Nmax):
             print "############################## ",self.name," run = ", run, " ######################################"
@@ -163,8 +161,6 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             print "build reduced matrices"
             self.build_red_matrices()
             self.build_red_vectors()
-            np.save(self.red_matrices_folder + "red_A", self.red_A)
-            np.save(self.red_matrices_folder + "red_F", self.red_F)
             
             print "solve rb"
             self.red_solve(self.N)
@@ -175,8 +171,6 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             if self.N < self.Nmax:
                 print "find next mu"
                 self.greedy()
-                self.theta_a = self.compute_theta_a()
-                self.theta_f = self.compute_theta_f()
             else:
                 self.greedy()
 
@@ -214,8 +208,6 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         delta_max = -1.0
         for mu in self.xi_train:
             self.setmu(mu)
-            self.theta_a = self.compute_theta_a()
-            self.theta_f = self.compute_theta_f()
             self.red_solve(self.N)
             delta = self.get_delta()
             if delta > delta_max:
@@ -334,6 +326,24 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
+    
+    ###########################     I/O     ########################### 
+    ## @defgroup IO Input/output methods
+    #  @{
+    
+    def load_red_matrices(self):
+        # Read in data structures as in parent
+        EllipticCoerciveBase.load_red_matrices()
+        # Moreover, read also data structures related to the dual
+        if not self.CC: # avoid loading multiple times
+            self.CC = np.load(self.dual_folder + "CC.npy")
+        if not self.CL: # avoid loading multiple times
+            self.CL = np.load(self.dual_folder + "CL.npy")
+        if not self.LL: # avoid loading multiple times
+            self.LL = np.load(self.dual_folder + "LL.npy")
+    
+    #  @}
+    ########################### end - I/O - end ########################### 
     
     ###########################     PROBLEM SPECIFIC     ########################### 
     ## @defgroup ProblemSpecific Problem specific methods
