@@ -36,10 +36,7 @@ class ProperOrthogonalDecomposition():
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
-        # Call the parent initialization
-        EllipticCoerciveBase.__init__(self, V)
-        
+    def __init__(self):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a matrix to store the snapshots
         self.snapshot_matrix = np.array([])
