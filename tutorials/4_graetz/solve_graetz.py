@@ -39,19 +39,41 @@ class Graetz(EllipticCoerciveRBBase):
         # ... and also store FEniCS data structures for assembly ...
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
-        self.BC = [ 
+        # ... and FEniCS data structure related to the geometrical parametrization
+        self.mesh = mesh
+        self.subd = subd
+        self.xref = mesh.coordinates()[:,0].copy()
+        self.yref = mesh.coordinates()[:,1].copy()
+        # We will consider non-homogeneous Dirichlet BCs with a lifting.
+        # First of all, assemble a suitable lifting function
+        lifting_BC = [ 
+            DirichletBC(V, 0.0, bound, 1), # homog. bcs
+            DirichletBC(V, 0.0, bound, 5), # homog. bcs
+            DirichletBC(V, 0.0, bound, 6), # homog. bcs
+            DirichletBC(V, 1.0, bound, 2), # non-homog. bcs
+            DirichletBC(V, 1.0, bound, 4)  # non-homog. bcs
+        ]
+        u = self.u
+        v = self.v
+        dx = self.dx
+        lifting_a = inner(grad(u),grad(v))*dx
+        lifting_A = assemble(lifting_a)
+        lifting_f = 1e-15*v*dx
+        lifting_f = assemble(lifting_f)
+        [bc.apply(lifting_A) for bc in lifting_BC] # Apply BCs on LHS
+        [bc.apply(lifting_F) for bc in lifting_BC] # Apply BCs on RHS
+        lifting = Function(V)
+        solve(lifting_A, lifting.vector(), lifting_F)
+        # Discard the lifting_{BC, A, F} object and store only the lifting function
+        self.lifting = lifting
+        # Store the BC object for the homogeneous solution (after lifting)
+        self.BC = [
             DirichletBC(V, 0.0, bound, 1), # indeed homog. bcs
             DirichletBC(V, 0.0, bound, 5), # indeed homog. bcs
             DirichletBC(V, 0.0, bound, 6), # indeed homog. bcs
             DirichletBC(V, 0.0, bound, 2), # non-homog. bcs with a lifting
             DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
         ]
-        # ... and, finally, FEniCS data structure related to the geometrical parametrization
-        self.mesh = mesh
-        self.subd = subd
-        self.xref = mesh.coordinates()[:,0].copy()
-        self.yref = mesh.coordinates()[:,1].copy()
-        #
         # Finally, initialize an SCM object to approximate alpha LB
         self.SCM_obj = SCM(self)
         
