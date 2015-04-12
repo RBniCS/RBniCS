@@ -190,13 +190,13 @@ class Graetz(EllipticCoerciveRBBase):
     
     # Perform an online solve: method overridden to perform
     # the plot on the deformed domain
-    def online_solve(self,mu,with_plot=True):
+    def online_solve(self,N=None, with_plot=True):
         # Call the parent method, disabling plot ...
-        EllipticCoerciveRBBase.online_solve(self, mu, False)
+        EllipticCoerciveRBBase.online_solve(self, N, False)
         # ... and then deform the mesh and perform the plot
         if with_plot == True:
             self.move_mesh()
-            plot(self.rb, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+            plot(self.red, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
             self.reset_reference()
     
     ## Deform the mesh as a function of the geometrical parameters mu_1 and mu_2
@@ -273,5 +273,9 @@ graetz.setmu(first_mu)
 graetz.offline()
 
 # 7. Perform an online solve
-mu = (1.0, 1.0, 1.0)
-graetz.online_solve(mu)
+online_mu = (1.0, 1.0, 1.0)
+graetz.setmu(online_mu)
+graetz.online_solve()
+
+# 8. Perform an error analysis
+graetz.error_analysis()

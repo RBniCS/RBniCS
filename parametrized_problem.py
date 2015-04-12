@@ -40,16 +40,15 @@ class ParametrizedProblem:
         # 1. Online reduced space dimension
         self.N = 0
         # 2. Current parameter
-        self.mu = []
+        self.mu = ()
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
         self.Nmax = 10
         self.tol = 1.e-15
         # 2. Parameter ranges and training set
-        self.mu_range = []
-        self.mu = []
-        self.xi_train = []
+        self.mu_range = [()]
+        self.xi_train = [()]
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 

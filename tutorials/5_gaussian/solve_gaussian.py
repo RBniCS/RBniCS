@@ -154,5 +154,9 @@ gaussian.setmu(first_mu)
 gaussian.offline()
 
 # 7. Perform an online solve
-mu = (0.3,-1.0)
-gaussian.online_solve(mu)
+online_mu = (0.3,-1.0)
+graetz.setmu(online_mu)
+gaussian.online_solve()
+
+# 8. Perform an error analysis
+gaussian.error_analysis()

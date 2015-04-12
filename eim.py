@@ -63,7 +63,6 @@ class EIM(EllipticCoerciveRBBase):
         # 6bis. Declare a new matrix to store the snapshots
         self.snapshot_matrix = np.array([])
         # 9. I/O
-        self.name = "EIM"
         self.snap_folder = "snapshots__eim/"
         self.basis_folder = "basis__eim/"
         self.dual_folder = "dual__eim/" # never used
@@ -109,7 +108,7 @@ class EIM(EllipticCoerciveRBBase):
     def offline(self):
         # Interpolate the parametrized function on the mesh grid for all parameters in xi_train
         print "=============================================================="
-        print "=        ",self.name," preprocessing phase begins                       ="
+        print "=        EIM preprocessing phase begins                      ="
         print "=============================================================="
         print ""
         if os.path.exists(self.pp_folder):
@@ -135,7 +134,7 @@ class EIM(EllipticCoerciveRBBase):
             run += 1
         
         print "=============================================================="
-        print "=        ",self.name," preprocessing phase ends                       ="
+        print "=        EIM preprocessing phase ends                        ="
         print "=============================================================="
         print ""
         

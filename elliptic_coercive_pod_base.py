@@ -24,6 +24,7 @@
 
 import os # for path and makedir
 import shutil # for rm
+from scipy import stats as scistats
 from proper_orthogonal_decomposition import *
 from elliptic_coercive_base import *
 
@@ -45,12 +46,12 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a POD object
-        self.POD = ProperOrthogonalDecomposition
+        self.POD = ProperOrthogonalDecomposition()
         # 9. I/O
         self.snap_folder = "snapshots__pod/"
         self.basis_folder = "basis__pod/"
         self.dual_folder = "dual__pod/" # never used
-        self.rb_matrices_folder = "red_matr__pod/"
+        self.red_matrices_folder = "red_matr__pod/"
         self.pp_folder = "pp__pod/" # post processing
         
     #  @}
@@ -87,8 +88,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
         
-        run = 0
-        for mu in self.xi_train:
+        for run in range(len(self.xi_train)):
             print "############################## run = ", run, " ######################################"
             
             self.setmu(self.xi_train[run])
@@ -103,7 +103,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             run += 1
             
         print "############################## perform POD ######################################"
-        (self.Z, self.N) = self.POD.apply(self.S, pp_folder + "eigs", self.Nmax, self.tol)
+        (self.Z, self.N) = self.POD.apply(self.S, self.pp_folder + "eigs", self.Nmax, self.tol)
         
         print ""
         print "build reduced matrices"
@@ -122,6 +122,53 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the training set
+    def error_analysis(self, N=None):
+        if N is None:
+            N = self.N
+            
+        print "=============================================================="
+        print "=             Error analysis begins                          ="
+        print "=============================================================="
+        print ""
+        
+        # Generate a new test set
+        self.setxi_train(len(self.xi_train))
+        
+        error = np.zeros((N, len(self.xi_train)))
+        
+        for run in range(len(self.xi_train)):
+            print "############################## run = ", run, " ######################################"
+            
+            self.setmu(self.xi_train[run])
+            
+            # Perform the truth solve only once
+            self.truth_solve(False)
+            
+            for n in range(N): # n = 0, 1, ... N - 1
+                error[n, run] = self.compute_error(n + 1, False)
+        
+        # Print some statistics
+        print ""
+        print "N \t gmean(err)"
+        for n in range(N): # n = 0, 1, ... N - 1
+            mean_error = scistats.gmean(error[n, :])
+            print str(n+1) + " \t " + str(mean_error)
+        
+        print ""
+        print "=============================================================="
+        print "=             Error analysis ends                            ="
+        print "=============================================================="
+        print ""
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
     
     ###########################     PROBLEM SPECIFIC     ########################### 
     ## @defgroup ProblemSpecific Problem specific methods

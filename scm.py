@@ -234,7 +234,7 @@ class SCM(ParametrizedProblem):
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
 		current_theta_a = self.parametrized_problem.compute_theta_a()
-        A = self.aff_assemble_truth_sym(self.parametrized_problem.truth_A, current_theta_a)
+        A = self.aff_assemble_truth_sym_matrix(self.parametrized_problem.truth_A, current_theta_a)
         S = self.parametrized_problem.S
         
         eigensolver = SLEPcEigenSolver(A, S)
@@ -248,13 +248,6 @@ class SCM(ParametrizedProblem):
         rv_f = Function(self.V, rv)
         UB_vector = compute_UB_vector(self.parametrized_problem.truth_A, S, rv_f)
         self.UB_vectors_K += (UB_vector,)
-        
-    ## Assemble the symmetric part of the matrix A
-    def aff_assemble_truth_sym(self, vec, theta_v):
-        A_ = vec[0]*theta_v[0]
-        for qa in range(1,len(vec)):
-            A_ += (vec[qa]+vec[qa].T)/2.*theta_v[qa]
-        return A_
         
     ## Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
     def compute_UB_vector(self, vec, S, u):

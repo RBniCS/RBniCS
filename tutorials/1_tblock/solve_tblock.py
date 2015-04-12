@@ -43,6 +43,13 @@ class Tblock(EllipticCoerciveRBBase):
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
         self.bc = DirichletBC(V, 0.0, bound, 3)
+        # Use the H^1 seminorm on V as norm, instead of the H^1 norm
+        u = self.u
+        v = self.v
+        dx = self.dx
+        scalar = inner(grad(u),grad(v))*dx
+        self.S = assemble(scalar)
+        self.bc.apply(self.S)
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -53,7 +60,7 @@ class Tblock(EllipticCoerciveRBBase):
     
     ## Return the alpha_lower bound.
     def get_alpha_lb(self):
-        return 0.1
+        return min(self.compute_theta_a())
     
     ## Set theta multiplicative terms of the affine expansion of a.
     def compute_theta_a(self):
@@ -121,7 +128,7 @@ parameters.linear_algebra_backend = 'PETSc'
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
 tb.setmu_range(mu_range)
 tb.setxi_train(500)
-tb.setNmax(4)
+tb.setNmax(6)
 
 # 6. Perform the offline phase
 first_mu = (0.5,1.0)
@@ -129,5 +136,9 @@ tb.setmu(first_mu)
 tb.offline()
 
 # 7. Perform an online solve
-mu = (0.3,-1.0)
-tb.online_solve(mu)
+online_mu = (8.,-1.0)
+tb.setmu(online_mu)
+tb.online_solve()
+
+# 8. Perform an error analysis
+tb.error_analysis()
