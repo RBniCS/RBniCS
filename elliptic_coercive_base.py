@@ -240,10 +240,19 @@ class EllipticCoerciveBase(ParametrizedProblem):
         if not self.Z.size: # avoid loading multiple times
             self.Z = np.load(self.basis_folder + "basis.npy")
 
-    ## Export snapshot in VTK format
+    ## Export solution in VTK format
     def export_solution(self, solution, filename):
         file = File(filename + ".pvd", "compressed")
         file << solution
+        
+    ## Export basis in VTK format. 
+    #  The default implementation is equal to the export solution method. Child classes
+    #  may redefine this method since, for instance, when geometrical parametrization
+    #  is employed basis are defined on the reference domain, while solutions are
+    #  more effectively plotted on the deformed domain
+    def export_basis(self, basis, filename):
+        file = File(filename + ".pvd", "compressed")
+        file << basis
         
     #  @}
     ########################### end - I/O - end ########################### 

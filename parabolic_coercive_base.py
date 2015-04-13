@@ -217,6 +217,8 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         for k in range(len(self.all_times)):
             self.t = self.all_times[k]
             file << (solution[:, k], self.t)
+            
+    # Note that there is no need to override the export basis method. Basis are steady!
     
     #  @}
     ########################### end - I/O - end ########################### 

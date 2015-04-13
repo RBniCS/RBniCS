@@ -128,7 +128,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         current_basis = Function(self.V)
         for b in range(N):
             current_basis.vector()[:] = Z[:, b]
-            self.export_solution(current_basis, self.basis_folder + "basis_" + str(b))
+            self.export_basis(current_basis, self.basis_folder + "basis_" + str(b))
         return (Z, N)
         
     #  @}

@@ -190,7 +190,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         np.save(self.basis_folder + "basis", self.Z)
         current_basis = Function(self.V)
         current_basis.vector()[:] = self.Z[:, self.N]
-        self.export_solution(current_basis, self.basis_folder + "basis_" + str(self.N))
+        self.export_basis(current_basis, self.basis_folder + "basis_" + str(self.N))
         self.N += 1
     
     ## Perform Gram Schmidt orthonormalization
