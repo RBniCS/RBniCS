@@ -66,6 +66,7 @@ class Graetz(EllipticCoerciveRBBase):
         solve(lifting_A, lifting.vector(), lifting_F)
         # Discard the lifting_{BC, A, F} object and store only the lifting function
         self.lifting = lifting
+        self.export_solution(self.lifting, self.snap_folder + "lifting")
         # Store the BC object for the homogeneous solution (after lifting)
         self.BC = [
             DirichletBC(V, 0.0, bound, 1), # indeed homog. bcs
@@ -74,6 +75,8 @@ class Graetz(EllipticCoerciveRBBase):
             DirichletBC(V, 0.0, bound, 2), # non-homog. bcs with a lifting
             DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
         ]
+        # Store the velocity expression
+        vel = Expression("x[1]*(1-x[1])")
         # Finally, initialize an SCM object to approximate alpha LB
         self.SCM_obj = SCM(self)
         
@@ -117,27 +120,33 @@ class Graetz(EllipticCoerciveRBBase):
     def compute_theta_a(self):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
-        theta_a0 = 10.0
-        theta_a1 = 1.0/(mu1*mu2)
-        theta_a2 = 1.0/mu2
-        theta_a3 = mu1/mu2
+        theta_a0 = mu2
+        theta_a1 = mu2/mu1
+        theta_a2 = mu1*mu2
+        theta_a3 = 1.0
         return (theta_a0, theta_a1, theta_a2, theta_a3)
     
     ## Set theta multiplicative terms of the affine expansion of f.
     def compute_theta_f(self):
-        return (self.mu[2],) # TODO manca il lifting
+        mu1 = self.mu[0]
+        mu2 = self.mu[1]
+        theta_f0 = - mu2
+        theta_f1 = - mu2/mu1
+        theta_f2 = - mu1*mu2
+        theta_f3 = - 1.0
+        return (theta_f0, theta_f1, theta_f2, theta_f3)
     
     ## Set matrices resulting from the truth discretization of a.
     def assemble_truth_a(self):
         u = self.u
         v = self.v
         dx = self.dx
+        vel = self.vel
         # Define
-        vel = Expression("x[1]*(1-x[1])")
-        a0 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2) + 1e-15*u*v*dx
+        a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*u*v*dx
         a1 = u.dx(0)*v.dx(0)*dx(2) + 1e-15*u*v*dx
-        a2 = inner(grad(u),grad(v))*dx(1) + 1e-15*u*v*dx
-        a3 = u.dx(1)*v.dx(1)*dx(2) + 1e-15*u*v*dx
+        a2 = u.dx(1)*v.dx(1)*dx(2) + 1e-15*u*v*dx
+        a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2) + 1e-15*u*v*dx
         # Assemble
         A0 = assemble(a0)
         A1 = assemble(a1)
@@ -158,14 +167,28 @@ class Graetz(EllipticCoerciveRBBase):
     def assemble_truth_f(self):
         v = self.v
         dx = self.dx
-        ds = self.ds
-        # Assemble F0
-        f0 = v*ds(2) + v*ds(4) + 1e-11*v*dx
+        vel = self.vel
+        lifting = self.lifting
+        # Define
+        f0 = inner(grad(lifting),grad(v))*dx(1) + 1e-15*lifting*v*dx
+        f1 = lifting.dx(0)*v.dx(0)*dx(2) + 1e-15*lifting*v*dx
+        f2 = lifting.dx(1)*v.dx(1)*dx(2) + 1e-15*lifting*v*dx
+        f3 = vel*lifting.dx(0)*v*dx(1) + vel*lifting.dx(0)*v*dx(2) + 1e-15*lifting*v*dx
+        # Assemble
         F0 = assemble(f0)
+        F1 = assemble(f1)
+        F2 = assemble(f2)
+        F3 = assemble(f3)
         # Apply BCs
         [bc.apply(F0) for bc in self.BC]
+        [bc.apply(F1) for bc in self.BC]
+        [bc.apply(F2) for bc in self.BC]
+        [bc.apply(F3) for bc in self.BC]
+        [bc.zero(F1) for bc in self.BC]
+        [bc.zero(F2) for bc in self.BC]
+        [bc.zero(F3) for bc in self.BC]
         # Return
-        return (F0,) # TODO manca il lifting
+        return (F0, F1, F2, F3)
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
@@ -215,8 +238,8 @@ class Graetz(EllipticCoerciveRBBase):
     ## Auxiliary method to deform the domain
     def reference2deformed(self):
         subd_v = np.asarray(self.subd.array(), dtype=np.int32)
-        m1 = self.mu[0]
-        m2 = self.mu[1]
+        mu1 = self.mu[0]
+        mu2 = self.mu[1]
         dd = self.V.dofmap().tabulate_all_coordinates(self.mesh)
         dd.resize((self.V.dim(),2))
         dd_new = dd.copy()
@@ -232,12 +255,12 @@ class Graetz(EllipticCoerciveRBBase):
             
             # deform coordinates
             if sub_id == 1: 
-                p[0] = x # TODO
-                p[1] = y # TODO
+                p[0] = x
+                p[1] = y
     
             if sub_id == 2: 
-                p[0] = x # TODO
-                p[1] = y # TODO
+                p[0] = (1-mu_1) + mu_1*x
+                p[1] = y
     
         return [dd_new[:,0], dd_new[:,1]]
         
@@ -262,18 +285,18 @@ graetz = Graetz(V, mesh, subd, bound)
 parameters.linear_algebra_backend = 'PETSc'
 
 # 5. Set mu range, xi_train and Nmax
-mu_range = [(1.0, 10.0), (0.1, 100.0), (-1.0, 1.0)]
+mu_range = [(0.01, 10.0), (0.01, 10.0)]
 graetz.setmu_range(mu_range)
 graetz.setxi_train(500)
 graetz.setNmax(4)
 
 # 6. Perform the offline phase
-first_mu = (1.0, 1.0, 1.0)
+first_mu = (1.0, 1.0)
 graetz.setmu(first_mu)
 graetz.offline()
 
 # 7. Perform an online solve
-online_mu = (1.0, 1.0, 1.0)
+online_mu = (1.0, 1.0)
 graetz.setmu(online_mu)
 graetz.online_solve()
 
