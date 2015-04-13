@@ -24,6 +24,7 @@
 
 from dolfin import *
 from elliptic_coercive_rb_base import *
+from scm import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class Graetz(EllipticCoerciveRBBase):
@@ -44,6 +45,15 @@ class Graetz(EllipticCoerciveRBBase):
         self.subd = subd
         self.xref = mesh.coordinates()[:,0].copy()
         self.yref = mesh.coordinates()[:,1].copy()
+        self.deformation_V = VectorFunctionSpace(self.mesh, "Lagrange", 1)
+        self.subdomain_id_to_deformation_dofs = ()
+        for subdomain_id in np.unique(self.subd.array()):
+            self.subdomain_id_to_deformation_dofs += ([],)
+        for cell in cells(mesh):
+            subdomain_id = int(self.subd.array()[cell.index()] - 1) # tuple start from 0, while subdomains from 1
+            dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
+            for dof in dofs:
+                self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
         # We will consider non-homogeneous Dirichlet BCs with a lifting.
         # First of all, assemble a suitable lifting function
         lifting_BC = [ 
@@ -59,14 +69,14 @@ class Graetz(EllipticCoerciveRBBase):
         lifting_a = inner(grad(u),grad(v))*dx
         lifting_A = assemble(lifting_a)
         lifting_f = 1e-15*v*dx
-        lifting_f = assemble(lifting_f)
+        lifting_F = assemble(lifting_f)
         [bc.apply(lifting_A) for bc in lifting_BC] # Apply BCs on LHS
         [bc.apply(lifting_F) for bc in lifting_BC] # Apply BCs on RHS
         lifting = Function(V)
         solve(lifting_A, lifting.vector(), lifting_F)
         # Discard the lifting_{BC, A, F} object and store only the lifting function
         self.lifting = lifting
-        self.export_solution(self.lifting, self.snap_folder + "lifting")
+        self.export_basis(self.lifting, self.basis_folder + "lifting")
         # Store the BC object for the homogeneous solution (after lifting)
         self.BC = [
             DirichletBC(V, 0.0, bound, 1), # indeed homog. bcs
@@ -76,9 +86,9 @@ class Graetz(EllipticCoerciveRBBase):
             DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
         ]
         # Store the velocity expression
-        vel = Expression("x[1]*(1-x[1])")
+        self.vel = Expression("x[1]*(1-x[1])")
         # Finally, initialize an SCM object to approximate alpha LB
-        self.SCM_obj = SCM(self)
+        #self.SCM_obj = SCM(self)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -90,20 +100,20 @@ class Graetz(EllipticCoerciveRBBase):
     # Propagate the values of all setters also to the SCM object
     
     def setNmax(self, nmax):
-        EllipticCoerciveRBBase.setNmax(nmax)
-        self.SCM_obj.setNmax(nmax)
+        EllipticCoerciveRBBase.setNmax(self, nmax)
+        #self.SCM_obj.setNmax(nmax)
     def settol(self, tol):
-        EllipticCoerciveRBBase.settol(tol)
-        self.SCM_obj.settol(tol)
+        EllipticCoerciveRBBase.settol(self, tol)
+        #self.SCM_obj.settol(tol)
     def setmu_range(self, mu_range):
-        EllipticCoerciveRBBase.setmu_range(mu_range)
-        self.SCM_obj.setmu_range(mu_range)
+        EllipticCoerciveRBBase.setmu_range(self, mu_range)
+        #self.SCM_obj.setmu_range(mu_range)
     def setxi_train(self, ntrain, sampling="random"):
-        EllipticCoerciveRBBase.setxi_train(train, sampling)
-        self.SCM_obj.setxi_train(train, sampling)
+        EllipticCoerciveRBBase.setxi_train(self, ntrain, sampling)
+        #self.SCM_obj.setxi_train(ntrain, sampling)
     def setmu(self, mu):
-        EllipticCoerciveRBBase.setmu(mu)
-        self.SCM_obj.setmu(mu)
+        EllipticCoerciveRBBase.setmu(self, mu)
+        #self.SCM_obj.setmu(mu)
         
     #  @}
     ########################### end - SETTERS - end ########################### 
@@ -114,7 +124,7 @@ class Graetz(EllipticCoerciveRBBase):
     
     ## Return the alpha_lower bound.
     def get_alpha_lb(self):
-        return SCM_obj.get_alpha_LB(self.mu)
+        return 1. #return SCM_obj.get_alpha_LB(self.mu)
     
     ## Set theta multiplicative terms of the affine expansion of a.
     def compute_theta_a(self):
@@ -184,9 +194,6 @@ class Graetz(EllipticCoerciveRBBase):
         [bc.apply(F1) for bc in self.BC]
         [bc.apply(F2) for bc in self.BC]
         [bc.apply(F3) for bc in self.BC]
-        [bc.zero(F1) for bc in self.BC]
-        [bc.zero(F2) for bc in self.BC]
-        [bc.zero(F3) for bc in self.BC]
         # Return
         return (F0, F1, F2, F3)
         
@@ -200,9 +207,9 @@ class Graetz(EllipticCoerciveRBBase):
     ## Perform the offline phase of the reduced order model
     def offline(self):
         # Perform first the SCM offline phase, ...
-        self.SCM_obj.offline()
+        #self.SCM_obj.offline()
         # ..., and then call the parent method.
-        EllipticCoerciveRBBase.offline()
+        EllipticCoerciveRBBase.offline(self)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -219,53 +226,56 @@ class Graetz(EllipticCoerciveRBBase):
         # ... and then deform the mesh and perform the plot
         if with_plot == True:
             self.move_mesh()
-            plot(self.red, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+            red_with_lifting = Function(self.V)
+            red_with_lifting.vector()[:] = self.red.vector()[:] + self.lifting.vector()[:]
+            plot(red_with_lifting, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
             self.reset_reference()
     
-    ## Deform the mesh as a function of the geometrical parameters mu_1 and mu_2
+    ## Deform the mesh as a function of the geometrical parameter mu_1
     def move_mesh(self):
-        print "moving mesh (it may take a while)"
-        x_bar, y_bar = self.reference2deformed()
-        new_coor = np.array([x_bar, y_bar]).transpose()
-        self.mesh.coordinates()[:] = new_coor
+        print "moving mesh"
+        displacement = self.compute_displacement()
+        self.mesh.move(displacement)
     
     ## Restore the reference mesh
     def reset_reference(self):
-        print "back to the refernce mesh"
+        print "back to the reference mesh"
         new_coor = np.array([self.xref, self.yref]).transpose()
         self.mesh.coordinates()[:] = new_coor
     
     ## Auxiliary method to deform the domain
-    def reference2deformed(self):
-        subd_v = np.asarray(self.subd.array(), dtype=np.int32)
-        mu1 = self.mu[0]
-        mu2 = self.mu[1]
-        dd = self.V.dofmap().tabulate_all_coordinates(self.mesh)
-        dd.resize((self.V.dim(),2))
-        dd_new = dd.copy()
-        i=0
-        for p in dd_new:
-            x = p[0]
-            y = p[1]
-            
-            for c in cells(self.mesh):
-                if c.contains(Point(p[0],p[1])):
-                    sub_id = subd_v[c.index()]
-                    break
-            
-            # deform coordinates
-            if sub_id == 1: 
-                p[0] = x
-                p[1] = y
-    
-            if sub_id == 2: 
-                p[0] = (1-mu_1) + mu_1*x
-                p[1] = y
-    
-        return [dd_new[:,0], dd_new[:,1]]
+    def compute_displacement(self):
+        expression_displacement_subdomains = (
+            Expression(("0", "0")), # subdomain 1
+            Expression(("(mu_1-1)*(x[0]-1)", "0"), mu_1 = self.mu[0]) # subdomain 2
+        )
+        displacement_subdomains = ()
+        for i in range(len(expression_displacement_subdomains)):
+            displacement_subdomains += (interpolate(expression_displacement_subdomains[i], self.deformation_V),)
+        displacement = Function(self.deformation_V)
+        for i in range(len(displacement_subdomains)):
+            subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]
+            displacement.vector()[subdomain_dofs] = displacement_subdomains[i].vector()[subdomain_dofs]
+        return displacement
         
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
+    
+    ###########################     I/O     ########################### 
+    ## @defgroup IO Input/output methods
+    #  @{
+    
+    ## Export solution in VTK format: add lifting and deform
+    def export_solution(self, solution, filename):
+        solution_with_lifting = Function(self.V)
+        solution_with_lifting.vector()[:] = solution.vector()[:] + self.lifting.vector()[:]
+        self.move_mesh()
+        file = File(filename + ".pvd", "compressed")
+        file << solution_with_lifting
+        self.reset_reference()
+        
+    #  @}
+    ########################### end - I/O - end ########################### 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -288,7 +298,7 @@ parameters.linear_algebra_backend = 'PETSc'
 mu_range = [(0.01, 10.0), (0.01, 10.0)]
 graetz.setmu_range(mu_range)
 graetz.setxi_train(500)
-graetz.setNmax(4)
+graetz.setNmax(20)
 
 # 6. Perform the offline phase
 first_mu = (1.0, 1.0)
@@ -296,7 +306,7 @@ graetz.setmu(first_mu)
 graetz.offline()
 
 # 7. Perform an online solve
-online_mu = (1.0, 1.0)
+online_mu = (10.0, 0.01)
 graetz.setmu(online_mu)
 graetz.online_solve()
 
