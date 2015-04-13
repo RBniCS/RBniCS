@@ -40,9 +40,17 @@ class Gaussian(EllipticCoerciveRBBase):
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
+        self.bc = DirichletBC(V, 0.0, bound)
+        # Use the H^1 seminorm on V as norm, instead of the H^1 norm
+        u = self.u
+        v = self.v
+        dx = self.dx
+        scalar = inner(grad(u),grad(v))*dx
+        self.S = assemble(scalar)
+        self.bc.apply(self.S)
         # Finally, initialize an EIM object for the interpolation of the forcing term
         self.EIM_obj = EIM(self)
-        self.EIM_obj.parametrized_function = "TODO" #TODO una gaussiana
+        self.EIM_obj.parametrized_function = "exp( - 2*(x[0]-mu_1)**2- 2*(x[1]-mu_2)**2 )"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -101,7 +109,7 @@ class Gaussian(EllipticCoerciveRBBase):
         EIM_obj.setmu(self.mu)
         interpolated_gaussian = assemble_mu_independent_interpolated_function()
         # Assemble
-        all_F = []
+        all_F = ()
         for q in range(len(interpolated_gaussian_q)):
             f_q = interpolated_gaussian[q]*v*dx
             all_F += (assemble(f_q),)
@@ -128,7 +136,6 @@ class Gaussian(EllipticCoerciveRBBase):
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
 # 1. Read the mesh for this problem
-# TODO mi serve una mesh di un quadrato [-1,1]^2
 mesh = Mesh("data/gaussian.xml")
 subd = MeshFunction("size_t", mesh, "data/gaussian_physical_region.xml")
 bound = MeshFunction("size_t", mesh, "data/gaussian_facet_region.xml")
