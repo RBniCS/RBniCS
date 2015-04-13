@@ -3,8 +3,8 @@
 *.pyc
 tex/*.aux
 tex/*.log
-basis
-dual
-pp
-red_matr
-shapshots
+basis*
+dual*
+pp*
+red_matr*
+snapshots*
