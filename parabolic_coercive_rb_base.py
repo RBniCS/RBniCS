@@ -136,54 +136,6 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     ## Perform the offline phase of the reduced order model
     def offline(self):
         # TODO il resto del metodo, ma non dovrebbe servire
-        print "=============================================================="
-        print "=             Offline phase begins                           ="
-        print "=============================================================="
-        print ""
-        if os.path.exists(self.pp_folder):
-            shutil.rmtree(self.pp_folder)
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.red_matrices_folder, self.pp_folder)
-        for f in folders:
-            if not os.path.exists(f):
-                os.makedirs(f)
-        
-        self.truth_A = self.assemble_truth_a()
-        self.truth_F = self.assemble_truth_f()
-        self.Qa = len(self.truth_a)
-        self.Qf = len(self.truth_f)
-        
-        for run in range(self.Nmax):
-            print "############################## ",self.name," run = ", run, " ######################################"
-            
-            print "truth solve for mu = ", self.mu
-            self.truth_solve()
-            
-            print "update basis matrix"
-            self.update_basis_matrix()            
-            np.save(self.basis_folder + "basis", self.Z)
-            
-            print "build reduced matrices"
-            self.build_red_matrices()
-            self.build_red_vectors()
-            
-            print "solve rb"
-            self.red_solve(self.N)
-            
-            print "build matrices for error estimation (it may take a while)"
-            self.compute_dual_terms()
-            
-            if self.N < self.Nmax:
-                print "find next mu"
-                self.greedy()
-            else:
-                self.greedy()
-
-            print ""
-            
-        print "=============================================================="
-        print "=             Offline phase ends                             ="
-        print "=============================================================="
-        print ""
         
     ## Update basis matrix
     def update_basis_matrix(self):

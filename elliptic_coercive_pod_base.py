@@ -95,6 +95,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             
             print "truth solve for mu = ", self.mu
             self.truth_solve()
+            self.export_solution(self.snap, self.snap_folder + "truth_" + str(run))
             
             print "update snapshot matrix"
             self.update_snapshot_matrix()
@@ -103,7 +104,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             run += 1
             
         print "############################## perform POD ######################################"
-        (self.Z, self.N) = self.POD.apply(self.S, self.pp_folder + "eigs", self.Nmax, self.tol)
+        (self.Z, self.N) = self.apply_POD(self.S, self.pp_folder + "eigs", self.Nmax, self.tol)
         
         print ""
         print "build reduced matrices"
@@ -119,6 +120,16 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
         self.POD.store_single_snapshot(self.snap)
+        
+    ## Apply POD
+    def apply_POD(self, S, pp_file, Nmax, tol):
+        (Z, N) = self.POD.apply(S, pp_file, Nmax, tol)
+        np.save(self.basis_folder + "basis", self.Z)
+        current_basis = Function(self.V)
+        for b in range(N):
+            current_basis.vector()[:] = Z[:, b]
+            self.export_solution(current_basis, self.basis_folder + "basis_" + str(b))
+        return (Z, N)
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -149,7 +160,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             self.setmu(self.xi_train[run])
             
             # Perform the truth solve only once
-            self.truth_solve(False)
+            self.truth_solve()
             
             for n in range(N): # n = 0, 1, ... N - 1
                 error[n, run] = self.compute_error(n + 1, False)

@@ -150,10 +150,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             
             print "truth solve for mu = ", self.mu
             self.truth_solve()
+            self.export_solution(self.snap, self.snap_folder + "truth_" + str(run))
             
             print "update basis matrix"
-            self.update_basis_matrix()            
-            np.save(self.basis_folder + "basis", self.Z)
+            self.update_basis_matrix()
             
             print "build reduced matrices"
             self.build_red_matrices()
@@ -187,6 +187,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         else:
             self.Z = np.hstack((self.Z, self.snap.vector())) # add new basis functions as column vectors
             self.Z = self.GS()
+        np.save(self.basis_folder + "basis", self.Z)
+        current_basis = Function(self.V)
+        current_basis.vector()[:] = self.Z[:, self.N]
+        self.export_solution(current_basis, self.basis_folder + "basis_" + str(self.N))
         self.N += 1
     
     ## Perform Gram Schmidt orthonormalization
@@ -348,7 +352,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.setmu(self.xi_train[run])
             
             # Perform the truth solve only once
-            self.truth_solve(False)
+            self.truth_solve()
             
             for n in range(N): # n = 0, 1, ... N - 1
                 error[n, run] = self.compute_error(n + 1, False)
@@ -357,7 +361,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
         # Print some statistics
         print ""
-        print "N \t gmean(err) \t\t gmean(delta) \t\t gmean(eff) \t gmax(eff)"
+        print "N \t gmean(err) \t\t gmean(delta) \t\t gmean(eff) \t max(eff)"
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error = scistats.gmean(error[n, :])
             mean_delta = scistats.gmean(delta[n, :])

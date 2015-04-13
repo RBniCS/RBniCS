@@ -137,7 +137,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         sys.exit("Please implement the offline phase of the reduced order model.")
 
     ## Perform a truth solve
-    def truth_solve(self, with_plot=True):
+    def truth_solve(self):
         self.theta_a = self.compute_theta_a()
         self.theta_f = self.compute_theta_f()
         assembled_truth_A = self.aff_assemble_truth_matrix(self.truth_A, self.theta_a)
@@ -211,7 +211,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     # for the current value of mu
     def compute_error(self, N=None, skip_truth_solve=False):
         if not skip_truth_solve:
-            self.truth_solve(False)
+            self.truth_solve()
         self.online_solve(N, False)
         self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
         self.theta_a = self.compute_theta_a() # not really necessary, for symmetry with the parabolic case
@@ -239,7 +239,12 @@ class EllipticCoerciveBase(ParametrizedProblem):
             self.red_F = np.load(self.red_matrices_folder + "red_F.npy")
         if not self.Z.size: # avoid loading multiple times
             self.Z = np.load(self.basis_folder + "basis.npy")
-    
+
+    ## Export snapshot in VTK format
+    def export_solution(self, solution, filename):
+        file = File(filename + ".pvd", "compressed")
+        file << solution
+        
     #  @}
     ########################### end - I/O - end ########################### 
 

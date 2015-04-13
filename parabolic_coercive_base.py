@@ -129,7 +129,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     #  @{
 
     ## Perform a truth solve
-    def truth_solve(self, with_plot=True):
+    def truth_solve(self):
         current_snap = Function(self.V)
         
         # Set the initial condition
@@ -182,7 +182,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     # for the current value of mu
     def compute_error(self, N=None, skip_truth_solve=False):
         if not skip_truth_solve:
-            self.truth_solve(False)
+            self.truth_solve()
         self.online_solve(N, False)
         self.er = np.array([])
         error = 0.
@@ -209,6 +209,14 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # Moreover, read in also the reduced matrix M
         if not self.red_M: # avoid loading multiple times
             self.red_M = np.load(self.red_matrices_folder + "red_M.npy")
+        # TODO ne serviranno altre
+        
+    ## Export snapshot in VTK format
+    def export_solution(self, solution, filename):
+        file = File(filename + ".pvd", "compressed")
+        for k in range(len(self.all_times)):
+            self.t = self.all_times[k]
+            file << (solution[:, k], self.t)
     
     #  @}
     ########################### end - I/O - end ########################### 
