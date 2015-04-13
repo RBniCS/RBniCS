@@ -27,13 +27,13 @@ import os # for path and makedir
 import shutil # for rm
 import glpk # for LB computation
 import sys # for sys.float_info.max
-from elliptic_coercive_rb_base import *
+from parametrized_problem import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EIM
 #
 # Empirical interpolation method for the interpolation of parametrized functions
-class EIM(EllipticCoerciveRBBase):
+class EIM(ParametrizedProblem):
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the EIM object
@@ -47,7 +47,7 @@ class EIM(EllipticCoerciveRBBase):
         #       Create therefore a new (scalar) FunctionSpace, which will be
         #       saved in self.V
         scalar_V = FunctionSpace(V.___mesh, V.___family, V.___degree)
-        EllipticCoerciveRBBase.__init__(self, scalar_V)
+        ParametrizedProblem.__init__(self, scalar_V)
         # Store the parametrized problem object
         self.parametrized_problem = parametrized_problem
         # Store a string containing the parametrized function, to be assigned by the user
@@ -125,7 +125,7 @@ class EIM(EllipticCoerciveRBBase):
             print "evaluate parametrized function"
             self.setmu(self.xi_train[run])
             f = evaluate_parametrized_function_at_mu(self.xi_train[run])
-            self.snap = Interpolate(f, self.V)
+            self.snap = interpolate(f, self.V)
             
             print "update snapshot matrix"
             self.update_snapshot_matrix()
@@ -140,7 +140,7 @@ class EIM(EllipticCoerciveRBBase):
         
         # Afterwards, call the standard (parent) offline phase. Note however that we
         # redefine some methods employed internally by the greedy algorithm
-        EllipticCoerciveRBBase.offline(self)
+        ParametrizedProblem.offline(self)
         
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
@@ -161,7 +161,7 @@ class EIM(EllipticCoerciveRBBase):
         # this may happen if we use truth_solve in the error computation
         print "(computing ...)"
         f = evaluate_parametrized_function_at_mu(mu)
-        self.snap = Interpolate(f, self.V)
+        self.snap = interpolate(f, self.V)
         
     ## Assemble the reduced order affine expansion (matrix). Overridden 
     #  to assemble the interpolation matrix

@@ -40,12 +40,12 @@ class SCM(ParametrizedProblem):
     
     ## Default initialization of members
     def __init__(self, parametrized_problem):
-    	# Call the parent initialization
+        # Call the parent initialization
         ParametrizedProblem.__init__(self)
         # Store the parametrized problem object
         self.parametrized_problem = parametrized_problem
         
-    	# $$ ONLINE DATA STRUCTURES $$ #
+        # $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for SCM
         self.B_min = [] # minimum values of the bounding box mathcal{B}. Vector of size Qa
         self.B_max = [] # maximum values of the bounding box mathcal{B}. Vector of size Qa
@@ -53,7 +53,7 @@ class SCM(ParametrizedProblem):
         self.alpha_K = [] # vector storing the truth coercivity constants at the greedy parameters in C_K
         self.UB_vectors_K = [] # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_K
         
-    	# $$ OFFLINE DATA STRUCTURES $$ #
+        # $$ OFFLINE DATA STRUCTURES $$ #
         # 9. I/O
         self.snap_folder = "snapshots__scm/"
         self.basis_folder = "basis__scm/"
@@ -83,7 +83,7 @@ class SCM(ParametrizedProblem):
                 glpk.glp_set_col_bnds(lp, q+1, GLP_DB, B_min[q], B_max[q]);
             elif B_min[qa] == B_max[qa]: # unlikely, but possible
                 glpk.glp_set_col_bnds(lp, q+1, GLP_FX, B_min[q], B_max[q]);
-            else # there is something wrong in the bounding box: set as unconstrained variable
+            else: # there is something wrong in the bounding box: set as unconstrained variable
                 print "Warning: wrong bounding box for affine expansion element #", qa
                 glp_set_col_bnds(lp, q+1, GLP_FR, 0., 0.);
                 
@@ -115,15 +115,15 @@ class SCM(ParametrizedProblem):
             glpk.glp_set_obj_coef(lp, qa+1, current_theta_a[qa])
         
         # 5. Solve the linear programming problem
-        glpk.glp_smcp options;
-        glpk.glp_init_smcp(&options);
-        options.msg_lev = GLP_MSG_ERR;
-        options.meth = GLP_DUAL;
-        glp_simplex(lp, &parm);
-        alpha_LB = glpk.glp_get_obj_val(lp);
-        glpk.glp_delete_prob(lp);
+        options = glpk.glp_smcp()
+        glpk.glp_init_smcp(options)
+        options.msg_lev = GLP_MSG_ERR
+        options.meth = GLP_DUAL
+        glp_simplex(lp, parm)
+        alpha_LB = glpk.glp_get_obj_val(lp)
+        glpk.glp_delete_prob(lp)
         
-        return alpha_LB;
+        return alpha_LB
     
     def get_alpha_UB(self, mu):
         Qa = self.parametrized_problem.Qa
@@ -144,7 +144,7 @@ class SCM(ParametrizedProblem):
             for qa in range(Qa):
                 obj += UB_vector[q]*current_theta_a[q]
             
-            if obj < alpha_UB
+            if obj < alpha_UB:
                 alpha_UB = obj
         
         return alpha_UB
@@ -188,7 +188,7 @@ class SCM(ParametrizedProblem):
             self.N = len(self.C_K)
             
             # Prepare for next iteration
-			if self.N < self.Nmax:
+            if self.N < self.Nmax:
                 print "find next mu"
                 self.greedy()
             else:
@@ -233,13 +233,13 @@ class SCM(ParametrizedProblem):
         
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
-		current_theta_a = self.parametrized_problem.compute_theta_a()
+        current_theta_a = self.parametrized_problem.compute_theta_a()
         A = self.aff_assemble_truth_sym_matrix(self.parametrized_problem.truth_A, current_theta_a)
         S = self.parametrized_problem.S
         
         eigensolver = SLEPcEigenSolver(A, S)
         eigensolver.parameters["problem_type"] = "gen_hermitian"
-		eigensolver.parameters["spectrum"] = "smallest real"
+        eigensolver.parameters["spectrum"] = "smallest real"
         eigensolver.solve(1)
         
         r, c, rv, cv = eigensolver.get_pair(0) # real and complex part of the (eigenvalue, eigenvectors)
