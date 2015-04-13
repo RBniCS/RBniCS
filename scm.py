@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from dolfin import *
 import os # for path and makedir
 import shutil # for rm
 import glpk # for LB computation
@@ -49,9 +50,9 @@ class SCM(ParametrizedProblem):
         # Define additional storage for SCM
         self.B_min = [] # minimum values of the bounding box mathcal{B}. Vector of size Qa
         self.B_max = [] # maximum values of the bounding box mathcal{B}. Vector of size Qa
-        self.C_K = [] # vector storing the greedily select parameters during the training phase
-        self.alpha_K = [] # vector storing the truth coercivity constants at the greedy parameters in C_K
-        self.UB_vectors_K = [] # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_K
+        self.C_J = () # vector storing the greedily select parameters during the training phase
+        self.alpha_J =() # vector storing the truth coercivity constants at the greedy parameters in C_J
+        self.UB_vectors_J = () # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 9. I/O
@@ -69,7 +70,7 @@ class SCM(ParametrizedProblem):
     #  @{
         
     def get_alpha_LB(self, mu):
-        lp = glpk.glp_prob()
+        lp = glpk.glp_create_prob()
         glpk.glp_set_obj_dir(lp, glpk.GLP_MIN);
         Qa = self.parametrized_problem.Qa
         N = self.N
@@ -79,35 +80,40 @@ class SCM(ParametrizedProblem):
         
         # 2. Range: constrain the variables to be in the bounding box (note: GLPK indexing starts from 1)
         for qa in range(Qa):
-            if B_min[qa] < B_max[qa]: # the usual case
-                glpk.glp_set_col_bnds(lp, q+1, GLP_DB, B_min[q], B_max[q]);
-            elif B_min[qa] == B_max[qa]: # unlikely, but possible
-                glpk.glp_set_col_bnds(lp, q+1, GLP_FX, B_min[q], B_max[q]);
+            if self.B_min[qa] < self.B_max[qa]: # the usual case
+                glpk.glp_set_col_bnds(lp, qa+1, glpk.GLP_DB, self.B_min[qa], self.B_max[qa]);
+            elif self.B_min[qa] == self.B_max[qa]: # unlikely, but possible
+                glpk.glp_set_col_bnds(lp, qa+1, glpk.GLP_FX, self.B_min[qa], self.B_max[qa]);
             else: # there is something wrong in the bounding box: set as unconstrained variable
                 print "Warning: wrong bounding box for affine expansion element #", qa
-                glp_set_col_bnds(lp, q+1, GLP_FR, 0., 0.);
+                glp_set_col_bnds(lp, qa+1, glpk.GLP_FR, 0., 0.);
                 
-        # 3. Add constraints: a constraint is added for each sample in C_K
+        # 3. Add constraints: a constraint is added for each sample in C_J
         glpk.glp_add_rows(lp, N);
-        matrix_row_index = np.zeros((N, Qa))
-        matrix_column_index = np.zeros((N, Qa))
-        matrix_content = np.zeros((N, Qa))
-        for k in range(N):
+        print "N*Qa", N*Qa
+        matrix_row_index = glpk.intArray(N*Qa)
+        matrix_column_index = glpk.intArray(N*Qa)
+        matrix_content = glpk.doubleArray(N*Qa)
+        glpk_container_index = 1 # glpk starts from 1
+        for j in range(N):
             # Overwrite parameter values
-            omega = self.C_K[k]
+            omega = self.C_J[j]
             self.parametrized_problem.setmu(omega)
             current_theta_a = self.parametrized_problem.compute_theta_a()
             
             # Assemble the LHS of the constraint
             for qa in range(Qa):
-                matrix_row_index[k, qa] = k + 1
-                matrix_column_index[k, qa] = qa + 1
-                matrix_content[k, qa] = current_theta_a[qa]
-            glp_load_matrix(lp, N*Qa, matrix_row_index, matrix_column_index, matrix_content)
+                matrix_row_index[glpk_container_index] = j + 1
+                matrix_column_index[glpk_container_index] = qa + 1
+                print matrix_row_index[glpk_container_index]
+                print matrix_column_index[glpk_container_index]
+                matrix_content[glpk_container_index] = current_theta_a[qa]
+                glpk_container_index += 1
+            glpk.glp_load_matrix(lp, N*Qa, matrix_row_index, matrix_column_index, matrix_content)
             
             # Assemble the RHS of the constraint
-            glpk.glp_set_row_bnds(lp, k+1, GLP_LO, alpha_K[k], 0.);
-        
+            glpk.glp_set_row_bnds(lp, j+1, glpk.GLP_LO, self.alpha_J[j], 0.);
+            
         # 4. Add cost function coefficients
         self.parametrized_problem.setmu(mu)
         current_theta_a = self.parametrized_problem.compute_theta_a()
@@ -117,9 +123,9 @@ class SCM(ParametrizedProblem):
         # 5. Solve the linear programming problem
         options = glpk.glp_smcp()
         glpk.glp_init_smcp(options)
-        options.msg_lev = GLP_MSG_ERR
-        options.meth = GLP_DUAL
-        glp_simplex(lp, parm)
+        options.msg_lev = glpk.GLP_MSG_ERR
+        options.meth = glpk.GLP_DUAL
+        glpk.glp_simplex(lp, options)
         alpha_LB = glpk.glp_get_obj_val(lp)
         glpk.glp_delete_prob(lp)
         
@@ -128,21 +134,21 @@ class SCM(ParametrizedProblem):
     def get_alpha_UB(self, mu):
         Qa = self.parametrized_problem.Qa
         N = self.N
-        UB_vectors_K = self.UB_vectors_K
+        UB_vectors_J = self.UB_vectors_J
         
         alpha_UB = sys.float_info.max;
         
-        for k in range(N):
+        for j in range(N):
             # Overwrite parameter values
-            omega = self.C_K[k]
+            omega = self.C_J[j]
             self.parametrized_problem.setmu(omega)
             current_theta_a = self.parametrized_problem.compute_theta_a()
-            UB_vector = UB_vectors[k]
+            UB_vector = UB_vectors_J[j]
             
             # Compute the cost function for fixed omega
             obj = 0.
             for qa in range(Qa):
-                obj += UB_vector[q]*current_theta_a[q]
+                obj += UB_vector[qa]*current_theta_a[qa]
             
             if obj < alpha_UB:
                 alpha_UB = obj
@@ -178,14 +184,14 @@ class SCM(ParametrizedProblem):
         
         for run in range(self.Nmax):
             # Store the greedy parameter
-            self.store_C_k()
+            self.update_C_J()
             
             print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             
             # Evaluate the coercivity constant
             self.truth_coercivity_constant()
             
-            self.N = len(self.C_K)
+            self.N = len(self.C_J)
             
             # Prepare for next iteration
             if self.N < self.Nmax:
@@ -208,53 +214,66 @@ class SCM(ParametrizedProblem):
         
         # RHS matrix
         S = self.parametrized_problem.S
+        S = as_backend_type(S)
         
         for qa in range(Qa):
             A = self.parametrized_problem.truth_A[qa]
+            A = as_backend_type(A)
             
             eigensolver = SLEPcEigenSolver(A, S)
             eigensolver.parameters["problem_type"] = "gen_hermitian"
+            eigensolver.parameters["solver"] = "lapack"
+            eigensolver.parameters["spectral_transform"] = "shift-and-invert"
+            eigensolver.parameters["spectral_shift"] = 1e-5
             
             # Compute the minimum eigenvalue
             eigensolver.parameters["spectrum"] = "smallest real"
             eigensolver.solve(1)
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             self.B_min[qa] = r
+            print "B_min[" + str(qa) + "] = " + str(r)
             
             # Compute the maximum eigenvalue
             eigensolver.parameters["spectrum"] = "largest real"
             eigensolver.solve(1)
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             self.B_max[qa] = r
+            print "B_max[" + str(qa) + "] = " + str(r)
         
     # Store the greedy parameter
-    def store_C_k(self):
-        C_k += (self.mu,)
+    def update_C_J(self):
+        self.C_J += (self.mu,)
         
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
         current_theta_a = self.parametrized_problem.compute_theta_a()
-        A = self.aff_assemble_truth_sym_matrix(self.parametrized_problem.truth_A, current_theta_a)
+        A = self.parametrized_problem.aff_assemble_truth_sym_matrix(self.parametrized_problem.truth_A, current_theta_a)
+        A = as_backend_type(A)
         S = self.parametrized_problem.S
+        S = as_backend_type(S)
         
         eigensolver = SLEPcEigenSolver(A, S)
         eigensolver.parameters["problem_type"] = "gen_hermitian"
         eigensolver.parameters["spectrum"] = "smallest real"
+        eigensolver.parameters["solver"] = "lapack"
+        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
+        eigensolver.parameters["spectral_shift"] = 1e-5
         eigensolver.solve(1)
         
-        r, c, rv, cv = eigensolver.get_pair(0) # real and complex part of the (eigenvalue, eigenvectors)
-        self.alpha_k += (r,)
+        r, c, rv, cv = eigensolver.get_eigenpair(0) # real and complex part of the (eigenvalue, eigenvectors)
+        self.alpha_J += (r,)
+        print "truth_alpha =" + str(r)
         
-        rv_f = Function(self.V, rv)
-        UB_vector = compute_UB_vector(self.parametrized_problem.truth_A, S, rv_f)
-        self.UB_vectors_K += (UB_vector,)
+        rv_f = Function(self.parametrized_problem.V, rv)
+        UB_vector = self.compute_UB_vector(self.parametrized_problem.truth_A, S, rv_f)
+        self.UB_vectors_J += (UB_vector,)
         
     ## Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
     def compute_UB_vector(self, vec, S, u):
         UB_vector = np.zeros((len(vec)))
-        norm_S_squared = compute_scalar(u,u,S)
+        norm_S_squared = self.parametrized_problem.compute_scalar(u,u,S)
         for qa in range(1,len(vec)):
-            UB_vector[qa] = compute_scalar(u,u,vec[qa])/norm_S_squared;
+            UB_vector[qa] = self.parametrized_problem.compute_scalar(u,u,vec[qa])/norm_S_squared;
         return UB_vector
         
     ## Choose the next parameter in the offline stage in a greedy fashion
