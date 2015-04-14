@@ -27,6 +27,7 @@ import shutil # for rm
 import sys # for exit
 from scipy import stats as scistats # for geometric mean
 import random # to randomize selection in case of equal error bound
+from gram_schmidt import *
 from elliptic_coercive_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -54,6 +55,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.lnq = ()
         
         # $$ OFFLINE DATA STRUCTURES $$ #
+        # 6bis. Declare a GS object
+        self.GS = GramSchmidt()
         # 9. I/O
         self.snap_folder = "snapshots/"
         self.basis_folder = "basis/"
@@ -184,26 +187,14 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         if self.N == 0:
             self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
             self.Z /= np.sqrt(np.dot(self.Z[:, 0], self.S*self.Z[:, 0]))
-    
         else:
             self.Z = np.hstack((self.Z, self.snap.vector())) # add new basis functions as column vectors
-            self.Z = self.GS()
+            self.Z = self.GS.apply(self.Z, self.S)
         np.save(self.basis_folder + "basis", self.Z)
         current_basis = Function(self.V)
         current_basis.vector()[:] = self.Z[:, self.N]
         self.export_basis(current_basis, self.basis_folder + "basis_" + str(self.N))
-        self.N += 1
-    
-    ## Perform Gram Schmidt orthonormalization
-    def GS(self):
-        basis = self.Z
-        last = basis.shape[1]-1
-        b = basis[:, last].copy()
-        for i in range(last):
-            proj = np.dot(np.dot(b,self.S*basis[:, i])/np.dot(basis[:, i],self.S*basis[:, i]),basis[:, i])
-            b = b - proj 
-        basis[:, last] = b/np.sqrt(np.dot(b,self.S*b))
-        return basis
+        self.N += 1        
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
