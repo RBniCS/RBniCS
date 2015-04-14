@@ -40,17 +40,22 @@ class Gaussian(EllipticCoerciveRBBase):
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
-        self.bc = DirichletBC(V, 0.0, bound)
+        self.bc = [
+            DirichletBC(V, 0.0, bound, 0),
+            DirichletBC(V, 0.0, bound, 1),
+            DirichletBC(V, 0.0, bound, 2),
+            DirichletBC(V, 0.0, bound, 3)
+        ]
         # Use the H^1 seminorm on V as norm, instead of the H^1 norm
         u = self.u
         v = self.v
         dx = self.dx
         scalar = inner(grad(u),grad(v))*dx
         self.S = assemble(scalar)
-        self.bc.apply(self.S)
+        [bc.apply(self.S) for bc in self.bc]
         # Finally, initialize an EIM object for the interpolation of the forcing term
         self.EIM_obj = EIM(self)
-        self.EIM_obj.parametrized_function = "exp( - 2*(x[0]-mu_1)**2- 2*(x[1]-mu_2)**2 )"
+        self.EIM_obj.parametrized_function = "exp( - 2*pow(x[0]-mu_1, 2) - 2*pow(x[1]-mu_2, 2) )"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -62,19 +67,19 @@ class Gaussian(EllipticCoerciveRBBase):
     # Propagate the values of all setters also to the EIM object
     
     def setNmax(self, nmax):
-        EllipticCoerciveRBBase.setNmax(nmax)
+        EllipticCoerciveRBBase.setNmax(self, nmax)
         self.EIM_obj.setNmax(nmax)
     def settol(self, tol):
-        EllipticCoerciveRBBase.settol(tol)
+        EllipticCoerciveRBBase.settol(self, tol)
         self.EIM_obj.settol(tol)
     def setmu_range(self, mu_range):
-        EllipticCoerciveRBBase.setmu_range(mu_range)
+        EllipticCoerciveRBBase.setmu_range(self, mu_range)
         self.EIM_obj.setmu_range(mu_range)
     def setxi_train(self, ntrain, sampling="random"):
-        EllipticCoerciveRBBase.setxi_train(train, sampling)
-        self.EIM_obj.setxi_train(train, sampling)
+        EllipticCoerciveRBBase.setxi_train(self, ntrain, sampling)
+        self.EIM_obj.setxi_train(ntrain, sampling)
     def setmu(self, mu):
-        EllipticCoerciveRBBase.setmu(mu)
+        EllipticCoerciveRBBase.setmu(self, mu)
         self.EIM_obj.setmu(mu)
         
     #  @}
@@ -110,7 +115,7 @@ class Gaussian(EllipticCoerciveRBBase):
         interpolated_gaussian = assemble_mu_independent_interpolated_function()
         # Assemble
         all_F = ()
-        for q in range(len(interpolated_gaussian_q)):
+        for q in range(len(interpolated_gaussian)):
             f_q = interpolated_gaussian[q]*v*dx
             all_F += (assemble(f_q),)
         # Return
@@ -152,8 +157,8 @@ parameters.linear_algebra_backend = 'PETSc'
 # 5. Set mu range, xi_train and Nmax
 mu_range = [(-1.0, 1.0), (-1.0, 1.0)]
 gaussian.setmu_range(mu_range)
-gaussian.setxi_train(500)
-gaussian.setNmax(4)
+gaussian.setxi_train(50)
+gaussian.setNmax(20)
 
 # 6. Perform the offline phase
 first_mu = (0.5,1.0)
