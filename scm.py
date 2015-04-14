@@ -27,6 +27,7 @@ import os # for path and makedir
 import shutil # for rm
 import glpk # for LB computation
 import sys # for sys.float_info.max
+import random # to randomize selection in case of equal error bound
 from parametrized_problem import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -40,11 +41,12 @@ class SCM(ParametrizedProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, parametrized_problem):
+    def __init__(self, parametrized_problem, bc_list):
         # Call the parent initialization
         ParametrizedProblem.__init__(self)
-        # Store the parametrized problem object
+        # Store the parametrized problem object and the bc list
         self.parametrized_problem = parametrized_problem
+        self.bc_list = bc_list
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for SCM
@@ -52,9 +54,19 @@ class SCM(ParametrizedProblem):
         self.B_max = [] # maximum values of the bounding box mathcal{B}. Vector of size Qa
         self.C_J = () # vector storing the greedily select parameters during the training phase
         self.alpha_J =() # vector storing the truth coercivity constants at the greedy parameters in C_J
+        self.eigenvector_J = () # vector of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
         self.UB_vectors_J = () # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
         
         # $$ OFFLINE DATA STRUCTURES $$ #
+        # We need to discard dofs related to bcs in eigenvalue computations. To avoid having to create a PETSc submatrix
+        # we simply zero rows and columns and replace the diagonal element with an eigenvalue that for sure
+        # will not be the minimum/maximum
+        self.invalid_minimum_eigenvalue = 1.e4
+        self.invalid_maximum_eigenvalue = 1.e-4
+        # 3c. Matrices/vectors resulting from the truth discretization
+        self.truth_A__condensed_for_minimum_eigenvalue = ()
+        self.truth_A__condensed_for_maximum_eigenvalue = ()
+        self.S__condensed = ()
         # 9. I/O
         self.snap_folder = "snapshots__scm/"
         self.basis_folder = "basis__scm/"
@@ -71,29 +83,28 @@ class SCM(ParametrizedProblem):
         
     def get_alpha_LB(self, mu):
         lp = glpk.glp_create_prob()
-        glpk.glp_set_obj_dir(lp, glpk.GLP_MIN);
+        glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
         Qa = self.parametrized_problem.Qa
         N = self.N
         
         # 1. Linear program unknowns: Qa variables, y_1, ..., y_{Q_a}
-        glpk.glp_add_cols(lp, Qa);
+        glpk.glp_add_cols(lp, Qa)
         
         # 2. Range: constrain the variables to be in the bounding box (note: GLPK indexing starts from 1)
         for qa in range(Qa):
             if self.B_min[qa] < self.B_max[qa]: # the usual case
-                glpk.glp_set_col_bnds(lp, qa+1, glpk.GLP_DB, self.B_min[qa], self.B_max[qa]);
+                glpk.glp_set_col_bnds(lp, qa+1, glpk.GLP_DB, self.B_min[qa], self.B_max[qa])
             elif self.B_min[qa] == self.B_max[qa]: # unlikely, but possible
-                glpk.glp_set_col_bnds(lp, qa+1, glpk.GLP_FX, self.B_min[qa], self.B_max[qa]);
+                glpk.glp_set_col_bnds(lp, qa+1, glpk.GLP_FX, self.B_min[qa], self.B_max[qa])
             else: # there is something wrong in the bounding box: set as unconstrained variable
                 print "Warning: wrong bounding box for affine expansion element #", qa
-                glp_set_col_bnds(lp, qa+1, glpk.GLP_FR, 0., 0.);
+                glp_set_col_bnds(lp, qa+1, glpk.GLP_FR, 0., 0.)
                 
         # 3. Add constraints: a constraint is added for each sample in C_J
-        glpk.glp_add_rows(lp, N);
-        print "N*Qa", N*Qa
-        matrix_row_index = glpk.intArray(N*Qa)
-        matrix_column_index = glpk.intArray(N*Qa)
-        matrix_content = glpk.doubleArray(N*Qa)
+        glpk.glp_add_rows(lp, N)
+        matrix_row_index = glpk.intArray(self.Nmax*Qa)    # the more conservative N*Qa size ...
+        matrix_column_index = glpk.intArray(self.Nmax*Qa) # ... gives a segafult ...
+        matrix_content = glpk.doubleArray(self.Nmax*Qa)   # ... after some iterations
         glpk_container_index = 1 # glpk starts from 1
         for j in range(N):
             # Overwrite parameter values
@@ -103,17 +114,17 @@ class SCM(ParametrizedProblem):
             
             # Assemble the LHS of the constraint
             for qa in range(Qa):
-                matrix_row_index[glpk_container_index] = j + 1
-                matrix_column_index[glpk_container_index] = qa + 1
-                print matrix_row_index[glpk_container_index]
-                print matrix_column_index[glpk_container_index]
+                matrix_row_index[glpk_container_index] = int(j + 1)
+                matrix_column_index[glpk_container_index] = int(qa + 1)
                 matrix_content[glpk_container_index] = current_theta_a[qa]
                 glpk_container_index += 1
-            glpk.glp_load_matrix(lp, N*Qa, matrix_row_index, matrix_column_index, matrix_content)
             
             # Assemble the RHS of the constraint
-            glpk.glp_set_row_bnds(lp, j+1, glpk.GLP_LO, self.alpha_J[j], 0.);
-            
+            glpk.glp_set_row_bnds(lp, j+1, glpk.GLP_LO, self.alpha_J[j], 0.)
+        
+        # Load the assembled LHS
+        glpk.glp_load_matrix(lp, N*Qa, matrix_row_index, matrix_column_index, matrix_content)
+        
         # 4. Add cost function coefficients
         self.parametrized_problem.setmu(mu)
         current_theta_a = self.parametrized_problem.compute_theta_a()
@@ -136,13 +147,10 @@ class SCM(ParametrizedProblem):
         N = self.N
         UB_vectors_J = self.UB_vectors_J
         
-        alpha_UB = sys.float_info.max;
+        alpha_UB = sys.float_info.max
+        current_theta_a = self.parametrized_problem.compute_theta_a()
         
         for j in range(N):
-            # Overwrite parameter values
-            omega = self.C_J[j]
-            self.parametrized_problem.setmu(omega)
-            current_theta_a = self.parametrized_problem.compute_theta_a()
             UB_vector = UB_vectors_J[j]
             
             # Compute the cost function for fixed omega
@@ -179,17 +187,32 @@ class SCM(ParametrizedProblem):
         self.parametrized_problem.truth_A = self.parametrized_problem.assemble_truth_a()
         self.parametrized_problem.Qa = len(self.parametrized_problem.truth_A)
         
+        # Assemble the condensed versions of truth_A and S matrices
+        self.S__condensed = self.clear_constrained_dofs(self.parametrized_problem.S.copy(), 1.)
+        for qa in range(self.parametrized_problem.Qa):
+            self.truth_A__condensed_for_minimum_eigenvalue +=(
+                self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa].copy(), self.invalid_minimum_eigenvalue), 
+            )
+            self.truth_A__condensed_for_maximum_eigenvalue +=(
+                self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa].copy(), self.invalid_maximum_eigenvalue), 
+            )
+        
         # Compute the bounding box \mathcal{B}
-        self.compute_bounding_box();
+        self.compute_bounding_box()
         
         for run in range(self.Nmax):
+            print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            
             # Store the greedy parameter
             self.update_C_J()
             
-            print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            
             # Evaluate the coercivity constant
-            self.truth_coercivity_constant()
+            print "evaluate the coercivity constant for mu = ", self.mu
+            (alpha, eigenvector, UB_vector) = self.truth_coercivity_constant()
+            self.alpha_J += (alpha,)
+            self.eigenvector_J += (eigenvector,)
+            self.UB_vectors_J += (UB_vector,)
+            self.export_solution(eigenvector, self.snap_folder + "eigenvector_" + str(run))
             
             self.N = len(self.C_J)
             
@@ -213,20 +236,19 @@ class SCM(ParametrizedProblem):
         self.B_max = np.zeros((Qa))
         
         # RHS matrix
-        S = self.parametrized_problem.S
+        S = self.S__condensed
         S = as_backend_type(S)
         
         for qa in range(Qa):
-            A = self.parametrized_problem.truth_A[qa]
+            # Compute the minimum eigenvalue
+            A = self.truth_A__condensed_for_minimum_eigenvalue[qa]
             A = as_backend_type(A)
             
             eigensolver = SLEPcEigenSolver(A, S)
             eigensolver.parameters["problem_type"] = "gen_hermitian"
-            eigensolver.parameters["solver"] = "lapack"
+            #eigensolver.parameters["solver"] = "lapack"
             eigensolver.parameters["spectral_transform"] = "shift-and-invert"
             eigensolver.parameters["spectral_shift"] = 1e-5
-            
-            # Compute the minimum eigenvalue
             eigensolver.parameters["spectrum"] = "smallest real"
             eigensolver.solve(1)
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
@@ -234,46 +256,53 @@ class SCM(ParametrizedProblem):
             print "B_min[" + str(qa) + "] = " + str(r)
             
             # Compute the maximum eigenvalue
+            A = self.truth_A__condensed_for_maximum_eigenvalue[qa]
+            A = as_backend_type(A)
+            
+            eigensolver = SLEPcEigenSolver(A, S)
+            eigensolver.parameters["problem_type"] = "gen_hermitian"
+            #eigensolver.parameters["solver"] = "lapack"
+            eigensolver.parameters["spectral_transform"] = "shift-and-invert"
+            eigensolver.parameters["spectral_shift"] = 1e5
             eigensolver.parameters["spectrum"] = "largest real"
             eigensolver.solve(1)
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             self.B_max[qa] = r
             print "B_max[" + str(qa) + "] = " + str(r)
-        
+    
     # Store the greedy parameter
     def update_C_J(self):
         self.C_J += (self.mu,)
         
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
+        self.parametrized_problem.setmu(self.mu)
         current_theta_a = self.parametrized_problem.compute_theta_a()
-        A = self.parametrized_problem.aff_assemble_truth_sym_matrix(self.parametrized_problem.truth_A, current_theta_a)
+        A = self.parametrized_problem.aff_assemble_truth_sym_matrix(self.truth_A__condensed_for_minimum_eigenvalue, current_theta_a)
         A = as_backend_type(A)
-        S = self.parametrized_problem.S
+        S = self.S__condensed
         S = as_backend_type(S)
         
         eigensolver = SLEPcEigenSolver(A, S)
         eigensolver.parameters["problem_type"] = "gen_hermitian"
         eigensolver.parameters["spectrum"] = "smallest real"
-        eigensolver.parameters["solver"] = "lapack"
+        #eigensolver.parameters["solver"] = "lapack"
         eigensolver.parameters["spectral_transform"] = "shift-and-invert"
         eigensolver.parameters["spectral_shift"] = 1e-5
         eigensolver.solve(1)
         
         r, c, rv, cv = eigensolver.get_eigenpair(0) # real and complex part of the (eigenvalue, eigenvectors)
-        self.alpha_J += (r,)
-        print "truth_alpha =" + str(r)
-        
         rv_f = Function(self.parametrized_problem.V, rv)
-        UB_vector = self.compute_UB_vector(self.parametrized_problem.truth_A, S, rv_f)
-        self.UB_vectors_J += (UB_vector,)
+        UB_vector = self.compute_UB_vector(self.parametrized_problem.truth_A, self.parametrized_problem.S, rv_f)
+        
+        return (r, rv_f, UB_vector)
         
     ## Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
     def compute_UB_vector(self, vec, S, u):
         UB_vector = np.zeros((len(vec)))
         norm_S_squared = self.parametrized_problem.compute_scalar(u,u,S)
-        for qa in range(1,len(vec)):
-            UB_vector[qa] = self.parametrized_problem.compute_scalar(u,u,vec[qa])/norm_S_squared;
+        for qa in range(len(vec)):
+            UB_vector[qa] = self.parametrized_problem.compute_scalar(u,u,vec[qa])/norm_S_squared
         return UB_vector
         
     ## Choose the next parameter in the offline stage in a greedy fashion
@@ -284,7 +313,7 @@ class SCM(ParametrizedProblem):
             LB = self.get_alpha_LB(mu) # ... notice that only ...  [1]
             UB = self.get_alpha_UB(mu) # ... these three lines ... [2]
             delta = (UB - LB)/UB       # ... have been changed     [3]
-            if delta > delta_max:
+            if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
         print "absolute SCM delta max = ", delta_max
@@ -301,6 +330,78 @@ class SCM(ParametrizedProblem):
 
         self.setmu(munew)
     
+    # Clear constrained dofs
+    def clear_constrained_dofs(self, M, diag_value):
+        if self.bc_list != None:
+            fake_vector = inner(1., self.parametrized_problem.v)*self.parametrized_problem.dx
+            FAKE_VECTOR = assemble(fake_vector)
+            for bc in self.bc_list:
+                bc.zero(M)
+                bc.zero_columns(M, FAKE_VECTOR, diag_value)
+        return M
+    
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
+    
+    ###########################     I/O     ########################### 
+    ## @defgroup IO Input/output methods
+    #  @{
+
+    ## Export solution in VTK format
+    def export_solution(self, solution, filename):
+        file = File(filename + ".pvd", "compressed")
+        file << solution
+        
+    #  @}
+    ########################### end - I/O - end ###########################
+    
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the training set
+    def error_analysis(self):
+        print "=============================================================="
+        print "=             SCM error analysis begins                      ="
+        print "=============================================================="
+        print ""
+        
+        # Regenerate a new test set (necessarily random)
+        self.setxi_train(len(self.xi_train))
+        
+        normalized_error = np.zeros((len(self.xi_train)))
+        
+        for run in range(len(self.xi_train)):
+            print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            
+            self.setmu(self.xi_train[run])
+            
+            # Truth solves
+            (alpha, discarded1, discarded2) = self.truth_coercivity_constant()
+            
+            # Reduced solves
+            alpha_LB = self.get_alpha_LB(self.mu)
+            alpha_UB = self.get_alpha_UB(self.mu)
+            
+            normalized_error[run] = (alpha - alpha_LB)/alpha_UB
+        
+        # Print some statistics
+        print ""
+        print "min(nerr) \t\t mean(nerr) \t\t max(nerr)"
+        min_normalized_error = np.min(normalized_error[:]) # it should not be negative!
+        mean_normalized_error = np.mean(normalized_error[:])
+        max_normalized_error = np.max(normalized_error[:])
+        print str(min_normalized_error) + " \t " + str(mean_normalized_error) \
+              + " \t " + str(max_normalized_error)
+        
+        print ""
+        print "=============================================================="
+        print "=             SCM error analysis ends                        ="
+        print "=============================================================="
+        print ""
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
     

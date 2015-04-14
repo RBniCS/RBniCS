@@ -25,7 +25,8 @@
 import os # for path and makedir
 import shutil # for rm
 import sys # for exit
-from scipy import stats as scistats
+from scipy import stats as scistats # for geometric mean
+import random # to randomize selection in case of equal error bound
 from elliptic_coercive_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -211,7 +212,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.setmu(mu)
             self.red_solve(self.N)
             delta = self.get_delta()
-            if delta > delta_max:
+            if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
         print "absolute delta max = ", delta_max

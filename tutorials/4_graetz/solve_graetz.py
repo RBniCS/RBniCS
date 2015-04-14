@@ -56,7 +56,7 @@ class Graetz(EllipticCoerciveRBBase):
                 self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
         # We will consider non-homogeneous Dirichlet BCs with a lifting.
         # First of all, assemble a suitable lifting function
-        lifting_BC = [ 
+        lifting_bc = [ 
             DirichletBC(V, 0.0, bound, 1), # homog. bcs
             DirichletBC(V, 0.0, bound, 5), # homog. bcs
             DirichletBC(V, 0.0, bound, 6), # homog. bcs
@@ -70,15 +70,15 @@ class Graetz(EllipticCoerciveRBBase):
         lifting_A = assemble(lifting_a)
         lifting_f = 1e-15*v*dx
         lifting_F = assemble(lifting_f)
-        [bc.apply(lifting_A) for bc in lifting_BC] # Apply BCs on LHS
-        [bc.apply(lifting_F) for bc in lifting_BC] # Apply BCs on RHS
+        [bc.apply(lifting_A) for bc in lifting_bc] # Apply BCs on LHS
+        [bc.apply(lifting_F) for bc in lifting_bc] # Apply BCs on RHS
         lifting = Function(V)
         solve(lifting_A, lifting.vector(), lifting_F)
-        # Discard the lifting_{BC, A, F} object and store only the lifting function
+        # Discard the lifting_{bc, A, F} object and store only the lifting function
         self.lifting = lifting
         self.export_basis(self.lifting, self.basis_folder + "lifting")
         # Store the BC object for the homogeneous solution (after lifting)
-        self.BC = [
+        self.bc = [
             DirichletBC(V, 0.0, bound, 1), # indeed homog. bcs
             DirichletBC(V, 0.0, bound, 5), # indeed homog. bcs
             DirichletBC(V, 0.0, bound, 6), # indeed homog. bcs
@@ -88,7 +88,7 @@ class Graetz(EllipticCoerciveRBBase):
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])")
         # Finally, initialize an SCM object to approximate alpha LB
-        #self.SCM_obj = SCM(self)
+        self.SCM_obj = SCM(self, self.bc)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -101,19 +101,19 @@ class Graetz(EllipticCoerciveRBBase):
     
     def setNmax(self, nmax):
         EllipticCoerciveRBBase.setNmax(self, nmax)
-        #self.SCM_obj.setNmax(nmax)
+        self.SCM_obj.setNmax(2*nmax)
     def settol(self, tol):
         EllipticCoerciveRBBase.settol(self, tol)
-        #self.SCM_obj.settol(tol)
+        self.SCM_obj.settol(tol)
     def setmu_range(self, mu_range):
         EllipticCoerciveRBBase.setmu_range(self, mu_range)
-        #self.SCM_obj.setmu_range(mu_range)
+        self.SCM_obj.setmu_range(mu_range)
     def setxi_train(self, ntrain, sampling="random"):
         EllipticCoerciveRBBase.setxi_train(self, ntrain, sampling)
-        #self.SCM_obj.setxi_train(ntrain, sampling)
+        self.SCM_obj.setxi_train(ntrain, sampling)
     def setmu(self, mu):
         EllipticCoerciveRBBase.setmu(self, mu)
-        #self.SCM_obj.setmu(mu)
+        self.SCM_obj.setmu(mu)
         
     #  @}
     ########################### end - SETTERS - end ########################### 
@@ -124,7 +124,7 @@ class Graetz(EllipticCoerciveRBBase):
     
     ## Return the alpha_lower bound.
     def get_alpha_lb(self):
-        return 1. #return SCM_obj.get_alpha_LB(self.mu)
+        return self.SCM_obj.get_alpha_LB(self.mu)
     
     ## Set theta multiplicative terms of the affine expansion of a.
     def compute_theta_a(self):
@@ -163,13 +163,13 @@ class Graetz(EllipticCoerciveRBBase):
         A2 = assemble(a2)
         A3 = assemble(a3)
         # Apply BCs
-        [bc.apply(A0) for bc in self.BC]
-        [bc.apply(A1) for bc in self.BC]
-        [bc.apply(A2) for bc in self.BC]
-        [bc.apply(A3) for bc in self.BC]
-        [bc.zero(A1) for bc in self.BC]
-        [bc.zero(A2) for bc in self.BC]
-        [bc.zero(A3) for bc in self.BC]
+        [bc.apply(A0) for bc in self.bc]
+        [bc.apply(A1) for bc in self.bc]
+        [bc.apply(A2) for bc in self.bc]
+        [bc.apply(A3) for bc in self.bc]
+        [bc.zero(A1) for bc in self.bc]
+        [bc.zero(A2) for bc in self.bc]
+        [bc.zero(A3) for bc in self.bc]
         # Return
         return (A0, A1, A2, A3)
     
@@ -190,10 +190,10 @@ class Graetz(EllipticCoerciveRBBase):
         F2 = assemble(f2)
         F3 = assemble(f3)
         # Apply BCs
-        [bc.apply(F0) for bc in self.BC]
-        [bc.apply(F1) for bc in self.BC]
-        [bc.apply(F2) for bc in self.BC]
-        [bc.apply(F3) for bc in self.BC]
+        [bc.apply(F0) for bc in self.bc]
+        [bc.apply(F1) for bc in self.bc]
+        [bc.apply(F2) for bc in self.bc]
+        [bc.apply(F3) for bc in self.bc]
         # Return
         return (F0, F1, F2, F3)
         
@@ -207,7 +207,7 @@ class Graetz(EllipticCoerciveRBBase):
     ## Perform the offline phase of the reduced order model
     def offline(self):
         # Perform first the SCM offline phase, ...
-        #self.SCM_obj.offline()
+        self.SCM_obj.offline()
         # ..., and then call the parent method.
         EllipticCoerciveRBBase.offline(self)
     
@@ -276,6 +276,21 @@ class Graetz(EllipticCoerciveRBBase):
         
     #  @}
     ########################### end - I/O - end ########################### 
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the training set
+    def error_analysis(self, N=None):
+        # Perform first the SCM error analysis, ...
+        self.SCM_obj.error_analysis()
+        # ..., and then call the parent method.
+        EllipticCoerciveRBBase.error_analysis(self, N)        
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
