@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file elliptic_coercive_rb_base.py
-#  @brief Implementation of the reduced basis method for elliptic coervice problems
+#  @brief Implementation of the reduced basis method for (compliant) elliptic coervice problems
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
@@ -31,7 +31,7 @@ from gram_schmidt import *
 from elliptic_coercive_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveBase
+## @class EllipticCoerciveRBBase
 #
 # Base class containing the interface of the RB method
 # for (compliant) elliptic coercive problems
@@ -306,24 +306,24 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     
     ## Compute the dual of a
     def compute_a_dual(self, RBu):
-        riez = Function(self.V)
+        riesz = Function(self.V)
         i = 0
         for A in self.truth_A:
-            solve (self.S,riez.vector(), A*RBu.vector()*(-1.0))
+            solve (self.S,riesz.vector(), A*RBu.vector()*(-1.0))
             if i != 0:
-                l = np.hstack((l,riez.vector()))
+                l = np.hstack((l,riesz.vector()))
             else:
-                l = np.array(riez.vector()).reshape(-1, 1) # as column vector
+                l = np.array(riesz.vector()).reshape(-1, 1) # as column vector
                 i = 1
         return l
     
     ## Compute the dual of f
     def compute_f_dual(self):
-        riez = Function(self.V)
+        riesz = Function(self.V)
         c = ()
         for F in self.truth_F:
-            solve (self.S, riez.vector(), F)
-            c += (riez.copy(True),)
+            solve (self.S, riesz.vector(), F)
+            c += (riesz.copy(True),)
         return c
         
     ## Perform a truth evaluation of the output
