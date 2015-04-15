@@ -24,11 +24,9 @@
 
 from dolfin import *
 from elliptic_coercive_rb_base import *
-#from elliptic_coercive_pod_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: THERMAL BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class Tblock(EllipticCoerciveRBBase):
-#class Tblock(EllipticCoercivePODBase):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -39,7 +37,6 @@ class Tblock(EllipticCoerciveRBBase):
         bc = DirichletBC(V, 0.0, bound, 3)
         # Call the standard initialization
         EllipticCoerciveRBBase.__init__(self, V, [bc])
-#        EllipticCoercivePODBase.__init__(self, V)
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
