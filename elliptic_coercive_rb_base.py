@@ -34,7 +34,7 @@ from elliptic_coercive_base import *
 ## @class EllipticCoerciveBase
 #
 # Base class containing the interface of the RB method
-# for elliptic coercive problems
+# for (compliant) elliptic coercive problems
 class EllipticCoerciveRBBase(EllipticCoerciveBase):
 
     ###########################     CONSTRUCTORS     ########################### 
@@ -47,7 +47,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         EllipticCoerciveBase.__init__(self, V)
         
         # $$ ONLINE DATA STRUCTURES $$ #
-        # 4. Residual terms
+        # 4. Online output
+        self.sN = 0
+        # 5. Residual terms
         self.Cf = ()
         self.CC = ()
         self.CL = ()
@@ -55,6 +57,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.lnq = ()
         
         # $$ OFFLINE DATA STRUCTURES $$ #
+        # 4. Offline output
+        self.s = 0
         # 6bis. Declare a GS object
         self.GS = GramSchmidt()
         # 9. I/O
@@ -71,12 +75,22 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
     
+    # Perform an online evaluation of the (compliant) output
+    def online_output(self):
+        N = self.uN.size
+        assembled_red_F = self.aff_assemble_red_vector(self.red_F, self.theta_f, N)
+        self.sN = np.dot(assembled_red_F, self.uN)
+        
     ## Return an error bound for the current solution
     def get_delta(self):
         eps2 = self.get_eps2()
         alpha = self.get_alpha_lb()
         return np.sqrt(np.abs(eps2)/alpha)
     
+    ## Return an error bound for the current solution
+    def get_delta_output(self):
+        return self.get_delta()**2
+        
     ## Return the numerator of the error bound for the current solution
     def get_eps2 (self):
         theta_a = self.theta_a
@@ -312,6 +326,12 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             c += (riez.copy(True),)
         return c
         
+    ## Perform a truth evaluation of the output
+    def truth_output(self):
+        self.theta_f = self.compute_theta_f()
+        assembled_truth_F = self.aff_assemble_truth_vector(self.truth_F, self.theta_f)
+        self.s = assembled_truth_F.inner(self.snap.vector())
+        
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
@@ -319,6 +339,17 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## @defgroup ErrorAnalysis Error analysis
     #  @{
     
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # for the current value of mu. Overridden to compute also error on the output
+    def compute_error(self, N=None, skip_truth_solve=False):
+        error_u = EllipticCoerciveBase.compute_error(self, N, skip_truth_solve)
+        if not skip_truth_solve:
+            self.truth_output()
+        self.online_output()
+        error_s = abs(self.s - self.sN)
+        return (error_u, error_s)
+        
+        
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the training set
     def error_analysis(self, N=None):
@@ -334,9 +365,12 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # otherwise effectivity -> +\infty at greedily selected points
         self.setxi_train(len(self.xi_train))
         
-        error = np.zeros((N, len(self.xi_train)))
-        delta = np.zeros((N, len(self.xi_train)))
-        effectivity = np.zeros((N, len(self.xi_train)))
+        error_u = np.zeros((N, len(self.xi_train)))
+        delta_u = np.zeros((N, len(self.xi_train)))
+        effectivity_u = np.zeros((N, len(self.xi_train)))
+        error_s = np.zeros((N, len(self.xi_train)))
+        delta_s = np.zeros((N, len(self.xi_train)))
+        effectivity_s = np.zeros((N, len(self.xi_train)))
         
         for run in range(len(self.xi_train)):
             print "############################## run = ", run, " ######################################"
@@ -347,20 +381,36 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.truth_solve()
             
             for n in range(N): # n = 0, 1, ... N - 1
-                error[n, run] = self.compute_error(n + 1, False)
-                delta[n, run] = self.get_delta()
-                effectivity[n, run] = delta[n, run]/error[n, run]
+                (current_error_u, current_error_s) = self.compute_error(n + 1, False)
+                
+                error_u[n, run] = current_error_u
+                delta_u[n, run] = self.get_delta()
+                effectivity_u[n, run] = delta_u[n, run]/error_u[n, run]
+                
+                error_s[n, run] = current_error_s
+                delta_s[n, run] = self.get_delta_output()
+                effectivity_s[n, run] = delta_s[n, run]/error_s[n, run]
         
         # Print some statistics
         print ""
-        print "N \t gmean(err) \t\t gmean(delta) \t\t gmean(eff) \t max(eff)"
+        print "N \t gmean(err_u) \t\t gmean(delta_u) \t\t gmean(eff_u) \t max(eff_u)"
         for n in range(N): # n = 0, 1, ... N - 1
-            mean_error = scistats.gmean(error[n, :])
-            mean_delta = scistats.gmean(delta[n, :])
-            mean_effectivity = scistats.gmean(effectivity[n, :])
-            max_effectivity = np.max(effectivity[n, :])
-            print str(n+1) + " \t " + str(mean_error) + " \t " + str(mean_delta) \
-                  + " \t " + str(mean_effectivity) + " \t " + str(max_effectivity)
+            mean_error_u = scistats.gmean(error_u[n, :])
+            mean_delta_u = scistats.gmean(delta_u[n, :])
+            mean_effectivity_u = scistats.gmean(effectivity_u[n, :])
+            max_effectivity_u = np.max(effectivity_u[n, :])
+            print str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
+                  + " \t " + str(mean_effectivity_u) + " \t " + str(max_effectivity_u)
+                  
+        print ""
+        print "N \t gmean(err_s) \t\t gmean(delta_s) \t\t gmean(eff_s) \t max(eff_s)"
+        for n in range(N): # n = 0, 1, ... N - 1
+            mean_error_s = scistats.gmean(error_s[n, :])
+            mean_delta_s = scistats.gmean(delta_s[n, :])
+            mean_effectivity_s = scistats.gmean(effectivity_s[n, :])
+            max_effectivity_s = np.max(effectivity_s[n, :])
+            print str(n+1) + " \t " + str(mean_error_s) + " \t " + str(mean_delta_s) \
+                  + " \t " + str(mean_effectivity_s) + " \t " + str(max_effectivity_s)
         
         print ""
         print "=============================================================="
