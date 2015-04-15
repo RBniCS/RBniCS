@@ -23,11 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from elliptic_coercive_rb_base import *
+from elliptic_coercive_rb_non_compliant_base import *
 from scm import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Graetz(EllipticCoerciveRBBase):
+class Graetz(EllipticCoerciveRBNonCompliantBase):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -44,7 +44,7 @@ class Graetz(EllipticCoerciveRBBase):
             DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
         ]
         # Call the standard initialization
-        EllipticCoerciveRBBase.__init__(self, V, bc_list)
+        EllipticCoerciveRBNonCompliantBase.__init__(self, V, bc_list)
         # ... and also store FEniCS data structures for assembly ...
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
@@ -100,19 +100,19 @@ class Graetz(EllipticCoerciveRBBase):
     # Propagate the values of all setters also to the SCM object
     
     def setNmax(self, nmax):
-        EllipticCoerciveRBBase.setNmax(self, nmax)
+        EllipticCoerciveRBNonCompliantBase.setNmax(self, nmax)
         self.SCM_obj.setNmax(2*nmax)
     def settol(self, tol):
-        EllipticCoerciveRBBase.settol(self, tol)
+        EllipticCoerciveRBNonCompliantBase.settol(self, tol)
         self.SCM_obj.settol(tol)
     def setmu_range(self, mu_range):
-        EllipticCoerciveRBBase.setmu_range(self, mu_range)
+        EllipticCoerciveRBNonCompliantBase.setmu_range(self, mu_range)
         self.SCM_obj.setmu_range(mu_range)
     def setxi_train(self, ntrain, sampling="random"):
-        EllipticCoerciveRBBase.setxi_train(self, ntrain, sampling)
+        EllipticCoerciveRBNonCompliantBase.setxi_train(self, ntrain, sampling)
         self.SCM_obj.setxi_train(ntrain, sampling)
     def setmu(self, mu):
-        EllipticCoerciveRBBase.setmu(self, mu)
+        EllipticCoerciveRBNonCompliantBase.setmu(self, mu)
         self.SCM_obj.setmu(mu)
         
     #  @}
@@ -145,6 +145,10 @@ class Graetz(EllipticCoerciveRBBase):
         theta_f2 = - mu1*mu2
         theta_f3 = - 1.0
         return (theta_f0, theta_f1, theta_f2, theta_f3)
+        
+    ## Set theta multiplicative terms of the affine expansion of s.
+    def compute_theta_s(self):
+        return (1.0,)
     
     ## Set matrices resulting from the truth discretization of a.
     def assemble_truth_a(self):
@@ -184,6 +188,16 @@ class Graetz(EllipticCoerciveRBBase):
         # Return
         return (F0, F1, F2, F3)
         
+    ## Set vectors resulting from the truth discretization of s.
+    def assemble_truth_s(self):
+        v = self.v
+        ds = self.ds
+        s0 = v*ds(3)
+        
+        # Assemble and return
+        S0 = assemble(s0)
+        return (S0,)
+        
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
     
@@ -196,7 +210,7 @@ class Graetz(EllipticCoerciveRBBase):
         # Perform first the SCM offline phase, ...
         self.SCM_obj.offline()
         # ..., and then call the parent method.
-        EllipticCoerciveRBBase.offline(self)
+        EllipticCoerciveRBNonCompliantBase.offline(self)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -209,7 +223,7 @@ class Graetz(EllipticCoerciveRBBase):
     # the plot on the deformed domain
     def online_solve(self,N=None, with_plot=True):
         # Call the parent method, disabling plot ...
-        EllipticCoerciveRBBase.online_solve(self, N, False)
+        EllipticCoerciveRBNonCompliantBase.online_solve(self, N, False)
         # ... and then deform the mesh and perform the plot
         if with_plot == True:
             self.move_mesh()
@@ -274,7 +288,7 @@ class Graetz(EllipticCoerciveRBBase):
         # Perform first the SCM error analysis, ...
         self.SCM_obj.error_analysis()
         # ..., and then call the parent method.
-        EllipticCoerciveRBBase.error_analysis(self, N)        
+        EllipticCoerciveRBNonCompliantBase.error_analysis(self, N)        
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
