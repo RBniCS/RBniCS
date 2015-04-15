@@ -36,9 +36,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
+    def __init__(self, V, bc_list):
         # Call the parent initialization
-        EllipticCoerciveBase.__init__(self, V)
+        EllipticCoerciveBase.__init__(self, V, bc_list)
         
         # $$ PROBLEM SPECIFIC $$ #
         # Time step

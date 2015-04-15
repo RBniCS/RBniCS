@@ -40,9 +40,9 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
+    def __init__(self, V, bc_list):
         # Call the parent initialization
-        EllipticCoerciveBase.__init__(self, V)
+        EllipticCoerciveBase.__init__(self, V, bc_list)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a POD object
@@ -84,7 +84,9 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
                 os.makedirs(f)
         
         self.truth_A = self.assemble_truth_a()
+        self.apply_bc_to_matrix_expansion(self.truth_A)
         self.truth_F = self.assemble_truth_f()
+        self.apply_bc_to_vector_expansion(self.truth_F)
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
         

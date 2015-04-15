@@ -35,24 +35,24 @@ class Gaussian(EllipticCoerciveRBBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
-        # Call the standard initialization
-        EllipticCoerciveRBBase.__init__(self, V)
-        # ... and also store FEniCS data structures for assembly
-        self.dx = Measure("dx")[subd]
-        self.ds = Measure("ds")[bound]
-        self.bc = [
+        bc_list = [
             DirichletBC(V, 0.0, bound, 0),
             DirichletBC(V, 0.0, bound, 1),
             DirichletBC(V, 0.0, bound, 2),
             DirichletBC(V, 0.0, bound, 3)
         ]
+        # Call the standard initialization
+        EllipticCoerciveRBBase.__init__(self, V, bc_list)
+        # ... and also store FEniCS data structures for assembly
+        self.dx = Measure("dx")[subd]
+        self.ds = Measure("ds")[bound]
         # Use the H^1 seminorm on V as norm, instead of the H^1 norm
         u = self.u
         v = self.v
         dx = self.dx
         scalar = inner(grad(u),grad(v))*dx
         self.S = assemble(scalar)
-        [bc.apply(self.S) for bc in self.bc]
+        [bc.apply(self.S) for bc in self.bc_list] # make sure to apply BCs to the inner product matrix
         # Finally, initialize an EIM object for the interpolation of the forcing term
         self.EIM_obj = EIM(self)
         self.EIM_obj.parametrized_function = "exp( - 2*pow(x[0]-mu_1, 2) - 2*pow(x[1]-mu_2, 2) )"

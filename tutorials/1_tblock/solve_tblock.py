@@ -36,20 +36,20 @@ class Tblock(EllipticCoerciveRBBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
+        bc = DirichletBC(V, 0.0, bound, 3)
         # Call the standard initialization
-        EllipticCoerciveRBBase.__init__(self, V)
+        EllipticCoerciveRBBase.__init__(self, V, [bc])
 #        EllipticCoercivePODBase.__init__(self, V)
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
-        self.bc = DirichletBC(V, 0.0, bound, 3)
         # Use the H^1 seminorm on V as norm, instead of the H^1 norm
         u = self.u
         v = self.v
         dx = self.dx
         scalar = inner(grad(u),grad(v))*dx
         self.S = assemble(scalar)
-        self.bc.apply(self.S)
+        [bc.apply(self.S) for bc in self.bc_list] # make sure to apply BCs to the inner product matrix
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -85,10 +85,6 @@ class Tblock(EllipticCoerciveRBBase):
         # Assemble A1
         a1 = inner(grad(u),grad(v))*dx(2) +1e-15*inner(u,v)*dx
         A1 = assemble(a1)
-        # Apply BCs
-        self.bc.apply(A0)
-        self.bc.apply(A1)
-        self.bc.zero(A1)
         # Return
         return (A0, A1)
     
@@ -100,8 +96,6 @@ class Tblock(EllipticCoerciveRBBase):
         # Assemble F0
         f0 = v*ds(1) + 1e-15*v*dx
         F0 = assemble(f0)
-        # Apply BCs
-        self.bc.apply(F0)
         # Return
         return (F0,)
         

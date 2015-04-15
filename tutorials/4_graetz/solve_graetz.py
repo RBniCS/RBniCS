@@ -35,8 +35,16 @@ class Graetz(EllipticCoerciveRBBase):
     
     ## Default initialization of members
     def __init__(self, V, mesh, subd, bound):
+        # Store the BC object for the homogeneous solution (after lifting)
+        bc_list = [
+            DirichletBC(V, 0.0, bound, 1), # indeed homog. bcs
+            DirichletBC(V, 0.0, bound, 5), # indeed homog. bcs
+            DirichletBC(V, 0.0, bound, 6), # indeed homog. bcs
+            DirichletBC(V, 0.0, bound, 2), # non-homog. bcs with a lifting
+            DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
+        ]
         # Call the standard initialization
-        EllipticCoerciveRBBase.__init__(self,V)
+        EllipticCoerciveRBBase.__init__(self, V, bc_list)
         # ... and also store FEniCS data structures for assembly ...
         self.dx = Measure("dx")[subd]
         self.ds = Measure("ds")[bound]
@@ -77,18 +85,10 @@ class Graetz(EllipticCoerciveRBBase):
         # Discard the lifting_{bc, A, F} object and store only the lifting function
         self.lifting = lifting
         self.export_basis(self.lifting, self.basis_folder + "lifting")
-        # Store the BC object for the homogeneous solution (after lifting)
-        self.bc = [
-            DirichletBC(V, 0.0, bound, 1), # indeed homog. bcs
-            DirichletBC(V, 0.0, bound, 5), # indeed homog. bcs
-            DirichletBC(V, 0.0, bound, 6), # indeed homog. bcs
-            DirichletBC(V, 0.0, bound, 2), # non-homog. bcs with a lifting
-            DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
-        ]
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])")
         # Finally, initialize an SCM object to approximate alpha LB
-        self.SCM_obj = SCM(self, self.bc)
+        self.SCM_obj = SCM(self)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -162,14 +162,6 @@ class Graetz(EllipticCoerciveRBBase):
         A1 = assemble(a1)
         A2 = assemble(a2)
         A3 = assemble(a3)
-        # Apply BCs
-        [bc.apply(A0) for bc in self.bc]
-        [bc.apply(A1) for bc in self.bc]
-        [bc.apply(A2) for bc in self.bc]
-        [bc.apply(A3) for bc in self.bc]
-        [bc.zero(A1) for bc in self.bc]
-        [bc.zero(A2) for bc in self.bc]
-        [bc.zero(A3) for bc in self.bc]
         # Return
         return (A0, A1, A2, A3)
     
@@ -189,11 +181,6 @@ class Graetz(EllipticCoerciveRBBase):
         F1 = assemble(f1)
         F2 = assemble(f2)
         F3 = assemble(f3)
-        # Apply BCs
-        [bc.apply(F0) for bc in self.bc]
-        [bc.apply(F1) for bc in self.bc]
-        [bc.apply(F2) for bc in self.bc]
-        [bc.apply(F3) for bc in self.bc]
         # Return
         return (F0, F1, F2, F3)
         

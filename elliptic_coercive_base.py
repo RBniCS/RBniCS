@@ -41,7 +41,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
+    def __init__(self, V, bc_list):
         # Call to parent
         ParametrizedProblem.__init__(self)
         
@@ -69,6 +69,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         # 6. Basis functions matrix
         self.Z = []
         # 7. Truth space, functions and inner products
+        self.bc_list = bc_list
         self.V = V
         self.u = TrialFunction(self.V)
         self.v = TestFunction(self.V)
@@ -76,6 +77,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         v = self.v
         scalar = inner(u,v)*dx + inner(grad(u),grad(v))*dx # H^1 inner product
         self.S = assemble(scalar) # H^1 inner product matrix
+        [bc.apply(self.S) for bc in self.bc_list] # make sure to apply BCs to the inner product matrix
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -154,7 +156,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## Assemble the symmetric part of the the truth affine expansion (matrix)
     def aff_assemble_truth_sym_matrix(self, vec, theta_v):
         A_ = self.aff_assemble_truth_matrix(vec, theta_v)
-        AT_ = A_.copy(); AT_ = as_backend_type(AT_); AT_.mat().transpose()
+        AT_ = self.compute_transpose(A_)
         A_ += AT_
         A_ /= 2.
         return A_
@@ -167,6 +169,18 @@ class EllipticCoerciveBase(ParametrizedProblem):
         for i in range(1,len(vec)):
             F_ += vec[i]*theta_v[i]
         return F_
+        
+    ## Apply BCs to each element of the truth affine expansion (matrix)
+    def apply_bc_to_matrix_expansion(self, vec):
+        for i in range(len(vec)):
+            [bc.apply(vec[i]) for bc in self.bc_list]
+        for i in range(1,len(vec)):
+            [bc.zero(vec[i]) for bc in self.bc_list]
+            
+    ## Apply BCs to each element of the truth affine expansion (vector)
+    def apply_bc_to_vector_expansion(self, vec):
+        for i in range(len(vec)):
+            [bc.apply(vec[i]) for bc in self.bc_list]
         
     ## Assemble the reduced order affine expansion (matrix)
     def build_red_matrices(self):
@@ -196,9 +210,14 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.red_F = red_F
         np.save(self.red_matrices_folder + "red_F", self.red_F)
     
-    ## Auxiliary internal method to computed the scalar product (v1, M*v2)
+    ## Auxiliary internal method to compute the scalar product (v1, M*v2)
     def compute_scalar(self,v1,v2,M):
         return v1.vector().inner(M*v2.vector())
+        
+    ## Auxiliary internal method to compute the transpose of a matrix
+    def compute_transpose(self, A):
+        AT = A.copy(); AT = as_backend_type(AT); AT.mat().transpose()
+        return AT
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

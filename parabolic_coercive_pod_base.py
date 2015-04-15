@@ -38,10 +38,10 @@ class ParabolicCoercivePODBase(ParabolicCoerciveBase,EllipticCoercivePODBase):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
+    def __init__(self, V, bc_list):
         # Call the parent initialization
-        ParabolicCoerciveBase.__init__(self, V)
-        EllipticCoercivePODBase.__init__(self, V)
+        ParabolicCoerciveBase.__init__(self, V, bc_list)
+        EllipticCoercivePODBase.__init__(self, V, bc_list)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 

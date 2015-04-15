@@ -38,10 +38,10 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
+    def __init__(self, V, bc_list):
         # Call the parent initialization
-        ParabolicCoerciveBase.__init__(self, V)
-        EllipticCoerciveRBBase.__init__(self, V)
+        ParabolicCoerciveBase.__init__(self, V, bc_list)
+        EllipticCoerciveRBBase.__init__(self, V, bc_list)
         
         # TODO il resto del metodo
         # $$ ONLINE DATA STRUCTURES $$ #

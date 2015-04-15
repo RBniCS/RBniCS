@@ -41,12 +41,12 @@ class SCM(ParametrizedProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, parametrized_problem, bc_list):
+    def __init__(self, parametrized_problem):
         # Call the parent initialization
         ParametrizedProblem.__init__(self)
         # Store the parametrized problem object and the bc list
         self.parametrized_problem = parametrized_problem
-        self.bc_list = bc_list
+        self.bc_list = parametrized_problem.bc_list
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for SCM

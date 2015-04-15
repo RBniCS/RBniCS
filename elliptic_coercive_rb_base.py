@@ -42,9 +42,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
+    def __init__(self, V, bc_list):
         # Call the parent initialization
-        EllipticCoerciveBase.__init__(self, V)
+        EllipticCoerciveBase.__init__(self, V, bc_list)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # 4. Online output
@@ -87,7 +87,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         alpha = self.get_alpha_lb()
         return np.sqrt(np.abs(eps2)/alpha)
     
-    ## Return an error bound for the current solution
+    ## Return an error bound for the current output
     def get_delta_output(self):
         return self.get_delta()**2
         
@@ -159,7 +159,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                 os.makedirs(f)
         
         self.truth_A = self.assemble_truth_a()
+        self.apply_bc_to_matrix_expansion(self.truth_A)
         self.truth_F = self.assemble_truth_f()
+        self.apply_bc_to_vector_expansion(self.truth_F)
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
         
