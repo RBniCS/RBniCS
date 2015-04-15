@@ -49,7 +49,20 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         # Attach a dual problem
         self.dual_problem = _EllipticCoerciveRBNonCompliantBase_Dual(self)
         
-        # TODO theta, truth and red per S
+        # $$ ONLINE DATA STRUCTURES $$ #
+        # 3a. Number of terms in the affine expansion
+        self.Qs = 0
+        # 3b. Theta multiplicative factors of the affine expansion
+        self.theta_s = ()
+        # 3c. Reduced order matrices/vectors
+        self.red_S = ()
+        self.red_A_pd = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
+        self.red_F_d = () # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
+        
+        # $$ OFFLINE DATA STRUCTURES $$ #
+        # 3c. Matrices/vectors resulting from the truth discretization
+        self.truth_A = ()
+        self.truth_F = ()
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -57,6 +70,12 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
+    
+    # Perform an online solve. Overridden to solve also the dual problem for output correction
+    # and error estimation
+    def online_solve(self, N=None, with_plot=True):
+        self.dual_problem.online_solve(N, False)
+        EllipticCoerciveRBBase.online_solve(N, with_plot)
     
     # Perform an online evaluation of the non-compliant output
     def online_output(self):
@@ -77,18 +96,62 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     
     ## Perform the offline phase of the reduced order model
     def offline(self):
-        # Perform the offline stage for both primal and dual problems
-        EllipticCoerciveRBBase.offline(self)
+        self.truth_S = self.assemble_truth_s()
+        self.apply_bc_to_matrix_expansion(self.truth_S)
+        
+        # Perform the offline stage of the dual problem
         self.dual_problem.offline()
         
-        # Assemble data structures that are needed for the correction of the reduced order output
-        # TODO
+        # Perform the offline stage of the primal problem
+        EllipticCoerciveRBBase.offline(self)
         
     ## Perform a truth evaluation of the output
     def truth_output(self):
         self.theta_s = self.compute_theta_s()
         assembled_truth_S = self.aff_assemble_truth_vector(self.truth_S, self.theta_s)
         self.s = assembled_truth_S.inner(self.snap.vector())
+    
+    ## Assemble the reduced order affine expansion (matrix). Overridden to assemble also terms related to output correction
+    def build_red_matrices(self):
+        EllipticCoerciveRBBase.build_red_matrices(self)
+        
+        # Output correction terms
+        red_A_pd = ()
+        for A in self.truth_A:
+            A = as_backend_type(A)
+            dim = A.size(0) # = A.size(1)
+            if self.N == 1:
+                red_A_pd += (np.dot(self.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.dual_problem.Z)),)
+            else:
+                red = np.matrix(np.dot(self.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.dual_problem.Z))))
+                red_A_pd += (red,)
+        self.red_A_pd = red_A_pd
+        np.save(self.red_matrices_folder + "red_A_pd", self.red_A_pd)
+    
+    ## Assemble the reduced order affine expansion (rhs). Overridden to assemble also terms related to output  and output correction
+    def build_red_vectors(self):
+        EllipticCoerciveRBBase.build_red_vectors(self)
+        
+        # Output terms
+        red_S = ()
+        for S in self.truth_S:
+            S = as_backend_type(S)
+            dim = S.size()
+            red_s = np.dot(self.Z.T, S.vec().getValues(range(dim)) )
+            red_S += (red_s,)
+        self.red_S = red_S
+        np.save(self.red_matrices_folder + "red_S", self.red_S)
+        
+        # Output correction terms
+        red_F_d = ()
+        for F in self.truth_F:
+            F = as_backend_type(F)
+            dim = F.size()
+            red_f_d = np.dot(self.dual_problem.Z.T, F.vec().getValues(range(dim)) )
+            red_F_d += (red_f_d,)
+        self.red_F_d = red_F_d
+        np.save(self.red_matrices_folder + "red_F_d", self.red_F_d)
+        
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -101,13 +164,14 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         # Read in data structures as in parent
         EllipticCoerciveRBBase.load_red_matrices(self)
         # Moreover, read also data structures related to the dual problem
-        # TODO, questo era vecchio...
+        self.dual_problem.load_red_matrices(self)
+        # ... and those related to output and output correction
         if not self.CC.size: # avoid loading multiple times
-            self.CC = np.load(self.dual_folder + "CC.npy")
+            self.CC = np.load(self.red_matrices_folder + "red_A_pd.npy")
         if not self.CL.size: # avoid loading multiple times
-            self.CL = np.load(self.dual_folder + "CL.npy")
+            self.CL = np.load(self.red_matrices_folder + "red_S.npy")
         if not self.LL.size: # avoid loading multiple times
-            self.LL = np.load(self.dual_folder + "LL.npy")
+            self.LL = np.load(self.red_matrices_folder + "red_F_d.npy")
     
     #  @}
     ########################### end - I/O - end ########################### 

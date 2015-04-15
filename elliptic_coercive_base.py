@@ -185,7 +185,6 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## Assemble the reduced order affine expansion (matrix)
     def build_red_matrices(self):
         red_A = ()
-        i = 0
         for A in self.truth_A:
             A = as_backend_type(A)
             dim = A.size(0) # = A.size(1)
@@ -194,14 +193,12 @@ class EllipticCoerciveBase(ParametrizedProblem):
             else:
                 red = np.matrix(np.dot(self.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.Z))))
                 red_A += (red,)
-                i += 1
         self.red_A = red_A
         np.save(self.red_matrices_folder + "red_A", self.red_A)
     
     ## Assemble the reduced order affine expansion (rhs)
     def build_red_vectors(self):
         red_F = ()
-        i = 0
         for F in self.truth_F:
             F = as_backend_type(F)
             dim = F.size()
