@@ -67,6 +67,31 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
     
+    ###########################     SETTERS     ########################### 
+    ## @defgroup Setters Set properties of the reduced order approximation
+    #  @{
+    
+    # Propagate the values of all setters also to the dual problem
+    
+    def setNmax(self, nmax):
+        EllipticCoerciveRBBase.setNmax(self, nmax)
+        self.dual_problem.setNmax(nmax)
+    def settol(self, tol):
+        EllipticCoerciveRBBase.settol(self, tol)
+        self.dual_problem.settol(tol)
+    def setmu_range(self, mu_range):
+        EllipticCoerciveRBBase.setmu_range(self, mu_range)
+        self.dual_problem.setmu_range(mu_range)
+    def setxi_train(self, ntrain, sampling="random"):
+        EllipticCoerciveRBBase.setxi_train(self, ntrain, sampling)
+        self.dual_problem.setxi_train(ntrain, sampling)
+    def setmu(self, mu):
+        EllipticCoerciveRBBase.setmu(self, mu)
+        self.dual_problem.setmu(mu)
+        
+    #  @}
+    ########################### end - SETTERS - end ########################### 
+    
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
@@ -75,7 +100,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     # and error estimation
     def online_solve(self, N=None, with_plot=True):
         self.dual_problem.online_solve(N, False)
-        EllipticCoerciveRBBase.online_solve(N, with_plot)
+        EllipticCoerciveRBBase.online_solve(self, N, with_plot)
     
     # Perform an online evaluation of the non-compliant output
     def online_output(self):
@@ -164,7 +189,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         # Read in data structures as in parent
         EllipticCoerciveRBBase.load_red_matrices(self)
         # Moreover, read also data structures related to the dual problem
-        self.dual_problem.load_red_matrices(self)
+        self.dual_problem.load_red_matrices()
         # ... and those related to output and output correction
         if not self.CC.size: # avoid loading multiple times
             self.CC = np.load(self.red_matrices_folder + "red_A_pd.npy")
@@ -235,31 +260,6 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
-    
-    # Propagate the values of all setters also to the primal problem
-    
-    def setNmax(self, nmax):
-        EllipticCoerciveRBBase.setNmax(self, nmax)
-        self.primal_problem.setNmax(nmax)
-    def settol(self, tol):
-        EllipticCoerciveRBBase.settol(self, tol)
-        self.primal_problem.settol(tol)
-    def setmu_range(self, mu_range):
-        EllipticCoerciveRBBase.setmu_range(self, mu_range)
-        self.primal_problem.setmu_range(mu_range)
-    def setxi_train(self, ntrain, sampling="random"):
-        EllipticCoerciveRBBase.setxi_train(self, ntrain, sampling)
-        self.primal_problem.setxi_train(ntrain, sampling)
-    def setmu(self, mu):
-        EllipticCoerciveRBBase.setmu(self, mu)
-        self.primal_problem.setmu(mu)
-        
-    #  @}
-    ########################### end - SETTERS - end ########################### 
         
     ###########################     PROBLEM SPECIFIC     ########################### 
     ## @defgroup ProblemSpecific Problem specific methods
@@ -271,14 +271,17 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     
     ## Set theta multiplicative terms of the affine expansion of a.
     def compute_theta_a(self):
+        self.primal_problem.setmu(self.mu)
         return self.primal_problem.compute_theta_a()
     
     ## Set theta multiplicative terms of the affine expansion of f.
     def compute_theta_f(self):
+        self.primal_problem.setmu(self.mu)
         primal_theta_s = self.primal_problem.compute_theta_s()
-        for qs in range(primal_theta_s):
-            primal_theta_s[qs] *= -1.
-        return (self.mu[1],)
+        primal_theta_s_minus = ()
+        for qs in range(len(primal_theta_s)):
+            primal_theta_s_minus += (- primal_theta_s[qs],)
+        return primal_theta_s_minus
     
     ## Set matrices resulting from the truth discretization of a.
     def assemble_truth_a(self):
