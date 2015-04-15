@@ -213,7 +213,10 @@ class EllipticCoerciveBase(ParametrizedProblem):
         
     ## Auxiliary internal method to compute the transpose of a matrix
     def compute_transpose(self, A):
-        AT = A.copy(); AT = as_backend_type(AT); AT.mat().transpose()
+        AT = A.copy()
+        A = as_backend_type(A)
+        AT = as_backend_type(AT)
+        A.mat().transpose(AT.mat())
         return AT
     
     #  @}

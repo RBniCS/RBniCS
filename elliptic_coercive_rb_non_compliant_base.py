@@ -284,8 +284,9 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     def assemble_truth_a(self):
         primal_truth_a = self.primal_problem.assemble_truth_a()
         primal_truth_a_transpose = ()
-        for qa in range(primal_theta_a):
-            primal_truth_a_transpose += (self.compute_transpose(primal_truth_a[qa]),)
+        for qa in range(len(primal_truth_a)):
+            primal_truth_a_qa_transpose = self.compute_transpose(primal_truth_a[qa])
+            primal_truth_a_transpose += (primal_truth_a_qa_transpose,)
         return primal_truth_a_transpose
     
     ## Set vectors resulting from the truth discretization of f.
