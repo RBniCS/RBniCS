@@ -77,7 +77,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
         v = self.v
         scalar = inner(u,v)*dx + inner(grad(u),grad(v))*dx # H^1 inner product
         self.S = assemble(scalar) # H^1 inner product matrix
-        [bc.apply(self.S) for bc in self.bc_list] # make sure to apply BCs to the inner product matrix
+        if self.bc_list != None:
+            [bc.apply(self.S) for bc in self.bc_list] # make sure to apply BCs to the inner product matrix
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -172,15 +173,17 @@ class EllipticCoerciveBase(ParametrizedProblem):
         
     ## Apply BCs to each element of the truth affine expansion (matrix)
     def apply_bc_to_matrix_expansion(self, vec):
-        for i in range(len(vec)):
-            [bc.apply(vec[i]) for bc in self.bc_list]
-        for i in range(1,len(vec)):
-            [bc.zero(vec[i]) for bc in self.bc_list]
+        if self.bc_list != None:
+            for i in range(len(vec)):
+                [bc.apply(vec[i]) for bc in self.bc_list]
+            for i in range(1,len(vec)):
+                [bc.zero(vec[i]) for bc in self.bc_list]
             
     ## Apply BCs to each element of the truth affine expansion (vector)
     def apply_bc_to_vector_expansion(self, vec):
-        for i in range(len(vec)):
-            [bc.apply(vec[i]) for bc in self.bc_list]
+        if self.bc_list != None:
+            for i in range(len(vec)):
+                [bc.apply(vec[i]) for bc in self.bc_list]
         
     ## Assemble the reduced order affine expansion (matrix)
     def build_red_matrices(self):
