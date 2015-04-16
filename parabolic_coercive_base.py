@@ -58,7 +58,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # 3c. Reduced order matrices/vectors
         self.red_M = []
         # 4. Online solution
-        self.uN = np.array([]) # array (size of T/dt + 1) of vectors of dimension N storing the reduced order solution
+        self.all_uN = np.array([]) # array (size of T/dt + 1) of vectors of dimension N storing the reduced order solution
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 3c. Matrices/vectors resulting from the truth discretization
@@ -67,9 +67,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         truth_m = inner(u,v)*dx
         self.truth_M = (assemble(truth_m), )
         # 4. Auxiliary functions
-        self.snap = np.array([]) # array (size of T/dt + 1) of vectors for storage of a truth solution
-        self.red = np.array([]) # array (size of T/dt + 1) of vectors for storage of the FE reconstruction of the reduced solution
-        self.er = np.array([]) # array (size of T/dt + 1) of vectors for storage of the error
+        self.all_snap = np.array([]) # array (size of T/dt + 1) of vectors for storage of a truth solution
+        self.all_red = np.array([]) # array (size of T/dt + 1) of vectors for storage of the FE reconstruction of the reduced solution
+        self.all_er = np.array([]) # array (size of T/dt + 1) of vectors for storage of the error
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -86,7 +86,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         
         # Set the initial condition
         self.t = 0.
-        self.uN = np.array.zeros([N, 1]) # as column vector
+        self.all_uN = np.array.zeros([N, 1]) # as column vector
         
         # Iterate in time
         for t in self.all_times[1:]:
@@ -96,9 +96,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         
         # Now obtain the FE functions corresponding to the reduced order solutions
         for k in range(len(self.all_times)):
-            sol = self.Z[:, 0]*self.uN[0, k]
+            sol = self.Z[:, 0]*self.all_uN[0, k]
             i=1
-            for un in self.uN[1:, k]:
+            for un in self.all_uN[1:, k]:
                 sol += self.Z[:, i]*un
                 i+=1
             self.red = np.hstack((self.red, sol.vector())) # add new solutions as column vectors
@@ -114,12 +114,12 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         assembled_red_A = self.aff_assemble_red_matrix(self.red_A, self.theta_a, N, N)
         assembled_red_F = self.aff_assemble_red_vector(self.red_F, self.theta_f, N)
         assembled_red_lhs = 1./dt*assembled_red_M + assembled_red_A
-        assembled_red_rhs = 1./dt*assembled_red_M*self.uN[:,-1] + assembled_red_F # -1 -> the last one
+        assembled_red_rhs = 1./dt*assembled_red_M*self.uN + assembled_red_F # uN -> solution at previous time
         if isinstance(assembled_red_lhs, float) == True:
-            current_uN = assembled_red_rhs/assembled_red_lhs
+            self.uN = assembled_red_rhs/assembled_red_lhs
         else:
-            current_uN = np.linalg.solve(assembled_red_lhs, assembled_red_rhs)
-        self.uN = np.hstack((self.uN, current_uN)) # add new solutions as column vectors
+            self.uN = np.linalg.solve(assembled_red_lhs, assembled_red_rhs)
+        self.all_uN = np.hstack((self.all_uN, self.uN)) # add new solutions as column vectors
     
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
@@ -130,12 +130,10 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
 
     ## Perform a truth solve
     def truth_solve(self):
-        current_snap = Function(self.V)
-        
         # Set the initial condition
         self.t = 0.
-        current_snap *= 0.
-        self.snap = np.array(ic.vector()).reshape(-1, 1) # as column vector
+        self.snap *= 0.
+        self.all_snap = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
         
         # Iterate in time
         for k in range(1,len(self.all_times)):
@@ -148,9 +146,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             assembled_truth_A = self.aff_assemble_truth_matrix(self.truth_A, self.theta_a)
             assembled_truth_F = self.aff_assemble_truth_vector(self.truth_F, self.theta_f)
             assembled_truth_lhs = 1./dt*assembled_truth_M + assembled_truth_A
-            assembled_truth_rhs = 1./dt*assembled_truth_M*self.snap[:, k-1] + assembled_truth_F
-            solve(assembled_truth_lhs, current_snap.vector(), assembled_truth_rhs)
-            self.snap = np.hstack((self.uN, current_snap)) # add new solutions as column vectors
+            assembled_truth_rhs = 1./dt*assembled_truth_M*self.snap + assembled_truth_F  # snap -> solution at previous time
+            solve(assembled_truth_lhs, self.snap.vector(), assembled_truth_rhs)
+            self.all_snap = np.hstack((self.all_snap, self.snap)) # add new solutions as column vectors
         
     ## Assemble the reduced order affine expansion (matrix)
     def build_red_matrices(self):
@@ -187,7 +185,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         self.er = np.array([])
         error = 0.
         for k in range(len(self.all_times)):
-            current_er.vector()[:] = self.snap[:, k].vector()[:] - self.red[:, k].vector()[:] # error as a function
+            current_er.vector()[:] = self.all_snap[:, k].vector()[:] - self.all_red[:, k].vector()[:] # error as a function
             self.t = self.all_times[k] # needed by the next line, since theta_a ...
             print "t = " + str(self.t)
             self.theta_a = self.compute_theta_a() # ... may depend on time
@@ -209,7 +207,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # Moreover, read in also the reduced matrix M
         if not self.red_M: # avoid loading multiple times
             self.red_M = np.load(self.red_matrices_folder + "red_M.npy")
-        # TODO ne serviranno altre
+        # TODO ne serviranno altre?
         
     ## Export snapshot in VTK format
     def export_solution(self, solution, filename):
