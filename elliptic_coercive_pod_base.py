@@ -24,7 +24,6 @@
 
 import os # for path and makedir
 import shutil # for rm
-from scipy import stats as scistats
 from proper_orthogonal_decomposition import *
 from elliptic_coercive_base import *
 
@@ -171,7 +170,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print ""
         print "N \t gmean(err)"
         for n in range(N): # n = 0, 1, ... N - 1
-            mean_error = scistats.gmean(error[n, :])
+            mean_error = np.exp(np.mean(np.log((error[n, :]))))
             print str(n+1) + " \t " + str(mean_error)
         
         print ""

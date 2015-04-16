@@ -25,7 +25,6 @@
 import os # for path and makedir
 import shutil # for rm
 import sys # for exit
-from scipy import stats as scistats # for geometric mean
 import random # to randomize selection in case of equal error bound
 from gram_schmidt import *
 from elliptic_coercive_rb_base import *
