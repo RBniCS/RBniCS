@@ -74,6 +74,9 @@ class SCM(ParametrizedProblem):
         self.red_matrices_folder = "red_matr__scm/"
         self.pp_folder = "pp__scm/" # post processing
         
+        # $$ ADDITIONAL OPTIONS $$ #
+        self.constrain_alpha_LB_positive = False # Constrain the objective function to be positive in the online problem?
+        
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
     
@@ -99,12 +102,17 @@ class SCM(ParametrizedProblem):
             else: # there is something wrong in the bounding box: set as unconstrained variable
                 print "Warning: wrong bounding box for affine expansion element #", qa
                 glp_set_col_bnds(lp, qa+1, glpk.GLP_FR, 0., 0.)
-                
-        # 3. Add constraints: a constraint is added for each sample in C_J
-        glpk.glp_add_rows(lp, N)
-        matrix_row_index = glpk.intArray(self.Nmax*Qa)    # the more conservative N*Qa size ...
-        matrix_column_index = glpk.intArray(self.Nmax*Qa) # ... gives a segafult ...
-        matrix_content = glpk.doubleArray(self.Nmax*Qa)   # ... after some iterations
+        
+        # 3. Add two different sets of constraints
+        glpk.glp_add_rows(lp, N + 1)
+        array_size = self.N*Qa
+        if self.constrain_alpha_LB_positive == True:
+            array_size += Qa
+        matrix_row_index = glpk.intArray(array_size + 1)
+        matrix_column_index = glpk.intArray(array_size + 1) # + 1 since GLPK indexing starts from 1
+        matrix_content = glpk.doubleArray(array_size + 1)
+        
+        # 3a. Add constraints: a constraint is added for each sample in C_J
         glpk_container_index = 1 # glpk starts from 1
         for j in range(N):
             # Overwrite parameter values
@@ -122,8 +130,22 @@ class SCM(ParametrizedProblem):
             # Assemble the RHS of the constraint
             glpk.glp_set_row_bnds(lp, j+1, glpk.GLP_LO, self.alpha_J[j], 0.)
         
+        # 3b. Add constraints: the resulting coercivity constant should be positive,
+        #                      since we assume to use SCM for coercive problems
+        if self.constrain_alpha_LB_positive == True:
+            self.parametrized_problem.setmu(mu)
+            current_theta_a = self.parametrized_problem.compute_theta_a()
+            # Assemble first the LHS
+            for qa in range(Qa):
+                matrix_row_index[glpk_container_index] = int(N + 1)
+                matrix_column_index[glpk_container_index] = int(qa + 1)
+                matrix_content[glpk_container_index] = current_theta_a[qa]
+                glpk_container_index += 1
+            # ... and then the RHS
+            glpk.glp_set_row_bnds(lp, N+1, glpk.GLP_LO, 0., 0.)
+        
         # Load the assembled LHS
-        glpk.glp_load_matrix(lp, N*Qa, matrix_row_index, matrix_column_index, matrix_content)
+        glpk.glp_load_matrix(lp, array_size, matrix_row_index, matrix_column_index, matrix_content)
         
         # 4. Add cost function coefficients
         self.parametrized_problem.setmu(mu)
@@ -139,7 +161,7 @@ class SCM(ParametrizedProblem):
         glpk.glp_simplex(lp, options)
         alpha_LB = glpk.glp_get_obj_val(lp)
         glpk.glp_delete_prob(lp)
-        
+            
         return alpha_LB
     
     def get_alpha_UB(self, mu):
@@ -246,10 +268,8 @@ class SCM(ParametrizedProblem):
             
             eigensolver = SLEPcEigenSolver(A, S)
             eigensolver.parameters["problem_type"] = "gen_hermitian"
-            #eigensolver.parameters["solver"] = "lapack"
-            eigensolver.parameters["spectral_transform"] = "shift-and-invert"
-            eigensolver.parameters["spectral_shift"] = 1e-5
             eigensolver.parameters["spectrum"] = "smallest real"
+            self.set_additional_eigensolver_options_for_bounding_box_minimum(eigensolver, qa)
             eigensolver.solve(1)
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             self.B_min[qa] = r
@@ -261,10 +281,8 @@ class SCM(ParametrizedProblem):
             
             eigensolver = SLEPcEigenSolver(A, S)
             eigensolver.parameters["problem_type"] = "gen_hermitian"
-            #eigensolver.parameters["solver"] = "lapack"
-            eigensolver.parameters["spectral_transform"] = "shift-and-invert"
-            eigensolver.parameters["spectral_shift"] = 1e5
             eigensolver.parameters["spectrum"] = "largest real"
+            self.set_additional_eigensolver_options_for_bounding_box_maximum(eigensolver, qa)
             eigensolver.solve(1)
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             self.B_max[qa] = r
@@ -286,9 +304,7 @@ class SCM(ParametrizedProblem):
         eigensolver = SLEPcEigenSolver(A, S)
         eigensolver.parameters["problem_type"] = "gen_hermitian"
         eigensolver.parameters["spectrum"] = "smallest real"
-        #eigensolver.parameters["solver"] = "lapack"
-        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
-        eigensolver.parameters["spectral_shift"] = 1e-5
+        self.set_additional_eigensolver_options_for_truth_coercivity_constant(eigensolver)
         eigensolver.solve(1)
         
         r, c, rv, cv = eigensolver.get_eigenpair(0) # real and complex part of the (eigenvalue, eigenvectors)
@@ -404,4 +420,26 @@ class SCM(ParametrizedProblem):
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
+    
+    ###########################     PROBLEM SPECIFIC     ########################### 
+    ## @defgroup ProblemSpecific Problem specific methods
+    #  @{
+    
+    ## Set additional options for the eigensolver (bounding box minimum)
+    def set_additional_eigensolver_options_for_bounding_box_minimum(self, eigensolver, qa):
+        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
+        eigensolver.parameters["spectral_shift"] = 1.e-5
+        
+    ## Set additional options for the eigensolver (bounding box maximimum)
+    def set_additional_eigensolver_options_for_bounding_box_maximum(self, eigensolver, qa):
+        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
+        eigensolver.parameters["spectral_shift"] = 1.e5
+        
+    ## Set additional options for the eigensolver (truth_coercivity constant)
+    def set_additional_eigensolver_options_for_truth_coercivity_constant(self, eigensolver):
+        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
+        eigensolver.parameters["spectral_shift"] = 1.e-5
+        
+    #  @}
+    ########################### end - PROBLEM SPECIFIC - end ########################### 
     
