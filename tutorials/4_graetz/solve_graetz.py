@@ -88,7 +88,7 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])")
         # Finally, initialize an SCM object to approximate alpha LB
-        self.SCM_obj = SCM(self)
+        self.SCM_obj = SCM_Graetz(self)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -292,6 +292,42 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
+    
+#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
+class SCM_Graetz(SCM):
+    
+    ###########################     CONSTRUCTORS     ########################### 
+    ## @defgroup Constructors Methods related to the construction of the reduced order model object
+    #  @{
+    
+    ## Default initialization of members
+    def __init__(self, parametrized_problem):
+        # Call the standard initialization
+        SCM.__init__(self, parametrized_problem)
+        
+        # Good guesses to help convergence of bounding box
+        self.guess_bounding_box_minimum = (1.e-5, 1.e-5, 1.e-5, 1.e-5)
+        self.guess_bounding_box_maximum = (1., 1., 1., 1.)
+    
+    #  @}
+    ########################### end - CONSTRUCTORS - end ########################### 
+    
+    ###########################     PROBLEM SPECIFIC     ########################### 
+    ## @defgroup ProblemSpecific Problem specific methods
+    #  @{
+    
+    ## Set additional options for the eigensolver (bounding box minimum)
+    def set_additional_eigensolver_options_for_bounding_box_minimum(self, eigensolver, qa):
+        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
+        eigensolver.parameters["spectral_shift"] = self.guess_bounding_box_minimum[qa]
+        
+    ## Set additional options for the eigensolver (bounding box maximimum)
+    def set_additional_eigensolver_options_for_bounding_box_maximum(self, eigensolver, qa):
+        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
+        eigensolver.parameters["spectral_shift"] = self.guess_bounding_box_maximum[qa]
+        
+    #  @}
+    ########################### end - PROBLEM SPECIFIC - end ########################### 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
