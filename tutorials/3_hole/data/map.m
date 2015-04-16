@@ -2,7 +2,7 @@ clear all
 clc
 
 % initialization
-syms m1 m2;
+syms m1 m2 real;
 
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -132,7 +132,7 @@ case 8
 	xo_3 = x3;
 	yo_3 = y3;
 otherwise
-	disp('wrong number of subdomain id');
+	error('wrong number of subdomain id');
 end
 
 
@@ -163,7 +163,7 @@ g22 = A(6);
 
 G = [g11 g12;
       g21 g22];
-J = abs(det(G));
+J = det(G);
 
 D = inv(G);
 
@@ -171,11 +171,11 @@ Gg = [D(1,:) 0; D(2,:) 0; 0 0 1];
 
 K1 = J*Gg*K0*Gg';
 
-K11 = K1(1,1)
-K22 = K1(2,2)
-K33 = K1(3,3)
-K12 = K1(1,2)
-K21 = K1(2,1)
+K11 = simplify(K1(1,1))
+K22 = simplify(K1(2,2))
+K33 = simplify(K1(3,3))
+K12 = simplify(K1(1,2))
+K21 = simplify(K1(2,1))
 
 
  
