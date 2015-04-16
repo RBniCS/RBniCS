@@ -25,7 +25,6 @@
 import os # for path and makedir
 import shutil # for rm
 import sys # for exit
-from scipy import stats as scistats # for geometric mean
 import random # to randomize selection in case of equal error bound
 from gram_schmidt import *
 from elliptic_coercive_base import *
@@ -208,7 +207,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.Z = self.GS.apply(self.Z, self.S)
         np.save(self.basis_folder + "basis", self.Z)
         current_basis = Function(self.V)
-        current_basis.vector()[:] = self.Z[:, self.N]
+        current_basis.vector()[:] = np.array(self.Z[:, self.N], dtype=np.float_)
         self.export_basis(current_basis, self.basis_folder + "basis_" + str(self.N))
         self.N += 1        
         
@@ -266,22 +265,22 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.CL = np.zeros((self.Nmax,self.Qf,self.Qa))
             for qf in range(0,Qf):
                 for qa in range(0,Qa):
-                    la.vector()[:] = self.lnq[0][:, qa]
+                    la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
                     self.CL[0,qf,qa] = self.compute_scalar(la,self.Cf[qf],self.S)
             np.save(self.dual_folder + "CL", self.CL)
             
             # LL
             self.LL = np.zeros((self.Nmax,self.Nmax,self.Qa,self.Qa))
             for qa in range(0,Qa):
-                la.vector()[:] = self.lnq[0][:, qa]
+                la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
                 for qap in range(qa,Qa):
-                    lap.vector()[:] = self.lnq[0][:, qap]
+                    lap.vector()[:] = np.array(self.lnq[0][:,qap], dtype=np.float_)
                     self.LL[0,0,qa,qap] = self.compute_scalar(la,lap,self.S)
                     if qa != qap:
                         self.LL[0,0,qap,qa] = self.LL[0,0,qa,qap]
             np.save(self.dual_folder + "LL", self.LL)
         else:
-            RBu.vector()[:] = self.Z[:, N-1]
+            RBu.vector()[:] = np.array(self.Z[:, N-1], dtype=np.float_)
             self.lnq += (self.compute_a_dual(RBu),)
             la = Function(self.V)
             lap = Function(self.V)
@@ -291,16 +290,16 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             # CL
             for qf in range(0,Qf):
                 for qa in range(0,Qa):
-                    la.vector()[:] = self.lnq[N-1][:, qa]
+                    la.vector()[:] = np.array(self.lnq[N-1][:, qa], dtype=np.float_)
                     self.CL[n,qf,qa] = self.compute_scalar(self.Cf[qf],la,self.S)
             np.save(self.dual_folder + "CL", self.CL)
     
             # LL
             for qa in range(0,Qa):
-                la.vector()[:] = self.lnq[n][:, qa]
+                la.vector()[:] = np.array(self.lnq[n][:, qa], dtype=np.float_)
                 for nn in range(0,N):
                     for qap in range(0,Qa):
-                        lap.vector()[:] = self.lnq[nn][:, qap]
+                        lap.vector()[:] = np.array(self.lnq[nn][:, qap], dtype=np.float_)
                         self.LL[n,nn,qa,qap] = self.compute_scalar(la,lap,self.S)
                         if n != nn:
                             self.LL[nn,n,qa,qap] = self.LL[n,nn,qa,qap]
@@ -397,9 +396,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         print ""
         print "N \t gmean(err_u) \t\t gmean(delta_u) \t\t gmean(eff_u) \t max(eff_u)"
         for n in range(N): # n = 0, 1, ... N - 1
-            mean_error_u = scistats.gmean(error_u[n, :])
-            mean_delta_u = scistats.gmean(delta_u[n, :])
-            mean_effectivity_u = scistats.gmean(effectivity_u[n, :])
+            mean_error_u = np.exp(np.mean(np.log(error_u[n, :])))
+            mean_delta_u = np.exp(np.mean(np.log(delta_u[n, :])))
+            mean_effectivity_u = np.exp(np.mean(np.log(effectivity_u[n, :])))
             max_effectivity_u = np.max(effectivity_u[n, :])
             print str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
                   + " \t " + str(mean_effectivity_u) + " \t " + str(max_effectivity_u)
@@ -407,9 +406,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         print ""
         print "N \t gmean(err_s) \t\t gmean(delta_s) \t\t gmean(eff_s) \t max(eff_s)"
         for n in range(N): # n = 0, 1, ... N - 1
-            mean_error_s = scistats.gmean(error_s[n, :])
-            mean_delta_s = scistats.gmean(delta_s[n, :])
-            mean_effectivity_s = scistats.gmean(effectivity_s[n, :])
+            mean_error_s = np.exp(np.mean(np.log(error_s[n, :])))
+            mean_delta_s = np.exp(np.mean(np.log(delta_s[n, :])))
+            mean_effectivity_s = np.exp(np.mean(np.log(effectivity_s[n, :])))
             max_effectivity_s = np.max(effectivity_s[n, :])
             print str(n+1) + " \t " + str(mean_error_s) + " \t " + str(mean_delta_s) \
                   + " \t " + str(mean_effectivity_s) + " \t " + str(max_effectivity_s)
