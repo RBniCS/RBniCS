@@ -59,8 +59,8 @@ class SCM(ParametrizedProblem):
         self.alpha_LB_on_xi_train = np.array([]) # vector storing the approximation of the coercivity constant on the complement of C_J (at the previous iteration, during the offline phase)
         self.eigenvector_J = [] # vector of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
         self.UB_vectors_J = [] # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
-        self.M_e = None # integer denoting the number of constraints based on the exact eigenvalues. If = None, then it is assumed to be len(C_J)
-        self.M_p = None # integer denoting the number of constraints based on the previous lower bounds. If = None, then it is assumed to be len(C_J)
+        self.M_e = -1 # integer denoting the number of constraints based on the exact eigenvalues. If < 0, then it is assumed to be len(C_J)
+        self.M_p = -1 # integer denoting the number of constraints based on the previous lower bounds. If < 0, then it is assumed to be len(C_J)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # We need to discard dofs related to bcs in eigenvalue computations. To avoid having to create a PETSc submatrix
@@ -93,7 +93,6 @@ class SCM(ParametrizedProblem):
         ParametrizedProblem.setxi_train(self, ntrain, sampling)
         self.alpha_LB_on_xi_train = np.zeros([ntrain])
         self.complement_C_J = range(ntrain)
-        print "IN"
         
     #  @}
     ########################### end - SETTERS - end ########################### 
@@ -102,19 +101,21 @@ class SCM(ParametrizedProblem):
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
     
-    ## Get a lower bound for alpha    
+    ## Get a lower bound for alpha
     def get_alpha_LB(self, mu):
+        self.load_red_data_structures()
+        
         lp = glpk.glp_create_prob()
         glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
         Qa = self.parametrized_problem.Qa
         N = self.N
         M_e = self.M_e
-        if self.M_e == None:
+        if M_e < 0:
             M_e = N
         if M_e > len(self.C_J):
             M_e = len(self.C_J) # = N
         M_p = self.M_p
-        if self.M_p == None:
+        if M_p < 0:
             M_p = N
         if M_p > len(self.complement_C_J):
             M_p = len(self.complement_C_J)
@@ -125,12 +126,12 @@ class SCM(ParametrizedProblem):
         # 2. Range: constrain the variables to be in the bounding box (note: GLPK indexing starts from 1)
         for qa in range(Qa):
             if self.B_min[qa] < self.B_max[qa]: # the usual case
-                glpk.glp_set_col_bnds(lp, qa+1, glpk.GLP_DB, self.B_min[qa], self.B_max[qa])
+                glpk.glp_set_col_bnds(lp, qa + 1, glpk.GLP_DB, self.B_min[qa], self.B_max[qa])
             elif self.B_min[qa] == self.B_max[qa]: # unlikely, but possible
-                glpk.glp_set_col_bnds(lp, qa+1, glpk.GLP_FX, self.B_min[qa], self.B_max[qa])
+                glpk.glp_set_col_bnds(lp, qa + 1, glpk.GLP_FX, self.B_min[qa], self.B_max[qa])
             else: # there is something wrong in the bounding box: set as unconstrained variable
                 print "Warning: wrong bounding box for affine expansion element #", qa
-                glp_set_col_bnds(lp, qa+1, glpk.GLP_FR, 0., 0.)
+                glpk.glp_set_col_bnds(lp, qa + 1, glpk.GLP_FR, 0., 0.)
         
         # 3. Add two different sets of constraints
         glpk.glp_add_rows(lp, M_e + M_p)
@@ -160,7 +161,7 @@ class SCM(ParametrizedProblem):
         closest_C_J_indices = None
         
         # 3b. Add constraints: also constrain the closest point in the complement of C_J, 
-        #                      with rhs depending on previously computed lower bounds
+        #                      with RHS depending on previously computed lower bounds
         closest_complement_C_J_indices = self.closest_parameters(M_p, self.complement_C_J, mu)
         for j in range(M_p):
             nu = self.xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
@@ -184,7 +185,7 @@ class SCM(ParametrizedProblem):
         current_theta_a = self.parametrized_problem.compute_theta_a()
         for qa in range(Qa):
             glpk.glp_set_obj_coef(lp, qa + 1, current_theta_a[qa])
-        
+        glpk.glp_write_lp(lp, None, "glpkout")
         # 5. Solve the linear programming problem
         options = glpk.glp_smcp()
         glpk.glp_init_smcp(options)
@@ -198,6 +199,8 @@ class SCM(ParametrizedProblem):
     
     ## Get an upper bound for alpha
     def get_alpha_UB(self, mu):
+        self.load_red_data_structures()
+        
         Qa = self.parametrized_problem.Qa
         N = self.N
         UB_vectors_J = self.UB_vectors_J
@@ -222,15 +225,22 @@ class SCM(ParametrizedProblem):
     def closest_parameters(self, M, all_mu_indices, mu):
         if M == 0:
             return
-                    
+        
+        if M < len(all_mu_indices):
+            sys.exit("SCM error in closest parameters: this should never happen")
+        
+        if M == len(all_mu_indices):
+            return range(len(all_mu_indices))
+        
         indices_and_distances = []
         for p in range(len(all_mu_indices)):
             distance = self.parameters_distance(mu, self.xi_train[ all_mu_indices[p] ])
             indices_and_distances.append((p, distance))
         indices_and_distances.sort(key=operator.itemgetter(1))
-        neighbors = ()
+        neighbors = []
         for p in range(M):
-            neighbors += (indices_and_distances[p][0],)
+            neighbors += [indices_and_distances[p][0]]
+        neighbors.sort()
         return neighbors
         
     ## Auxiliary function: distance bewteen two parameters
@@ -261,6 +271,10 @@ class SCM(ParametrizedProblem):
             if not os.path.exists(f):
                 os.makedirs(f)
         
+        # Save M_e and M_p
+        np.save(self.red_matrices_folder + "M_e", self.M_e)
+        np.save(self.red_matrices_folder + "M_p", self.M_p)
+        
         # Assemble matrices related to the LHS A of the parametrized problem
         self.parametrized_problem.truth_A = self.parametrized_problem.assemble_truth_a()
         self.parametrized_problem.Qa = len(self.parametrized_problem.truth_A)
@@ -279,7 +293,7 @@ class SCM(ParametrizedProblem):
         self.compute_bounding_box()
         
         # Arbitrarily start from the first parameter in the training set
-        self.mu = self.xi_train[0]
+        self.setmu(self.xi_train[0])
         self.mu_index = 0
         
         for run in range(self.Nmax):
@@ -291,9 +305,9 @@ class SCM(ParametrizedProblem):
             # Evaluate the coercivity constant
             print "evaluate the coercivity constant for mu = ", self.mu
             (alpha, eigenvector, UB_vector) = self.truth_coercivity_constant()
-            self.alpha_J += [alpha]
+            self.alpha_J += [alpha]; np.save(self.red_matrices_folder + "alpha_J", self.alpha_J)
             self.eigenvector_J += [eigenvector]
-            self.UB_vectors_J += [UB_vector]
+            self.UB_vectors_J += [UB_vector]; np.save(self.red_matrices_folder + "UB_vectors_J", self.UB_vectors_J)
             self.export_solution(eigenvector, self.snap_folder + "eigenvector_" + str(run))
             
             self.N = len(self.C_J)
@@ -309,6 +323,9 @@ class SCM(ParametrizedProblem):
         print "=             SCM offline phase ends                         ="
         print "=============================================================="
         print ""
+        
+        # mu_index does not make any sense from now on
+        self.mu_index = None
         
     # Compute the bounding box \mathcal{B}
     def compute_bounding_box(self):
@@ -347,12 +364,20 @@ class SCM(ParametrizedProblem):
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             self.B_max[qa] = r
             print "B_max[" + str(qa) + "] = " + str(r)
+        
+        # Save to file
+        np.save(self.red_matrices_folder + "B_min", self.B_min)
+        np.save(self.red_matrices_folder + "B_min", self.B_max)
     
     # Store the greedy parameter
     def update_C_J(self):
         self.C_J += [self.mu_index]
         if self.mu_index in self.complement_C_J: # if not SCM selects twice the same parameter
             self.complement_C_J.remove(self.mu_index)
+        
+        # Save to file
+        np.save(self.red_matrices_folder + "C_J", self.C_J)
+        np.save(self.red_matrices_folder + "complement_C_J", self.complement_C_J)
         
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
@@ -404,14 +429,11 @@ class SCM(ParametrizedProblem):
             if LB > UB + tol:
                 print "SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB
             alpha_LB_on_xi_train[i] = max(0, LB)
-            if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
+            if (delta > delta_max): # or (delta == delta_max and random.random() >= 0.5)): # TODO RIMETTERE
                 delta_max = delta
                 munew = mu
                 munew_index = i
-        
-        # Overwrite alpha_LB_on_xi_train
-        self.alpha_LB_on_xi_train = alpha_LB_on_xi_train
-        
+                
         print "absolute SCM delta max = ", delta_max
         if os.path.isfile(self.pp_folder + "delta_max.npy") == True:
             d = np.load(self.pp_folder + "delta_max.npy")
@@ -426,6 +448,10 @@ class SCM(ParametrizedProblem):
 
         self.setmu(munew)
         self.mu_index = munew_index
+        
+        # Overwrite alpha_LB_on_xi_train
+        self.alpha_LB_on_xi_train = alpha_LB_on_xi_train
+        np.save(self.red_matrices_folder + "alpha_LB_on_xi_train", self.alpha_LB_on_xi_train)
     
     # Clear constrained dofs
     def clear_constrained_dofs(self, M, diag_value):
@@ -444,6 +470,29 @@ class SCM(ParametrizedProblem):
     ## @defgroup IO Input/output methods
     #  @{
 
+    ## Load reduced order data structures
+    def load_red_data_structures(self):
+        if not self.B_min.size: # avoid loading multiple times
+            self.B_min = np.load(self.red_matrices_folder + "B_min.npy")
+        if not self.B_max.size: # avoid loading multiple times
+            self.B_max = np.load(self.red_matrices_folder + "B_max.npy")
+        if not self.C_J: # avoid loading multiple times
+            self.C_J = np.load(self.red_matrices_folder + "C_J.npy")
+        if not self.complement_C_J: # avoid loading multiple times
+            self.complement_C_J = np.load(self.red_matrices_folder + "complement_C_J.npy")
+        if not self.alpha_J: # avoid loading multiple times
+            self.alpha_J = np.load(self.red_matrices_folder + "alpha_J.npy")
+        if not self.alpha_LB_on_xi_train.size: # avoid loading multiple times
+            self.alpha_LB_on_xi_train = np.load(self.red_matrices_folder + "alpha_LB_on_xi_train.npy")
+        if not self.UB_vectors_J: # avoid loading multiple times
+            self.UB_vectors_J = np.load(self.red_matrices_folder + "UB_vectors_J.npy")
+        if not self.M_e: # avoid loading multiple times
+            self.M_e = np.load(self.red_matrices_folder + "M_e.npy")
+            self.M_e = int(self.M_e)
+        if not self.M_p: # avoid loading multiple times
+            self.M_p = np.load(self.red_matrices_folder + "M_p.npy")
+            self.M_p = int(self.M_p)
+    
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
         file = File(filename + ".pvd", "compressed")
@@ -490,6 +539,7 @@ class SCM(ParametrizedProblem):
                 print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > exact = ", alpha
             
             normalized_error[run] = (alpha - alpha_LB)/alpha_UB
+            print normalized_error[run], " ", alpha_LB, " ", alpha, " ", self.mu # TODO
         
         # Print some statistics
         print ""
