@@ -214,6 +214,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         delta_max = -1.0
+        munew = None
         for mu in self.xi_train:
             self.setmu(mu)
             self.red_solve(self.N)

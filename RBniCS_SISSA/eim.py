@@ -293,6 +293,8 @@ class EIM(ParametrizedProblem):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         err_max = -1.0
+        munew = None
+        munew_index = None
         for i in range(len(self.xi_train)):
             self.setmu(self.xi_train[i])
             self.mu_index = i

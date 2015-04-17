@@ -166,6 +166,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     def greedy(self):
     # TODO il resto del metodo, ma non serve?
         delta_max = -1.0
+        munew = None
         for mu in self.xi_train:
             self.setmu(mu)
             self.red_solve(self.N)
