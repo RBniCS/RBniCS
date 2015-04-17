@@ -111,6 +111,9 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
     def setxi_train(self, ntrain, sampling="random"):
         EllipticCoerciveRBNonCompliantBase.setxi_train(self, ntrain, sampling)
         self.SCM_obj.setxi_train(ntrain, sampling)
+    def setxi_test(self, ntest, sampling="random"):
+        EllipticCoerciveRBNonCompliantBase.setxi_test(self, ntest, sampling)
+        self.SCM_obj.setxi_test(ntest, sampling)
     def setmu(self, mu):
         EllipticCoerciveRBNonCompliantBase.setmu(self, mu)
         self.SCM_obj.setmu(mu)
@@ -283,7 +286,7 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
     #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the training set
+    # over the test set
     def error_analysis(self, N=None):
         # Perform first the SCM error analysis, ...
         self.SCM_obj.error_analysis()
@@ -365,4 +368,5 @@ graetz.setmu(online_mu)
 graetz.online_solve()
 
 # 8. Perform an error analysis
+graetz.setxi_test(500)
 graetz.error_analysis()

@@ -132,4 +132,5 @@ tb.setmu(online_mu)
 tb.online_solve()
 
 # 8. Perform an error analysis
+tb.setxi_test(500)
 tb.error_analysis()

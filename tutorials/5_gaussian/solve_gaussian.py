@@ -77,6 +77,9 @@ class Gaussian(EllipticCoerciveRBBase):
     def setxi_train(self, ntrain, sampling="random"):
         EllipticCoerciveRBBase.setxi_train(self, ntrain, sampling)
         self.EIM_obj.setxi_train(ntrain, sampling)
+    def setxi_test(self, ntest, sampling="random"):
+        EllipticCoerciveRBBase.setxi_test(self, ntest, sampling)
+        self.EIM_obj.setxi_test(ntest, sampling)
     def setmu(self, mu):
         EllipticCoerciveRBBase.setmu(self, mu)
         self.EIM_obj.setmu(mu)
@@ -170,4 +173,5 @@ graetz.setmu(online_mu)
 gaussian.online_solve()
 
 # 8. Perform an error analysis
+gaussian.setxi_test(50)
 gaussian.error_analysis()
