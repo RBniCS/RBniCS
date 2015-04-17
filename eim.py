@@ -50,7 +50,7 @@ class EIM(ParametrizedProblem):
         #       Create therefore a new (scalar) FunctionSpace, which will be
         #       saved in self.V
         self.V = FunctionSpace(parametrized_problem.V.mesh(), "Lagrange", 1)
-        # Store the vertex to dof map to locate maximum of functions
+        # Store the dof to vertex map to locate maximum of functions
         self.dof_to_vertex_map = dof_to_vertex_map(self.V)
         # Store the parametrized problem object
         self.parametrized_problem = parametrized_problem
@@ -62,6 +62,7 @@ class EIM(ParametrizedProblem):
         # $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for EIM
         self.interpolation_points = () # vector of interpolation points selected by the greedy
+        self.interpolation_points_dof = () # vector of dofs corresponding to interpolation points selected by the greedy
         self.interpolation_matrix = np.matrix([]) # interpolation matrix
         self.interpolation_coefficients = np.array([]) # online solution
         
@@ -70,13 +71,6 @@ class EIM(ParametrizedProblem):
         self.Z = []
         # 6bis. Declare a new matrix to store the snapshots
         self.snapshot_matrix = np.array([])
-        # 6tris. Declare a GS object
-        self.GS = GramSchmidt()
-        # 7. Inner product
-        u = TrialFunction(self.V)
-        v = TestFunction(self.V)
-        scalar = inner(u,v)*dx # L^2 inner product matrix
-        self.S = assemble(scalar) # L^2 inner product matrix
         # 9. I/O
         self.snap_folder = "snapshots__eim/"
         self.basis_folder = "basis__eim/"
@@ -93,8 +87,8 @@ class EIM(ParametrizedProblem):
     ## @defgroup Setters Set properties of the reduced order approximation
     #  @{
     
-    ## OFFLINE: set maximum reduced space dimension (stopping criterion) and
-    #           overriden to resize the interpolation matrix
+    ## OFFLINE: set maximum reduced space dimension (stopping criterion).
+    #           Overridden to resize the interpolation matrix
     def setNmax(self, nmax):
         self.Nmax = nmax
         self.interpolation_matrix = np.matrix(np.zeros((nmax, nmax)))
@@ -128,7 +122,7 @@ class EIM(ParametrizedProblem):
     ## Return an error bound for the current solution
     def get_delta(self):
         N = self.interpolation_coefficients.size(0)
-        print "N = ", N
+        print "N = ", N # TODO
         
         # Exact function evaluation at the next point
         f_next_point = self.evaluate_parametrized_function_at_mu_and_x(self.mu, self.interpolation_points[N])
@@ -160,7 +154,7 @@ class EIM(ParametrizedProblem):
     def offline(self):
         # Interpolate the parametrized function on the mesh grid for all parameters in xi_train
         print "=============================================================="
-        print "=        EIM preprocessing phase begins                      ="
+        print "=             EIM preprocessing phase begins                 ="
         print "=============================================================="
         print ""
         if os.path.exists(self.pp_folder):
@@ -176,7 +170,7 @@ class EIM(ParametrizedProblem):
             
             print "evaluate parametrized function"
             self.setmu(self.xi_train[run])
-            f = self.evaluate_parametrized_function_at_mu(self.xi_train[run])
+            f = self.evaluate_parametrized_function_at_mu(self.mu)
             self.snap = interpolate(f, self.V)
             self.export_solution(self.snap, self.snap_folder + "truth_" + str(run))
             
@@ -187,7 +181,7 @@ class EIM(ParametrizedProblem):
             run += 1
         
         print "=============================================================="
-        print "=        EIM preprocessing phase ends                        ="
+        print "=             EIM preprocessing phase ends                   ="
         print "=============================================================="
         print ""
         
@@ -201,7 +195,7 @@ class EIM(ParametrizedProblem):
         self.mu_index = 0
         
         for run in range(self.Nmax + 1): # the + 1 is needed for the error bound computation
-            print "############################## run = ", run, " ######################################"
+            print ":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::"
             
             print "load parametrized function for mu = ", self.mu
             self.load_snapshot()
@@ -210,8 +204,9 @@ class EIM(ParametrizedProblem):
             self.online_solve()
             
             print "compute maximum interpolation error"
-            maximum_point = self.compute_maximum_interpolation_error()
+            (maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error()
             self.interpolation_points += (maximum_point,)
+            self.interpolation_points_dof += (maximum_point_dof,)
             
             print "update basis matrix"
             self.update_basis_matrix()
@@ -247,7 +242,6 @@ class EIM(ParametrizedProblem):
             # There is something wrong if we are here...
             sys.exit("Should never arrive here")
         self.snap.vector()[:] = self.snapshot_matrix[:, mu_index]
-
     
     # Compute the interpolation error and its maximum location
     def compute_maximum_interpolation_error(self):
@@ -259,45 +253,49 @@ class EIM(ParametrizedProblem):
         # Locate the vertex of the mesh where the error is maximum
         maximum_error = -1.0
         maximum_point = None
+        maximum_point_dof = None
         for dof_index in range(self.V.dim()):
             vertex_index = self.dof_to_vertex_map[dof_index]
             err = abs(self.snap.vector()[dof_index])
             if (err > maximum_error):
-                maximum_point = self.V.mesh().coordinates()[vertex_index]
                 maximum_error = err
+                maximum_point = self.V.mesh().coordinates()[vertex_index]
+                maximum_point_dof = dof_index
         
         # Normalize the function in self.snap
         self.snap.vector()[:] /= maximum_error
                
         # Return
-        return maximum_point 
+        return (maximum_point, maximum_point_dof)
         
     ## Update basis matrix
     def update_basis_matrix(self):
         if self.N == 0:
             self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
-            self.Z /= np.sqrt(np.dot(self.Z[:, 0], self.S*self.Z[:, 0]))
         else:
             self.Z = np.hstack((self.Z, self.snap.vector())) # add new basis functions as column vectors
-            self.Z = self.GS.apply(self.Z, self.S)
         np.save(self.basis_folder + "basis", self.Z)
-        current_basis = Function(self.V)
-        current_basis.vector()[:] = self.Z[:, self.N]
-        self.export_basis(current_basis, self.basis_folder + "basis_" + str(self.N))
+        self.export_basis(self.snap, self.basis_folder + "basis_" + str(self.N))
         self.N += 1
         
     ## Assemble the reduced order affine expansion (matrix). Overridden 
     #  to assemble the interpolation matrix
     def update_interpolation_matrix(self):
         for j in range(self.N):
-            self.interpolation_matrix[self.N - 1, j] = self.evaluate_parametrized_function_at_mu_and_x(self.mu, self.interpolation_points[j])
+            self.interpolation_matrix[self.N - 1, j] = self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[self.N - 1])
+        # TODO
+        for i in range(self.N):
+            for j in range(self.N):
+                print self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[i]),
+            print ""
+        # end TODO
             
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         err_max = -1.0
         for i in range(len(self.xi_train)):
-            self.mu_index = i
             self.setmu(self.xi_train[i])
+            self.mu_index = i
             
             # Load the exact function evaluation
             self.load_snapshot()
@@ -348,6 +346,10 @@ class EIM(ParametrizedProblem):
         expression_s += ")"
         expression = eval(expression_s)
         return expression
+        
+    ## Evaluate the b-th basis function at the point corresponding to dof d
+    def evaluate_basis_function_at_dof(self, b, d):
+        return self.Z[d, b]
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
