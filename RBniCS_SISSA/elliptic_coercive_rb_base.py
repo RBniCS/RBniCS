@@ -50,10 +50,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.sN = 0
         # 5. Residual terms
         self.Cf = ()
-        self.CC = ()
-        self.CL = ()
-        self.LL = ()
         self.lnq = ()
+        self.CC = np.array([])
+        self.CL = np.array([])
+        self.LL = np.array([])
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 4. Offline output

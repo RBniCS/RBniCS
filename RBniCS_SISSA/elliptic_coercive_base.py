@@ -67,7 +67,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.red = Function(V) # temporary vector for storage of the FE reconstruction of the reduced solution
         self.er = Function(V) # temporary vector for storage of the error
         # 6. Basis functions matrix
-        self.Z = []
+        self.Z = np.array([])
         # 7. Truth space, functions and inner products
         self.bc_list = bc_list
         self.V = V
