@@ -74,8 +74,8 @@ class SCM(ParametrizedProblem):
         self.red_matrices_folder = "red_matr__scm/"
         self.pp_folder = "pp__scm/" # post processing
         
-        # $$ ADDITIONAL OPTIONS $$ #
-        self.constrain_alpha_LB_positive = False # Constrain the objective function to be positive in the online problem?
+        # TODO aggiungere un M_e and M_p
+        # TODO aggiungere un vettore di previous alpha_LB sul training set
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -83,7 +83,8 @@ class SCM(ParametrizedProblem):
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
-        
+    
+    ## Get a lower bound for alpha    
     def get_alpha_LB(self, mu):
         lp = glpk.glp_create_prob()
         glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
@@ -105,14 +106,15 @@ class SCM(ParametrizedProblem):
         
         # 3. Add two different sets of constraints
         glpk.glp_add_rows(lp, N + 1)
-        array_size = self.N*Qa
-        if self.constrain_alpha_LB_positive == True:
+        array_size = self.N*Qa # TODO cambiare
+        if self.constrain_alpha_LB_positive == True: # TODO eliminare
             array_size += Qa
         matrix_row_index = glpk.intArray(array_size + 1)
         matrix_column_index = glpk.intArray(array_size + 1) # + 1 since GLPK indexing starts from 1
         matrix_content = glpk.doubleArray(array_size + 1)
         
-        # 3a. Add constraints: a constraint is added for each sample in C_J
+        # 3a. Add constraints: a constraint is added for the closest samples to mu in C_J
+        # TODO: usare closest
         glpk_container_index = 1 # glpk starts from 1
         for j in range(N):
             # Overwrite parameter values
@@ -132,7 +134,7 @@ class SCM(ParametrizedProblem):
         
         # 3b. Add constraints: the resulting coercivity constant should be positive,
         #                      since we assume to use SCM for coercive problems
-        if self.constrain_alpha_LB_positive == True:
+        if self.constrain_alpha_LB_positive == True: # TODO cambiare con closest
             self.parametrized_problem.setmu(mu)
             current_theta_a = self.parametrized_problem.compute_theta_a()
             # Assemble first the LHS
@@ -144,7 +146,7 @@ class SCM(ParametrizedProblem):
             # ... and then the RHS
             glpk.glp_set_row_bnds(lp, N+1, glpk.GLP_LO, 0., 0.)
         
-        # Load the assembled LHS
+        # Load the assembled LHS # TODO non e` detto che sia array_size (potrebbe essere meno), probabilmente e` meglio glpk_container_index?
         glpk.glp_load_matrix(lp, array_size, matrix_row_index, matrix_column_index, matrix_content)
         
         # 4. Add cost function coefficients
@@ -161,9 +163,10 @@ class SCM(ParametrizedProblem):
         glpk.glp_simplex(lp, options)
         alpha_LB = glpk.glp_get_obj_val(lp)
         glpk.glp_delete_prob(lp)
-            
+        
         return alpha_LB
     
+    ## Get an upper bound for alpha
     def get_alpha_UB(self, mu):
         Qa = self.parametrized_problem.Qa
         N = self.N
@@ -184,6 +187,27 @@ class SCM(ParametrizedProblem):
                 alpha_UB = obj
         
         return alpha_UB
+
+    ## Auxiliary function: M parameters in the set all_mu closest to mu
+    def closest_parameters(self, M, all_mu, mu):
+        distances = []
+        for p in range(len(all_mu)):
+            distance = parameters_distance(mu, all_mu[p])
+            indices_and_distances.append((p, distance))
+        indices_and_distances.sort(key=operator.itemgetter(1))
+        neighbors = ()
+        for p in range(M):
+            neighbors += (indices_and_distances[p][0])
+        return neighbors
+        
+    ## Auxiliary function: distance bewteen two parameters
+    def parameters_distance(mu1, mu2):
+	    P = len(mu1)
+	    distance = 0.
+        for c in range(P):
+            distance += (mu1[c] - mu2[x])*(mu1[c] - mu2[x])
+        return np.sqrt(distance)
+    
     
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
@@ -398,7 +422,7 @@ class SCM(ParametrizedProblem):
             (alpha, discarded1, discarded2) = self.truth_coercivity_constant()
             
             # Reduced solves
-            alpha_LB = self.get_alpha_LB(self.mu)
+            alpha_LB = self.get_alpha_LB(self.mu) # TODO salvarli
             alpha_UB = self.get_alpha_UB(self.mu)
             
             normalized_error[run] = (alpha - alpha_LB)/alpha_UB
