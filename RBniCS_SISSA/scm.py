@@ -28,6 +28,7 @@ import shutil # for rm
 import glpk # for LB computation
 import sys # for sys.float_info.max
 import random # to randomize selection in case of equal error bound
+import operator # to find closest parameters
 from parametrized_problem import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -50,12 +51,16 @@ class SCM(ParametrizedProblem):
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for SCM
-        self.B_min = [] # minimum values of the bounding box mathcal{B}. Vector of size Qa
-        self.B_max = [] # maximum values of the bounding box mathcal{B}. Vector of size Qa
-        self.C_J = () # vector storing the greedily select parameters during the training phase
-        self.alpha_J =() # vector storing the truth coercivity constants at the greedy parameters in C_J
-        self.eigenvector_J = () # vector of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
-        self.UB_vectors_J = () # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
+        self.B_min = np.array([]) # minimum values of the bounding box mathcal{B}. Vector of size Qa
+        self.B_max = np.array([]) # maximum values of the bounding box mathcal{B}. Vector of size Qa
+        self.C_J = [] # vector storing the indices of greedily selected parameters during the training phase
+        self.complement_C_J = [] # vector storing the indices of the complement of greedily selected parameters during the training phase
+        self.alpha_J = [] # vector storing the truth coercivity constants at the greedy parameters in C_J
+        self.alpha_LB_on_xi_train = np.array([]) # vector storing the approximation of the coercivity constant on the complement of C_J (at the previous iteration, during the offline phase)
+        self.eigenvector_J = [] # vector of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
+        self.UB_vectors_J = [] # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
+        self.M_e = None # integer denoting the number of constraints based on the exact eigenvalues. If = None, then it is assumed to be len(C_J)
+        self.M_p = None # integer denoting the number of constraints based on the previous lower bounds. If = None, then it is assumed to be len(C_J)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # We need to discard dofs related to bcs in eigenvalue computations. To avoid having to create a PETSc submatrix
@@ -73,12 +78,25 @@ class SCM(ParametrizedProblem):
         self.dual_folder = "dual__scm/" # never used
         self.red_matrices_folder = "red_matr__scm/"
         self.pp_folder = "pp__scm/" # post processing
-        
-        # TODO aggiungere un M_e and M_p
-        # TODO aggiungere un vettore di previous alpha_LB sul training set
+        # 
+        self.mu_index = 0 # index of the greedy select parameter at the current iteration
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
+    
+    ###########################     SETTERS     ########################### 
+    ## @defgroup Setters Set properties of the reduced order approximation
+    #  @{
+    
+    ## OFFLINE: set the elements in the training set \xi_train. Overridden to resize alpha_LB_on_xi_train
+    def setxi_train(self, ntrain, sampling="random"):    
+        ParametrizedProblem.setxi_train(self, ntrain, sampling)
+        self.alpha_LB_on_xi_train = np.zeros([ntrain])
+        self.complement_C_J = range(ntrain)
+        print "IN"
+        
+    #  @}
+    ########################### end - SETTERS - end ########################### 
     
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage
@@ -90,6 +108,16 @@ class SCM(ParametrizedProblem):
         glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
         Qa = self.parametrized_problem.Qa
         N = self.N
+        M_e = self.M_e
+        if self.M_e == None:
+            M_e = N
+        if M_e > len(self.C_J):
+            M_e = len(self.C_J) # = N
+        M_p = self.M_p
+        if self.M_p == None:
+            M_p = N
+        if M_p > len(self.complement_C_J):
+            M_p = len(self.complement_C_J)
         
         # 1. Linear program unknowns: Qa variables, y_1, ..., y_{Q_a}
         glpk.glp_add_cols(lp, Qa)
@@ -105,55 +133,57 @@ class SCM(ParametrizedProblem):
                 glp_set_col_bnds(lp, qa+1, glpk.GLP_FR, 0., 0.)
         
         # 3. Add two different sets of constraints
-        glpk.glp_add_rows(lp, N + 1)
-        array_size = self.N*Qa # TODO cambiare
-        if False: #self.constrain_alpha_LB_positive == True: # TODO eliminare
-            array_size += Qa
-        matrix_row_index = glpk.intArray(array_size + 1)
-        matrix_column_index = glpk.intArray(array_size + 1) # + 1 since GLPK indexing starts from 1
+        glpk.glp_add_rows(lp, M_e + M_p)
+        array_size = (M_e + M_p)*Qa
+        matrix_row_index = glpk.intArray(array_size + 1) # + 1 since GLPK indexing starts from 1
+        matrix_column_index = glpk.intArray(array_size + 1)
         matrix_content = glpk.doubleArray(array_size + 1)
+        glpk_container_size = 0
         
         # 3a. Add constraints: a constraint is added for the closest samples to mu in C_J
-        # TODO: usare closest
-        glpk_container_index = 1 # glpk starts from 1
-        for j in range(N):
+        closest_C_J_indices = self.closest_parameters(M_e, self.C_J, mu)
+        for j in range(M_e):
             # Overwrite parameter values
-            omega = self.C_J[j]
+            omega = self.xi_train[ self.C_J[ closest_C_J_indices[j] ] ]
             self.parametrized_problem.setmu(omega)
             current_theta_a = self.parametrized_problem.compute_theta_a()
             
             # Assemble the LHS of the constraint
             for qa in range(Qa):
-                matrix_row_index[glpk_container_index] = int(j + 1)
-                matrix_column_index[glpk_container_index] = int(qa + 1)
-                matrix_content[glpk_container_index] = current_theta_a[qa]
-                glpk_container_index += 1
+                matrix_row_index[glpk_container_size + 1] = int(j + 1)
+                matrix_column_index[glpk_container_size + 1] = int(qa + 1)
+                matrix_content[glpk_container_size + 1] = current_theta_a[qa]
+                glpk_container_size += 1
             
             # Assemble the RHS of the constraint
-            glpk.glp_set_row_bnds(lp, j+1, glpk.GLP_LO, self.alpha_J[j], 0.)
+            glpk.glp_set_row_bnds(lp, j + 1, glpk.GLP_LO, self.alpha_J[ closest_C_J_indices[j] ], 0.)
+        closest_C_J_indices = None
         
-        # 3b. Add constraints: the resulting coercivity constant should be positive,
-        #                      since we assume to use SCM for coercive problems
-        if False: #self.constrain_alpha_LB_positive == True: # TODO cambiare con closest
-            self.parametrized_problem.setmu(mu)
+        # 3b. Add constraints: also constrain the closest point in the complement of C_J, 
+        #                      with rhs depending on previously computed lower bounds
+        closest_complement_C_J_indices = self.closest_parameters(M_p, self.complement_C_J, mu)
+        for j in range(M_p):
+            nu = self.xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
+            self.parametrized_problem.setmu(nu)
             current_theta_a = self.parametrized_problem.compute_theta_a()
             # Assemble first the LHS
             for qa in range(Qa):
-                matrix_row_index[glpk_container_index] = int(N + 1)
-                matrix_column_index[glpk_container_index] = int(qa + 1)
-                matrix_content[glpk_container_index] = current_theta_a[qa]
-                glpk_container_index += 1
+                matrix_row_index[glpk_container_size + 1] = int(M_e + j + 1)
+                matrix_column_index[glpk_container_size + 1] = int(qa + 1)
+                matrix_content[glpk_container_size + 1] = current_theta_a[qa]
+                glpk_container_size += 1
             # ... and then the RHS
-            glpk.glp_set_row_bnds(lp, N+1, glpk.GLP_LO, 0., 0.)
+            glpk.glp_set_row_bnds(lp, M_e + j + 1, glpk.GLP_LO, self.alpha_LB_on_xi_train[ closest_complement_C_J_indices[j] ], 0.)
+        closest_complement_C_J_indices = None
         
-        # Load the assembled LHS # TODO non e` detto che sia array_size (potrebbe essere meno), probabilmente e` meglio glpk_container_index?
+        # Load the assembled LHS
         glpk.glp_load_matrix(lp, array_size, matrix_row_index, matrix_column_index, matrix_content)
         
         # 4. Add cost function coefficients
         self.parametrized_problem.setmu(mu)
         current_theta_a = self.parametrized_problem.compute_theta_a()
         for qa in range(Qa):
-            glpk.glp_set_obj_coef(lp, qa+1, current_theta_a[qa])
+            glpk.glp_set_obj_coef(lp, qa + 1, current_theta_a[qa])
         
         # 5. Solve the linear programming problem
         options = glpk.glp_smcp()
@@ -189,23 +219,26 @@ class SCM(ParametrizedProblem):
         return alpha_UB
 
     ## Auxiliary function: M parameters in the set all_mu closest to mu
-    def closest_parameters(self, M, all_mu, mu):
-        distances = []
-        for p in range(len(all_mu)):
-            distance = parameters_distance(mu, all_mu[p])
+    def closest_parameters(self, M, all_mu_indices, mu):
+        if M == 0:
+            return
+                    
+        indices_and_distances = []
+        for p in range(len(all_mu_indices)):
+            distance = self.parameters_distance(mu, self.xi_train[ all_mu_indices[p] ])
             indices_and_distances.append((p, distance))
         indices_and_distances.sort(key=operator.itemgetter(1))
         neighbors = ()
         for p in range(M):
-            neighbors += (indices_and_distances[p][0])
+            neighbors += (indices_and_distances[p][0],)
         return neighbors
         
     ## Auxiliary function: distance bewteen two parameters
-    def parameters_distance(mu1, mu2):
+    def parameters_distance(self, mu1, mu2):
         P = len(mu1)
         distance = 0.
         for c in range(P):
-            distance += (mu1[c] - mu2[x])*(mu1[c] - mu2[x])
+            distance += (mu1[c] - mu2[c])*(mu1[c] - mu2[c])
         return np.sqrt(distance)
     
     #  @}
@@ -245,6 +278,10 @@ class SCM(ParametrizedProblem):
         # Compute the bounding box \mathcal{B}
         self.compute_bounding_box()
         
+        # Arbitrarily start from the first parameter in the training set
+        self.mu = self.xi_train[0]
+        self.mu_index = 0
+        
         for run in range(self.Nmax):
             print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             
@@ -254,9 +291,9 @@ class SCM(ParametrizedProblem):
             # Evaluate the coercivity constant
             print "evaluate the coercivity constant for mu = ", self.mu
             (alpha, eigenvector, UB_vector) = self.truth_coercivity_constant()
-            self.alpha_J += (alpha,)
-            self.eigenvector_J += (eigenvector,)
-            self.UB_vectors_J += (UB_vector,)
+            self.alpha_J += [alpha]
+            self.eigenvector_J += [eigenvector]
+            self.UB_vectors_J += [UB_vector]
             self.export_solution(eigenvector, self.snap_folder + "eigenvector_" + str(run))
             
             self.N = len(self.C_J)
@@ -313,7 +350,9 @@ class SCM(ParametrizedProblem):
     
     # Store the greedy parameter
     def update_C_J(self):
-        self.C_J += (self.mu,)
+        self.C_J += [self.mu_index]
+        if self.mu_index in self.complement_C_J: # if not SCM selects twice the same parameter
+            self.complement_C_J.remove(self.mu_index)
         
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
@@ -346,15 +385,33 @@ class SCM(ParametrizedProblem):
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
+        ntrain = len(self.xi_train)
+        alpha_LB_on_xi_train = np.zeros([ntrain])
+        #
         delta_max = -1.0
-        for mu in self.xi_train:       # similar to the one in ...
-            self.setmu(mu)             # ... elliptic_coercive_rb: ...
-            LB = self.get_alpha_LB(mu) # ... notice that only ...  [1]
-            UB = self.get_alpha_UB(mu) # ... these three lines ... [2]
-            delta = (UB - LB)/UB       # ... have been changed     [3]
+        munew = None
+        munew_index = None
+        for i in range(ntrain):
+            mu = self.xi_train[i]
+            self.mu_index = i
+            self.setmu(mu)
+            LB = self.get_alpha_LB(mu)
+            UB = self.get_alpha_UB(mu)
+            delta = (UB - LB)/UB
+            tol = 1.e-10
+            if LB < -tol:
+                print "SCM warning at mu = ", mu , ": LB = ", LB, " < 0"
+            if LB > UB + tol:
+                print "SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB
+            alpha_LB_on_xi_train[i] = max(0, LB)
             if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
+                munew_index = i
+        
+        # Overwrite alpha_LB_on_xi_train
+        self.alpha_LB_on_xi_train = alpha_LB_on_xi_train
+        
         print "absolute SCM delta max = ", delta_max
         if os.path.isfile(self.pp_folder + "delta_max.npy") == True:
             d = np.load(self.pp_folder + "delta_max.npy")
@@ -368,6 +425,7 @@ class SCM(ParametrizedProblem):
             np.save(self.pp_folder + "mu_greedy", np.array(munew))
 
         self.setmu(munew)
+        self.mu_index = munew_index
     
     # Clear constrained dofs
     def clear_constrained_dofs(self, M, diag_value):
@@ -421,8 +479,15 @@ class SCM(ParametrizedProblem):
             (alpha, discarded1, discarded2) = self.truth_coercivity_constant()
             
             # Reduced solves
-            alpha_LB = self.get_alpha_LB(self.mu) # TODO salvarli
+            alpha_LB = self.get_alpha_LB(self.mu)
             alpha_UB = self.get_alpha_UB(self.mu)
+            tol = 1.e-10
+            if alpha_LB < -tol:
+                print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " < 0"
+            if alpha_LB > alpha_UB + tol:
+                print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > UB = ", alpha_UB
+            if alpha_LB > alpha + tol:
+                print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > exact = ", alpha
             
             normalized_error[run] = (alpha - alpha_LB)/alpha_UB
         
