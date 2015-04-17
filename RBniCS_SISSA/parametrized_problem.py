@@ -69,7 +69,7 @@ class ParametrizedProblem:
     def setmu_range(self, mu_range):
         self.mu_range = mu_range
     
-    ## OFFLINE: set the elements in the training set \xi_train, from a random uniform distribution
+    ## OFFLINE: set the elements in the training set \xi_train.
     # If the optional argument is equal to "random", ntrain parameters are drawn from a random uniform distribution
     # Else, if the optional argument is equal to "linspace", (approximately) ntrain parameters are obtained from a cartesian grid
     def setxi_train(self, ntrain, sampling="random"):
