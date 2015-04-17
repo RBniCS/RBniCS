@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import numpy as np
+import itertools # for linspace sampling
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParametrizedProblem
@@ -76,22 +77,25 @@ class ParametrizedProblem:
         if sampling == "random":
             ss = "[("
             for i in range(len(self.mu_range)):
-                ss += "np.random.uniform(self.mu_range[" + str(i) + "][0],self.mu_range[" + str(i) + "][1])"
+                ss += "np.random.uniform(self.mu_range[" + str(i) + "][0], self.mu_range[" + str(i) + "][1])"
                 if i < len(self.mu_range)-1:
                     ss += ", "
                 else:
                     ss += ") for _ in range(" + str(ntrain) +")]"
             self.xi_train = eval(ss)
         elif sampling == "linspace":
-            ntrain_P_root = ceil(ntrain**(1./len(self.mu_range)))
+            ntrain_P_root = int(np.ceil(ntrain**(1./len(self.mu_range))))
             ss = "itertools.product("
             for i in range(len(self.mu_range)):
-                ss += "[np.linspace(self.mu_range[" + str(i) + "][0],self.mu_range[" + str(i) + "][1]]"
+                ss += "np.linspace(self.mu_range[" + str(i) + "][0], self.mu_range[" + str(i) + "][1], num = " + str(ntrain_P_root) + ").tolist()"
                 if i < len(self.mu_range)-1:
                     ss += ", "
                 else:
                     ss += ")"
-            self.xi_train = eval(ss)
+            itertools_xi_train = eval(ss)
+            self.xi_train = []
+            for mu_train in itertools_xi_train:
+                self.xi_train += [mu_train]
         else:
             sys.exit("Invalid sampling mode.")
 
