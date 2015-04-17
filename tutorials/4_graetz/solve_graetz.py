@@ -24,7 +24,7 @@
 
 from dolfin import *
 import numpy as np
-from RBniCS_SISSA import *
+from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class Graetz(EllipticCoerciveRBNonCompliantBase):
