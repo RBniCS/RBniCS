@@ -136,10 +136,11 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     ## Perform the offline phase of the reduced order model
     def offline(self):
         # TODO il resto del metodo, ma non dovrebbe servire
+        pass
         
     ## Update basis matrix
     def update_basis_matrix(self):
-    # TODO il resto del metodo
+        # TODO il resto del metodo
         if self.N == 0:
             self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
             self.Z /= np.sqrt(np.dot(self.Z[:, 0], self.S*self.Z[:, 0]))

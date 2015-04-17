@@ -107,7 +107,7 @@ class SCM(ParametrizedProblem):
         # 3. Add two different sets of constraints
         glpk.glp_add_rows(lp, N + 1)
         array_size = self.N*Qa # TODO cambiare
-        if self.constrain_alpha_LB_positive == True: # TODO eliminare
+        if False: #self.constrain_alpha_LB_positive == True: # TODO eliminare
             array_size += Qa
         matrix_row_index = glpk.intArray(array_size + 1)
         matrix_column_index = glpk.intArray(array_size + 1) # + 1 since GLPK indexing starts from 1
@@ -134,7 +134,7 @@ class SCM(ParametrizedProblem):
         
         # 3b. Add constraints: the resulting coercivity constant should be positive,
         #                      since we assume to use SCM for coercive problems
-        if self.constrain_alpha_LB_positive == True: # TODO cambiare con closest
+        if False: #self.constrain_alpha_LB_positive == True: # TODO cambiare con closest
             self.parametrized_problem.setmu(mu)
             current_theta_a = self.parametrized_problem.compute_theta_a()
             # Assemble first the LHS
@@ -202,12 +202,11 @@ class SCM(ParametrizedProblem):
         
     ## Auxiliary function: distance bewteen two parameters
     def parameters_distance(mu1, mu2):
-	    P = len(mu1)
-	    distance = 0.
+        P = len(mu1)
+        distance = 0.
         for c in range(P):
             distance += (mu1[c] - mu2[x])*(mu1[c] - mu2[x])
         return np.sqrt(distance)
-    
     
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 

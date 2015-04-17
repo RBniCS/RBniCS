@@ -23,8 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from elliptic_coercive_rb_non_compliant_base import *
-from scm import *
+from RBniCS_SISSA import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class Graetz(EllipticCoerciveRBNonCompliantBase):
