@@ -84,6 +84,9 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     def setxi_train(self, ntrain, sampling="random"):
         EllipticCoerciveRBBase.setxi_train(self, ntrain, sampling)
         self.dual_problem.setxi_train(ntrain, sampling)
+    def setxi_test(self, ntest, sampling="random"):
+        EllipticCoerciveRBBase.setxi_test(self, ntest, sampling)
+        self.dual_problem.setxi_test(ntest, sampling)
     def setmu(self, mu):
         EllipticCoerciveRBBase.setmu(self, mu)
         self.dual_problem.setmu(mu)

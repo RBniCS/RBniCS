@@ -93,6 +93,14 @@ class SCM(ParametrizedProblem):
         ParametrizedProblem.setxi_train(self, ntrain, sampling)
         self.alpha_LB_on_xi_train = np.zeros([ntrain])
         self.complement_C_J = range(ntrain)
+        # Since the online evaluation depends also on the training set, we need
+        # to save it to file. Be safe and remove the previous folder, so that
+        # if the user overwrites the training set but forgets to run the offline
+        # phase he/she will get an error
+        if os.path.exists(self.red_matrices_folder):
+            shutil.rmtree(self.red_matrices_folder)
+        # Save the training set to file
+        np.save(self.red_matrices_folder + "xi_train", self.xi_train)
         
     #  @}
     ########################### end - SETTERS - end ########################### 
@@ -429,7 +437,7 @@ class SCM(ParametrizedProblem):
             if LB > UB + tol:
                 print "SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB
             alpha_LB_on_xi_train[i] = max(0, LB)
-            if (delta > delta_max): # or (delta == delta_max and random.random() >= 0.5)): # TODO RIMETTERE
+            if (delta > delta_max) or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
                 munew_index = i
@@ -492,6 +500,8 @@ class SCM(ParametrizedProblem):
         if not self.M_p: # avoid loading multiple times
             self.M_p = np.load(self.red_matrices_folder + "M_p.npy")
             self.M_p = int(self.M_p)
+        if not self.xi_train: # avoid loading multiple times
+            self.xi_train = np.load(self.red_matrices_folder + "xi_train.npy")
     
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
@@ -507,22 +517,19 @@ class SCM(ParametrizedProblem):
     #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the training set
+    # over the test set
     def error_analysis(self):
         print "=============================================================="
         print "=             SCM error analysis begins                      ="
         print "=============================================================="
         print ""
         
-        # Regenerate a new test set (necessarily random)
-        self.setxi_train(len(self.xi_train))
+        normalized_error = np.zeros((len(self.xi_test)))
         
-        normalized_error = np.zeros((len(self.xi_train)))
-        
-        for run in range(len(self.xi_train)):
+        for run in range(len(self.xi_test)):
             print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             
-            self.setmu(self.xi_train[run])
+            self.setmu(self.xi_test[run])
             
             # Truth solves
             (alpha, discarded1, discarded2) = self.truth_coercivity_constant()

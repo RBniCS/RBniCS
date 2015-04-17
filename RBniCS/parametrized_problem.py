@@ -50,6 +50,10 @@ class ParametrizedProblem:
         # 2. Parameter ranges and training set
         self.mu_range = [()]
         self.xi_train = [()]
+        
+        # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
+        # 2. Test set
+        self.xi_test = [()]
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -71,9 +75,19 @@ class ParametrizedProblem:
         self.mu_range = mu_range
     
     ## OFFLINE: set the elements in the training set \xi_train.
-    # If the optional argument is equal to "random", ntrain parameters are drawn from a random uniform distribution
-    # Else, if the optional argument is equal to "linspace", (approximately) ntrain parameters are obtained from a cartesian grid
+    # See the documentation of generate_train_or_test_set for more details
     def setxi_train(self, ntrain, sampling="random"):
+        self.xi_train = self.generate_train_or_test_set(ntrain, sampling)
+        
+    ## ERROR ANALYSIS: set the elements in the test set \xi_test.
+    # See the documentation of generate_train_or_test_set for more details
+    def setxi_test(self, ntest, sampling="random"):
+        self.xi_test = self.generate_train_or_test_set(ntest, sampling)
+    
+    ## Internal method for generation of training or test sets
+    # If the last argument is equal to "random", n parameters are drawn from a random uniform distribution
+    # Else, if the last argument is equal to "linspace", (approximately) n parameters are obtained from a cartesian grid
+    def generate_train_or_test_set(self, n, sampling):
         if sampling == "random":
             ss = "[("
             for i in range(len(self.mu_range)):
@@ -81,21 +95,23 @@ class ParametrizedProblem:
                 if i < len(self.mu_range)-1:
                     ss += ", "
                 else:
-                    ss += ") for _ in range(" + str(ntrain) +")]"
-            self.xi_train = eval(ss)
+                    ss += ") for _ in range(" + str(n) +")]"
+            xi = eval(ss)
+            return xi
         elif sampling == "linspace":
-            ntrain_P_root = int(np.ceil(ntrain**(1./len(self.mu_range))))
+            n_P_root = int(np.ceil(n**(1./len(self.mu_range))))
             ss = "itertools.product("
             for i in range(len(self.mu_range)):
-                ss += "np.linspace(self.mu_range[" + str(i) + "][0], self.mu_range[" + str(i) + "][1], num = " + str(ntrain_P_root) + ").tolist()"
+                ss += "np.linspace(self.mu_range[" + str(i) + "][0], self.mu_range[" + str(i) + "][1], num = " + str(n_P_root) + ").tolist()"
                 if i < len(self.mu_range)-1:
                     ss += ", "
                 else:
                     ss += ")"
-            itertools_xi_train = eval(ss)
-            self.xi_train = []
-            for mu_train in itertools_xi_train:
-                self.xi_train += [mu_train]
+            itertools_xi = eval(ss)
+            xi = []
+            for mu in itertools_xi:
+                xi += [mu]
+            return xi
         else:
             sys.exit("Invalid sampling mode.")
 

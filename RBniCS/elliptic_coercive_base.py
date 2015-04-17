@@ -242,7 +242,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         return np.sqrt(error)
         
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the training set
+    # over the test set
     def error_analysis(self, N=None):
         sys.exit("Please implement the error analysis of the reduced order model.")
         

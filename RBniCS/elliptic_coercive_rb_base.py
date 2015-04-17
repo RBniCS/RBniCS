@@ -353,7 +353,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
         
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the training set
+    # over the test set
     def error_analysis(self, N=None):
         if N is None:
             N = self.N
@@ -363,21 +363,17 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         print "=============================================================="
         print ""
         
-        # Make sure to regenerate a new test set (necessarily random), 
-        # otherwise effectivity -> +\infty at greedily selected points
-        self.setxi_train(len(self.xi_train))
+        error_u = np.zeros((N, len(self.xi_test)))
+        delta_u = np.zeros((N, len(self.xi_test)))
+        effectivity_u = np.zeros((N, len(self.xi_test)))
+        error_s = np.zeros((N, len(self.xi_test)))
+        delta_s = np.zeros((N, len(self.xi_test)))
+        effectivity_s = np.zeros((N, len(self.xi_test)))
         
-        error_u = np.zeros((N, len(self.xi_train)))
-        delta_u = np.zeros((N, len(self.xi_train)))
-        effectivity_u = np.zeros((N, len(self.xi_train)))
-        error_s = np.zeros((N, len(self.xi_train)))
-        delta_s = np.zeros((N, len(self.xi_train)))
-        effectivity_s = np.zeros((N, len(self.xi_train)))
-        
-        for run in range(len(self.xi_train)):
+        for run in range(len(self.xi_test)):
             print "############################## run = ", run, " ######################################"
             
-            self.setmu(self.xi_train[run])
+            self.setmu(self.xi_test[run])
             
             # Perform the truth solve only once
             self.truth_solve()

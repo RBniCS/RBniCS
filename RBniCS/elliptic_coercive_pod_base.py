@@ -140,7 +140,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the training set
+    # over the test set
     def error_analysis(self, N=None):
         if N is None:
             N = self.N
@@ -150,15 +150,12 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print "=============================================================="
         print ""
         
-        # Generate a new test set
-        self.setxi_train(len(self.xi_train))
+        error = np.zeros((N, len(self.xi_test)))
         
-        error = np.zeros((N, len(self.xi_train)))
-        
-        for run in range(len(self.xi_train)):
+        for run in range(len(self.xi_test)):
             print "############################## run = ", run, " ######################################"
             
-            self.setmu(self.xi_train[run])
+            self.setmu(self.xi_test[run])
             
             # Perform the truth solve only once
             self.truth_solve()
