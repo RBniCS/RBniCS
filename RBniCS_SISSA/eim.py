@@ -191,7 +191,7 @@ class EIM(ParametrizedProblem):
         print ""
         
         # Arbitrarily start from the first parameter in the training set
-        self.mu = self.xi_train[0]
+        self.setmu(self.xi_train[0])
         self.mu_index = 0
         
         for run in range(self.Nmax + 1): # the + 1 is needed for the error bound computation
