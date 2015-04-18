@@ -99,6 +99,7 @@ class SCM(ParametrizedProblem):
         # phase he/she will get an error
         if os.path.exists(self.red_matrices_folder):
             shutil.rmtree(self.red_matrices_folder)
+        os.makedirs(self.red_matrices_folder)
         # Save the training set to file
         np.save(self.red_matrices_folder + "xi_train", self.xi_train)
         
@@ -182,7 +183,7 @@ class SCM(ParametrizedProblem):
                 matrix_content[glpk_container_size + 1] = current_theta_a[qa]
                 glpk_container_size += 1
             # ... and then the RHS
-            glpk.glp_set_row_bnds(lp, M_e + j + 1, glpk.GLP_LO, self.alpha_LB_on_xi_train[ closest_complement_C_J_indices[j] ], 0.)
+            glpk.glp_set_row_bnds(lp, M_e + j + 1, glpk.GLP_LO, self.alpha_LB_on_xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ], 0.)
         closest_complement_C_J_indices = None
         
         # Load the assembled LHS
@@ -193,7 +194,7 @@ class SCM(ParametrizedProblem):
         current_theta_a = self.parametrized_problem.compute_theta_a()
         for qa in range(Qa):
             glpk.glp_set_obj_coef(lp, qa + 1, current_theta_a[qa])
-        glpk.glp_write_lp(lp, None, "glpkout")
+        
         # 5. Solve the linear programming problem
         options = glpk.glp_smcp()
         glpk.glp_init_smcp(options)
@@ -231,14 +232,17 @@ class SCM(ParametrizedProblem):
 
     ## Auxiliary function: M parameters in the set all_mu closest to mu
     def closest_parameters(self, M, all_mu_indices, mu):
+        # Trivial case 1:
         if M == 0:
             return
         
-        if M < len(all_mu_indices):
-            sys.exit("SCM error in closest parameters: this should never happen")
-        
+        # Trivial case 2:
         if M == len(all_mu_indices):
             return range(len(all_mu_indices))
+        
+        # Error case: there are not enough elements    
+        if M > len(all_mu_indices):
+            sys.exit("SCM error in closest parameters: this should never happen")
         
         indices_and_distances = []
         for p in range(len(all_mu_indices)):
@@ -437,7 +441,7 @@ class SCM(ParametrizedProblem):
             if LB > UB + tol:
                 print "SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB
             alpha_LB_on_xi_train[i] = max(0, LB)
-            if (delta > delta_max) or (delta == delta_max and random.random() >= 0.5)):
+            if ((delta > delta_max) or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
                 munew_index = i
@@ -527,7 +531,7 @@ class SCM(ParametrizedProblem):
         normalized_error = np.zeros((len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
-            print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             
             self.setmu(self.xi_test[run])
             
@@ -546,7 +550,6 @@ class SCM(ParametrizedProblem):
                 print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > exact = ", alpha
             
             normalized_error[run] = (alpha - alpha_LB)/alpha_UB
-            print normalized_error[run], " ", alpha_LB, " ", alpha, " ", self.mu # TODO
         
         # Print some statistics
         print ""
