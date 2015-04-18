@@ -100,6 +100,7 @@ class SCM(ParametrizedProblem):
         if os.path.exists(self.red_matrices_folder):
             shutil.rmtree(self.red_matrices_folder)
         os.makedirs(self.red_matrices_folder)
+        self.B_min = np.array([]) # make sure to trigger the import for at least a variable
         # Save the training set to file
         np.save(self.red_matrices_folder + "xi_train", self.xi_train)
         
@@ -111,7 +112,7 @@ class SCM(ParametrizedProblem):
     #  @{
     
     ## Get a lower bound for alpha
-    def get_alpha_LB(self, mu):
+    def get_alpha_LB(self, mu, safeguard=True):
         self.load_red_data_structures()
         
         lp = glpk.glp_create_prob()
@@ -204,6 +205,23 @@ class SCM(ParametrizedProblem):
         alpha_LB = glpk.glp_get_obj_val(lp)
         glpk.glp_delete_prob(lp)
         
+        # 6. If a safeguard is requested (when called in the online stage of the RB method),
+        #    we check the resulting value of alpha_LB. In order to avoid divisions by zero
+        #    or taking the square root of a negative number, we allow an inefficient evaluation.
+        if safeguard == True:
+            tol = 1e-10
+            alpha_UB = self.get_alpha_UB(mu)
+            if alpha_LB/alpha_UB < tol:
+                print "SCM warning: alpha_LB is <= 0 at mu = " + str(mu) + ".",
+                print "Please consider a larger Nmax for SCM. Meanwhile, a truth",
+                print "eigensolve is performed."
+                
+                (alpha_LB, discarded1, discarded2) = self.truth_coercivity_constant()
+                
+            if alpha_LB/alpha_UB > 1 + tol:
+                print "SCM warning: alpha_LB is > alpha_UB at mu = " + str(mu) + ".",
+                print "This should never happen!"
+        
         return alpha_LB
     
     ## Get an upper bound for alpha
@@ -215,6 +233,7 @@ class SCM(ParametrizedProblem):
         UB_vectors_J = self.UB_vectors_J
         
         alpha_UB = sys.float_info.max
+        self.parametrized_problem.setmu(mu)
         current_theta_a = self.parametrized_problem.compute_theta_a()
         
         for j in range(N):
@@ -252,7 +271,6 @@ class SCM(ParametrizedProblem):
         neighbors = []
         for p in range(M):
             neighbors += [indices_and_distances[p][0]]
-        neighbors.sort()
         return neighbors
         
     ## Auxiliary function: distance bewteen two parameters
@@ -287,19 +305,8 @@ class SCM(ParametrizedProblem):
         np.save(self.red_matrices_folder + "M_e", self.M_e)
         np.save(self.red_matrices_folder + "M_p", self.M_p)
         
-        # Assemble matrices related to the LHS A of the parametrized problem
-        self.parametrized_problem.truth_A = self.parametrized_problem.assemble_truth_a()
-        self.parametrized_problem.Qa = len(self.parametrized_problem.truth_A)
-        
         # Assemble the condensed versions of truth_A and S matrices
-        self.S__condensed = self.clear_constrained_dofs(self.parametrized_problem.S.copy(), 1.)
-        for qa in range(self.parametrized_problem.Qa):
-            self.truth_A__condensed_for_minimum_eigenvalue +=(
-                self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa].copy(), self.invalid_minimum_eigenvalue), 
-            )
-            self.truth_A__condensed_for_maximum_eigenvalue +=(
-                self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa].copy(), self.invalid_maximum_eigenvalue), 
-            )
+        self.assemble_condensed_truth_matrices()
         
         # Compute the bounding box \mathcal{B}
         self.compute_bounding_box()
@@ -322,8 +329,6 @@ class SCM(ParametrizedProblem):
             self.UB_vectors_J += [UB_vector]; np.save(self.red_matrices_folder + "UB_vectors_J", self.UB_vectors_J)
             self.export_solution(eigenvector, self.snap_folder + "eigenvector_" + str(run))
             
-            self.N = len(self.C_J)
-            
             # Prepare for next iteration
             if self.N < self.Nmax:
                 print "find next mu"
@@ -338,7 +343,29 @@ class SCM(ParametrizedProblem):
         
         # mu_index does not make any sense from now on
         self.mu_index = None
+    
+    # Assemble condensed versions of truth matrices
+    def assemble_condensed_truth_matrices(self):
+        # Assemble matrices related to the LHS A of the parametrized problem
+        if not self.parametrized_problem.truth_A:
+            self.parametrized_problem.truth_A = self.parametrized_problem.assemble_truth_a()
+        if self.parametrized_problem.Qa == 0:
+            self.parametrized_problem.Qa = len(self.parametrized_problem.truth_A)
         
+        # Assemble condensed matrices
+        if not self.S__condensed:
+            self.S__condensed = self.clear_constrained_dofs(self.parametrized_problem.S.copy(), 1.)
+        if not self.truth_A__condensed_for_minimum_eigenvalue:
+            for qa in range(self.parametrized_problem.Qa):
+                self.truth_A__condensed_for_minimum_eigenvalue +=(
+                    self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa].copy(), self.invalid_minimum_eigenvalue), 
+                )
+        if not self.truth_A__condensed_for_maximum_eigenvalue:
+            for qa in range(self.parametrized_problem.Qa):
+                self.truth_A__condensed_for_maximum_eigenvalue +=(
+                    self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa].copy(), self.invalid_maximum_eigenvalue), 
+                )
+            
     # Compute the bounding box \mathcal{B}
     def compute_bounding_box(self):
         # Resize the bounding box storage
@@ -383,9 +410,15 @@ class SCM(ParametrizedProblem):
     
     # Store the greedy parameter
     def update_C_J(self):
+        if self.mu != self.xi_train[self.mu_index]:
+            # There is something wrong if we are here...
+            sys.exit("Should never arrive here")
+        
         self.C_J += [self.mu_index]
         if self.mu_index in self.complement_C_J: # if not SCM selects twice the same parameter
             self.complement_C_J.remove(self.mu_index)
+        
+        self.N = len(self.C_J)
         
         # Save to file
         np.save(self.red_matrices_folder + "C_J", self.C_J)
@@ -393,6 +426,8 @@ class SCM(ParametrizedProblem):
         
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
+        self.assemble_condensed_truth_matrices()
+        
         self.parametrized_problem.setmu(self.mu)
         current_theta_a = self.parametrized_problem.compute_theta_a()
         A = self.parametrized_problem.aff_assemble_truth_sym_matrix(self.truth_A__condensed_for_minimum_eigenvalue, current_theta_a)
@@ -432,13 +467,13 @@ class SCM(ParametrizedProblem):
             mu = self.xi_train[i]
             self.mu_index = i
             self.setmu(mu)
-            LB = self.get_alpha_LB(mu)
+            LB = self.get_alpha_LB(mu, False)
             UB = self.get_alpha_UB(mu)
             delta = (UB - LB)/UB
             tol = 1.e-10
-            if LB < -tol:
+            if LB/UB < -tol:
                 print "SCM warning at mu = ", mu , ": LB = ", LB, " < 0"
-            if LB > UB + tol:
+            if LB/UB > 1 + tol:
                 print "SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB
             alpha_LB_on_xi_train[i] = max(0, LB)
             if ((delta > delta_max) or (delta == delta_max and random.random() >= 0.5)):
@@ -539,14 +574,14 @@ class SCM(ParametrizedProblem):
             (alpha, discarded1, discarded2) = self.truth_coercivity_constant()
             
             # Reduced solves
-            alpha_LB = self.get_alpha_LB(self.mu)
+            alpha_LB = self.get_alpha_LB(self.mu, False)
             alpha_UB = self.get_alpha_UB(self.mu)
             tol = 1.e-10
-            if alpha_LB < -tol:
+            if alpha_LB/alpha_UB < -tol:
                 print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " < 0"
-            if alpha_LB > alpha_UB + tol:
+            if alpha_LB/alpha_UB > 1 + tol:
                 print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > UB = ", alpha_UB
-            if alpha_LB > alpha + tol:
+            if alpha_LB/alpha > 1 + tol:
                 print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > exact = ", alpha
             
             normalized_error[run] = (alpha - alpha_LB)/alpha_UB
