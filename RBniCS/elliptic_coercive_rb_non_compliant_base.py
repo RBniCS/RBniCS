@@ -55,7 +55,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.theta_s = ()
         # 3c. Reduced order matrices/vectors
         self.red_S = ()
-        self.red_A_pd = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
+        self.red_A_dp = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
         self.red_F_d = () # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
         
         # $$ OFFLINE DATA STRUCTURES $$ #
@@ -107,8 +107,15 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     # Perform an online evaluation of the non-compliant output
     def online_output(self):
         N = self.uN.size
+        self.sN = 0.
+        # Assemble output
+        self.theta_s = self.compute_theta_s()
         assembled_red_S = self.aff_assemble_red_vector(self.red_S, self.theta_s, N)
-        self.sN = np.dot(assembled_red_S, self.uN)
+        self.sN += float(np.dot(assembled_red_S, self.uN))
+        # Assemble correction
+        assembled_red_A_dp = self.aff_assemble_red_matrix(self.red_A_dp, self.theta_a, N, N)
+        assembled_red_F_d = self.aff_assemble_red_vector(self.red_F_d, self.theta_f, N)
+        self.sN -= float(np.dot(assembled_red_F_d, self.dual_problem.uN)) - float(self.dual_problem.uN.T*(assembled_red_A_dp*self.uN))
     
     ## Return an error bound for the current output
     def get_delta_output(self):
@@ -143,17 +150,17 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         EllipticCoerciveRBBase.build_red_matrices(self)
         
         # Output correction terms
-        red_A_pd = ()
+        red_A_dp = ()
         for A in self.truth_A:
             A = as_backend_type(A)
             dim = A.size(0) # = A.size(1)
             if self.N == 1:
-                red_A_pd += (np.dot(self.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.dual_problem.Z)),)
+                red_A_dp += (np.dot(self.dual_problem.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
             else:
-                red = np.matrix(np.dot(self.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.dual_problem.Z))))
-                red_A_pd += (red,)
-        self.red_A_pd = red_A_pd
-        np.save(self.red_matrices_folder + "red_A_pd", self.red_A_pd)
+                red = np.matrix(np.dot(self.dual_problem.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.Z))))
+                red_A_dp += (red,)
+        self.red_A_dp = red_A_dp
+        np.save(self.red_matrices_folder + "red_A_dp", self.red_A_dp)
     
     ## Assemble the reduced order affine expansion (rhs). Overridden to assemble also terms related to output  and output correction
     def build_red_vectors(self):
@@ -194,7 +201,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.dual_problem.load_red_matrices()
         # ... and those related to output and output correction
         if not self.CC.size: # avoid loading multiple times
-            self.CC = np.load(self.red_matrices_folder + "red_A_pd.npy")
+            self.CC = np.load(self.red_matrices_folder + "red_A_dp.npy")
         if not self.CL.size: # avoid loading multiple times
             self.CL = np.load(self.red_matrices_folder + "red_S.npy")
         if not self.LL.size: # avoid loading multiple times
@@ -269,6 +276,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     
     ## Return the alpha_lower bound.
     def get_alpha_lb(self):
+        self.primal_problem.setmu(self.mu)
         return self.primal_problem.get_alpha_lb()
     
     ## Set theta multiplicative terms of the affine expansion of a.

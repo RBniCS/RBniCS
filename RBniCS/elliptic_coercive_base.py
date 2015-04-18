@@ -112,6 +112,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
             uN = assembled_red_F/assembled_red_A
         else:
             uN = np.linalg.solve(assembled_red_A, assembled_red_F)
+            uN = uN.reshape(-1, 1) # as column vector
         self.uN = uN
         
     ## Assemble the reduced affine expansion (matrix)

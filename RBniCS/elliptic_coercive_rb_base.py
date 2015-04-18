@@ -77,8 +77,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     # Perform an online evaluation of the (compliant) output
     def online_output(self):
         N = self.uN.size
+        self.theta_f = self.compute_theta_f()
         assembled_red_F = self.aff_assemble_red_vector(self.red_F, self.theta_f, N)
-        self.sN = np.dot(assembled_red_F, self.uN)
+        self.sN = float(np.dot(assembled_red_F, self.uN))
         
     ## Return an error bound for the current solution
     def get_delta(self):
