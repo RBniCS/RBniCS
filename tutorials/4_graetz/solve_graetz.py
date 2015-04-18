@@ -311,8 +311,6 @@ class SCM_Graetz(SCM):
         # Good guesses to help convergence of bounding box
         self.guess_bounding_box_minimum = (1.e-5, 1.e-5, 1.e-5, 1.e-5)
         self.guess_bounding_box_maximum = (1., 1., 1., 1.)
-        
-        self.M_p = 0
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
