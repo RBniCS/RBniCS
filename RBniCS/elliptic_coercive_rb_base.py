@@ -123,7 +123,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             for un in uN:
                 for qf in range(Qf):
                     for qa in range(Qa):
-                        eps2 += 2.0* theta_f[qf]*theta_a[qa]*un*CL[n][qf,qa]
+                        eps2 += 2.0* theta_f[qf]*theta_a[qa]*un*CL[n,qf,qa]
                 n += 1
 
             n = 0
