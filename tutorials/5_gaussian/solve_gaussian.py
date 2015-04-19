@@ -35,7 +35,6 @@ class Gaussian(EllipticCoerciveRBBase):
     ## Default initialization of members
     def __init__(self, V, subd, bound):
         bc_list = [
-            DirichletBC(V, 0.0, bound, 0),
             DirichletBC(V, 0.0, bound, 1),
             DirichletBC(V, 0.0, bound, 2),
             DirichletBC(V, 0.0, bound, 3)
@@ -101,8 +100,8 @@ class Gaussian(EllipticCoerciveRBBase):
     
     ## Set theta multiplicative terms of the affine expansion of f.
     def compute_theta_f(self):
-        EIM_obj.setmu(self.mu)
-        return EIM_obj.compute_interpolated_theta()
+        self.EIM_obj.setmu(self.mu)
+        return self.EIM_obj.compute_interpolated_theta()
     
     ## Set matrices resulting from the truth discretization of a.
     def assemble_truth_a(self):
@@ -113,8 +112,8 @@ class Gaussian(EllipticCoerciveRBBase):
         v = self.v
         dx = self.dx
         # Call EIM
-        EIM_obj.setmu(self.mu)
-        interpolated_gaussian = assemble_mu_independent_interpolated_function()
+        self.EIM_obj.setmu(self.mu)
+        interpolated_gaussian = self.EIM_obj.assemble_mu_independent_interpolated_function()
         # Assemble
         all_F = ()
         for q in range(len(interpolated_gaussian)):
@@ -135,7 +134,7 @@ class Gaussian(EllipticCoerciveRBBase):
         # Perform first the EIM offline phase, ...
         self.EIM_obj.offline()
         # ..., and then call the parent method.
-        EllipticCoerciveRBBase.offline()
+        EllipticCoerciveRBBase.offline(self)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ###########################
@@ -169,7 +168,7 @@ gaussian.offline()
 
 # 7. Perform an online solve
 online_mu = (0.3,-1.0)
-graetz.setmu(online_mu)
+gaussian.setmu(online_mu)
 gaussian.online_solve()
 
 # 8. Perform an error analysis

@@ -28,6 +28,7 @@ import os # for path and makedir
 import shutil # for rm
 import glpk # for LB computation
 import sys # for sys.float_info.max
+import random # to randomize selection in case of equal error bound
 from gram_schmidt import *
 from parametrized_problem import *
 
@@ -91,7 +92,7 @@ class EIM(ParametrizedProblem):
     #           Overridden to resize the interpolation matrix
     def setNmax(self, nmax):
         self.Nmax = nmax
-        self.interpolation_matrix = np.matrix(np.zeros((nmax, nmax)))
+        self.interpolation_matrix = np.matrix(np.zeros((nmax + 1, nmax + 1)))
     
     #  @}
     ########################### end - SETTERS - end ########################### 
@@ -122,7 +123,6 @@ class EIM(ParametrizedProblem):
     ## Return an error bound for the current solution
     def get_delta(self):
         N = self.interpolation_coefficients.size(0)
-        print "N = ", N # TODO
         
         # Exact function evaluation at the next point
         f_next_point = self.evaluate_parametrized_function_at_mu_and_x(self.mu, self.interpolation_points[N])
@@ -134,7 +134,8 @@ class EIM(ParametrizedProblem):
         
     ## Call online_solve and then convert the result of online solve from numpy to a tuple
     def compute_interpolated_theta(self):
-        return tuple(self.online_solve())
+        self.online_solve()
+        return tuple(self.interpolation_coefficients)
         
     ## Evaluate the parametrized function f(x; mu)
     def evaluate_parametrized_function_at_mu_and_x(self, mu, x):
@@ -214,7 +215,7 @@ class EIM(ParametrizedProblem):
             print "update interpolation matrix"
             self.update_interpolation_matrix()
             
-            if self.N < self.Nmax:
+            if self.N < self.Nmax + 1:
                 print "find next mu"
                 self.greedy()
             else:
@@ -248,16 +249,17 @@ class EIM(ParametrizedProblem):
         # self.snap now contains the exact function evaluation (loaded by truth solve)
         # Compute the error (difference with the eim approximation)
         for n in range(self.N):
-            self.snap.vector()[:] -= self.interpolation_coefficients[n]*self.Z[:, n]
+            for d in range(self.snap.vector().size()):
+                self.snap.vector()[d] = float(self.snap.vector()[d] - self.interpolation_coefficients[n]*self.Z[d, n])
         
         # Locate the vertex of the mesh where the error is maximum
-        maximum_error = -1.0
+        maximum_error = 0.0
         maximum_point = None
         maximum_point_dof = None
         for dof_index in range(self.V.dim()):
             vertex_index = self.dof_to_vertex_map[dof_index]
-            err = abs(self.snap.vector()[dof_index])
-            if (err > maximum_error):
+            err = self.snap.vector()[dof_index]
+            if (abs(err) > abs(maximum_error) or (abs(err) == abs(maximum_error) and random.random() >= 0.5)):
                 maximum_error = err
                 maximum_point = self.V.mesh().coordinates()[vertex_index]
                 maximum_point_dof = dof_index
@@ -283,12 +285,6 @@ class EIM(ParametrizedProblem):
     def update_interpolation_matrix(self):
         for j in range(self.N):
             self.interpolation_matrix[self.N - 1, j] = self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[self.N - 1])
-        # TODO
-        for i in range(self.N):
-            for j in range(self.N):
-                print self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[i]),
-            print ""
-        # end TODO
             
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
@@ -307,10 +303,11 @@ class EIM(ParametrizedProblem):
             
             # ... and compute the difference
             for n in range(self.N):
-                self.snap.vector()[:] -= self.interpolation_coefficients[n]*self.Z[:, n]
+                for d in range(self.snap.vector().size()):
+                    self.snap.vector()[d] = float(self.snap.vector()[d] - self.interpolation_coefficients[n]*self.Z[d, n])
             
             # Compute the maximum error
-            err = self.snap.vector().max()
+            err = self.snap.vector().norm("linf")
             
             if (err > err_max):
                 err_max = err
