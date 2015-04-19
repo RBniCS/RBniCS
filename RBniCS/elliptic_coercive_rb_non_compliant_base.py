@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import numpy as np
 import os # for path and makedir
 import shutil # for rm
 import sys # for exit
@@ -117,9 +118,16 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         assembled_red_F_d = self.aff_assemble_red_vector(self.red_F_d, self.theta_f, N)
         self.sN -= float(np.dot(assembled_red_F_d, self.dual_problem.uN)) - float(self.dual_problem.uN.T*(assembled_red_A_dp*self.uN))
     
+    ## Return an error bound for the current solution. Overridden to be computed in the V-norm
+    #  since the energy norm is not defined generally in the non compliant case
+    def get_delta(self):
+        eps2 = self.get_eps2()
+        alpha = self.get_alpha_lb()
+        return np.sqrt(np.abs(eps2))/alpha
+    
     ## Return an error bound for the current output
     def get_delta_output(self):
-        return self.get_delta()*self.dual_problem.get_delta()
+        return EllipticCoerciveRBBase.get_delta(self)*self.dual_problem.get_delta()
         
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
@@ -189,6 +197,27 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # for the current value of mu. Overridden to compute the error in the V-norm
+    def compute_error(self, N=None, skip_truth_solve=False):
+        if not skip_truth_solve:
+            self.truth_solve()
+            self.truth_output()
+        self.online_solve(N, False)
+        self.online_output()
+        self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
+        error_u = self.compute_scalar(self.er, self.er, self.S) # norm of the error
+        error_u = np.sqrt(error_u)
+        error_s = abs(self.s - self.sN)
+        return (error_u, error_s)
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
     
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods
