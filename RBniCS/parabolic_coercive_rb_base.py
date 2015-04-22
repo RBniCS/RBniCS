@@ -24,6 +24,7 @@
 
 from parabolic_coercive_base import *
 from elliptic_coercive_rb_base import *
+from proper_orthogonal_decomposition import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoerciveBase
@@ -42,6 +43,10 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         # Call the parent initialization
         ParabolicCoerciveBase.__init__(self, V, bc_list)
         EllipticCoerciveRBBase.__init__(self, V, bc_list)
+
+        self.POD = ProperOrthogonalDecomposition()
+        self.M1 = 2
+        self.M2 = 2
         
         # CHECK il resto del metodo
         # $$ ONLINE DATA STRUCTURES $$ #
@@ -192,27 +197,20 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         
     ## Update basis matrix
     def update_basis_matrix(self):
-        # TODO il resto del metodo
+        # CHECK il resto del metodo
+        self.POD.clear()
+        self.POD.store_multiple_snapshots(self.all_snap)
+        (zz, n) = self.POD.apply(self.S, self.pp_folder + "eigs", self.M1, self.tol)
         if self.N == 0:
-            self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
-            self.Z /= np.sqrt(np.dot(self.Z[:, 0], self.S*self.Z[:, 0]))
+            self.Z = zz
+            self.N += n
     
         else:
-            self.Z = np.hstack((self.Z, self.snap.vector())) # add new basis functions as column vectors
-            self.Z = self.GS()
-        self.N += 1
+            Z = np.hstack((self.Z,zz))
+            self.POD.clear()
+            self.POD.store_multiple_snapshots(Z)
+            (self.Z, self.N) = self.POD.apply(self.S, self.pp_folder + "eigs", self.N+self.M2, self.tol)
     
-    ## Perform Gram Schmidt orthonormalization
-    def GS(self):
-    # TODO il resto del metodo, ma non serve
-        basis = self.Z
-        last = basis.shape[1]-1
-        b = basis[:, last].copy()
-        for i in range(last):
-            proj = np.dot(np.dot(b,self.S*basis[:, i])/np.dot(basis[:, i],self.S*basis[:, i]),basis[:, i])
-            b = b - proj 
-        basis[:, last] = b/np.sqrt(np.dot(b,self.S*b))
-        return basis
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
