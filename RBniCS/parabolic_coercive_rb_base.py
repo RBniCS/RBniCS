@@ -75,12 +75,19 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     ## Return an error bound for the current solution
     def get_delta(self):
         # TODO il resto del metodo
-        eps2 = self.get_eps2_at_last_time_step()
         alpha = self.get_alpha_lb()
-        return np.sqrt(np.abs(eps2)/alpha)
+        all_eps2 = self.get_all_eps2()
+        delta = np.sqrt(np.abs(np.sum(all_eps2))*self.dt/alpha)
+        return delta
     
+    def get_all_eps2(self):
+        all_eps2 = np.zeros(len(self.all_times))
+        for i in range(len(self.all_times)):
+            all_eps2[i] += get_eps2(i)
+        return all_eps2
+
     ## Return the numerator of the error bound for the current solution
-    def get_eps2_at_last_time_step (self):
+    def get_eps2(self, tt):
         # CHECK il resto del metodo
         theta_m = self.theta_m
         theta_a = self.theta_a
@@ -88,8 +95,12 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         Qf = self.Qf
         Qa = self.Qa
         Qm = self.Qm
-        uN = self.all_uN[:, len(self.all_times)-1]
-        uN_k = self.all_uN[:, len(self.all_times)-2]
+
+        uN = self.all_uN[:, tt]
+        if (tt == 0):
+            uN_k = 0.0
+        else:
+            uN_k = self.all_uN[:, tt-1]
         
         eps2 = 0.0
         
