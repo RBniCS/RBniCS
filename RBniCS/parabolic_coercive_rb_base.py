@@ -74,13 +74,14 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     
     ## Return an error bound for the current solution
     def get_delta(self):
-        # TODO il resto del metodo
+        # CHECK il resto del metodo
         alpha = self.get_alpha_lb()
         all_eps2 = self.get_all_eps2()
         delta = np.sqrt(np.abs(np.sum(all_eps2))*self.dt/alpha)
         return delta
     
     def get_all_eps2(self):
+        # CHECK
         all_eps2 = np.zeros(len(self.all_times))
         for i in range(len(self.all_times)):
             all_eps2[i] += get_eps2(i)
@@ -224,7 +225,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
-    # TODO il resto del metodo, ma non serve?
+    # CHECK il resto del metodo, ma non serve?
         delta_max = -1.0
         munew = None
         for mu in self.xi_train:
