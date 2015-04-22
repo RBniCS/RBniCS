@@ -56,15 +56,6 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         self.lnq = []
         self.mnq = []
         
-        # $$ OFFLINE DATA STRUCTURES $$ #
-        # 9. I/O
-        self.name = "RB "
-        self.snap_folder = "snapshots/"
-        self.basis_folder = "basis/"
-        self.dual_folder = "dual/"
-        self.red_matrices_folder = "red_matr/"
-        self.pp_folder = "pp/" # post processing
-        
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
     
@@ -84,7 +75,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         # CHECK
         all_eps2 = np.zeros(len(self.all_times))
         for i in range(len(self.all_times)):
-            all_eps2[i] += get_eps2(i)
+            all_eps2[i] += self.get_eps2(i)
         return all_eps2
 
     ## Return the numerator of the error bound for the current solution
@@ -412,28 +403,6 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                 m = np.array(riesz.vector()).reshape(-1, 1) # as column vector
                 i = 1
         return m
-    
-    ## Compute the dual of a
-    def compute_a_dual(self, RBu):
-        riesz = Function(self.V)
-        i = 0
-        for A in self.truth_A:
-            solve (self.S,riesz.vector(), A*RBu.vector()*(-1.0))
-            if i != 0:
-                l = np.hstack((l,riesz.vector()))
-            else:
-                l = np.array(riesz.vector()).reshape(-1, 1) # as column vector
-                i = 1
-        return l
-    
-    ## Compute the dual of f
-    def compute_f_dual(self):
-        riesz = Function(self.V)
-        c = ()
-        for F in self.truth_F:
-            solve (self.S, riesz.vector(), F)
-            c += (riesz.copy(True),)
-        return c
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

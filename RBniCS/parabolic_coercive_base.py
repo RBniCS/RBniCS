@@ -95,15 +95,15 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             self.red_solve(N)
         
         # Now obtain the FE functions corresponding to the reduced order solutions
-        if with_plot == True:
-            for k in range(len(self.all_times)):
-                sol = self.Z[:, 0]*self.all_uN[0, k]
-                i=1
-                for un in self.all_uN[1:, k]:
-                    sol += self.Z[:, i]*un
-                    i+=1
-                self.red = np.hstack((self.red, sol.vector())) # add new solutions as column vectors
-            plot(self.red[:, k], title = "Reduced solution. mu = " + str(self.mu) + ", t = " + str(k*dt), interactive = True)
+        for k in range(len(self.all_times)):
+            sol = self.Z[:, 0]*self.all_uN[0, k]
+            i=1
+            for un in self.all_uN[1:, k]:
+                sol += self.Z[:, i]*un
+                i+=1
+            self.all_red = np.hstack((self.all_red, sol.vector())) # add new solutions as column vectors
+            if with_plot == True:
+                plot(self.all_red[:, k], title = "Reduced solution. mu = " + str(self.mu) + ", t = " + str(k*dt), interactive = True)
     
     # Perform an online solve (internal)
     def red_solve(self, N):

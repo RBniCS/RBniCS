@@ -61,7 +61,7 @@ class ParabolicCoercivePODBase(ParabolicCoerciveBase,EllipticCoercivePODBase):
 
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
-        self.POD.store_multiple_snapshots(self.snap)
+        self.POD.store_multiple_snapshots(self.all_snap)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
