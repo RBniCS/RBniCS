@@ -43,7 +43,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         ParabolicCoerciveBase.__init__(self, V, bc_list)
         EllipticCoerciveRBBase.__init__(self, V, bc_list)
         
-        # TODO il resto del metodo
+        # CHECK il resto del metodo
         # $$ ONLINE DATA STRUCTURES $$ #
         # 4. Residual terms
         self.Cf = []
@@ -75,18 +75,21 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     ## Return an error bound for the current solution
     def get_delta(self):
         # TODO il resto del metodo
-        eps2 = self.get_eps2()
+        eps2 = self.get_eps2_at_last_time_step()
         alpha = self.get_alpha_lb()
         return np.sqrt(np.abs(eps2)/alpha)
     
     ## Return the numerator of the error bound for the current solution
-    def get_eps2 (self):
-        # TODO il resto del metodo
+    def get_eps2_at_last_time_step (self):
+        # CHECK il resto del metodo
+        theta_m = self.theta_m
         theta_a = self.theta_a
         theta_f = self.theta_f
         Qf = self.Qf
         Qa = self.Qa
-        uN = self.uN
+        Qm = self.Qm
+        uN = self.all_uN[:, len(self.all_times)-1]
+        uN_k = self.all_uN[:, len(self.all_times)-2]
         
         eps2 = 0.0
         
@@ -100,17 +103,38 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         
         CL = self.CL
         LL = self.LL
+        LM = self.LM
+        CM = self.CM
+        MM = self.MM
+
         if self.N == 1:
+    
+            #LL
+            for qa in range(Qa):
+                for qap in range(Qa):
+                    eps2 += theta_a[qa]*uN*uN*theta_a[qap]*LL[0,0,qa,qap]
+            #CL
             for qf in range(Qf):
                 for qa in range(Qa):
                     eps2 += 2.0*theta_f[qf]*uN*theta_a[qa]*CL[0][qf,qa]
     
-    
-            for qa in range(Qa):
-                for qap in range(Qa):
-                    eps2 += theta_a[qa]*uN*uN*theta_a[qap]*LL[0,0,qa,qap]
+            #CM
+            for qf in range(Qf):
+                for qm in range(Qm):
+                    eps2 += (2.0/self.dt)*theta_f[qf]*(uN-uN_k)*theta_m[qm]*CM[0][qf,qm]
+
+            #LM
+            for qm in range(Qm):
+                for qa in range(Qa):
+                    eps2 += (2.0/self.dt)*theta_a[qa]*(uN-uN_k)*uN*theta_m[qm]*LM[0,0,qm,qa]
+
+            #MM
+            for qm in range(Qm):
+                for qmp in range(Qmp):
+                    eps2 += (1.0/(self.dt**2))*(uN-uN_k)*(uN-uN_k)*theta_m[qm]*theta_m[qmp]*MM[0,0,qm,qmp]
             
         else:
+            #CL
             n=0
             for un in self.uN:
                 for qf in range(Qf):
@@ -118,6 +142,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                         eps2 += 2.0* theta_f[qf]*theta_a[qa]*un*CL[n][qf,qa]
                 n += 1
 
+            #LL
             n = 0
             for un in uN:
                 for qa in range(Qa):
@@ -127,6 +152,26 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                             eps2 += theta_a[qa]*un*theta_a[qap]*unp*LL[n,np,qa,qap]
                         np += 1
                 n += 1
+
+            #CM
+            for i in range(self.N):
+                for qf in range(Qf):
+                    for qm in range(Qm):
+                        eps2 += (2.0/self.dt)*(uN[i]-uN_k[i])*theta_f[qf]*theta_m[qm]*CM[i][qf,qm]
+
+            #LM
+            for i in range(self.N):
+                for j in range(self.N):
+                    for qm in range(Qm):
+                        for qa in range(Qa):
+                            eps2 += (2.0/self.dt)*(uN[i]-uN_k[i])*uN[j]*theta_m[qm]*theta_a[qa]*LM[i,j,qm,qa]
+
+            #MM
+            for i in range(self.N):
+                for j in range(self.N):
+                    for qm in range(Qm):
+                        for qmp in range(Qmp):
+                            eps2 += (1.0/(self.dt**2))*(uN[i]-uN_k[i])*(uN[j]-uN_k[j])*theta_m[qm]*theta_m[qmp]*MM[i,j,qm,qa]
         
         return eps2
         
