@@ -47,10 +47,14 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         # $$ ONLINE DATA STRUCTURES $$ #
         # 4. Residual terms
         self.Cf = []
-        self.CC = []
-        self.CL = []
-        self.LL = []
+        self.CC = [] # C_ff
+        self.CL = [] # C_fa
+        self.LL = [] # C_aa
+        self.MM = [] # C_mm
+        self.CM = [] # C_fm
+        self.LM = [] # C_am
         self.lnq = []
+        self.mnq = []
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 9. I/O
@@ -190,12 +194,13 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         
     ## Compute dual terms
     def compute_dual_terms(self):
-    # TODO il resto del metodo
+    # CHECK il resto del metodo
         N = self.N
         RBu = Function(self.V)
         
         Qf = self.Qf
         Qa = self.Qa
+        Qm = self.Qm
         if self.N == 1 :
             
             # CC (does not depend on N, so we compute it only once)
@@ -237,8 +242,44 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                     if qa != qap:
                         self.LL[0,0,qap,qa] = self.LL[0,0,qa,qap]
             np.save(self.dual_folder + "LL", self.LL)
+
+
+            self.mnq = (self.compute_m_dual(RBu),)
+
+            lm = Function(self.V)
+            lmp = Function(self.V)
+            self.CM = np.zeros((Qf,Qm))
+
+            # CM
+            for qf in range(0,Qf):
+                for qm in range(0,Qm):
+                    lm.vector()[:] = self.mnq[0][:, qm]
+                    self.CM[qf,qm] = self.compute_scalar(lm,self.Cf[qf],self.S)
+            self.CM = (self.CM,)
+            np.save(self.dual_folder + "CM", self.CM)
+
+            # MM
+            self.MM = np.zeros((self.Nmax,self.Nmax,self.Qm,self.Qm))
+            for qm in range(0,Qm):
+                lm.vector()[:] = self.mnq[0][:, qm]
+                for qmp in range(qm,Qm):
+                    lmp.vector()[:] = self.mnq[0][:, qmp]
+                    self.MM[0,0,qm,qmp] = self.compute_scalar(lm,lmp,self.S)
+                    if qm != qmp:
+                        self.MM[0,0,qmp,qm] = self.MM[0,0,qm,qmp]
+            np.save(self.dual_folder + "MM", self.MM)
+
+            # LM
+            self.LM = np.zeros((self.Nmax,self.Nmax,self.Qm,self.Qa))
+            for qm in range(0,Qm):
+                lm.vector()[:] = self.mnq[0][:, qm]
+                for qa in range(0,Qa):
+                    la.vector()[:] = self.lnq[0][:, qa]
+                    self.LM[0,0,qm,qa] = self.compute_scalar(lm,la,self.S)
+            np.save(self.dual_folder + "LM", self.LM)
         else:
-            RBu.vector()[:] = self.Z[:, N-1]
+            n = self.N-1
+            RBu.vector()[:] = self.Z[:, n]
             self.lnq += (self.compute_a_dual(RBu),)
             la = Function(self.V)
             lap = Function(self.V)
@@ -247,13 +288,12 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
             # CL
             for qf in range(0,Qf):
                 for qa in range(0,Qa):
-                    la.vector()[:] = self.lnq[N-1][:, qa]
+                    la.vector()[:] = self.lnq[n][:, qa]
                     cl[qf,qa] = self.compute_scalar(self.Cf[qf],la,self.S)
             self.CL += (cl,)
             np.save(self.dual_folder + "CL", self.CL)
     
             # LL
-            n = self.N-1
             for qa in range(0,Qa):
                 la.vector()[:] = self.lnq[n][:, qa]
                 for nn in range(0,N):
@@ -263,6 +303,58 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                         if n != nn:
                             self.LL[nn,n,qa,qap] = self.LL[n,nn,qa,qap]
             np.save(self.dual_folder + "LL", self.LL)
+
+            self.mnq += (self.compute_m_dual(RBu),)
+
+            lm = Function(self.V)
+            lmp = Function(self.V)
+            self.CM = np.zeros((Qf,Qm))
+
+            cm = np.zeros((Qf,Qm))
+
+            # CM
+            for qf in range(0,Qf):
+                for qm in range(0,Qm):
+                    lm.vector()[:] = self.mnq[n][:, qm]
+                    cm[qf,qm] = self.compute_scalar(self.Cf[qf],lm,self.S)
+            self.CM += (cm,)
+            np.save(self.dual_folder + "CM", self.CM)
+    
+            # MM
+            for qm in range(0,Qm):
+                lm.vector()[:] = self.mnq[n][:, qm]
+                for nn in range(0,N):
+                    for qmp in range(0,Qm):
+                        lmp.vector()[:] = self.mnq[nn][:, qmp]
+                        self.MM[n,nn,qm,qmp] = self.compute_scalar(lm,lmp,self.S)
+                        if n != nn:
+                            self.MM[nn,n,qm,qmp] = self.MM[n,nn,qm,qmp]
+            np.save(self.dual_folder + "MM", self.MM)
+    
+            # LM
+            for qm in range(0,Qm):
+                lm.vector()[:] = self.mnq[n][:, qm]
+                for nn in range(0,N):
+                    for qa in range(0,Qa):
+                        la.vector()[:] = self.lnq[nn][:, qa]
+                        self.LM[n,nn,qm,qa] = self.compute_scalar(lm,la,self.S)
+                        if n != nn:
+                            self.LM[nn,n,qm,qa] = self.LM[n,nn,qm,qa]
+            np.save(self.dual_folder + "LM", self.LM)
+
+
+    ## Compute the dual of m
+    def compute_m_dual(self, RBu):
+        riesz = Function(self.V)
+        i = 0
+        for M in self.truth_M:
+            solve (self.S,riesz.vector(), M*RBu.vector()*(-1.0))
+            if i != 0:
+                m = np.hstack((m,riesz.vector()))
+            else:
+                m = np.array(riesz.vector()).reshape(-1, 1) # as column vector
+                i = 1
+        return m
     
     ## Compute the dual of a
     def compute_a_dual(self, RBu):
