@@ -87,7 +87,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     #  @{
     
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-    def online_solve(self, N=None, with_plot=True):
+    def online_solve(self, N=None, with_plot=False):
         if N is None:
             N = self.N
         self.load_red_matrices()
@@ -96,24 +96,32 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         
         # Set the initial condition
         self.t = 0.
+        sol = self.Z[:, 0]*self.all_uN[0, 0]*0.0
+        self.all_red = sol
         
         # Iterate in time
         for t in self.all_times[1:]:
             self.t = t
        #     print "t = " + str(self.t)
             self.red_solve(N)
-        
-        # Now obtain the FE functions corresponding to the reduced order solutions
-        for k in range(len(self.all_times)):
-            sol = self.Z[:, 0]*self.all_uN[0, k]
-            i=1
-            for un in self.all_uN[1:, k]:
-                sol += self.Z[:, i]*un
-                i+=1
-            self.all_red = np.hstack((self.all_red, sol.vector())) # add new solutions as column vectors
-            if with_plot == True:
-                plot(self.all_red[:, k], title = "Reduced solution. mu = " + str(self.mu) + ", t = " + str(k*dt), interactive = True)
+            self.all_red = np.hstack((self.all_red, self.get_fe_functions_at_time(t)))
+
+        # Now obtain the FE function corresponding to the reduced order solutions
+        if with_plot == True:
+            func = Function(self.V)
+            func.vector()[:] = self.get_fe_functions_at_time(t)
+            plot(func, title = "Reduced solution. mu = " + str(self.mu) + ", t = " + str(t*self.dt), interactive = True)
     
+    def get_fe_functions_at_time(self,tt):
+        sol = self.Z[:, 0]*self.all_uN[0,tt]
+        i = 1
+        for un in self.all_uN[1:,tt]:
+            sol += self.Z[:,i]*np.float(un)
+            i += 1
+        func = Function(self.V)
+        func.vector()[:] = sol
+        return sol
+
     # Perform an online solve (internal)
     def red_solve(self, N):
         dt = self.dt
