@@ -356,7 +356,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
-        if N is None:
+        print "############################## run = ", run, " ######################################"
+        if Nu is None:
             N = self.N
             
         print "=============================================================="
@@ -372,7 +373,6 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         effectivity_s = np.zeros((N, len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
-            print "############################## run = ", run, " ######################################"
             
             self.setmu(self.xi_test[run])
             
