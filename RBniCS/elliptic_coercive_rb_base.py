@@ -360,6 +360,12 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         if Nu is None:
             N = self.N
             
+        self.truth_A = self.assemble_truth_a()
+        self.apply_bc_to_matrix_expansion(self.truth_A)
+        self.truth_F = self.assemble_truth_f()
+        self.apply_bc_to_vector_expansion(self.truth_F)
+        self.Qa = len(self.truth_A)
+        self.Qf = len(self.truth_F)
         print "=============================================================="
         print "=             Error analysis begins                          ="
         print "=============================================================="
