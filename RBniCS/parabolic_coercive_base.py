@@ -146,7 +146,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
 
-    def offline_solve(self):
+    def offline(self):
         print "=============================================================="
         print "=             Offline phase begins                           ="
         print "=============================================================="
@@ -175,7 +175,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             print "truth solve for mu = ", self.mu
             self.truth_solve()
             
-            print "update basis matrix"
+            print "update basis matrix" 
             self.update_basis_matrix()
             
             print "build reduced matrices"

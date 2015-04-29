@@ -69,7 +69,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     #  @{
     
     ## Return an error bound for the current solution
-    def get_delta(self):
+    def get_delta(self): 
         # CHECK il resto del metodo
         alpha = self.get_alpha_lb()
         all_eps2 = self.get_all_eps2()
@@ -193,7 +193,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     ## Perform the offline phase of the reduced order model
         
     ## Update basis matrix
-    def update_basis_matrix(self):
+    def update_basis_matrix(self): # TODO
         # CHECK il resto del metodo
         self.POD.clear()
         self.POD.store_multiple_snapshots(self.all_snap)
