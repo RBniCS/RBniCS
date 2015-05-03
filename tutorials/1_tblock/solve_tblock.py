@@ -124,7 +124,7 @@ tb.setNmax(4)
 # 6. Perform the offline phase
 first_mu = (0.5,1.0)
 tb.setmu(first_mu)
-#tb.offline()
+tb.offline()
 
 # 7. Perform an online solve
 online_mu = (8.,-1.0)
