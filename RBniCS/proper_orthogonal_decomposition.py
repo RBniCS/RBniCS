@@ -58,14 +58,14 @@ class ProperOrthogonalDecomposition():
         if self.snapshot_matrix.size == 0: # for the first snapshot
             self.snapshot_matrix = np.array(snap.vector()).reshape(-1, 1) # as column vector
         else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, snap.vector())) # add new snapshots as column vectors
+            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(snap.vector()).reshape(-1, 1))) # add new snapshots as column vectors
             
     ## Store a multiple snapshots in the snapshot matrix
     def store_multiple_snapshots(self, snap):
         if self.snapshot_matrix.size == 0: # for the first snapshot
             self.snapshot_matrix = np.array(snap) # as column vectors
         else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, snap)) # add new snapshots as column vectors
+            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(snap))) # add new snapshots as column vectors
             
     ## Perform POD on the snapshots previously computed, and store the first
     #  POD modes in the basis functions matrix.

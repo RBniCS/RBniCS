@@ -128,7 +128,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         np.save(self.basis_folder + "basis", self.Z)
         current_basis = Function(self.V)
         for b in range(N):
-            current_basis.vector()[:] = Z[:, b]
+            current_basis.vector()[:] = np.array(Z[:, b], dtype=np.float)
             self.export_basis(current_basis, self.basis_folder + "basis_" + str(b))
         return (Z, N)
         

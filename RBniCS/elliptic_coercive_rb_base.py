@@ -204,7 +204,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
             self.Z /= np.sqrt(np.dot(self.Z[:, 0], self.S*self.Z[:, 0]))
         else:
-            self.Z = np.hstack((self.Z, self.snap.vector())) # add new basis functions as column vectors
+            self.Z = np.hstack((self.Z, np.array(self.snap.vector()).reshape(-1, 1))) # add new basis functions as column vectors
             self.Z = self.GS.apply(self.Z, self.S)
         np.save(self.basis_folder + "basis", self.Z)
         current_basis = Function(self.V)
@@ -314,7 +314,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         for A in self.truth_A:
             solve (self.S,riesz.vector(), A*RBu.vector()*(-1.0))
             if i != 0:
-                l = np.hstack((l,riesz.vector()))
+                l = np.hstack((l,np.array(riesz.vector()).reshape(-1, 1)))
             else:
                 l = np.array(riesz.vector()).reshape(-1, 1) # as column vector
                 i = 1

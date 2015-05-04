@@ -233,7 +233,7 @@ class EIM(ParametrizedProblem):
         if self.snapshot_matrix.size == 0: # for the first snapshot
             self.snapshot_matrix = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
         else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, self.snap.vector())) # add new snapshots as column vectors
+            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(self.snap.vector()).reshape(-1, 1))) # add new snapshots as column vectors
             
     ## The truth_solve method just returns the precomputed snapshot
     def load_snapshot(self):
@@ -275,7 +275,7 @@ class EIM(ParametrizedProblem):
         if self.N == 0:
             self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
         else:
-            self.Z = np.hstack((self.Z, self.snap.vector())) # add new basis functions as column vectors
+            self.Z = np.hstack((self.Z, np.array(self.snap.vector()).reshape(-1, 1))) # add new basis functions as column vectors
         np.save(self.basis_folder + "basis", self.Z)
         self.export_basis(self.snap, self.basis_folder + "basis_" + str(self.N))
         self.N += 1
