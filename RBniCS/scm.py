@@ -354,16 +354,16 @@ class SCM(ParametrizedProblem):
         
         # Assemble condensed matrices
         if not self.S__condensed:
-            self.S__condensed = self.clear_constrained_dofs(self.parametrized_problem.S.copy(), 1.)
+            self.S__condensed = self.clear_constrained_dofs(self.parametrized_problem.S, 1.)
         if not self.truth_A__condensed_for_minimum_eigenvalue:
             for qa in range(self.parametrized_problem.Qa):
                 self.truth_A__condensed_for_minimum_eigenvalue +=(
-                    self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa].copy(), self.invalid_minimum_eigenvalue), 
+                    self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa], self.invalid_minimum_eigenvalue), 
                 )
         if not self.truth_A__condensed_for_maximum_eigenvalue:
             for qa in range(self.parametrized_problem.Qa):
                 self.truth_A__condensed_for_maximum_eigenvalue +=(
-                    self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa].copy(), self.invalid_maximum_eigenvalue), 
+                    self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa], self.invalid_maximum_eigenvalue), 
                 )
             
     # Compute the bounding box \mathcal{B}
@@ -501,10 +501,11 @@ class SCM(ParametrizedProblem):
         np.save(self.red_matrices_folder + "alpha_LB_on_xi_train", self.alpha_LB_on_xi_train)
     
     # Clear constrained dofs
-    def clear_constrained_dofs(self, M, diag_value):
+    def clear_constrained_dofs(self, M_in, diag_value):
+        M = M_in.copy()
         if self.bc_list != None:
-            fake_vector = inner(1., self.parametrized_problem.v)*self.parametrized_problem.dx
-            FAKE_VECTOR = assemble(fake_vector)
+            fake_vector = Function(self.parametrized_problem.V)
+            FAKE_VECTOR = fake_vector.vector()
             for bc in self.bc_list:
                 bc.zero(M)
                 bc.zero_columns(M, FAKE_VECTOR, diag_value)
