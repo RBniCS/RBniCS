@@ -242,7 +242,7 @@ class EIM(ParametrizedProblem):
         if mu != self.xi_train[mu_index]:
             # There is something wrong if we are here...
             sys.exit("Should never arrive here")
-        self.snap.vector()[:] = self.snapshot_matrix[:, mu_index]
+        self.snap.vector()[:] = np.array(self.snapshot_matrix[:, mu_index], dtype=np.float)
     
     # Compute the interpolation error and its maximum location
     def compute_maximum_interpolation_error(self):
