@@ -333,7 +333,7 @@ class EIM(ParametrizedProblem):
         output = ()
         for n in range(self.N):
             fun = Function(self.V)
-            fun.vector()[:] = self.Z[:, n]
+            fun.vector()[:] = np.array(self.Z[:, n], dtype=np.float)
             output += (fun,)
         return output
         
