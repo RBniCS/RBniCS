@@ -93,15 +93,15 @@ class Eblock(EllipticCoercivePODBase):
         v = self.v
         dx = self.dx
         # Define
-        a0 = inner(self.sigma(u), grad(v))*dx(1) +1e-15*inner(u,v)*dx
-        a1 = inner(self.sigma(u), grad(v))*dx(2) +1e-15*inner(u,v)*dx
-        a2 = inner(self.sigma(u), grad(v))*dx(3) +1e-15*inner(u,v)*dx
-        a3 = inner(self.sigma(u), grad(v))*dx(4) +1e-15*inner(u,v)*dx
-        a4 = inner(self.sigma(u), grad(v))*dx(5) +1e-15*inner(u,v)*dx
-        a5 = inner(self.sigma(u), grad(v))*dx(6) +1e-15*inner(u,v)*dx
-        a6 = inner(self.sigma(u), grad(v))*dx(7) +1e-15*inner(u,v)*dx
-        a7 = inner(self.sigma(u), grad(v))*dx(8) +1e-15*inner(u,v)*dx
-        a8 = inner(self.sigma(u), grad(v))*dx(9) +1e-15*inner(u,v)*dx
+        a0 = self.elasticity(u,v)*dx(1) +1e-15*inner(u,v)*dx
+        a1 = self.elasticity(u,v)*dx(2) +1e-15*inner(u,v)*dx
+        a2 = self.elasticity(u,v)*dx(3) +1e-15*inner(u,v)*dx
+        a3 = self.elasticity(u,v)*dx(4) +1e-15*inner(u,v)*dx
+        a4 = self.elasticity(u,v)*dx(5) +1e-15*inner(u,v)*dx
+        a5 = self.elasticity(u,v)*dx(6) +1e-15*inner(u,v)*dx
+        a6 = self.elasticity(u,v)*dx(7) +1e-15*inner(u,v)*dx
+        a7 = self.elasticity(u,v)*dx(8) +1e-15*inner(u,v)*dx
+        a8 = self.elasticity(u,v)*dx(9) +1e-15*inner(u,v)*dx
         # Assemble
         A0 = assemble(a0)
         A1 = assemble(a1)
@@ -133,11 +133,11 @@ class Eblock(EllipticCoercivePODBase):
         # Return
         return (F0,F1,F2)
     
-    ## Auxiliary function to compute the stress tensor    
-    def sigma(self, v):
+    ## Auxiliary function to compute the elasticity bilinear form    
+    def elasticity(self, u, v):
         lambda_1 = self.lambda_1
         lambda_2 = self.lambda_2
-        return 2.0*lambda_2*sym(grad(v)) + lambda_1*tr(sym(grad(v)))*Identity(v.geometric_dimension())
+        return 2.0*lambda_2*inner(sym(grad(u)),sym(grad(v))) + lambda_1*tr(sym(grad(u)))*tr(sym(grad(v)))
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
