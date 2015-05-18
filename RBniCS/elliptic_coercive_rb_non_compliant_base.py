@@ -141,7 +141,8 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     ## Perform the offline phase of the reduced order model
     def offline(self):
         self.truth_S = self.assemble_truth_s()
-        self.apply_bc_to_matrix_expansion(self.truth_S)
+        self.apply_bc_to_vector_expansion(self.truth_S)
+        self.Qs = len(self.truth_S)
         
         # Perform the offline stage of the dual problem
         self.dual_problem.offline()
@@ -222,7 +223,8 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     # over the test set
     def error_analysis(self, N=None):
         self.truth_S = self.assemble_truth_s()
-        self.apply_bc_to_matrix_expansion(self.truth_S)
+        self.apply_bc_to_vector_expansion(self.truth_S)
+        self.Qs = len(self.truth_S)
         
         # Perform the error analysis of the dual problem
         self.dual_problem.error_analysis(N)
