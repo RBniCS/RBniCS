@@ -23,11 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import numpy as np
-import os # for path and makedir
-import shutil # for rm
 import sys # for exit
-import random # to randomize selection in case of equal error bound
-from gram_schmidt import *
 from elliptic_coercive_rb_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB NON COMPLIANT BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -182,7 +178,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         for S in self.truth_S:
             S = as_backend_type(S)
             dim = S.size()
-            red_s = np.dot(self.Z.T, S.vec().getValues(range(dim)) )
+            red_s = np.dot(self.Z.T, S.vec().getValues(range(dim)))
             red_S += (red_s,)
         self.red_S = red_S
         np.save(self.red_matrices_folder + "red_S", self.red_S)
@@ -192,7 +188,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         for F in self.truth_F:
             F = as_backend_type(F)
             dim = F.size()
-            red_f_d = np.dot(self.dual_problem.Z.T, F.vec().getValues(range(dim)) )
+            red_f_d = np.dot(self.dual_problem.Z.T, F.vec().getValues(range(dim)))
             red_F_d += (red_f_d,)
         self.red_F_d = red_F_d
         np.save(self.red_matrices_folder + "red_F_d", self.red_F_d)
