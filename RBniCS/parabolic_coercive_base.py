@@ -88,9 +88,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def online_solve(self, N=None, with_plot=False):
+        self.load_red_matrices()
         if N is None:
             N = self.N
-        self.load_red_matrices()
         self.all_uN = (self.red_F[0]*0.0).reshape(-1,1)
         self.uN = (self.red_F[0]*0.0).reshape(-1,1)
         
@@ -281,7 +281,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         EllipticCoerciveBase.load_red_matrices(self)
         # Moreover, read in also the reduced matrix M
         if not self.red_M: # avoid loading multiple times
-            self.red_M = np.load(self.red_matrices_folder + "red_M.npy")
+            self.red_M = tuple(np.load(self.red_matrices_folder + "red_M.npy"))
         # TODO ne serviranno altre?
         
     ## Export snapshot in VTK format

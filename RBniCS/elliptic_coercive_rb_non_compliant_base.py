@@ -61,8 +61,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 3c. Matrices/vectors resulting from the truth discretization
-        self.truth_A = ()
-        self.truth_F = ()
+        self.truth_S = ()
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -116,7 +115,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         # Assemble correction
         assembled_red_A_dp = self.aff_assemble_red_matrix(self.red_A_dp, self.theta_a, N, N)
         assembled_red_F_d = self.aff_assemble_red_vector(self.red_F_d, self.theta_f, N)
-        self.sN -= float(np.dot(assembled_red_F_d, self.dual_problem.uN)) - float(self.dual_problem.uN.T*(assembled_red_A_dp*self.uN))
+        self.sN -= float(np.dot(assembled_red_F_d, self.dual_problem.uN)) - float(np.matrix(self.dual_problem.uN.T)*(assembled_red_A_dp*np.matrix(self.uN)))
     
     ## Return an error bound for the current solution. Overridden to be computed in the V-norm
     #  since the energy norm is not defined generally in the non compliant case
@@ -127,7 +126,10 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     
     ## Return an error bound for the current output
     def get_delta_output(self):
-        return EllipticCoerciveRBBase.get_delta(self)*self.dual_problem.get_delta()
+        primal_eps2 = self.get_eps2()
+        dual_eps2 = self.dual_problem.get_eps2()
+        alpha = self.get_alpha_lb()
+        return np.sqrt(np.abs(primal_eps2*dual_eps2))/alpha
         
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
@@ -216,6 +218,17 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         error_s = abs(self.s - self.sN)
         return (error_u, error_s)
         
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the test set
+    def error_analysis(self, N=None):
+        self.truth_S = self.assemble_truth_s()
+        self.apply_bc_to_matrix_expansion(self.truth_S)
+        
+        # Perform the error analysis of the dual problem
+        self.dual_problem.error_analysis(N)
+        # Perform the error analysis of the primal problem
+        EllipticCoerciveRBBase.error_analysis(self, N)
+        
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
     
@@ -229,12 +242,12 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         # Moreover, read also data structures related to the dual problem
         self.dual_problem.load_red_matrices()
         # ... and those related to output and output correction
-        if not self.CC.size: # avoid loading multiple times
-            self.CC = np.load(self.red_matrices_folder + "red_A_dp.npy")
-        if not self.CL.size: # avoid loading multiple times
-            self.CL = np.load(self.red_matrices_folder + "red_S.npy")
-        if not self.LL.size: # avoid loading multiple times
-            self.LL = np.load(self.red_matrices_folder + "red_F_d.npy")
+        if len(np.asarray(self.red_A_dp)) == 0: # avoid loading multiple times
+            self.red_A_dp = tuple(np.load(self.red_matrices_folder + "red_A_dp.npy"))
+        if len(np.asarray(self.red_S)) == 0: # avoid loading multiple times
+            self.red_S = tuple(np.load(self.red_matrices_folder + "red_S.npy"))
+        if len(np.asarray(self.red_F_d)) == 0: # avoid loading multiple times
+            self.red_F_d = tuple(np.load(self.red_matrices_folder + "red_F_d.npy"))
     
     #  @}
     ########################### end - I/O - end ########################### 
@@ -286,7 +299,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         EllipticCoerciveRBBase.__init__(self, primal_problem.V, primal_problem.bc_list)
         self.primal_problem = primal_problem
         
-        # Possibly copy the inner product matrix, if the primal problem has redefined id
+        # Possibly copy the inner product matrix, if the primal problem has redefined it
         self.S = self.primal_problem.S
         
         # 9. I/O
@@ -298,6 +311,52 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
+    
+    ###########################     ONLINE STAGE     ########################### 
+    ## @defgroup OnlineStage Methods related to the online stage
+    #  @{
+    
+    ## Return an error bound for the current solution. Overridden to be computed in the V-norm
+    #  since the energy norm is not defined generally in the non compliant case
+    def get_delta(self):
+        eps2 = self.get_eps2()
+        alpha = self.get_alpha_lb()
+        return np.sqrt(np.abs(eps2))/alpha
+        
+    #  @}
+    ########################### end - ONLINE STAGE - end ###########################
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # for the current value of mu. Overridden to compute the error in the V-norm
+    def compute_error(self, N=None, skip_truth_solve=False):
+        if not skip_truth_solve:
+            self.truth_solve()
+            self.truth_output()
+        self.online_solve(N, False)
+        self.online_output()
+        self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
+        error_u = self.compute_scalar(self.er, self.er, self.S) # norm of the error
+        error_u = np.sqrt(error_u)
+        error_s = abs(self.s - self.sN)
+        return (error_u, error_s)
+        
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the test set
+    def error_analysis(self, N=None):
+        # Possibly need to initialize Qa of primal, since error_analysis of dual
+        # may be performed before any primal data structures is initialized,
+        # but we may rely on the primal itself in get_alpha_lb, when querying SCM
+        self.primal_problem.theta_a = self.primal_problem.compute_theta_a()
+        self.primal_problem.Qa = len(self.primal_problem.theta_a)
+        # Call parent
+        EllipticCoerciveRBBase.error_analysis(self, N)
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
         
     ###########################     PROBLEM SPECIFIC     ########################### 
     ## @defgroup ProblemSpecific Problem specific methods

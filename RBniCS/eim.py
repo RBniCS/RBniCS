@@ -103,6 +103,7 @@ class EIM(ParametrizedProblem):
     
     # Perform an online solve.
     def online_solve(self, N=None):
+        #self.load_red_matrices() # TODO
         if N is None:
             N = self.N
         

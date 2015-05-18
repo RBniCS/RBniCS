@@ -48,12 +48,12 @@ class ParametrizedProblem:
         self.Nmax = 10
         self.tol = 1.e-15
         # 2. Parameter ranges and training set
-        self.mu_range = [()]
-        self.xi_train = [()]
+        self.mu_range = []
+        self.xi_train = []
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
         # 2. Test set
-        self.xi_test = [()]
+        self.xi_test = []
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 

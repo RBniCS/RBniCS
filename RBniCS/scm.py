@@ -90,19 +90,33 @@ class SCM(ParametrizedProblem):
     
     ## OFFLINE: set the elements in the training set \xi_train. Overridden to resize alpha_LB_on_xi_train
     def setxi_train(self, ntrain, sampling="random"):    
-        ParametrizedProblem.setxi_train(self, ntrain, sampling)
+        # Try to import from file
+        import_successful = False
+        if os.path.exists(self.red_matrices_folder + "xi_train.npy"):
+            xi_train = np.load(self.red_matrices_folder + "xi_train.npy")
+            import_successful = (len(np.asarray(xi_train)) == ntrain)
+        # If the imported xi_train has the correct dimensions, use it,
+        # to avoid problems when the offline stage is being commented out,
+        # otherwise generate a new one.
+        if import_successful == False:
+            ParametrizedProblem.setxi_train(self, ntrain, sampling)
+            # Since the online evaluation depends also on the training set, we need
+            # to save it to file. Be safe and remove the previous folder, so that
+            # if the user overwrites the training set but forgets to run the offline
+            # phase he/she will get an error
+            if os.path.exists(self.red_matrices_folder):
+                shutil.rmtree(self.red_matrices_folder)
+            os.makedirs(self.red_matrices_folder)
+            # Save the training set to file
+            np.save(self.red_matrices_folder + "xi_train", self.xi_train)
+        else:
+            # Convert to an array of tuples
+            self.xi_train = list()
+            for i in range(len(np.asarray(xi_train))):
+                self.xi_train.append(tuple(xi_train[i, :]))
+        # Properly resize related structures
         self.alpha_LB_on_xi_train = np.zeros([ntrain])
         self.complement_C_J = range(ntrain)
-        # Since the online evaluation depends also on the training set, we need
-        # to save it to file. Be safe and remove the previous folder, so that
-        # if the user overwrites the training set but forgets to run the offline
-        # phase he/she will get an error
-        if os.path.exists(self.red_matrices_folder):
-            shutil.rmtree(self.red_matrices_folder)
-        os.makedirs(self.red_matrices_folder)
-        self.B_min = np.array([]) # make sure to trigger the import for at least a variable
-        # Save the training set to file
-        np.save(self.red_matrices_folder + "xi_train", self.xi_train)
         
     #  @}
     ########################### end - SETTERS - end ########################### 
@@ -406,7 +420,7 @@ class SCM(ParametrizedProblem):
         
         # Save to file
         np.save(self.red_matrices_folder + "B_min", self.B_min)
-        np.save(self.red_matrices_folder + "B_min", self.B_max)
+        np.save(self.red_matrices_folder + "B_max", self.B_max)
     
     # Store the greedy parameter
     def update_C_J(self):
@@ -520,19 +534,20 @@ class SCM(ParametrizedProblem):
 
     ## Load reduced order data structures
     def load_red_data_structures(self):
-        if not self.B_min.size: # avoid loading multiple times
+        if len(np.asarray(self.B_min)) == 0: # avoid loading multiple times
             self.B_min = np.load(self.red_matrices_folder + "B_min.npy")
-        if not self.B_max.size: # avoid loading multiple times
+        if len(np.asarray(self.B_max)) == 0: # avoid loading multiple times
             self.B_max = np.load(self.red_matrices_folder + "B_max.npy")
-        if not self.C_J: # avoid loading multiple times
+        if len(np.asarray(self.C_J)) == 0: # avoid loading multiple times
             self.C_J = np.load(self.red_matrices_folder + "C_J.npy")
-        if not self.complement_C_J: # avoid loading multiple times
+            self.N = len(self.C_J)
+        if len(np.asarray(self.complement_C_J)) == 0: # avoid loading multiple times
             self.complement_C_J = np.load(self.red_matrices_folder + "complement_C_J.npy")
-        if not self.alpha_J: # avoid loading multiple times
+        if len(np.asarray(self.alpha_J)) == 0: # avoid loading multiple times
             self.alpha_J = np.load(self.red_matrices_folder + "alpha_J.npy")
-        if not self.alpha_LB_on_xi_train.size: # avoid loading multiple times
+        if len(np.asarray(self.alpha_LB_on_xi_train)) == 0: # avoid loading multiple times
             self.alpha_LB_on_xi_train = np.load(self.red_matrices_folder + "alpha_LB_on_xi_train.npy")
-        if not self.UB_vectors_J: # avoid loading multiple times
+        if len(np.asarray(self.UB_vectors_J)) == 0: # avoid loading multiple times
             self.UB_vectors_J = np.load(self.red_matrices_folder + "UB_vectors_J.npy")
         if not self.M_e: # avoid loading multiple times
             self.M_e = np.load(self.red_matrices_folder + "M_e.npy")
@@ -540,7 +555,7 @@ class SCM(ParametrizedProblem):
         if not self.M_p: # avoid loading multiple times
             self.M_p = np.load(self.red_matrices_folder + "M_p.npy")
             self.M_p = int(self.M_p)
-        if not self.xi_train: # avoid loading multiple times
+        if len(np.asarray(self.xi_train)) == 0: # avoid loading multiple times
             self.xi_train = np.load(self.red_matrices_folder + "xi_train.npy")
     
     ## Export solution in VTK format

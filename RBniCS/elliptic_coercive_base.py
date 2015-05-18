@@ -90,8 +90,6 @@ class EllipticCoerciveBase(ParametrizedProblem):
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def online_solve(self, N=None, with_plot=True):
         self.load_red_matrices()
-        if self.N == 0:
-            self.N = len(self.red_F[0])
         if N is None:
             N = self.N
         self.red_solve(N)
@@ -259,11 +257,12 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## Load reduced order data structures
     def load_red_matrices(self):
         if len(np.asarray(self.red_A)) == 0: # avoid loading multiple times
-            self.red_A = np.load(self.red_matrices_folder + "red_A.npy")
+            self.red_A = tuple(np.load(self.red_matrices_folder + "red_A.npy"))
         if len(np.asarray(self.red_F)) == 0: # avoid loading multiple times
-            self.red_F = np.load(self.red_matrices_folder + "red_F.npy")
+            self.red_F = tuple(np.load(self.red_matrices_folder + "red_F.npy"))
         if len(np.asarray(self.Z)) == 0: # avoid loading multiple times
             self.Z = np.load(self.basis_folder + "basis.npy")
+            self.N = self.Z.shape[1]
 
     ## Export solution in VTK format
     def export_solution(self, solution, filename):

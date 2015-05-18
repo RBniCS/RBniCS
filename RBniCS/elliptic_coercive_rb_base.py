@@ -89,7 +89,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     
     ## Return an error bound for the current output
     def get_delta_output(self):
-        return self.get_delta()**2
+        eps2 = self.get_eps2()
+        alpha = self.get_alpha_lb()
+        return np.abs(eps2)/alpha
         
     ## Return the numerator of the error bound for the current solution
     def get_eps2 (self):
@@ -119,11 +121,11 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                     eps2 += theta_a[qa]*uN*uN*theta_a[qap]*LL[0,0,qa,qap]
             
         else:
-            n=0
+            n = 0
             for un in uN:
                 for qf in range(Qf):
                     for qa in range(Qa):
-                        eps2 += 2.0* theta_f[qf]*theta_a[qa]*un*CL[n,qf,qa]
+                        eps2 += 2.0*theta_f[qf]*theta_a[qa]*un*CL[n,qf,qa]
                 n += 1
 
             n = 0
@@ -210,7 +212,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         current_basis = Function(self.V)
         current_basis.vector()[:] = np.array(self.Z[:, self.N], dtype=np.float_)
         self.export_basis(current_basis, self.basis_folder + "basis_" + str(self.N))
-        self.N += 1        
+        self.N += 1
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
@@ -244,7 +246,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
         Qf = self.Qf
         Qa = self.Qa
-        if self.N == 1 :
+        if N == 1 :
             
             # CC (does not depend on N, so we compute it only once)
             self.Cf = self.compute_f_dual()
@@ -292,7 +294,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             # CL
             for qf in range(0,Qf):
                 for qa in range(0,Qa):
-                    la.vector()[:] = np.array(self.lnq[N-1][:, qa], dtype=np.float_)
+                    la.vector()[:] = np.array(self.lnq[n][:, qa], dtype=np.float_)
                     self.CL[n,qf,qa] = self.compute_scalar(self.Cf[qf],la,self.S)
             np.save(self.dual_folder + "CL", self.CL)
     
@@ -312,7 +314,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         riesz = Function(self.V)
         i = 0
         for A in self.truth_A:
-            solve (self.S,riesz.vector(), A*RBu.vector()*(-1.0))
+            solve (self.S, riesz.vector(), A*RBu.vector()*(-1.0))
             if i != 0:
                 l = np.hstack((l,np.array(riesz.vector()).reshape(-1, 1)))
             else:
@@ -356,6 +358,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
+        self.load_red_matrices()
         if N is None:
             N = self.N
             
@@ -365,6 +368,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.apply_bc_to_vector_expansion(self.truth_F)
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
+        
         print "=============================================================="
         print "=             Error analysis begins                          ="
         print "=============================================================="
@@ -384,9 +388,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             
             # Perform the truth solve only once
             self.truth_solve()
+            self.truth_output()
             
             for n in range(N): # n = 0, 1, ... N - 1
-                (current_error_u, current_error_s) = self.compute_error(n + 1, False)
+                (current_error_u, current_error_s) = self.compute_error(n + 1, True)
                 
                 error_u[n, run] = current_error_u
                 delta_u[n, run] = self.get_delta()
@@ -398,24 +403,28 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
         # Print some statistics
         print ""
-        print "N \t gmean(err_u) \t\t gmean(delta_u) \t\t gmean(eff_u) \t max(eff_u)"
+        print "N \t gmean(err_u) \t\t gmean(delta_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)"
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error_u = np.exp(np.mean(np.log(error_u[n, :])))
             mean_delta_u = np.exp(np.mean(np.log(delta_u[n, :])))
+            min_effectivity_u = np.min(effectivity_u[n, :])
             mean_effectivity_u = np.exp(np.mean(np.log(effectivity_u[n, :])))
             max_effectivity_u = np.max(effectivity_u[n, :])
             print str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
-                  + " \t " + str(mean_effectivity_u) + " \t " + str(max_effectivity_u)
+                  + " \t " + str(min_effectivity_u) + " \t " + str(mean_effectivity_u) \
+                  + " \t " + str(max_effectivity_u)
                   
         print ""
-        print "N \t gmean(err_s) \t\t gmean(delta_s) \t\t gmean(eff_s) \t max(eff_s)"
+        print "N \t gmean(err_s) \t\t gmean(delta_s) \t min(eff_s) \t gmean(eff_s) \t max(eff_s)"
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error_s = np.exp(np.mean(np.log(error_s[n, :])))
             mean_delta_s = np.exp(np.mean(np.log(delta_s[n, :])))
+            min_effectivity_s = np.min(effectivity_s[n, :])
             mean_effectivity_s = np.exp(np.mean(np.log(effectivity_s[n, :])))
             max_effectivity_s = np.max(effectivity_s[n, :])
             print str(n+1) + " \t " + str(mean_error_s) + " \t " + str(mean_delta_s) \
-                  + " \t " + str(mean_effectivity_s) + " \t " + str(max_effectivity_s)
+                  + " \t " + str(min_effectivity_s) + " \t " + str(mean_effectivity_s) \
+                  + " \t " + str(max_effectivity_s)
         
         print ""
         print "=============================================================="
@@ -434,11 +443,11 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # Read in data structures as in parent
         EllipticCoerciveBase.load_red_matrices(self)
         # Moreover, read also data structures related to the dual
-        if not self.CC.size: # avoid loading multiple times
+        if len(np.asarray(self.CC)) == 0: # avoid loading multiple times
             self.CC = np.load(self.dual_folder + "CC.npy")
-        if not self.CL.size: # avoid loading multiple times
+        if len(np.asarray(self.CL)) == 0: # avoid loading multiple times
             self.CL = np.load(self.dual_folder + "CL.npy")
-        if not self.LL.size: # avoid loading multiple times
+        if len(np.asarray(self.LL)) == 0: # avoid loading multiple times
             self.LL = np.load(self.dual_folder + "LL.npy")
     
     #  @}

@@ -125,7 +125,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     ## Apply POD
     def apply_POD(self, S, pp_file, Nmax, tol):
         (Z, N) = self.POD.apply(S, pp_file, Nmax, tol)
-        np.save(self.basis_folder + "basis", self.Z)
+        np.save(self.basis_folder + "basis", Z)
         current_basis = Function(self.V)
         for b in range(N):
             current_basis.vector()[:] = np.array(Z[:, b], dtype=np.float)
@@ -142,8 +142,16 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
+        self.load_red_matrices()
         if N is None:
             N = self.N
+            
+        self.truth_A = self.assemble_truth_a()
+        self.apply_bc_to_matrix_expansion(self.truth_A)
+        self.truth_F = self.assemble_truth_f()
+        self.apply_bc_to_vector_expansion(self.truth_F)
+        self.Qa = len(self.truth_A)
+        self.Qf = len(self.truth_F)
             
         print "=============================================================="
         print "=             Error analysis begins                          ="
@@ -161,7 +169,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             self.truth_solve()
             
             for n in range(N): # n = 0, 1, ... N - 1
-                error[n, run] = self.compute_error(n + 1, False)
+                error[n, run] = self.compute_error(n + 1, True)
         
         # Print some statistics
         print ""
