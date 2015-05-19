@@ -145,7 +145,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.dual_problem.offline()
         
         # Perform the offline stage of the primal problem
-        self.set_mu(bak_first_mu)
+        self.setmu(bak_first_mu)
         EllipticCoerciveRBBase.offline(self)
         
     ## Perform a truth evaluation of the output
