@@ -141,9 +141,11 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.Qs = len(self.truth_S)
         
         # Perform the offline stage of the dual problem
+        bak_first_mu = tuple(list(self.mu))
         self.dual_problem.offline()
         
         # Perform the offline stage of the primal problem
+        self.set_mu(bak_first_mu)
         EllipticCoerciveRBBase.offline(self)
         
     ## Perform a truth evaluation of the output

@@ -213,8 +213,10 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
     ## Perform the offline phase of the reduced order model
     def offline(self):
         # Perform first the SCM offline phase, ...
+        bak_first_mu = tuple(list(self.mu))
         self.SCM_obj.offline()
         # ..., and then call the parent method.
+        self.setmu(bak_first_mu)
         EllipticCoerciveRBNonCompliantBase.offline(self)
     
     #  @}
