@@ -333,14 +333,10 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     def compute_error(self, N=None, skip_truth_solve=False):
         if not skip_truth_solve:
             self.truth_solve()
-            self.truth_output()
         self.online_solve(N, False)
-        self.online_output()
         self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
-        error_u = self.compute_scalar(self.er, self.er, self.S) # norm of the error
-        error_u = np.sqrt(error_u)
-        error_s = abs(self.s - self.sN)
-        return (error_u, error_s)
+        error = self.compute_scalar(self.er, self.er, self.S) # norm of the error
+        return np.sqrt(error)
         
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
@@ -350,8 +346,62 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         # but we may rely on the primal itself in get_alpha_lb, when querying SCM
         self.primal_problem.theta_a = self.primal_problem.compute_theta_a()
         self.primal_problem.Qa = len(self.primal_problem.theta_a)
-        # Call parent
-        EllipticCoerciveRBBase.error_analysis(self, N)
+        # This is almost the same as in parent, without the output computation,
+        # since it makes no sense here.
+        self.load_red_matrices()
+        if N is None:
+            N = self.N
+            
+        self.truth_A = self.assemble_truth_a()
+        self.apply_bc_to_matrix_expansion(self.truth_A)
+        self.truth_F = self.assemble_truth_f()
+        self.apply_bc_to_vector_expansion(self.truth_F)
+        self.Qa = len(self.truth_A)
+        self.Qf = len(self.truth_F)
+        
+        print "=============================================================="
+        print "=             Error analysis begins                          ="
+        print "=============================================================="
+        print ""
+        
+        error_u = np.zeros((N, len(self.xi_test)))
+        delta_u = np.zeros((N, len(self.xi_test)))
+        effectivity_u = np.zeros((N, len(self.xi_test)))
+        
+        for run in range(len(self.xi_test)):
+            print "############################## run = ", run, " ######################################"
+            
+            self.setmu(self.xi_test[run])
+            
+            # Perform the truth solve only once
+            self.truth_solve()
+            self.truth_output()
+            
+            for n in range(N): # n = 0, 1, ... N - 1
+                current_error_u = self.compute_error(n + 1, True)
+                
+                error_u[n, run] = current_error_u
+                delta_u[n, run] = self.get_delta()
+                effectivity_u[n, run] = delta_u[n, run]/error_u[n, run]
+                
+        # Print some statistics
+        print ""
+        print "N \t gmean(err_u) \t\t gmean(delta_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)"
+        for n in range(N): # n = 0, 1, ... N - 1
+            mean_error_u = np.exp(np.mean(np.log(error_u[n, :])))
+            mean_delta_u = np.exp(np.mean(np.log(delta_u[n, :])))
+            min_effectivity_u = np.min(effectivity_u[n, :])
+            mean_effectivity_u = np.exp(np.mean(np.log(effectivity_u[n, :])))
+            max_effectivity_u = np.max(effectivity_u[n, :])
+            print str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
+                  + " \t " + str(min_effectivity_u) + " \t " + str(mean_effectivity_u) \
+                  + " \t " + str(max_effectivity_u)
+                  
+        print ""
+        print "=============================================================="
+        print "=             Error analysis ends                            ="
+        print "=============================================================="
+        print ""
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
