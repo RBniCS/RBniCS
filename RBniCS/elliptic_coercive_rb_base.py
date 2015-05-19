@@ -266,7 +266,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             lap = Function(self.V)
 
             # CL
-            self.CL = np.zeros((self.Nmax,self.Qf,self.Qa))
+            self.CL = np.zeros((self.Nmax,Qf,Qa))
             for qf in range(0,Qf):
                 for qa in range(0,Qa):
                     la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
@@ -274,7 +274,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             np.save(self.dual_folder + "CL", self.CL)
             
             # LL
-            self.LL = np.zeros((self.Nmax,self.Nmax,self.Qa,self.Qa))
+            self.LL = np.zeros((self.Nmax,self.Nmax,Qa,Qa))
             for qa in range(0,Qa):
                 la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
                 for qap in range(qa,Qa):
