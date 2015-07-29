@@ -20,7 +20,7 @@
 __author__ = "Francesco Ballarin, Gianluigi Rozza, Alberto Sartori"
 __copyright__ = "Copyright 2015 SISSA mathLab"
 __license__ = "LGPL"
-__version__ = "0.0.0"
+__version__ = "0.0.1"
 __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
 
 
