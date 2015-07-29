@@ -15,7 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## RBniCS@SISSA: implementation in FEniCS of the certified the reduced basis method for coercive problems
+## RBniCS: reduced order modelling in FEniCS
+
+__author__ = "Francesco Ballarin, Gianluigi Rozza, Alberto Sartori"
+__copyright__ = "Copyright 2015 SISSA mathLab"
+__license__ = "LGPL"
+__version__ = "0.0.0"
+__email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
+
 
 from eim import *
 from elliptic_coercive_base import *
