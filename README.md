@@ -1,4 +1,4 @@
-## ![alt text](https://gitlab.com/RBniCS/RBniCS/doc/rbnics-logo-small "RBniCS - reduced order modelling in FEniCS") RBniCS - reduced order modelling in FEniCS ##
+## ![RBniCS - reduced order modelling in FEniCS](https://gitlab.com/RBniCS/RBniCS/raw/master/doc/rbnics-logo-small.png "RBniCS - reduced order modelling in FEniCS") RBniCS - reduced order modelling in FEniCS ##
 
 ### 0. Introduction
 **RBniCS** is an implementation in **FEniCS** of the several reduced order modelling techniques (and, in particular, certified reduced basis method and Proper Orthogonal Decomposition-Galerkin methods) for coercive problems. It is ideally suited for an introductory course on reduced basis methods and reduced order modelling, thanks to an object-oriented approach and an intuitive and versatiile python interface. To this end, it has been employed in the Doctoral course in "Reduced Basis Methods for Computational Mechanics" held at SISSA/ICTP in April 2015.
@@ -36,7 +36,7 @@ python RBniCS_example.py
 If you want to try **RBniCS** out but do not have **FEniCS** already installed, a virtual machine (Ubuntu 14.04 LTS) with RBniCS (and all required dependencies) installed is available at this link. Username and password are both **rbnics**.
 
 ### 4. Tutorials
-Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/RBniCS/RBniCS/tutorials).
+Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials).
 * **Tutorial 1**: introduction to the capabilities of **RBniCS**: reduced basis method for scalar problems.
 * **Tutorial 2**: introduction to the capabilities of **RBniCS**: POD-Galerkin method for vector problems.
 * **Tutorial 3**: geometrical parametrization.
@@ -44,7 +44,7 @@ Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/
 * **Tutorial 5**: empirical interpolation method.
 
 ### 5. Authors and contributors
-**RBniCS** is currently developed and mantained by
+**RBniCS** is currently developed and mantained at [SISSA mathLab](http://mathlab.sissa.it/) by
 * [Dr. Francesco Ballarin](mailto:francesco.ballarin@sissa.it)
 * [Dr. Alberto Sartori](mailto:alberto.sartori@sissa.it)
 * [Prof. Gianluigi Rozza](mailto:gianluigi.rozza@sissa.it)
