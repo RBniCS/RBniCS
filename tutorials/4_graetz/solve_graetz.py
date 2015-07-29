@@ -356,19 +356,15 @@ parameters.linear_algebra_backend = 'PETSc'
 # 5. Set mu range, xi_train and Nmax
 mu_range = [(0.01, 10.0), (0.01, 10.0)]
 graetz.setmu_range(mu_range)
-graetz.setxi_train(20)
-graetz.setNmax(4)
+graetz.setxi_train(100)
+graetz.setNmax(10)
 
 # 6. Perform the offline phase
 first_mu = (1.0, 1.0)
 graetz.setmu(first_mu)
-#graetz.offline()
+graetz.offline()
 
 # 7. Perform an online solve
 online_mu = (10.0, 0.01)
 graetz.setmu(online_mu)
 graetz.online_solve()
-
-# 8. Perform an error analysis
-graetz.setxi_test(10)
-graetz.error_analysis()

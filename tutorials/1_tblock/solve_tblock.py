@@ -77,10 +77,10 @@ class Tblock(EllipticCoerciveRBBase):
         v = self.v
         dx = self.dx
         # Assemble A0
-        a0 = inner(grad(u),grad(v))*dx(1) +1e-15*inner(u,v)*dx
+        a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*inner(u,v)*dx
         A0 = assemble(a0)
         # Assemble A1
-        a1 = inner(grad(u),grad(v))*dx(2) +1e-15*inner(u,v)*dx
+        a1 = inner(grad(u),grad(v))*dx(2) + 1e-15*inner(u,v)*dx
         A1 = assemble(a1)
         # Return
         return (A0, A1)
@@ -118,7 +118,7 @@ parameters.linear_algebra_backend = 'PETSc'
 # 5. Set mu range, xi_train and Nmax
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
 tb.setmu_range(mu_range)
-tb.setxi_train(10)
+tb.setxi_train(100)
 tb.setNmax(4)
 
 # 6. Perform the offline phase
