@@ -1,9 +1,9 @@
-## ![alt text](doc/rbnics-logo-small "RBniCS - reduced order modelling in FEniCS") RBniCS - reduced order modelling in FEniCS ##
+## ![alt text](https://gitlab.com/RBniCS/RBniCS/doc/rbnics-logo-small "RBniCS - reduced order modelling in FEniCS") RBniCS - reduced order modelling in FEniCS ##
 
 ### 0. Introduction
-**RBniCS** is an implementation in FEniCS of the several reduced order modelling techniques (and, in particular, certified reduced basis method and Proper Orthogonal Decomposition-Galerkin methods) for coercive problems. It is ideally suited for an introductory course on reduced basis methods and reduced order modelling, thanks to an object-oriented approach and an intuitive and versatiile python interface. To this end, it has been employed in the Doctoral course in "Reduced Basis Methods for Computational Mechanics" held at SISSA/ICTP in April 2015.
+**RBniCS** is an implementation in **FEniCS** of the several reduced order modelling techniques (and, in particular, certified reduced basis method and Proper Orthogonal Decomposition-Galerkin methods) for coercive problems. It is ideally suited for an introductory course on reduced basis methods and reduced order modelling, thanks to an object-oriented approach and an intuitive and versatiile python interface. To this end, it has been employed in the Doctoral course in "Reduced Basis Methods for Computational Mechanics" held at SISSA/ICTP in April 2015.
 
-**RBniCS** can also be used as a basis for more advanced projects that would like to assess the capability of reduced order models in their existing FEniCS-based software, thanks to the availability of several reduced order methods (such as reduced basis and proper orthogonal decomposition) and algorithms (such as successive constraint method, empirical interpolation method) in the library.
+**RBniCS** can also be used as a basis for more advanced projects that would like to assess the capability of reduced order models in their existing **FEniCS**-based software, thanks to the availability of several reduced order methods (such as reduced basis and proper orthogonal decomposition) and algorithms (such as successive constraint method, empirical interpolation method) in the library.
 
 Several tutorials are provided. This software is also a companion of the introductory reduced basis handbook: 
 
@@ -22,7 +22,7 @@ git clone https://gitlab.com/RBniCS/RBniCS.git /RB/ni/CS/path
 ```
 The core of the **RBniCS** code is in the **RBniCS** subfolder of the repository.
 
-Then Make sure that both FEniCS and RBniCS are in your PYTHONPATH,
+Then Make sure that both **FEniCS** and **RBniCS** are in your PYTHONPATH,
 ```
 source /FE/ni/CS/path/share/fenics/fenics.conf
 export PYTHONPATH="/RB/ni/CS/path:$PYTHONPATH"
@@ -33,10 +33,10 @@ python RBniCS_example.py
 ```
 
 ### 3. RBniCS virtual machine
-If you want to try **RBniCS** out but do not have FEniCS already installed, a virtual machine (Ubuntu 14.04 LTS) with RBniCS (and all required dependencies) installed is available at this link. Username and password are both **rbnics**.
+If you want to try **RBniCS** out but do not have **FEniCS** already installed, a virtual machine (Ubuntu 14.04 LTS) with RBniCS (and all required dependencies) installed is available at this link. Username and password are both **rbnics**.
 
 ### 4. Tutorials
-Several tutorials are provided the **tutorials** subfolder.
+Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/RBniCS/RBniCS/tutorials).
 * **Tutorial 1**: introduction to the capabilities of **RBniCS**: reduced basis method for scalar problems.
 * **Tutorial 2**: introduction to the capabilities of **RBniCS**: POD-Galerkin method for vector problems.
 * **Tutorial 3**: geometrical parametrization.
@@ -67,4 +67,4 @@ If you use **RBniCS** in your work, please use the following citation to referen
 A forthcoming publication will also provide more details on **RBniCS**.
 
 ### 7. License
-Like all core FEniCS components, **RBniCS** is freely available under the GNU LGPL, version 3.
+Like all core **FEniCS** components, **RBniCS** is freely available under the GNU LGPL, version 3.

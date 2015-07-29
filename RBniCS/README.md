@@ -1,4 +1,4 @@
-## ![alt text](../doc/rbnics-logo-small "RBniCS - reduced order modelling in FEniCS") RBniCS - reduced order modelling in FEniCS ##
+## ![alt text](https://gitlab.com/RBniCS/RBniCS/doc/rbnics-logo-small "RBniCS - reduced order modelling in FEniCS") RBniCS - reduced order modelling in FEniCS ##
 
 ### 1. Classes hierarchy
                                      --------------> parametrized_problem.py <----------
