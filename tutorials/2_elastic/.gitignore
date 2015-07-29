@@ -1,8 +1,6 @@
 *~
 *.bak
 *.pyc
-tex/*.aux
-tex/*.log
 basis*
 dual*
 pp*

@@ -1,5 +1,3 @@
 *~
 *.bak
 *.pyc
-.gitignore
-FEniCS-install
