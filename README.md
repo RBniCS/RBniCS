@@ -33,7 +33,9 @@ python RBniCS_example.py
 ```
 
 ### 3. RBniCS virtual machine
-If you want to try **RBniCS** out but do not have **FEniCS** already installed, a virtual machine (Ubuntu 14.04 LTS) with RBniCS (and all required dependencies) installed is available at this link. Username and password are both **rbnics**.
+If you want to try **RBniCS** out but do not have **FEniCS** already installed, a virtual machine (Ubuntu 14.04 LTS) with RBniCS (and all required dependencies) installed is available. [link 1](http://1drv.ms/1LZq4VI) [link 2](https://drive.google.com/file/d/0B3Jdl3uI0HHPTUNBTzZrcU1QT0k/view?usp=sharing) 
+
+Username and password of the main Ubuntu user are both **rbnics**. **RBniCS** software is located in $HOME/RBniCS.
 
 ### 4. Tutorials
 Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials).
@@ -49,7 +51,7 @@ Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/
 * [Dr. Alberto Sartori](mailto:alberto.sartori@sissa.it)
 * [Prof. Gianluigi Rozza](mailto:gianluigi.rozza@sissa.it)
 
-Contact us by email for further information or questions about **RBniCS**, or open an ''Issue'' on this webiste. Contributions improving either the code or the documentation are welcome, both as patches or merge requests on this website.
+Contact us by email for further information or questions about **RBniCS**, or open an ''Issue'' on this webiste. **RBniCS** is at an early development stage, so contributions improving either the code or the documentation are welcome, both as patches or merge requests on this website.
 
 ### 6. How to cite
 If you use **RBniCS** in your work, please use the following citation to reference **RBniCS**
