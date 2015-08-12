@@ -42,7 +42,7 @@ Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/
 * **Tutorial 1**: introduction to the capabilities of **RBniCS**: reduced basis method for scalar problems.
 * **Tutorial 2**: introduction to the capabilities of **RBniCS**: POD-Galerkin method for vector problems.
 * **Tutorial 3**: geometrical parametrization.
-* **Tutorial 4**: non compliant problems, successive constraint method.
+* **Tutorial 4**: non-compliant problems, successive constraint method.
 * **Tutorial 5**: empirical interpolation method.
 
 ### 5. Authors and contributors
@@ -51,10 +51,10 @@ Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/
 * [Dr. Alberto Sartori](mailto:alberto.sartori@sissa.it)
 * [Prof. Gianluigi Rozza](mailto:gianluigi.rozza@sissa.it)
 
-Contact us by email for further information or questions about **RBniCS**, or open an ''Issue'' on this webiste. **RBniCS** is at an early development stage, so contributions improving either the code or the documentation are welcome, both as patches or merge requests on this website.
+Contact us by email for further information or questions about **RBniCS**, or open an ''Issue'' on this website. **RBniCS** is at an early development stage, so contributions improving either the code or the documentation are welcome, both as patches or merge requests on this website.
 
 ### 6. How to cite
-If you use **RBniCS** in your work, please use the following citation to reference **RBniCS**
+If you use **RBniCS** in your work, please use the following citations to reference **RBniCS**
 ```
 @book{HesthavenRozzaStamm2015,
   author    = {Hesthaven, Jan S. and Rozza, Gianluigi and Stamm, Benjamin},
@@ -65,8 +65,11 @@ If you use **RBniCS** in your work, please use the following citation to referen
   isbn      = {978-3-319-22469-5}
 }
 ```
+and cite the [RBniCS website](http://mathlab.sissa.it/rbnics).
 
 A forthcoming publication will also provide more details on **RBniCS**.
 
 ### 7. License
 Like all core **FEniCS** components, **RBniCS** is freely available under the GNU LGPL, version 3.
+
+![Google Analytics](https://ga-beacon.appspot.com/UA-66224794-1/rbnics/readme?pixel)
