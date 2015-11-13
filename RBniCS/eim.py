@@ -62,8 +62,8 @@ class EIM(ParametrizedProblem):
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Define additional storage for EIM
-        self.interpolation_points = () # vector of interpolation points selected by the greedy
-        self.interpolation_points_dof = () # vector of dofs corresponding to interpolation points selected by the greedy
+        self.interpolation_points = np.array([]) # vector of interpolation points selected by the greedy
+        self.interpolation_points_dof = np.array([]) # vector of dofs corresponding to interpolation points selected by the greedy
         self.interpolation_matrix = np.matrix([]) # interpolation matrix
         self.interpolation_coefficients = np.array([]) # online solution
         
@@ -103,7 +103,7 @@ class EIM(ParametrizedProblem):
     
     # Perform an online solve.
     def online_solve(self, N=None):
-        #self.load_red_matrices() # TODO
+        self.load_red_matrices()
         if N is None:
             N = self.N
         
@@ -195,6 +195,11 @@ class EIM(ParametrizedProblem):
         # Arbitrarily start from the first parameter in the training set
         self.setmu(self.xi_train[0])
         self.mu_index = 0
+        # Create empty files
+        np.save(self.red_matrices_folder + "interpolation_points", self.interpolation_points)
+        np.save(self.red_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
+        np.save(self.red_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
+        np.save(self.basis_folder + "basis", self.Z)
         
         for run in range(self.Nmax + 1): # the + 1 is needed for the error bound computation
             print ":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::"
@@ -207,8 +212,14 @@ class EIM(ParametrizedProblem):
             
             print "compute maximum interpolation error"
             (maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error()
-            self.interpolation_points += (maximum_point,)
-            self.interpolation_points_dof += (maximum_point_dof,)
+            if self.N == 0:
+                self.interpolation_points = np.array([maximum_point])
+                self.interpolation_points_dof = np.array([maximum_point_dof])
+            else:
+                self.interpolation_points = np.vstack((self.interpolation_points, [maximum_point]))
+                self.interpolation_points_dof = np.vstack((self.interpolation_points_dof, [maximum_point_dof]))
+            np.save(self.red_matrices_folder + "interpolation_points", self.interpolation_points)
+            np.save(self.red_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
             
             print "update basis matrix"
             self.update_basis_matrix()
@@ -286,6 +297,7 @@ class EIM(ParametrizedProblem):
     def update_interpolation_matrix(self):
         for j in range(self.N):
             self.interpolation_matrix[self.N - 1, j] = self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[self.N - 1])
+        np.save(self.red_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
             
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
@@ -367,6 +379,18 @@ class EIM(ParametrizedProblem):
     def export_basis(self, basis, filename):
         file = File(filename + ".pvd", "compressed")
         file << basis
+        
+    def load_red_matrices(self):
+        if len(np.asarray(self.interpolation_points)) == 0: # avoid loading multiple times
+            self.interpolation_points = np.load(self.red_matrices_folder + "interpolation_points.npy")
+        if len(np.asarray(self.interpolation_points_dof)) == 0: # avoid loading multiple times
+            self.interpolation_points_dof = np.load(self.red_matrices_folder + "interpolation_points_dof.npy")
+        if len(np.asarray(self.interpolation_matrix)) == 0: # avoid loading multiple times
+            self.interpolation_matrix = np.load(self.red_matrices_folder + "interpolation_matrix.npy")
+        if len(np.asarray(self.Z)) == 0: # avoid loading multiple times
+            self.Z = np.load(self.basis_folder + "basis.npy")
+            if len(np.asarray(self.Z)) > 0: # it will still be empty the first time the greedy is executed
+                self.N = self.Z.shape[1]
         
     #  @}
     ########################### end - I/O - end ########################### 
