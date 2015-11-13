@@ -64,7 +64,7 @@ class EIM(ParametrizedProblem):
         # Define additional storage for EIM
         self.interpolation_points = np.array([]) # vector of interpolation points selected by the greedy
         self.interpolation_points_dof = np.array([]) # vector of dofs corresponding to interpolation points selected by the greedy
-        self.interpolation_matrix = np.matrix([]) # interpolation matrix
+        self.interpolation_matrix = () # interpolation matrix
         self.interpolation_coefficients = np.array([]) # online solution
         
         # $$ OFFLINE DATA STRUCTURES $$ #
@@ -92,7 +92,6 @@ class EIM(ParametrizedProblem):
     #           Overridden to resize the interpolation matrix
     def setNmax(self, nmax):
         self.Nmax = nmax
-        self.interpolation_matrix = np.matrix(np.zeros((nmax + 1, nmax + 1)))
     
     #  @}
     ########################### end - SETTERS - end ########################### 
@@ -200,6 +199,8 @@ class EIM(ParametrizedProblem):
         np.save(self.red_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
         np.save(self.red_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
         np.save(self.basis_folder + "basis", self.Z)
+        # Resize the interpolation matrix
+        self.interpolation_matrix = np.matrix(np.zeros((self.Nmax + 1, self.Nmax + 1)))
         
         for run in range(self.Nmax + 1): # the + 1 is needed for the error bound computation
             print ":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::"
