@@ -38,8 +38,8 @@ class Tblock(EllipticCoerciveRBBase):
         # Call the standard initialization
         EllipticCoerciveRBBase.__init__(self, V, [bc])
         # ... and also store FEniCS data structures for assembly
-        self.dx = Measure("dx")[subd]
-        self.ds = Measure("ds")[bound]
+        self.dx = Measure("dx")(subdomain_data=subd)
+        self.ds = Measure("ds")(subdomain_data=bound)
         # Use the H^1 seminorm on V as norm, instead of the H^1 norm
         u = self.u
         v = self.v

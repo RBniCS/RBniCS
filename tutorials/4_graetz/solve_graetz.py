@@ -46,8 +46,8 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
         # Call the standard initialization
         EllipticCoerciveRBNonCompliantBase.__init__(self, V, bc_list)
         # ... and also store FEniCS data structures for assembly ...
-        self.dx = Measure("dx")[subd]
-        self.ds = Measure("ds")[bound]
+        self.dx = Measure("dx")(subdomain_data=subd)
+        self.ds = Measure("ds")(subdomain_data=bound)
         # ... and FEniCS data structure related to the geometrical parametrization
         self.mesh = mesh
         self.subd = subd

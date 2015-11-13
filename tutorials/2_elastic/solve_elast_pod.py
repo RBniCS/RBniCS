@@ -38,8 +38,8 @@ class Eblock(EllipticCoercivePODBase):
         # Call the standard initialization
         EllipticCoercivePODBase.__init__(self, V, [bc])
         # ... and also store FEniCS data structures for assembly
-        self.dx = Measure("dx")[subd]
-        self.ds = Measure("ds")[bound]
+        self.dx = Measure("dx")(subdomain_data=subd)
+        self.ds = Measure("ds")(subdomain_data=bound)
         # ...
         self.f = Constant((1.0, 0.0))
         self.E  = 1.0

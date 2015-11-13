@@ -38,8 +38,8 @@ class Hole(EllipticCoercivePODBase):
         # Call the standard initialization
         EllipticCoercivePODBase.__init__(self, V, None)
         # ... and also store FEniCS data structures for assembly ...
-        self.dx = Measure("dx")[subd]
-        self.ds = Measure("ds")[bound]
+        self.dx = Measure("dx")(subdomain_data=subd)
+        self.ds = Measure("ds")(subdomain_data=bound)
         # ... and, finally, FEniCS data structure related to the geometrical parametrization
         self.mesh = mesh
         self.subd = subd
