@@ -24,7 +24,6 @@
 
 from dolfin import *
 import numpy as np
-import scipy.linalg # for eigenvalue computation
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PROPER ORTHOGONAL DECOMPOSITION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ProperOrthogonalDecomposition
@@ -75,7 +74,7 @@ class ProperOrthogonalDecomposition():
         S = as_backend_type(S)
         dim = S.size(0) # = S.size(1)
         corr = np.matrix(np.dot(self.snapshot_matrix.T,np.matrix(np.dot(S.mat().getValues(range(dim),range(dim)),self.snapshot_matrix))))
-        eigs, eigv = scipy.linalg.eig(corr)
+        eigs, eigv = np.linalg.eig(corr)
         idx = eigs.argsort()
         idx = idx[::-1]
         eigs = eigs[idx]

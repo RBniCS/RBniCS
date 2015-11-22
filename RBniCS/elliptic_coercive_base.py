@@ -24,7 +24,6 @@
 
 from dolfin import *
 import numpy as np
-import scipy.linalg # for reduced problem solution
 import sys # for exit
 import itertools # for equispaced grid generation
 from parametrized_problem import *
