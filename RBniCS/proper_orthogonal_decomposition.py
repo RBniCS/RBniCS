@@ -93,10 +93,12 @@ class ProperOrthogonalDecomposition():
             print "lambda_",i," = ",eigs[i]
             if i==0:
                 p = np.dot(self.snapshot_matrix,eigv[:,i])
+                p = np.squeeze(np.asarray(p)) # convert from an N_h x 1 matrix to an N_h vector
                 p /= np.sqrt(np.dot(p, S*p))
                 Z = p.reshape(-1, 1) # as column vector
             else:
                 p = np.dot(self.snapshot_matrix,eigv[:,i])
+                p = np.squeeze(np.asarray(p)) # convert from an N_h x 1 matrix to an N_h vector
                 p /= np.sqrt(np.dot(p, S*p))
                 Z = np.hstack((Z, p.reshape(-1, 1))) # add new basis functions as column vectors
         
