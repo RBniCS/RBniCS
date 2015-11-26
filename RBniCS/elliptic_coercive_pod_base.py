@@ -47,6 +47,8 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         # 6bis. Declare a POD object
         self.POD = ProperOrthogonalDecomposition()
         # 9. I/O
+        self.xi_train_folder = "xi_train__pod/"
+        self.xi_test_folder = "xi_test__pod/"
         self.snap_folder = "snapshots__pod/"
         self.basis_folder = "basis__pod/"
         self.dual_folder = "dual__pod/" # never used

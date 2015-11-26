@@ -303,6 +303,8 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         self.S = self.primal_problem.S
         
         # 9. I/O
+        self.xi_train_folder = "xi_train__dual/"
+        self.xi_test_folder = "xi_test__dual/"
         self.snap_folder = "snapshots__dual/"
         self.basis_folder = "basis__dual/"
         self.dual_folder = "dual__dual/"

@@ -73,6 +73,8 @@ class EIM(ParametrizedProblem):
         # 6bis. Declare a new matrix to store the snapshots
         self.snapshot_matrix = np.array([])
         # 9. I/O
+        self.xi_train_folder = "xi_train__eim/"
+        self.xi_test_folder = "xi_test__eim/"
         self.snap_folder = "snapshots__eim/"
         self.basis_folder = "basis__eim/"
         self.dual_folder = "dual__eim/" # never used
