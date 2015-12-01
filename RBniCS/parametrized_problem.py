@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import os # for path and makedir
 import numpy as np
 import itertools # for linspace sampling
 
@@ -50,6 +51,9 @@ class ParametrizedProblem:
         # 2. Parameter ranges and training set
         self.mu_range = []
         self.xi_train = []
+        # 9. I/O
+        self.xi_train_folder = "xi_train/"
+        self.xi_test_folder = "xi_test/"
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
         # 2. Test set
@@ -76,13 +80,43 @@ class ParametrizedProblem:
     
     ## OFFLINE: set the elements in the training set \xi_train.
     # See the documentation of generate_train_or_test_set for more details
-    def setxi_train(self, ntrain, sampling="random"):
-        self.xi_train = self.generate_train_or_test_set(ntrain, sampling)
+    def setxi_train(self, ntrain, enable_import=False, sampling="random"):
+        # Create I/O folder
+        if not os.path.exists(self.xi_train_folder):
+            os.makedirs(self.xi_train_folder)
+        # Test if can import
+        import_successful = False
+        if enable_import and os.path.exists(self.xi_train_folder + "xi_train.npy"):
+            xi_train = np.load(self.xi_train_folder + "xi_train.npy")
+            import_successful = (len(np.asarray(xi_train)) == ntrain)
+        if import_successful:
+            self.xi_train = list()
+            for i in range(len(np.asarray(xi_train))):
+                self.xi_train.append(tuple(xi_train[i, :]))
+        else:
+            self.xi_train = self.generate_train_or_test_set(ntrain, sampling)
+            # Export 
+            np.save(self.xi_train_folder + "xi_train", self.xi_train)
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     # See the documentation of generate_train_or_test_set for more details
-    def setxi_test(self, ntest, sampling="random"):
-        self.xi_test = self.generate_train_or_test_set(ntest, sampling)
+    def setxi_test(self, ntest, enable_import=False, sampling="random"):
+        # Create I/O folder
+        if not os.path.exists(self.xi_test_folder):
+            os.makedirs(self.xi_test_folder)
+        # Test if can import
+        import_successful = False
+        if enable_import and os.path.exists(self.xi_test_folder + "xi_test.npy"):
+            xi_test = np.load(self.xi_test_folder + "xi_test.npy")
+            import_successful = (len(np.asarray(xi_test)) == ntest)
+        if import_successful:
+            self.xi_test = list()
+            for i in range(len(np.asarray(xi_test))):
+                self.xi_test.append(tuple(xi_test[i, :]))
+        else:
+            self.xi_test = self.generate_train_or_test_set(ntest, sampling)
+            # Export 
+            np.save(self.xi_test_folder + "xi_test", self.xi_test)
     
     ## Internal method for generation of training or test sets
     # If the last argument is equal to "random", n parameters are drawn from a random uniform distribution
