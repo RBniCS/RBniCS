@@ -16,5 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 from dolfin import *
-print "Check if petsc4py is installed:", has_petsc4py(), ". The answer shuold be True."
+print "Check if petsc4py is installed:", has_petsc4py(), ". The answer should be True."
 
