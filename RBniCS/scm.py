@@ -91,14 +91,17 @@ class SCM(ParametrizedProblem):
     #  @{
     
     ## OFFLINE: set the elements in the training set \xi_train. Overridden to resize alpha_LB_on_xi_train
-    def setxi_train(self, ntrain, sampling="random"):
+    ##          Note that the default value of enable_import has been changed here to True
+    def setxi_train(self, ntrain, enable_import=True, sampling="random"):
+        if not enable_import:
+        	sys.exit("SCM will not work without import.")
         # Save the flag if can import from file
         import_successful = False
         if os.path.exists(self.xi_train_folder + "xi_train.npy"):
             xi_train = np.load(self.xi_train_folder + "xi_train.npy")
             import_successful = (len(np.asarray(xi_train)) == ntrain)
         # Call parent
-        ParametrizedProblem.setxi_train(self, ntrain, sampling)
+        ParametrizedProblem.setxi_train(self, ntrain, enable_import, sampling)
         # If xi_train was not imported, be safe and remove the previous folder, so that
         # if the user overwrites the training set but forgets to run the offline
         # phase he/she will get an error

@@ -108,12 +108,12 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
     def setmu_range(self, mu_range):
         EllipticCoerciveRBNonCompliantBase.setmu_range(self, mu_range)
         self.SCM_obj.setmu_range(mu_range)
-    def setxi_train(self, ntrain, sampling="random"):
-        EllipticCoerciveRBNonCompliantBase.setxi_train(self, ntrain, sampling)
-        self.SCM_obj.setxi_train(ntrain, sampling)
-    def setxi_test(self, ntest, sampling="random"):
-        EllipticCoerciveRBNonCompliantBase.setxi_test(self, ntest, sampling)
-        self.SCM_obj.setxi_test(ntest, sampling)
+    def setxi_train(self, ntrain, enable_import=False, sampling="random"):
+        EllipticCoerciveRBNonCompliantBase.setxi_train(self, ntrain, enable_import, sampling)
+        self.SCM_obj.setxi_train(ntrain, True, sampling)
+    def setxi_test(self, ntest, enable_import=False, sampling="random"):
+        EllipticCoerciveRBNonCompliantBase.setxi_test(self, ntest, enable_import, sampling)
+        self.SCM_obj.setxi_test(ntest, True, sampling)
     def setmu(self, mu):
         EllipticCoerciveRBNonCompliantBase.setmu(self, mu)
         self.SCM_obj.setmu(mu)

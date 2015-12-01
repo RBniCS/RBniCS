@@ -80,13 +80,13 @@ class ParametrizedProblem:
     
     ## OFFLINE: set the elements in the training set \xi_train.
     # See the documentation of generate_train_or_test_set for more details
-    def setxi_train(self, ntrain, sampling="random"):
+    def setxi_train(self, ntrain, enable_import=False, sampling="random"):
         # Create I/O folder
         if not os.path.exists(self.xi_train_folder):
             os.makedirs(self.xi_train_folder)
         # Test if can import
         import_successful = False
-        if os.path.exists(self.xi_train_folder + "xi_train.npy"):
+        if enable_import and os.path.exists(self.xi_train_folder + "xi_train.npy"):
             xi_train = np.load(self.xi_train_folder + "xi_train.npy")
             import_successful = (len(np.asarray(xi_train)) == ntrain)
         if import_successful:
@@ -100,13 +100,16 @@ class ParametrizedProblem:
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     # See the documentation of generate_train_or_test_set for more details
-    def setxi_test(self, ntest, sampling="random"):
+    def setxi_test(self, ntest, enable_import=False, sampling="random"):
         # Create I/O folder
         if not os.path.exists(self.xi_test_folder):
             os.makedirs(self.xi_test_folder)
         # Test if can import
-        if os.path.exists(self.xi_test_folder + "xi_test.npy"):
+        import_successful = False
+        if enable_import and os.path.exists(self.xi_test_folder + "xi_test.npy"):
             xi_test = np.load(self.xi_test_folder + "xi_test.npy")
+            import_successful = (len(np.asarray(xi_test)) == ntest)
+        if import_successful:
             self.xi_test = list()
             for i in range(len(np.asarray(xi_test))):
                 self.xi_test.append(tuple(xi_test[i, :]))
