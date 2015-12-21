@@ -243,7 +243,7 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
     def move_mesh(self):
         print "moving mesh"
         displacement = self.compute_displacement()
-        self.mesh.move(displacement)
+        ALE.move(self.mesh, displacement)
     
     ## Restore the reference mesh
     def reset_reference(self):
