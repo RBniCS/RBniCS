@@ -1,4 +1,4 @@
-# Copyright (C) 2015 SISSA mathLab
+# Copyright (C) 2015-2016 SISSA mathLab
 #
 # This file is part of RBniCS.
 #

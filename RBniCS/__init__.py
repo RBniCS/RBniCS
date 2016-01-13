@@ -1,4 +1,4 @@
-# Copyright (C) 2015 SISSA mathLab
+# Copyright (C) 2015-2016 SISSA mathLab
 #
 # This file is part of RBniCS.
 #
@@ -18,7 +18,7 @@
 ## RBniCS: reduced order modelling in FEniCS
 
 __author__ = "Francesco Ballarin, Gianluigi Rozza, Alberto Sartori"
-__copyright__ = "Copyright 2015 SISSA mathLab"
+__copyright__ = "Copyright 2015-2016 SISSA mathLab"
 __license__ = "LGPL"
 __version__ = "0.0.1"
 __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
