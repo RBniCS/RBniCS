@@ -67,7 +67,7 @@ class Gaussian(EllipticCoerciveRBBase):
     
     def setNmax(self, nmax):
         EllipticCoerciveRBBase.setNmax(self, nmax)
-        self.EIM_obj.setNmax(nmax)
+        self.EIM_obj.setNmax(2*nmax)
     def settol(self, tol):
         EllipticCoerciveRBBase.settol(self, tol)
         self.EIM_obj.settol(tol)
@@ -139,6 +139,21 @@ class Gaussian(EllipticCoerciveRBBase):
     
     #  @}
     ########################### end - OFFLINE STAGE - end ###########################
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the test set
+    def error_analysis(self, N=None):
+        # Perform first the EIM error analysis, ...
+        self.EIM_obj.error_analysis(N)
+        # ..., and then call the parent method.
+        EllipticCoerciveRBBase.error_analysis(self, N)        
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 

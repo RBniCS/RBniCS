@@ -220,7 +220,7 @@ class EIM(ParametrizedProblem):
             self.online_solve()
             
             print "compute maximum interpolation error"
-            (maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error()
+            (maximum_error__unused, maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error()
             if self.N == 0:
                 self.interpolation_points = np.array([maximum_point])
                 self.interpolation_points_dof = np.array([maximum_point_dof])
@@ -291,7 +291,7 @@ class EIM(ParametrizedProblem):
         self.snap.vector()[:] /= maximum_error
                
         # Return
-        return (maximum_point, maximum_point_dof)
+        return (maximum_error, maximum_point, maximum_point_dof)
         
     ## Update basis matrix
     def update_basis_matrix(self):
@@ -376,6 +376,53 @@ class EIM(ParametrizedProblem):
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the empirical interpolation approximation with respect to the
+    # exact function over the test set
+    def error_analysis(self, N=None):
+        self.load_red_matrices()
+        if N is None:
+            N = self.N
+            
+        print "=============================================================="
+        print "=             EIM error analysis begins                      ="
+        print "=============================================================="
+        print ""
+        
+        error = np.zeros((N, len(self.xi_test)))
+        
+        for run in range(len(self.xi_test)):
+            print "############################## run = ", run, " ######################################"
+            
+            self.setmu(self.xi_test[run])
+            
+            # Evaluate the exact function on the truth grid
+            f = self.evaluate_parametrized_function_at_mu(self.mu)
+            self.snap = interpolate(f, self.V)
+            
+            for n in range(N): # n = 0, 1, ... N - 1
+                self.online_solve(n)
+                (error[n, run], maximum_point__unused, maximum_point_dof__unused) = self.compute_maximum_interpolation_error()
+        
+        # Print some statistics
+        print ""
+        print "N \t gmean(err)"
+        for n in range(N): # n = 0, 1, ... N - 1
+            mean_error = np.exp(np.mean(np.log((error[n, :]))))
+            print str(n+1) + " \t " + str(mean_error)
+        
+        print ""
+        print "=============================================================="
+        print "=             EIM error analysis ends                        ="
+        print "=============================================================="
+        print ""
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
     
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods
