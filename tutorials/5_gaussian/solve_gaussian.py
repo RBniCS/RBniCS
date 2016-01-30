@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file solve_gaussian.py
-#  @brief Example 5: gaussian EIM testa case
+#  @brief Example 5: gaussian EIM test case
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
@@ -54,6 +54,7 @@ class Gaussian(EllipticCoerciveRBBase):
         # Finally, initialize an EIM object for the interpolation of the forcing term
         self.EIM_obj = EIM(self)
         self.EIM_obj.parametrized_function = "exp( - 2*pow(x[0]-mu_1, 2) - 2*pow(x[1]-mu_2, 2) )"
+        self.EIM_N = None # if None, use the maximum number of EIM basis functions, otherwise use EIM_N
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -101,7 +102,7 @@ class Gaussian(EllipticCoerciveRBBase):
     ## Set theta multiplicative terms of the affine expansion of f.
     def compute_theta_f(self):
         self.EIM_obj.setmu(self.mu)
-        return self.EIM_obj.compute_interpolated_theta()
+        return self.EIM_obj.compute_interpolated_theta(self.EIM_N)
     
     ## Set matrices resulting from the truth discretization of a.
     def assemble_truth_a(self):

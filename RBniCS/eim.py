@@ -135,9 +135,15 @@ class EIM(ParametrizedProblem):
         return abs(f_next_point - eim_next_point)
         
     ## Call online_solve and then convert the result of online solve from numpy to a tuple
-    def compute_interpolated_theta(self):
-        self.online_solve()
-        return tuple(self.interpolation_coefficients)
+    def compute_interpolated_theta(self, N=None):
+        self.online_solve(N)
+        interpolated_theta = tuple(self.interpolation_coefficients)
+        if N is not None:
+            # Make sure to append a 0 coefficient for each basis function
+            # which has not been requested
+            for n in range(N, self.N):
+                interpolated_theta += (0.0,)
+        return interpolated_theta
         
     ## Evaluate the parametrized function f(x; mu)
     def evaluate_parametrized_function_at_mu_and_x(self, mu, x):
@@ -242,6 +248,8 @@ class EIM(ParametrizedProblem):
         print "=             EIM offline phase ends                         ="
         print "=============================================================="
         print ""
+        
+        self.N -= 1 # Due to the "+1" in the training "for" loop
         
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
@@ -393,7 +401,8 @@ class EIM(ParametrizedProblem):
         if len(np.asarray(self.Z)) == 0: # avoid loading multiple times
             self.Z = np.load(self.basis_folder + "basis.npy")
             if len(np.asarray(self.Z)) > 0: # it will still be empty the first time the greedy is executed
-                self.N = self.Z.shape[1]
+                self.N = self.Z.shape[1] - 1 # without the "-1", when loading from disk at the end of the offline stage, 
+                                             # N would be equal to Nmax + 1 due to the "+1" in the training "for" loop
         
     #  @}
     ########################### end - I/O - end ########################### 
