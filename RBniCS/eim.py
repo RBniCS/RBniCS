@@ -68,6 +68,10 @@ class EIM(ParametrizedProblem):
         self.interpolation_coefficients = np.array([]) # online solution
         
         # $$ OFFLINE DATA STRUCTURES $$ #
+        # 4. Offline solutions
+        self.snap = Function(self.V) # temporary vector for storage of a function exact evaluation
+        self.red = Function(self.V) # temporary vector for storage of the function EIM approximation
+        self.er = Function(self.V) # temporary vector for storage of the error
         # 6. Basis functions matrix
         self.Z = []
         # 6bis. Declare a new matrix to store the snapshots
@@ -121,23 +125,17 @@ class EIM(ParametrizedProblem):
         
         # Solve the interpolation problem
         self.interpolation_coefficients = np.linalg.solve(lhs, rhs)
-    
-    ## Return an error bound for the current solution
-    def get_delta(self):
-        N = self.interpolation_coefficients.size(0)
-        
-        # Exact function evaluation at the next point
-        f_next_point = self.evaluate_parametrized_function_at_mu_and_x(self.mu, self.interpolation_points[N])
-        
-        # EIM function evaluation at the next point
-        eim_next_point = np.dot(self.interpolation_coefficients, self.interpolation_matrix[N, :])
-        
-        return abs(f_next_point - eim_next_point)
         
     ## Call online_solve and then convert the result of online solve from numpy to a tuple
-    def compute_interpolated_theta(self):
-        self.online_solve()
-        return tuple(self.interpolation_coefficients)
+    def compute_interpolated_theta(self, N=None):
+        self.online_solve(N)
+        interpolated_theta = tuple(self.interpolation_coefficients)
+        if N is not None:
+            # Make sure to append a 0 coefficient for each basis function
+            # which has not been requested
+            for n in range(N, self.N):
+                interpolated_theta += (0.0,)
+        return interpolated_theta
         
     ## Evaluate the parametrized function f(x; mu)
     def evaluate_parametrized_function_at_mu_and_x(self, mu, x):
@@ -202,9 +200,9 @@ class EIM(ParametrizedProblem):
         np.save(self.red_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
         np.save(self.basis_folder + "basis", self.Z)
         # Resize the interpolation matrix
-        self.interpolation_matrix = np.matrix(np.zeros((self.Nmax + 1, self.Nmax + 1)))
+        self.interpolation_matrix = np.matrix(np.zeros((self.Nmax, self.Nmax)))
         
-        for run in range(self.Nmax + 1): # the + 1 is needed for the error bound computation
+        for run in range(self.Nmax):
             print ":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::"
             
             print "load parametrized function for mu = ", self.mu
@@ -214,7 +212,7 @@ class EIM(ParametrizedProblem):
             self.online_solve()
             
             print "compute maximum interpolation error"
-            (maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error()
+            (maximum_error, maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error({"Output error": True, "Output location": True})
             if self.N == 0:
                 self.interpolation_points = np.array([maximum_point])
                 self.interpolation_points_dof = np.array([maximum_point_dof])
@@ -225,12 +223,12 @@ class EIM(ParametrizedProblem):
             np.save(self.red_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
             
             print "update basis matrix"
-            self.update_basis_matrix()
+            self.update_basis_matrix(maximum_error)
             
             print "update interpolation matrix"
             self.update_interpolation_matrix()
             
-            if self.N < self.Nmax + 1:
+            if self.N < self.Nmax:
                 print "find next mu"
                 self.greedy()
             else:
@@ -259,40 +257,65 @@ class EIM(ParametrizedProblem):
             sys.exit("Should never arrive here")
         self.snap.vector()[:] = np.array(self.snapshot_matrix[:, mu_index], dtype=np.float)
     
-    # Compute the interpolation error and its maximum location
-    def compute_maximum_interpolation_error(self):
+    # Compute the interpolation error and/or its maximum location
+    def compute_maximum_interpolation_error(self, output_options, N=None):
+        if N is None:
+            N = self.N
+        if not "Output error" in output_options:
+            output_options["Output error"] = False
+        if not "Output location" in output_options:
+            output_options["Output location"] = False
+        
         # self.snap now contains the exact function evaluation (loaded by truth solve)
         # Compute the error (difference with the eim approximation)
-        for n in range(self.N):
-            for d in range(self.snap.vector().size()):
-                self.snap.vector()[d] = float(self.snap.vector()[d] - self.interpolation_coefficients[n]*self.Z[d, n])
+        if N > 0:
+            snap_EIM = self.interpolation_coefficients[0]*self.Z[:, 0]
+            for n in range(1,N):
+                snap_EIM += self.interpolation_coefficients[n]*self.Z[:, n]
+            self.red.vector()[:] = snap_EIM
+            self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
+        else:
+            self.er.vector()[:] = self.snap.vector()[:]
         
-        # Locate the vertex of the mesh where the error is maximum
-        maximum_error = 0.0
-        maximum_point = None
-        maximum_point_dof = None
-        for dof_index in range(self.V.dim()):
-            vertex_index = self.dof_to_vertex_map[dof_index]
-            err = self.snap.vector()[dof_index]
-            if (abs(err) > abs(maximum_error) or (abs(err) == abs(maximum_error) and random.random() >= 0.5)):
-                maximum_error = err
-                maximum_point = self.V.mesh().coordinates()[vertex_index]
-                maximum_point_dof = dof_index
-        
-        # Normalize the function in self.snap
-        self.snap.vector()[:] /= maximum_error
-               
+        if output_options["Output error"] and not output_options["Output location"]:
+            maximum_error = self.er.vector().norm("linf")
+        elif output_options["Output location"]:
+            # Locate the vertex of the mesh where the error is maximum
+            maximum_error = 0.0
+            maximum_point = None
+            maximum_point_dof = None
+            for dof_index in range(self.V.dim()):
+                vertex_index = self.dof_to_vertex_map[dof_index]
+                err = self.er.vector()[dof_index]
+                if (abs(err) > abs(maximum_error) or (abs(err) == abs(maximum_error) and random.random() >= 0.5)):
+                    maximum_error = err
+                    maximum_point = self.V.mesh().coordinates()[vertex_index]
+                    maximum_point_dof = dof_index
+        else:
+            sys.exit("Invalid output options")
+            
         # Return
-        return (maximum_point, maximum_point_dof)
+        if output_options["Output error"] and output_options["Output location"]:
+            return (abs(maximum_error), maximum_point, maximum_point_dof)
+        elif output_options["Output error"]:
+            return abs(maximum_error)
+        elif output_options["Output location"]:
+            return (maximum_point, maximum_point_dof)
+        else:
+            sys.exit("Invalid output options")
         
     ## Update basis matrix
-    def update_basis_matrix(self):
+    def update_basis_matrix(self, maximum_error):
+        # Normalize the function in self.er
+        self.er.vector()[:] /= maximum_error
+        
+        # Append to self.Z
         if self.N == 0:
-            self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
+            self.Z = np.array(self.er.vector()).reshape(-1, 1) # as column vector
         else:
-            self.Z = np.hstack((self.Z, np.array(self.snap.vector()).reshape(-1, 1))) # add new basis functions as column vectors
+            self.Z = np.hstack((self.Z, np.array(self.er.vector()).reshape(-1, 1))) # add new basis functions as column vectors
         np.save(self.basis_folder + "basis", self.Z)
-        self.export_basis(self.snap, self.basis_folder + "basis_" + str(self.N))
+        self.export_basis(self.er, self.basis_folder + "basis_" + str(self.N))
         self.N += 1
         
     ## Assemble the reduced order affine expansion (matrix). Overridden 
@@ -317,13 +340,8 @@ class EIM(ParametrizedProblem):
             # ... the EIM approximation ...
             self.online_solve()
             
-            # ... and compute the difference
-            for n in range(self.N):
-                for d in range(self.snap.vector().size()):
-                    self.snap.vector()[d] = float(self.snap.vector()[d] - self.interpolation_coefficients[n]*self.Z[d, n])
-            
-            # Compute the maximum error
-            err = self.snap.vector().norm("linf")
+            # ... and compute the maximum error
+            err = self.compute_maximum_interpolation_error({"Output error": True})
             
             if (err > err_max):
                 err_max = err
@@ -368,6 +386,53 @@ class EIM(ParametrizedProblem):
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the empirical interpolation approximation with respect to the
+    # exact function over the test set
+    def error_analysis(self, N=None):
+        self.load_red_matrices()
+        if N is None:
+            N = self.N
+            
+        print "=============================================================="
+        print "=             EIM error analysis begins                      ="
+        print "=============================================================="
+        print ""
+        
+        error = np.zeros((N, len(self.xi_test)))
+        
+        for run in range(len(self.xi_test)):
+            print ":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::"
+            
+            self.setmu(self.xi_test[run])
+            
+            # Evaluate the exact function on the truth grid
+            f = self.evaluate_parametrized_function_at_mu(self.mu)
+            self.snap = interpolate(f, self.V)
+            
+            for n in range(N): # n = 0, 1, ... N - 1
+                self.online_solve(n)
+                error[n, run] = self.compute_maximum_interpolation_error({"Output error": True}, n)
+        
+        # Print some statistics
+        print ""
+        print "N \t gmean(err)"
+        for n in range(N): # n = 0, 1, ... N - 1
+            mean_error = np.exp(np.mean(np.log((error[n, :]))))
+            print str(n+1) + " \t " + str(mean_error)
+        
+        print ""
+        print "=============================================================="
+        print "=             EIM error analysis ends                        ="
+        print "=============================================================="
+        print ""
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
     
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods

@@ -117,6 +117,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## Assemble the reduced affine expansion (matrix)
     def aff_assemble_red_matrix(self, vec, theta_v, m, n):
         A_ = vec[0][:m,:n]*theta_v[0]
+        assert len(vec) == len(theta_v)
         for i in range(1,len(vec)):
             A_ += vec[i][:m,:n]*theta_v[i]
         return A_
@@ -124,6 +125,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## Assemble the reduced affine expansion (vector)
     def aff_assemble_red_vector(self, vec, theta_v, n):
         F_ = vec[0][:n]*theta_v[0]
+        assert len(vec) == len(theta_v)
         for i in range(1,len(vec)):
             F_ += vec[i][:n]*theta_v[i]
         return F_
