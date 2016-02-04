@@ -78,8 +78,8 @@ class SCM(ParametrizedProblem):
         self.snap_folder = "snapshots__scm/"
         self.basis_folder = "basis__scm/"
         self.dual_folder = "dual__scm/" # never used
-        self.red_matrices_folder = "red_matr__scm/"
-        self.pp_folder = "pp__scm/" # post processing
+        self.reduced_matrices_folder = "reduced_matrices__scm/"
+        self.post_processing_folder = "post_processing__scm/"
         # 
         self.mu_index = 0 # index of the greedy select parameter at the current iteration
         
@@ -106,9 +106,9 @@ class SCM(ParametrizedProblem):
         # if the user overwrites the training set but forgets to run the offline
         # phase he/she will get an error
         if import_successful == False:
-            if os.path.exists(self.red_matrices_folder):
-                shutil.rmtree(self.red_matrices_folder)
-            os.makedirs(self.red_matrices_folder)
+            if os.path.exists(self.reduced_matrices_folder):
+                shutil.rmtree(self.reduced_matrices_folder)
+            os.makedirs(self.reduced_matrices_folder)
         # Properly resize related structures
         self.alpha_LB_on_xi_train = np.zeros([ntrain])
         self.complement_C_J = range(ntrain)
@@ -122,7 +122,7 @@ class SCM(ParametrizedProblem):
     
     ## Get a lower bound for alpha
     def get_alpha_LB(self, mu, safeguard=True):
-        self.load_red_data_structures()
+        self.load_reduced_data_structures()
         
         lp = glpk.glp_create_prob()
         glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
@@ -235,7 +235,7 @@ class SCM(ParametrizedProblem):
     
     ## Get an upper bound for alpha
     def get_alpha_UB(self, mu):
-        self.load_red_data_structures()
+        self.load_reduced_data_structures()
         
         Qa = self.parametrized_problem.Qa
         N = self.N
@@ -303,16 +303,16 @@ class SCM(ParametrizedProblem):
         print "=             SCM offline phase begins                       ="
         print "=============================================================="
         print ""
-        if os.path.exists(self.pp_folder):
-            shutil.rmtree(self.pp_folder)
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.red_matrices_folder, self.pp_folder)
+        if os.path.exists(self.post_processing_folder):
+            shutil.rmtree(self.post_processing_folder)
+        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
         
         # Save M_e and M_p
-        np.save(self.red_matrices_folder + "M_e", self.M_e)
-        np.save(self.red_matrices_folder + "M_p", self.M_p)
+        np.save(self.reduced_matrices_folder + "M_e", self.M_e)
+        np.save(self.reduced_matrices_folder + "M_p", self.M_p)
         
         # Assemble the condensed versions of truth_A and S matrices
         self.assemble_condensed_truth_matrices()
@@ -333,9 +333,9 @@ class SCM(ParametrizedProblem):
             # Evaluate the coercivity constant
             print "evaluate the coercivity constant for mu = ", self.mu
             (alpha, eigenvector, UB_vector) = self.truth_coercivity_constant()
-            self.alpha_J += [alpha]; np.save(self.red_matrices_folder + "alpha_J", self.alpha_J)
+            self.alpha_J += [alpha]; np.save(self.reduced_matrices_folder + "alpha_J", self.alpha_J)
             self.eigenvector_J += [eigenvector]
-            self.UB_vectors_J += [UB_vector]; np.save(self.red_matrices_folder + "UB_vectors_J", self.UB_vectors_J)
+            self.UB_vectors_J += [UB_vector]; np.save(self.reduced_matrices_folder + "UB_vectors_J", self.UB_vectors_J)
             self.export_solution(eigenvector, self.snap_folder + "eigenvector_" + str(run))
             
             # Prepare for next iteration
@@ -414,8 +414,8 @@ class SCM(ParametrizedProblem):
             print "B_max[" + str(qa) + "] = " + str(r)
         
         # Save to file
-        np.save(self.red_matrices_folder + "B_min", self.B_min)
-        np.save(self.red_matrices_folder + "B_max", self.B_max)
+        np.save(self.reduced_matrices_folder + "B_min", self.B_min)
+        np.save(self.reduced_matrices_folder + "B_max", self.B_max)
     
     # Store the greedy parameter
     def update_C_J(self):
@@ -430,8 +430,8 @@ class SCM(ParametrizedProblem):
         self.N = len(self.C_J)
         
         # Save to file
-        np.save(self.red_matrices_folder + "C_J", self.C_J)
-        np.save(self.red_matrices_folder + "complement_C_J", self.complement_C_J)
+        np.save(self.reduced_matrices_folder + "C_J", self.C_J)
+        np.save(self.reduced_matrices_folder + "complement_C_J", self.complement_C_J)
         
     # Evaluate the coercivity constant
     def truth_coercivity_constant(self):
@@ -439,7 +439,7 @@ class SCM(ParametrizedProblem):
         
         self.parametrized_problem.setmu(self.mu)
         current_theta_a = self.parametrized_problem.compute_theta_a()
-        A = self.parametrized_problem.aff_assemble_truth_sym_matrix(self.truth_A__condensed_for_minimum_eigenvalue, current_theta_a)
+        A = self.parametrized_problem.affine_assemble_truth_symmetric_part_matrix(self.truth_A__condensed_for_minimum_eigenvalue, current_theta_a)
         A = as_backend_type(A)
         S = self.S__condensed
         S = as_backend_type(S)
@@ -491,23 +491,23 @@ class SCM(ParametrizedProblem):
                 munew_index = i
                 
         print "absolute SCM delta max = ", delta_max
-        if os.path.isfile(self.pp_folder + "delta_max.npy") == True:
-            d = np.load(self.pp_folder + "delta_max.npy")
+        if os.path.isfile(self.post_processing_folder + "delta_max.npy") == True:
+            d = np.load(self.post_processing_folder + "delta_max.npy")
             
-            np.save(self.pp_folder + "delta_max", np.append(d, delta_max))
+            np.save(self.post_processing_folder + "delta_max", np.append(d, delta_max))
     
-            m = np.load(self.pp_folder + "mu_greedy.npy")
-            np.save(self.pp_folder + "mu_greedy", np.append(m, munew))
+            m = np.load(self.post_processing_folder + "mu_greedy.npy")
+            np.save(self.post_processing_folder + "mu_greedy", np.append(m, munew))
         else:
-            np.save(self.pp_folder + "delta_max", delta_max)
-            np.save(self.pp_folder + "mu_greedy", np.array(munew))
+            np.save(self.post_processing_folder + "delta_max", delta_max)
+            np.save(self.post_processing_folder + "mu_greedy", np.array(munew))
 
         self.setmu(munew)
         self.mu_index = munew_index
         
         # Overwrite alpha_LB_on_xi_train
         self.alpha_LB_on_xi_train = alpha_LB_on_xi_train
-        np.save(self.red_matrices_folder + "alpha_LB_on_xi_train", self.alpha_LB_on_xi_train)
+        np.save(self.reduced_matrices_folder + "alpha_LB_on_xi_train", self.alpha_LB_on_xi_train)
     
     # Clear constrained dofs
     def clear_constrained_dofs(self, M_in, diag_value):
@@ -528,30 +528,30 @@ class SCM(ParametrizedProblem):
     #  @{
 
     ## Load reduced order data structures
-    def load_red_data_structures(self):
+    def load_reduced_data_structures(self):
         if len(np.asarray(self.B_min)) == 0: # avoid loading multiple times
-            self.B_min = np.load(self.red_matrices_folder + "B_min.npy")
+            self.B_min = np.load(self.reduced_matrices_folder + "B_min.npy")
         if len(np.asarray(self.B_max)) == 0: # avoid loading multiple times
-            self.B_max = np.load(self.red_matrices_folder + "B_max.npy")
+            self.B_max = np.load(self.reduced_matrices_folder + "B_max.npy")
         if len(np.asarray(self.C_J)) == 0: # avoid loading multiple times
-            self.C_J = np.load(self.red_matrices_folder + "C_J.npy")
+            self.C_J = np.load(self.reduced_matrices_folder + "C_J.npy")
             self.N = len(self.C_J)
         if len(np.asarray(self.complement_C_J)) == 0: # avoid loading multiple times
-            self.complement_C_J = np.load(self.red_matrices_folder + "complement_C_J.npy")
+            self.complement_C_J = np.load(self.reduced_matrices_folder + "complement_C_J.npy")
         if len(np.asarray(self.alpha_J)) == 0: # avoid loading multiple times
-            self.alpha_J = np.load(self.red_matrices_folder + "alpha_J.npy")
+            self.alpha_J = np.load(self.reduced_matrices_folder + "alpha_J.npy")
         if len(np.asarray(self.alpha_LB_on_xi_train)) == 0: # avoid loading multiple times
-            self.alpha_LB_on_xi_train = np.load(self.red_matrices_folder + "alpha_LB_on_xi_train.npy")
+            self.alpha_LB_on_xi_train = np.load(self.reduced_matrices_folder + "alpha_LB_on_xi_train.npy")
         if len(np.asarray(self.UB_vectors_J)) == 0: # avoid loading multiple times
-            self.UB_vectors_J = np.load(self.red_matrices_folder + "UB_vectors_J.npy")
+            self.UB_vectors_J = np.load(self.reduced_matrices_folder + "UB_vectors_J.npy")
         if not self.M_e: # avoid loading multiple times
-            self.M_e = np.load(self.red_matrices_folder + "M_e.npy")
+            self.M_e = np.load(self.reduced_matrices_folder + "M_e.npy")
             self.M_e = int(self.M_e)
         if not self.M_p: # avoid loading multiple times
-            self.M_p = np.load(self.red_matrices_folder + "M_p.npy")
+            self.M_p = np.load(self.reduced_matrices_folder + "M_p.npy")
             self.M_p = int(self.M_p)
         if len(np.asarray(self.xi_train)) == 0: # avoid loading multiple times
-            self.xi_train = np.load(self.red_matrices_folder + "xi_train.npy")
+            self.xi_train = np.load(self.reduced_matrices_folder + "xi_train.npy")
     
     ## Export solution in VTK format
     def export_solution(self, solution, filename):

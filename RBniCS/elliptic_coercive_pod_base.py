@@ -49,11 +49,11 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         # 9. I/O
         self.xi_train_folder = "xi_train__pod/"
         self.xi_test_folder = "xi_test__pod/"
-        self.snap_folder = "snapshots__pod/"
+        self.snapshots_folder = "snapshots__pod/"
         self.basis_folder = "basis__pod/"
         self.dual_folder = "dual__pod/" # never used
-        self.red_matrices_folder = "red_matr__pod/"
-        self.pp_folder = "pp__pod/" # post processing
+        self.reduced_matrices_folder = "reduced_matrices__pod/"
+        self.post_processing_folder = "post_processing__pod/" # 
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -77,9 +77,9 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print "=             Offline phase begins                           ="
         print "=============================================================="
         print ""
-        if os.path.exists(self.pp_folder):
-            shutil.rmtree(self.pp_folder)
-        folders = (self.snap_folder, self.basis_folder, self.red_matrices_folder, self.pp_folder)
+        if os.path.exists(self.post_processing_folder):
+            shutil.rmtree(self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -98,7 +98,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             
             print "truth solve for mu = ", self.mu
             self.truth_solve()
-            self.export_solution(self.snap, self.snap_folder + "truth_" + str(run))
+            self.export_solution(self.snapshot, self.snapshots_folder + "truth_" + str(run))
             
             print "update snapshot matrix"
             self.update_snapshot_matrix()
@@ -107,12 +107,12 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             run += 1
             
         print "############################## perform POD ######################################"
-        (self.Z, self.N) = self.apply_POD(self.S, self.pp_folder + "eigs", self.Nmax, self.tol)
+        (self.Z, self.N) = self.apply_POD(self.S, self.post_processing_folder + "eigs", self.Nmax, self.tol)
         
         print ""
         print "build reduced matrices"
-        self.build_red_matrices()
-        self.build_red_vectors()
+        self.build_reduced_matrices()
+        self.build_reduced_vectors()
         
         print ""
         print "=============================================================="
@@ -122,11 +122,11 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
-        self.POD.store_single_snapshot(self.snap)
+        self.POD.store_single_snapshot(self.snapshot)
         
     ## Apply POD
-    def apply_POD(self, S, pp_file, Nmax, tol):
-        (Z, N) = self.POD.apply(S, pp_file, Nmax, tol)
+    def apply_POD(self, S, eigenvalues_file, Nmax, tol):
+        (Z, N) = self.POD.apply(S, eigenvalues_file, Nmax, tol)
         np.save(self.basis_folder + "basis", Z)
         current_basis = Function(self.V)
         for b in range(N):
@@ -144,7 +144,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
-        self.load_red_matrices()
+        self.load_reduced_matrices()
         if N is None:
             N = self.N
             

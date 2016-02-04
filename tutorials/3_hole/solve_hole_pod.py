@@ -172,7 +172,7 @@ class Hole(EllipticCoercivePODBase):
         # ... and then deform the mesh and perform the plot
         if with_plot == True:
             self.move_mesh()
-            plot(self.red, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+            plot(self.reduced, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
             self.reset_reference()
     
     ## Deform the mesh as a function of the geometrical parameters mu_1 and mu_2

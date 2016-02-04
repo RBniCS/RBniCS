@@ -197,7 +197,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         # CHECK il resto del metodo
         self.POD.clear()
         self.POD.store_multiple_snapshots(self.all_snap)
-        (zz, n) = self.POD.apply(self.S, self.pp_folder + "eigs", self.M1, self.tol)
+        (zz, n) = self.POD.apply(self.S, self.post_processing_folder + "eigs", self.M1, self.tol)
         if self.N == 0:
             self.Z = zz
             self.N += n
@@ -207,7 +207,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
             Z = np.hstack((self.Z,zz))
             self.POD.clear()
             self.POD.store_multiple_snapshots(Z)
-            (self.Z, self.N) = self.POD.apply(self.S, self.pp_folder + "eigs", N+self.M2, self.tol)
+            (self.Z, self.N) = self.POD.apply(self.S, self.post_processing_folder + "eigs", N+self.M2, self.tol)
         np.save(self.basis_folder + "basis", self.Z)
     
         
@@ -224,16 +224,16 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                 delta_max = delta
                 munew = mu
         print "absolute delta max = ", delta_max
-        if os.path.isfile(self.pp_folder + "delta_max.npy") == True:
-            d = np.load(self.pp_folder + "delta_max.npy")
+        if os.path.isfile(self.post_processing_folder + "delta_max.npy") == True:
+            d = np.load(self.post_processing_folder + "delta_max.npy")
             
-            np.save(self.pp_folder + "delta_max", np.append(d, delta_max))
+            np.save(self.post_processing_folder + "delta_max", np.append(d, delta_max))
     
-            m = np.load(self.pp_folder + "mu_greedy.npy")
-            np.save(self.pp_folder + "mu_greedy", np.append(m, munew))
+            m = np.load(self.post_processing_folder + "mu_greedy.npy")
+            np.save(self.post_processing_folder + "mu_greedy", np.append(m, munew))
         else:
-            np.save(self.pp_folder + "delta_max", delta_max)
-            np.save(self.pp_folder + "mu_greedy", np.array(munew))
+            np.save(self.post_processing_folder + "delta_max", delta_max)
+            np.save(self.post_processing_folder + "mu_greedy", np.array(munew))
 
         self.setmu(munew)
         
@@ -351,11 +351,11 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     #  @{
     
     ## Load reduced order data structures
-    def load_red_matrices(self):
+    def load_reduced_matrices(self):
         # Read in data structures as in parents
         # (need to call them explicitly because this method was overridden in both parents)
-        ParabolicCoerciveBase.load_red_matrices(self)
-        EllipticCoerciveBase.load_red_matrices(self)
+        ParabolicCoerciveBase.load_reduced_matrices(self)
+        EllipticCoerciveBase.load_reduced_matrices(self)
     
     #  @}
     ########################### end - I/O - end ###########################  

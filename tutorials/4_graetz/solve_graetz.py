@@ -234,9 +234,9 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
         # ... and then deform the mesh and perform the plot
         if with_plot == True:
             self.move_mesh()
-            red_with_lifting = Function(self.V)
-            red_with_lifting.vector()[:] = self.red.vector()[:] + self.lifting.vector()[:]
-            plot(red_with_lifting, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+            reduced_with_lifting = Function(self.V)
+            reduced_with_lifting.vector()[:] = self.reduced.vector()[:] + self.lifting.vector()[:]
+            plot(reduced_with_lifting, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
             self.reset_reference()
     
     ## Deform the mesh as a function of the geometrical parameter mu_1

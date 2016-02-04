@@ -53,24 +53,24 @@ class ProperOrthogonalDecomposition():
     #  @{
     
     ## Store a single snapshot in the snapshot matrix
-    def store_single_snapshot(self, snap):
+    def store_single_snapshot(self, snapshot):
         if self.snapshot_matrix.size == 0: # for the first snapshot
-            self.snapshot_matrix = np.array(snap.vector()).reshape(-1, 1) # as column vector
+            self.snapshot_matrix = np.array(snapshot.vector()).reshape(-1, 1) # as column vector
         else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(snap.vector()).reshape(-1, 1))) # add new snapshots as column vectors
+            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(snapshot.vector()).reshape(-1, 1))) # add new snapshots as column vectors
             
     ## Store a multiple snapshots in the snapshot matrix
-    def store_multiple_snapshots(self, snap):
+    def store_multiple_snapshots(self, snapshots):
         if self.snapshot_matrix.size == 0: # for the first snapshot
-            self.snapshot_matrix = np.array(snap) # as column vectors
+            self.snapshot_matrix = np.array(snapshots) # as column vectors
         else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(snap))) # add new snapshots as column vectors
+            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(snapshots))) # add new snapshots as column vectors
             
     ## Perform POD on the snapshots previously computed, and store the first
     #  POD modes in the basis functions matrix.
     #  Input arguments are: inner product matrix, post processing file, Nmax and tol (mutually exclusive)
     #  Output arguments are: POD modes, number of POD modes
-    def apply(self, S, pp_file, Nmax, tol):
+    def apply(self, S, eigenvalues_file, Nmax, tol):
         S = as_backend_type(S)
         dim = S.size(0) # = S.size(1)
         corr = np.matrix(np.dot(self.snapshot_matrix.T,np.matrix(np.dot(S.mat().getValues(range(dim),range(dim)),self.snapshot_matrix))))
@@ -80,7 +80,7 @@ class ProperOrthogonalDecomposition():
         eigs = eigs[idx]
    
         eigv = eigv[:,idx]
-        np.save(pp_file,eigs)
+        np.save(eigenvalues_file,eigs)
         
         # Remove (negigible) complex parts
         eigs = np.real(eigs)

@@ -52,8 +52,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.theta_a = ()
         self.theta_f = ()
         # 3c. Reduced order matrices/vectors
-        self.red_A = ()
-        self.red_F = ()
+        self.reduced_A = ()
+        self.reduced_F = ()
         # 4. Online solution
         self.uN = 0 # vector of dimension N storing the reduced order solution
         
@@ -62,9 +62,9 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.truth_A = ()
         self.truth_F = ()
         # 4. Offline solutions
-        self.snap = Function(V) # temporary vector for storage of a truth solution
-        self.red = Function(V) # temporary vector for storage of the FE reconstruction of the reduced solution
-        self.er = Function(V) # temporary vector for storage of the error
+        self.snapshot = Function(V) # temporary vector for storage of a truth solution
+        self.reduced = Function(V) # temporary vector for storage of the FE reconstruction of the reduced solution
+        self.error = Function(V) # temporary vector for storage of the error
         # 6. Basis functions matrix
         self.Z = np.array([])
         # 7. Truth space, functions and inner products
@@ -88,34 +88,34 @@ class EllipticCoerciveBase(ParametrizedProblem):
     
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def online_solve(self, N=None, with_plot=True):
-        self.load_red_matrices()
+        self.load_reduced_matrices()
         if N is None:
             N = self.N
-        self.red_solve(N)
+        self._online_solve(N)
         sol = self.Z[:, 0]*self.uN[0]
         i=1
         for un in self.uN[1:]:
             sol += self.Z[:, i]*un
             i+=1
-        self.red.vector()[:] = sol
+        self.reduced.vector()[:] = sol
         if with_plot == True:
-            plot(self.red, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+            plot(self.reduced, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
     
     # Perform an online solve (internal)
-    def red_solve(self, N):
+    def _online_solve(self, N):
         self.theta_a = self.compute_theta_a()
         self.theta_f = self.compute_theta_f()
-        assembled_red_A = self.aff_assemble_red_matrix(self.red_A, self.theta_a, N, N)
-        assembled_red_F = self.aff_assemble_red_vector(self.red_F, self.theta_f, N)
-        if isinstance(assembled_red_A, float) == True:
-            uN = assembled_red_F/assembled_red_A
+        assembled_reduced_A = self.affine_assemble_reduced_matrix(self.reduced_A, self.theta_a, N, N)
+        assembled_reduced_F = self.affine_assemble_reduced_vector(self.reduced_F, self.theta_f, N)
+        if isinstance(assembled_reduced_A, float) == True:
+            uN = assembled_reduced_F/assembled_reduced_A
         else:
-            uN = np.linalg.solve(assembled_red_A, assembled_red_F)
+            uN = np.linalg.solve(assembled_reduced_A, assembled_reduced_F)
             uN = uN.reshape(-1, 1) # as column vector
         self.uN = uN
         
     ## Assemble the reduced affine expansion (matrix)
-    def aff_assemble_red_matrix(self, vec, theta_v, m, n):
+    def affine_assemble_reduced_matrix(self, vec, theta_v, m, n):
         A_ = vec[0][:m,:n]*theta_v[0]
         assert len(vec) == len(theta_v)
         for i in range(1,len(vec)):
@@ -123,7 +123,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         return A_
         
     ## Assemble the reduced affine expansion (vector)
-    def aff_assemble_red_vector(self, vec, theta_v, n):
+    def affine_assemble_reduced_vector(self, vec, theta_v, n):
         F_ = vec[0][:n]*theta_v[0]
         assert len(vec) == len(theta_v)
         for i in range(1,len(vec)):
@@ -145,20 +145,20 @@ class EllipticCoerciveBase(ParametrizedProblem):
     def truth_solve(self):
         self.theta_a = self.compute_theta_a()
         self.theta_f = self.compute_theta_f()
-        assembled_truth_A = self.aff_assemble_truth_matrix(self.truth_A, self.theta_a)
-        assembled_truth_F = self.aff_assemble_truth_vector(self.truth_F, self.theta_f)
-        solve(assembled_truth_A, self.snap.vector(), assembled_truth_F)
+        assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a)
+        assembled_truth_F = self.affine_assemble_truth_vector(self.truth_F, self.theta_f)
+        solve(assembled_truth_A, self.snapshot.vector(), assembled_truth_F)
         
     ## Assemble the truth affine expansion (matrix)
-    def aff_assemble_truth_matrix(self, vec, theta_v):
+    def affine_assemble_truth_matrix(self, vec, theta_v):
         A_ = vec[0]*theta_v[0]
         for i in range(1,len(vec)):
             A_ += vec[i]*theta_v[i]
         return A_
         
     ## Assemble the symmetric part of the the truth affine expansion (matrix)
-    def aff_assemble_truth_sym_matrix(self, vec, theta_v):
-        A_ = self.aff_assemble_truth_matrix(vec, theta_v)
+    def affine_assemble_truth_symmetric_part_matrix(self, vec, theta_v):
+        A_ = self.affine_assemble_truth_matrix(vec, theta_v)
         AT_ = self.compute_transpose(A_)
         A_ += AT_
         A_ /= 2.
@@ -167,7 +167,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## Assemble the truth affine expansion (vector)
     #  (the implementation is acutally the same of the matrix case, but this method is
     #   provided here for symmetry with the reduced case)
-    def aff_assemble_truth_vector(self, vec, theta_v):
+    def affine_assemble_truth_vector(self, vec, theta_v):
         F_ = vec[0]*theta_v[0]
         for i in range(1,len(vec)):
             F_ += vec[i]*theta_v[i]
@@ -188,29 +188,28 @@ class EllipticCoerciveBase(ParametrizedProblem):
                 [bc.apply(vec[i]) for bc in self.bc_list]
         
     ## Assemble the reduced order affine expansion (matrix)
-    def build_red_matrices(self):
-        red_A = ()
+    def build_reduced_matrices(self):
+        reduced_A = ()
         for A in self.truth_A:
             A = as_backend_type(A)
             dim = A.size(0) # = A.size(1)
             if self.N == 1:
-                red_A += (np.dot(self.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
+                reduced_A += (np.dot(self.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
             else:
-                red = np.matrix(np.dot(self.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.Z))))
-                red_A += (red,)
-        self.red_A = red_A
-        np.save(self.red_matrices_folder + "red_A", self.red_A)
+                reduced_A += (np.matrix(np.dot(self.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.Z)))),)
+        self.reduced_A = reduced_A
+        np.save(self.reduced_matrices_folder + "reduced_A", self.reduced_A)
     
     ## Assemble the reduced order affine expansion (rhs)
-    def build_red_vectors(self):
-        red_F = ()
+    def build_reduced_vectors(self):
+        reduced_F = ()
         for F in self.truth_F:
             F = as_backend_type(F)
             dim = F.size()
-            red_f = np.dot(self.Z.T, F.vec().getValues(range(dim)) )
-            red_F += (red_f,)
-        self.red_F = red_F
-        np.save(self.red_matrices_folder + "red_F", self.red_F)
+            reduced_f = np.dot(self.Z.T, F.vec().getValues(range(dim)) )
+            reduced_F += (reduced_f,)
+        self.reduced_F = reduced_F
+        np.save(self.reduced_matrices_folder + "reduced_F", self.reduced_F)
     
     ## Auxiliary internal method to compute the scalar product (v1, M*v2)
     def compute_scalar(self,v1,v2,M):
@@ -237,11 +236,11 @@ class EllipticCoerciveBase(ParametrizedProblem):
         if not skip_truth_solve:
             self.truth_solve()
         self.online_solve(N, False)
-        self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
+        self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
         self.theta_a = self.compute_theta_a() # not really necessary, for symmetry with the parabolic case
-        assembled_truth_A_sym = self.aff_assemble_truth_sym_matrix(self.truth_A, self.theta_a)
-        error = self.compute_scalar(self.er, self.er, assembled_truth_A_sym) # norm of the error
-        return np.sqrt(error)
+        assembled_truth_A_sym = self.affine_assemble_truth_symmetric_part_matrix(self.truth_A, self.theta_a)
+        error_norm_squared = self.compute_scalar(self.error, self.error, assembled_truth_A_sym) # norm of the error
+        return np.sqrt(error_norm_squared)
         
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
@@ -256,11 +255,11 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #  @{
     
     ## Load reduced order data structures
-    def load_red_matrices(self):
-        if len(np.asarray(self.red_A)) == 0: # avoid loading multiple times
-            self.red_A = tuple(np.load(self.red_matrices_folder + "red_A.npy"))
-        if len(np.asarray(self.red_F)) == 0: # avoid loading multiple times
-            self.red_F = tuple(np.load(self.red_matrices_folder + "red_F.npy"))
+    def load_reduced_matrices(self):
+        if len(np.asarray(self.reduced_A)) == 0: # avoid loading multiple times
+            self.reduced_A = tuple(np.load(self.reduced_matrices_folder + "reduced_A.npy"))
+        if len(np.asarray(self.reduced_F)) == 0: # avoid loading multiple times
+            self.reduced_F = tuple(np.load(self.reduced_matrices_folder + "reduced_F.npy"))
         if len(np.asarray(self.Z)) == 0: # avoid loading multiple times
             self.Z = np.load(self.basis_folder + "basis.npy")
             self.N = self.Z.shape[1]

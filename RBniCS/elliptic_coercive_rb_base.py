@@ -61,11 +61,11 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # 6bis. Declare a GS object
         self.GS = GramSchmidt()
         # 9. I/O
-        self.snap_folder = "snapshots/"
+        self.snapshots_folder = "snapshots/"
         self.basis_folder = "basis/"
         self.dual_folder = "dual/"
-        self.red_matrices_folder = "red_matr/"
-        self.pp_folder = "pp/" # post processing
+        self.reduced_matrices_folder = "reduced_matrices/"
+        self.post_processing_folder = "post_processing/"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -78,8 +78,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     def online_output(self):
         N = self.uN.size
         self.theta_f = self.compute_theta_f()
-        assembled_red_F = self.aff_assemble_red_vector(self.red_F, self.theta_f, N)
-        self.sN = float(np.dot(assembled_red_F, self.uN))
+        assembled_reduced_F = self.affine_assemble_reduced_vector(self.reduced_F, self.theta_f, N)
+        self.sN = float(np.dot(assembled_reduced_F, self.uN))
         
     ## Return an error bound for the current solution
     def get_delta(self):
@@ -153,9 +153,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         print "=             Offline phase begins                           ="
         print "=============================================================="
         print ""
-        if os.path.exists(self.pp_folder):
-            shutil.rmtree(self.pp_folder)
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.red_matrices_folder, self.pp_folder)
+        if os.path.exists(self.post_processing_folder):
+            shutil.rmtree(self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -172,17 +172,17 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             
             print "truth solve for mu = ", self.mu
             self.truth_solve()
-            self.export_solution(self.snap, self.snap_folder + "truth_" + str(run))
+            self.export_solution(self.snapshot, self.snapshots_folder + "truth_" + str(run))
             
             print "update basis matrix"
             self.update_basis_matrix()
             
             print "build reduced matrices"
-            self.build_red_matrices()
-            self.build_red_vectors()
+            self.build_reduced_matrices()
+            self.build_reduced_vectors()
             
-            print "solve rb"
-            self.red_solve(self.N)
+            print "reduced order solve"
+            self._online_solve(self.N)
             
             print "build matrices for error estimation (it may take a while)"
             self.compute_dual_terms()
@@ -203,10 +203,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## Update basis matrix
     def update_basis_matrix(self):
         if self.N == 0:
-            self.Z = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
+            self.Z = np.array(self.snapshot.vector()).reshape(-1, 1) # as column vector
             self.Z /= np.sqrt(np.dot(self.Z[:, 0], self.S*self.Z[:, 0]))
         else:
-            self.Z = np.hstack((self.Z, np.array(self.snap.vector()).reshape(-1, 1))) # add new basis functions as column vectors
+            self.Z = np.hstack((self.Z, np.array(self.snapshot.vector()).reshape(-1, 1))) # add new basis functions as column vectors
             self.Z = self.GS.apply(self.Z, self.S)
         np.save(self.basis_folder + "basis", self.Z)
         current_basis = Function(self.V)
@@ -220,22 +220,22 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         munew = None
         for mu in self.xi_train:
             self.setmu(mu)
-            self.red_solve(self.N)
+            self._online_solve(self.N)
             delta = self.get_delta()
             if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
         print "absolute delta max = ", delta_max
-        if os.path.isfile(self.pp_folder + "delta_max.npy") == True:
-            d = np.load(self.pp_folder + "delta_max.npy")
+        if os.path.isfile(self.post_processing_folder + "delta_max.npy") == True:
+            d = np.load(self.post_processing_folder + "delta_max.npy")
             
-            np.save(self.pp_folder + "delta_max", np.append(d, delta_max))
+            np.save(self.post_processing_folder + "delta_max", np.append(d, delta_max))
     
-            m = np.load(self.pp_folder + "mu_greedy.npy")
-            np.save(self.pp_folder + "mu_greedy", np.append(m, munew))
+            m = np.load(self.post_processing_folder + "mu_greedy.npy")
+            np.save(self.post_processing_folder + "mu_greedy", np.append(m, munew))
         else:
-            np.save(self.pp_folder + "delta_max", delta_max)
-            np.save(self.pp_folder + "mu_greedy", np.array(munew))
+            np.save(self.post_processing_folder + "delta_max", delta_max)
+            np.save(self.post_processing_folder + "mu_greedy", np.array(munew))
 
         self.setmu(munew)
         
@@ -334,8 +334,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## Perform a truth evaluation of the output
     def truth_output(self):
         self.theta_f = self.compute_theta_f()
-        assembled_truth_F = self.aff_assemble_truth_vector(self.truth_F, self.theta_f)
-        self.s = assembled_truth_F.inner(self.snap.vector())
+        assembled_truth_F = self.affine_assemble_truth_vector(self.truth_F, self.theta_f)
+        self.s = assembled_truth_F.inner(self.snapshot.vector())
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -358,7 +358,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
-        self.load_red_matrices()
+        self.load_reduced_matrices()
         if N is None:
             N = self.N
             
@@ -439,9 +439,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## @defgroup IO Input/output methods
     #  @{
     
-    def load_red_matrices(self):
+    def load_reduced_matrices(self):
         # Read in data structures as in parent
-        EllipticCoerciveBase.load_red_matrices(self)
+        EllipticCoerciveBase.load_reduced_matrices(self)
         # Moreover, read also data structures related to the dual
         if len(np.asarray(self.CC)) == 0: # avoid loading multiple times
             self.CC = np.load(self.dual_folder + "CC.npy")

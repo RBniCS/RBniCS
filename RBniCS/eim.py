@@ -69,9 +69,9 @@ class EIM(ParametrizedProblem):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 4. Offline solutions
-        self.snap = Function(self.V) # temporary vector for storage of a function exact evaluation
-        self.red = Function(self.V) # temporary vector for storage of the function EIM approximation
-        self.er = Function(self.V) # temporary vector for storage of the error
+        self.snapshot = Function(self.V) # temporary vector for storage of a function exact evaluation
+        self.reduced = Function(self.V) # temporary vector for storage of the function EIM approximation
+        self.error = Function(self.V) # temporary vector for storage of the error
         # 6. Basis functions matrix
         self.Z = []
         # 6bis. Declare a new matrix to store the snapshots
@@ -79,11 +79,11 @@ class EIM(ParametrizedProblem):
         # 9. I/O
         self.xi_train_folder = "xi_train__eim/"
         self.xi_test_folder = "xi_test__eim/"
-        self.snap_folder = "snapshots__eim/"
+        self.snapshots_folder = "snapshots__eim/"
         self.basis_folder = "basis__eim/"
         self.dual_folder = "dual__eim/" # never used
-        self.red_matrices_folder = "red_matr__eim/"
-        self.pp_folder = "pp__eim/" # post processing
+        self.reduced_matrices_folder = "reduced_matrices__eim/"
+        self.post_processing_folder = "post_processing__eim/"
         #
         self.mu_index = 0
         
@@ -108,7 +108,7 @@ class EIM(ParametrizedProblem):
     
     # Perform an online solve.
     def online_solve(self, N=None):
-        self.load_red_matrices()
+        self.load_reduced_matrices()
         if N is None:
             N = self.N
         
@@ -158,9 +158,9 @@ class EIM(ParametrizedProblem):
         print "=             EIM preprocessing phase begins                 ="
         print "=============================================================="
         print ""
-        if os.path.exists(self.pp_folder):
-            shutil.rmtree(self.pp_folder)
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.red_matrices_folder, self.pp_folder)
+        if os.path.exists(self.post_processing_folder):
+            shutil.rmtree(self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -172,8 +172,8 @@ class EIM(ParametrizedProblem):
             print "evaluate parametrized function"
             self.setmu(self.xi_train[run])
             f = self.evaluate_parametrized_function_at_mu(self.mu)
-            self.snap = interpolate(f, self.V)
-            self.export_solution(self.snap, self.snap_folder + "truth_" + str(run))
+            self.snapshot = interpolate(f, self.V)
+            self.export_solution(self.snapshot, self.snapshots_folder + "truth_" + str(run))
             
             print "update snapshot matrix"
             self.update_snapshot_matrix()
@@ -195,9 +195,9 @@ class EIM(ParametrizedProblem):
         self.setmu(self.xi_train[0])
         self.mu_index = 0
         # Create empty files
-        np.save(self.red_matrices_folder + "interpolation_points", self.interpolation_points)
-        np.save(self.red_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
-        np.save(self.red_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
+        np.save(self.reduced_matrices_folder + "interpolation_points", self.interpolation_points)
+        np.save(self.reduced_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
+        np.save(self.reduced_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
         np.save(self.basis_folder + "basis", self.Z)
         # Resize the interpolation matrix
         self.interpolation_matrix = np.matrix(np.zeros((self.Nmax, self.Nmax)))
@@ -219,8 +219,8 @@ class EIM(ParametrizedProblem):
             else:
                 self.interpolation_points = np.vstack((self.interpolation_points, [maximum_point]))
                 self.interpolation_points_dof = np.vstack((self.interpolation_points_dof, [maximum_point_dof]))
-            np.save(self.red_matrices_folder + "interpolation_points", self.interpolation_points)
-            np.save(self.red_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
+            np.save(self.reduced_matrices_folder + "interpolation_points", self.interpolation_points)
+            np.save(self.reduced_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
             
             print "update basis matrix"
             self.update_basis_matrix(maximum_error)
@@ -244,9 +244,9 @@ class EIM(ParametrizedProblem):
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
         if self.snapshot_matrix.size == 0: # for the first snapshot
-            self.snapshot_matrix = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
+            self.snapshot_matrix = np.array(self.snapshot.vector()).reshape(-1, 1) # as column vector
         else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(self.snap.vector()).reshape(-1, 1))) # add new snapshots as column vectors
+            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(self.snapshot.vector()).reshape(-1, 1))) # add new snapshots as column vectors
             
     ## The truth_solve method just returns the precomputed snapshot
     def load_snapshot(self):
@@ -255,7 +255,7 @@ class EIM(ParametrizedProblem):
         if mu != self.xi_train[mu_index]:
             # There is something wrong if we are here...
             sys.exit("Should never arrive here")
-        self.snap.vector()[:] = np.array(self.snapshot_matrix[:, mu_index], dtype=np.float)
+        self.snapshot.vector()[:] = np.array(self.snapshot_matrix[:, mu_index], dtype=np.float)
     
     # Compute the interpolation error and/or its maximum location
     def compute_maximum_interpolation_error(self, output_options, N=None):
@@ -266,19 +266,19 @@ class EIM(ParametrizedProblem):
         if not "Output location" in output_options:
             output_options["Output location"] = False
         
-        # self.snap now contains the exact function evaluation (loaded by truth solve)
+        # self.snapshot now contains the exact function evaluation (loaded by truth solve)
         # Compute the error (difference with the eim approximation)
         if N > 0:
-            snap_EIM = self.interpolation_coefficients[0]*self.Z[:, 0]
+            snapshot_EIM = self.interpolation_coefficients[0]*self.Z[:, 0]
             for n in range(1,N):
-                snap_EIM += self.interpolation_coefficients[n]*self.Z[:, n]
-            self.red.vector()[:] = snap_EIM
-            self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
+                snapshot_EIM += self.interpolation_coefficients[n]*self.Z[:, n]
+            self.reduced.vector()[:] = snapshot_EIM
+            self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
         else:
-            self.er.vector()[:] = self.snap.vector()[:]
+            self.error.vector()[:] = self.snapshot.vector()[:]
         
         if output_options["Output error"] and not output_options["Output location"]:
-            maximum_error = self.er.vector().norm("linf")
+            maximum_error = self.error.vector().norm("linf")
         elif output_options["Output location"]:
             # Locate the vertex of the mesh where the error is maximum
             maximum_error = 0.0
@@ -286,7 +286,7 @@ class EIM(ParametrizedProblem):
             maximum_point_dof = None
             for dof_index in range(self.V.dim()):
                 vertex_index = self.dof_to_vertex_map[dof_index]
-                err = self.er.vector()[dof_index]
+                err = self.error.vector()[dof_index]
                 if (abs(err) > abs(maximum_error) or (abs(err) == abs(maximum_error) and random.random() >= 0.5)):
                     maximum_error = err
                     maximum_point = self.V.mesh().coordinates()[vertex_index]
@@ -306,16 +306,16 @@ class EIM(ParametrizedProblem):
         
     ## Update basis matrix
     def update_basis_matrix(self, maximum_error):
-        # Normalize the function in self.er
-        self.er.vector()[:] /= maximum_error
+        # Normalize the function in self.error
+        self.error.vector()[:] /= maximum_error
         
         # Append to self.Z
         if self.N == 0:
-            self.Z = np.array(self.er.vector()).reshape(-1, 1) # as column vector
+            self.Z = np.array(self.error.vector()).reshape(-1, 1) # as column vector
         else:
-            self.Z = np.hstack((self.Z, np.array(self.er.vector()).reshape(-1, 1))) # add new basis functions as column vectors
+            self.Z = np.hstack((self.Z, np.array(self.error.vector()).reshape(-1, 1))) # add new basis functions as column vectors
         np.save(self.basis_folder + "basis", self.Z)
-        self.export_basis(self.er, self.basis_folder + "basis_" + str(self.N))
+        self.export_basis(self.error, self.basis_folder + "basis_" + str(self.N))
         self.N += 1
         
     ## Assemble the reduced order affine expansion (matrix). Overridden 
@@ -323,7 +323,7 @@ class EIM(ParametrizedProblem):
     def update_interpolation_matrix(self):
         for j in range(self.N):
             self.interpolation_matrix[self.N - 1, j] = self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[self.N - 1])
-        np.save(self.red_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
+        np.save(self.reduced_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
             
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
@@ -348,16 +348,16 @@ class EIM(ParametrizedProblem):
                 munew = self.xi_train[i]
                 munew_index = i
         print "absolute err max = ", err_max
-        if os.path.isfile(self.pp_folder + "err_max.npy") == True:
-            d = np.load(self.pp_folder + "err_max.npy")
+        if os.path.isfile(self.post_processing_folder + "err_max.npy") == True:
+            d = np.load(self.post_processing_folder + "err_max.npy")
             
-            np.save(self.pp_folder + "err_max", np.append(d, err_max))
+            np.save(self.post_processing_folder + "err_max", np.append(d, err_max))
     
-            m = np.load(self.pp_folder + "mu_greedy.npy")
-            np.save(self.pp_folder + "mu_greedy", np.append(m, munew))
+            m = np.load(self.post_processing_folder + "mu_greedy.npy")
+            np.save(self.post_processing_folder + "mu_greedy", np.append(m, munew))
         else:
-            np.save(self.pp_folder + "err_max", err_max)
-            np.save(self.pp_folder + "mu_greedy", np.array(munew))
+            np.save(self.post_processing_folder + "err_max", err_max)
+            np.save(self.post_processing_folder + "mu_greedy", np.array(munew))
 
         self.setmu(munew)
         self.mu_index = munew_index
@@ -394,7 +394,7 @@ class EIM(ParametrizedProblem):
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the test set
     def error_analysis(self, N=None):
-        self.load_red_matrices()
+        self.load_reduced_matrices()
         if N is None:
             N = self.N
             
@@ -412,7 +412,7 @@ class EIM(ParametrizedProblem):
             
             # Evaluate the exact function on the truth grid
             f = self.evaluate_parametrized_function_at_mu(self.mu)
-            self.snap = interpolate(f, self.V)
+            self.snapshot = interpolate(f, self.V)
             
             for n in range(N): # n = 0, 1, ... N - 1
                 self.online_solve(n)
@@ -448,13 +448,13 @@ class EIM(ParametrizedProblem):
         file = File(filename + ".pvd", "compressed")
         file << basis
         
-    def load_red_matrices(self):
+    def load_reduced_matrices(self):
         if len(np.asarray(self.interpolation_points)) == 0: # avoid loading multiple times
-            self.interpolation_points = np.load(self.red_matrices_folder + "interpolation_points.npy")
+            self.interpolation_points = np.load(self.reduced_matrices_folder + "interpolation_points.npy")
         if len(np.asarray(self.interpolation_points_dof)) == 0: # avoid loading multiple times
-            self.interpolation_points_dof = np.load(self.red_matrices_folder + "interpolation_points_dof.npy")
+            self.interpolation_points_dof = np.load(self.reduced_matrices_folder + "interpolation_points_dof.npy")
         if len(np.asarray(self.interpolation_matrix)) == 0: # avoid loading multiple times
-            self.interpolation_matrix = np.load(self.red_matrices_folder + "interpolation_matrix.npy")
+            self.interpolation_matrix = np.load(self.reduced_matrices_folder + "interpolation_matrix.npy")
         if len(np.asarray(self.Z)) == 0: # avoid loading multiple times
             self.Z = np.load(self.basis_folder + "basis.npy")
             if len(np.asarray(self.Z)) > 0: # it will still be empty the first time the greedy is executed

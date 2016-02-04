@@ -51,9 +51,9 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         # 3b. Theta multiplicative factors of the affine expansion
         self.theta_s = ()
         # 3c. Reduced order matrices/vectors
-        self.red_S = ()
-        self.red_A_dp = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
-        self.red_F_d = () # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
+        self.reduced_S = ()
+        self.reduced_A_dp = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
+        self.reduced_F_d = () # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 3c. Matrices/vectors resulting from the truth discretization
@@ -106,12 +106,12 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.sN = 0.
         # Assemble output
         self.theta_s = self.compute_theta_s()
-        assembled_red_S = self.aff_assemble_red_vector(self.red_S, self.theta_s, N)
-        self.sN += float(np.dot(assembled_red_S, self.uN))
+        assembled_reduced_S = self.affine_assemble_reduced_vector(self.reduced_S, self.theta_s, N)
+        self.sN += float(np.dot(assembled_reduced_S, self.uN))
         # Assemble correction
-        assembled_red_A_dp = self.aff_assemble_red_matrix(self.red_A_dp, self.theta_a, N, N)
-        assembled_red_F_d = self.aff_assemble_red_vector(self.red_F_d, self.theta_f, N)
-        self.sN -= float(np.dot(assembled_red_F_d, self.dual_problem.uN)) - float(np.matrix(self.dual_problem.uN.T)*(assembled_red_A_dp*np.matrix(self.uN)))
+        assembled_reduced_A_dp = self.affine_assemble_reduced_matrix(self.reduced_A_dp, self.theta_a, N, N)
+        assembled_reduced_F_d = self.affine_assemble_reduced_vector(self.reduced_F_d, self.theta_f, N)
+        self.sN -= float(np.dot(assembled_reduced_F_d, self.dual_problem.uN)) - float(np.matrix(self.dual_problem.uN.T)*(assembled_reduced_A_dp*np.matrix(self.uN)))
     
     ## Return an error bound for the current solution. Overridden to be computed in the V-norm
     #  since the energy norm is not defined generally in the non compliant case
@@ -151,49 +151,48 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     ## Perform a truth evaluation of the output
     def truth_output(self):
         self.theta_s = self.compute_theta_s()
-        assembled_truth_S = self.aff_assemble_truth_vector(self.truth_S, self.theta_s)
-        self.s = assembled_truth_S.inner(self.snap.vector())
+        assembled_truth_S = self.affine_assemble_truth_vector(self.truth_S, self.theta_s)
+        self.s = assembled_truth_S.inner(self.snapshot.vector())
     
     ## Assemble the reduced order affine expansion (matrix). Overridden to assemble also terms related to output correction
-    def build_red_matrices(self):
-        EllipticCoerciveRBBase.build_red_matrices(self)
+    def build_reduced_matrices(self):
+        EllipticCoerciveRBBase.build_reduced_matrices(self)
         
         # Output correction terms
-        red_A_dp = ()
+        reduced_A_dp = ()
         for A in self.truth_A:
             A = as_backend_type(A)
             dim = A.size(0) # = A.size(1)
             if self.N == 1:
-                red_A_dp += (np.dot(self.dual_problem.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
+                reduced_A_dp += (np.dot(self.dual_problem.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
             else:
-                red = np.matrix(np.dot(self.dual_problem.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.Z))))
-                red_A_dp += (red,)
-        self.red_A_dp = red_A_dp
-        np.save(self.red_matrices_folder + "red_A_dp", self.red_A_dp)
+                reduced_A_dp += (np.matrix(np.dot(self.dual_problem.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.Z)))),)
+        self.reduced_A_dp = reduced_A_dp
+        np.save(self.reduced_matrices_folder + "reduced_A_dp", self.reduced_A_dp)
     
     ## Assemble the reduced order affine expansion (rhs). Overridden to assemble also terms related to output  and output correction
-    def build_red_vectors(self):
-        EllipticCoerciveRBBase.build_red_vectors(self)
+    def build_reduced_vectors(self):
+        EllipticCoerciveRBBase.build_reduced_vectors(self)
         
         # Output terms
-        red_S = ()
+        reduced_S = ()
         for S in self.truth_S:
             S = as_backend_type(S)
             dim = S.size()
-            red_s = np.dot(self.Z.T, S.vec().getValues(range(dim)))
-            red_S += (red_s,)
-        self.red_S = red_S
-        np.save(self.red_matrices_folder + "red_S", self.red_S)
+            reduced_s = np.dot(self.Z.T, S.vec().getValues(range(dim)))
+            reduced_S += (reduced_s,)
+        self.reduced_S = reduced_S
+        np.save(self.reduced_matrices_folder + "reduced_S", self.reduced_S)
         
         # Output correction terms
-        red_F_d = ()
+        reduced_F_d = ()
         for F in self.truth_F:
             F = as_backend_type(F)
             dim = F.size()
-            red_f_d = np.dot(self.dual_problem.Z.T, F.vec().getValues(range(dim)))
-            red_F_d += (red_f_d,)
-        self.red_F_d = red_F_d
-        np.save(self.red_matrices_folder + "red_F_d", self.red_F_d)
+            reduced_f_d = np.dot(self.dual_problem.Z.T, F.vec().getValues(range(dim)))
+            reduced_F_d += (reduced_f_d,)
+        self.reduced_F_d = reduced_F_d
+        np.save(self.reduced_matrices_folder + "reduced_F_d", self.reduced_F_d)
         
         
     #  @}
@@ -211,11 +210,11 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
             self.truth_output()
         self.online_solve(N, False)
         self.online_output()
-        self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
-        error_u = self.compute_scalar(self.er, self.er, self.S) # norm of the error
-        error_u = np.sqrt(error_u)
+        self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
+        error_u_norm_squared = self.compute_scalar(self.error, self.error, self.S) # norm of the error
+        error_u_norm = np.sqrt(error_u_norm_squared)
         error_s = abs(self.s - self.sN)
-        return (error_u, error_s)
+        return (error_u_norm, error_s)
         
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
@@ -236,18 +235,18 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     ## @defgroup IO Input/output methods
     #  @{
     
-    def load_red_matrices(self):
+    def load_reduced_matrices(self):
         # Read in data structures as in parent
-        EllipticCoerciveRBBase.load_red_matrices(self)
+        EllipticCoerciveRBBase.load_reduced_matrices(self)
         # Moreover, read also data structures related to the dual problem
-        self.dual_problem.load_red_matrices()
+        self.dual_problem.load_reduced_matrices()
         # ... and those related to output and output correction
-        if len(np.asarray(self.red_A_dp)) == 0: # avoid loading multiple times
-            self.red_A_dp = tuple(np.load(self.red_matrices_folder + "red_A_dp.npy"))
-        if len(np.asarray(self.red_S)) == 0: # avoid loading multiple times
-            self.red_S = tuple(np.load(self.red_matrices_folder + "red_S.npy"))
-        if len(np.asarray(self.red_F_d)) == 0: # avoid loading multiple times
-            self.red_F_d = tuple(np.load(self.red_matrices_folder + "red_F_d.npy"))
+        if len(np.asarray(self.reduced_A_dp)) == 0: # avoid loading multiple times
+            self.reduced_A_dp = tuple(np.load(self.reduced_matrices_folder + "reduced_A_dp.npy"))
+        if len(np.asarray(self.reduced_S)) == 0: # avoid loading multiple times
+            self.reduced_S = tuple(np.load(self.reduced_matrices_folder + "reduced_S.npy"))
+        if len(np.asarray(self.reduced_F_d)) == 0: # avoid loading multiple times
+            self.reduced_F_d = tuple(np.load(self.reduced_matrices_folder + "reduced_F_d.npy"))
     
     #  @}
     ########################### end - I/O - end ########################### 
@@ -305,11 +304,11 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         # 9. I/O
         self.xi_train_folder = "xi_train__dual/"
         self.xi_test_folder = "xi_test__dual/"
-        self.snap_folder = "snapshots__dual/"
+        self.snapshots_folder = "snapshots__dual/"
         self.basis_folder = "basis__dual/"
         self.dual_folder = "dual__dual/"
-        self.red_matrices_folder = "red_matr__dual/"
-        self.pp_folder = "pp__dual/" # post processing
+        self.reduced_matrices_folder = "reduced_matrices__dual/"
+        self.post_processing_folder = "post_processing__dual/"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -338,9 +337,9 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         if not skip_truth_solve:
             self.truth_solve()
         self.online_solve(N, False)
-        self.er.vector()[:] = self.snap.vector()[:] - self.red.vector()[:] # error as a function
-        error = self.compute_scalar(self.er, self.er, self.S) # norm of the error
-        return np.sqrt(error)
+        self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
+        error_norm_squared = self.compute_scalar(self.error, self.error, self.S) # norm of the error
+        return np.sqrt(error_norm_squared)
         
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
@@ -352,7 +351,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         self.primal_problem.Qa = len(self.primal_problem.theta_a)
         # This is almost the same as in parent, without the output computation,
         # since it makes no sense here.
-        self.load_red_matrices()
+        self.load_reduced_matrices()
         if N is None:
             N = self.N
             

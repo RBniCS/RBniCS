@@ -58,7 +58,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # 3b. Theta multiplicative factors of the affine expansion
         self.theta_m = (1., )
         # 3c. Reduced order matrices/vectors
-        self.red_M = []
+        self.reduced_M = []
         # 4. Online solution
         self.all_uN = np.array([]) # array (size of T/dt + 1) of vectors of dimension N storing the reduced order solution
         
@@ -69,9 +69,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         truth_m = inner(u,v)*dx
         self.truth_M = (assemble(truth_m), )
         # 4. Auxiliary functions
-        self.all_snap = np.array([]) # array (size of T/dt + 1) of vectors for storage of a truth solution
-        self.all_red = np.array([]) # array (size of T/dt + 1) of vectors for storage of the FE reconstruction of the reduced solution
-        self.all_er = np.array([]) # array (size of T/dt + 1) of vectors for storage of the error
+        self.all_snapshot = np.array([]) # array (size of T/dt + 1) of vectors for storage of a truth solution
+        self.all_reduced = np.array([]) # array (size of T/dt + 1) of vectors for storage of the FE reconstruction of the reduced solution
+        self.all_error = np.array([]) # array (size of T/dt + 1) of vectors for storage of the error
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -88,23 +88,23 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def online_solve(self, N=None, with_plot=False):
-        self.load_red_matrices()
+        self.load_reduced_matrices()
         if N is None:
             N = self.N
-        self.all_uN = (self.red_F[0]*0.0).reshape(-1,1)
-        self.uN = (self.red_F[0]*0.0).reshape(-1,1)
+        self.all_uN = (self.reduced_F[0]*0.0).reshape(-1,1)
+        self.uN = (self.reduced_F[0]*0.0).reshape(-1,1)
         
         # Set the initial condition
         self.t = 0.
         sol = self.Z[:, 0]*self.all_uN[0, 0]*0.0
-        self.all_red = sol
+        self.all_reduced = sol
         
         # Iterate in time
         for t in self.all_times[1:]:
             self.t = t
        #     print "t = " + str(self.t)
-            self.red_solve(N)
-            self.all_red = np.hstack((self.all_red, self.get_fe_functions_at_time(t)))
+            self._online_solve(N)
+            self.all_reduced = np.hstack((self.all_reduced, self.get_fe_functions_at_time(t)))
 
         # Now obtain the FE function corresponding to the reduced order solutions
         if with_plot == True:
@@ -123,20 +123,20 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         return sol
 
     # Perform an online solve (internal)
-    def red_solve(self, N):
+    def _online_solve(self, N):
         dt = self.dt
         # Need to possibly re-evaluate theta, since they may be time dependent
         self.theta_a = self.compute_theta_a()
         self.theta_f = self.compute_theta_f()
-        assembled_red_M = self.aff_assemble_red_matrix(self.red_M, self.theta_m, N, N)
-        assembled_red_A = self.aff_assemble_red_matrix(self.red_A, self.theta_a, N, N)
-        assembled_red_F = self.aff_assemble_red_vector(self.red_F, self.theta_f, N)
-        assembled_red_lhs = 1./dt*assembled_red_M + assembled_red_A
-        assembled_red_rhs = 1./dt*assembled_red_M*np.matrix(self.uN) + assembled_red_F.reshape(-1,1) # uN -> solution at previous time
+        assembled_reduced_M = self.affine_assemble_reduced_matrix(self.reduced_M, self.theta_m, N, N)
+        assembled_reduced_A = self.affine_assemble_reduced_matrix(self.reduced_A, self.theta_a, N, N)
+        assembled_reduced_F = self.affine_assemble_reduced_vector(self.reduced_F, self.theta_f, N)
+        assembled_reduced_lhs = 1./dt*assembled_reduced_M + assembled_reduced_A
+        assembled_reduced_rhs = 1./dt*assembled_reduced_M*np.matrix(self.uN) + assembled_reduced_F.reshape(-1,1) # uN -> solution at previous time
         if (self.N == 1):
-            self.uN = assembled_red_rhs/assembled_red_lhs
+            self.uN = assembled_reduced_rhs/assembled_reduced_lhs
         else:
-            self.uN = np.linalg.solve(assembled_red_lhs, assembled_red_rhs)
+            self.uN = np.linalg.solve(assembled_reduced_lhs, assembled_reduced_rhs)
         self.all_uN = np.hstack((self.all_uN, self.uN)) # add new solutions as column vectors
     
     #  @}
@@ -151,9 +151,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         print "=             Offline phase begins                           ="
         print "=============================================================="
         print ""
-        if os.path.exists(self.pp_folder):
-            shutil.rmtree(self.pp_folder)
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.red_matrices_folder, self.pp_folder)
+        if os.path.exists(self.post_processing_folder):
+            shutil.rmtree(self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -179,10 +179,10 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             self.update_basis_matrix()
             
             print "build reduced matrices"
-            self.build_red_matrices()
-            self.build_red_vectors()
+            self.build_reduced_matrices()
+            self.build_reduced_vectors()
             
-            print "solve rb"
+            print "reduced order solve"
             ParabolicCoerciveBase.online_solve(self,self.N,False)
             
             print "build matrices for error estimation (it may take a while)"
@@ -205,8 +205,8 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # Set the initial condition
         dt = self.dt
         self.t = 0.
-        self.snap = interpolate(Constant(0.0),self.V)
-        self.all_snap = np.array(self.snap.vector()).reshape(-1, 1) # as column vector
+        self.snapshot = interpolate(Constant(0.0),self.V)
+        self.all_snapshot = np.array(self.snapshot.vector()).reshape(-1, 1) # as column vector
         
         # Iterate in time
         for k in range(1,len(self.all_times)):
@@ -216,33 +216,32 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             # Need to possibly re-evaluate theta, since they may be time dependent
             self.theta_a = self.compute_theta_a()
             self.theta_f = self.compute_theta_f()
-            assembled_truth_M = self.aff_assemble_truth_matrix(self.truth_M, self.theta_m)
-            assembled_truth_A = self.aff_assemble_truth_matrix(self.truth_A, self.theta_a)
-            assembled_truth_F = self.aff_assemble_truth_vector(self.truth_F, self.theta_f)
+            assembled_truth_M = self.affine_assemble_truth_matrix(self.truth_M, self.theta_m)
+            assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a)
+            assembled_truth_F = self.affine_assemble_truth_vector(self.truth_F, self.theta_f)
             assembled_truth_lhs = 1./dt*assembled_truth_M + assembled_truth_A
-            assembled_truth_rhs = 1./dt*assembled_truth_M*self.snap.vector() + assembled_truth_F  # snap -> solution at previous time
-            solve(assembled_truth_lhs, self.snap.vector(), assembled_truth_rhs)
-            self.all_snap = np.hstack((self.all_snap, self.snap.vector())) # add new solutions as column vectors
+            assembled_truth_rhs = 1./dt*assembled_truth_M*self.snapshot.vector() + assembled_truth_F  # snapshot -> solution at previous time
+            solve(assembled_truth_lhs, self.snapshot.vector(), assembled_truth_rhs)
+            self.all_snapshot = np.hstack((self.all_snapshot, self.snapshot.vector())) # add new solutions as column vectors
         print ""
         
     ## Assemble the reduced order affine expansion (matrix)
-    def build_red_matrices(self):
+    def build_reduced_matrices(self):
         # Assemble the reduced matrix A, as in parent
-        EllipticCoerciveBase.build_red_matrices(self)
+        EllipticCoerciveBase.build_reduced_matrices(self)
         # Moreover, assemble also the reduced matrix M
-        red_M = ()
+        reduced_M = ()
         i = 0
         for M in self.truth_M:
             M = as_backend_type(M)
             dim = M.size(0) # = M.size(1)
             if self.N == 1:
-                red_M += (np.dot(self.Z.T,M.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
+                reduced_M += (np.dot(self.Z.T,M.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
             else:
-                red = np.matrix(np.dot(self.Z.T,np.matrix(np.dot(M.mat().getValues(range(dim),range(dim)),self.Z))))
-                red_M += (red,)
+                reduced_M += (np.matrix(np.dot(self.Z.T,np.matrix(np.dot(M.mat().getValues(range(dim),range(dim)),self.Z)))),)
                 i += 1
-        self.red_M = red_M
-        np.save(self.red_matrices_folder + "red_M", self.red_M)
+        self.reduced_M = reduced_M
+        np.save(self.reduced_matrices_folder + "reduced_M", self.reduced_M)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -257,16 +256,16 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         if not skip_truth_solve:
             self.truth_solve()
         self.online_solve(N, False)
-        self.er = np.array([])
-        error = 0.
+        self.error = np.array([])
+        error_norm_squared = 0.
         for k in range(len(self.all_times)):
-            current_er.vector()[:] = self.all_snap[:, k].vector()[:] - self.all_red[:, k].vector()[:] # error as a function
+            current_error.vector()[:] = self.all_snapshot[:, k].vector()[:] - self.all_reduced[:, k].vector()[:] # error as a function
             self.t = self.all_times[k] # needed by the next line, since theta_a ...
             print "t = " + str(self.t)
             self.theta_a = self.compute_theta_a() # ... may depend on time
-            assembled_truth_A_sym = self.aff_assemble_truth_sym_matrix(self.truth_A, self.theta_a)
-            error += 1./self.dt * self.compute_scalar(current_er, current_er, assembled_truth_A_sym) # norm of the error
-        return np.sqrt(error)
+            assembled_truth_A_sym = self.affine_assemble_truth_symmetric_part_matrix(self.truth_A, self.theta_a)
+            error_norm_squared += 1./self.dt * self.compute_scalar(current_error, current_error, assembled_truth_A_sym) # norm of the error
+        return np.sqrt(error_norm_squared)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
@@ -276,13 +275,12 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     #  @{
     
     ## Load reduced order data structures
-    def load_red_matrices(self):
+    def load_reduced_matrices(self):
         # Read in data structures as in parent
-        EllipticCoerciveBase.load_red_matrices(self)
+        EllipticCoerciveBase.load_reduced_matrices(self)
         # Moreover, read in also the reduced matrix M
-        if not self.red_M: # avoid loading multiple times
-            self.red_M = tuple(np.load(self.red_matrices_folder + "red_M.npy"))
-        # TODO ne serviranno altre?
+        if not self.reduced_M: # avoid loading multiple times
+            self.reduced_M = tuple(np.load(self.reduced_matrices_folder + "reduced_M.npy"))
         
     ## Export snapshot in VTK format
     def export_solution(self, solution, filename):
