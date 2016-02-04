@@ -111,17 +111,13 @@ class ParametrizedProblem(object):
             os.makedirs(self.xi_train_folder)
         # Test if can import
         import_successful = False
-        if enable_import and os.path.exists(self.xi_train_folder + "xi_train.npy"):
-            xi_train = np.load(self.xi_train_folder + "xi_train.npy")
-            import_successful = (len(np.asarray(xi_train)) == ntrain)
-        if import_successful:
-            self.xi_train = list()
-            for i in range(len(np.asarray(xi_train))):
-                self.xi_train.append(tuple(xi_train[i, :]))
-        else:
+        if enable_import and self.exists_parameter_space_subset_file(self.xi_train_folder, "xi_train"):
+            self.xi_train = self.load_parameter_space_subset_file(self.xi_train_folder, "xi_train")
+            import_successful = (len(self.xi_train) == ntrain)
+        if not import_successful:
             self.xi_train = self.generate_train_or_test_set(ntrain, sampling)
             # Export 
-            np.save(self.xi_train_folder + "xi_train", self.xi_train)
+            self.save_parameter_space_subset_file(self.xi_train, self.xi_train_folder, "xi_train")
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     # See the documentation of generate_train_or_test_set for more details
@@ -131,17 +127,13 @@ class ParametrizedProblem(object):
             os.makedirs(self.xi_test_folder)
         # Test if can import
         import_successful = False
-        if enable_import and os.path.exists(self.xi_test_folder + "xi_test.npy"):
-            xi_test = np.load(self.xi_test_folder + "xi_test.npy")
-            import_successful = (len(np.asarray(xi_test)) == ntest)
-        if import_successful:
-            self.xi_test = list()
-            for i in range(len(np.asarray(xi_test))):
-                self.xi_test.append(tuple(xi_test[i, :]))
-        else:
+        if enable_import and self.exists_parameter_space_subset_file(self.xi_test_folder, "xi_test"):
+            self.xi_test = self.load_parameter_space_subset_file(self.xi_test_folder, "xi_test")
+            import_successful = (len(self.xi_test) == ntest)
+        if not import_successful:
             self.xi_test = self.generate_train_or_test_set(ntest, sampling)
             # Export 
-            np.save(self.xi_test_folder + "xi_test", self.xi_test)
+            self.save_parameter_space_subset_file(self.xi_test, self.xi_test_folder, "xi_test")
     
     ## Internal method for generation of training or test sets
     # If the last argument is equal to "random", n parameters are drawn from a random uniform distribution
@@ -223,6 +215,38 @@ class ParametrizedProblem(object):
     def reset_reference(self):
         pass # nothing to be done by default
                 
+    ## Load a parameter space subset from file
+    @staticmethod
+    def load_parameter_space_subset_file(directory, filename):
+        return ParametrizedProblem._load_pickle_file(directory, filename)
+        
+    ## Save a parameter space subset to file
+    @staticmethod
+    def save_parameter_space_subset_file(subset, directory, filename):
+        ParametrizedProblem._save_pickle_file(subset, directory, filename)
+        
+    ## Check if a parameter space subset file exists
+    @staticmethod
+    def exists_parameter_space_subset_file(directory, filename):
+        return ParametrizedProblem._exists_pickle_file(directory, filename)
+    
+    ## Load a variable from file using pickle
+    @staticmethod
+    def _load_pickle_file(directory, filename):
+        with open(directory + "/" + filename + ".pkl", "rb") as infile:
+            return pickle.load(infile)
+    
+    ## Save a variable to file using pickle
+    @staticmethod
+    def _save_pickle_file(subset, directory, filename):
+        with open(directory + "/" + filename + ".pkl", "wb") as outfile:
+            pickle.dump(subset, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+            
+    ## Check if a pickle file exists
+    @staticmethod
+    def _exists_pickle_file(directory, filename):
+        return os.path.exists(directory + "/" + filename + ".pkl")
+    
     #  @}
     ########################### end - I/O - end ########################### 
 
