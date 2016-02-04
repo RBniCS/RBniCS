@@ -26,6 +26,7 @@ from dolfin import File, plot
 import os # for path and makedir
 import numpy as np
 import itertools # for linspace sampling
+import pickle # for I/O
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARAMETRIZED PROBLEM BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParametrizedProblem
