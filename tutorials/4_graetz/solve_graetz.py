@@ -23,11 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-import numpy as np
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Graetz(EllipticCoerciveRBNonCompliantBase):
+class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -43,25 +42,16 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
             DirichletBC(V, 0.0, bound, 2), # non-homog. bcs with a lifting
             DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
         ]
+        # Declare the shape parametrization map
+        shape_parametrization_expression = [
+            ("x[0]", "x[1]"), # subdomain 1
+            ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
+        ]
         # Call the standard initialization
-        EllipticCoerciveRBNonCompliantBase.__init__(self, V, bc_list)
-        # ... and also store FEniCS data structures for assembly ...
+        super(Graetz, self).__init__(mesh, subd, V, bc_list, shape_parametrization_expression)
+        # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)
-        # ... and FEniCS data structure related to the geometrical parametrization
-        self.mesh = mesh
-        self.subd = subd
-        self.xref = mesh.coordinates()[:,0].copy()
-        self.yref = mesh.coordinates()[:,1].copy()
-        self.deformation_V = VectorFunctionSpace(self.mesh, "Lagrange", 1)
-        self.subdomain_id_to_deformation_dofs = ()
-        for subdomain_id in np.unique(self.subd.array()):
-            self.subdomain_id_to_deformation_dofs += ([],)
-        for cell in cells(mesh):
-            subdomain_id = int(self.subd.array()[cell.index()] - 1) # tuple start from 0, while subdomains from 1
-            dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
-            for dof in dofs:
-                self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
         # We will consider non-homogeneous Dirichlet BCs with a lifting.
         # First of all, assemble a suitable lifting function
         lifting_bc = [ 
@@ -222,65 +212,15 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
-    
-    # Perform an online solve: method overridden to perform
-    # the plot on the deformed domain
-    def online_solve(self,N=None, with_plot=True):
-        # Call the parent method, disabling plot ...
-        EllipticCoerciveRBNonCompliantBase.online_solve(self, N, False)
-        # ... and then deform the mesh and perform the plot
-        if with_plot == True:
-            self.move_mesh()
-            reduced_with_lifting = Function(self.V)
-            reduced_with_lifting.vector()[:] = self.reduced.vector()[:] + self.lifting.vector()[:]
-            plot(reduced_with_lifting, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
-            self.reset_reference()
-    
-    ## Deform the mesh as a function of the geometrical parameter mu_1
-    def move_mesh(self):
-        print "moving mesh"
-        displacement = self.compute_displacement()
-        ALE.move(self.mesh, displacement)
-    
-    ## Restore the reference mesh
-    def reset_reference(self):
-        print "back to the reference mesh"
-        new_coor = np.array([self.xref, self.yref]).transpose()
-        self.mesh.coordinates()[:] = new_coor
-    
-    ## Auxiliary method to deform the domain
-    def compute_displacement(self):
-        expression_displacement_subdomains = (
-            Expression(("0", "0")), # subdomain 1
-            Expression(("(mu_1-1)*(x[0]-1)", "0"), mu_1 = self.mu[0]) # subdomain 2
-        )
-        displacement_subdomains = ()
-        for i in range(len(expression_displacement_subdomains)):
-            displacement_subdomains += (interpolate(expression_displacement_subdomains[i], self.deformation_V),)
-        displacement = Function(self.deformation_V)
-        for i in range(len(displacement_subdomains)):
-            subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]
-            displacement.vector()[subdomain_dofs] = displacement_subdomains[i].vector()[subdomain_dofs]
-        return displacement
-        
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
-    
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods
     #  @{
     
-    ## Export solution in VTK format: add lifting and deform
-    def export_solution(self, solution, filename):
+    ## Preprocess the solution before plotting to add a lifting
+    def preprocess_solution_for_plot(self, solution):
         solution_with_lifting = Function(self.V)
         solution_with_lifting.vector()[:] = solution.vector()[:] + self.lifting.vector()[:]
-        self.move_mesh()
-        file = File(filename + ".pvd", "compressed")
-        file << solution_with_lifting
-        self.reset_reference()
+        return solution_with_lifting
         
     #  @}
     ########################### end - I/O - end ########################### 

@@ -110,7 +110,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         if with_plot == True:
             func = Function(self.V)
             func.vector()[:] = self.get_fe_functions_at_time(t)
-            plot(func, title = "Reduced solution. mu = " + str(self.mu) + ", t = " + str(t*self.dt), interactive = True)
+            self._plot(func, title = "Reduced solution. mu = " + str(self.mu) + ", t = " + str(t*self.dt), interactive = True)
     
     def get_fe_functions_at_time(self,tt):
         sol = self.Z[:, 0]*self.all_uN[0,tt]
@@ -284,13 +284,30 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         
     ## Export snapshot in VTK format
     def export_solution(self, solution, filename):
+        self._export_vtk_all_times(solution, filename, {"With mesh motion": True, "With preprocessing": True})
+        
+    # Note that there is no need to override the export basis method. Basis are steady!
+            
+    ## Export in VTK format
+    def _export_vtk_all_times(self, solution, filename, output_options={}):
+        if not "With mesh motion" in output_options:
+            output_options["With mesh motion"] = False
+        if not "With preprocessing" in output_options:
+            output_options["With preprocessing"] = False
+        #
         file = File(filename + ".pvd", "compressed")
+        if output_options["With mesh motion"]:
+            self.move_mesh() # deform the mesh
         for k in range(len(self.all_times)):
             self.t = self.all_times[k]
-            file << (solution[:, k], self.t)
+            if output_options["With preprocessing"]:
+                preprocessed_solution = self.preprocess_solution_for_plot(solution[:, k])
+                file << (preprocessed_solution, self.t)
+            else:
+                file << (solution[:, k], self.t)
+        if output_options["With mesh motion"]:
+            self.reset_reference() # undo mesh motion
             
-    # Note that there is no need to override the export basis method. Basis are steady!
-    
     #  @}
     ########################### end - I/O - end ########################### 
 

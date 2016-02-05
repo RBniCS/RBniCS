@@ -23,11 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-import numpy as np
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 3: GEOMETRICAL PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Hole(EllipticCoercivePODBase):
+class Hole(ShapeParametrization(EllipticCoercivePODBase)):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -35,25 +34,22 @@ class Hole(EllipticCoercivePODBase):
     
     ## Default initialization of members
     def __init__(self, V, mesh, subd, bound):
+        # Declare the shape parametrization map
+        shape_parametrization_expression = [
+            ("2.0 - 2.0*mu[0] + mu[0]*x[0] +(2.0-2.0*mu[0])*x[1]", "2.0 -2.0*mu[1] + (2.0-mu[1])*x[1]"), # subdomain 1
+            ("2.0*mu[0]-2.0 +x[0] +(mu[0]-1.0)*x[1]", "2.0 -2.0*mu[1] + (2.0-mu[1])*x[1]"), # subdomain 2
+            ("2.0 - 2.0*mu[0] + (2.0-mu[0])*x[0]", "2.0 -2.0*mu[1] + (2.0-2.0*mu[1])*x[0] + mu[1]*x[1]"), # subdomain 3
+            ("2.0 - 2.0*mu[0] + (2.0-mu[0])*x[0]", "2.0*mu[1] -2.0 + (mu[1]-1.0)*x[0] + x[1]"), # subdomain 4
+            ("2.0*mu[0] -2.0 + (2.0-mu[0])*x[0]", "2.0 -2.0*mu[1] + (2.0*mu[1]-2.0)*x[0] + mu[1]*x[1]"), # subdomain 5
+            ("2.0*mu[0] -2.0 + (2.0-mu[0])*x[0]", "2.0*mu[1] -2.0 + (1.0 - mu[1])*x[0] + x[1]"), # subdomain 6
+            ("2.0 -2.0*mu[0] + mu[0]*x[0] + (2.0*mu[0]-2.0)*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 7
+            ("2.0*mu[0] -2.0 + x[0] + (1.0-mu[0])*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 8
+        ]
         # Call the standard initialization
-        EllipticCoercivePODBase.__init__(self, V, None)
-        # ... and also store FEniCS data structures for assembly ...
+        super(Hole, self).__init__(mesh, subd, V, None, shape_parametrization_expression)      
+        # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)
-        # ... and, finally, FEniCS data structure related to the geometrical parametrization
-        self.mesh = mesh
-        self.subd = subd
-        self.xref = mesh.coordinates()[:,0].copy()
-        self.yref = mesh.coordinates()[:,1].copy()
-        self.deformation_V = VectorFunctionSpace(self.mesh, "Lagrange", 1)
-        self.subdomain_id_to_deformation_dofs = ()
-        for subdomain_id in np.unique(self.subd.array()):
-            self.subdomain_id_to_deformation_dofs += ([],)
-        for cell in cells(mesh):
-            subdomain_id = int(self.subd.array()[cell.index()] - 1) # tuple start from 0, while subdomains from 1
-            dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
-            for dof in dofs:
-                self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -159,71 +155,6 @@ class Hole(EllipticCoercivePODBase):
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
-    
-    # Perform an online solve: method overridden to perform
-    # the plot on the deformed domain
-    def online_solve(self, N=None, with_plot=True):
-        # Call the parent method, disabling plot ...
-        EllipticCoercivePODBase.online_solve(self, N, False)
-        # ... and then deform the mesh and perform the plot
-        if with_plot == True:
-            self.move_mesh()
-            plot(self.reduced, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
-            self.reset_reference()
-    
-    ## Deform the mesh as a function of the geometrical parameters mu_1 and mu_2
-    def move_mesh(self):
-        print "moving mesh (it may take a while)"
-        displacement = self.compute_displacement()
-        ALE.move(self.mesh, displacement)
-    
-    ## Restore the reference mesh
-    def reset_reference(self):
-        print "back to the reference mesh"
-        new_coor = np.array([self.xref, self.yref]).transpose()
-        self.mesh.coordinates()[:] = new_coor
-    
-    ## Auxiliary method to deform the domain
-    def compute_displacement(self):
-        expression_displacement_subdomains = (
-            Expression(("2.0 - 2.0*mu_1 + mu_1*x[0] - x[0] +(2.0-2.0*mu_1)*x[1]", "2.0 -2.0*mu_2 + (1.0-mu_2)*x[1]"), mu_1 = self.mu[0], mu_2 = self.mu[1]), # subdomain 1
-            Expression(("2.0*mu_1-2.0 +(mu_1-1.0)*x[1]", "2.0 -2.0*mu_2 + (1.0-mu_2)*x[1]"), mu_1 = self.mu[0], mu_2 = self.mu[1]), # subdomain 2
-            Expression(("2.0 - 2.0*mu_1 + (1.0-mu_1)*x[0]", "2.0 -2.0*mu_2 + (2.0-2.0*mu_2)*x[0] + (mu_2 - 1.0)*x[1]"), mu_1 = self.mu[0], mu_2 = self.mu[1]), # subdomain 3
-            Expression(("2.0 - 2.0*mu_1 + (1.0-mu_1)*x[0]", "2.0*mu_2 -2.0 + (mu_2-1.0)*x[0]"), mu_1 = self.mu[0], mu_2 = self.mu[1]), # subdomain 4
-            Expression(("2.0*mu_1 -2.0 + (1.0-mu_1)*x[0]", "2.0 -2.0*mu_2 + (2.0*mu_2-2.0)*x[0] + (mu_2 - 1.0)*x[1]"), mu_1 = self.mu[0], mu_2 = self.mu[1]), # subdomain 5
-            Expression(("2.0*mu_1 -2.0 + (1.0-mu_1)*x[0]", "2.0*mu_2 -2.0 + (1.0 - mu_2)*x[0]"), mu_1 = self.mu[0], mu_2 = self.mu[1]), # subdomain 6
-            Expression(("2.0 -2.0*mu_1 + (mu_1-1.0)*x[0] + (2.0*mu_1-2.0)*x[1]", "2.0*mu_2 -2.0 + (1.0 - mu_2)*x[1]"), mu_1 = self.mu[0], mu_2 = self.mu[1]), # subdomain 7
-            Expression(("2.0*mu_1 -2.0 + (1.0-mu_1)*x[1]", "2.0*mu_2 -2.0 + (1.0 - mu_2)*x[1]"), mu_1 = self.mu[0], mu_2 = self.mu[1]) # subdomain 8
-        )
-        displacement_subdomains = ()
-        for i in range(len(expression_displacement_subdomains)):
-            displacement_subdomains += (interpolate(expression_displacement_subdomains[i], self.deformation_V),)
-        displacement = Function(self.deformation_V)
-        for i in range(len(displacement_subdomains)):
-            subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]
-            displacement.vector()[subdomain_dofs] = displacement_subdomains[i].vector()[subdomain_dofs]
-        return displacement
-        
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
-    
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-    
-    ## Export solution in VTK format: add lifting and deform
-    def export_solution(self, solution, filename):
-        self.move_mesh()
-        file = File(filename + ".pvd", "compressed")
-        file << solution
-        self.reset_reference()
-        
-    #  @}
-    ########################### end - I/O - end ########################### 
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 3: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 

@@ -36,7 +36,7 @@ class Tblock(EllipticCoerciveRBBase):
     def __init__(self, V, subd, bound):
         bc = DirichletBC(V, 0.0, bound, 3)
         # Call the standard initialization
-        EllipticCoerciveRBBase.__init__(self, V, [bc])
+        super(Tblock, self).__init__(V, [bc])
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)

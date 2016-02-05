@@ -36,7 +36,7 @@ class Eblock(EllipticCoercivePODBase):
     def __init__(self, V, subd, bound):
         bc = DirichletBC(V, (0.0, 0.0), bound, 6)
         # Call the standard initialization
-        EllipticCoercivePODBase.__init__(self, V, [bc])
+        super(Eblock, self).__init__(V, [bc])
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)

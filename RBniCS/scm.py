@@ -555,8 +555,7 @@ class SCM(ParametrizedProblem):
     
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
-        file = File(filename + ".pvd", "compressed")
-        file << solution
+        self._export_vtk(solution, filename, {"With mesh motion": True, "With preprocessing": True})
         
     #  @}
     ########################### end - I/O - end ###########################
