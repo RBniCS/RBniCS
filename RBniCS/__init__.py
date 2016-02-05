@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## RBniCS: reduced order modelling in FEniCS
+## @file __init__.py
+#  @brief RBniCS: reduced order modelling in FEniCS
+#
+#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
+#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
+#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 __author__ = "Francesco Ballarin, Gianluigi Rozza, Alberto Sartori"
 __copyright__ = "Copyright 2015-2016 by the RBniCS authors"
