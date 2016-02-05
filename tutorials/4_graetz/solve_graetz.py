@@ -23,7 +23,6 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-import numpy as np
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -49,7 +48,7 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
             ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
         ]
         # Call the standard initialization
-        super(Graetz, self).__init__(self, mesh, subd, V, bc_list, shape_parametrization_expression)
+        super(Graetz, self).__init__(mesh, subd, V, bc_list, shape_parametrization_expression)
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)

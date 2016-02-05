@@ -40,7 +40,7 @@ class Gaussian(EllipticCoerciveRBBase):
             DirichletBC(V, 0.0, bound, 3)
         ]
         # Call the standard initialization
-        EllipticCoerciveRBBase.__init__(self, V, bc_list)
+        super(Gaussian, self).__init__(V, bc_list)
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)

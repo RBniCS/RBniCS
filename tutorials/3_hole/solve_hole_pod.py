@@ -23,7 +23,6 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-import numpy as np
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 3: GEOMETRICAL PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -47,7 +46,7 @@ class Hole(ShapeParametrization(EllipticCoercivePODBase)):
             ("2.0*mu[0] -2.0 + x[0] + (1.0-mu[0])*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 8
         ]
         # Call the standard initialization
-        super(Hole, self).__init__(self, mesh, subd, V, None, shape_parametrization_expression)      
+        super(Hole, self).__init__(mesh, subd, V, None, shape_parametrization_expression)      
         # ... and also store FEniCS data structures for assembly
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)
