@@ -23,8 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
+import numpy as np
 
-def ShapeParametrization(ParametrizedProblem_DerivedClass)
+def ShapeParametrization(ParametrizedProblem_DerivedClass):
     #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
     ## @class ShapeParametrization
     #
@@ -57,17 +58,32 @@ def ShapeParametrization(ParametrizedProblem_DerivedClass)
                 for dof in dofs:
                     self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
             
-            # Preprocess the shape parametrization expression, to convert mu[p] to mu_p
-            # as instant requires, and to convert it in the displacement expression
-            self.displacement_expression = shape_parametrization_expression
-            for i in range(len(self.displacement_expression)):
-                for j in range(len(self.displacement_expression[i])):
+            # Store the shape parametrization expression
+            self.shape_parametrization_expression = shape_parametrization_expression
+        
+        # Preprocess the shape parametrization expression, to convert mu[p] to mu_p
+        # as instant requires, and to convert it in the displacement expression
+        # It cannot be done during __init__ because at construction time the number
+        # of parameters is still unknown
+        def __init_displacement_expression(self):
+            if self.__init_displacement_expression.__func__.done:
+                return
+            self.displacement_expression = []
+            for i in range(len(self.shape_parametrization_expression)):
+                displacement_expression_i = ()
+                for j in range(len(self.shape_parametrization_expression[i])):
+                    displacement_expression_ij = self.shape_parametrization_expression[i][j]
                     for p in range(len(self.mu)):
-                        self.displacement_expression[i][j] = \
-                            self.displacement_expression[i][j].replace("mu[" + str(p) + "]", "mu_" + str(p))
-                    self.displacement_expression[i][j] = \
-                        self.displacement_expression[i][j] + " - x[" + str(j) + "]" # convert from shape parametrization T to displacement d = T - I
-            
+                        displacement_expression_ij = \
+                            displacement_expression_ij.replace("mu[" + str(p) + "]", "mu_" + str(p))
+                    displacement_expression_ij = \
+                        displacement_expression_ij + " - x[" + str(j) + "]" # convert from shape parametrization T to displacement d = T - I
+                    displacement_expression_i += (displacement_expression_ij,)
+                self.displacement_expression.append(displacement_expression_i)
+            self.__init_displacement_expression.__func__.done = True
+        # Default value for static variable
+        __init_displacement_expression.done = False    
+        
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################
         
@@ -89,11 +105,12 @@ def ShapeParametrization(ParametrizedProblem_DerivedClass)
         
         ## Auxiliary method to deform the domain
         def compute_displacement(self):
+            self.__init_displacement_expression() # done only once
             mu_dict = {}
             for p in range(len(self.mu)):
                 mu_dict[ "mu_" + str(p) ] = self.mu[p]
             displacement_subdomains = ()
-            for i in range(len(expression_displacement_subdomains)):
+            for i in range(len(self.displacement_expression)):
                 displacement_expression_i = Expression(self.displacement_expression[i], **mu_dict)
                 displacement_subdomains += (interpolate(displacement_expression_i, self.deformation_V),)
             displacement = Function(self.deformation_V)

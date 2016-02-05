@@ -270,7 +270,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         
     ## Export basis in VTK format. 
     def export_basis(self, basis, filename):
-        self._export_vtk(solution, filename, {"With mesh motion": False, "With preprocessing": False})
+        self._export_vtk(basis, filename, {"With mesh motion": False, "With preprocessing": False})
         
     #  @}
     ########################### end - I/O - end ########################### 

@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from dolfin import File, plot
 import os # for path and makedir
 import numpy as np
 import itertools # for linspace sampling
@@ -161,10 +162,10 @@ class ParametrizedProblem(object):
     #  @{
     
     ## Interactive plot
-    def _plot(solution, *args, **kwargs)
+    def _plot(self, solution, *args, **kwargs):
         self.move_mesh() # possibly deform the mesh
         preprocessed_solution = self.preprocess_solution_for_plot(solution)
-        plot(solution, *args, **kwargs) # call FEniCS plot
+        plot(preprocessed_solution, *args, **kwargs) # call FEniCS plot
         self.reset_reference() # undo mesh motion
         
     ## Export in VTK format

@@ -444,7 +444,7 @@ class EIM(ParametrizedProblem):
         
     ## Export basis in VTK format. 
     def export_basis(self, basis, filename):
-        self._export_vtk(solution, filename, {"With mesh motion": False, "With preprocessing": False})
+        self._export_vtk(basis, filename, {"With mesh motion": False, "With preprocessing": False})
         
     def load_reduced_matrices(self):
         if len(np.asarray(self.interpolation_points)) == 0: # avoid loading multiple times
