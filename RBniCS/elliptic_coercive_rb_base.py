@@ -297,7 +297,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.CC = np.zeros((Qf,Qf))
             for qf in range(0,Qf):
                 for qfp in range(qf,Qf):
-                    self.CC[qf,qfp] = self.compute_scalar(self.Cf[qf],self.Cf[qfp],self.S)
+                    self.CC[qf,qfp] = self.compute_scalar_product(self.Cf[qf], self.S, self.Cf[qfp])
                     if qf != qfp:
                         self.CC[qfp,qf] = self.CC[qf,qfp]
             np.save(self.dual_folder + "CC", self.CC)
@@ -314,7 +314,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             for qf in range(0,Qf):
                 for qa in range(0,Qa):
                     la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
-                    self.CL[0,qf,qa] = self.compute_scalar(la,self.Cf[qf],self.S)
+                    self.CL[0,qf,qa] = self.compute_scalar_product(la, self.S, self.Cf[qf])
             np.save(self.dual_folder + "CL", self.CL)
             
             # LL
@@ -323,7 +323,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                 la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
                 for qap in range(qa,Qa):
                     lap.vector()[:] = np.array(self.lnq[0][:,qap], dtype=np.float_)
-                    self.LL[0,0,qa,qap] = self.compute_scalar(la,lap,self.S)
+                    self.LL[0,0,qa,qap] = self.compute_scalar_product(la, self.S, lap)
                     if qa != qap:
                         self.LL[0,0,qap,qa] = self.LL[0,0,qa,qap]
             np.save(self.dual_folder + "LL", self.LL)
@@ -339,7 +339,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             for qf in range(0,Qf):
                 for qa in range(0,Qa):
                     la.vector()[:] = np.array(self.lnq[n][:, qa], dtype=np.float_)
-                    self.CL[n,qf,qa] = self.compute_scalar(self.Cf[qf],la,self.S)
+                    self.CL[n,qf,qa] = self.compute_scalar_product(self.Cf[qf], self.S, la)
             np.save(self.dual_folder + "CL", self.CL)
     
             # LL
@@ -348,7 +348,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                 for nn in range(0,N):
                     for qap in range(0,Qa):
                         lap.vector()[:] = np.array(self.lnq[nn][:, qap], dtype=np.float_)
-                        self.LL[n,nn,qa,qap] = self.compute_scalar(la,lap,self.S)
+                        self.LL[n,nn,qa,qap] = self.compute_scalar_product(la, self.S, lap)
                         if n != nn:
                             self.LL[nn,n,qa,qap] = self.LL[n,nn,qa,qap]
             np.save(self.dual_folder + "LL", self.LL)

@@ -31,7 +31,7 @@ import numpy as np
 ## @class ProperOrthogonalDecomposition
 #
 # Class containing the implementation of the POD
-class ProperOrthogonalDecomposition():
+class ProperOrthogonalDecomposition(object):
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of a POD object

@@ -463,9 +463,9 @@ class SCM(ParametrizedProblem):
     ## Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
     def compute_UB_vector(self, vec, S, u):
         UB_vector = np.zeros((len(vec)))
-        norm_S_squared = self.parametrized_problem.compute_scalar(u,u,S)
+        norm_S_squared = self.parametrized_problem.compute_scalar_product(u, S, u)
         for qa in range(len(vec)):
-            UB_vector[qa] = self.parametrized_problem.compute_scalar(u,u,vec[qa])/norm_S_squared
+            UB_vector[qa] = self.parametrized_problem.compute_scalar_product(u, vec[qa], u)/norm_S_squared
         return UB_vector
         
     ## Choose the next parameter in the offline stage in a greedy fashion

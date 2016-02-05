@@ -224,7 +224,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.online_solve(N, False)
         self.online_output()
         self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
-        error_u_norm_squared = self.compute_scalar(self.error, self.error, self.S) # norm of the error
+        error_u_norm_squared = self.compute_scalar_product(self.error, self.S, self.error) # norm of the error
         error_u_norm = np.sqrt(error_u_norm_squared)
         error_s = abs(self.s - self.sN)
         return (error_u_norm, error_s)
@@ -351,7 +351,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
             self.truth_solve()
         self.online_solve(N, False)
         self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
-        error_norm_squared = self.compute_scalar(self.error, self.error, self.S) # norm of the error
+        error_norm_squared = self.compute_scalar_product(self.error, self.S, self.error) # norm of the error
         return np.sqrt(error_norm_squared)
         
     # Compute the error of the reduced order approximation with respect to the full order one

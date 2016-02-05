@@ -253,9 +253,16 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.reduced_F = reduced_F
         np.save(self.reduced_matrices_folder + "reduced_F", self.reduced_F)
     
-    ## Auxiliary internal method to compute the scalar product (v1, M*v2)
-    def compute_scalar(self,v1,v2,M):
-        return v1.vector().inner(M*v2.vector())
+    ## Auxiliary internal methods to compute scalar product (v1, M*v2)
+    @staticmethod
+    def compute_scalar_product(v1, M, v2):
+        assert isinstance(M, GenericMatrix)
+        if isinstance(v1, GenericVector) and isinstance(v2, GenericVector):
+            return v1.inner(M*v2)
+        elif isinstance(v1, Function) and isinstance(v2, Function):
+            return v1.vector().inner(M*v2.vector())
+        else:
+            raise RuntimeError("Invalid arguments in compute_scalar_product.")
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -272,8 +279,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.online_solve(N, False)
         self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
         self.theta_a = self.compute_theta_a() # not really necessary, for symmetry with the parabolic case
-        assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a)
-        error_norm_squared = self.compute_scalar(self.error, self.error, assembled_truth_A) # norm of the error
+        assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a) # use the energy norm (skew part will discarded by the scalar product)
+        error_norm_squared = self.compute_scalar_product(self.error, assembled_truth_A, self.error) # norm of the error
         return np.sqrt(error_norm_squared)
         
     # Compute the error of the reduced order approximation with respect to the full order one

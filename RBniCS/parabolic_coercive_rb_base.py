@@ -277,11 +277,11 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
             self.CC = np.zeros((Qf,Qf))
             for qf in range(0,Qf):
                 for qfp in range(qf,Qf):
-                    self.CC[qf,qfp] = self.compute_scalar(self.Cf[qf],self.Cf[qfp],self.S)
+                    self.CC[qf,qfp] = self.compute_scalar_product(self.Cf[qf], self.S, self.Cf[qfp])
                     if qf != qfp:
                         self.CC[qfp,qf] = self.CC[qf,qfp]
         else:
-            self.CC = self.compute_scalar(self.Cf[0],self.Cf[0],self.S)
+            self.CC = self.compute_scalar_product(self.Cf[0], self.S, self.Cf[0])
         np.save(self.dual_folder + "CC", self.CC)
 
 
@@ -307,7 +307,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
             for qf in range(0,Qf):
                 for qa in range(0,Qa):
                     la.vector()[:] = np.array(self.lnq[n][:, qa], dtype=np.float_)
-                    self.CL[n,qf,qa] = self.compute_scalar(self.Cf[qf],la,self.S)
+                    self.CL[n,qf,qa] = self.compute_scalar_product(self.Cf[qf], self.S, la)
             np.save(self.dual_folder + "CL", self.CL)
     
             # LL
@@ -316,7 +316,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                 for nn in range(0,N):
                     for qap in range(0,Qa):
                         lap.vector()[:] = np.array(self.lnq[nn][:, qap], dtype=np.float_)
-                        self.LL[n,nn,qa,qap] = self.compute_scalar(la,lap,self.S)
+                        self.LL[n,nn,qa,qap] = self.compute_scalar_product(la, self.S, lap)
                         if n != nn:
                             self.LL[nn,n,qa,qap] = self.LL[n,nn,qa,qap]
             np.save(self.dual_folder + "LL", self.LL)
@@ -330,7 +330,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
             for qf in range(0,Qf):
                 for qm in range(0,Qm):
                     lm.vector()[:] = np.array(self.mnq[n][:, qm], dtype=np.float_)
-                    self.CM[n,qf,qm] = self.compute_scalar(self.Cf[qf],lm,self.S)
+                    self.CM[n,qf,qm] = self.compute_scalar_product(self.Cf[qf], self.S, lm)
             np.save(self.dual_folder + "CM", self.CM)
     
             # MM
@@ -339,7 +339,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                 for nn in range(0,N):
                     for qmp in range(0,Qm):
                         lmp.vector()[:] = np.array(self.mnq[nn][:, qmp], dtype=np.float_)
-                        self.MM[n,nn,qm,qmp] = self.compute_scalar(lm,lmp,self.S)
+                        self.MM[n,nn,qm,qmp] = self.compute_scalar_product(lm, self.S, lmp)
                         if n != nn:
                             self.MM[nn,n,qm,qmp] = self.MM[n,nn,qm,qmp]
             np.save(self.dual_folder + "MM", self.MM)
@@ -350,7 +350,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                 for nn in range(0,N):
                     for qa in range(0,Qa):
                         la.vector()[:] = np.array(self.lnq[nn][:, qa], dtype=np.float_)
-                        self.LM[n,nn,qm,qa] = self.compute_scalar(lm,la,self.S)
+                        self.LM[n,nn,qm,qa] = self.compute_scalar_product(lm, self.S, la)
                         if n != nn:
                             self.LM[nn,n,qm,qa] = self.LM[n,nn,qm,qa]
             np.save(self.dual_folder + "LM", self.LM)
