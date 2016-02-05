@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 from parabolic_coercive_base import *
 from elliptic_coercive_rb_base import *
 from proper_orthogonal_decomposition import *
@@ -247,7 +249,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
             if delta > delta_max:
                 delta_max = delta
                 munew = mu
-        print "absolute delta max = ", delta_max
+        print("absolute delta max = ", delta_max)
         if os.path.isfile(self.post_processing_folder + "delta_max.npy") == True:
             d = np.load(self.post_processing_folder + "delta_max.npy")
             

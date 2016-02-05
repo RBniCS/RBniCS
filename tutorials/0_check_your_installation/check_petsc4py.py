@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import print_function
 from dolfin import *
-print "Check if petsc4py is installed:", has_petsc4py(), ". The answer should be True."
+print("Check if petsc4py is installed:", has_petsc4py(), ". The answer should be True.")
 

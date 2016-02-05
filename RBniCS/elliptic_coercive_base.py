@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 from dolfin import *
 import numpy as np
 import sys # for exit
@@ -337,8 +339,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #    theta_a2 = m1*m2+m3/7.0
     #    return (theta_a0, theta_a1, theta_a2)
     def compute_theta_a(self):
-        print "The function compute_theta_a() is problem-specific and needs to be overwritten."
-        print "Abort program."
+        print("The function compute_theta_a() is problem-specific and needs to be overwritten.")
+        print("Abort program.")
         sys.exit("Plase define function compute_theta_a(self)!")
     
     ## Return theta multiplicative terms of the affine expansion of f.
@@ -351,8 +353,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #    theta_f2 = m1*m2+m3/7.0
     #    return (theta_f0, theta_f1, theta_f2)
     def compute_theta_f(self):
-        print "The function compute_theta_f() is problem-specific and needs to be overwritten."
-        print "Abort program."
+        print("The function compute_theta_f() is problem-specific and needs to be overwritten.")
+        print("Abort program.")
         sys.exit("Plase define function compute_theta_f(self)!")
         
     ## Return matrices resulting from the truth discretization of a.
@@ -361,8 +363,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #    A0 = assemble(a0)
     #    return (A0,)
     def assemble_truth_a(self):
-        print "The function assemble_truth_a() is problem-specific and needs to be overwritten."
-        print "Abort program."
+        print("The function assemble_truth_a() is problem-specific and needs to be overwritten.")
+        print("Abort program.")
         sys.exit("Plase define function assemble_truth_a(self)!")
 
     ## Return vectors resulting from the truth discretization of f.
@@ -370,8 +372,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #    F0 = assemble(f0)
     #    return (F0,)
     def assemble_truth_f(self):
-        print "The function compute_truth_f() is problem-specific and needs to be overwritten."
-        print "Abort program."
+        print("The function compute_truth_f() is problem-specific and needs to be overwritten.")
+        print("Abort program.")
         sys.exit("Plase define function assemble_truth_f(self)!")
     
     #  @}

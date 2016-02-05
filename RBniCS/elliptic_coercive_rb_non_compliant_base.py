@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 import numpy as np
 import sys # for exit
 from elliptic_coercive_rb_base import *
@@ -276,8 +278,8 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     #    theta_s2 = m1*m2+m3/7.0
     #    return (theta_s0, theta_s1, theta_s2)
     def compute_theta_s(self):
-        print "The function compute_theta_s() is problem-specific and needs to be overwritten."
-        print "Abort program."
+        print("The function compute_theta_s() is problem-specific and needs to be overwritten.")
+        print("Abort program.")
         sys.exit("Plase define function compute_theta_s(self)!")
         
     ## Return vectors resulting from the truth discretization of s.
@@ -285,8 +287,8 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     #    S0 = assemble(S0)
     #    return (S0,)
     def assemble_truth_s(self):
-        print "The function compute_truth_s() is problem-specific and needs to be overwritten."
-        print "Abort program."
+        print("The function compute_truth_s() is problem-specific and needs to be overwritten.")
+        print("Abort program.")
         sys.exit("Plase define function assemble_truth_s(self)!")
         
     #  @}
@@ -373,17 +375,17 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
         
-        print "=============================================================="
-        print "=             Error analysis begins                          ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             Error analysis begins                          =")
+        print("==============================================================")
+        print("")
         
         error_u = np.zeros((N, len(self.xi_test)))
         delta_u = np.zeros((N, len(self.xi_test)))
         effectivity_u = np.zeros((N, len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
-            print "############################## run = ", run, " ######################################"
+            print("############################## run = ", run, " ######################################")
             
             self.setmu(self.xi_test[run])
             
@@ -399,23 +401,24 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
                 effectivity_u[n, run] = delta_u[n, run]/error_u[n, run]
                 
         # Print some statistics
-        print ""
-        print "N \t gmean(err_u) \t\t gmean(delta_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)"
+        print("")
+        print("N \t gmean(err_u) \t\t gmean(delta_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)")
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error_u = np.exp(np.mean(np.log(error_u[n, :])))
             mean_delta_u = np.exp(np.mean(np.log(delta_u[n, :])))
             min_effectivity_u = np.min(effectivity_u[n, :])
             mean_effectivity_u = np.exp(np.mean(np.log(effectivity_u[n, :])))
             max_effectivity_u = np.max(effectivity_u[n, :])
-            print str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
+            print(str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
                   + " \t " + str(min_effectivity_u) + " \t " + str(mean_effectivity_u) \
-                  + " \t " + str(max_effectivity_u)
+                  + " \t " + str(max_effectivity_u) \
+                 )
                   
-        print ""
-        print "=============================================================="
-        print "=             Error analysis ends                            ="
-        print "=============================================================="
-        print ""
+        print("")
+        print("==============================================================")
+        print("=             Error analysis ends                            =")
+        print("==============================================================")
+        print("")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

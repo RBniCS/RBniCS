@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
+from __future__ import print_function
 import glpk
 
-print "Check if glpk is correctly installed by solving a simple linear program."
+print("Check if glpk is correctly installed by solving a simple linear program.")
 
 lp = glpk.glp_create_prob()
 glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
@@ -47,7 +48,7 @@ glpk.glp_init_smcp(options)
 options.msg_lev = glpk.GLP_MSG_ERR
 options.meth = glpk.GLP_DUAL
 glpk.glp_simplex(lp, options)
-print "Computed optimum: x = ", glpk.glp_get_col_prim(lp, 1), ", y = ", glpk.glp_get_col_prim(lp, 2) ,", obj = ", glpk.glp_get_obj_val(lp)
-print "Expected optimum: x = 0.75, y = 0.25, obj = 0.625"
+print("Computed optimum: x =", glpk.glp_get_col_prim(lp, 1), ", y =", glpk.glp_get_col_prim(lp, 2) ,", obj =", glpk.glp_get_obj_val(lp))
+print("Expected optimum: x = 0.75, y = 0.25, obj = 0.625")
 glpk.glp_delete_prob(lp)
 

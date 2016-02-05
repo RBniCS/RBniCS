@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 from dolfin import *
 import numpy as np
 
@@ -90,7 +92,7 @@ class ProperOrthogonalDecomposition():
         eigs_norm = eigs/tot
         
         for i in range(Nmax):
-            print "lambda_",i," = ",eigs[i]
+            print("lambda_",i," = ",eigs[i])
             if i==0:
                 p = np.dot(self.snapshot_matrix,eigv[:,i])
                 p = np.squeeze(np.asarray(p)) # convert from an N_h x 1 matrix to an N_h vector

@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 from dolfin import *
 import os # for path and makedir
 import shutil # for rm
@@ -149,7 +151,7 @@ class SCM(ParametrizedProblem):
             elif self.B_min[qa] == self.B_max[qa]: # unlikely, but possible
                 glpk.glp_set_col_bnds(lp, qa + 1, glpk.GLP_FX, self.B_min[qa], self.B_max[qa])
             else: # there is something wrong in the bounding box: set as unconstrained variable
-                print "Warning: wrong bounding box for affine expansion element #", qa
+                print("Warning: wrong bounding box for affine expansion element #", qa)
                 glpk.glp_set_col_bnds(lp, qa + 1, glpk.GLP_FR, 0., 0.)
         
         # 3. Add two different sets of constraints
@@ -221,15 +223,15 @@ class SCM(ParametrizedProblem):
             tol = 1e-10
             alpha_UB = self.get_alpha_UB(mu)
             if alpha_LB/alpha_UB < tol:
-                print "SCM warning: alpha_LB is <= 0 at mu = " + str(mu) + ".",
-                print "Please consider a larger Nmax for SCM. Meanwhile, a truth",
-                print "eigensolve is performed."
+                print("SCM warning: alpha_LB is <= 0 at mu = " + str(mu) + ".", end=" ")
+                print("Please consider a larger Nmax for SCM. Meanwhile, a truth", end=" ")
+                print("eigensolve is performed.")
                 
                 (alpha_LB, discarded1, discarded2) = self.truth_coercivity_constant()
                 
             if alpha_LB/alpha_UB > 1 + tol:
-                print "SCM warning: alpha_LB is > alpha_UB at mu = " + str(mu) + ".",
-                print "This should never happen!"
+                print("SCM warning: alpha_LB is > alpha_UB at mu = " + str(mu) + ".", end=" ")
+                print("This should never happen!")
         
         return alpha_LB
     
@@ -299,10 +301,10 @@ class SCM(ParametrizedProblem):
     
     ## Perform the offline phase of SCM
     def offline(self):
-        print "=============================================================="
-        print "=             SCM offline phase begins                       ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             SCM offline phase begins                       =")
+        print("==============================================================")
+        print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
         folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
@@ -325,13 +327,13 @@ class SCM(ParametrizedProblem):
         self.mu_index = 0
         
         for run in range(self.Nmax):
-            print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             
             # Store the greedy parameter
             self.update_C_J()
             
             # Evaluate the coercivity constant
-            print "evaluate the coercivity constant for mu = ", self.mu
+            print("evaluate the coercivity constant for mu = ", self.mu)
             (alpha, eigenvector, UB_vector) = self.truth_coercivity_constant()
             self.alpha_J += [alpha]; np.save(self.reduced_matrices_folder + "alpha_J", self.alpha_J)
             self.eigenvector_J += [eigenvector]
@@ -340,15 +342,15 @@ class SCM(ParametrizedProblem):
             
             # Prepare for next iteration
             if self.N < self.Nmax:
-                print "find next mu"
+                print("find next mu")
                 self.greedy()
             else:
                 self.greedy()
         
-        print "=============================================================="
-        print "=             SCM offline phase ends                         ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             SCM offline phase ends                         =")
+        print("==============================================================")
+        print("")
         
         # mu_index does not make any sense from now on
         self.mu_index = None
@@ -398,7 +400,7 @@ class SCM(ParametrizedProblem):
             eigensolver.solve(1)
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             self.B_min[qa] = r
-            print "B_min[" + str(qa) + "] = " + str(r)
+            print("B_min[" + str(qa) + "] = " + str(r))
             
             # Compute the maximum eigenvalue
             A = self.truth_A__condensed_for_maximum_eigenvalue[qa]
@@ -411,7 +413,7 @@ class SCM(ParametrizedProblem):
             eigensolver.solve(1)
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             self.B_max[qa] = r
-            print "B_max[" + str(qa) + "] = " + str(r)
+            print("B_max[" + str(qa) + "] = " + str(r))
         
         # Save to file
         np.save(self.reduced_matrices_folder + "B_min", self.B_min)
@@ -481,16 +483,16 @@ class SCM(ParametrizedProblem):
             delta = (UB - LB)/UB
             tol = 1.e-10
             if LB/UB < -tol:
-                print "SCM warning at mu = ", mu , ": LB = ", LB, " < 0"
+                print("SCM warning at mu = ", mu , ": LB = ", LB, " < 0")
             if LB/UB > 1 + tol:
-                print "SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB
+                print("SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB)
             alpha_LB_on_xi_train[i] = max(0, LB)
             if ((delta > delta_max) or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
                 munew_index = i
                 
-        print "absolute SCM delta max = ", delta_max
+        print("absolute SCM delta max = ", delta_max)
         if os.path.isfile(self.post_processing_folder + "delta_max.npy") == True:
             d = np.load(self.post_processing_folder + "delta_max.npy")
             
@@ -568,15 +570,15 @@ class SCM(ParametrizedProblem):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self):
-        print "=============================================================="
-        print "=             SCM error analysis begins                      ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             SCM error analysis begins                      =")
+        print("==============================================================")
+        print("")
         
         normalized_error = np.zeros((len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
-            print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             
             self.setmu(self.xi_test[run])
             
@@ -588,28 +590,28 @@ class SCM(ParametrizedProblem):
             alpha_UB = self.get_alpha_UB(self.mu)
             tol = 1.e-10
             if alpha_LB/alpha_UB < -tol:
-                print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " < 0"
+                print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " < 0")
             if alpha_LB/alpha_UB > 1 + tol:
-                print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > UB = ", alpha_UB
+                print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > UB = ", alpha_UB)
             if alpha_LB/alpha > 1 + tol:
-                print "SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > exact = ", alpha
+                print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > exact = ", alpha)
             
             normalized_error[run] = (alpha - alpha_LB)/alpha_UB
         
         # Print some statistics
-        print ""
-        print "min(nerr) \t\t mean(nerr) \t\t max(nerr)"
+        print("")
+        print("min(nerr) \t\t mean(nerr) \t\t max(nerr)")
         min_normalized_error = np.min(normalized_error[:]) # it should not be negative!
         mean_normalized_error = np.mean(normalized_error[:])
         max_normalized_error = np.max(normalized_error[:])
-        print str(min_normalized_error) + " \t " + str(mean_normalized_error) \
-              + " \t " + str(max_normalized_error)
+        print(str(min_normalized_error) + " \t " + str(mean_normalized_error) \
+              + " \t " + str(max_normalized_error))
         
-        print ""
-        print "=============================================================="
-        print "=             SCM error analysis ends                        ="
-        print "=============================================================="
-        print ""
+        print("")
+        print("==============================================================")
+        print("=             SCM error analysis ends                        =")
+        print("==============================================================")
+        print("")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 from dolfin import *
 import numpy as np
 import os # for path and makedir
@@ -154,10 +156,10 @@ class EIM(ParametrizedProblem):
     ## Perform the offline phase of EIM
     def offline(self):
         # Interpolate the parametrized function on the mesh grid for all parameters in xi_train
-        print "=============================================================="
-        print "=             EIM preprocessing phase begins                 ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             EIM preprocessing phase begins                 =")
+        print("==============================================================")
+        print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
         folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
@@ -167,29 +169,29 @@ class EIM(ParametrizedProblem):
                 
         run = 0
         for mu in self.xi_train:
-            print ":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::"
+            print(":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::")
             
-            print "evaluate parametrized function"
+            print("evaluate parametrized function")
             self.setmu(self.xi_train[run])
             f = self.evaluate_parametrized_function_at_mu(self.mu)
             self.snapshot = interpolate(f, self.V)
             self.export_solution(self.snapshot, self.snapshots_folder + "truth_" + str(run))
             
-            print "update snapshot matrix"
+            print("update snapshot matrix")
             self.update_snapshot_matrix()
 
-            print ""
+            print("")
             run += 1
         
-        print "=============================================================="
-        print "=             EIM preprocessing phase ends                   ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             EIM preprocessing phase ends                   =")
+        print("==============================================================")
+        print("")
         
-        print "=============================================================="
-        print "=             EIM offline phase begins                       ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             EIM offline phase begins                       =")
+        print("==============================================================")
+        print("")
         
         # Arbitrarily start from the first parameter in the training set
         self.setmu(self.xi_train[0])
@@ -203,15 +205,15 @@ class EIM(ParametrizedProblem):
         self.interpolation_matrix = np.matrix(np.zeros((self.Nmax, self.Nmax)))
         
         for run in range(self.Nmax):
-            print ":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::"
+            print(":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::")
             
-            print "load parametrized function for mu = ", self.mu
+            print("load parametrized function for mu = ", self.mu)
             self.load_snapshot()
             
-            print "solve eim"
+            print("solve eim")
             self.online_solve()
             
-            print "compute maximum interpolation error"
+            print("compute maximum interpolation error")
             (maximum_error, maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error({"Output error": True, "Output location": True})
             if self.N == 0:
                 self.interpolation_points = np.array([maximum_point])
@@ -222,24 +224,24 @@ class EIM(ParametrizedProblem):
             np.save(self.reduced_matrices_folder + "interpolation_points", self.interpolation_points)
             np.save(self.reduced_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
             
-            print "update basis matrix"
+            print("update basis matrix")
             self.update_basis_matrix(maximum_error)
             
-            print "update interpolation matrix"
+            print("update interpolation matrix")
             self.update_interpolation_matrix()
             
             if self.N < self.Nmax:
-                print "find next mu"
+                print("find next mu")
                 self.greedy()
             else:
                 self.greedy()
 
-            print ""
+            print("")
             
-        print "=============================================================="
-        print "=             EIM offline phase ends                         ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             EIM offline phase ends                         =")
+        print("==============================================================")
+        print("")
         
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
@@ -347,7 +349,7 @@ class EIM(ParametrizedProblem):
                 err_max = err
                 munew = self.xi_train[i]
                 munew_index = i
-        print "absolute err max = ", err_max
+        print("absolute err max = ", err_max)
         if os.path.isfile(self.post_processing_folder + "err_max.npy") == True:
             d = np.load(self.post_processing_folder + "err_max.npy")
             
@@ -398,15 +400,15 @@ class EIM(ParametrizedProblem):
         if N is None:
             N = self.N
             
-        print "=============================================================="
-        print "=             EIM error analysis begins                      ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             EIM error analysis begins                      =")
+        print("==============================================================")
+        print("")
         
         error = np.zeros((N, len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
-            print ":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::"
+            print(":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::")
             
             self.setmu(self.xi_test[run])
             
@@ -419,17 +421,17 @@ class EIM(ParametrizedProblem):
                 error[n, run] = self.compute_maximum_interpolation_error({"Output error": True}, n)
         
         # Print some statistics
-        print ""
-        print "N \t gmean(err)"
+        print("")
+        print("N \t gmean(err)")
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error = np.exp(np.mean(np.log((error[n, :]))))
-            print str(n+1) + " \t " + str(mean_error)
+            print(str(n+1) + " \t " + str(mean_error))
         
-        print ""
-        print "=============================================================="
-        print "=             EIM error analysis ends                        ="
-        print "=============================================================="
-        print ""
+        print("")
+        print("==============================================================")
+        print("=             EIM error analysis ends                        =")
+        print("==============================================================")
+        print("")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

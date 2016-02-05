@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 import os # for path and makedir
 import shutil # for rm
 from proper_orthogonal_decomposition import *
@@ -91,10 +93,10 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     
     ## Perform the offline phase of the reduced order model
     def offline(self):
-        print "=============================================================="
-        print "=             Offline phase begins                           ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             Offline phase begins                           =")
+        print("==============================================================")
+        print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
         folders = (self.snapshots_folder, self.basis_folder, self.reduced_matrices_folder, self.post_processing_folder)
@@ -110,33 +112,33 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         self.Qf = len(self.truth_F)
         
         for run in range(len(self.xi_train)):
-            print "############################## run = ", run, " ######################################"
+            print("############################## run = ", run, " ######################################")
             
             self.setmu(self.xi_train[run])
             
-            print "truth solve for mu = ", self.mu
+            print("truth solve for mu = ", self.mu)
             self.truth_solve()
             self.export_solution(self.snapshot, self.snapshots_folder + "truth_" + str(run))
             
-            print "update snapshot matrix"
+            print("update snapshot matrix")
             self.update_snapshot_matrix()
 
-            print ""
+            print("")
             run += 1
             
-        print "############################## perform POD ######################################"
+        print("############################## perform POD ######################################")
         (self.Z, self.N) = self.apply_POD(self.S, self.post_processing_folder + "eigs", self.Nmax, self.tol)
         
-        print ""
-        print "build reduced matrices"
+        print("")
+        print("build reduced matrices")
         self.build_reduced_matrices()
         self.build_reduced_vectors()
         
-        print ""
-        print "=============================================================="
-        print "=             Offline phase ends                             ="
-        print "=============================================================="
-        print ""
+        print("")
+        print("==============================================================")
+        print("=             Offline phase ends                             =")
+        print("==============================================================")
+        print("")
         
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
@@ -173,15 +175,15 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
             
-        print "=============================================================="
-        print "=             Error analysis begins                          ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             Error analysis begins                          =")
+        print("==============================================================")
+        print("")
         
         error = np.zeros((N, len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
-            print "############################## run = ", run, " ######################################"
+            print("############################## run = ", run, " ######################################")
             
             self.setmu(self.xi_test[run])
             
@@ -192,17 +194,17 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
                 error[n, run] = self.compute_error(n + 1, True)
         
         # Print some statistics
-        print ""
-        print "N \t gmean(err)"
+        print("")
+        print("N \t gmean(err)")
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error = np.exp(np.mean(np.log((error[n, :]))))
-            print str(n+1) + " \t " + str(mean_error)
+            print(str(n+1) + " \t " + str(mean_error))
         
-        print ""
-        print "=============================================================="
-        print "=             Error analysis ends                            ="
-        print "=============================================================="
-        print ""
+        print("")
+        print("==============================================================")
+        print("=             Error analysis ends                            =")
+        print("==============================================================")
+        print("")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

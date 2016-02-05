@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 import os # for path and makedir
 import shutil # for rm
 import sys # for exit
@@ -190,10 +192,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     
     ## Perform the offline phase of the reduced order model
     def offline(self):
-        print "=============================================================="
-        print "=             Offline phase begins                           ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             Offline phase begins                           =")
+        print("==============================================================")
+        print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
         folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
@@ -209,38 +211,38 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.Qf = len(self.truth_F)
         
         for run in range(self.Nmax):
-            print "############################## run = ", run, " ######################################"
+            print("############################## run = ", run, " ######################################")
             
-            print "truth solve for mu = ", self.mu
+            print("truth solve for mu = ", self.mu)
             self.truth_solve()
             self.export_solution(self.snapshot, self.snapshots_folder + "truth_" + str(run))
             
-            print "update basis matrix"
+            print("update basis matrix")
             self.update_basis_matrix()
             
-            print "build reduced matrices"
+            print("build reduced matrices")
             self.build_reduced_matrices()
             self.build_reduced_vectors()
             
-            print "reduced order solve"
+            print("reduced order solve")
             self._online_solve(self.N)
             
-            print "build matrices for error estimation (it may take a while)"
+            print("build matrices for error estimation (it may take a while)")
             self.compute_dual_terms()
             
             if self.N < self.Nmax:
-                print "find next mu"
-
+                print("find next mu")
+            
             # we do a greedy even if N==Nmax in order to have in
             # output the delta_max
             self.greedy()
 
-            print ""
+            print("")
             
-        print "=============================================================="
-        print "=             Offline phase ends                             ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             Offline phase ends                             =")
+        print("==============================================================")
+        print("")
         
     ## Update basis matrix
     def update_basis_matrix(self):
@@ -267,7 +269,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
-        print "absolute delta max = ", delta_max
+        print("absolute delta max = ", delta_max)
         if os.path.isfile(self.post_processing_folder + "delta_max.npy") == True:
             d = np.load(self.post_processing_folder + "delta_max.npy")
             
@@ -411,10 +413,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
         
-        print "=============================================================="
-        print "=             Error analysis begins                          ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             Error analysis begins                          =")
+        print("==============================================================")
+        print("")
         
         error_u = np.zeros((N, len(self.xi_test)))
         delta_u = np.zeros((N, len(self.xi_test)))
@@ -424,7 +426,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         effectivity_s = np.zeros((N, len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
-            print "############################## run = ", run, " ######################################"
+            print("############################## run = ", run, " ######################################")
             
             self.setmu(self.xi_test[run])
             
@@ -444,35 +446,37 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                 effectivity_s[n, run] = delta_s[n, run]/error_s[n, run]
         
         # Print some statistics
-        print ""
-        print "N \t gmean(err_u) \t\t gmean(delta_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)"
+        print("")
+        print("N \t gmean(err_u) \t\t gmean(delta_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)")
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error_u = np.exp(np.mean(np.log(error_u[n, :])))
             mean_delta_u = np.exp(np.mean(np.log(delta_u[n, :])))
             min_effectivity_u = np.min(effectivity_u[n, :])
             mean_effectivity_u = np.exp(np.mean(np.log(effectivity_u[n, :])))
             max_effectivity_u = np.max(effectivity_u[n, :])
-            print str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
+            print(str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
                   + " \t " + str(min_effectivity_u) + " \t " + str(mean_effectivity_u) \
-                  + " \t " + str(max_effectivity_u)
+                  + " \t " + str(max_effectivity_u) \
+                 )
                   
-        print ""
-        print "N \t gmean(err_s) \t\t gmean(delta_s) \t min(eff_s) \t gmean(eff_s) \t max(eff_s)"
+        print("")
+        print("N \t gmean(err_s) \t\t gmean(delta_s) \t min(eff_s) \t gmean(eff_s) \t max(eff_s)")
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error_s = np.exp(np.mean(np.log(error_s[n, :])))
             mean_delta_s = np.exp(np.mean(np.log(delta_s[n, :])))
             min_effectivity_s = np.min(effectivity_s[n, :])
             mean_effectivity_s = np.exp(np.mean(np.log(effectivity_s[n, :])))
             max_effectivity_s = np.max(effectivity_s[n, :])
-            print str(n+1) + " \t " + str(mean_error_s) + " \t " + str(mean_delta_s) \
+            print(str(n+1) + " \t " + str(mean_error_s) + " \t " + str(mean_delta_s) \
                   + " \t " + str(min_effectivity_s) + " \t " + str(mean_effectivity_s) \
-                  + " \t " + str(max_effectivity_s)
+                  + " \t " + str(max_effectivity_s) \
+                 )
         
-        print ""
-        print "=============================================================="
-        print "=             Error analysis ends                            ="
-        print "=============================================================="
-        print ""
+        print("")
+        print("==============================================================")
+        print("=             Error analysis ends                            =")
+        print("==============================================================")
+        print("")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
@@ -503,8 +507,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     # example of implementation:
     #    return 1.0
     def get_alpha_lb(self):
-        print "The function get_alpha_lb(self) is problem-specific and needs to be overwritten."
-        print "Abort program."
+        print("The function get_alpha_lb(self) is problem-specific and needs to be overwritten.")
+        print("Abort program.")
         sys.exit("Plase define function get_alpha_lb(self)!")
         
     #  @}

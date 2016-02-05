@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
+from config import *
 from elliptic_coercive_base import *
 import os
 import shutil
@@ -134,7 +136,6 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # Iterate in time
         for t in self.all_times[1:]:
             self.t = t
-       #     print "t = " + str(self.t)
             self._online_solve(N)
             self.all_reduced = np.hstack((self.all_reduced, self.get_fe_functions_at_time(t)))
 
@@ -179,10 +180,10 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     #  @{
 
     def offline(self):
-        print "=============================================================="
-        print "=             Offline phase begins                           ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             Offline phase begins                           =")
+        print("==============================================================")
+        print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
         folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
@@ -202,36 +203,36 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         self.Qf = len(self.truth_F)
 
         while self.N < self.Nmax:
-            print "############################## N = ", self.N, " ######################################"
+            print("############################## N = ", self.N, " ######################################")
             
-            print "truth solve for mu = ", self.mu
+            print("truth solve for mu = ", self.mu)
             self.truth_solve()
             
-            print "update basis matrix" 
+            print("update basis matrix")
             self.update_basis_matrix()
             
-            print "build reduced matrices"
+            print("build reduced matrices")
             self.build_reduced_matrices()
             self.build_reduced_vectors()
             
-            print "reduced order solve"
+            print("reduced order solve")
             ParabolicCoerciveBase.online_solve(self,self.N,False)
             
-            print "build matrices for error estimation (it may take a while)"
+            print("build matrices for error estimation (it may take a while)")
             self.compute_dual_terms()
             
             if self.N < self.Nmax:
-                print "find next mu"
+                print("find next mu")
                 self.greedy()
             else:
                 self.greedy()
 
-            print ""
+            print("")
             
-        print "=============================================================="
-        print "=             Offline phase ends                             ="
-        print "=============================================================="
-        print ""
+        print("==============================================================")
+        print("=             Offline phase ends                             =")
+        print("==============================================================")
+        print("")
     ## Perform a truth solve
     def truth_solve(self):
         # Set the initial condition
@@ -255,7 +256,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             assembled_truth_rhs = 1./dt*assembled_truth_M*self.snapshot.vector() + assembled_truth_F  # snapshot -> solution at previous time
             solve(assembled_truth_lhs, self.snapshot.vector(), assembled_truth_rhs)
             self.all_snapshot = np.hstack((self.all_snapshot, self.snapshot.vector())) # add new solutions as column vectors
-        print ""
+        print("")
         
     ## Assemble the reduced order affine expansion (matrix)
     def build_reduced_matrices(self):
@@ -293,7 +294,6 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         for k in range(len(self.all_times)):
             current_error.vector()[:] = self.all_snapshot[:, k].vector()[:] - self.all_reduced[:, k].vector()[:] # error as a function
             self.t = self.all_times[k] # needed by the next line, since theta_a ...
-            print "t = " + str(self.t)
             self.theta_a = self.compute_theta_a() # ... may depend on time
             assembled_truth_A_sym = self.affine_assemble_truth_symmetric_part_matrix(self.truth_A, self.theta_a)
             error_norm_squared += 1./self.dt * self.compute_scalar(current_error, current_error, assembled_truth_A_sym) # norm of the error

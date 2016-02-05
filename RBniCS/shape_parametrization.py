@@ -93,13 +93,13 @@ def ShapeParametrization(ParametrizedProblem_DerivedClass):
             
         ## Deform the mesh as a function of the geometrical parameters
         def move_mesh(self):
-            print "moving mesh"
+            print("moving mesh")
             displacement = self.compute_displacement()
             ALE.move(self.mesh, displacement)
         
         ## Restore the reference mesh
         def reset_reference(self):
-            print "back to the reference mesh"
+            print("back to the reference mesh")
             new_coor = np.array([self.xref, self.yref]).transpose()
             self.mesh.coordinates()[:] = new_coor
         
