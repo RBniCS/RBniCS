@@ -26,7 +26,7 @@ import os # for path and makedir
 import numpy as np
 import itertools # for linspace sampling
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
+#~~~~~~~~~~~~~~~~~~~~~~~~~     PARAMETRIZED PROBLEM BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParametrizedProblem
 #
 # Base class containing an offline/online decomposition of parametrized problems
@@ -155,4 +155,48 @@ class ParametrizedProblem:
     
     #  @}
     ########################### end - SETTERS - end ########################### 
+    
+    ###########################     I/O     ########################### 
+    ## @defgroup IO Input/output methods
+    #  @{
+    
+    ## Interactive plot
+    def _plot(solution, *args, **kwargs)
+        self.move_mesh() # possibly deform the mesh
+        preprocessed_solution = self.preprocess_solution_for_plot(solution)
+        plot(solution, *args, **kwargs) # call FEniCS plot
+        self.reset_reference() # undo mesh motion
+        
+    ## Export in VTK format
+    def _export_vtk(self, solution, filename, output_options={}):
+        if not "With mesh motion" in output_options:
+            output_options["With mesh motion"] = False
+        if not "With preprocessing" in output_options:
+            output_options["With preprocessing"] = False
+        #
+        file = File(filename + ".pvd", "compressed")
+        if output_options["With mesh motion"]:
+            self.move_mesh() # deform the mesh
+        if output_options["With preprocessing"]:
+            preprocessed_solution = self.preprocess_solution_for_plot(solution)
+            file << preprocessed_solution
+        else:
+            file << solution
+        if output_options["With mesh motion"]:
+            self.reset_reference() # undo mesh motion
+            
+    ## Preprocess the solution before plotting (e.g. to add a lifting)
+    def preprocess_solution_for_plot(self, solution):
+        return solution # nothing to be done by default
+        
+    ## Deform the mesh as a function of the geometrical parameters
+    def move_mesh(self):
+        pass # nothing to be done by default
+    
+    ## Restore the reference mesh
+    def reset_reference(self):
+        pass # nothing to be done by default
+                
+    #  @}
+    ########################### end - I/O - end ########################### 
 

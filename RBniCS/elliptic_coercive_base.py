@@ -99,7 +99,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
             i+=1
         self.reduced.vector()[:] = sol
         if with_plot == True:
-            plot(self.reduced, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+            self._plot(self.reduced, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
     
     # Perform an online solve (internal)
     def _online_solve(self, N):
@@ -266,17 +266,11 @@ class EllipticCoerciveBase(ParametrizedProblem):
 
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
-        file = File(filename + ".pvd", "compressed")
-        file << solution
+        self._export_vtk(solution, filename, {"With mesh motion": True, "With preprocessing": True})
         
     ## Export basis in VTK format. 
-    #  The default implementation is equal to the export solution method. Child classes
-    #  may redefine this method since, for instance, when geometrical parametrization
-    #  is employed basis are defined on the reference domain, while solutions are
-    #  more effectively plotted on the deformed domain
     def export_basis(self, basis, filename):
-        file = File(filename + ".pvd", "compressed")
-        file << basis
+        self._export_vtk(solution, filename, {"With mesh motion": False, "With preprocessing": False})
         
     #  @}
     ########################### end - I/O - end ########################### 

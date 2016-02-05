@@ -258,7 +258,7 @@ class EIM(ParametrizedProblem):
         self.snapshot.vector()[:] = np.array(self.snapshot_matrix[:, mu_index], dtype=np.float)
     
     # Compute the interpolation error and/or its maximum location
-    def compute_maximum_interpolation_error(self, output_options, N=None):
+    def compute_maximum_interpolation_error(self, output_options={}, N=None):
         if N is None:
             N = self.N
         if not "Output error" in output_options:
@@ -440,13 +440,11 @@ class EIM(ParametrizedProblem):
 
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
-        file = File(filename + ".pvd", "compressed")
-        file << solution
+        self._export_vtk(solution, filename, {"With mesh motion": True, "With preprocessing": True})
         
     ## Export basis in VTK format. 
     def export_basis(self, basis, filename):
-        file = File(filename + ".pvd", "compressed")
-        file << basis
+        self._export_vtk(solution, filename, {"With mesh motion": False, "With preprocessing": False})
         
     def load_reduced_matrices(self):
         if len(np.asarray(self.interpolation_points)) == 0: # avoid loading multiple times
