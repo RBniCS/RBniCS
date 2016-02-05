@@ -3,8 +3,8 @@
 *.pyc
 basis*
 dual*
-pp*
-red_matr*
+post_processing*
+reduced_matrices*
 snapshots*
 xi_test*
 xi_train*
