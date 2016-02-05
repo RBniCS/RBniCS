@@ -36,6 +36,7 @@ from parabolic_coercive_rb_base import *
 from parametrized_problem import *
 from proper_orthogonal_decomposition import *
 from scm import *
+from shape_parametrization import *
 
 __all__ = [ \
               'EIM', \
@@ -49,6 +50,7 @@ __all__ = [ \
               'ParabolicCoerciveRBBase', \
               'ParametrizedProblem', \
               'ProperOrthogonalDecomposition', \
-              'SCM' \
+              'SCM', \
+              'ShapeParametrization', \
           ]
 

@@ -447,3 +447,19 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
+    
+    ###########################     I/O     ########################### 
+    ## @defgroup IO Input/output methods
+    #  @{
+    
+    ## Deform the mesh as a function of the geometrical parameters
+    def move_mesh(self):
+        self.primal_problem.setmu(self.mu)
+        self.primal_problem.move_mesh()
+    
+    ## Restore the reference mesh
+    def reset_reference(self):
+        self.primal_problem.reset_reference()
+                
+    #  @}
+    ########################### end - I/O - end ########################### 

@@ -30,7 +30,7 @@ import itertools # for linspace sampling
 ## @class ParametrizedProblem
 #
 # Base class containing an offline/online decomposition of parametrized problems
-class ParametrizedProblem:
+class ParametrizedProblem(object):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
