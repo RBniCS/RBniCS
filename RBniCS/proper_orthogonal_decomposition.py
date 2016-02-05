@@ -38,14 +38,17 @@ class ProperOrthogonalDecomposition(object):
     #  @{
     
     ## Default initialization of members
-    def __init__(self):
+    def __init__(self, compute_scalar_product_method, X):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a matrix to store the snapshots
-        self.snapshot_matrix = np.array([])
+        self.snapshot_matrix = []
+        # 7. Inner product
+        self.compute_scalar_product = compute_scalar_product_method
+        self.X = X
         
     ## Clean up
     def clear(self):
-        self.snapshot_matrix = np.array([])
+        self.snapshot_matrix = []
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -56,27 +59,23 @@ class ProperOrthogonalDecomposition(object):
     
     ## Store a single snapshot in the snapshot matrix
     def store_single_snapshot(self, snapshot):
-        if self.snapshot_matrix.size == 0: # for the first snapshot
-            self.snapshot_matrix = np.array(snapshot.vector()).reshape(-1, 1) # as column vector
-        else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(snapshot.vector()).reshape(-1, 1))) # add new snapshots as column vectors
+        self.snapshot_matrix.append(snapshot.vector().copy())
             
     ## Store a multiple snapshots in the snapshot matrix
     def store_multiple_snapshots(self, snapshots):
-        if self.snapshot_matrix.size == 0: # for the first snapshot
-            self.snapshot_matrix = np.array(snapshots) # as column vectors
-        else:
-            self.snapshot_matrix = np.hstack((self.snapshot_matrix, np.array(snapshots))) # add new snapshots as column vectors
+        self.snapshot_matrix.extend(snapshots) # note the difference between extend and append in python
             
     ## Perform POD on the snapshots previously computed, and store the first
     #  POD modes in the basis functions matrix.
-    #  Input arguments are: inner product matrix, post processing file, Nmax and tol (mutually exclusive)
+    #  Input arguments are: post processing file, Nmax
     #  Output arguments are: POD modes, number of POD modes
-    def apply(self, S, eigenvalues_file, Nmax, tol):
-        S = as_backend_type(S)
-        dim = S.size(0) # = S.size(1)
-        corr = np.matrix(np.dot(self.snapshot_matrix.T,np.matrix(np.dot(S.mat().getValues(range(dim),range(dim)),self.snapshot_matrix))))
-        eigs, eigv = np.linalg.eig(corr)
+    def apply(self, eigenvalues_file, Nmax):
+        dim = len(self.snapshot_matrix)
+        correlation = np.matrix(np.zeros(dim, dim))
+        for i in range(dim):
+            for j in range(dim):
+                correlation[i, j] = self.compute_scalar_product(self.snapshot_matrix[i], self.X, self.snapshot_matrix[j])
+        eigs, eigv = np.linalg.eig(correlation)
         idx = eigs.argsort()
         idx = idx[::-1]
         eigs = eigs[idx]
@@ -91,18 +90,14 @@ class ProperOrthogonalDecomposition(object):
         tot = np.sum(eigs)
         eigs_norm = eigs/tot
         
+        Z = []
         for i in range(Nmax):
             print("lambda_",i," = ",eigs[i])
-            if i==0:
-                p = np.dot(self.snapshot_matrix,eigv[:,i])
-                p = np.squeeze(np.asarray(p)) # convert from an N_h x 1 matrix to an N_h vector
-                p /= np.sqrt(np.dot(p, S*p))
-                Z = p.reshape(-1, 1) # as column vector
-            else:
-                p = np.dot(self.snapshot_matrix,eigv[:,i])
-                p = np.squeeze(np.asarray(p)) # convert from an N_h x 1 matrix to an N_h vector
-                p /= np.sqrt(np.dot(p, S*p))
-                Z = np.hstack((Z, p.reshape(-1, 1))) # add new basis functions as column vectors
+            Z_i = self.snapshot_matrix[0]*eigv[0, i]
+            for j in range(1, dim):
+                Z_i += self.snapshot_matrix[j]*eigv[j, i]
+            Z_i /= self.compute_scalar_product(Z_i, self.X, Z_i)
+            Z.append(Z_i.copy())
         
         return (Z, Nmax)
     

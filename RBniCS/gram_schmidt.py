@@ -24,10 +24,10 @@
 
 import numpy as np
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     PROPER ORTHOGONAL DECOMPOSITION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ProperOrthogonalDecomposition
+#~~~~~~~~~~~~~~~~~~~~~~~~~     GRAM SCHMIDT CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
+## @class GramSchmidt
 #
-# Class containing the implementation of GS
+# Class containing the implementation of Gram Schmidt
 class GramSchmidt():
 
     ###########################     CONSTRUCTORS     ########################### 
@@ -35,9 +35,11 @@ class GramSchmidt():
     #  @{
     
     ## Default initialization of members
-    def __init__(self):
-        # Nothing to be done
-        pass
+    def __init__(self, compute_scalar_product_method, X):
+        # $$ OFFLINE DATA STRUCTURES $$ #
+        # 7. Inner product
+        self.compute_scalar_product = compute_scalar_product_method
+        self.X = X
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -46,14 +48,13 @@ class GramSchmidt():
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
             
-    ## Apply GS on the basis functions matrix Z. S is the inner product matrix
-    def apply(self, Z, S):
-        last = Z.shape[1]-1
-        b = Z[:, last].copy()
-        for i in range(last):
-            proj = np.dot(np.dot(b,S*Z[:, i])/np.dot(Z[:, i],S*Z[:, i]),Z[:, i])
-            b = b - proj 
-        Z[:, last] = b/np.sqrt(np.dot(b,S*b))
+    ## Apply Gram Schmidt on the basis functions matrix Z
+    def apply(self, Z):
+        n_basis = len(Z) # basis are store as a list of FE vectors
+        b = Z[n_basis - 1] # reference to the last basis
+        for i in range(n_basis - 1):
+            b -= self.compute_scalar_product(b, self.X, Z[i])/self.compute_scalar_product(Z[i], self.X, Z[i]) * Z[i]
+        b /= self.compute_scalar(b, self.X, b)
         return Z
     
     #  @}
