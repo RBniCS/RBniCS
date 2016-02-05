@@ -99,18 +99,18 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.Qa = 0
         self.Qf = 0
         # 3b. Theta multiplicative factors of the affine expansion
-        self.theta_a = ()
-        self.theta_f = ()
+        self.theta_a = []
+        self.theta_f = []
         # 3c. Reduced order matrices/vectors
-        self.reduced_A = ()
-        self.reduced_F = ()
+        self.reduced_A = []
+        self.reduced_F = []
         # 4. Online solution
         self.uN = 0 # vector of dimension N storing the reduced order solution
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 3c. Matrices/vectors resulting from the truth discretization
-        self.truth_A = ()
-        self.truth_F = ()
+        self.truth_A = []
+        self.truth_F = []
         # 4. Offline solutions
         self.snapshot = Function(V) # temporary vector for storage of a truth solution
         self.reduced = Function(V) # temporary vector for storage of the FE reconstruction of the reduced solution

@@ -203,9 +203,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             if not os.path.exists(f):
                 os.makedirs(f)
         
-        self.truth_A = self.assemble_truth_a()
+        self.truth_A = [assemble(a_form) for a_form in self.assemble_truth_a()]
         self.apply_bc_to_matrix_expansion(self.truth_A)
-        self.truth_F = self.assemble_truth_f()
+        self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
         self.apply_bc_to_vector_expansion(self.truth_F)
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
@@ -406,9 +406,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         if N is None:
             N = self.N
             
-        self.truth_A = self.assemble_truth_a()
+        self.truth_A = [assemble(a_form) for a_form in self.assemble_truth_a()]
         self.apply_bc_to_matrix_expansion(self.truth_A)
-        self.truth_F = self.assemble_truth_f()
+        self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
         self.apply_bc_to_vector_expansion(self.truth_F)
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)

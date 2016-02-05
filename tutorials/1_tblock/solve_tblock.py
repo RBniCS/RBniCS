@@ -76,25 +76,21 @@ class Tblock(EllipticCoerciveRBBase):
         u = self.u
         v = self.v
         dx = self.dx
-        # Assemble A0
+        # Define
         a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*inner(u,v)*dx
-        A0 = assemble(a0)
-        # Assemble A1
         a1 = inner(grad(u),grad(v))*dx(2) + 1e-15*inner(u,v)*dx
-        A1 = assemble(a1)
         # Return
-        return (A0, A1)
+        return (a0, a1)
     
     ## Set vectors resulting from the truth discretization of f.
     def assemble_truth_f(self):
         v = self.v
         dx = self.dx
         ds = self.ds
-        # Assemble F0
+        # Define
         f0 = v*ds(1) + 1e-15*v*dx
-        F0 = assemble(f0)
         # Return
-        return (F0,)
+        return (f0,)
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

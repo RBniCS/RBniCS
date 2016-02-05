@@ -90,7 +90,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # 3a. Number of terms in the affine expansion
         self.Qm = 1
         # 3b. Theta multiplicative factors of the affine expansion
-        self.theta_m = (1., )
+        self.theta_m = [1.]
         # 3c. Reduced order matrices/vectors
         self.reduced_M = []
         # 4. Online solution
@@ -191,12 +191,12 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             if not os.path.exists(f):
                 os.makedirs(f)
         
-        self.truth_A = self.assemble_truth_a()
+        self.truth_A = [assemble(a_form) for a_form in self.assemble_truth_a()]
         self.apply_bc_to_matrix_expansion(self.truth_A)
-        #self.truth_M = self.assemble_truth_M()
+        #self.truth_M = [assemble(m_form) for m_form in self.assemble_truth_m()]
         self.apply_bc_to_matrix_expansion(self.truth_M)
         [bc.zero(self.truth_M[0]) for bc in self.bc_list]
-        self.truth_F = self.assemble_truth_f()
+        self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
         self.apply_bc_to_vector_expansion(self.truth_F)
         self.Qa = len(self.truth_A)
         self.Qm = len(self.truth_M)

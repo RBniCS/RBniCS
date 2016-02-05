@@ -359,7 +359,7 @@ class SCM(ParametrizedProblem):
     def assemble_condensed_truth_matrices(self):
         # Assemble matrices related to the LHS A of the parametrized problem
         if not self.parametrized_problem.truth_A:
-            self.parametrized_problem.truth_A = self.parametrized_problem.assemble_truth_a()
+            self.parametrized_problem.truth_A = [assemble(a_form) for a_form in self.parametrized_problem.assemble_truth_a()]
         if self.parametrized_problem.Qa == 0:
             self.parametrized_problem.Qa = len(self.parametrized_problem.truth_A)
         

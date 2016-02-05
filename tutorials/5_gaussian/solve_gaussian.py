@@ -116,12 +116,11 @@ class Gaussian(EllipticCoerciveRBBase):
         self.EIM_obj.setmu(self.mu)
         interpolated_gaussian = self.EIM_obj.assemble_mu_independent_interpolated_function()
         # Assemble
-        all_F = ()
+        all_f = ()
         for q in range(len(interpolated_gaussian)):
-            f_q = interpolated_gaussian[q]*v*dx
-            all_F += (assemble(f_q),)
+            all_f += (interpolated_gaussian[q]*v*dx,)
         # Return
-        return all_F
+        return all_f
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

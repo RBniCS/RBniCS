@@ -154,13 +154,8 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
         a1 = u.dx(0)*v.dx(0)*dx(2) + 1e-15*u*v*dx
         a2 = u.dx(1)*v.dx(1)*dx(2) + 1e-15*u*v*dx
         a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2) + 1e-15*u*v*dx
-        # Assemble
-        A0 = assemble(a0)
-        A1 = assemble(a1)
-        A2 = assemble(a2)
-        A3 = assemble(a3)
         # Return
-        return (A0, A1, A2, A3)
+        return (a0, a1, a2, a3)
     
     ## Set vectors resulting from the truth discretization of f.
     def assemble_truth_f(self):
@@ -173,13 +168,8 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
         f1 = lifting.dx(0)*v.dx(0)*dx(2) + 1e-15*lifting*v*dx
         f2 = lifting.dx(1)*v.dx(1)*dx(2) + 1e-15*lifting*v*dx
         f3 = vel*lifting.dx(0)*v*dx(1) + vel*lifting.dx(0)*v*dx(2) + 1e-15*lifting*v*dx
-        # Assemble
-        F0 = assemble(f0)
-        F1 = assemble(f1)
-        F2 = assemble(f2)
-        F3 = assemble(f3)
         # Return
-        return (F0, F1, F2, F3)
+        return (f0, f1, f2, f3)
         
     ## Set vectors resulting from the truth discretization of s.
     def assemble_truth_s(self):
@@ -188,10 +178,8 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
 #        s0 = v*ds(3)
         dx = self.dx
         s0 = v*dx(2)
-        
-        # Assemble and return
-        S0 = assemble(s0)
-        return (S0,)
+        # Return
+        return (s0,)
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

@@ -102,18 +102,8 @@ class Eblock(EllipticCoercivePODBase):
         a6 = self.elasticity(u,v)*dx(7) +1e-15*inner(u,v)*dx
         a7 = self.elasticity(u,v)*dx(8) +1e-15*inner(u,v)*dx
         a8 = self.elasticity(u,v)*dx(9) +1e-15*inner(u,v)*dx
-        # Assemble
-        A0 = assemble(a0)
-        A1 = assemble(a1)
-        A2 = assemble(a2)
-        A3 = assemble(a3)
-        A4 = assemble(a4)
-        A5 = assemble(a5)
-        A6 = assemble(a6)
-        A7 = assemble(a7)
-        A8 = assemble(a8)
         # Return
-        return (A0, A1, A2, A3, A4, A5, A6, A7, A8)
+        return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
     
     ## Set vectors resulting from the truth discretization of f.
     def assemble_truth_f(self):
@@ -126,12 +116,8 @@ class Eblock(EllipticCoercivePODBase):
         f0 = inner(f,v)*ds(2) + inner(l,v)*dx
         f1 = inner(f,v)*ds(3) + inner(l,v)*dx 
         f2 = inner(f,v)*ds(4) + inner(l,v)*dx
-        # Assemble
-        F0 = assemble(f0)
-        F1 = assemble(f1)
-        F2 = assemble(f2)
         # Return
-        return (F0,F1,F2)
+        return (f0,f1,f2)
     
     ## Auxiliary function to compute the elasticity bilinear form    
     def elasticity(self, u, v):

@@ -149,7 +149,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     
     ## Perform the offline phase of the reduced order model
     def offline(self):
-        self.truth_S = self.assemble_truth_s()
+        self.truth_S = [assemble(s_form) for s_form in self.assemble_truth_s()]
         self.apply_bc_to_vector_expansion(self.truth_S)
         self.Qs = len(self.truth_S)
         
@@ -232,7 +232,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
-        self.truth_S = self.assemble_truth_s()
+        self.truth_S = [assemble(s_form) for s_form in self.assemble_truth_s()]
         self.apply_bc_to_vector_expansion(self.truth_S)
         self.Qs = len(self.truth_S)
         
@@ -368,9 +368,9 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         if N is None:
             N = self.N
             
-        self.truth_A = self.assemble_truth_a()
+        self.truth_A = [assemble(a_form) for a_form in self.assemble_truth_a()]
         self.apply_bc_to_matrix_expansion(self.truth_A)
-        self.truth_F = self.assemble_truth_f()
+        self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
         self.apply_bc_to_vector_expansion(self.truth_F)
         self.Qa = len(self.truth_A)
         self.Qf = len(self.truth_F)
@@ -448,12 +448,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     
     ## Set matrices resulting from the truth discretization of a.
     def assemble_truth_a(self):
-        primal_truth_a = self.primal_problem.assemble_truth_a()
-        primal_truth_a_transpose = ()
-        for qa in range(len(primal_truth_a)):
-            primal_truth_a_qa_transpose = self.compute_transpose(primal_truth_a[qa])
-            primal_truth_a_transpose += (primal_truth_a_qa_transpose,)
-        return primal_truth_a_transpose
+        return [adjoint(a_form) for a_form in self.primal_problem.assemble_truth_a()]
     
     ## Set vectors resulting from the truth discretization of f.
     def assemble_truth_f(self):
