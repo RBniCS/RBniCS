@@ -102,7 +102,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # 4. Offline output
         self.s = 0
         # 6bis. Declare a GS object
-        self.GS = GramSchmidt()
+        self.GS = GramSchmidt(self.compute_scalar_product, self.S)
         # 9. I/O
         self.snapshots_folder = "snapshots/"
         self.basis_folder = "basis/"
@@ -251,7 +251,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.Z /= np.sqrt(np.dot(self.Z[:, 0], self.S*self.Z[:, 0]))
         else:
             self.Z = np.hstack((self.Z, np.array(self.snapshot.vector()).reshape(-1, 1))) # add new basis functions as column vectors
-            self.Z = self.GS.apply(self.Z, self.S)
+            self.Z = self.GS.apply(self.Z)
         np.save(self.basis_folder + "basis", self.Z)
         current_basis = Function(self.V)
         current_basis.vector()[:] = np.array(self.Z[:, self.N], dtype=np.float_)

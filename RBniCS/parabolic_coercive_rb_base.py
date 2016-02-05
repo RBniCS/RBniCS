@@ -70,7 +70,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         ParabolicCoerciveBase.__init__(self, V, bc_list)
         EllipticCoerciveRBBase.__init__(self, V, bc_list)
 
-        self.POD = ProperOrthogonalDecomposition()
+        self.POD = ProperOrthogonalDecomposition(self.compute_scalar_product, self.S)
         self.M1 = 2
         self.M2 = 2
         

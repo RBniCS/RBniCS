@@ -65,7 +65,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a POD object
-        self.POD = ProperOrthogonalDecomposition()
+        self.POD = ProperOrthogonalDecomposition(self.compute_scalar_product, self.S)
         # 9. I/O
         self.xi_train_folder = "xi_train__pod/"
         self.xi_test_folder = "xi_test__pod/"
@@ -127,7 +127,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             run += 1
             
         print("############################## perform POD ######################################")
-        (self.Z, self.N) = self.apply_POD(self.S, self.post_processing_folder + "eigs", self.Nmax, self.tol)
+        (self.Z, self.N) = self.apply_POD(self.S, self.post_processing_folder + "eigs", self.Nmax)
         
         print("")
         print("build reduced matrices")
@@ -145,8 +145,8 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         self.POD.store_single_snapshot(self.snapshot)
         
     ## Apply POD
-    def apply_POD(self, S, eigenvalues_file, Nmax, tol):
-        (Z, N) = self.POD.apply(S, eigenvalues_file, Nmax, tol)
+    def apply_POD(self, S, eigenvalues_file, Nmax):
+        (Z, N) = self.POD.apply(S, eigenvalues_file, Nmax)
         np.save(self.basis_folder + "basis", Z)
         current_basis = Function(self.V)
         for b in range(N):
