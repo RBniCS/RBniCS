@@ -295,8 +295,8 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             current_error.vector()[:] = self.all_snapshot[:, k].vector()[:] - self.all_reduced[:, k].vector()[:] # error as a function
             self.t = self.all_times[k] # needed by the next line, since theta_a ...
             self.theta_a = self.compute_theta_a() # ... may depend on time
-            assembled_truth_A_sym = self.affine_assemble_truth_symmetric_part_matrix(self.truth_A, self.theta_a)
-            error_norm_squared += 1./self.dt * self.compute_scalar(current_error, current_error, assembled_truth_A_sym) # norm of the error
+            assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a)
+            error_norm_squared += 1./self.dt * self.compute_scalar(current_error, current_error, assembled_truth_A) # norm of the error
         return np.sqrt(error_norm_squared)
         
     #  @}

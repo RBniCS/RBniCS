@@ -359,7 +359,9 @@ class SCM(ParametrizedProblem):
     def assemble_condensed_truth_matrices(self):
         # Assemble matrices related to the LHS A of the parametrized problem
         if not self.parametrized_problem.truth_A:
-            self.parametrized_problem.truth_A = [assemble(a_form) for a_form in self.parametrized_problem.assemble_truth_a()]
+            self.parametrized_problem.truth_A = [ \
+                assemble( 0.5*(a_form + adjoint(a_form)) ) for a_form in self.parametrized_problem.assemble_truth_a()
+            ]
         if self.parametrized_problem.Qa == 0:
             self.parametrized_problem.Qa = len(self.parametrized_problem.truth_A)
         
@@ -441,7 +443,7 @@ class SCM(ParametrizedProblem):
         
         self.parametrized_problem.setmu(self.mu)
         current_theta_a = self.parametrized_problem.compute_theta_a()
-        A = self.parametrized_problem.affine_assemble_truth_symmetric_part_matrix(self.truth_A__condensed_for_minimum_eigenvalue, current_theta_a)
+        A = self.parametrized_problem.affine_assemble_truth_matrix(self.truth_A__condensed_for_minimum_eigenvalue, current_theta_a)
         A = as_backend_type(A)
         S = self.S__condensed
         S = as_backend_type(S)

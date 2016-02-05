@@ -206,14 +206,6 @@ class EllipticCoerciveBase(ParametrizedProblem):
             A_ += vec[i]*theta_v[i]
         return A_
         
-    ## Assemble the symmetric part of the the truth affine expansion (matrix)
-    def affine_assemble_truth_symmetric_part_matrix(self, vec, theta_v):
-        A_ = self.affine_assemble_truth_matrix(vec, theta_v)
-        AT_ = self.compute_transpose(A_)
-        A_ += AT_
-        A_ /= 2.
-        return A_
-        
     ## Assemble the truth affine expansion (vector)
     #  (the implementation is acutally the same of the matrix case, but this method is
     #   provided here for symmetry with the reduced case)
@@ -265,14 +257,6 @@ class EllipticCoerciveBase(ParametrizedProblem):
     def compute_scalar(self,v1,v2,M):
         return v1.vector().inner(M*v2.vector())
         
-    ## Auxiliary internal method to compute the transpose of a matrix
-    def compute_transpose(self, A):
-        AT = A.copy()
-        A = as_backend_type(A)
-        AT = as_backend_type(AT)
-        A.mat().transpose(AT.mat())
-        return AT
-    
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
@@ -288,8 +272,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.online_solve(N, False)
         self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
         self.theta_a = self.compute_theta_a() # not really necessary, for symmetry with the parabolic case
-        assembled_truth_A_sym = self.affine_assemble_truth_symmetric_part_matrix(self.truth_A, self.theta_a)
-        error_norm_squared = self.compute_scalar(self.error, self.error, assembled_truth_A_sym) # norm of the error
+        assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a)
+        error_norm_squared = self.compute_scalar(self.error, self.error, assembled_truth_A) # norm of the error
         return np.sqrt(error_norm_squared)
         
     # Compute the error of the reduced order approximation with respect to the full order one
