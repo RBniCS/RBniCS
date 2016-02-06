@@ -24,9 +24,10 @@
 
 from __future__ import print_function
 from config import *
+from dolfin import *
+import numpy as np
 import os # for path and makedir
 import shutil # for rm
-import sys # for exit
 import random # to randomize selection in case of equal error bound
 from gram_schmidt import *
 from elliptic_coercive_base import *
@@ -92,11 +93,11 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # 4. Online output
         self.sN = 0
         # 5. Residual terms
-        self.Cf = ()
-        self.lnq = ()
-        self.CC = np.array([])
-        self.CL = np.array([])
-        self.LL = np.array([])
+        self.Cf = []
+        self.lnq = []
+        self.CC = MultiIndexArray([])
+        self.CL = MultiIndexArray([])
+        self.LL = MultiIndexArray([])
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 4. Offline output
@@ -246,16 +247,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
     ## Update basis matrix
     def update_basis_matrix(self):
-        if self.N == 0:
-            self.Z = np.array(self.snapshot.vector()).reshape(-1, 1) # as column vector
-            self.Z /= np.sqrt(np.dot(self.Z[:, 0], self.S*self.Z[:, 0]))
-        else:
-            self.Z = np.hstack((self.Z, np.array(self.snapshot.vector()).reshape(-1, 1))) # add new basis functions as column vectors
-            self.Z = self.GS.apply(self.Z)
-        np.save(self.basis_folder + "basis", self.Z)
-        current_basis = Function(self.V)
-        current_basis.vector()[:] = np.array(self.Z[:, self.N], dtype=np.float_)
-        self.export_basis(current_basis, self.basis_folder + "basis_" + str(self.N))
+        self.Z.enrich(self.snapshot)
+        self.GS.apply(self.Z)
+        self.Z.save(self.basis_folder, "basis")
         self.N += 1
         
     ## Choose the next parameter in the offline stage in a greedy fashion
@@ -270,18 +264,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                 delta_max = delta
                 munew = mu
         print("absolute delta max = ", delta_max)
-        if os.path.isfile(self.post_processing_folder + "delta_max.npy") == True:
-            d = np.load(self.post_processing_folder + "delta_max.npy")
-            
-            np.save(self.post_processing_folder + "delta_max", np.append(d, delta_max))
-    
-            m = np.load(self.post_processing_folder + "mu_greedy.npy")
-            np.save(self.post_processing_folder + "mu_greedy", np.append(m, munew))
-        else:
-            np.save(self.post_processing_folder + "delta_max", delta_max)
-            np.save(self.post_processing_folder + "mu_greedy", np.array(munew))
-
         self.setmu(munew)
+        save_greedy_post_processing_file(self.N, delta_max, munew, self.post_processing_folder)
         
     ## Compute dual terms
     def compute_dual_terms(self):
@@ -489,13 +473,18 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # Read in data structures as in parent
         EllipticCoerciveBase.load_reduced_matrices(self)
         # Moreover, read also data structures related to the dual
-        if len(np.asarray(self.CC)) == 0: # avoid loading multiple times
-            self.CC = np.load(self.dual_folder + "CC.npy")
-        if len(np.asarray(self.CL)) == 0: # avoid loading multiple times
-            self.CL = np.load(self.dual_folder + "CL.npy")
-        if len(np.asarray(self.LL)) == 0: # avoid loading multiple times
-            self.LL = np.load(self.dual_folder + "LL.npy")
-    
+        self.CC.load(self.dual_folder, "CC")
+        self.CL.load(self.dual_folder, "CL")
+        self.LL.load(self.dual_folder, "LL")
+            
+    ## Save greedy post processing to file
+    @staticmethod
+    def save_greedy_post_processing_file(N, delta_max, mu_greedy, directory):
+        with open(directory + "/delta_max.txt", "a") as outfile:
+            file.write(str(N) + " " + str(delta_max))
+        with open(directory + "/mu_greedy.txt", "a") as outfile:
+            file.write(str(mu_greedy))
+        
     #  @}
     ########################### end - I/O - end ########################### 
     
@@ -507,9 +496,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     # example of implementation:
     #    return 1.0
     def get_alpha_lb(self):
-        print("The function get_alpha_lb(self) is problem-specific and needs to be overwritten.")
-        print("Abort program.")
-        sys.exit("Plase define function get_alpha_lb(self)!")
+        raise RuntimeError("The function get_alpha_lb(self) is problem-specific and needs to be overridden.")
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

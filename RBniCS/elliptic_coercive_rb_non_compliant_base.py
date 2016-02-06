@@ -25,7 +25,6 @@
 from __future__ import print_function
 from config import *
 import numpy as np
-import sys # for exit
 from elliptic_coercive_rb_base import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB NON COMPLIANT BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -278,18 +277,14 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     #    theta_s2 = m1*m2+m3/7.0
     #    return (theta_s0, theta_s1, theta_s2)
     def compute_theta_s(self):
-        print("The function compute_theta_s() is problem-specific and needs to be overwritten.")
-        print("Abort program.")
-        sys.exit("Plase define function compute_theta_s(self)!")
+        raise RuntimeError("The function compute_theta_s() is problem-specific and needs to be overridden.")
         
     ## Return vectors resulting from the truth discretization of s.
     #    s0 = v*ds(1)
     #    S0 = assemble(S0)
     #    return (S0,)
     def assemble_truth_s(self):
-        print("The function compute_truth_s() is problem-specific and needs to be overwritten.")
-        print("Abort program.")
-        sys.exit("Plase define function assemble_truth_s(self)!")
+        raise RuntimeError("The function compute_truth_s() is problem-specific and needs to be overridden.")
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

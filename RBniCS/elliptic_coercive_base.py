@@ -24,10 +24,6 @@
 
 from __future__ import print_function
 from config import *
-from dolfin import *
-import numpy as np
-import sys # for exit
-import itertools # for equispaced grid generation
 from parametrized_problem import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -99,24 +95,24 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.Qa = 0
         self.Qf = 0
         # 3b. Theta multiplicative factors of the affine expansion
-        self.theta_a = []
-        self.theta_f = []
+        self.theta_a = AffineExpansionStorage()
+        self.theta_f = AffineExpansionStorage()
         # 3c. Reduced order matrices/vectors
-        self.reduced_A = []
-        self.reduced_F = []
+        self.reduced_A = AffineExpansionStorage()
+        self.reduced_F = AffineExpansionStorage()
         # 4. Online solution
-        self.uN = 0 # vector of dimension N storing the reduced order solution
+        self.uN = OnlineVector() # vector of dimension N storing the reduced order solution
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 3c. Matrices/vectors resulting from the truth discretization
-        self.truth_A = []
-        self.truth_F = []
+        self.truth_A = AffineExpansionStorage()
+        self.truth_F = AffineExpansionStorage()
         # 4. Offline solutions
         self.snapshot = Function(V) # temporary vector for storage of a truth solution
         self.reduced = Function(V) # temporary vector for storage of the FE reconstruction of the reduced solution
         self.error = Function(V) # temporary vector for storage of the error
         # 6. Basis functions matrix
-        self.Z = np.array([])
+        self.Z = BasisFunctionsMatrix()
         # 7. Truth space, functions and inner products
         self.bc_list = bc_list
         self.V = V
@@ -157,12 +153,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.theta_f = self.compute_theta_f()
         assembled_reduced_A = self.affine_assemble_reduced_matrix(self.reduced_A, self.theta_a, N, N)
         assembled_reduced_F = self.affine_assemble_reduced_vector(self.reduced_F, self.theta_f, N)
-        if isinstance(assembled_reduced_A, float) == True:
-            uN = assembled_reduced_F/assembled_reduced_A
-        else:
-            uN = np.linalg.solve(assembled_reduced_A, assembled_reduced_F)
-            uN = uN.reshape(-1, 1) # as column vector
-        self.uN = uN
+        solve(assembled_reduced_A, self.uN, assembled_reduced_F)
         
     ## Assemble the reduced affine expansion (matrix)
     def affine_assemble_reduced_matrix(self, vec, theta_v, m, n):
@@ -189,7 +180,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     
     ## Perform the offline phase of the reduced order model
     def offline(self):
-        sys.exit("Please implement the offline phase of the reduced order model.")
+        raise RuntimeError("Please implement the offline phase of the reduced order model.")
 
     ## Perform a truth solve
     def truth_solve(self):
@@ -202,6 +193,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## Assemble the truth affine expansion (matrix)
     def affine_assemble_truth_matrix(self, vec, theta_v):
         A_ = vec[0]*theta_v[0]
+        assert len(vec) == len(theta_v)
         for i in range(1,len(vec)):
             A_ += vec[i]*theta_v[i]
         return A_
@@ -211,6 +203,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #   provided here for symmetry with the reduced case)
     def affine_assemble_truth_vector(self, vec, theta_v):
         F_ = vec[0]*theta_v[0]
+        assert len(vec) == len(theta_v)
         for i in range(1,len(vec)):
             F_ += vec[i]*theta_v[i]
         return F_
@@ -231,39 +224,27 @@ class EllipticCoerciveBase(ParametrizedProblem):
         
     ## Assemble the reduced order affine expansion (matrix)
     def build_reduced_matrices(self):
-        reduced_A = ()
-        for A in self.truth_A:
-            A = as_backend_type(A)
-            dim = A.size(0) # = A.size(1)
-            if self.N == 1:
-                reduced_A += (np.dot(self.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
-            else:
-                reduced_A += (np.matrix(np.dot(self.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.Z)))),)
+        reduced_A = AffineExpansionStorage(self.Qa)
+        for qa in range(self.Qa):
+            current_reduced_A = OnlineMatrix(self.N, self.N)
+            for i in range(self.N):
+                for j in range(self.N):
+                    current_reduced_A[i, j] = self.compute_scalar_product(self.Z[i], self.truth_A[qa], self.Z[j])
+            reduced_A[qa] = current_reduced_A
         self.reduced_A = reduced_A
-        np.save(self.reduced_matrices_folder + "reduced_A", self.reduced_A)
+        self.save_reduced_affine_expansion_file(self.reduced_A, self.reduced_matrices_folder, "reduced_A")
     
     ## Assemble the reduced order affine expansion (rhs)
     def build_reduced_vectors(self):
-        reduced_F = ()
-        for F in self.truth_F:
-            F = as_backend_type(F)
-            dim = F.size()
-            reduced_f = np.dot(self.Z.T, F.vec().getValues(range(dim)) )
-            reduced_F += (reduced_f,)
+        reduced_F = AffineExpansionStorage(self.Qf)
+        for qf in range(self.Qf):
+            current_reduced_F = OnlineVector(self.N)
+            for i in range(self.N):
+                current_reduced_F[i] = self.compute_scalar_product(self.Z[i], self.truth_F[qf])
+            reduced_F[qf] = current_reduced_F
         self.reduced_F = reduced_F
-        np.save(self.reduced_matrices_folder + "reduced_F", self.reduced_F)
+        self.save_reduced_affine_expansion_file(self.reduced_F, self.reduced_matrices_folder + "reduced_F")
     
-    ## Auxiliary internal methods to compute scalar product (v1, M*v2)
-    @staticmethod
-    def compute_scalar_product(v1, M, v2):
-        assert isinstance(M, GenericMatrix)
-        if isinstance(v1, GenericVector) and isinstance(v2, GenericVector):
-            return v1.inner(M*v2)
-        elif isinstance(v1, Function) and isinstance(v2, Function):
-            return v1.vector().inner(M*v2.vector())
-        else:
-            raise RuntimeError("Invalid arguments in compute_scalar_product.")
-        
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
@@ -281,12 +262,12 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.theta_a = self.compute_theta_a() # not really necessary, for symmetry with the parabolic case
         assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a) # use the energy norm (skew part will discarded by the scalar product)
         error_norm_squared = self.compute_scalar_product(self.error, assembled_truth_A, self.error) # norm of the error
-        return np.sqrt(error_norm_squared)
+        return sqrt(error_norm_squared)
         
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
-        sys.exit("Please implement the error analysis of the reduced order model.")
+        raise RuntimeError("Please implement the error analysis of the reduced order model.")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
@@ -297,21 +278,15 @@ class EllipticCoerciveBase(ParametrizedProblem):
     
     ## Load reduced order data structures
     def load_reduced_matrices(self):
-        if len(np.asarray(self.reduced_A)) == 0: # avoid loading multiple times
-            self.reduced_A = tuple(np.load(self.reduced_matrices_folder + "reduced_A.npy"))
-        if len(np.asarray(self.reduced_F)) == 0: # avoid loading multiple times
-            self.reduced_F = tuple(np.load(self.reduced_matrices_folder + "reduced_F.npy"))
-        if len(np.asarray(self.Z)) == 0: # avoid loading multiple times
-            self.Z = np.load(self.basis_folder + "basis.npy")
-            self.N = self.Z.shape[1]
+        self.reduced_A.load(self.reduced_matrices_folder, "reduced_A")
+        self.reduced_F.load(self.reduced_matrices_folder, "reduced_F")
+        was_Z_loaded = self.Z.load(self.basis_folder, "basis")
+        if was_Z_loaded:
+            self.N = len(self.Z)
 
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
         self._export_vtk(solution, filename, {"With mesh motion": True, "With preprocessing": True})
-        
-    ## Export basis in VTK format. 
-    def export_basis(self, basis, filename):
-        self._export_vtk(basis, filename, {"With mesh motion": False, "With preprocessing": False})
         
     #  @}
     ########################### end - I/O - end ########################### 
@@ -330,9 +305,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #    theta_a2 = m1*m2+m3/7.0
     #    return (theta_a0, theta_a1, theta_a2)
     def compute_theta_a(self):
-        print("The function compute_theta_a() is problem-specific and needs to be overwritten.")
-        print("Abort program.")
-        sys.exit("Plase define function compute_theta_a(self)!")
+        raise RuntimeError("The function compute_theta_a() is problem-specific and needs to be overridden.")
     
     ## Return theta multiplicative terms of the affine expansion of f.
     # example of implementation:
@@ -344,9 +317,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #    theta_f2 = m1*m2+m3/7.0
     #    return (theta_f0, theta_f1, theta_f2)
     def compute_theta_f(self):
-        print("The function compute_theta_f() is problem-specific and needs to be overwritten.")
-        print("Abort program.")
-        sys.exit("Plase define function compute_theta_f(self)!")
+        raise RuntimeError("The function compute_theta_f() is problem-specific and needs to be overridden.")
         
     ## Return matrices resulting from the truth discretization of a.
     # example of implementation:
@@ -354,18 +325,14 @@ class EllipticCoerciveBase(ParametrizedProblem):
     #    A0 = assemble(a0)
     #    return (A0,)
     def assemble_truth_a(self):
-        print("The function assemble_truth_a() is problem-specific and needs to be overwritten.")
-        print("Abort program.")
-        sys.exit("Plase define function assemble_truth_a(self)!")
+        raise RuntimeError("The function assemble_truth_a() is problem-specific and needs to be overridden.")
 
     ## Return vectors resulting from the truth discretization of f.
     #    f0 = v*ds(1)
     #    F0 = assemble(f0)
     #    return (F0,)
     def assemble_truth_f(self):
-        print("The function compute_truth_f() is problem-specific and needs to be overwritten.")
-        print("Abort program.")
-        sys.exit("Plase define function assemble_truth_f(self)!")
+        raise RuntimeError("The function compute_truth_f() is problem-specific and needs to be overridden.")
     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

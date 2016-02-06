@@ -24,6 +24,8 @@
 
 from __future__ import print_function
 from config import *
+from dolfin import *
+from numpy import log, exp, mean
 import os # for path and makedir
 import shutil # for rm
 from proper_orthogonal_decomposition import *
@@ -127,7 +129,10 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             run += 1
             
         print("############################## perform POD ######################################")
-        (self.Z, self.N) = self.apply_POD(self.S, self.post_processing_folder + "eigs", self.Nmax)
+        (self.Z, self.N) = self.POD.apply(self.Nmax)
+        self.Z.save(self.basis_folder, "basis")
+        self.POD.save_eigenvalues_file(self.post_processing_folder, "eigs")
+        self.POD.save_retained_energy_file(self.post_processing_folder, "retained_energy")
         
         print("")
         print("build reduced matrices")
@@ -142,17 +147,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         
     ## Update the snapshot matrix
     def update_snapshot_matrix(self):
-        self.POD.store_single_snapshot(self.snapshot)
-        
-    ## Apply POD
-    def apply_POD(self, S, eigenvalues_file, Nmax):
-        (Z, N) = self.POD.apply(S, eigenvalues_file, Nmax)
-        np.save(self.basis_folder + "basis", Z)
-        current_basis = Function(self.V)
-        for b in range(N):
-            current_basis.vector()[:] = np.array(Z[:, b], dtype=np.float)
-            self.export_basis(current_basis, self.basis_folder + "basis_" + str(b))
-        return (Z, N)
+        self.POD.store_snapshot(self.snapshot)
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -180,7 +175,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print("==============================================================")
         print("")
         
-        error = np.zeros((N, len(self.xi_test)))
+        error = MultiIndexArray((N, len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
             print("############################## run = ", run, " ######################################")
@@ -197,7 +192,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print("")
         print("N \t gmean(err)")
         for n in range(N): # n = 0, 1, ... N - 1
-            mean_error = np.exp(np.mean(np.log((error[n, :]))))
+            mean_error = exp(mean(log((error[n, :]))))
             print(str(n+1) + " \t " + str(mean_error))
         
         print("")
