@@ -67,23 +67,23 @@ class ParametrizedProblem(object):
         # $$ ONLINE DATA STRUCTURES $$ #
         # 1. Online reduced space dimension
         self.N = 0
-        # 2. Current parameter
-        self.mu = ()
+        # 2. Current parameters value
+        self.mu = tuple()
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
         self.Nmax = 10
         self.tol = 1.e-15
         # 2. Parameter ranges and training set
-        self.mu_range = []
-        self.xi_train = []
+        self.mu_range = list()
+        self.xi_train = ParameterSpaceSubset()
         # 9. I/O
         self.xi_train_folder = "xi_train/"
         self.xi_test_folder = "xi_test/"
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
         # 2. Test set
-        self.xi_test = []
+        self.xi_test = ParameterSpaceSubset()
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -112,13 +112,13 @@ class ParametrizedProblem(object):
             os.makedirs(self.xi_train_folder)
         # Test if can import
         import_successful = False
-        if enable_import and self.exists_parameter_space_subset_file(self.xi_train_folder, "xi_train"):
-            self.xi_train = self.load_parameter_space_subset_file(self.xi_train_folder, "xi_train")
-            import_successful = (len(self.xi_train) == ntrain)
+        if enable_import:
+            import_successful = self.xi_train.load(self.xi_train_folder, "xi_train") \
+                and  (len(self.xi_train) == ntrain)
         if not import_successful:
-            self.xi_train = self.generate_train_or_test_set(ntrain, sampling)
+            self.xi_train.generate(self.mu_range, ntrain, sampling)
             # Export 
-            self.save_parameter_space_subset_file(self.xi_train, self.xi_train_folder, "xi_train")
+            self.xi_train.save(self.xi_train_folder, "xi_train")
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     # See the documentation of generate_train_or_test_set for more details
@@ -128,45 +128,14 @@ class ParametrizedProblem(object):
             os.makedirs(self.xi_test_folder)
         # Test if can import
         import_successful = False
-        if enable_import and self.exists_parameter_space_subset_file(self.xi_test_folder, "xi_test"):
-            self.xi_test = self.load_parameter_space_subset_file(self.xi_test_folder, "xi_test")
-            import_successful = (len(self.xi_test) == ntest)
+        if enable_import:
+            import_successful = self.xi_test.load(self.xi_test_folder, "xi_test") \
+                and  (len(self.xi_test) == ntest)
         if not import_successful:
-            self.xi_test = self.generate_train_or_test_set(ntest, sampling)
+            self.xi_test.generate(self.mu_range, ntest, sampling)
             # Export 
-            self.save_parameter_space_subset_file(self.xi_test, self.xi_test_folder, "xi_test")
+            self.xi_test.save(self.xi_test_folder, "xi_test")
     
-    ## Internal method for generation of training or test sets
-    # If the last argument is equal to "random", n parameters are drawn from a random uniform distribution
-    # Else, if the last argument is equal to "linspace", (approximately) n parameters are obtained from a cartesian grid
-    def generate_train_or_test_set(self, n, sampling):
-        if sampling == "random":
-            ss = "[("
-            for i in range(len(self.mu_range)):
-                ss += "np.random.uniform(self.mu_range[" + str(i) + "][0], self.mu_range[" + str(i) + "][1])"
-                if i < len(self.mu_range)-1:
-                    ss += ", "
-                else:
-                    ss += ") for _ in range(" + str(n) +")]"
-            xi = eval(ss)
-            return xi
-        elif sampling == "linspace":
-            n_P_root = int(np.ceil(n**(1./len(self.mu_range))))
-            ss = "itertools.product("
-            for i in range(len(self.mu_range)):
-                ss += "np.linspace(self.mu_range[" + str(i) + "][0], self.mu_range[" + str(i) + "][1], num = " + str(n_P_root) + ").tolist()"
-                if i < len(self.mu_range)-1:
-                    ss += ", "
-                else:
-                    ss += ")"
-            itertools_xi = eval(ss)
-            xi = []
-            for mu in itertools_xi:
-                xi += [mu]
-            return xi
-        else:
-            sys.exit("Invalid sampling mode.")
-
     ## OFFLINE/ONLINE: set the current value of the parameter
     def setmu(self, mu):
         assert (len(mu) == len(self.mu_range)), "mu and mu_range must have the same lenght"
@@ -216,38 +185,6 @@ class ParametrizedProblem(object):
     def reset_reference(self):
         pass # nothing to be done by default
                 
-    ## Load a parameter space subset from file
-    @staticmethod
-    def load_parameter_space_subset_file(directory, filename):
-        return ParametrizedProblem._load_pickle_file(directory, filename)
-        
-    ## Save a parameter space subset to file
-    @staticmethod
-    def save_parameter_space_subset_file(subset, directory, filename):
-        ParametrizedProblem._save_pickle_file(subset, directory, filename)
-        
-    ## Check if a parameter space subset file exists
-    @staticmethod
-    def exists_parameter_space_subset_file(directory, filename):
-        return ParametrizedProblem._exists_pickle_file(directory, filename)
-    
-    ## Load a variable from file using pickle
-    @staticmethod
-    def _load_pickle_file(directory, filename):
-        with open(directory + "/" + filename + ".pkl", "rb") as infile:
-            return pickle.load(infile)
-    
-    ## Save a variable to file using pickle
-    @staticmethod
-    def _save_pickle_file(subset, directory, filename):
-        with open(directory + "/" + filename + ".pkl", "wb") as outfile:
-            pickle.dump(subset, outfile, protocol=pickle.HIGHEST_PROTOCOL)
-            
-    ## Check if a pickle file exists
-    @staticmethod
-    def _exists_pickle_file(directory, filename):
-        return os.path.exists(directory + "/" + filename + ".pkl")
-    
     #  @}
     ########################### end - I/O - end ########################### 
 
