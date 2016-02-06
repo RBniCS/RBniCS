@@ -41,14 +41,16 @@ class ProperOrthogonalDecomposition(object):
     def __init__(self, compute_scalar_product_method, X):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a matrix to store the snapshots
-        self.snapshot_matrix = []
+        self.snapshots_matrix = SnapshotMatrix()
+        self.eigensolver = OnlineEigenSolver()
         # 7. Inner product
         self.compute_scalar_product = compute_scalar_product_method
         self.X = X
         
     ## Clean up
     def clear(self):
-        self.snapshot_matrix = []
+        self.snapshots_matrix = SnapshotMatrix()
+        self.eigensolver = OnlineEigenSolver()
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -57,49 +59,44 @@ class ProperOrthogonalDecomposition(object):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
     
-    ## Store a single snapshot in the snapshot matrix
-    def store_single_snapshot(self, snapshot):
-        self.snapshot_matrix.append(snapshot.vector().copy())
-            
-    ## Store a multiple snapshots in the snapshot matrix
-    def store_multiple_snapshots(self, snapshots):
-        self.snapshot_matrix.extend(snapshots) # note the difference between extend and append in python
+    ## Store a snapshot in the snapshot matrix
+    def store_snapshot(self, snapshot):
+        self.snapshots_matrix.append(snapshot)
             
     ## Perform POD on the snapshots previously computed, and store the first
     #  POD modes in the basis functions matrix.
-    #  Input arguments are: post processing file, Nmax
+    #  Input arguments are: Nmax
     #  Output arguments are: POD modes, number of POD modes
-    def apply(self, eigenvalues_file, Nmax):
+    def apply(self, Nmax):
         dim = len(self.snapshot_matrix)
         correlation = np.matrix(np.zeros(dim, dim))
         for i in range(dim):
             for j in range(dim):
-                correlation[i, j] = self.compute_scalar_product(self.snapshot_matrix[i], self.X, self.snapshot_matrix[j])
-        eigs, eigv = np.linalg.eig(correlation)
-        idx = eigs.argsort()
-        idx = idx[::-1]
-        eigs = eigs[idx]
-   
-        eigv = eigv[:,idx]
-        np.save(eigenvalues_file,eigs)
-        
-        # Remove (negigible) complex parts
-        eigs = np.real(eigs)
-        eigv = np.real(eigv)
-        
-        tot = np.sum(eigs)
-        eigs_norm = eigs/tot
-        
-        Z = []
+                correlation[i, j] = self.compute_scalar_product(self.snapshots_matrix[i], self.X, self.snapshots_matrix[j])
+                
+        eigensolver = OnlineEigenSolver(correlation, self.X)
+        eigensolver.parameters["problem_type"] = "gen_hermitian"
+        eigensolver.parameters["spectrum"] = "largest real"
+        eigensolver.solve()
+
+        Z = BasisFunctionsMatrix()
         for i in range(Nmax):
-            print("lambda_",i," = ",eigs[i])
-            Z_i = self.snapshot_matrix[0]*eigv[0, i]
+            print("lambda_" + str(i) " = " + eigensolver.get_eigenvalue(i))
+            eigv_i = eigensolver.get_eigenvector(i)
+            Z_i = self.snapshots_matrix[0]*eigv_i[0]
             for j in range(1, dim):
-                Z_i += self.snapshot_matrix[j]*eigv[j, i]
+                Z_i += self.snapshots_matrix[j]*eigv_i[j]
             Z_i /= self.compute_scalar_product(Z_i, self.X, Z_i)
-            Z.append(Z_i.copy())
+            Z.enrich(Z_i)
         
+        self.eigensolver = eigensolver
         return (Z, Nmax)
+
+    def save_eigenvalues_file(self, output_directory, eigenvalues_file):
+        self.eigensolver.save_eigenvalues_file(output_directory, eigenvalues_file)
+        
+    def save_retained_energy_file(self, output_directory, retained_energy_file):
+        self.eigensolver.save_retained_energy_file(output_directory, retained_energy_file)        
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

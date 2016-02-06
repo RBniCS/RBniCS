@@ -55,7 +55,6 @@ class GramSchmidt():
         for i in range(n_basis - 1):
             b -= self.compute_scalar_product(b, self.X, Z[i])/self.compute_scalar_product(Z[i], self.X, Z[i]) * Z[i]
         b /= self.compute_scalar(b, self.X, b)
-        return Z
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
