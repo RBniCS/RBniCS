@@ -81,7 +81,7 @@ class ProperOrthogonalDecomposition(object):
 
         Z = BasisFunctionsMatrix()
         for i in range(Nmax):
-            print("lambda_" + str(i) " = " + eigensolver.get_eigenvalue(i))
+            print("lambda_" + str(i) + " = " + eigensolver.get_eigenvalue(i))
             eigv_i = eigensolver.get_eigenvector(i)
             Z_i = self.snapshots_matrix[0]*eigv_i[0]
             for j in range(1, dim):
