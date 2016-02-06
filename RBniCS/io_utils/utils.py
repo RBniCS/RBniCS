@@ -26,6 +26,9 @@
 ## @defgroup IO Input/output methods
 #  @{
 
+import pickle
+import numpy
+
 class utils(object):
     
     ## Load a variable from file using pickle

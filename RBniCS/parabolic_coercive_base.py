@@ -23,10 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from config import *
-from elliptic_coercive_base import *
 import os
 import shutil
+from RBniCS.elliptic_coercive_base import EllipticCoerciveBase
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParablicCoerciveBase

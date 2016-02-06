@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from parabolic_coercive_base import *
-from elliptic_coercive_pod_base import *
+from RBniCS.elliptic_coercive_pod_base import EllipticCoercivePODBase
+from RBniCS.parabolic_coercive_base import ParabolicCoerciveBase
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoercivePODBase

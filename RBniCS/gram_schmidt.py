@@ -22,8 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import numpy as np
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~     GRAM SCHMIDT CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class GramSchmidt
 #

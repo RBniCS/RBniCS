@@ -108,4 +108,3 @@ __all__ = [ \
               'SCM', \
               'ShapeParametrization', \
           ]
-

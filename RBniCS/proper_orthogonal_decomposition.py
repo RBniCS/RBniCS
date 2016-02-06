@@ -23,9 +23,6 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from config import *
-from dolfin import *
-import numpy as np
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PROPER ORTHOGONAL DECOMPOSITION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ProperOrthogonalDecomposition

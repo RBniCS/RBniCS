@@ -23,15 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from config import *
-from dolfin import *
-import numpy as np
+from numpy import log, exp, mean, sqrt # for error analysis
 import os # for path and makedir
 import shutil # for rm
-import glpk # for LB computation
 import random # to randomize selection in case of equal error bound
-from gram_schmidt import *
-from parametrized_problem import *
+from RBniCS.gram_schmidt import GramSchmidt
+from RBniCS.parametrized_problem import ParametrizedProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EIM

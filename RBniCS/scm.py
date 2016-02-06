@@ -23,15 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from config import *
-from dolfin import *
 import os # for path and makedir
 import shutil # for rm
 import glpk # for LB computation
 import sys # for sys.float_info.max
 import random # to randomize selection in case of equal error bound
 import operator # to find closest parameters
-from parametrized_problem import *
+from RBniCS.parametrized_problem import ParametrizedProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class SCM

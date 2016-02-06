@@ -23,10 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from config import *
-from parabolic_coercive_base import *
-from elliptic_coercive_rb_base import *
-from proper_orthogonal_decomposition import *
+from RBniCS.elliptic_coercive_rb_base import EllipticCoerciveRBBase
+from RBniCS.parabolic_coercive_base import ParabolicCoerciveBase
+from RBniCS.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoerciveBase

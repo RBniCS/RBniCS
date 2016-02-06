@@ -27,6 +27,8 @@
 #  @{
 
 # Parameter space subsets
+import itertools # for linspace sampling
+import numpy
 class ParameterSpaceSubset(object): # equivalent to a list of tuples
     def __init__(self):
         self._list = []
@@ -38,7 +40,7 @@ class ParameterSpaceSubset(object): # equivalent to a list of tuples
         if sampling == "random":
             ss = "[("
             for i in range(len(box)):
-                ss += "np.random.uniform(box[" + str(i) + "][0], box[" + str(i) + "][1])"
+                ss += "numpy.random.uniform(box[" + str(i) + "][0], box[" + str(i) + "][1])"
                 if i < len(box)-1:
                     ss += ", "
                 else:
@@ -46,9 +48,9 @@ class ParameterSpaceSubset(object): # equivalent to a list of tuples
             self._list = eval(ss)
         elif sampling == "linspace":
             n_P_root = int(np.ceil(n**(1./len(box))))
-            ss = "itertools.product("
+            ss = "numpy.itertools.product("
             for i in range(len(box)):
-                ss += "np.linspace(box[" + str(i) + "][0], box[" + str(i) + "][1], num = " + str(n_P_root) + ").tolist()"
+                ss += "linspace(box[" + str(i) + "][0], box[" + str(i) + "][1], num = " + str(n_P_root) + ").tolist()"
                 if i < len(box)-1:
                     ss += ", "
                 else:

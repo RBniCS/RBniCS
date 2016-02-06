@@ -23,13 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from config import *
-from dolfin import *
-from numpy import log, exp, mean
+from numpy import log, exp, mean # for error analysis
 import os # for path and makedir
 import shutil # for rm
-from proper_orthogonal_decomposition import *
-from elliptic_coercive_base import *
+from RBniCS.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.elliptic_coercive_base import EllipticCoerciveBase
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoercivePODBase

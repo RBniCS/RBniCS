@@ -23,9 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from config import *
-import numpy as np
-from elliptic_coercive_rb_base import *
+from RBniCS.elliptic_coercive_rb_base import EllipticCoerciveRBBase
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB NON COMPLIANT BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveRBNonCompliantBase
