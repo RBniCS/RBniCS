@@ -96,7 +96,7 @@ class SCM(ParametrizedProblem):
     ##          Note that the default value of enable_import has been changed here to True
     def setxi_train(self, ntrain, enable_import=True, sampling="random"):
         if not enable_import:
-        	sys.exit("SCM will not work without import.")
+        	raise RuntimeError("SCM will not work without import.")
         # Save the flag if can import from file
         import_successful = False
         if os.path.exists(self.xi_train_folder + "xi_train.npy"):
@@ -272,7 +272,7 @@ class SCM(ParametrizedProblem):
         
         # Error case: there are not enough elements    
         if M > len(all_mu_indices):
-            sys.exit("SCM error in closest parameters: this should never happen")
+            raise RuntimeError("SCM error in closest parameters: this should never happen")
         
         indices_and_distances = []
         for p in range(len(all_mu_indices)):
@@ -425,7 +425,7 @@ class SCM(ParametrizedProblem):
     def update_C_J(self):
         if self.mu != self.xi_train[self.mu_index]:
             # There is something wrong if we are here...
-            sys.exit("Should never arrive here")
+            raise RuntimeError("Should never arrive here")
         
         self.C_J += [self.mu_index]
         if self.mu_index in self.complement_C_J: # if not SCM selects twice the same parameter

@@ -29,7 +29,6 @@ import numpy as np
 import os # for path and makedir
 import shutil # for rm
 import glpk # for LB computation
-import sys # for sys.float_info.max
 import random # to randomize selection in case of equal error bound
 from gram_schmidt import *
 from parametrized_problem import *
@@ -256,7 +255,7 @@ class EIM(ParametrizedProblem):
         mu_index = self.mu_index
         if mu != self.xi_train[mu_index]:
             # There is something wrong if we are here...
-            sys.exit("Should never arrive here")
+            raise RuntimeError("Should never arrive here")
         self.snapshot.vector()[:] = np.array(self.snapshot_matrix[:, mu_index], dtype=np.float)
     
     # Compute the interpolation error and/or its maximum location
@@ -294,7 +293,7 @@ class EIM(ParametrizedProblem):
                     maximum_point = self.V.mesh().coordinates()[vertex_index]
                     maximum_point_dof = dof_index
         else:
-            sys.exit("Invalid output options")
+            raise RuntimeError("Invalid output options")
             
         # Return
         if output_options["Output error"] and output_options["Output location"]:
@@ -304,20 +303,16 @@ class EIM(ParametrizedProblem):
         elif output_options["Output location"]:
             return (maximum_point, maximum_point_dof)
         else:
-            sys.exit("Invalid output options")
+            raise RuntimeError("Invalid output options")
         
     ## Update basis matrix
     def update_basis_matrix(self, maximum_error):
         # Normalize the function in self.error
         self.error.vector()[:] /= maximum_error
         
-        # Append to self.Z
-        if self.N == 0:
-            self.Z = np.array(self.error.vector()).reshape(-1, 1) # as column vector
-        else:
-            self.Z = np.hstack((self.Z, np.array(self.error.vector()).reshape(-1, 1))) # add new basis functions as column vectors
-        np.save(self.basis_folder + "basis", self.Z)
-        self.export_basis(self.error, self.basis_folder + "basis_" + str(self.N))
+        # Enrich the basis functions set
+        self.Z.enrich(self.error)
+        self.Z.save(self.basis_folder, "basis")
         self.N += 1
         
     ## Assemble the reduced order affine expansion (matrix). Overridden 
@@ -443,10 +438,6 @@ class EIM(ParametrizedProblem):
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
         self._export_vtk(solution, filename, {"With mesh motion": True, "With preprocessing": True})
-        
-    ## Export basis in VTK format. 
-    def export_basis(self, basis, filename):
-        self._export_vtk(basis, filename, {"With mesh motion": False, "With preprocessing": False})
         
     def load_reduced_matrices(self):
         if len(np.asarray(self.interpolation_points)) == 0: # avoid loading multiple times
