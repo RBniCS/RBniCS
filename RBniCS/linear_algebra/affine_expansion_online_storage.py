@@ -15,15 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file affine_expansion_storage.py
-#  @brief Type for storing quantities related to an affine expansion
+## @file affine_expansion_online_storage.py
+#  @brief Type for storing online quantities related to an affine expansion
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-###########################     OFFLINE AND ONLINE COMMON INTERFACES     ########################### 
-## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
+###########################     ONLINE STAGE     ########################### 
+## @defgroup OnlineStage Methods related to the online stage
 #  @{
 
 # Hide the implementation of an array with two or more indices, used to store tensors
@@ -32,12 +32,13 @@
 # over the affine expansion. Its content will be another container, indicized over
 # the basis functions
 # Requires: access with operator[]
-from numpy import empty as AffineExpansionStorageContent_Base
-class AffineExpansionStorage(object):
+from numpy import empty as AffineExpansionOnlineStorageContent_Base
+from numpy import nditer as AffineExpansionOnlineStorageContent_Iterator
+class AffineExpansionOnlineStorage(object):
     def __init__(self, *args):
         self._content = None
         if args:
-            self._content = AffineExpansionStorageContent_Base(args, dtype=object)
+            self._content = AffineExpansionOnlineStorageContent_Base(args, dtype=object)
             
     def load(self, directory, filename):
         if self._content: # avoid loading multiple times
@@ -52,11 +53,30 @@ class AffineExpansionStorage(object):
         io_utils.save_numpy_file(self._content, directory, filename)
 
     def __getitem__(self, key):
-        return self._content[key]
+        if \
+            isinstance(key, slice) \
+                or \
+            isinstance(key, tuple) and isinstance(key[0], slice) \
+        : # return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
+            output = AffineExpansionOnlineStorage(*self._content.shape)
+            it = AffineExpansionOnlineStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+            while not it.finished:
+                output[it.multi_index] = self._content[it.multi_index][key]
+                it.iternext()
+            return output
+        else: # return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
+            return self._content[key]
         
     def __setitem__(self, key, item):
+        assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
         self._content[key] = item
         
+    def __len__(self):
+        if len(self._content.shape) == 1: # for 1D arrays
+            return self._content.size
+        else:
+            raise RuntimeError("Should not call len for tensors of dimension 2 or higher")
+        
 #  @}
-########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 
+########################### end - ONLINE STAGE - end ########################### 
 
