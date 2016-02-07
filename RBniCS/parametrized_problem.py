@@ -116,6 +116,8 @@ class ParametrizedProblem(object):
             self.xi_train.generate(self.mu_range, ntrain, sampling)
             # Export 
             self.xi_train.save(self.xi_train_folder, "xi_train")
+        # Prepare for the offline phase
+        self._init_offline()
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     # See the documentation of generate_train_or_test_set for more details
@@ -132,6 +134,8 @@ class ParametrizedProblem(object):
             self.xi_test.generate(self.mu_range, ntest, sampling)
             # Export 
             self.xi_test.save(self.xi_test_folder, "xi_test")
+        # Prepare for the error analysis
+        self._init_error_analysis()
     
     ## OFFLINE/ONLINE: set the current value of the parameter
     def setmu(self, mu):
@@ -140,6 +144,37 @@ class ParametrizedProblem(object):
     
     #  @}
     ########################### end - SETTERS - end ########################### 
+    
+    ###########################     OFFLINE STAGE     ########################### 
+    ## @defgroup OfflineStage Methods related to the offline stage
+    #  @{
+    
+    ## Perform the offline phase of the reduced order model
+    def offline(self):
+        raise RuntimeError("Please implement the offline phase of the reduced order model.")
+        
+    ## Initialize data structures required for the offline phase
+    def _init_offline(self):
+        pass
+    
+    #  @}
+    ########################### end - OFFLINE STAGE - end ########################### 
+        
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the test set
+    def error_analysis(self, N=None):
+        raise RuntimeError("Please implement the error analysis of the reduced order model.")
+        
+    ## Initialize data structures required for the error analysis phase
+    def _init_error_analysis(self):
+        pass
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
     
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods

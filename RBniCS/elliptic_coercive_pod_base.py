@@ -103,13 +103,6 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             if not os.path.exists(f):
                 os.makedirs(f)
         
-        self.truth_A = [assemble(a_form) for a_form in self.assemble_truth_a()]
-        self.apply_bc_to_matrix_expansion(self.truth_A)
-        self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
-        self.apply_bc_to_vector_expansion(self.truth_F)
-        self.Qa = len(self.truth_A)
-        self.Qf = len(self.truth_F)
-        
         for run in range(len(self.xi_train)):
             print("############################## run = ", run, " ######################################")
             
@@ -157,16 +150,8 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
-        self.load_reduced_matrices()
         if N is None:
             N = self.N
-            
-        self.truth_A = [assemble(a_form) for a_form in self.assemble_truth_a()]
-        self.apply_bc_to_matrix_expansion(self.truth_A)
-        self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
-        self.apply_bc_to_vector_expansion(self.truth_F)
-        self.Qa = len(self.truth_A)
-        self.Qf = len(self.truth_F)
             
         print("==============================================================")
         print("=             Error analysis begins                          =")

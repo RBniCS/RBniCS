@@ -57,6 +57,9 @@ def ShapeParametrization(ParametrizedProblem_DerivedClass):
             
             # Store the shape parametrization expression
             self.shape_parametrization_expression = shape_parametrization_expression
+            
+            # Default value for a static variable that controls the displacement expression initialization
+            self.__init_displacement_expression.__func__.done = False
         
         # Preprocess the shape parametrization expression, to convert mu[p] to mu_p
         # as instant requires, and to convert it in the displacement expression
@@ -78,8 +81,6 @@ def ShapeParametrization(ParametrizedProblem_DerivedClass):
                     displacement_expression_i += (displacement_expression_ij,)
                 self.displacement_expression.append(displacement_expression_i)
             self.__init_displacement_expression.__func__.done = True
-        # Default value for static variable
-        __init_displacement_expression.done = False    
         
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################

@@ -90,11 +90,12 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # 4. Online output
         self.sN = 0
         # 5. Residual terms
-        self.Cf = []
-        self.lnq = []
-        self.CC = MultiIndexArray([])
-        self.CL = MultiIndexArray([])
-        self.LL = MultiIndexArray([])
+        self.riesz_A = AffineExpansionOnlineStorage()
+        self.riesz_F = AffineExpansionOnlineStorage()
+        self.riesz_AA_product = AffineExpansionOnlineStorage()
+        self.riesz_AF_product = AffineExpansionOnlineStorage()
+        self.riesz_FF_product = AffineExpansionOnlineStorage()
+        self.build_error_estimation_matrices.__func__.initialized = False
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 4. Offline output
@@ -136,48 +137,22 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
     ## Return the numerator of the error bound for the current solution
     def get_eps2(self):
-        theta_a = self.theta_a
-        theta_f = self.theta_f
-        Qf = self.Qf
-        Qa = self.Qa
-        uN = self.uN
-        
         eps2 = 0.0
         
-        CC = self.CC
-        for qf in range(Qf):
-            for qfp in range(Qf):
-                eps2 += theta_f[qf]*theta_f[qfp]*CC[qf,qfp]
+        # Add the (F, F) product part
+        for qf in range(self.Qf):
+            for qfp in range(self.Qf):
+                eps2 += self.theta_f[qf]*self.theta_f[qfp]*self.riesz_FF_product[qf, qfp]
         
-        CL = self.CL
-        LL = self.LL
-        if self.N == 1:
-            for qf in range(Qf):
-                for qa in range(Qa):
-                    eps2 += 2.0*theta_f[qf]*uN*theta_a[qa]*CL[0,qf,qa]
-    
-    
-            for qa in range(Qa):
-                for qap in range(Qa):
-                    eps2 += theta_a[qa]*uN*uN*theta_a[qap]*LL[0,0,qa,qap]
-            
-        else:
-            n = 0
-            for un in uN:
-                for qf in range(Qf):
-                    for qa in range(Qa):
-                        eps2 += 2.0*theta_f[qf]*theta_a[qa]*un*CL[n,qf,qa]
-                n += 1
+        # Add the (A, F) product part
+        for qa in range(self.Qa):
+            for qf in range(self.Qf):
+                eps2 += 2.0*self.theta_a[qa]*self.theta_f[qf]*self.riesz_AF_product[qa, qf]*self.uN
 
-            n = 0
-            for un in uN:
-                for qa in range(Qa):
-                    np = 0
-                    for unp in uN:
-                        for qap in range(Qa):
-                            eps2 += theta_a[qa]*un*theta_a[qap]*unp*LL[n,np,qa,qap]
-                        np += 1
-                n += 1
+        # Add the (A, A) product part
+        for qa in range(self.Qa):
+            for qap in range(self.Qa):
+                eps2 += self.theta_a[qa]*self.theta_a[qap]*transpose(self.uN)*self.riesz_AA_product[qa, qap]*self.uN
         
         return eps2
         
@@ -188,6 +163,20 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
     
+    ## Initialize data structures required for the offline phase
+    def _init_offline(self):
+        super(EllipticCoerciveRBBase, self)._init_error_analysis()
+        # Also initialize data structures related to error estimation
+        self.riesz_A = AffineExpansionOnlineStorage(self.Qa)
+        for qa in range(self.Qa):
+            self.riesz_A[qa] = FunctionsList()
+        self.riesz_F = AffineExpansionOnlineStorage(self.Qf)
+        for qf in range(self.Qf):
+            self.riesz_F[qf] = FunctionsList() # even though it will be composed of only one function
+        self.riesz_AA_product = AffineExpansionOnlineStorage(self.Qa, self.Qa)
+        self.riesz_AF_product = AffineExpansionOnlineStorage(self.Qa, self.Qf)
+        self.riesz_FF_product = AffineExpansionOnlineStorage(self.Qf, self.Qf)
+        
     ## Perform the offline phase of the reduced order model
     def offline(self):
         print("==============================================================")
@@ -200,13 +189,6 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
-        
-        self.truth_A = [assemble(a_form) for a_form in self.assemble_truth_a()]
-        self.apply_bc_to_matrix_expansion(self.truth_A)
-        self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
-        self.apply_bc_to_vector_expansion(self.truth_F)
-        self.Qa = len(self.truth_A)
-        self.Qf = len(self.truth_F)
         
         for run in range(self.Nmax):
             print("############################## run = ", run, " ######################################")
@@ -266,95 +248,51 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
     ## Build matrices for error estimation
     def build_error_estimation_matrices(self):
-        N = self.N
-        RBu = Function(self.V)
-        
-        Qf = self.Qf
-        Qa = self.Qa
-        if N == 1 :
+        if not self.build_error_estimation_matrices.__func__.initialized: # this part does not depend on N, so we compute it only once
+            # Compute the Riesz representation of F
+            self.compute_riesz_F()
             
-            # CC (does not depend on N, so we compute it only once)
-            self.Cf = self.compute_f_riesz()
-            self.CC = np.zeros((Qf,Qf))
-            for qf in range(0,Qf):
-                for qfp in range(qf,Qf):
-                    self.CC[qf,qfp] = self.compute_scalar_product(self.Cf[qf], self.S, self.Cf[qfp])
+            # Compute the (F, F) Riesz representors product
+            for qf in range(0, self.Qf):
+                for qfp in range(qf, self.Qf):
+                    self.riesz_FF_product[qf, qfp] = transpose(self.riesz_F[qf])*self.S*self.riesz_F[qfp]
                     if qf != qfp:
-                        self.CC[qfp,qf] = self.CC[qf,qfp]
-            np.save(self.error_estimation_folder + "CC", self.CC)
-    
-            RBu.vector()[:] = self.Z[:, 0]
+                        self.riesz_FF_product[qfp, qf] = self.riesz_FF_product[qf, qfp]
+            self.riesz_FF_product.save(self.error_estimation_folder, "riesz_FF_product")
             
-            self.lnq = (self.compute_a_riesz(RBu),)
-    
-            la = Function(self.V)
-            lap = Function(self.V)
-
-            # CL
-            self.CL = np.zeros((self.Nmax,Qf,Qa))
-            for qf in range(0,Qf):
-                for qa in range(0,Qa):
-                    la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
-                    self.CL[0,qf,qa] = self.compute_scalar_product(la, self.S, self.Cf[qf])
-            np.save(self.error_estimation_folder + "CL", self.CL)
+            self.build_error_estimation_matrices.__func__.initialized = True
             
-            # LL
-            self.LL = np.zeros((self.Nmax,self.Nmax,Qa,Qa))
-            for qa in range(0,Qa):
-                la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
-                for qap in range(qa,Qa):
-                    lap.vector()[:] = np.array(self.lnq[0][:,qap], dtype=np.float_)
-                    self.LL[0,0,qa,qap] = self.compute_scalar_product(la, self.S, lap)
-                    if qa != qap:
-                        self.LL[0,0,qap,qa] = self.LL[0,0,qa,qap]
-            np.save(self.error_estimation_folder + "LL", self.LL)
-        else:
-            RBu.vector()[:] = np.array(self.Z[:, N-1], dtype=np.float_)
-            self.lnq += (self.compute_a_riesz(RBu),)
-            la = Function(self.V)
-            lap = Function(self.V)
-            cl = np.zeros((Qf,Qa))
-            n = self.N-1
-
-            # CL
-            for qf in range(0,Qf):
-                for qa in range(0,Qa):
-                    la.vector()[:] = np.array(self.lnq[n][:, qa], dtype=np.float_)
-                    self.CL[n,qf,qa] = self.compute_scalar_product(self.Cf[qf], self.S, la)
-            np.save(self.error_estimation_folder + "CL", self.CL)
-    
-            # LL
-            for qa in range(0,Qa):
-                la.vector()[:] = np.array(self.lnq[n][:, qa], dtype=np.float_)
-                for nn in range(0,N):
-                    for qap in range(0,Qa):
-                        lap.vector()[:] = np.array(self.lnq[nn][:, qap], dtype=np.float_)
-                        self.LL[n,nn,qa,qap] = self.compute_scalar_product(la, self.S, lap)
-                        if n != nn:
-                            self.LL[nn,n,qa,qap] = self.LL[n,nn,qa,qap]
-            np.save(self.error_estimation_folder + "LL", self.LL)
+        # Update the Riesz representation of -A*Z with the new basis function(s)
+        self.update_riesz_A()
+        
+        # Update the (A, F) Riesz representors product with the new basis function
+        for qa in range(0, self.Qa):
+            for qf in range(0, self.Qf):
+                self.riesz_AF_product[qa, qf] = transpose(self.riesz_A[qa])*self.S*self.riesz_F[qf]
+        self.riesz_AF_product.save(self.error_estimation_folder, "riesz_AF_product")
+                
+        # Update the (A, A) Riesz representors product with the new basis function
+        for qa in range(0, self.Qa):
+            for qap in range(qa, self.Qa):
+                self.riesz_AA_product[qa, qap] = transpose(self.riesz_A[qa])*self.S*self.riesz_A[qap]
+                if qa != qap:
+                    self.riesz_AA_product[qap, qa] = self.riesz_AA_product[qa, qap]
+        self.riesz_AA_product.save(self.error_estimation_folder, "riesz_AA_product")
     
     ## Compute the Riesz representation of a
-    def compute_a_riesz(self, RBu):
+    def update_riesz_A(self):
         riesz = Function(self.V)
-        i = 0
-        for A in self.truth_A:
-            solve (self.S, riesz.vector(), A*RBu.vector()*(-1.0))
-            if i != 0:
-                l = np.hstack((l,np.array(riesz.vector()).reshape(-1, 1)))
-            else:
-                l = np.array(riesz.vector()).reshape(-1, 1) # as column vector
-                i = 1
-        return l
+        for qa in range(self.Qa):
+            for n in range(len(self.riesz_A[qa]), self.N):
+                solve(self.S, riesz.vector(), -1.*self.truth_A[qa]*self.Z[n])
+                self.riesz_A[qa].enrich(riesz.vector())
     
     ## Compute the Riesz representation of f
-    def compute_f_riesz(self):
+    def compute_riesz_F(self):
         riesz = Function(self.V)
-        c = ()
-        for F in self.truth_F:
-            solve (self.S, riesz.vector(), F)
-            c += (riesz.copy(True),)
-        return c
+        for qf in range(self.Qf):
+            solve(self.S, riesz.vector(), self.truth_F[qf])
+            self.riesz_F[qf].enrich(riesz.vector())
         
     ## Perform a truth evaluation of the output
     def truth_output(self):
@@ -383,17 +321,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
-        self.load_reduced_matrices()
         if N is None:
             N = self.N
             
-        self.truth_A = [assemble(a_form) for a_form in self.assemble_truth_a()]
-        self.apply_bc_to_matrix_expansion(self.truth_A)
-        self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
-        self.apply_bc_to_vector_expansion(self.truth_F)
-        self.Qa = len(self.truth_A)
-        self.Qf = len(self.truth_F)
-        
         print("==============================================================")
         print("=             Error analysis begins                          =")
         print("==============================================================")

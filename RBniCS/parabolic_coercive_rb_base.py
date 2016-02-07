@@ -265,6 +265,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     ## Build matrices for error estimation
     def build_error_estimation_matrices(self):
     # CHECK il resto del metodo
+    # TODO questo ora puo' ereditare dal caso ellittico il calcolo delle parti relative a F e A
         N = self.N
         RBu = Function(self.V)
         

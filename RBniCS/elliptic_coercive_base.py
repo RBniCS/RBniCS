@@ -94,8 +94,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
         self.Qa = 0
         self.Qf = 0
         # 3b. Theta multiplicative factors of the affine expansion
-        self.theta_a = ()
-        self.theta_f = ()
+        self.theta_a = tuple()
+        self.theta_f = tuple()
         # 3c. Reduced order matrices/vectors
         self.reduced_A = AffineExpansionOnlineStorage()
         self.reduced_F = AffineExpansionOnlineStorage()
@@ -104,8 +104,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 3c. Matrices/vectors resulting from the truth discretization
-        self.truth_A = ()
-        self.truth_F = ()
+        self.truth_A = tuple()
+        self.truth_F = tuple()
         # 4. Offline solutions
         self.snapshot = Function(V) # temporary vector for storage of a truth solution
         self.reduced = Function(V) # temporary vector for storage of the FE reconstruction of the reduced solution
@@ -156,10 +156,17 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
     
-    ## Perform the offline phase of the reduced order model
-    def offline(self):
-        raise RuntimeError("Please implement the offline phase of the reduced order model.")
-
+    ## Initialize data structures required for the offline phase
+    def _init_offline(self):
+        self.truth_A = tuple(assemble(a_form) for a_form in self.assemble_truth_a())
+        self.apply_bc_to_matrix_expansion(self.truth_A)
+        self.truth_F = tuple(assemble(f_form) for f_form in self.assemble_truth_f())
+        self.apply_bc_to_vector_expansion(self.truth_F)
+        self.Qa = len(self.truth_A)
+        self.Qf = len(self.truth_F)
+        self.reduced_A = AffineExpansionOnlineStorage(self.Qa)
+        self.reduced_F = AffineExpansionOnlineStorage(self.Qf)
+        
     ## Perform a truth solve
     def truth_solve(self):
         self.theta_a = self.compute_theta_a()
@@ -184,19 +191,15 @@ class EllipticCoerciveBase(ParametrizedProblem):
         
     ## Assemble the reduced order affine expansion (matrix)
     def build_reduced_matrices(self):
-        reduced_A = AffineExpansionOnlineStorage(self.Qa)
         for qa in range(self.Qa):
-            reduced_A[qa] = transpose(self.Z)*self.truth_A[qa]*self.Z
-        self.reduced_A = reduced_A
-        self.save_reduced_affine_expansion_file(self.reduced_A, self.reduced_matrices_folder, "reduced_A")
+            self.reduced_A[qa] = transpose(self.Z)*self.truth_A[qa]*self.Z
+        self.reduced_A.save(self.reduced_matrices_folder, "reduced_A")
     
     ## Assemble the reduced order affine expansion (rhs)
     def build_reduced_vectors(self):
-        reduced_F = AffineExpansionOnlineStorage(self.Qf)
         for qf in range(self.Qf):
-            reduced_F[qf] = transpose(self.Z)*self.truth_F[qf]
-        self.reduced_F = reduced_F
-        self.save_reduced_affine_expansion_file(self.reduced_F, self.reduced_matrices_folder + "reduced_F")
+            self.reduced_F[qf] = transpose(self.Z)*self.truth_F[qf]
+        self.reduced_F.save(self.reduced_matrices_folder, "reduced_F")
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -204,6 +207,16 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ###########################     ERROR ANALYSIS     ########################### 
     ## @defgroup ErrorAnalysis Error analysis
     #  @{
+    
+    ## Initialize data structures required for the error analysis phase
+    def _init_error_analysis(self):
+        self.truth_A = tuple(assemble(a_form) for a_form in self.assemble_truth_a())
+        self.apply_bc_to_matrix_expansion(self.truth_A)
+        self.truth_F = tuple(assemble(f_form) for f_form in self.assemble_truth_f())
+        self.apply_bc_to_vector_expansion(self.truth_F)
+        self.Qa = len(self.truth_A)
+        self.Qf = len(self.truth_F)
+        self.load_reduced_matrices()
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
@@ -216,11 +229,6 @@ class EllipticCoerciveBase(ParametrizedProblem):
         assembled_truth_A = sum(product(self.theta_a, self.truth_A)) # use the energy norm (skew part will discarded by the scalar product)
         error_norm_squared = self.compute_scalar_product(self.error, assembled_truth_A, self.error) # norm of the error
         return sqrt(error_norm_squared)
-        
-    # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
-    def error_analysis(self, N=None):
-        raise RuntimeError("Please implement the error analysis of the reduced order model.")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
