@@ -104,7 +104,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # 9. I/O
         self.snapshots_folder = "snapshots/"
         self.basis_folder = "basis/"
-        self.dual_folder = "dual/"
+        self.error_estimation_folder = "error_estimation/"
         self.reduced_matrices_folder = "reduced_matrices/"
         self.post_processing_folder = "post_processing/"
         
@@ -135,7 +135,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         return np.abs(eps2)/alpha
         
     ## Return the numerator of the error bound for the current solution
-    def get_eps2 (self):
+    def get_eps2(self):
         theta_a = self.theta_a
         theta_f = self.theta_f
         Qf = self.Qf
@@ -196,7 +196,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.error_estimation_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -226,7 +226,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self._online_solve(self.N)
             
             print("build matrices for error estimation (it may take a while)")
-            self.compute_dual_terms()
+            self.build_error_estimation_matrices()
             
             if self.N < self.Nmax:
                 print("find next mu")
@@ -264,8 +264,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.setmu(munew)
         save_greedy_post_processing_file(self.N, delta_max, munew, self.post_processing_folder)
         
-    ## Compute dual terms
-    def compute_dual_terms(self):
+    ## Build matrices for error estimation
+    def build_error_estimation_matrices(self):
         N = self.N
         RBu = Function(self.V)
         
@@ -274,18 +274,18 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         if N == 1 :
             
             # CC (does not depend on N, so we compute it only once)
-            self.Cf = self.compute_f_dual()
+            self.Cf = self.compute_f_riesz()
             self.CC = np.zeros((Qf,Qf))
             for qf in range(0,Qf):
                 for qfp in range(qf,Qf):
                     self.CC[qf,qfp] = self.compute_scalar_product(self.Cf[qf], self.S, self.Cf[qfp])
                     if qf != qfp:
                         self.CC[qfp,qf] = self.CC[qf,qfp]
-            np.save(self.dual_folder + "CC", self.CC)
+            np.save(self.error_estimation_folder + "CC", self.CC)
     
             RBu.vector()[:] = self.Z[:, 0]
             
-            self.lnq = (self.compute_a_dual(RBu),)
+            self.lnq = (self.compute_a_riesz(RBu),)
     
             la = Function(self.V)
             lap = Function(self.V)
@@ -296,7 +296,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                 for qa in range(0,Qa):
                     la.vector()[:] = np.array(self.lnq[0][:,qa], dtype=np.float_)
                     self.CL[0,qf,qa] = self.compute_scalar_product(la, self.S, self.Cf[qf])
-            np.save(self.dual_folder + "CL", self.CL)
+            np.save(self.error_estimation_folder + "CL", self.CL)
             
             # LL
             self.LL = np.zeros((self.Nmax,self.Nmax,Qa,Qa))
@@ -307,10 +307,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                     self.LL[0,0,qa,qap] = self.compute_scalar_product(la, self.S, lap)
                     if qa != qap:
                         self.LL[0,0,qap,qa] = self.LL[0,0,qa,qap]
-            np.save(self.dual_folder + "LL", self.LL)
+            np.save(self.error_estimation_folder + "LL", self.LL)
         else:
             RBu.vector()[:] = np.array(self.Z[:, N-1], dtype=np.float_)
-            self.lnq += (self.compute_a_dual(RBu),)
+            self.lnq += (self.compute_a_riesz(RBu),)
             la = Function(self.V)
             lap = Function(self.V)
             cl = np.zeros((Qf,Qa))
@@ -321,7 +321,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                 for qa in range(0,Qa):
                     la.vector()[:] = np.array(self.lnq[n][:, qa], dtype=np.float_)
                     self.CL[n,qf,qa] = self.compute_scalar_product(self.Cf[qf], self.S, la)
-            np.save(self.dual_folder + "CL", self.CL)
+            np.save(self.error_estimation_folder + "CL", self.CL)
     
             # LL
             for qa in range(0,Qa):
@@ -332,10 +332,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                         self.LL[n,nn,qa,qap] = self.compute_scalar_product(la, self.S, lap)
                         if n != nn:
                             self.LL[nn,n,qa,qap] = self.LL[n,nn,qa,qap]
-            np.save(self.dual_folder + "LL", self.LL)
+            np.save(self.error_estimation_folder + "LL", self.LL)
     
-    ## Compute the dual of a
-    def compute_a_dual(self, RBu):
+    ## Compute the Riesz representation of a
+    def compute_a_riesz(self, RBu):
         riesz = Function(self.V)
         i = 0
         for A in self.truth_A:
@@ -347,8 +347,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
                 i = 1
         return l
     
-    ## Compute the dual of f
-    def compute_f_dual(self):
+    ## Compute the Riesz representation of f
+    def compute_f_riesz(self):
         riesz = Function(self.V)
         c = ()
         for F in self.truth_F:
@@ -469,10 +469,10 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     def load_reduced_matrices(self):
         # Read in data structures as in parent
         EllipticCoerciveBase.load_reduced_matrices(self)
-        # Moreover, read also data structures related to the dual
-        self.CC.load(self.dual_folder, "CC")
-        self.CL.load(self.dual_folder, "CL")
-        self.LL.load(self.dual_folder, "LL")
+        # Moreover, read also data structures related to error estimation
+        self.CC.load(self.error_estimation_folder, "CC")
+        self.CL.load(self.error_estimation_folder, "CL")
+        self.LL.load(self.error_estimation_folder, "LL")
             
     ## Save greedy post processing to file
     @staticmethod

@@ -79,7 +79,6 @@ class EIM(ParametrizedProblem):
         self.xi_test_folder = "xi_test__eim/"
         self.snapshots_folder = "snapshots__eim/"
         self.basis_folder = "basis__eim/"
-        self.dual_folder = "dual__eim/" # never used
         self.reduced_matrices_folder = "reduced_matrices__eim/"
         self.post_processing_folder = "post_processing__eim/"
         #
@@ -158,7 +157,7 @@ class EIM(ParametrizedProblem):
         print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)

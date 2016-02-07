@@ -179,13 +179,15 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     #  @{
 
     def offline(self):
+    # TODO non capisco perche' abbiamo dovuto copiarlo... solo per aggiungere il truth_M?!?
+    # Sicuramente non va bene qui, perche' la fase offline per POD e' diversa
         print("==============================================================")
         print("=             Offline phase begins                           =")
         print("==============================================================")
         print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.error_estimation_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -218,7 +220,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             ParabolicCoerciveBase.online_solve(self,self.N,False)
             
             print("build matrices for error estimation (it may take a while)")
-            self.compute_dual_terms()
+            self.build_error_estimation_matrices()
             
             if self.N < self.Nmax:
                 print("find next mu")

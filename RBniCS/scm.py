@@ -77,7 +77,6 @@ class SCM(ParametrizedProblem):
         self.xi_test_folder = "xi_test__scm/"
         self.snap_folder = "snapshots__scm/"
         self.basis_folder = "basis__scm/"
-        self.dual_folder = "dual__scm/" # never used
         self.reduced_matrices_folder = "reduced_matrices__scm/"
         self.post_processing_folder = "post_processing__scm/"
         # 
@@ -305,7 +304,7 @@ class SCM(ParametrizedProblem):
         print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
-        folders = (self.snap_folder, self.basis_folder, self.dual_folder, self.reduced_matrices_folder, self.post_processing_folder)
+        folders = (self.snap_folder, self.basis_folder, self.reduced_matrices_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)

@@ -301,7 +301,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         self.xi_test_folder = "xi_test__dual/"
         self.snapshots_folder = "snapshots__dual/"
         self.basis_folder = "basis__dual/"
-        self.dual_folder = "dual__dual/"
+        self.error_estimation_folder = "error_estimation__dual/"
         self.reduced_matrices_folder = "reduced_matrices__dual/"
         self.post_processing_folder = "post_processing__dual/"
         

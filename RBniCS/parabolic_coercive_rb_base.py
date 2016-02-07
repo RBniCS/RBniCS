@@ -262,8 +262,8 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
 
         self.setmu(munew)
         
-    ## Compute dual terms
-    def compute_dual_terms(self):
+    ## Build matrices for error estimation
+    def build_error_estimation_matrices(self):
     # CHECK il resto del metodo
         N = self.N
         RBu = Function(self.V)
@@ -271,7 +271,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         Qf = self.Qf
         Qa = self.Qa
         Qm = self.Qm
-        self.Cf = self.compute_f_dual()
+        self.Cf = self.compute_f_riesz()
         if Qf > 1:
             self.CC = np.zeros((Qf,Qf))
             for qf in range(0,Qf):
@@ -281,7 +281,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                         self.CC[qfp,qf] = self.CC[qf,qfp]
         else:
             self.CC = self.compute_scalar_product(self.Cf[0], self.S, self.Cf[0])
-        np.save(self.dual_folder + "CC", self.CC)
+        np.save(self.error_estimation_folder + "CC", self.CC)
 
 
 
@@ -295,8 +295,8 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
 
         for n in range(self.N):
             RBu.vector()[:] = np.array(self.Z[:, n], dtype=np.float_)
-            self.lnq += (self.compute_a_dual(RBu),)
-            self.mnq += (self.compute_m_dual(RBu),)
+            self.lnq += (self.compute_a_riesz(RBu),)
+            self.mnq += (self.compute_m_riesz(RBu),)
 
         for n in range(self.N):
             la = Function(self.V)
@@ -307,7 +307,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                 for qa in range(0,Qa):
                     la.vector()[:] = np.array(self.lnq[n][:, qa], dtype=np.float_)
                     self.CL[n,qf,qa] = self.compute_scalar_product(self.Cf[qf], self.S, la)
-            np.save(self.dual_folder + "CL", self.CL)
+            np.save(self.error_estimation_folder + "CL", self.CL)
     
             # LL
             for qa in range(0,Qa):
@@ -318,7 +318,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                         self.LL[n,nn,qa,qap] = self.compute_scalar_product(la, self.S, lap)
                         if n != nn:
                             self.LL[nn,n,qa,qap] = self.LL[n,nn,qa,qap]
-            np.save(self.dual_folder + "LL", self.LL)
+            np.save(self.error_estimation_folder + "LL", self.LL)
 
 
             lm = Function(self.V)
@@ -330,7 +330,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                 for qm in range(0,Qm):
                     lm.vector()[:] = np.array(self.mnq[n][:, qm], dtype=np.float_)
                     self.CM[n,qf,qm] = self.compute_scalar_product(self.Cf[qf], self.S, lm)
-            np.save(self.dual_folder + "CM", self.CM)
+            np.save(self.error_estimation_folder + "CM", self.CM)
     
             # MM
             for qm in range(0,Qm):
@@ -341,7 +341,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                         self.MM[n,nn,qm,qmp] = self.compute_scalar_product(lm, self.S, lmp)
                         if n != nn:
                             self.MM[nn,n,qm,qmp] = self.MM[n,nn,qm,qmp]
-            np.save(self.dual_folder + "MM", self.MM)
+            np.save(self.error_estimation_folder + "MM", self.MM)
     
             # LM
             for qm in range(0,Qm):
@@ -352,11 +352,11 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
                         self.LM[n,nn,qm,qa] = self.compute_scalar_product(lm, self.S, la)
                         if n != nn:
                             self.LM[nn,n,qm,qa] = self.LM[n,nn,qm,qa]
-            np.save(self.dual_folder + "LM", self.LM)
+            np.save(self.error_estimation_folder + "LM", self.LM)
 
 
-    ## Compute the dual of m
-    def compute_m_dual(self, RBu):
+    ## Compute the Riesz representation of m
+    def compute_m_riesz(self, RBu):
         riesz = Function(self.V)
         i = 0
         for M in self.truth_M:

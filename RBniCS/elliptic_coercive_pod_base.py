@@ -71,9 +71,8 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         self.xi_test_folder = "xi_test__pod/"
         self.snapshots_folder = "snapshots__pod/"
         self.basis_folder = "basis__pod/"
-        self.dual_folder = "dual__pod/" # never used
         self.reduced_matrices_folder = "reduced_matrices__pod/"
-        self.post_processing_folder = "post_processing__pod/" # 
+        self.post_processing_folder = "post_processing__pod/"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
