@@ -32,5 +32,4 @@ RBniCS provides the following classes:
 8. **parabolic_coercive_pod_base.py**: class for POD-Galerkin ROMs of parabolic coervice problems
 9. **eim.py**: class for empirical interpolation method (interpolation of parametrized functions)
 10. **scm.py**: class for successive constraints method (approximation of the coercivity constant)
-11. **gram_schmidt.py**: auxiliary class containing the implementation of the Gram Schmidt procedure
-12. **proper_orthogonal_decomposition.py**: auxiliary class containing the implementation of the POD
+11. **shape_parametrization.py**: decorator class for problems depending on geometrical parameters
