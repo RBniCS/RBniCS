@@ -51,8 +51,8 @@ class GramSchmidt():
         n_basis = len(Z) # basis are store as a list of FE vectors
         b = Z[n_basis - 1] # reference to the last basis
         for i in range(n_basis - 1):
-            b -= self.compute_scalar_product(b, self.X, Z[i])/self.compute_scalar_product(Z[i], self.X, Z[i]) * Z[i]
-        b /= self.compute_scalar(b, self.X, b)
+            b -= (transpose(b)*self.X*Z[i]) * Z[i]
+        b /= transpose(b)*self.X*b
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

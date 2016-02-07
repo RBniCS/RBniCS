@@ -22,8 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PROPER ORTHOGONAL DECOMPOSITION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ProperOrthogonalDecomposition
 #
@@ -65,30 +63,23 @@ class ProperOrthogonalDecomposition(object):
     #  Input arguments are: Nmax
     #  Output arguments are: POD modes, number of POD modes
     def apply(self, Nmax):
-        dim = len(self.snapshot_matrix)
-        correlation = np.matrix(np.zeros(dim, dim))
-        for i in range(dim):
-            for j in range(dim):
-                correlation[i, j] = self.compute_scalar_product(self.snapshots_matrix[i], self.X, self.snapshots_matrix[j])
-                
+        correlation = transpose(self.snapshots_matrix)*self.X*self.snapshots_matrix
+        
         eigensolver = OnlineEigenSolver(correlation, self.X)
         eigensolver.parameters["problem_type"] = "gen_hermitian"
         eigensolver.parameters["spectrum"] = "largest real"
         eigensolver.solve()
 
-        Z = BasisFunctionsMatrix()
-        for i in range(Nmax):
-            print("lambda_" + str(i) + " = " + eigensolver.get_eigenvalue(i))
-            eigv_i = eigensolver.get_eigenvector(i)
-            Z_i = self.snapshots_matrix[0]*eigv_i[0]
-            for j in range(1, dim):
-                Z_i += self.snapshots_matrix[j]*eigv_i[j]
-            Z_i /= self.compute_scalar_product(Z_i, self.X, Z_i)
-            Z.enrich(Z_i)
+        Z = self.snapshots_matrix*eigensolver.get_eigenvectors(Nmax)
+        for b in Z:
+            b /= transpose(b)*self.X*b
         
         self.eigensolver = eigensolver
         return (Z, Nmax)
 
+    def print_eigenvalues(self):
+        self.eigensolver.print_eigenvalues()
+        
     def save_eigenvalues_file(self, output_directory, eigenvalues_file):
         self.eigensolver.save_eigenvalues_file(output_directory, eigenvalues_file)
         
