@@ -129,6 +129,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print("############################## perform POD ######################################")
         (self.Z, self.N) = self.POD.apply(self.Nmax)
         self.Z.save(self.basis_folder, "basis")
+        self.POD.print_eigenvalues()
         self.POD.save_eigenvalues_file(self.post_processing_folder, "eigs")
         self.POD.save_retained_energy_file(self.post_processing_folder, "retained_energy")
         

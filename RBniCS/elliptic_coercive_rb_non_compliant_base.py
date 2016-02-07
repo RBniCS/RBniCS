@@ -116,12 +116,12 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.sN = 0.
         # Assemble output
         self.theta_s = self.compute_theta_s()
-        assembled_reduced_S = self.affine_assemble_reduced_vector(self.reduced_S, self.theta_s, N)
-        self.sN += float(np.dot(assembled_reduced_S, self.uN))
+        assembled_reduced_S = sum(product(self.theta_s, self.reduced_S[:N]))
+        self.sN += transpose(assembled_reduced_S)*self.uN
         # Assemble correction
-        assembled_reduced_A_dp = self.affine_assemble_reduced_matrix(self.reduced_A_dp, self.theta_a, N, N)
-        assembled_reduced_F_d = self.affine_assemble_reduced_vector(self.reduced_F_d, self.theta_f, N)
-        self.sN -= float(np.dot(assembled_reduced_F_d, self.dual_problem.uN)) - float(np.matrix(self.dual_problem.uN.T)*(assembled_reduced_A_dp*np.matrix(self.uN)))
+        assembled_reduced_A_dp = sum(product(self.theta_a, self.reduced_A_dp[:N, :N]))
+        assembled_reduced_F_d = sum(product(self.theta_f, self.reduced_F_d[:N]))
+        self.sN -= transpose(assembled_reduced_F_d)*self.dual_problem.uN - transpose(self.dual_problem.uN)*assembled_reduced_A_dp*self.uN
     
     ## Return an error bound for the current solution. Overridden to be computed in the V-norm
     #  since the energy norm is not defined generally in the non compliant case
@@ -161,22 +161,17 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     ## Perform a truth evaluation of the output
     def truth_output(self):
         self.theta_s = self.compute_theta_s()
-        assembled_truth_S = self.affine_assemble_truth_vector(self.truth_S, self.theta_s)
-        self.s = assembled_truth_S.inner(self.snapshot.vector())
+        assembled_truth_S = sum(product(self.theta_s, self.truth_S))
+        self.s = transpose(assembled_truth_S)*self.snapshot.vector()
     
     ## Assemble the reduced order affine expansion (matrix). Overridden to assemble also terms related to output correction
     def build_reduced_matrices(self):
         EllipticCoerciveRBBase.build_reduced_matrices(self)
         
         # Output correction terms
-        reduced_A_dp = ()
-        for A in self.truth_A:
-            A = as_backend_type(A)
-            dim = A.size(0) # = A.size(1)
-            if self.N == 1:
-                reduced_A_dp += (np.dot(self.dual_problem.Z.T,A.mat().getValues(range(dim),range(dim)).dot(self.Z)),)
-            else:
-                reduced_A_dp += (np.matrix(np.dot(self.dual_problem.Z.T,np.matrix(np.dot(A.mat().getValues(range(dim),range(dim)),self.Z)))),)
+        reduced_A_dp = AffineExpansionOnlineStorage(self.Qa)
+        for qa in range(self.Qa):
+            reduced_A_dp[qa] = transpose(self.dual_problem.Z)*self.truth_A[qa]*self.Z
         self.reduced_A_dp = reduced_A_dp
         np.save(self.reduced_matrices_folder + "reduced_A_dp", self.reduced_A_dp)
     
@@ -185,22 +180,16 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         EllipticCoerciveRBBase.build_reduced_vectors(self)
         
         # Output terms
-        reduced_S = ()
-        for S in self.truth_S:
-            S = as_backend_type(S)
-            dim = S.size()
-            reduced_s = np.dot(self.Z.T, S.vec().getValues(range(dim)))
-            reduced_S += (reduced_s,)
+        reduced_S = AffineExpansionOnlineStorage(self.Qs)
+        for qs in range(self.Qs):
+            reduced_S[qs] = transpose(self.Z)*self.truth_S[qs]
         self.reduced_S = reduced_S
         np.save(self.reduced_matrices_folder + "reduced_S", self.reduced_S)
         
         # Output correction terms
-        reduced_F_d = ()
-        for F in self.truth_F:
-            F = as_backend_type(F)
-            dim = F.size()
-            reduced_f_d = np.dot(self.dual_problem.Z.T, F.vec().getValues(range(dim)))
-            reduced_F_d += (reduced_f_d,)
+        reduced_F_d = AffineExpansionOnlineStorage(self.Qf)
+        for qf in range(self.Qf):
+            reduced_F_d[qf] = transpose(self.dual_problem.Z)*self.truth_F[qf]
         self.reduced_F_d = reduced_F_d
         np.save(self.reduced_matrices_folder + "reduced_F_d", self.reduced_F_d)
         
@@ -221,7 +210,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.online_solve(N, False)
         self.online_output()
         self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
-        error_u_norm_squared = self.compute_scalar_product(self.error, self.S, self.error) # norm of the error
+        error_u_norm_squared = transpose(self.error)*self.S*self.error # norm of the error
         error_u_norm = np.sqrt(error_u_norm_squared)
         error_s = abs(self.s - self.sN)
         return (error_u_norm, error_s)

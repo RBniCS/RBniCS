@@ -160,9 +160,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         # Need to possibly re-evaluate theta, since they may be time dependent
         self.theta_a = self.compute_theta_a()
         self.theta_f = self.compute_theta_f()
-        assembled_reduced_M = self.affine_assemble_reduced_matrix(self.reduced_M, self.theta_m, N, N)
-        assembled_reduced_A = self.affine_assemble_reduced_matrix(self.reduced_A, self.theta_a, N, N)
-        assembled_reduced_F = self.affine_assemble_reduced_vector(self.reduced_F, self.theta_f, N)
+        assembled_reduced_M = sum(product(self.theta_m, self.reduced_M[:N, :N]))
+        assembled_reduced_A = sum(product(self.theta_a, self.reduced_A[:N, :N]))
+        assembled_reduced_F = sum(product(self.theta_f, self.reduced_F[:N]))
         assembled_reduced_lhs = 1./dt*assembled_reduced_M + assembled_reduced_A
         assembled_reduced_rhs = 1./dt*assembled_reduced_M*np.matrix(self.uN) + assembled_reduced_F.reshape(-1,1) # uN -> solution at previous time
         if (self.N == 1):
@@ -248,9 +248,9 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             # Need to possibly re-evaluate theta, since they may be time dependent
             self.theta_a = self.compute_theta_a()
             self.theta_f = self.compute_theta_f()
-            assembled_truth_M = self.affine_assemble_truth_matrix(self.truth_M, self.theta_m)
-            assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a)
-            assembled_truth_F = self.affine_assemble_truth_vector(self.truth_F, self.theta_f)
+            assembled_truth_M = sum(product(self.theta_m, self.truth_M))
+            assembled_truth_A = sum(product(self.theta_a, self.truth_A))
+            assembled_truth_F = sum(product(self.theta_f, self.truth_F))
             assembled_truth_lhs = 1./dt*assembled_truth_M + assembled_truth_A
             assembled_truth_rhs = 1./dt*assembled_truth_M*self.snapshot.vector() + assembled_truth_F  # snapshot -> solution at previous time
             solve(assembled_truth_lhs, self.snapshot.vector(), assembled_truth_rhs)
@@ -294,7 +294,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             current_error.vector()[:] = self.all_snapshot[:, k].vector()[:] - self.all_reduced[:, k].vector()[:] # error as a function
             self.t = self.all_times[k] # needed by the next line, since theta_a ...
             self.theta_a = self.compute_theta_a() # ... may depend on time
-            assembled_truth_A = self.affine_assemble_truth_matrix(self.truth_A, self.theta_a)
+            assembled_truth_A = sum(product(self.theta_a, self.truth_A))
             error_norm_squared += 1./self.dt * self.compute_scalar_product(current_error, assembled_truth_A, current_error) # norm of the error
         return np.sqrt(error_norm_squared)
         

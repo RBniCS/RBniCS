@@ -119,8 +119,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     def online_output(self):
         N = self.uN.size
         self.theta_f = self.compute_theta_f()
-        assembled_reduced_F = self.affine_assemble_reduced_vector(self.reduced_F, self.theta_f, N)
-        self.sN = float(np.dot(assembled_reduced_F, self.uN))
+        assembled_reduced_F = sum(product(self.theta_f, self.reduced_F[:N]))
+        self.sN = transpose(assembled_reduced_F)*self.uN
         
     ## Return an error bound for the current solution
     def get_delta(self):
@@ -359,8 +359,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## Perform a truth evaluation of the output
     def truth_output(self):
         self.theta_f = self.compute_theta_f()
-        assembled_truth_F = self.affine_assemble_truth_vector(self.truth_F, self.theta_f)
-        self.s = assembled_truth_F.inner(self.snapshot.vector())
+        assembled_truth_F = sum(product(self.theta_f, self.truth_F))
+        self.s = transpose(assembled_truth_F)*self.snapshot.vector()
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
