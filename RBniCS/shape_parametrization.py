@@ -111,7 +111,7 @@ def ShapeParametrization(ParametrizedProblem_DerivedClass):
                 mu_dict[ "mu_" + str(p) ] = self.mu[p]
             displacement_subdomains = ()
             for i in range(len(self.displacement_expression)):
-                displacement_expression_i = Expression(self.displacement_expression[i], **mu_dict)
+                displacement_expression_i = Expression(self.displacement_expression[i], degree=self.deformation_V.ufl_element().degree(), **mu_dict)
                 displacement_subdomains += (interpolate(displacement_expression_i, self.deformation_V),)
             displacement = Function(self.deformation_V)
             for i in range(len(displacement_subdomains)):

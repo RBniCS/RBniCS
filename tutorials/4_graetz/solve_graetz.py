@@ -76,7 +76,7 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
         self.lifting = lifting
         self.export_basis(self.lifting, self.basis_folder + "lifting")
         # Store the velocity expression
-        self.vel = Expression("x[1]*(1-x[1])")
+        self.vel = Expression("x[1]*(1-x[1])", degree=self.V.ufl_element().degree())
         # Finally, initialize an SCM object to approximate alpha LB
         self.SCM_obj = SCM_Graetz(self)
         
