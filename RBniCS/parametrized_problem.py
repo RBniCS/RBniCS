@@ -188,21 +188,21 @@ class ParametrizedProblem(object):
         self.reset_reference() # undo mesh motion
         
     ## Export in VTK format
-    def _export_vtk(self, solution, filename, output_options={}):
-        if not "With mesh motion" in output_options:
-            output_options["With mesh motion"] = False
-        if not "With preprocessing" in output_options:
-            output_options["With preprocessing"] = False
+    def _export_vtk(self, solution, filename, **output_options):
+        if not "with_mesh_motion" in output_options:
+            output_options["with_mesh_motion"] = False
+        if not "with_preprocessing" in output_options:
+            output_options["with_preprocessing"] = False
         #
         file = File(filename + ".pvd", "compressed")
-        if output_options["With mesh motion"]:
+        if output_options["with_mesh_motion"]:
             self.move_mesh() # deform the mesh
-        if output_options["With preprocessing"]:
+        if output_options["with_preprocessing"]:
             preprocessed_solution = self.preprocess_solution_for_plot(solution)
             file << preprocessed_solution
         else:
             file << solution
-        if output_options["With mesh motion"]:
+        if output_options["with_mesh_motion"]:
             self.reset_reference() # undo mesh motion
             
     ## Preprocess the solution before plotting (e.g. to add a lifting)

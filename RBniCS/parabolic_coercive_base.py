@@ -317,28 +317,28 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         
     ## Export snapshot in VTK format
     def export_solution(self, solution, filename):
-        self._export_vtk_all_times(solution, filename, {"With mesh motion": True, "With preprocessing": True})
+        self._export_vtk_all_times(solution, filename, with_mesh_motion=True, with_preprocessing=True)
         
     # Note that there is no need to override the export basis method. Basis are steady!
             
     ## Export in VTK format
-    def _export_vtk_all_times(self, solution, filename, output_options={}):
-        if not "With mesh motion" in output_options:
-            output_options["With mesh motion"] = False
-        if not "With preprocessing" in output_options:
-            output_options["With preprocessing"] = False
+    def _export_vtk_all_times(self, solution, filename, **output_options):
+        if not "with_mesh_motion" in output_options:
+            output_options["with_mesh_motion"] = False
+        if not "with_preprocessing" in output_options:
+            output_options["with_preprocessing"] = False
         #
         file = File(filename + ".pvd", "compressed")
-        if output_options["With mesh motion"]:
+        if output_options["with_mesh_motion"]:
             self.move_mesh() # deform the mesh
         for k in range(len(self.all_times)):
             self.t = self.all_times[k]
-            if output_options["With preprocessing"]:
+            if output_options["with_preprocessing"]:
                 preprocessed_solution = self.preprocess_solution_for_plot(solution[:, k])
                 file << (preprocessed_solution, self.t)
             else:
                 file << (solution[:, k], self.t)
-        if output_options["With mesh motion"]:
+        if output_options["with_mesh_motion"]:
             self.reset_reference() # undo mesh motion
             
     #  @}

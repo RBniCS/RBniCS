@@ -556,7 +556,7 @@ class SCM(ParametrizedProblem):
     
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
-        self._export_vtk(solution, filename, {"With mesh motion": True, "With preprocessing": True})
+        self._export_vtk(solution, filename, with_mesh_motion=True, with_preprocessing=True)
         
     #  @}
     ########################### end - I/O - end ###########################

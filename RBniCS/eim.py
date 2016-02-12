@@ -209,7 +209,7 @@ class EIM(ParametrizedProblem):
             self.online_solve()
             
             print("compute maximum interpolation error")
-            (maximum_error, maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error({"Output error": True, "Output location": True})
+            (maximum_error, maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error(output_error=True, output location=True)
             if self.N == 0:
                 self.interpolation_points = np.array([maximum_point])
                 self.interpolation_points_dof = np.array([maximum_point_dof])
@@ -255,13 +255,13 @@ class EIM(ParametrizedProblem):
         self.snapshot.vector()[:] = np.array(self.snapshot_matrix[:, mu_index], dtype=np.float)
     
     # Compute the interpolation error and/or its maximum location
-    def compute_maximum_interpolation_error(self, output_options={}, N=None):
+    def compute_maximum_interpolation_error(self, N=None, **output_options):
         if N is None:
             N = self.N
-        if not "Output error" in output_options:
-            output_options["Output error"] = False
-        if not "Output location" in output_options:
-            output_options["Output location"] = False
+        if not "output_error" in output_options:
+            output_options["output_error"] = False
+        if not "output_location" in output_options:
+            output_options["output_location"] = False
         
         # self.snapshot now contains the exact function evaluation (loaded by truth solve)
         # Compute the error (difference with the eim approximation)
@@ -274,9 +274,9 @@ class EIM(ParametrizedProblem):
         else:
             self.error.vector()[:] = self.snapshot.vector()[:]
         
-        if output_options["Output error"] and not output_options["Output location"]:
+        if output_options["output_error"] and not output_options["output_location"]:
             maximum_error = self.error.vector().norm("linf")
-        elif output_options["Output location"]:
+        elif output_options["output_location"]:
             # Locate the vertex of the mesh where the error is maximum
             maximum_error = 0.0
             maximum_point = None
@@ -292,11 +292,11 @@ class EIM(ParametrizedProblem):
             raise RuntimeError("Invalid output options")
             
         # Return
-        if output_options["Output error"] and output_options["Output location"]:
+        if output_options["output_error"] and output_options["output_location"]:
             return (abs(maximum_error), maximum_point, maximum_point_dof)
-        elif output_options["Output error"]:
+        elif output_options["output_error"]:
             return abs(maximum_error)
-        elif output_options["Output location"]:
+        elif output_options["output_location"]:
             return (maximum_point, maximum_point_dof)
         else:
             raise RuntimeError("Invalid output options")
@@ -334,7 +334,7 @@ class EIM(ParametrizedProblem):
             self.online_solve()
             
             # ... and compute the maximum error
-            err = self.compute_maximum_interpolation_error({"Output error": True})
+            err = self.compute_maximum_interpolation_error(output_error=True)
             
             if (err > err_max):
                 err_max = err
@@ -409,7 +409,7 @@ class EIM(ParametrizedProblem):
             
             for n in range(N): # n = 0, 1, ... N - 1
                 self.online_solve(n)
-                error[n, run] = self.compute_maximum_interpolation_error({"Output error": True}, n)
+                error[n, run] = self.compute_maximum_interpolation_error(n, output_error=True)
         
         # Print some statistics
         print("")
@@ -433,7 +433,7 @@ class EIM(ParametrizedProblem):
 
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
-        self._export_vtk(solution, filename, {"With mesh motion": True, "With preprocessing": True})
+        self._export_vtk(solution, filename, with_mesh_motion=True, with_preprocessing=True)
         
     def load_reduced_matrices(self):
         if len(np.asarray(self.interpolation_points)) == 0: # avoid loading multiple times
