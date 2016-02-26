@@ -143,8 +143,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
     
     # Perform an online solve (internal)
     def _online_solve(self, N):
-        self.theta_a = self.compute_theta_a()
-        self.theta_f = self.compute_theta_f()
+        self.theta_a = self.compute_theta("a")
+        self.theta_f = self.compute_theta("f")
         assembled_reduced_A = sum(product(self.theta_a, self.reduced_A[:N, :N]))
         assembled_reduced_F = sum(product(self.theta_f, self.reduced_F[:N]))
         solve(assembled_reduced_A, self.uN, assembled_reduced_F)
@@ -169,8 +169,8 @@ class EllipticCoerciveBase(ParametrizedProblem):
         
     ## Perform a truth solve
     def truth_solve(self):
-        self.theta_a = self.compute_theta_a()
-        self.theta_f = self.compute_theta_f()
+        self.theta_a = self.compute_theta("a")
+        self.theta_f = self.compute_theta("f")
         assembled_truth_A = sum(product(self.theta_a, self.truth_A))
         assembled_truth_F = sum(product(self.theta_f, self.truth_F))
         solve(assembled_truth_A, self.snapshot.vector(), assembled_truth_F)
@@ -225,7 +225,7 @@ class EllipticCoerciveBase(ParametrizedProblem):
             self.truth_solve()
         self.online_solve(N, False)
         self.error.vector()[:] = self.snapshot.vector()[:] - self.reduced.vector()[:] # error as a function
-        self.theta_a = self.compute_theta_a() # not really necessary, for symmetry with the parabolic case
+        self.theta_a = self.compute_theta("a") # not really necessary, for symmetry with the parabolic case
         assembled_truth_A = sum(product(self.theta_a, self.truth_A)) # use the energy norm (skew part will discarded by the scalar product)
         error_norm_squared = self.compute_scalar_product(self.error, assembled_truth_A, self.error) # norm of the error
         return sqrt(error_norm_squared)
@@ -256,44 +256,36 @@ class EllipticCoerciveBase(ParametrizedProblem):
     ## @defgroup ProblemSpecific Problem specific methods
     #  @{
 
-    ## Return theta multiplicative terms of the affine expansion of a.
-    # example of implementation:
-    #    m1 = self.mu[0]
-    #    m2 = self.mu[1]
-    #    m3 = self.mu[2]
-    #    theta_a0 = m1
-    #    theta_a1 = m2
-    #    theta_a2 = m1*m2+m3/7.0
-    #    return (theta_a0, theta_a1, theta_a2)
-    def compute_theta_a(self):
-        raise RuntimeError("The function compute_theta_a() is problem-specific and needs to be overridden.")
-    
-    ## Return theta multiplicative terms of the affine expansion of f.
-    # example of implementation:
-    #    m1 = self.mu[0]
-    #    m2 = self.mu[1]
-    #    m3 = self.mu[2]
-    #    theta_f0 = m1
-    #    theta_f1 = m2
-    #    theta_f2 = m1*m2+m3/7.0
-    #    return (theta_f0, theta_f1, theta_f2)
-    def compute_theta_f(self):
-        raise RuntimeError("The function compute_theta_f() is problem-specific and needs to be overridden.")
+    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Example of implementation:
+    #   m1 = self.mu[0]
+    #   m2 = self.mu[1]
+    #   m3 = self.mu[2]
+    #   if term == "a":
+    #       theta_a0 = m1
+    #       theta_a1 = m2
+    #       theta_a2 = m1*m2+m3/7.0
+    #       return (theta_a0, theta_a1, theta_a2)
+    #   elif term == "f":
+    #       theta_f0 = m1*m3
+    #       return (theta_f0,)
+    #   else:
+    #       raise RuntimeError("Invalid term for compute_theta().")
+    def compute_theta(self, term):
+        raise RuntimeError("The function compute_theta() is problem-specific and needs to be overridden.")
         
-    ## Return matrices resulting from the truth discretization of a.
-    # example of implementation:
-    #    a0 = inner(grad(u),grad(v))*dx
-    #    A0 = assemble(a0)
-    #    return (A0,)
-    def assemble_truth_a(self):
-        raise RuntimeError("The function assemble_truth_a() is problem-specific and needs to be overridden.")
-
-    ## Return vectors resulting from the truth discretization of f.
-    #    f0 = v*ds(1)
-    #    F0 = assemble(f0)
-    #    return (F0,)
-    def assemble_truth_f(self):
-        raise RuntimeError("The function compute_truth_f() is problem-specific and needs to be overridden.")
+    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Example of implementation:
+    #   if term == "a":
+    #       a0 = inner(grad(u),grad(v))*dx
+    #       return (a0,)
+    #   elif term == "f":
+    #       f0 = v*ds(1)
+    #       return (f0,)
+    #   else:
+    #       raise RuntimeError("Invalid term for assemble_operator().")
+    def assemble_operator(self, term):
+        raise RuntimeError("The function assemble_operator() is problem-specific and needs to be overridden.")
     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

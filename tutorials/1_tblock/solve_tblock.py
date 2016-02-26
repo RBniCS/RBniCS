@@ -57,40 +57,37 @@ class Tblock(EllipticCoerciveRBBase):
     
     ## Return the alpha_lower bound.
     def get_alpha_lb(self):
-        return min(self.compute_theta_a())
+        return min(self.compute_theta("a"))
     
-    ## Set theta multiplicative terms of the affine expansion of a.
-    def compute_theta_a(self):
+    ## Return theta multiplicative terms of the affine expansion of the problem.
+    def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
-        theta_a0 = mu1
-        theta_a1 = 1.
-        return (theta_a0, theta_a1)
+        if term == "a":
+            theta_a0 = mu1
+            theta_a1 = 1.
+            return (theta_a0, theta_a1)
+        elif term == "f":
+            theta_f0 = mu2
+            return (theta_f0,)
+        else:
+            raise RuntimeError("Invalid term for compute_theta().")
     
-    ## Set theta multiplicative terms of the affine expansion of f.
-    def compute_theta_f(self):
-        return (self.mu[1],)
-    
-    ## Set matrices resulting from the truth discretization of a.
-    def assemble_truth_a(self):
-        u = self.u
+    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    def assemble_operator(self, term):
         v = self.v
         dx = self.dx
-        # Define
-        a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*inner(u,v)*dx
-        a1 = inner(grad(u),grad(v))*dx(2) + 1e-15*inner(u,v)*dx
-        # Return
-        return (a0, a1)
-    
-    ## Set vectors resulting from the truth discretization of f.
-    def assemble_truth_f(self):
-        v = self.v
-        dx = self.dx
-        ds = self.ds
-        # Define
-        f0 = v*ds(1) + 1e-15*v*dx
-        # Return
-        return (f0,)
+        if term == "a":
+            u = self.u
+            a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*inner(u,v)*dx
+            a1 = inner(grad(u),grad(v))*dx(2) + 1e-15*inner(u,v)*dx
+            return (a0, a1)
+        elif term == "f":
+            ds = self.ds
+            f0 = v*ds(1) + 1e-15*v*dx
+            return (f0,)
+        else:
+            raise RuntimeError("Invalid term for assemble_operator().")
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

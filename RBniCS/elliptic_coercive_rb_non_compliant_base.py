@@ -115,7 +115,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         N = self.uN.size
         self.sN = 0.
         # Assemble output
-        self.theta_s = self.compute_theta_s()
+        self.theta_s = self.compute_theta("s")
         assembled_reduced_S = sum(product(self.theta_s, self.reduced_S[:N]))
         self.sN += transpose(assembled_reduced_S)*self.uN
         # Assemble correction
@@ -160,7 +160,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         
     ## Perform a truth evaluation of the output
     def truth_output(self):
-        self.theta_s = self.compute_theta_s()
+        self.theta_s = self.compute_theta("s")
         assembled_truth_S = sum(product(self.theta_s, self.truth_S))
         self.s = transpose(assembled_truth_S)*self.snapshot.vector()
     
@@ -249,33 +249,6 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     
     #  @}
     ########################### end - I/O - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
-    ## Return theta multiplicative terms of the affine expansion of s.
-    # example of implementation:
-    #    m1 = self.mu[0]
-    #    m2 = self.mu[1]
-    #    m3 = self.mu[2]
-    #    theta_s0 = m1
-    #    theta_s1 = m2
-    #    theta_s2 = m1*m2+m3/7.0
-    #    return (theta_s0, theta_s1, theta_s2)
-    def compute_theta_s(self):
-        raise RuntimeError("The function compute_theta_s() is problem-specific and needs to be overridden.")
-        
-    ## Return vectors resulting from the truth discretization of s.
-    #    s0 = v*ds(1)
-    #    S0 = assemble(S0)
-    #    return (S0,)
-    def assemble_truth_s(self):
-        raise RuntimeError("The function compute_truth_s() is problem-specific and needs to be overridden.")
-        
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-    
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB NON COMPLIANT: AUXILIARY CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class _EllipticCoerciveRBNonCompliantBase_Dual
@@ -342,7 +315,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         # Possibly need to initialize Qa of primal, since error_analysis of dual
         # may be performed before any primal data structures is initialized,
         # but we may rely on the primal itself in get_alpha_lb, when querying SCM
-        self.primal_problem.theta_a = self.primal_problem.compute_theta_a()
+        self.primal_problem.theta_a = self.primal_problem.compute_theta("a")
         self.primal_problem.Qa = len(self.primal_problem.theta_a)
         # This is almost the same as in parent, without the output computation,
         # since it makes no sense here.
@@ -417,12 +390,12 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     ## Set theta multiplicative terms of the affine expansion of a.
     def compute_theta_a(self):
         self.primal_problem.setmu(self.mu)
-        return self.primal_problem.compute_theta_a()
+        return self.primal_problem.compute_theta("a")
     
     ## Set theta multiplicative terms of the affine expansion of f.
     def compute_theta_f(self):
         self.primal_problem.setmu(self.mu)
-        primal_theta_s = self.primal_problem.compute_theta_s()
+        primal_theta_s = self.primal_problem.compute_theta("s")
         primal_theta_s_minus = ()
         for qs in range(len(primal_theta_s)):
             primal_theta_s_minus += (- primal_theta_s[qs],)

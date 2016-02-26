@@ -119,7 +119,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     # Perform an online evaluation of the (compliant) output
     def online_output(self):
         N = self.uN.size
-        self.theta_f = self.compute_theta_f()
+        self.theta_f = self.compute_theta("f")
         assembled_reduced_F = sum(product(self.theta_f, self.reduced_F[:N]))
         self.sN = transpose(assembled_reduced_F)*self.uN
         
@@ -296,7 +296,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
     ## Perform a truth evaluation of the output
     def truth_output(self):
-        self.theta_f = self.compute_theta_f()
+        self.theta_f = self.compute_theta("f")
         assembled_truth_F = sum(product(self.theta_f, self.truth_F))
         self.s = transpose(assembled_truth_F)*self.snapshot.vector()
         

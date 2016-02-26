@@ -54,8 +54,8 @@ class Eblock(EllipticCoercivePODBase):
     ## @defgroup ProblemSpecific Problem specific methods
     #  @{
     
-    ## Set theta multiplicative terms of the affine expansion of a.
-    def compute_theta_a(self):
+    ## Return theta multiplicative terms of the affine expansion of the problem.
+    def compute_theta(self, term):
         mu = self.mu
         mu1 = mu[0]
         mu2 = mu[1]
@@ -65,59 +65,54 @@ class Eblock(EllipticCoercivePODBase):
         mu6 = mu[5]
         mu7 = mu[6]
         mu8 = mu[7]
-        theta_a0 = mu1
-        theta_a1 = mu2
-        theta_a2 = mu3
-        theta_a3 = mu4
-        theta_a4 = mu5
-        theta_a5 = mu6
-        theta_a6 = mu7
-        theta_a7 = mu8
-        theta_a8 = 1.
-        return (theta_a0, theta_a1 ,theta_a2 ,theta_a3 ,theta_a4 ,theta_a5 ,theta_a6 ,theta_a7 ,theta_a8)
-    
-    ## Set theta multiplicative terms of the affine expansion of f.
-    def compute_theta_f(self):
-        mu = self.mu
         mu9 = mu[8]
         mu10 = mu[9]
         mu11 = mu[10]
-        theta_f0 = mu9
-        theta_f1 = mu10
-        theta_f2 = mu11
-        return (theta_f0, theta_f1, theta_f2)
-    
-    ## Set matrices resulting from the truth discretization of a.
-    def assemble_truth_a(self):
-        u = self.u
+        if term == "a":
+            theta_a0 = mu1
+            theta_a1 = mu2
+            theta_a2 = mu3
+            theta_a3 = mu4
+            theta_a4 = mu5
+            theta_a5 = mu6
+            theta_a6 = mu7
+            theta_a7 = mu8
+            theta_a8 = 1.
+            return (theta_a0, theta_a1 ,theta_a2 ,theta_a3 ,theta_a4 ,theta_a5 ,theta_a6 ,theta_a7 ,theta_a8)
+        elif term == "f":
+            theta_f0 = mu9
+            theta_f1 = mu10
+            theta_f2 = mu11
+            return (theta_f0, theta_f1, theta_f2)
+        else:
+            raise RuntimeError("Invalid term for compute_theta().")
+                
+    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    def assemble_operator(self, term):
         v = self.v
         dx = self.dx
-        # Define
-        a0 = self.elasticity(u,v)*dx(1) +1e-15*inner(u,v)*dx
-        a1 = self.elasticity(u,v)*dx(2) +1e-15*inner(u,v)*dx
-        a2 = self.elasticity(u,v)*dx(3) +1e-15*inner(u,v)*dx
-        a3 = self.elasticity(u,v)*dx(4) +1e-15*inner(u,v)*dx
-        a4 = self.elasticity(u,v)*dx(5) +1e-15*inner(u,v)*dx
-        a5 = self.elasticity(u,v)*dx(6) +1e-15*inner(u,v)*dx
-        a6 = self.elasticity(u,v)*dx(7) +1e-15*inner(u,v)*dx
-        a7 = self.elasticity(u,v)*dx(8) +1e-15*inner(u,v)*dx
-        a8 = self.elasticity(u,v)*dx(9) +1e-15*inner(u,v)*dx
-        # Return
-        return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
-    
-    ## Set vectors resulting from the truth discretization of f.
-    def assemble_truth_f(self):
-        v = self.v
-        dx = self.dx
-        ds = self.ds
-        l = Constant((1e-11, 1e-11))
-        f = self.f
-        # Define
-        f0 = inner(f,v)*ds(2) + inner(l,v)*dx
-        f1 = inner(f,v)*ds(3) + inner(l,v)*dx 
-        f2 = inner(f,v)*ds(4) + inner(l,v)*dx
-        # Return
-        return (f0,f1,f2)
+        if term == "a":
+            u = self.u
+            a0 = self.elasticity(u,v)*dx(1) +1e-15*inner(u,v)*dx
+            a1 = self.elasticity(u,v)*dx(2) +1e-15*inner(u,v)*dx
+            a2 = self.elasticity(u,v)*dx(3) +1e-15*inner(u,v)*dx
+            a3 = self.elasticity(u,v)*dx(4) +1e-15*inner(u,v)*dx
+            a4 = self.elasticity(u,v)*dx(5) +1e-15*inner(u,v)*dx
+            a5 = self.elasticity(u,v)*dx(6) +1e-15*inner(u,v)*dx
+            a6 = self.elasticity(u,v)*dx(7) +1e-15*inner(u,v)*dx
+            a7 = self.elasticity(u,v)*dx(8) +1e-15*inner(u,v)*dx
+            a8 = self.elasticity(u,v)*dx(9) +1e-15*inner(u,v)*dx
+            return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
+        elif term == "f":
+            ds = self.ds
+            f = self.f
+            l = Constant((1e-11, 1e-11))
+            f0 = inner(f,v)*ds(2) + inner(l,v)*dx
+            f1 = inner(f,v)*ds(3) + inner(l,v)*dx 
+            f2 = inner(f,v)*ds(4) + inner(l,v)*dx
+            return (f0,f1,f2)
+        else:
+            raise RuntimeError("Invalid term for assemble_operator().")
     
     ## Auxiliary function to compute the elasticity bilinear form    
     def elasticity(self, u, v):

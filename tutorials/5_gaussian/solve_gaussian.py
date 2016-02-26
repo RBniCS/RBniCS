@@ -95,33 +95,35 @@ class Gaussian(EllipticCoerciveRBBase):
     def get_alpha_lb(self):
         return 1.
     
-    ## Set theta multiplicative terms of the affine expansion of a.
-    def compute_theta_a(self):
-        return (1., )
-    
-    ## Set theta multiplicative terms of the affine expansion of f.
-    def compute_theta_f(self):
-        self.EIM_obj.setmu(self.mu)
-        return self.EIM_obj.compute_interpolated_theta(self.EIM_N)
-    
-    ## Set matrices resulting from the truth discretization of a.
-    def assemble_truth_a(self):
-        return (self.S,)
-    
-    ## Set vectors resulting from the truth discretization of f.
-    def assemble_truth_f(self):
-        v = self.v
-        dx = self.dx
-        # Call EIM
-        self.EIM_obj.setmu(self.mu)
-        interpolated_gaussian = self.EIM_obj.assemble_mu_independent_interpolated_function()
-        # Assemble
-        all_f = ()
-        for q in range(len(interpolated_gaussian)):
-            all_f += (interpolated_gaussian[q]*v*dx,)
-        # Return
-        return all_f
-        
+    ## Return theta multiplicative terms of the affine expansion of the problem.
+    def compute_theta(self, term):
+        if term == "a":
+            return (1., )
+        elif term == "f":
+            self.EIM_obj.setmu(self.mu)
+            return self.EIM_obj.compute_interpolated_theta(self.EIM_N)
+        else:
+            raise RuntimeError("Invalid term for compute_theta().")
+                
+    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    def assemble_operator(self, term):
+        if term == "a":
+            return (self.S,)
+        elif term == "f":
+            v = self.v
+            dx = self.dx
+            # Call EIM
+            self.EIM_obj.setmu(self.mu)
+            interpolated_gaussian = self.EIM_obj.assemble_mu_independent_interpolated_function()
+            # Assemble
+            all_f = ()
+            for q in range(len(interpolated_gaussian)):
+                all_f += (interpolated_gaussian[q]*v*dx,)
+            # Return
+            return all_f
+        else:
+            raise RuntimeError("Invalid term for assemble_operator().")
+            
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
     

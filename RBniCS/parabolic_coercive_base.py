@@ -158,8 +158,8 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     def _online_solve(self, N):
         dt = self.dt
         # Need to possibly re-evaluate theta, since they may be time dependent
-        self.theta_a = self.compute_theta_a()
-        self.theta_f = self.compute_theta_f()
+        self.theta_a = self.compute_theta("a")
+        self.theta_f = self.compute_theta("f")
         assembled_reduced_M = sum(product(self.theta_m, self.reduced_M[:N, :N]))
         assembled_reduced_A = sum(product(self.theta_a, self.reduced_A[:N, :N]))
         assembled_reduced_F = sum(product(self.theta_f, self.reduced_F[:N]))
@@ -248,8 +248,8 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             sys.stdout.write('\rT = ' + str(self.t)+ '     ')
             sys.stdout.flush()
             # Need to possibly re-evaluate theta, since they may be time dependent
-            self.theta_a = self.compute_theta_a()
-            self.theta_f = self.compute_theta_f()
+            self.theta_a = self.compute_theta("a")
+            self.theta_f = self.compute_theta("f")
             assembled_truth_M = sum(product(self.theta_m, self.truth_M))
             assembled_truth_A = sum(product(self.theta_a, self.truth_A))
             assembled_truth_F = sum(product(self.theta_f, self.truth_F))
@@ -295,7 +295,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         for k in range(len(self.all_times)):
             current_error.vector()[:] = self.all_snapshot[:, k].vector()[:] - self.all_reduced[:, k].vector()[:] # error as a function
             self.t = self.all_times[k] # needed by the next line, since theta_a ...
-            self.theta_a = self.compute_theta_a() # ... may depend on time
+            self.theta_a = self.compute_theta("a") # ... may depend on time
             assembled_truth_A = sum(product(self.theta_a, self.truth_A))
             error_norm_squared += 1./self.dt * self.compute_scalar_product(current_error, assembled_truth_A, current_error) # norm of the error
         return np.sqrt(error_norm_squared)

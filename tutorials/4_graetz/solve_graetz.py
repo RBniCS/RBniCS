@@ -119,67 +119,54 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
     def get_alpha_lb(self):
         return self.SCM_obj.get_alpha_LB(self.mu)
     
-    ## Set theta multiplicative terms of the affine expansion of a.
-    def compute_theta_a(self):
+    ## Return theta multiplicative terms of the affine expansion of the problem.
+    def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
-        theta_a0 = mu2
-        theta_a1 = mu2/mu1
-        theta_a2 = mu1*mu2
-        theta_a3 = 1.0
-        return (theta_a0, theta_a1, theta_a2, theta_a3)
-    
-    ## Set theta multiplicative terms of the affine expansion of f.
-    def compute_theta_f(self):
-        mu1 = self.mu[0]
-        mu2 = self.mu[1]
-        theta_f0 = - mu2
-        theta_f1 = - mu2/mu1
-        theta_f2 = - mu1*mu2
-        theta_f3 = - 1.0
-        return (theta_f0, theta_f1, theta_f2, theta_f3)
-        
-    ## Set theta multiplicative terms of the affine expansion of s.
-    def compute_theta_s(self):
-        return (1.0,)
-    
-    ## Set matrices resulting from the truth discretization of a.
-    def assemble_truth_a(self):
-        u = self.u
+        if term == "a":
+            theta_a0 = mu2
+            theta_a1 = mu2/mu1
+            theta_a2 = mu1*mu2
+            theta_a3 = 1.0
+            return (theta_a0, theta_a1, theta_a2, theta_a3)
+        elif term == "f":
+            theta_f0 = - mu2
+            theta_f1 = - mu2/mu1
+            theta_f2 = - mu1*mu2
+            theta_f3 = - 1.0
+            return (theta_f0, theta_f1, theta_f2, theta_f3)
+        elif term == "s":
+            return (1.0,)
+        else:
+            raise RuntimeError("Invalid term for compute_theta().")
+                    
+    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    def assemble_operator(self, term):
         v = self.v
         dx = self.dx
-        vel = self.vel
-        # Define
-        a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*u*v*dx
-        a1 = u.dx(0)*v.dx(0)*dx(2) + 1e-15*u*v*dx
-        a2 = u.dx(1)*v.dx(1)*dx(2) + 1e-15*u*v*dx
-        a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2) + 1e-15*u*v*dx
-        # Return
-        return (a0, a1, a2, a3)
-    
-    ## Set vectors resulting from the truth discretization of f.
-    def assemble_truth_f(self):
-        v = self.v
-        dx = self.dx
-        vel = self.vel
-        lifting = self.lifting
-        # Define
-        f0 = inner(grad(lifting),grad(v))*dx(1) + 1e-15*lifting*v*dx
-        f1 = lifting.dx(0)*v.dx(0)*dx(2) + 1e-15*lifting*v*dx
-        f2 = lifting.dx(1)*v.dx(1)*dx(2) + 1e-15*lifting*v*dx
-        f3 = vel*lifting.dx(0)*v*dx(1) + vel*lifting.dx(0)*v*dx(2) + 1e-15*lifting*v*dx
-        # Return
-        return (f0, f1, f2, f3)
-        
-    ## Set vectors resulting from the truth discretization of s.
-    def assemble_truth_s(self):
-        v = self.v
-#        ds = self.ds
-#        s0 = v*ds(3)
-        dx = self.dx
-        s0 = v*dx(2)
-        # Return
-        return (s0,)
+        if term == "a":
+            u = self.u
+            vel = self.vel
+            a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*u*v*dx
+            a1 = u.dx(0)*v.dx(0)*dx(2) + 1e-15*u*v*dx
+            a2 = u.dx(1)*v.dx(1)*dx(2) + 1e-15*u*v*dx
+            a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2) + 1e-15*u*v*dx
+            return (a0, a1, a2, a3)
+        elif term == "f":
+            lifting = self.lifting
+            vel = self.vel
+            f0 = inner(grad(lifting),grad(v))*dx(1) + 1e-15*lifting*v*dx
+            f1 = lifting.dx(0)*v.dx(0)*dx(2) + 1e-15*lifting*v*dx
+            f2 = lifting.dx(1)*v.dx(1)*dx(2) + 1e-15*lifting*v*dx
+            f3 = vel*lifting.dx(0)*v*dx(1) + vel*lifting.dx(0)*v*dx(2) + 1e-15*lifting*v*dx
+            return (f0, f1, f2, f3)
+        elif term == "s":
+#            ds = self.ds
+#            s0 = v*ds(3)
+            s0 = v*dx(2)
+            return (s0,)
+        else:
+            raise RuntimeError("Invalid term for assemble_operator().")
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

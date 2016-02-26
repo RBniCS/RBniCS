@@ -165,7 +165,7 @@ class SCM(ParametrizedProblem):
             # Overwrite parameter values
             omega = self.xi_train[ self.C_J[ closest_C_J_indices[j] ] ]
             self.parametrized_problem.setmu(omega)
-            current_theta_a = self.parametrized_problem.compute_theta_a()
+            current_theta_a = self.parametrized_problem.compute_theta("a")
             
             # Assemble the LHS of the constraint
             for qa in range(Qa):
@@ -184,7 +184,7 @@ class SCM(ParametrizedProblem):
         for j in range(M_p):
             nu = self.xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
             self.parametrized_problem.setmu(nu)
-            current_theta_a = self.parametrized_problem.compute_theta_a()
+            current_theta_a = self.parametrized_problem.compute_theta("a")
             # Assemble first the LHS
             for qa in range(Qa):
                 matrix_row_index[glpk_container_size + 1] = int(M_e + j + 1)
@@ -200,7 +200,7 @@ class SCM(ParametrizedProblem):
         
         # 4. Add cost function coefficients
         self.parametrized_problem.setmu(mu)
-        current_theta_a = self.parametrized_problem.compute_theta_a()
+        current_theta_a = self.parametrized_problem.compute_theta("a")
         for qa in range(Qa):
             glpk.glp_set_obj_coef(lp, qa + 1, current_theta_a[qa])
         
@@ -242,7 +242,7 @@ class SCM(ParametrizedProblem):
         
         alpha_UB = sys.float_info.max
         self.parametrized_problem.setmu(mu)
-        current_theta_a = self.parametrized_problem.compute_theta_a()
+        current_theta_a = self.parametrized_problem.compute_theta("a")
         
         for j in range(N):
             UB_vector = UB_vectors_J[j]
@@ -439,7 +439,7 @@ class SCM(ParametrizedProblem):
         self.assemble_condensed_truth_matrices()
         
         self.parametrized_problem.setmu(self.mu)
-        current_theta_a = self.parametrized_problem.compute_theta_a()
+        current_theta_a = self.parametrized_problem.compute_theta("a")
         A = sum(product(current_theta_a, self.truth_A__condensed_for_minimum_eigenvalue))
         A = as_backend_type(A)
         S = self.S__condensed
