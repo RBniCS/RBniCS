@@ -101,6 +101,9 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         # 3c. Matrices/vectors resulting from the truth discretization
         self.operator_a = AffineExpansionOfflineStorage()
         self.operator_f = AffineExpansionOfflineStorage()
+        # Solution
+        self._solution = Function(self.V)
+        self._output = 0
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -126,6 +129,13 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         solution = Function(self.V)
         solve(assembled_operator_a, solution.vector(), assembled_operator_f)
         return solution
+        
+    ## Perform a truth evaluation of the (compliant) output
+    def output(self):
+        self.theta_f = self.compute_theta("f")
+        assembled_operator_f = sum(product(self.theta_f, self.operator_f))
+        self._output = transpose(assembled_operator_f)*self._solution.vector()
+        return self._output
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -175,6 +185,13 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #       raise RuntimeError("Invalid term for assemble_operator().")
     def assemble_operator(self, term):
         raise RuntimeError("The function assemble_operator() is problem-specific and needs to be overridden.")
+        
+    ## Return a lower bound for the coercivity constant
+    # example of implementation:
+    #    return 1.0
+    # Note that this method is not needed in POD-Galerkin reduced order models.
+    def get_alpha_lb(self):
+        raise RuntimeError("The function get_alpha_lb(self) is problem-specific and needs to be overridden.")
     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

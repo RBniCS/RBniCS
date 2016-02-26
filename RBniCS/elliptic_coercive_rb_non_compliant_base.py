@@ -341,7 +341,6 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
             self.setmu(self.xi_test[run])
             
             # Perform the truth solve only once
-            # TODO update
             self.truth_solve()
             self.truth_output()
             

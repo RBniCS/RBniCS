@@ -16,19 +16,18 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file parametrized_problem.py
-#  @brief Implementation of a class containing an offline/online decomposition of parametrized problems
+#  @brief Implementation of a class containing basic definitions of parametrized problems
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import File, plot
-import os # for path and makedir
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARAMETRIZED PROBLEM BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParametrizedProblem
 #
-# Base class containing an offline/online decomposition of parametrized problems
+# Implementation of a class containing basic definitions of parametrized problems
 class ParametrizedProblem(object):
     """This is the base class, which is inherited by all other
     classes. It defines the base interface with variables and
@@ -61,26 +60,10 @@ class ParametrizedProblem(object):
     
     ## Default initialization of members
     def __init__(self):
-        # $$ ONLINE DATA STRUCTURES $$ #
-        # 1. Online reduced space dimension
-        self.N = 0
         # 2. Current parameters value
         self.mu = tuple()
-        
-        # $$ OFFLINE DATA STRUCTURES $$ #
-        # 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
-        self.Nmax = 10
-        self.tol = 1.e-15
         # 2. Parameter ranges and training set
         self.mu_range = list()
-        self.xi_train = ParameterSpaceSubset()
-        # 9. I/O
-        self.xi_train_folder = "xi_train/"
-        self.xi_test_folder = "xi_test/"
-        
-        # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
-        # 2. Test set
-        self.xi_test = ParameterSpaceSubset()
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -89,53 +72,9 @@ class ParametrizedProblem(object):
     ## @defgroup Setters Set properties of the reduced order approximation
     #  @{
     
-    ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-    def setNmax(self, nmax):
-        self.Nmax = nmax
-        
-    ## OFFLINE: set tolerance of the offline phase (stopping criterion)
-    def settol(self, tol):
-        self.tol = tol
-    
     ## OFFLINE: set the range of the parameters
     def setmu_range(self, mu_range):
         self.mu_range = mu_range
-    
-    ## OFFLINE: set the elements in the training set \xi_train.
-    # See the documentation of generate_train_or_test_set for more details
-    def setxi_train(self, ntrain, enable_import=False, sampling="random"):
-        # Create I/O folder
-        if not os.path.exists(self.xi_train_folder):
-            os.makedirs(self.xi_train_folder)
-        # Test if can import
-        import_successful = False
-        if enable_import:
-            import_successful = self.xi_train.load(self.xi_train_folder, "xi_train") \
-                and  (len(self.xi_train) == ntrain)
-        if not import_successful:
-            self.xi_train.generate(self.mu_range, ntrain, sampling)
-            # Export 
-            self.xi_train.save(self.xi_train_folder, "xi_train")
-        # Prepare for the offline phase
-        self._init_offline()
-        
-    ## ERROR ANALYSIS: set the elements in the test set \xi_test.
-    # See the documentation of generate_train_or_test_set for more details
-    def setxi_test(self, ntest, enable_import=False, sampling="random"):
-        # Create I/O folder
-        if not os.path.exists(self.xi_test_folder):
-            os.makedirs(self.xi_test_folder)
-        # Test if can import
-        import_successful = False
-        if enable_import:
-            import_successful = self.xi_test.load(self.xi_test_folder, "xi_test") \
-                and  (len(self.xi_test) == ntest)
-        if not import_successful:
-            self.xi_test.generate(self.mu_range, ntest, sampling)
-            # Export 
-            self.xi_test.save(self.xi_test_folder, "xi_test")
-        # Prepare for the error analysis
-        self._init_error_analysis()
     
     ## OFFLINE/ONLINE: set the current value of the parameter
     def setmu(self, mu):
@@ -144,37 +83,6 @@ class ParametrizedProblem(object):
     
     #  @}
     ########################### end - SETTERS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
-    
-    ## Perform the offline phase of the reduced order model
-    def offline(self):
-        raise RuntimeError("Please implement the offline phase of the reduced order model.")
-        
-    ## Initialize data structures required for the offline phase
-    def _init_offline(self):
-        pass
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-        
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
-    
-    # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
-    def error_analysis(self, N=None):
-        raise RuntimeError("Please implement the error analysis of the reduced order model.")
-        
-    ## Initialize data structures required for the error analysis phase
-    def _init_error_analysis(self):
-        pass
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
     
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods

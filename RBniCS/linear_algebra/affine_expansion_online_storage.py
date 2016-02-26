@@ -39,7 +39,7 @@ class AffineExpansionOnlineStorage(object):
         self._content = None
         if args:
             self._content = AffineExpansionOnlineStorageContent_Base(args, dtype=object)
-            
+    
     def load(self, directory, filename):
         if self._content: # avoid loading multiple times
             return False
