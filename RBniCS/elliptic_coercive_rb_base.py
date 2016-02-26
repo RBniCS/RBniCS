@@ -106,7 +106,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         self.snapshots_folder = "snapshots/"
         self.basis_folder = "basis/"
         self.error_estimation_folder = "error_estimation/"
-        self.reduced_matrices_folder = "reduced_matrices/"
+        self.reduced_operators_folder = "reduced_operators/"
         self.post_processing_folder = "post_processing/"
         
     #  @}
@@ -120,8 +120,8 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     def online_output(self):
         N = self.uN.size
         self.theta_f = self.compute_theta("f")
-        assembled_reduced_F = sum(product(self.theta_f, self.reduced_F[:N]))
-        self.sN = transpose(assembled_reduced_F)*self.uN
+        assembled_operator_f = sum(product(self.theta_f, self.operator_f[:N]))
+        self.sN = transpose(assembled_operator_f)*self.uN
         
     ## Return an error bound for the current solution
     def get_delta(self):
@@ -165,7 +165,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     
     ## Initialize data structures required for the offline phase
     def _init_offline(self):
-        super(EllipticCoerciveRBBase, self)._init_error_analysis()
+        super(EllipticCoerciveRBBase, self)._init_offline()
         # Also initialize data structures related to error estimation
         self.riesz_A = AffineExpansionOnlineStorage(self.Qa)
         for qa in range(self.Qa):
@@ -179,17 +179,18 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         
     ## Perform the offline phase of the reduced order model
     def offline(self):
+        
         print("==============================================================")
         print("=             Offline phase begins                           =")
         print("==============================================================")
         print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.error_estimation_folder, self.reduced_matrices_folder, self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.error_estimation_folder, self.reduced_operators_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
-        
+                
         for run in range(self.Nmax):
             print("############################## run = ", run, " ######################################")
             
@@ -200,12 +201,11 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             print("update basis matrix")
             self.update_basis_matrix()
             
-            print("build reduced matrices")
-            self.build_reduced_matrices()
-            self.build_reduced_vectors()
+            print("build reduced operators")
+            self.build_reduced_operators()
             
             print("reduced order solve")
-            self._online_solve(self.N)
+            self._solve(self.N)
             
             print("build matrices for error estimation (it may take a while)")
             self.build_error_estimation_matrices()
@@ -237,7 +237,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         munew = None
         for mu in self.xi_train:
             self.setmu(mu)
-            self._online_solve(self.N)
+            self._solve(self.N)
             delta = self.get_delta()
             if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
@@ -309,12 +309,11 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu. Overridden to compute also error on the output
-    def compute_error(self, N=None, skip_truth_solve=False):
-        error_u = EllipticCoerciveBase.compute_error(self, N, skip_truth_solve)
-        if not skip_truth_solve:
-            self.truth_output()
-        self.online_output()
-        error_s = abs(self.s - self.sN)
+    def compute_error(self, truth_solution_and_output, N=None):
+        error_u = EllipticCoerciveBase.compute_error(self, truth_solution_and_output["solution"], N)
+        truth_output = truth_solution_and_output["output"]
+        online_output = self.online_output()
+        error_s = abs(truth_output - online_output)
         return (error_u, error_s)
         
         
@@ -342,11 +341,15 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             self.setmu(self.xi_test[run])
             
             # Perform the truth solve only once
-            self.truth_solve()
-            self.truth_output()
+            truth_solution = self.truth_solve()
+            truth_output = self.truth_output()
+            truth_solution_and_output = {
+                "solution": truth_solution,
+                "output": truth_output,
+            }
             
             for n in range(N): # n = 0, 1, ... N - 1
-                (current_error_u, current_error_s) = self.compute_error(n + 1, True)
+                (current_error_u, current_error_s) = self.compute_error(n + 1, truth_solution_and_output, True)
                 
                 error_u[n, run] = current_error_u
                 delta_u[n, run] = self.get_delta()
@@ -396,9 +399,9 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## @defgroup IO Input/output methods
     #  @{
     
-    def load_reduced_matrices(self):
+    def load_reduced_operators(self):
         # Read in data structures as in parent
-        EllipticCoerciveBase.load_reduced_matrices(self)
+        EllipticCoerciveBase.load_reduced_operators(self)
         # Moreover, read also data structures related to error estimation
         self.CC.load(self.error_estimation_folder, "CC")
         self.CL.load(self.error_estimation_folder, "CL")

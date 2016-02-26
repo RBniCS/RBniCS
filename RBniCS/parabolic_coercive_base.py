@@ -90,7 +90,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         self.Qm = 1
         # 3b. Theta multiplicative factors of the affine expansion
         self.theta_m = [1.]
-        # 3c. Reduced order matrices/vectors
+        # 3c. Reduced order operators
         self.reduced_M = []
         # 4. Online solution
         self.all_uN = np.array([]) # array (size of T/dt + 1) of vectors of dimension N storing the reduced order solution
@@ -121,7 +121,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def online_solve(self, N=None, with_plot=False):
-        self.load_reduced_matrices()
+        self.load_reduced_data_structures()
         if N is None:
             N = self.N
         self.all_uN = (self.reduced_F[0]*0.0).reshape(-1,1)
@@ -187,7 +187,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
         print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.error_estimation_folder, self.reduced_matrices_folder, self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.error_estimation_folder, self.reduced_operators_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -212,9 +212,8 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             print("update basis matrix")
             self.update_basis_matrix()
             
-            print("build reduced matrices")
-            self.build_reduced_matrices()
-            self.build_reduced_vectors()
+            print("build reduced operators")
+            self.build_reduced_operators()
             
             print("reduced order solve")
             ParabolicCoerciveBase.online_solve(self,self.N,False)
@@ -259,11 +258,12 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             self.all_snapshot = np.hstack((self.all_snapshot, self.snapshot.vector())) # add new solutions as column vectors
         print("")
         
-    ## Assemble the reduced order affine expansion (matrix)
-    def build_reduced_matrices(self):
+    ## Assemble the reduced order affine expansion
+    def build_reduced_operators(self):
         # Assemble the reduced matrix A, as in parent
-        EllipticCoerciveBase.build_reduced_matrices(self)
+        EllipticCoerciveBase.build_reduced_operators(self)
         # Moreover, assemble also the reduced matrix M
+        # TODO
         reduced_M = ()
         i = 0
         for M in self.truth_M:
@@ -275,7 +275,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
                 reduced_M += (np.matrix(np.dot(self.Z.T,np.matrix(np.dot(M.mat().getValues(range(dim),range(dim)),self.Z)))),)
                 i += 1
         self.reduced_M = reduced_M
-        np.save(self.reduced_matrices_folder + "reduced_M", self.reduced_M)
+        np.save(self.reduced_operators_folder + "reduced_M", self.reduced_M)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -287,6 +287,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
     def compute_error(self, N=None, skip_truth_solve=False):
+    # TODO update
         if not skip_truth_solve:
             self.truth_solve()
         self.online_solve(N, False)
@@ -308,12 +309,12 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     #  @{
     
     ## Load reduced order data structures
-    def load_reduced_matrices(self):
+    def load_reduced_data_structures(self):
         # Read in data structures as in parent
-        EllipticCoerciveBase.load_reduced_matrices(self)
+        EllipticCoerciveBase.load_reduced_data_structures(self)
         # Moreover, read in also the reduced matrix M
         if not self.reduced_M: # avoid loading multiple times
-            self.reduced_M = tuple(np.load(self.reduced_matrices_folder + "reduced_M.npy"))
+            self.reduced_M = tuple(np.load(self.reduced_operators_folder + "reduced_M.npy"))
         
     ## Export snapshot in VTK format
     def export_solution(self, solution, filename):

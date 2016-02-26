@@ -377,11 +377,11 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     #  @{
     
     ## Load reduced order data structures
-    def load_reduced_matrices(self):
+    def load_reduced_data_structures(self):
         # Read in data structures as in parents
         # (need to call them explicitly because this method was overridden in both parents)
-        ParabolicCoerciveBase.load_reduced_matrices(self)
-        EllipticCoerciveBase.load_reduced_matrices(self)
+        ParabolicCoerciveBase.load_reduced_data_structures(self)
+        EllipticCoerciveBase.load_reduced_data_structures(self)
     
     #  @}
     ########################### end - I/O - end ###########################  

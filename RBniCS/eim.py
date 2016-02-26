@@ -79,7 +79,7 @@ class EIM(ParametrizedProblem):
         self.xi_test_folder = "xi_test__eim/"
         self.snapshots_folder = "snapshots__eim/"
         self.basis_folder = "basis__eim/"
-        self.reduced_matrices_folder = "reduced_matrices__eim/"
+        self.reduced_operators_folder = "reduced_matrices__eim/"
         self.post_processing_folder = "post_processing__eim/"
         #
         self.mu_index = 0
@@ -105,7 +105,7 @@ class EIM(ParametrizedProblem):
     
     # Perform an online solve.
     def online_solve(self, N=None):
-        self.load_reduced_matrices()
+        self.load_reduced_data_structures()
         if N is None:
             N = self.N
         
@@ -157,7 +157,7 @@ class EIM(ParametrizedProblem):
         print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.reduced_matrices_folder, self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.reduced_operators_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -192,9 +192,9 @@ class EIM(ParametrizedProblem):
         self.setmu(self.xi_train[0])
         self.mu_index = 0
         # Create empty files
-        np.save(self.reduced_matrices_folder + "interpolation_points", self.interpolation_points)
-        np.save(self.reduced_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
-        np.save(self.reduced_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
+        np.save(self.reduced_operators_folder + "interpolation_points", self.interpolation_points)
+        np.save(self.reduced_operators_folder + "interpolation_points_dof", self.interpolation_points_dof)
+        np.save(self.reduced_operators_folder + "interpolation_matrix", self.interpolation_matrix)
         np.save(self.basis_folder + "basis", self.Z)
         # Resize the interpolation matrix
         self.interpolation_matrix = np.matrix(np.zeros((self.Nmax, self.Nmax)))
@@ -216,8 +216,8 @@ class EIM(ParametrizedProblem):
             else:
                 self.interpolation_points = np.vstack((self.interpolation_points, [maximum_point]))
                 self.interpolation_points_dof = np.vstack((self.interpolation_points_dof, [maximum_point_dof]))
-            np.save(self.reduced_matrices_folder + "interpolation_points", self.interpolation_points)
-            np.save(self.reduced_matrices_folder + "interpolation_points_dof", self.interpolation_points_dof)
+            np.save(self.reduced_operators_folder + "interpolation_points", self.interpolation_points)
+            np.save(self.reduced_operators_folder + "interpolation_points_dof", self.interpolation_points_dof)
             
             print("update basis matrix")
             self.update_basis_matrix(maximum_error)
@@ -316,7 +316,7 @@ class EIM(ParametrizedProblem):
     def update_interpolation_matrix(self):
         for j in range(self.N):
             self.interpolation_matrix[self.N - 1, j] = self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[self.N - 1])
-        np.save(self.reduced_matrices_folder + "interpolation_matrix", self.interpolation_matrix)
+        np.save(self.reduced_operators_folder + "interpolation_matrix", self.interpolation_matrix)
             
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
@@ -387,7 +387,7 @@ class EIM(ParametrizedProblem):
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the test set
     def error_analysis(self, N=None):
-        self.load_reduced_matrices()
+        self.load_reduced_data_structures()
         if N is None:
             N = self.N
             
@@ -435,13 +435,13 @@ class EIM(ParametrizedProblem):
     def export_solution(self, solution, filename):
         self._export_vtk(solution, filename, with_mesh_motion=True, with_preprocessing=True)
         
-    def load_reduced_matrices(self):
+    def load_reduced_data_structures(self):
         if len(np.asarray(self.interpolation_points)) == 0: # avoid loading multiple times
-            self.interpolation_points = np.load(self.reduced_matrices_folder + "interpolation_points.npy")
+            self.interpolation_points = np.load(self.reduced_operators_folder + "interpolation_points.npy")
         if len(np.asarray(self.interpolation_points_dof)) == 0: # avoid loading multiple times
-            self.interpolation_points_dof = np.load(self.reduced_matrices_folder + "interpolation_points_dof.npy")
+            self.interpolation_points_dof = np.load(self.reduced_operators_folder + "interpolation_points_dof.npy")
         if len(np.asarray(self.interpolation_matrix)) == 0: # avoid loading multiple times
-            self.interpolation_matrix = np.load(self.reduced_matrices_folder + "interpolation_matrix.npy")
+            self.interpolation_matrix = np.load(self.reduced_operators_folder + "interpolation_matrix.npy")
         if len(np.asarray(self.Z)) == 0: # avoid loading multiple times
             self.Z = np.load(self.basis_folder + "basis.npy")
             if len(np.asarray(self.Z)) > 0: # it will still be empty the first time the greedy is executed

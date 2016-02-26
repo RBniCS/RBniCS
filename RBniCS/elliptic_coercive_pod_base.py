@@ -71,7 +71,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         self.xi_test_folder = "xi_test__pod/"
         self.snapshots_folder = "snapshots__pod/"
         self.basis_folder = "basis__pod/"
-        self.reduced_matrices_folder = "reduced_matrices__pod/"
+        self.reduced_operators_folder = "reduced_operators__pod/"
         self.post_processing_folder = "post_processing__pod/"
         
     #  @}
@@ -98,7 +98,7 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         print("")
         if os.path.exists(self.post_processing_folder):
             shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.reduced_matrices_folder, self.post_processing_folder)
+        folders = (self.snapshots_folder, self.basis_folder, self.reduced_operators_folder, self.post_processing_folder)
         for f in folders:
             if not os.path.exists(f):
                 os.makedirs(f)
@@ -126,9 +126,8 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
         self.POD.save_retained_energy_file(self.post_processing_folder, "retained_energy")
         
         print("")
-        print("build reduced matrices")
-        self.build_reduced_matrices()
-        self.build_reduced_vectors()
+        print("build reduced operators")
+        self.build_reduced_operators()
         
         print("")
         print("==============================================================")
@@ -166,10 +165,10 @@ class EllipticCoercivePODBase(EllipticCoerciveBase):
             self.setmu(self.xi_test[run])
             
             # Perform the truth solve only once
-            self.truth_solve()
+            truth_solution = self.truth_solve()
             
             for n in range(N): # n = 0, 1, ... N - 1
-                error[n, run] = self.compute_error(n + 1, True)
+                error[n, run] = self.compute_error(n + 1, truth_solution, True)
         
         # Print some statistics
         print("")

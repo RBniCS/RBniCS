@@ -60,10 +60,10 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.Qs = 0
         # 3b. Theta multiplicative factors of the affine expansion
         self.theta_s = ()
-        # 3c. Reduced order matrices/vectors
-        self.reduced_S = ()
-        self.reduced_A_dp = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
-        self.reduced_F_d = () # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
+        # 3c. Reduced order operators
+        self.operator_s = ()
+        self.operator_a_dp = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
+        self.operator_f_d = () # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 3c. Matrices/vectors resulting from the truth discretization
@@ -116,12 +116,12 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.sN = 0.
         # Assemble output
         self.theta_s = self.compute_theta("s")
-        assembled_reduced_S = sum(product(self.theta_s, self.reduced_S[:N]))
-        self.sN += transpose(assembled_reduced_S)*self.uN
+        assembled_operator_s = sum(product(self.theta_s, self.operator_s[:N]))
+        self.sN += transpose(assembled_operator_s)*self.uN
         # Assemble correction
-        assembled_reduced_A_dp = sum(product(self.theta_a, self.reduced_A_dp[:N, :N]))
-        assembled_reduced_F_d = sum(product(self.theta_f, self.reduced_F_d[:N]))
-        self.sN -= transpose(assembled_reduced_F_d)*self.dual_problem.uN - transpose(self.dual_problem.uN)*assembled_reduced_A_dp*self.uN
+        assembled_operator_a_dp = sum(product(self.theta_a, self.operator_a_dp[:N, :N]))
+        assembled_operator_f_d = sum(product(self.theta_f, self.operator_f_d[:N]))
+        self.sN -= transpose(assembled_operator_f_d)*self.dual_problem.uN - transpose(self.dual_problem.uN)*assembled_operator_a_dp*self.uN
     
     ## Return an error bound for the current solution. Overridden to be computed in the V-norm
     #  since the energy norm is not defined generally in the non compliant case
@@ -164,36 +164,30 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         assembled_truth_S = sum(product(self.theta_s, self.truth_S))
         self.s = transpose(assembled_truth_S)*self.snapshot.vector()
     
-    ## Assemble the reduced order affine expansion (matrix). Overridden to assemble also terms related to output correction
-    def build_reduced_matrices(self):
-        EllipticCoerciveRBBase.build_reduced_matrices(self)
+    ## Assemble the reduced order affine expansion. Overridden to assemble also terms related to output and output correction
+    def build_reduced_operators(self):
+        EllipticCoerciveRBBase.build_reduced_operators(self)
         
         # Output correction terms
-        reduced_A_dp = AffineExpansionOnlineStorage(self.Qa)
+        operator_a_dp = AffineExpansionOnlineStorage(self.Qa)
         for qa in range(self.Qa):
-            reduced_A_dp[qa] = transpose(self.dual_problem.Z)*self.truth_A[qa]*self.Z
-        self.reduced_A_dp = reduced_A_dp
-        np.save(self.reduced_matrices_folder + "reduced_A_dp", self.reduced_A_dp)
-    
-    ## Assemble the reduced order affine expansion (rhs). Overridden to assemble also terms related to output  and output correction
-    def build_reduced_vectors(self):
-        EllipticCoerciveRBBase.build_reduced_vectors(self)
+            operator_a_dp[qa] = transpose(self.dual_problem.Z)*self.truth_A[qa]*self.Z
+        self.operator_a_dp = operator_a_dp
+        np.save(self.reduced_operators_folder + "operator_a_dp", self.operator_a_dp)
+        
+        operator_f_d = AffineExpansionOnlineStorage(self.Qf)
+        for qf in range(self.Qf):
+            operator_f_d[qf] = transpose(self.dual_problem.Z)*self.truth_F[qf]
+        self.operator_f_d = operator_f_d
+        np.save(self.reduced_operators_folder + "operator_f_d", self.operator_f_d)
         
         # Output terms
-        reduced_S = AffineExpansionOnlineStorage(self.Qs)
+        operator_s = AffineExpansionOnlineStorage(self.Qs)
         for qs in range(self.Qs):
-            reduced_S[qs] = transpose(self.Z)*self.truth_S[qs]
-        self.reduced_S = reduced_S
-        np.save(self.reduced_matrices_folder + "reduced_S", self.reduced_S)
-        
-        # Output correction terms
-        reduced_F_d = AffineExpansionOnlineStorage(self.Qf)
-        for qf in range(self.Qf):
-            reduced_F_d[qf] = transpose(self.dual_problem.Z)*self.truth_F[qf]
-        self.reduced_F_d = reduced_F_d
-        np.save(self.reduced_matrices_folder + "reduced_F_d", self.reduced_F_d)
-        
-        
+            operator_s[qs] = transpose(self.Z)*self.truth_S[qs]
+        self.operator_s = operator_s
+        np.save(self.reduced_operators_folder + "operator_s", self.operator_s)
+                
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
@@ -204,6 +198,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu. Overridden to compute the error in the V-norm
     def compute_error(self, N=None, skip_truth_solve=False):
+    # TODO update
         if not skip_truth_solve:
             self.truth_solve()
             self.truth_output()
@@ -234,18 +229,18 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     ## @defgroup IO Input/output methods
     #  @{
     
-    def load_reduced_matrices(self):
+    def load_reduced_data_structures(self):
         # Read in data structures as in parent
-        EllipticCoerciveRBBase.load_reduced_matrices(self)
+        EllipticCoerciveRBBase.load_reduced_data_structures(self)
         # Moreover, read also data structures related to the dual problem
-        self.dual_problem.load_reduced_matrices()
+        self.dual_problem.load_reduced_data_structures()
         # ... and those related to output and output correction
-        if len(np.asarray(self.reduced_A_dp)) == 0: # avoid loading multiple times
-            self.reduced_A_dp = tuple(np.load(self.reduced_matrices_folder + "reduced_A_dp.npy"))
-        if len(np.asarray(self.reduced_S)) == 0: # avoid loading multiple times
-            self.reduced_S = tuple(np.load(self.reduced_matrices_folder + "reduced_S.npy"))
-        if len(np.asarray(self.reduced_F_d)) == 0: # avoid loading multiple times
-            self.reduced_F_d = tuple(np.load(self.reduced_matrices_folder + "reduced_F_d.npy"))
+        if len(np.asarray(self.operator_a_dp)) == 0: # avoid loading multiple times
+            self.operator_a_dp = tuple(np.load(self.reduced_operators_folder + "operator_a_dp.npy"))
+        if len(np.asarray(self.operator_s)) == 0: # avoid loading multiple times
+            self.operator_s = tuple(np.load(self.reduced_operators_folder + "operator_s.npy"))
+        if len(np.asarray(self.operator_f_d)) == 0: # avoid loading multiple times
+            self.operator_f_d = tuple(np.load(self.reduced_operators_folder + "operator_f_d.npy"))
     
     #  @}
     ########################### end - I/O - end ########################### 
@@ -275,7 +270,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         self.snapshots_folder = "snapshots__dual/"
         self.basis_folder = "basis__dual/"
         self.error_estimation_folder = "error_estimation__dual/"
-        self.reduced_matrices_folder = "reduced_matrices__dual/"
+        self.reduced_operators_folder = "reduced_matrices__dual/"
         self.post_processing_folder = "post_processing__dual/"
         
     #  @}
@@ -301,7 +296,8 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu. Overridden to compute the error in the V-norm
-    def compute_error(self, N=None, skip_truth_solve=False):
+    def compute_error(self, truth_solution_and_output, N=None):
+    # TODO update
         if not skip_truth_solve:
             self.truth_solve()
         self.online_solve(N, False)
@@ -319,7 +315,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         self.primal_problem.Qa = len(self.primal_problem.theta_a)
         # This is almost the same as in parent, without the output computation,
         # since it makes no sense here.
-        self.load_reduced_matrices()
+        self.load_reduced_data_structures()
         if N is None:
             N = self.N
             
@@ -345,6 +341,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
             self.setmu(self.xi_test[run])
             
             # Perform the truth solve only once
+            # TODO update
             self.truth_solve()
             self.truth_output()
             
