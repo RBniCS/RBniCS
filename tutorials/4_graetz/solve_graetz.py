@@ -26,14 +26,20 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
+@ShapeParametrization(
+    shape_parametrization_expression = [
+        ("x[0]", "x[1]"), # subdomain 1
+        ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
+    ]
+)
+class Graetz(EllipticCoerciveRBNonCompliantBase):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, mesh, subd, bound):
+    def __init__(self, V, subd, bound):
         # Store the BC object for the homogeneous solution (after lifting)
         bc_list = [
             DirichletBC(V, 0.0, bound, 1), # indeed homog. bcs
@@ -41,11 +47,6 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
             DirichletBC(V, 0.0, bound, 6), # indeed homog. bcs
             DirichletBC(V, 0.0, bound, 2), # non-homog. bcs with a lifting
             DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
-        ]
-        # Declare the shape parametrization map
-        shape_parametrization_expression = [
-            ("x[0]", "x[1]"), # subdomain 1
-            ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
         ]
         # Call the standard initialization
         super(Graetz, self).__init__(mesh, subd, V, bc_list, shape_parametrization_expression)
@@ -76,7 +77,7 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
         self.lifting = lifting
         self.export_basis(self.lifting, self.basis_folder + "lifting")
         # Store the velocity expression
-        self.vel = Expression("x[1]*(1-x[1])", degree=self.V.ufl_element().degree())
+        self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
         # Finally, initialize an SCM object to approximate alpha LB
         self.SCM_obj = SCM_Graetz(self)
         

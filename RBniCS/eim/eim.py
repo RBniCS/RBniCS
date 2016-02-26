@@ -369,7 +369,7 @@ class EIM(ParametrizedProblem):
         expression_s = "Expression(\"" + self.parametrized_function + "\""
         for i in range(len(mu)):
             expression_s += ", mu_" + str(i+1) + "=" + str(mu[i])
-        expression_s += ", degree=" + str(self.V.ufl_element().degree()) + ")"
+        expression_s += ", element=" + str(self.V.ufl_element()) + ")"
         expression = eval(expression_s)
         return expression
         
