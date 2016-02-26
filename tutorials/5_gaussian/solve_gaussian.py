@@ -68,9 +68,6 @@ class Gaussian(EllipticCoerciveRBBase):
     def setNmax(self, nmax):
         EllipticCoerciveRBBase.setNmax(self, nmax)
         self.EIM_obj.setNmax(2*nmax)
-    def settol(self, tol):
-        EllipticCoerciveRBBase.settol(self, tol)
-        self.EIM_obj.settol(tol)
     def setmu_range(self, mu_range):
         EllipticCoerciveRBBase.setmu_range(self, mu_range)
         self.EIM_obj.setmu_range(mu_range)

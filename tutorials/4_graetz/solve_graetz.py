@@ -92,9 +92,6 @@ class Graetz(ShapeParametrization(EllipticCoerciveRBNonCompliantBase)):
     def setNmax(self, nmax):
         EllipticCoerciveRBNonCompliantBase.setNmax(self, nmax)
         self.SCM_obj.setNmax(2*nmax)
-    def settol(self, tol):
-        EllipticCoerciveRBNonCompliantBase.settol(self, tol)
-        self.SCM_obj.settol(tol)
     def setmu_range(self, mu_range):
         EllipticCoerciveRBNonCompliantBase.setmu_range(self, mu_range)
         self.SCM_obj.setmu_range(mu_range)

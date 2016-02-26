@@ -81,9 +81,6 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     def setNmax(self, nmax):
         EllipticCoerciveRBBase.setNmax(self, nmax)
         self.dual_problem.setNmax(nmax)
-    def settol(self, tol):
-        EllipticCoerciveRBBase.settol(self, tol)
-        self.dual_problem.settol(tol)
     def setmu_range(self, mu_range):
         EllipticCoerciveRBBase.setmu_range(self, mu_range)
         self.dual_problem.setmu_range(mu_range)
