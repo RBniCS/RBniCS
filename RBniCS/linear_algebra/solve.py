@@ -31,12 +31,18 @@ from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Base as OnlineVector
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Base as OnlineMatrix
 
-# Similarly to FEniCS' solve(A, x, b) define a solve for online problems
-def solve(A, x, b):
+# Similarly to FEniCS' solve define a solve for online problems
+def solve(A, x, b, bcs):
     if isinstance(A, TruthMatrix) and isinstance(x, TruthVector) and isinstance(b, TruthVector):
+        for bc in bcs:
+            bc.apply(A, b)
         from dolfin import solve as dolfin_solve
         dolfin_solve(A, x, b)
     elif isinstance(A, OnlineMatrix) and isinstance(x, OnlineVector) and isinstance(b, OnlineVector):
+        for i in range(bcs):
+            b[i] = bcs[i]
+            A[i, :] = 0.
+            A[i, i] = 1.
         from numpy.linalg import solve as numpy_solve
         x = numpy_solve(A, b)
     else:
