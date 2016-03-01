@@ -26,7 +26,7 @@ from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Base as OnlineVector
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Base as OnlineMatrix
-from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
 
 ###########################     OFFLINE STAGE     ########################### 
 ## @defgroup OfflineStage Methods related to the offline stage
@@ -128,7 +128,7 @@ class FunctionsList_Transpose__times__TruthMatrix(object):
         onlineMatrix = OnlineMatrix(dim, dim)
         for i in range(dim):
             for j in range(dim):
-                onlineMatrix[i, j] = transpose(self.functionsList[i])*self.truthMatrix*functionsList2[j]
+                onlineMatrix[i, j] = Vector_Transpose(self.functionsList[i])*self.truthMatrix*functionsList2[j]
         return onlineMatrix
      
 #  @}
