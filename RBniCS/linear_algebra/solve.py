@@ -28,8 +28,8 @@
 
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector_Base as OnlineVector
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Base as OnlineMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type as OnlineVector
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type as OnlineMatrix
 
 # Similarly to FEniCS' solve define a solve for online problems
 def solve(A, x, b, bcs):

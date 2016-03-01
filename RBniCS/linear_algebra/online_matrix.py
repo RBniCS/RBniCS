@@ -28,11 +28,14 @@
 
 # Declare reduced matrix type
 from numpy import matrix as OnlineMatrix_Base
+class OnlineMatrix_Type(OnlineMatrix_Base): # make sure that online matrices and vectors correspond to two different types
+    pass
+    
 from numpy import zeros as OnlineMatrixContent_Base
 def OnlineMatrix(M=None, N=None):
     assert (M is None and N is None) or (M is not None and N is not None)
     if M is not None and N is not None:
-        return OnlineMatrix_Base(OnlineMatrixContent_Base((M, N)))
+        return OnlineMatrix_Type(OnlineMatrixContent_Base((M, N)))
     else:
         return None
 

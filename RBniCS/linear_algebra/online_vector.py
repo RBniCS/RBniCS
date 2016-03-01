@@ -28,10 +28,13 @@
 
 # Declare reduced vector type
 from numpy import matrix as OnlineVector_Base
+class OnlineVector_Type(OnlineVector_Base): # make sure that online matrices and vectors correspond to two different types
+    pass
+    
 from numpy import zeros as OnlineVectorContent_Base
 def OnlineVector(N=None):
     if N is not None:
-        return OnlineVector_Base(OnlineVectorContent_Base((N))).transpose() # as column vector
+        return OnlineVector_Type(OnlineVectorContent_Base((N))).transpose() # as column vector
     else:
         return None
 
