@@ -86,10 +86,6 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         # Call the parent initialization
         EllipticCoerciveBase.__init__(self, V, bc_list)
         
-        # $$ ONLINE DATA STRUCTURES $$ #
-        # 3. Reduced order problem
-        self.reduced_problem_class = EllipticCoerciveRBReducedProblem
-        
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a GS object
         self.GS = GramSchmidt(self.compute_scalar_product, self.S)

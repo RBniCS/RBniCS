@@ -61,11 +61,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
     def __init__(self, truth_problem):
         # Call the parent initialization
         EllipticCoerciveReductionMethodBase.__init__(self, truth_problem)
-        
-        # $$ ONLINE DATA STRUCTURES $$ #
-        # 3. Reduced order problem
-        self.reduced_problem_class = EllipticCoercivePODGalerkinReducedProblem
-        
+                
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a POD object
         self.POD = ProperOrthogonalDecomposition(self.compute_scalar_product, self.S)
