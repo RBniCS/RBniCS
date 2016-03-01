@@ -145,15 +145,17 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     def update_riesz_a(self):
         for qa in range(self.Qa):
             for n in range(len(self.riesz_a[qa]), self.N):
-                solve(self.S, self._riesz.vector(), -1.*self.truth_A[qa]*self.Z[n])
-                # TODO BC
+                theta_bc = (0.,)*len(self.truth_problem.dirichet_bc)
+                homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichet_bc))
+                solve(self.S, self._riesz.vector(), -1.*self.truth_A[qa]*self.Z[n], homogeneous_dirichlet_bc)
                 self.riesz_a[qa].enrich(self._riesz)
     
     ## Compute the Riesz representation of f
     def compute_riesz_f(self):
         for qf in range(self.Qf):
-            solve(self.S, self._riesz.vector(), self.truth_F[qf])
-            # TODO BC
+            theta_bc = (0.,)*len(self.truth_problem.dirichet_bc)
+            homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichet_bc))
+            solve(self.S, self._riesz.vector(), self.truth_F[qf], homogeneous_dirichlet_bc)
             self.riesz_f[qf].enrich(self._riesz)
             
     #  @}

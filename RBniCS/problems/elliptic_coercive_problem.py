@@ -134,7 +134,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
             theta_bc = ()
         assembled_operator_a = sum(product(self.theta_a, self.operator_a))
         assembled_operator_f = sum(product(self.theta_f, self.operator_f))
-        assembled_dirichlet_bc = sum(product(self.theta_bc, self.dirichet_bc))
+        assembled_dirichlet_bc = sum(product(theta_bc, self.dirichet_bc))
         solve(assembled_operator_a, self._solution.vector(), assembled_operator_f, assembled_dirichlet_bc)
         return self._solution
         
