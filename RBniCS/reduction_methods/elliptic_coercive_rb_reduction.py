@@ -133,11 +133,12 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             print("############################## run = ", run, " ######################################")
             
             print("truth solve for mu = ", self.mu)
-            self.truth_problem.solve()
-            self.truth_problem.export_solution(self.snapshot, self.snapshots_folder + "truth_" + str(run))
+            snapshot = self.truth_problem.solve()
+            self.truth_problem.export_solution(snapshot, self.snapshots_folder + "truth_" + str(run))
+            self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update basis matrix")
-            self.reduced_problem.Z.enrich(self.snapshot)
+            self.reduced_problem.Z.enrich(snapshot)
             self.GS.apply(self.Z)
             self.reduced_problem.Z.save(self.basis_folder, "basis")
             self.reduced_problem.N += 1

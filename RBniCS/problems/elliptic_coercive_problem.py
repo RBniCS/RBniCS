@@ -117,7 +117,10 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         self.operator_a = AffineExpansionOfflineStorage(self.assemble_operator("a"))
         self.operator_f = AffineExpansionOfflineStorage(self.assemble_operator("f"))
         self.inner_product = AffineExpansionOfflineStorage(self.assemble_operator("inner_product"))
-        self.dirichlet_bc = AffineExpansionOfflineStorage(self.assemble_operator("dirichlet_bc"))
+        try:
+            self.dirichlet_bc = AffineExpansionOfflineStorage(self.assemble_operator("dirichlet_bc"))
+        except RuntimeError: # there were no Dirichlet BCs
+            self.dirichlet_bc = AffineExpansionOfflineStorage()
         self.Qa = len(self.operator_a)
         self.Qf = len(self.operator_f)
         
@@ -125,12 +128,15 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     def solve(self):
         self.theta_a = self.compute_theta("a")
         self.theta_f = self.compute_theta("f")
-        self.theta_bc = self.compute_theta("dirichlet_bc")
+        try:
+            theta_bc = self.compute_theta("dirichlet_bc")
+        except RuntimeError: # there were no Dirichlet BCs
+            theta_bc = ()
         assembled_operator_a = sum(product(self.theta_a, self.operator_a))
         assembled_operator_f = sum(product(self.theta_f, self.operator_f))
-        assembled_dirichlet_bc = sum(product(self.theta_a, self.operator_a))
+        assembled_dirichlet_bc = sum(product(self.theta_bc, self.dirichet_bc))
         solve(assembled_operator_a, self._solution.vector(), assembled_operator_f, assembled_dirichlet_bc)
-        return solution
+        return self._solution
         
     ## Perform a truth evaluation of the (compliant) output
     def output(self):

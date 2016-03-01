@@ -108,8 +108,9 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
             self.truth_problem.setmu(self.xi_train[run])
             
             print("truth solve for mu = ", self.mu)
-            self.truth_problem.solve()
-            self.truth_problem.export_solution(self.snapshot, self.snapshots_folder + "truth_" + str(run))
+            snapshot = self.truth_problem.solve()
+            self.truth_problem.export_solution(snapshot, self.snapshots_folder + "truth_" + str(run))
+            self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update snapshot matrix")
             self.update_snapshot_matrix()
@@ -118,7 +119,9 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
             run += 1
             
         print("############################## perform POD ######################################")
-        (self.reduced_problem.Z, self.reduced_problem.N) = self.POD.apply(self.Nmax)
+        (Z, N) = self.POD.apply(self.Nmax)
+        self.reduced_problem.Z.enrich(Z)
+        self.reduced_problem.N += N
         self.reduced_problem.Z.save(self.basis_folder, "basis")
         self.POD.print_eigenvalues()
         self.POD.save_eigenvalues_file(self.post_processing_folder, "eigs")

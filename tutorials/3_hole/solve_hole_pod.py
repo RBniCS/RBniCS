@@ -94,8 +94,6 @@ class Hole(EllipticCoerciveProblem):
             theta_f3 = - m2*(m1 - 2.0) # boundary 4
             # Return
             return (theta_f0, theta_f1, theta_f2, theta_f3)
-        elif term == "dirichlet_bc":
-            return None
         else:
             raise RuntimeError("Invalid term for compute_theta().")
                 
@@ -133,8 +131,6 @@ class Hole(EllipticCoerciveProblem):
             f3 = v*ds(4) # boundary 4
             # Return
             return (f0, f1, f2, f3)
-        elif term == "dirichlet_bc":
-            return None
         elif term == "inner_product":
             x0 = u*v*dx + inner(grad(u),grad(v))*dx
             return (x0,)

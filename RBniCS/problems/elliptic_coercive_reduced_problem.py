@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
+import types
 from RBniCS.elliptic_coercive_problem import EllipticCoerciveProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -47,6 +48,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         # $$ ONLINE DATA STRUCTURES $$ #
         # 1. Online reduced space dimension
         self.N = 0
+        self.N_bc = 0
         # 3a. Number of terms in the affine expansion
         self.Qa = 0
         self.Qf = 0
@@ -99,12 +101,25 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             self.Qf = len(self.operator_f)
             # Also load basis functions
             self.Z.load(self.basis_folder, "basis")
-            self.N = len(self.Z)
+            # To properly initialize N and N_bc, detect how many theta terms
+            # are related to boundary conditions
+            try:
+                theta_bc = self.compute_theta("dirichlet_bc")
+            except RuntimeError: # there were no Dirichlet BCs
+                self.N = len(self.Z)
+            else: # there were Dirichlet BCs
+                if not theta_bc or theta_bc.count(0.) == len(theta_bc):
+                    self.N = len(self.Z)
+                else:
+                    self.N = len(self.Z) - len(theta_bc)
+                    self.N_bc = len(theta_bc)
         elif current_stage == "offline":
             self.Qa = self.truth_problem.Qa
             self.Qf = self.truth_problem.Qf
             self.operator_a = AffineExpansionOnlineStorage(self.Qa)
             self.operator_f = AffineExpansionOnlineStorage(self.Qf)
+            # Store the lifting functions in self.Z
+            self.assemble_operator("dirichlet_bc")
         else:
             raise RuntimeError("Invalid stage in init().")
             
@@ -113,6 +128,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         self.init()
         if N is None:
             N = self.N
+        N += self.N_bc
         uN = self._solve(N)
         reduced_solution = self.Z*uN
         if with_plot == True:
@@ -123,9 +139,13 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
     def _solve(self, N):
         self.theta_a = self.compute_theta("a")
         self.theta_f = self.compute_theta("f")
+        try:
+            theta_bc = self.compute_theta("dirichlet_bc")
+        except RuntimeError: # there were no Dirichlet BCs
+            theta_bc = ()
         assembled_operator_a = sum(product(self.theta_a, self.operator_a[:N, :N]))
         assembled_operator_f = sum(product(self.theta_f, self.operator_f[:N]))
-        solve(assembled_operator_a, self._solution, assembled_operator_f)
+        solve(assembled_operator_a, self._solution, assembled_operator_f, self.theta_bc)
         return self._solution
         
     # Perform an online evaluation of the (compliant) output
@@ -147,6 +167,17 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
     def build_reduced_operators(self):
         self.assemble_operator("a")
         self.assemble_operator("f")
+        
+    ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
+    # non-homogeneous Dirichlet boundary conditions
+    def postprocess_snapshot(self, snapshot):
+        try:
+            theta_bc = self.compute_theta("dirichlet_bc")
+        except RuntimeError: # there were no Dirichlet BCs
+            pass # nothing to be done
+        else: # there were Dirichlet BCs
+            assert N_bc == len(theta_bc)
+            snapshot -= self.Z[:N_bc]*theta_bc
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -203,6 +234,8 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             elif term == "f":
                 self.operator_f.load(self.reduced_operators_folder, "operator_f")
                 return self.operator_f
+            elif term == "dirichlet_bc":
+                raise RuntimeError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
             else:
                 raise RuntimeError("Invalid term for assemble_operator().")
         elif self.current_stage == "offline":
@@ -217,6 +250,45 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
                 for qf in range(self.Qf):
                     self.operator_f[qf] = transpose(self.Z)*self.truth_problem.operator_f[qf]
                 self.operator_f.save(self.reduced_operators_folder, "operator_f")
+            elif term == "dirichlet_bc":
+                try:
+                    theta_bc = self.compute_theta("dirichlet_bc")
+                except RuntimeError: # there were no Dirichlet BCs
+                    return
+                Q_dirichlet_bcs = len(theta_bc)
+                # By convention, an homogeneous Dirichlet BC has all theta terms equal to 0.
+                # In this case, no additional basis functions will need to be added.
+                if theta_bc.count(0.) == Q_dirichlet_bcs:
+                    return
+                # Temporarily override compute_theta method to return only one nonzero 
+                # theta term related to boundary conditions
+                standard_compute_theta = self.truth_problem.compute_theta
+                for i in range(Q_dirichlet_bcs):
+                    def modified_compute_theta(self, term):
+                        if term == "dirichlet_bc":
+                            modified_theta_bc = ()
+                            for j in range(Q_dirichlet_bcs):
+                                if j != i:
+                                    modified_theta_bc += (0.,)
+                                else:
+                                    modified_theta_bc += (theta_bc[i],)
+                            return modified_theta
+                        else:
+                            return standard_compute_theta()
+                    self.truth_problem.compute_theta = types.MethodType(modified_compute_theta, self.truth_problem)
+                    # ... and store the solution of the truth problem corresponding to that boundary condition
+                    # as lifting function
+                    print("Computing and storing lifting function n.", i, " in the basis matrix")
+                    lifting = self.truth_problem.solve()
+                    lifting.vector()[:] /= theta_bc[i]
+                    self.Z.enrich(lifting)
+                # Restore the standard compute_theta method
+                self.truth_problem.compute_theta = standard_compute_theta
+                # Save basis functions matrix, that contains up to now only lifting functions
+                self.Z.save(self.basis_folder, "basis")
+                self.N_bc = Q_dirichlet_bcs
+                # Note that, however, self.N is not increased, so it will actually contain the number
+                # of basis functions without the lifting ones
             else:
                 raise RuntimeError("Invalid term for assemble_operator().")
         else:
