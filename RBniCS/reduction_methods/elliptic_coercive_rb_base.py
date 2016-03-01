@@ -103,24 +103,36 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ###########################     OFFLINE STAGE     ########################### 
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
+    
+    ## Initialize data structures required for the offline phase
+    def _init_offline(self):
+        # Call the parent initialization
+        need_to_do_offline_stage = EllipticCoerciveReductionMethodBase._init_offline(self)
+        
+        # Need to check also for the existence of the error estimation folder
+        if not os.path.exists(self.reduced_problem.error_estimation_folder):
+            assert need_to_do_offline_stage is True
+            os.makedirs(self.reduced_problem.error_estimation_folder)
+            
+        # Also create folders for snapshots and postprocessing
+        folders = (self.snapshots_folder, self.post_processing_folder)
+        for f in folders:
+            if not os.path.exists(f):
+                os.makedirs(f)
+        
+        return need_to_do_offline_stage
         
     ## Perform the offline phase of the reduced order model
     def offline(self):
-        self.reduced_problem = self.reduced_problem_class(self.truth_problem)
-        
-        self._init_offline()
+        need_to_do_offline_stage = self._init_offline()
+        if not need_to_do_offline_stage:
+            return self.reduced_problem
         
         print("==============================================================")
         print("=             Offline phase begins                           =")
         print("==============================================================")
         print("")
-        if os.path.exists(self.post_processing_folder):
-            shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.error_estimation_folder, self.reduced_operators_folder, self.post_processing_folder)
-        for f in folders:
-            if not os.path.exists(f):
-                os.makedirs(f)
-                
+        
         for run in range(self.Nmax):
             print("############################## run = ", run, " ######################################")
             

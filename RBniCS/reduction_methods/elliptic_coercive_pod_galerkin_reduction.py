@@ -25,7 +25,6 @@
 from __future__ import print_function
 from numpy import log, exp, mean # for error analysis
 import os # for path and makedir
-import shutil # for rm
 from RBniCS.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.elliptic_coercive_base import EllipticCoerciveBase
 
@@ -34,12 +33,12 @@ from RBniCS.elliptic_coercive_base import EllipticCoerciveBase
 #
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
-class EllipticCoercivePODGalerkinReduction(ReductionMethodBase):
+class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
     """This class implements a reduced order method based on a POD (Proper
     Orthogonal Decomposition) Galerkin approach. In particular, it
     implements the offline phase and the error analysis proper for the
     POD approach.
-
+    
     This class provides the following methods:
     
     ##  Methods related to the offline stage
@@ -83,22 +82,29 @@ class EllipticCoercivePODGalerkinReduction(ReductionMethodBase):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
     
+    ## Initialize data structures required for the offline phase
+    def _init_offline(self):
+        # Call the parent initialization
+        need_to_do_offline_stage = EllipticCoerciveReductionMethodBase._init_offline(self)
+        
+        # Also create folders for snapshots and postprocessing
+        folders = (self.snapshots_folder, self.post_processing_folder)
+        for f in folders:
+            if not os.path.exists(f):
+                os.makedirs(f)
+        
+        return need_to_do_offline_stage
+    
     ## Perform the offline phase of the reduced order model
     def offline(self):
-        self.reduced_problem = self.reduced_problem_class(self.truth_problem)
-        
-        self._init_offline()
+        need_to_do_offline_stage = self._init_offline()
+        if not need_to_do_offline_stage:
+            return self.reduced_problem
         
         print("==============================================================")
         print("=             Offline phase begins                           =")
         print("==============================================================")
         print("")
-        if os.path.exists(self.post_processing_folder):
-            shutil.rmtree(self.post_processing_folder)
-        folders = (self.snapshots_folder, self.basis_folder, self.reduced_operators_folder, self.post_processing_folder)
-        for f in folders:
-            if not os.path.exists(f):
-                os.makedirs(f)
         
         for run in range(len(self.xi_train)):
             print("############################## run = ", run, " ######################################")

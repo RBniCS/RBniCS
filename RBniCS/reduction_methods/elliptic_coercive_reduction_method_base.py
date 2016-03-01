@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
+import os # for path and makedir
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase
@@ -42,7 +43,6 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # 3. Reduced order problem
-        self.reduced_problem_class = EllipticCoerciveReducedProblem
         self.reduced_problem = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #
@@ -62,7 +62,21 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
         self.truth_problem.init()
         
         # Initialize reduced order data structures in the reduced problem
-        self.reduced_problem.init("offline")
+        self.reduced_problem = ReducedProblemFactory(self.truth_problem)
+        if \
+            os.path.exists(self.reduced_problem.basis_folder) \
+        and \
+            os.path.exists(self.reduced_problem.reduced_operators_folder) \
+        :
+            self.reduced_problem.init("online")
+            return False # offline construction should be skipped, since data are already available
+        else:
+            self.reduced_problem.init("offline")
+            folders = (self.reduced_problem.basis_folder, self.reduced_problem.reduced_operators_folder)
+            for f in folders:
+                if not os.path.exists(f):
+                    os.makedirs(f)
+            return True # offline construction should be carried out
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
