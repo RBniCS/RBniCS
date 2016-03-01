@@ -42,8 +42,8 @@ class ReductionMethodBase(object):
         # 2. Parameter ranges and training set
         self.xi_train = ParameterSpaceSubset()
         # 9. I/O
-        self.xi_train_folder = "xi_train/"
-        self.xi_test_folder = "xi_test/"
+        self.xi_train_folder = "xi_train"
+        self.xi_test_folder = "xi_test"
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
         # 2. Test set

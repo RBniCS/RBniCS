@@ -41,6 +41,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         # Call to parent
         EllipticCoerciveProblem.__init__(self)
         
+        self.name = truth_problem.name
         self.current_stage=None
         
         # $$ ONLINE DATA STRUCTURES $$ #
@@ -65,7 +66,10 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         self.truth_problem = truth_problem
         # 6. Basis functions matrix
         self.Z = BasisFunctionsMatrix()
-            
+        # 9. I/O
+        self.basis_folder = "basis"
+        self.reduced_operators_folder = "reduced_operators"
+        
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
     

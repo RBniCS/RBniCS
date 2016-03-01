@@ -71,24 +71,13 @@ class EllipticCoercivePODGalerkinReduction(ReductionMethodBase):
         # 6bis. Declare a POD object
         self.POD = ProperOrthogonalDecomposition(self.compute_scalar_product, self.S)
         # 9. I/O
-        self.xi_train_folder = "xi_train__pod/"
-        self.xi_test_folder = "xi_test__pod/"
-        self.snapshots_folder = "snapshots__pod/"
-        self.basis_folder = "basis__pod/"
-        self.reduced_operators_folder = "reduced_operators__pod/"
-        self.post_processing_folder = "post_processing__pod/"
+        self.xi_train_folder = "xi_train__pod"
+        self.xi_test_folder = "xi_test__pod"
+        self.snapshots_folder = "snapshots__pod"
+        self.post_processing_folder = "post_processing__pod"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
-    
-    # Nothing to be added in this case
-        
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
     
     ###########################     OFFLINE STAGE     ########################### 
     ## @defgroup OfflineStage Methods related to the offline stage

@@ -50,6 +50,10 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         self.riesz_af_product = AffineExpansionOnlineStorage()
         self.riesz_ff_product = AffineExpansionOnlineStorage()
         self.build_error_estimation_matrices.__func__.initialized = False
+        
+        # $$ OFFLINE DATA STRUCTURES $$ #
+        # 9. I/O
+        self.error_estimation_folder = "error_estimation"
 
         
     #  @}
