@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 2: ELASTIC BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Eblock(EllipticCoercivePODBase):
+class Eblock(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -34,10 +34,11 @@ class Eblock(EllipticCoercivePODBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
-        bc = DirichletBC(V, (0.0, 0.0), bound, 6)
         # Call the standard initialization
-        super(Eblock, self).__init__(V, [bc])
+        super(Eblock, self).__init__(V)
         # ... and also store FEniCS data structures for assembly
+        self.u = TrialFunction(V)
+        self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)
         # ...
@@ -84,6 +85,8 @@ class Eblock(EllipticCoercivePODBase):
             theta_f1 = mu10
             theta_f2 = mu11
             return (theta_f0, theta_f1, theta_f2)
+        elif term == "dirichlet_bc":
+            return (0.,)
         else:
             raise RuntimeError("Invalid term for compute_theta().")
                 
@@ -111,6 +114,12 @@ class Eblock(EllipticCoercivePODBase):
             f1 = inner(f,v)*ds(3) + inner(l,v)*dx 
             f2 = inner(f,v)*ds(4) + inner(l,v)*dx
             return (f0,f1,f2)
+        elif term == "dirichlet_bc":
+            bc0 = [(self.V, Constant((0.0, 0.0)), self.bound, 6)]
+            return (bc0,)
+        elif term == "inner_product":
+            x0 = u*v*dx + inner(grad(u),grad(v))*dx
+            return (x0,)
         else:
             raise RuntimeError("Invalid term for assemble_operator().")
     

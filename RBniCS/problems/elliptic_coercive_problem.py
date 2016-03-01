@@ -84,14 +84,12 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, bc_list):
+    def __init__(self, V):
         # Call to parent
         ParametrizedProblem.__init__(self)
         
         # Input arguments
         self.V = V
-        self.bc_list = bc_list
-        
         # 3a. Number of terms in the affine expansion
         self.Qa = 0
         self.Qf = 0
@@ -101,6 +99,8 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         # 3c. Matrices/vectors resulting from the truth discretization
         self.operator_a = AffineExpansionOfflineStorage()
         self.operator_f = AffineExpansionOfflineStorage()
+        self.inner_product = AffineExpansionOfflineStorage()
+        self.dirichlet_bc = AffineExpansionOfflineStorage()
         # Solution
         self._solution = Function(self.V)
         self._output = 0
@@ -116,6 +116,8 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     def init(self):
         self.operator_a = AffineExpansionOfflineStorage(self.assemble_operator("a"))
         self.operator_f = AffineExpansionOfflineStorage(self.assemble_operator("f"))
+        self.inner_product = AffineExpansionOfflineStorage(self.assemble_operator("inner_product"))
+        self.dirichlet_bc = AffineExpansionOfflineStorage(self.assemble_operator("dirichlet_bc"))
         self.Qa = len(self.operator_a)
         self.Qf = len(self.operator_f)
         
@@ -123,11 +125,11 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     def solve(self):
         self.theta_a = self.compute_theta("a")
         self.theta_f = self.compute_theta("f")
+        self.theta_bc = self.compute_theta("dirichlet_bc")
         assembled_operator_a = sum(product(self.theta_a, self.operator_a))
         assembled_operator_f = sum(product(self.theta_f, self.operator_f))
-        # TODO apply BC self.bc_list
-        solution = Function(self.V)
-        solve(assembled_operator_a, solution.vector(), assembled_operator_f)
+        assembled_dirichlet_bc = sum(product(self.theta_a, self.operator_a))
+        solve(assembled_operator_a, self._solution.vector(), assembled_operator_f, assembled_dirichlet_bc)
         return solution
         
     ## Perform a truth evaluation of the (compliant) output
@@ -168,6 +170,9 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #   elif term == "f":
     #       theta_f0 = m1*m3
     #       return (theta_f0,)
+    #   elif term == "dirichlet_bc":
+    #       theta_bc0 = 1.
+    #       return (theta_f0,)
     #   else:
     #       raise RuntimeError("Invalid term for compute_theta().")
     def compute_theta(self, term):
@@ -181,6 +186,12 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #   elif term == "f":
     #       f0 = v*ds(1)
     #       return (f0,)
+    #   elif term == "dirichlet_bc":
+    #       bc0 = [(V, Constant(0.0), boundaries, 3)]
+    #       return (bc0,)
+    #   elif term == "inner_product":
+    #       x0 = u*v*dx + inner(grad(u),grad(v))*dx
+    #       return (x0,)
     #   else:
     #       raise RuntimeError("Invalid term for assemble_operator().")
     def assemble_operator(self, term):

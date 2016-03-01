@@ -32,7 +32,7 @@ from RBniCS import *
         ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
     ]
 )
-class Graetz(EllipticCoerciveRBNonCompliantBase):
+class Graetz(EllipticCoerciveNonCompliantBase):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -40,42 +40,13 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
-        # Store the BC object for the homogeneous solution (after lifting)
-        bc_list = [
-            DirichletBC(V, 0.0, bound, 1), # indeed homog. bcs
-            DirichletBC(V, 0.0, bound, 5), # indeed homog. bcs
-            DirichletBC(V, 0.0, bound, 6), # indeed homog. bcs
-            DirichletBC(V, 0.0, bound, 2), # non-homog. bcs with a lifting
-            DirichletBC(V, 0.0, bound, 4)  # non-homog. bcs with a lifting
-        ]
         # Call the standard initialization
-        super(Graetz, self).__init__(mesh, subd, V, bc_list, shape_parametrization_expression)
+        super(Graetz, self).__init__(mesh, subd, V)
         # ... and also store FEniCS data structures for assembly
+        self.u = TrialFunction(V)
+        self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)
-        # We will consider non-homogeneous Dirichlet BCs with a lifting.
-        # First of all, assemble a suitable lifting function
-        lifting_bc = [ 
-            DirichletBC(V, 0.0, bound, 1), # homog. bcs
-            DirichletBC(V, 0.0, bound, 5), # homog. bcs
-            DirichletBC(V, 0.0, bound, 6), # homog. bcs
-            DirichletBC(V, 1.0, bound, 2), # non-homog. bcs
-            DirichletBC(V, 1.0, bound, 4)  # non-homog. bcs
-        ]
-        u = self.u
-        v = self.v
-        dx = self.dx
-        lifting_a = inner(grad(u),grad(v))*dx
-        lifting_A = assemble(lifting_a)
-        lifting_f = 1e-15*v*dx
-        lifting_F = assemble(lifting_f)
-        [bc.apply(lifting_A) for bc in lifting_bc] # Apply BCs on LHS
-        [bc.apply(lifting_F) for bc in lifting_bc] # Apply BCs on RHS
-        lifting = Function(V)
-        solve(lifting_A, lifting.vector(), lifting_F)
-        # Discard the lifting_{bc, A, F} object and store only the lifting function
-        self.lifting = lifting
-        self.export_basis(self.lifting, self.basis_folder + "lifting")
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
         # Finally, initialize an SCM object to approximate alpha LB
@@ -135,6 +106,8 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
             return (theta_f0, theta_f1, theta_f2, theta_f3)
         elif term == "s":
             return (1.0,)
+        elif term == "dirichlet_bc":
+            return (1.0,)
         else:
             raise RuntimeError("Invalid term for compute_theta().")
                     
@@ -163,6 +136,16 @@ class Graetz(EllipticCoerciveRBNonCompliantBase):
 #            s0 = v*ds(3)
             s0 = v*dx(2)
             return (s0,)
+        elif term == "dirichlet_bc":
+            bc0 = [(self.V, Constant(0.0), self.bound, 1),
+                   (self.V, Constant(0.0), self.bound, 5),
+                   (self.V, Constant(0.0), self.bound, 6),
+                   (self.V, Constant(1.0), self.bound, 2),
+                   (self.V, Constant(1.0), self.bound, 4)]
+            return (bc0,)
+        elif term == "inner_product":
+            x0 = u*v*dx + inner(grad(u),grad(v))*dx
+            return (x0,)
         else:
             raise RuntimeError("Invalid term for assemble_operator().")
         

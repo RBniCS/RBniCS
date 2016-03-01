@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: THERMAL BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Tblock(EllipticCoerciveRBBase):
+class Tblock(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -34,19 +34,13 @@ class Tblock(EllipticCoerciveRBBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
-        bc = DirichletBC(V, 0.0, bound, 3)
         # Call the standard initialization
-        super(Tblock, self).__init__(V, [bc])
+        super(Tblock, self).__init__(V)
         # ... and also store FEniCS data structures for assembly
+        self.u = TrialFunction(V)
+        self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)
-        # Use the H^1 seminorm on V as norm, instead of the H^1 norm
-        u = self.u
-        v = self.v
-        dx = self.dx
-        scalar = inner(grad(u),grad(v))*dx
-        self.S = assemble(scalar)
-        [bc.apply(self.S) for bc in self.bc_list] # make sure to apply BCs to the inner product matrix
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -70,6 +64,8 @@ class Tblock(EllipticCoerciveRBBase):
         elif term == "f":
             theta_f0 = mu2
             return (theta_f0,)
+        elif term == "dirichlet_bc":
+            return (0.,)
         else:
             raise RuntimeError("Invalid term for compute_theta().")
     
@@ -86,6 +82,12 @@ class Tblock(EllipticCoerciveRBBase):
             ds = self.ds
             f0 = v*ds(1) + 1e-15*v*dx
             return (f0,)
+        elif term == "dirichlet_bc":
+            bc0 = [(self.V, Constant(0.0), self.bound, 3)]
+            return (bc0,)
+        elif term == "inner_product":
+            x0 = inner(grad(u),grad(v))*dx
+            return (x0,)
         else:
             raise RuntimeError("Invalid term for assemble_operator().")
         

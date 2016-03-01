@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: GAUSSIAN EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Gaussian(EllipticCoerciveRBBase):
+class Gaussian(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -34,23 +34,13 @@ class Gaussian(EllipticCoerciveRBBase):
     
     ## Default initialization of members
     def __init__(self, V, subd, bound):
-        bc_list = [
-            DirichletBC(V, 0.0, bound, 1),
-            DirichletBC(V, 0.0, bound, 2),
-            DirichletBC(V, 0.0, bound, 3)
-        ]
         # Call the standard initialization
         super(Gaussian, self).__init__(V, bc_list)
         # ... and also store FEniCS data structures for assembly
+        self.u = TrialFunction(V)
+        self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)
-        # Use the H^1 seminorm on V as norm, instead of the H^1 norm
-        u = self.u
-        v = self.v
-        dx = self.dx
-        scalar = inner(grad(u),grad(v))*dx
-        self.S = assemble(scalar)
-        [bc.apply(self.S) for bc in self.bc_list] # make sure to apply BCs to the inner product matrix
         # Finally, initialize an EIM object for the interpolation of the forcing term
         self.EIM_obj = EIM(self)
         self.EIM_obj.parametrized_function = "exp( - 2*pow(x[0]-mu_1, 2) - 2*pow(x[1]-mu_2, 2) )"
@@ -99,6 +89,8 @@ class Gaussian(EllipticCoerciveRBBase):
         elif term == "f":
             self.EIM_obj.setmu(self.mu)
             return self.EIM_obj.compute_interpolated_theta(self.EIM_N)
+        elif term == "dirichlet_bc":
+            return (0.,)
         else:
             raise RuntimeError("Invalid term for compute_theta().")
                 
@@ -118,6 +110,14 @@ class Gaussian(EllipticCoerciveRBBase):
                 all_f += (interpolated_gaussian[q]*v*dx,)
             # Return
             return all_f
+        elif term == "dirichlet_bc":
+            bc0 = [(self.V, Constant(0.0), self.bound, 1),
+                   (self.V, Constant(0.0), self.bound, 2),
+                   (self.V, Constant(0.0), self.bound, 3)]
+            return (bc0,)
+        elif term == "inner_product":
+            x0 = inner(grad(u),grad(v))*dx
+            return (x0,)
         else:
             raise RuntimeError("Invalid term for assemble_operator().")
             
