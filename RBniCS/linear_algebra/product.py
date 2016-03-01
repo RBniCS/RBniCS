@@ -26,12 +26,33 @@
 ## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
 #  @{
 
+from RBniCS.linear_algebra.truth_vector import TruthVector
+from RBniCS.linear_algebra.truth_matrix import TruthMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector_Base as OnlineVector
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Base as OnlineMatrix
+
 # product function to assemble truth/reduced affine expansions. To be used in combination with python's sum.
-def product(thetas, matrices_or_vectors):
+def product(thetas, operators):
     output = []
-    assert len(thetas) == len(matrices_or_vectors)
-    for i in range(len(thetas)):
-        output.append(thetas[i]*matrices_or_vectors[i])
+    assert len(thetas) == len(operators)
+    if \
+        isinstance(operators[0], TruthMatrix) or isinstance(operators[0], TruthVector) \
+    or \
+        isinstance(operators[0], OnlineMatrix) or isinstance(operators[0], OnlineVector) \
+    :
+        for i in range(len(thetas)):
+            output.append(thetas[i]*operators[i])
+    elif isinstance(operators[0], list): # we use this Dirichlet BCs with FEniCS
+        for i in range(len(output)):
+            # Each element of the list contains a tuple. Owing to FEniCS documentation, its second argument is the function, to be multiplied by theta
+            output_i = []
+            for j in range(len(operators[i])):
+                operators_i_j_list = list(operators[i][j])
+                operators_i_j_list[1] = Constant(thetas[i])*operators_i_list[1]
+                output_i.append(tuple(operators_i_j_list))
+            output.append(output_i)
+    else:
+        raise RuntimeError("product(): invalid operands.")
     return output
         
 #  @}
