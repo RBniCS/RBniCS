@@ -107,7 +107,7 @@ class FunctionsList_Transpose(object):
             dim = len(self.functionsList)
             onlineVector = OnlineVector(dim)
             for i in range(dim):
-                onlineVector[i] = self.functionsList[i]*truthMatrixOrVector
+                onlineVector[i] = Vector_Transpose(self.functionsList[i])*truthMatrixOrVector
             return onlineVector
         else: # impossible to arrive here anyway, thanks to the assert
             raise RuntimeError("Invalid arguments in FunctionsList_Transpose.__mul__.")
