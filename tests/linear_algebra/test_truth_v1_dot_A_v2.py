@@ -34,6 +34,10 @@ class Test(TestBase):
         V = FunctionSpace(mesh, "Lagrange", 1)
         self.v1 = Function(V)
         self.v2 = Function(V)
+        self.k = Function(V)
+        u = TrialFunction(V)
+        v = TestFunction(V)
+        self.a = self.k*inner(grad(u), grad(v))*dx
         # Call parent init
         TestBase.__init__(self, N, test_id, test_subid)
             
@@ -45,15 +49,18 @@ class Test(TestBase):
             # Generate random vectors
             self.v1.vector()[:] = self.rand(self.v1.vector().size())
             self.v2.vector()[:] = self.rand(self.v2.vector().size())
+            self.k.vector()[:] = self.rand(self.k.vector().size())
+            # Generate random matrix
+            A = assemble(self.a)
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                v1_dot_v2_builtin = self.v1.vector().inner(self.v2.vector())
+                v1_dot_A_v2_builtin = self.v1.vector().inner(A*self.v2.vector())
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
-                v1_dot_v2_transpose = transpose(self.v1.vector())*self.v2.vector()
+                v1_dot_A_v2_transpose = transpose(self.v1.vector())*A*self.v2.vector()
         if test_id >= 2:
-            return (v1_dot_v2_builtin - v1_dot_v2_transpose)/v1_dot_v2_builtin
+            return (v1_dot_A_v2_builtin - v1_dot_A_v2_transpose)/v1_dot_A_v2_builtin
 
 for i in range(1, 8):
     N = 2**i
