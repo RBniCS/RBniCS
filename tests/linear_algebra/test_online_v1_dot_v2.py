@@ -33,9 +33,14 @@ class Test(TestBase):
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
-            # Generate random vectors
-            v1 = OnlineVector(self.rand(N)).transpose() # as column vector            
-            v2 = OnlineVector(self.rand(N)).transpose() # as column vector
+            if not self.index in self.storage:
+                # Generate random vectors
+                v1 = OnlineVector(self.rand(N)).transpose() # as column vector
+                v2 = OnlineVector(self.rand(N)).transpose() # as column vector
+                self.storage[self.index] = (v1, v2)
+            else:
+                (v1, v2) = self.storage[self.index]
+            self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
@@ -48,23 +53,25 @@ class Test(TestBase):
 
 for i in range(4, 15):
     N = 2**i
+    test = Test(N)
     print("N =", N)
     
-    test = Test(N, 0)
-    usec_0 = test.timeit()
-    print("Construction:", usec_0, "usec", "(number of runs: ", test.number_of_runs(), ")")
+    test.init_test(0)
+    (usec_0_build, usec_0_access) = test.timeit()
+    print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
+    print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
     
-    test = Test(N, 1, "a")
+    test.init_test(1, "a")
     usec_1a = test.timeit()
-    print("Builtin method:", usec_1a - usec_0, "usec", "(number of runs: ", test.number_of_runs(), ")")
+    print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
     
-    test = Test(N, 1, "b")
+    test.init_test(1, "b")
     usec_1b = test.timeit()
-    print("transpose() method:", usec_1b - usec_0, "usec", "(number of runs: ", test.number_of_runs(), ")")
+    print("transpose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
     
-    print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0))
+    print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
     
-    test = Test(N, 2)
+    test.init_test(2)
     error = test.average()
     print("Relative error:", error)
     

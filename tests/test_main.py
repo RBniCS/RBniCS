@@ -34,17 +34,31 @@ class Timer(object):
         # which is called by python -mtimeit script,
         # determine number so that 0.2 <= total time < 2.0
         for i in range(1, 10):
+            test.index = 0
+            test.storage = {}
             self.number = 10**i
             r = self.timeit_timer.timeit(self.number)
             if r >= 0.2:
+                # Clean up, we do want to time again
+                # the construction phase
+                test.index = 0
+                test.storage = {}
+                #
                 break
-        
 class TestBase(object):
-    def __init__(self, N, test_id, test_subid=None):
+    def __init__(self, N):
         self.N = N
+        self.test_id = 0
+        self.test_subid = None
+        #
+        self.index = 0
+        self.storage = {}
+        #
+        self.timer = Timer(self)
+            
+    def init_test(self, test_id, test_subid=None):
         self.test_id = test_id
         self.test_subid = test_subid
-        self.timer = Timer(self)
     
     def run(self):
         pass
@@ -53,10 +67,21 @@ class TestBase(object):
         return (-1)**randint(2, size=(args))*random(args)/(1e-3 + random(args))
         
     def timeit(self):
-        r = self.timer.timeit_timer.repeat(repeat=3, number=self.timer.number)
-        return min(r) * 1e6 / self.timer.number # usec
+        def run_timeit(self):
+            self.index = 0
+            r = self.timer.timeit_timer.repeat(repeat=3, number=self.timer.number)
+            return min(r) * 1e6 / self.timer.number # usec
+        if self.test_id is 0:
+            # Need to run timeit twice: the first one to populate the storage,
+            # the second one to time access to the storage
+            usec_build = run_timeit(self)
+            usec_access = run_timeit(self)
+            return (usec_build, usec_access)
+        else:
+            return run_timeit(self)
         
     def average(self):
+        self.index = 0
         all_outputs = zeros((3*self.timer.number))
         for i in range(len(all_outputs)):
             all_outputs[i] = self.run()
