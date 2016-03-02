@@ -48,9 +48,9 @@ class Test(TestBase):
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                self.v1.vector()[:] = self.rand(self.v1.vector().size())
-                self.v2.vector()[:] = self.rand(self.v2.vector().size())
-                self.k.vector()[:] = self.rand(self.k.vector().size())
+                self.v1.vector().set_local(self.rand(self.v1.vector().array().size))
+                self.v2.vector().set_local(self.rand(self.v2.vector().array().size))
+                self.k.vector().set_local(self.rand(self.k.vector().array().size))
                 # Generate random matrix
                 A = assemble(self.a)
                 # Store
