@@ -43,7 +43,9 @@ class Test(TestBase):
             if not self.index in self.storage:
                 # Generate random vectors
                 self.v1.vector().set_local(self.rand(self.v1.vector().array().size))
+                self.v1.vector().apply("insert")
                 self.v2.vector().set_local(self.rand(self.v2.vector().array().size))
+                self.v2.vector().apply("insert")
                 self.storage[self.index] = (self.v1, self.v2)
             else:
                 (self.v1, self.v2) = self.storage[self.index]

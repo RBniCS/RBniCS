@@ -25,14 +25,18 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
+from RBniCS.linear_algebra.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix
 from RBniCS.linear_algebra.transpose import transpose
+from numpy.linalg import norm
 
 class Test(TestBase):
-    def __init__(self, Nh):
+    def __init__(self, Nh, N):
+        self.N = N
         mesh = UnitSquareMesh(Nh, Nh)
         V = FunctionSpace(mesh, "Lagrange", 1)
-        self.v1 = Function(V)
-        self.v2 = Function(V)
+        self.b = Function(V)
+        self.Z = BasisFunctionsMatrix()
         self.k = Function(V)
         u = TrialFunction(V)
         v = TestFunction(V)
@@ -41,55 +45,61 @@ class Test(TestBase):
         TestBase.__init__(self)
             
     def run(self):
+        N = self.N
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                self.v1.vector().set_local(self.rand(self.v1.vector().array().size))
-                self.v1.vector().apply("insert")
-                self.v2.vector().set_local(self.rand(self.v2.vector().array().size))
-                self.v2.vector().apply("insert")
+                self.Z = BasisFunctionsMatrix()
+                for _ in range(self.N):
+                    self.b.vector().set_local(self.rand(self.b.vector().array().size))
+                    self.b.vector().apply("insert")
+                    self.Z.enrich(self.b)
                 self.k.vector().set_local(self.rand(self.k.vector().array().size))
-                self.k.vector().apply("insert")
                 # Generate random matrix
                 A = assemble(self.a)
                 # Store
-                self.storage[self.index] = (self.v1, self.v2, A)
+                self.storage[self.index] = (self.Z, A)
             else:
-                (self.v1, self.v2, A) = self.storage[self.index]
+                (self.Z, A) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                v1_dot_A_v2_builtin = self.v1.vector().inner(A*self.v2.vector())
+                Z_T_dot_A_Z_builtin = OnlineMatrix(self.N, self.N)
+                for i in range(self.N):
+                    for j in range(self.N):
+                        Z_T_dot_A_Z_builtin[i, j] = self.Z[i].inner(A*self.Z[j])
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
-                v1_dot_A_v2_transpose = transpose(self.v1.vector())*A*self.v2.vector()
+                Z_T_dot_A_Z_transpose = transpose(self.Z)*A*self.Z
         if test_id >= 2:
-            return (v1_dot_A_v2_builtin - v1_dot_A_v2_transpose)/v1_dot_A_v2_builtin
+            return norm(Z_T_dot_A_Z_builtin - Z_T_dot_A_Z_transpose)/norm(Z_T_dot_A_Z_builtin)
 
-for i in range(1, 8):
+for i in range(3, 7):
     Nh = 2**i
-    test = Test(Nh)
-    print("Nh =", test.v1.vector().size())
-    
-    test.init_test(0)
-    (usec_0_build, usec_0_access) = test.timeit()
-    print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
-    print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-    
-    test.init_test(1, "a")
-    usec_1a = test.timeit()
-    print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-    
-    test.init_test(1, "b")
-    usec_1b = test.timeit()
-    print("transpose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-    
-    print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
-    
-    test.init_test(2)
-    error = test.average()
-    print("Relative error:", error)
+    for j in range(1, 4):
+        N = 10 + 4*j
+        test = Test(Nh, N)
+        print("Nh =", test.b.vector().size(), "and N =", N)
+        
+        test.init_test(0)
+        (usec_0_build, usec_0_access) = test.timeit()
+        print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        
+        test.init_test(1, "a")
+        usec_1a = test.timeit()
+        print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        
+        test.init_test(1, "b")
+        usec_1b = test.timeit()
+        print("transpose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        
+        print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
+        
+        test.init_test(2)
+        error = test.average()
+        print("Relative error:", error)
     
