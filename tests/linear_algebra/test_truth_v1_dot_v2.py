@@ -27,7 +27,6 @@ from test_main import TestBase
 from dolfin import *
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.transpose import transpose
-from numpy.random import rand
 
 class Test(TestBase):
     def __init__(self, N, test_id, test_subid=None):
@@ -44,8 +43,8 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             # Generate random vectors
-            self.v1.vector()[:] = rand(self.v1.vector().size())
-            self.v2.vector()[:] = rand(self.v2.vector().size())
+            self.v1.vector()[:] = self.rand(self.v1.vector().size())
+            self.v2.vector()[:] = self.rand(self.v2.vector().size())
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods

@@ -25,6 +25,7 @@
 import sys
 import timeit
 from numpy import mean, zeros
+from numpy.random import random, randint
 
 class Timer(object):
     def __init__(self, test):
@@ -47,6 +48,9 @@ class TestBase(object):
     
     def run(self):
         pass
+    
+    def rand(self, *args):
+        return (-1)**randint(2, size=(args))*random(args)/(1e-3 + random(args))
         
     def timeit(self):
         r = self.timer.timeit_timer.repeat(repeat=3, number=self.timer.number)

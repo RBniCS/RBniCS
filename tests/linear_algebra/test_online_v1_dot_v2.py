@@ -26,7 +26,6 @@ from __future__ import print_function
 from test_main import TestBase
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type as OnlineVector
 from RBniCS.linear_algebra.transpose import transpose
-from numpy.random import rand
 
 class Test(TestBase):
     def run(self):
@@ -35,8 +34,8 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             # Generate random vectors
-            v1 = OnlineVector(rand(N)).transpose() # as column vector            
-            v2 = OnlineVector(rand(N)).transpose() # as column vector
+            v1 = OnlineVector(self.rand(N)).transpose() # as column vector            
+            v2 = OnlineVector(self.rand(N)).transpose() # as column vector
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
