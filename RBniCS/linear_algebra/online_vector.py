@@ -30,7 +30,9 @@
 from numpy import matrix as OnlineVector_Base
 class OnlineVector_Type(OnlineVector_Base): # make sure that online matrices and vectors correspond to two different types
     pass
-    
+
+# We prefer not to subclass numpy ndarray because it is not so trivial,
+# see http://docs.scipy.org/doc/numpy-1.10.1/user/basics.subclassing.html
 from numpy import zeros as OnlineVectorContent_Base
 def OnlineVector(N=None):
     if N is not None:

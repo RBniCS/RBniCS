@@ -28,8 +28,8 @@
 
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type as OnlineVector
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type as OnlineMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
 # sum function to assemble truth/reduced affine expansions. To be used in combination with the product method.
 __std_sum = sum
@@ -37,7 +37,7 @@ def sum(product_output):
     if \
         isinstance(product_output[0], TruthMatrix) or isinstance(product_output[0], TruthVector) \
     or \
-        isinstance(product_output[0], OnlineMatrix) or isinstance(product_output[0], OnlineVector) \
+        isinstance(product_output[0], OnlineMatrix_Type) or isinstance(product_output[0], OnlineVector_Type) \
     :
         return __std_sum(product_output)
     elif isinstance(product_output[0], list): # we use this Dirichlet BCs with FEniCS

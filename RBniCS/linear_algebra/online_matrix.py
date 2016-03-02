@@ -30,7 +30,9 @@
 from numpy import matrix as OnlineMatrix_Base
 class OnlineMatrix_Type(OnlineMatrix_Base): # make sure that online matrices and vectors correspond to two different types
     pass
-    
+
+# We prefer not to subclass numpy ndarray because it is not so trivial,
+# see http://docs.scipy.org/doc/numpy-1.10.1/user/basics.subclassing.html
 from numpy import zeros as OnlineMatrixContent_Base
 def OnlineMatrix(M=None, N=None):
     assert (M is None and N is None) or (M is not None and N is not None)

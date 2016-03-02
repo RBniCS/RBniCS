@@ -24,8 +24,8 @@
 
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type as OnlineVector
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type as OnlineMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type, OnlineVector
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type, OnlineMatrix
 from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
 
 ###########################     OFFLINE STAGE     ########################### 
@@ -40,12 +40,12 @@ class FunctionsList(object):
     def __init__(self):
         self._list = []
     
-    def enrich(functions):
-        import collections
-        if isinstance(functions, collections.Iterable): # more than one function
+    def enrich(self, functions):
+        from dolfin import Function
+        if isinstance(functions, Function): # one function
+            self._list.append(functions.vector().copy()) # copy it explicitly
+        else: # more than one function
             self._list.extend(functions) # assume that they where already copied
-        else: # one function
-            self.list.append(functions.vector().copy()) # copy it explicitly
             
     def load(self, directory, filename):
         if self._list: # avoid loading multiple times
@@ -75,8 +75,8 @@ class FunctionsList(object):
     
     # self * onlineMatrixOrVector [used e.g. to compute Z*u_N or S*eigv]
     def __mul__(self, onlineMatrixOrVector):
-        assert isinstance(onlineMatrixOrVector, OnlineMatrix) or isinstance(onlineMatrixOrVector, OnlineVector)
-        if isinstance(onlineMatrixOrVector, OnlineMatrix):
+        assert isinstance(onlineMatrixOrVector, OnlineMatrix_Type) or isinstance(onlineMatrixOrVector, OnlineVector_Type)
+        if isinstance(onlineMatrixOrVector, OnlineMatrix_Type):
             output = FunctionsList()
             dim = onlineMatrixOrVector.shape[1]
             for i in range(dim):
@@ -84,7 +84,7 @@ class FunctionsList(object):
                 for j in range(1, len(self._list)):
                     output_i += self._list[j]*onlineMatrixOrVector[i, j]
                 output.enrich(output_i)
-        elif isinstance(onlineMatrixOrVector, OnlineVector):
+        elif isinstance(onlineMatrixOrVector, OnlineVector_Type):
             output = self._list[0]*onlineMatrixOrVector[0]
             for j in range(1, len(self._list)):
                 output += self._list[j]*onlineMatrixOrVector[j]
@@ -121,7 +121,6 @@ class FunctionsList_Transpose__times__TruthMatrix(object):
       
     # self * functionsList2 [used e.g. to compute Z^T*A*Z or S^T*X*S]
     def __mul__(self, functionsList2):
-        assert isinstance(truthMatrixOrVector, TruthMatrix)
         assert isinstance(functionsList2, FunctionsList)
         assert len(self.functionsList) == len(functionsList2)
         dim = len(self.functionsList)

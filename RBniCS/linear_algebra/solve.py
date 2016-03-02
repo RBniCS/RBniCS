@@ -28,8 +28,8 @@
 
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type as OnlineVector
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type as OnlineMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
 # Similarly to FEniCS' solve define a solve for online problems
 def solve(A, x, b, bcs):
@@ -38,7 +38,7 @@ def solve(A, x, b, bcs):
             bc.apply(A, b)
         from dolfin import solve as dolfin_solve
         dolfin_solve(A, x, b)
-    elif isinstance(A, OnlineMatrix) and isinstance(x, OnlineVector) and isinstance(b, OnlineVector):
+    elif isinstance(A, OnlineMatrix) and isinstance(x, OnlineVector_Type) and isinstance(b, OnlineVector_Type):
         for i in range(bcs):
             b[i] = bcs[i]
             A[i, :] = 0.

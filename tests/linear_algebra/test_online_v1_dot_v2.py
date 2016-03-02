@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 from test_main import TestBase
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type as OnlineVector
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.transpose import transpose
 
 class Test(TestBase):
@@ -40,8 +40,8 @@ class Test(TestBase):
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                v1 = OnlineVector(self.rand(N)).transpose() # as column vector
-                v2 = OnlineVector(self.rand(N)).transpose() # as column vector
+                v1 = OnlineVector_Type(self.rand(N)).transpose() # as column vector
+                v2 = OnlineVector_Type(self.rand(N)).transpose() # as column vector
                 self.storage[self.index] = (v1, v2)
             else:
                 (v1, v2) = self.storage[self.index]

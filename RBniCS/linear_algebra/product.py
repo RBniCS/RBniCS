@@ -28,8 +28,8 @@
 
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type as OnlineVector
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type as OnlineMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with python's sum.
 def product(thetas, operators):
@@ -38,7 +38,7 @@ def product(thetas, operators):
     if \
         isinstance(operators[0], TruthMatrix) or isinstance(operators[0], TruthVector) \
     or \
-        isinstance(operators[0], OnlineMatrix) or isinstance(operators[0], OnlineVector) \
+        isinstance(operators[0], OnlineMatrix_Type) or isinstance(operators[0], OnlineVector_Type) \
     :
         for i in range(len(thetas)):
             output.append(thetas[i]*operators[i])

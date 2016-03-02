@@ -23,9 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.linear_algebra.truth_vector import TruthVector
-from RBniCS.linear_algebra.truth_matrix import TruthMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type as OnlineVector
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type as OnlineMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.functions_list import FunctionsList, FunctionsList_Transpose
 from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
 
@@ -35,10 +33,10 @@ from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
 
 # Auxiliary transpose method to be used in RBniCS. See functions_list.py and compute_scalar_product.py for more details.
 def transpose(arg):
-    assert isinstance(arg, FunctionsList) or isinstance(arg, TruthVector) or isinstance(arg, OnlineVector)
+    assert isinstance(arg, FunctionsList) or isinstance(arg, TruthVector) or isinstance(arg, OnlineVector_Type)
     if isinstance(arg, FunctionsList):
         return FunctionsList_Transpose(arg)
-    elif isinstance(arg, TruthVector) or isinstance(arg, OnlineVector):
+    elif isinstance(arg, TruthVector) or isinstance(arg, OnlineVector_Type):
         return Vector_Transpose(arg)
     else: # impossible to arrive here anyway, thanks to the assert
         raise RuntimeError("Invalid arguments in transpose.")
