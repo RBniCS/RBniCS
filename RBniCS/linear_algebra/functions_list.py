@@ -85,9 +85,10 @@ class FunctionsList(object):
                     output_i += self._list[j]*onlineMatrixOrVector[i, j]
                 output.enrich(output_i)
         elif isinstance(onlineMatrixOrVector, OnlineVector_Type):
-            output = self._list[0]*onlineMatrixOrVector[0]
+            output = self._list[0]*onlineMatrixOrVector.item(0)
             for j in range(1, len(self._list)):
-                output += self._list[j]*onlineMatrixOrVector[j]
+                output.add_local(self._list[j].array()*onlineMatrixOrVector.item(j))
+            output.apply("add")
             return output
         else: # impossible to arrive here anyway, thanks to the assert
             raise RuntimeError("Invalid arguments in FunctionsList.__mul__.")

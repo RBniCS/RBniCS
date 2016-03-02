@@ -26,9 +26,8 @@ from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
 from RBniCS.linear_algebra.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.transpose import transpose
-from numpy.linalg import norm
 
 class Test(TestBase):
     def __init__(self, Nh, N):
@@ -37,7 +36,6 @@ class Test(TestBase):
         V = FunctionSpace(mesh, "Lagrange", 1)
         self.b = Function(V)
         self.Z = BasisFunctionsMatrix()
-        self.F = Function(V)
         # Call parent init
         TestBase.__init__(self)
             
@@ -53,23 +51,24 @@ class Test(TestBase):
                     self.b.vector().set_local(self.rand(self.b.vector().array().size))
                     self.b.vector().apply("insert")
                     self.Z.enrich(self.b)
-                self.F.vector().set_local(self.rand(self.F.vector().array().size))
+                uN = OnlineVector_Type(self.rand(N)).transpose() # as column vector
                 # Store
-                self.storage[self.index] = (self.Z, self.F)
+                self.storage[self.index] = (self.Z, uN)
             else:
-                (self.Z, self.F) = self.storage[self.index]
+                (self.Z, uN) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                Z_T_dot_F_builtin = OnlineVector(self.N)
-                for i in range(self.N):
-                    Z_T_dot_F_builtin[i] = self.Z[i].inner(self.F.vector())
+                Z_uN_builtin = uN.item(0)*self.Z[0]
+                for i in range(1, self.N):
+                    Z_uN_builtin.add_local(uN.item(i)*self.Z[i].array())
+                Z_uN_builtin.apply("add")
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using transpose() method
-                Z_T_dot_F_transpose = transpose(self.Z)*self.F.vector()
+                # Time using mul method
+                Z_uN_mul = self.Z*uN
         if test_id >= 2:
-            return norm(Z_T_dot_F_builtin - Z_T_dot_F_transpose)/norm(Z_T_dot_F_builtin)
+            return (Z_uN_builtin - Z_uN_mul).norm("l2")/Z_uN_builtin.norm("l2")
 
 for i in range(3, 7):
     Nh = 2**i
@@ -89,7 +88,7 @@ for i in range(3, 7):
         
         test.init_test(1, "b")
         usec_1b = test.timeit()
-        print("transpose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        print("mul method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
         print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
         
