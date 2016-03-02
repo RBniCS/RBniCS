@@ -46,8 +46,7 @@ class Timer(object):
                 #
                 break
 class TestBase(object):
-    def __init__(self, N):
-        self.N = N
+    def __init__(self):
         self.test_id = 0
         self.test_subid = None
         #

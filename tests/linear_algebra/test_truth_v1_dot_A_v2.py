@@ -25,12 +25,11 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.transpose import transpose
 
 class Test(TestBase):
-    def __init__(self, N):
-        mesh = UnitSquareMesh(N, N)
+    def __init__(self, Nh):
+        mesh = UnitSquareMesh(Nh, Nh)
         V = FunctionSpace(mesh, "Lagrange", 1)
         self.v1 = Function(V)
         self.v2 = Function(V)
@@ -39,10 +38,9 @@ class Test(TestBase):
         v = TestFunction(V)
         self.a = self.k*inner(grad(u), grad(v))*dx
         # Call parent init
-        TestBase.__init__(self, N)
+        TestBase.__init__(self)
             
     def run(self):
-        N = self.N
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
@@ -69,9 +67,9 @@ class Test(TestBase):
             return (v1_dot_A_v2_builtin - v1_dot_A_v2_transpose)/v1_dot_A_v2_builtin
 
 for i in range(1, 8):
-    N = 2**i
-    test = Test(N)
-    print("N =", test.v1.vector().size())
+    Nh = 2**i
+    test = Test(Nh)
+    print("Nh =", test.v1.vector().size())
     
     test.init_test(0)
     (usec_0_build, usec_0_access) = test.timeit()

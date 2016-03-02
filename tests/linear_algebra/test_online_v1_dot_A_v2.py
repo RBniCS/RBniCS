@@ -29,6 +29,11 @@ from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type as OnlineMatri
 from RBniCS.linear_algebra.transpose import transpose
 
 class Test(TestBase):
+    def __init__(self, N):
+        self.N = N
+        # Call parent init
+        TestBase.__init__(self)
+        
     def run(self):
         N = self.N
         test_id = self.test_id
