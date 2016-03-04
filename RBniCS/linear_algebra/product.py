@@ -35,13 +35,17 @@ from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 def product(thetas, operators):
     output = []
     assert len(thetas) == len(operators)
-    if \
-        isinstance(operators[0], TruthMatrix) or isinstance(operators[0], TruthVector) \
-    or \
+    if isinstance(operators[0], TruthMatrix):
+        for i in range(len(thetas)):
+            output.append((thetas[i], operators[i]))
+    elif isinstance(operators[0], TruthVector):
+        for i in range(len(thetas)):
+            output.append((thetas[i], operators[i]))
+    elif \
         isinstance(operators[0], OnlineMatrix_Type) or isinstance(operators[0], OnlineVector_Type) \
     :
         for i in range(len(thetas)):
-            output.append(thetas[i]*operators[i])
+            output.append((thetas[i], operators[i]))
     elif isinstance(operators[0], list): # we use this Dirichlet BCs with FEniCS
         for i in range(len(output)):
             # Each element of the list contains a tuple. Owing to FEniCS documentation, its second argument is the function, to be multiplied by theta
