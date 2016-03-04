@@ -109,11 +109,11 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
             
             print("truth solve for mu = ", self.mu)
             snapshot = self.truth_problem.solve()
-            self.truth_problem.export_solution(snapshot, self.snapshots_folder + "truth_" + str(run))
+            self.truth_problem.export_solution(snapshot, self.snapshots_folder, "truth_" + str(run))
             self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update snapshot matrix")
-            self.update_snapshot_matrix()
+            self.update_snapshot_matrix(snapshot)
 
             print("")
             run += 1
@@ -140,8 +140,8 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         return self.reduced_problem
         
     ## Update the snapshot matrix
-    def update_snapshot_matrix(self):
-        self.POD.store_snapshot(self.snapshot)
+    def update_snapshot_matrix(self, snapshot):
+        self.POD.store_snapshot(snapshot)
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

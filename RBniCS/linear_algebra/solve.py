@@ -32,21 +32,22 @@ from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
 # Similarly to FEniCS' solve define a solve for online problems
-def solve(A, x, b, bcs):
-    if isinstance(A, TruthMatrix) and isinstance(x, TruthVector) and isinstance(b, TruthVector):
+def solve(equation, solution, bcs, solver_parameters=None):
+    if isinstance(equation.lhs, TruthMatrix) and isinstance(solution, TruthVector) and isinstance(equation.rhs, TruthVector):
         for bc in bcs:
-            bc.apply(A, b)
+            bc.apply(equation.lhs, equation.rhs)
         from dolfin import solve as dolfin_solve
-        dolfin_solve(A, x, b)
-    elif isinstance(A, OnlineMatrix) and isinstance(x, OnlineVector_Type) and isinstance(b, OnlineVector_Type):
+        dolfin_solve(equation.lhs, solution.vector(), equation.rhs)
+    elif isinstance(equation.lhs, OnlineMatrix) and isinstance(solution, OnlineVector_Type) and isinstance(equation.rhs, OnlineVector_Type):
         for i in range(bcs):
-            b[i] = bcs[i]
-            A[i, :] = 0.
-            A[i, i] = 1.
+            equation.rhs[i] = bcs[i]
+            equation.lhs[i, :] = 0.
+            equation.lhs[i, i] = 1.
         from numpy.linalg import solve as numpy_solve
-        x = numpy_solve(A, b)
+        solution = numpy_solve(equation.lhs, equation.rhs)
     else:
-        raise RuntimeError("Invalid input arguments in solve")
+        from dolfin import solve as dolfin_solve
+        dolfin_solve(equation, solution, bcs, solver_parameters)
         
 #  @}
 ########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 

@@ -62,7 +62,7 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
         self.truth_problem.init()
         
         # Initialize reduced order data structures in the reduced problem
-        self.reduced_problem = ReducedProblemFactory(self.truth_problem)
+        self.reduced_problem = ReducedProblemFactory(self.truth_problem, self)
         if \
             os.path.exists(self.reduced_problem.basis_folder) \
         and \

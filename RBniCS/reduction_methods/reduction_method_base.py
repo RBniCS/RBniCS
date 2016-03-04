@@ -75,8 +75,6 @@ class ReductionMethodBase(object):
             self.xi_train.generate(self.mu_range, ntrain, sampling)
             # Export 
             self.xi_train.save(self.xi_train_folder, "xi_train")
-        # Prepare for the offline phase
-        self._init_offline()
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     # See the documentation of generate_train_or_test_set for more details
@@ -93,8 +91,6 @@ class ReductionMethodBase(object):
             self.xi_test.generate(self.mu_range, ntest, sampling)
             # Export 
             self.xi_test.save(self.xi_test_folder, "xi_test")
-        # Prepare for the error analysis
-        self._init_error_analysis()
             
     #  @}
     ########################### end - SETTERS - end ########################### 

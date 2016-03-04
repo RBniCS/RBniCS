@@ -145,7 +145,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             theta_bc = ()
         assembled_operator_a = sum(product(self.theta_a, self.operator_a[:N, :N]))
         assembled_operator_f = sum(product(self.theta_f, self.operator_f[:N]))
-        solve(assembled_operator_a, self._solution, assembled_operator_f, self.theta_bc)
+        solve(assembled_operator_a == assembled_operator_f, self._solution, self.theta_bc)
         return self._solution
         
     # Perform an online evaluation of the (compliant) output

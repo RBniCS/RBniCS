@@ -32,7 +32,7 @@ from RBniCS.linear_algebra.product import _DotProductOutput, _DirichletBCsProduc
 __std_sum = sum
 def sum(product_output):
     if isinstance(product_output, _DotProductOutput):
-        return product_output[0] # sum has been already performed by the dot product
+        return _EquationSide(product_output[0]) # sum has been already performed by the dot product
     elif isinstance(product_output, _DirichletBCsProductOutput): # we use this Dirichlet BCs with FEniCS
         boundary_id_to_function_space_map = {} # first argument of the constructor
         boundary_id_to_function_map = {} # second argument of the constructor
@@ -70,6 +70,41 @@ def sum(product_output):
         return output
     else: # preserve the standard python sum function
         return __std_sum(product_output)
-        
+
+# The following two classes try to mimic a subset of the functionalities of Equation and Form
+# classes of UFL in order to be able to write solve(A == F, ...) also in RBniCS, where A and F
+# are assembled in an offline/online efficient way.
+import types
+from RBniCS.linear_algebra.truth_vector import TruthVector
+from RBniCS.linear_algebra.truth_matrix import TruthMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector_Type
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
+
+def _EquationSide(content): # inspired by UFL Form class
+    if \
+        isinstance(content, TruthMatrix) or isinstance(content, TruthVector) \
+            or \
+        isinstance(content, OnlineMatrix_Type) or isinstance(content, OnlineVector_Type) \
+    :
+        standard_eq = content.__eq__
+        def __eq__(self, other):
+            if hasattr(other, "equals"): # it means that also other was preprocessed by this function
+                return _EquationPlaceholder(self, other)
+            else:
+                return standard_eq(other)
+        content.__eq__ = types.MethodType(__eq__, content)
+        content.equals = types.MethodType(standard_eq, content)
+    return content
+    
+class _EquationPlaceholder(object): # inspired by UFL Equation class
+    def __init__(self, lhs, rhs):
+        self.lhs = lhs
+        self.rhs = rhs
+    
+    def __bool__(self):
+        if type(self.lhs) != type(self.rhs):
+            return False
+        return self.lhs.equals(self.rhs)
+
 #  @}
 ########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 

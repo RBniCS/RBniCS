@@ -28,8 +28,10 @@
 # Factory to associate reduced problem classes to reduction method classes.
 def ReducedProblemFactory(truth_problem, reduction_method):
     if isinstance(reduction_method, EllipticCoercivePODGalerkinReduction):
-        return EllipticCoercivePODGalerkinReducedProblem(truth_problem)
+        reduced_problem = EllipticCoercivePODGalerkinReducedProblem(truth_problem)
     elif isinstance(reduction_method, EllipticCoerciveRBReduction):
-        return EllipticCoerciveRBReducedProblem(truth_problem)
+        reduced_problem = EllipticCoerciveRBReducedProblem(truth_problem)
     else:
         raise RuntimeError("Invalid arguments in ReducedProblemFactory.")
+    # Make sure to pass the mu_range also to the reduced problem
+    reduced_problem.setmu_range(truth_problem.mu_range)

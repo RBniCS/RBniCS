@@ -34,7 +34,7 @@ from RBniCS.elliptic_coercive_base import EllipticCoerciveBase
 #
 # Base class containing the interface of the RB method
 # for (compliant) elliptic coercive problems
-class EllipticCoerciveRBBase(EllipticCoerciveBase):
+class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
     """This class implements the Certified Reduced Basis Method for
     elliptic and coercive problems. The output of interest are assumed to
     be compliant.
@@ -76,7 +76,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     A typical usage of this class is given in the tutorial 1.
 
     """
-
+    
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced basis object
     #  @{
@@ -84,7 +84,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
     ## Default initialization of members
     def __init__(self, truth_problem):
         # Call the parent initialization
-        EllipticCoerciveBase.__init__(self, V, bc_list)
+        EllipticCoerciveReductionMethodBase.__init__(self, truth_problem)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a GS object
@@ -134,13 +134,13 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             
             print("truth solve for mu = ", self.mu)
             snapshot = self.truth_problem.solve()
-            self.truth_problem.export_solution(snapshot, self.snapshots_folder + "truth_" + str(run))
+            self.truth_problem.export_solution(snapshot, self.snapshots_folder, "truth_" + str(run))
             self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update basis matrix")
             self.reduced_problem.Z.enrich(snapshot)
-            self.GS.apply(self.Z)
-            self.reduced_problem.Z.save(self.basis_folder, "basis")
+            self.GS.apply(self.reduced_problem.Z)
+            self.reduced_problem.Z.save(self.reduced_problem.basis_folder, "basis")
             self.reduced_problem.N += 1
             
             print("build reduced operators")
@@ -152,7 +152,7 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
             print("build matrices for error estimation")
             self.reduced_problem.build_error_estimation_matrices()
             
-            if self.N < self.Nmax:
+            if self.reduced_problem.N < self.Nmax:
                 print("find next mu")
             
             # we do a greedy even if N==Nmax in order to have in
@@ -173,16 +173,17 @@ class EllipticCoerciveRBBase(EllipticCoerciveBase):
         delta_max = -1.0
         munew = None
         for mu in self.xi_train:
-            self.setmu(mu)
-            self._solve(self.N)
-            delta = self.get_delta()
+            self.reduced_problem.setmu(mu)
+            self.reduced_problem._solve(self.N)
+            delta = self.reduced_problem.get_delta()
             if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
                 munew = mu
-        assert munew != None
+        assert delta_max > 0.
+        assert munew is not None
         print("absolute delta max = ", delta_max)
-        self.setmu(munew)
-        save_greedy_post_processing_file(self.N, delta_max, munew, self.post_processing_folder)
+        self.reduced_problem.setmu(munew)
+        self.save_greedy_post_processing_file(self.N, delta_max, munew, self.post_processing_folder)
 
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

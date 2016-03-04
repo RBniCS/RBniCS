@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def ShapeParametrization(shape_parametrization_expression):
+def ShapeParametrization(*shape_parametrization_expression):
     def ShapeParametrization_Decorator(ParametrizedProblem_DerivedClass)
         #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
         ## @class ShapeParametrization
