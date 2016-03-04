@@ -46,17 +46,19 @@ class Test(TestBase):
                 self.v1.vector().apply("insert")
                 self.v2.vector().set_local(self.rand(self.v2.vector().array().size))
                 self.v2.vector().apply("insert")
-                self.storage[self.index] = (self.v1, self.v2)
+                v1 = self.v1.vector().copy()
+                v2 = self.v2.vector().copy()
+                self.storage[self.index] = (v1, v2)
             else:
-                (self.v1, self.v2) = self.storage[self.index]
+                (v1, v2) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                v1_dot_v2_builtin = self.v1.vector().inner(self.v2.vector())
+                v1_dot_v2_builtin = v1.inner(v2)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
-                v1_dot_v2_transpose = transpose(self.v1.vector())*self.v2.vector()
+                v1_dot_v2_transpose = transpose(v1)*v2
         if test_id >= 2:
             return (v1_dot_v2_builtin - v1_dot_v2_transpose)/v1_dot_v2_builtin
 

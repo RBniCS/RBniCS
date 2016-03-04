@@ -55,17 +55,19 @@ class Test(TestBase):
                 # Generate random matrix
                 A = assemble(self.a)
                 # Store
-                self.storage[self.index] = (self.v1, self.v2, A)
+                v1 = self.v1.vector().copy()
+                v2 = self.v2.vector().copy()
+                self.storage[self.index] = (v1, v2, A)
             else:
-                (self.v1, self.v2, A) = self.storage[self.index]
+                (v1, v2, A) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                v1_dot_A_v2_builtin = self.v1.vector().inner(A*self.v2.vector())
+                v1_dot_A_v2_builtin = v1.inner(A*v2)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
-                v1_dot_A_v2_transpose = transpose(self.v1.vector())*A*self.v2.vector()
+                v1_dot_A_v2_transpose = transpose(v1)*A*v2
         if test_id >= 2:
             return (v1_dot_A_v2_builtin - v1_dot_A_v2_transpose)/v1_dot_A_v2_builtin
 
