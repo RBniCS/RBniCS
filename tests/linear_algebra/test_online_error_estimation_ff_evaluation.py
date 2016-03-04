@@ -48,8 +48,8 @@ class Test(TestBase):
             if not self.index in self.storage:
                 ff_product = AffineExpansionOnlineStorage(Q, Q)
                 ff_product_legacy = legacy_tensor((Q, Q))
-                for i in range(self.Q):
-                    for j in range(self.Q):
+                for i in range(Q):
+                    for j in range(Q):
                         # Generate random matrix
                         ff_product[i, j] = OnlineMatrix_Type(self.rand(1, 1))
                         ff_product_legacy[i, j] = ff_product[i, j]
@@ -93,7 +93,8 @@ for i in range(4, 9):
         usec_1b = test.timeit()
         print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        print("Speed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
+        #print("Speed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
+        print("Relative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
         
         test.init_test(2)
         error = test.average()

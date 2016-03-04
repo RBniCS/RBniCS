@@ -81,23 +81,66 @@ def product(thetas, _operators, thetas2=None):
             operators = _operators._content
         else: # isinstance(_operators, AffineExpansionOnlineStorage)
             operators = _operators
-        if operators.order() == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
+        order = operators.order()
+        if order == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
             assert isinstance(operators[0], OnlineMatrix_Type) or isinstance(operators[0], OnlineVector_Type)
             assert thetas2 is None
             assert len(thetas) == len(operators)
+            # Single for loop version:
             output = thetas[0]*operators[0]
             for i in range(1, len(thetas)):
-                output += thetas[i]*operators[i]
+                output += thetas[i]*operators._content[i]
             return _DotProductOutput(output)
-        elif operators.order() == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
+            '''
+            # Vectorized version:
+            # Profiling has reveleaded that the following vectorized (over q) version
+            # introduces an overhead of 10%~20%
+            from numpy import asmatrix
+            output = asmatrix(thetas)*operators.as_matrix().transpose()
+            output = output.item(0, 0)
+            return _DotProductOutput(output)
+            '''
+        elif order == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
             assert isinstance(operators[0, 0], OnlineMatrix_Type) or isinstance(operators[0, 0], OnlineVector_Type)
             assert thetas2 is not None
-            assert len(thetas) == len(thetas2)
-            # no assert here on the length of operators since the current operator interface does not provide a 2D len method
+            # no checks here on the first dimension of operators should be equal to len(thetas), and
+            # similarly that the second dimension should be equal to len(thetas2), because the
+            # current operator interface does not provide a 2D len method
+            from numpy import asmatrix
+            thetas_vector = asmatrix(thetas)
+            thetas2_vector = asmatrix(thetas2).transpose()
             output = 0.
-            for i in range(len(thetas)):
-                for j in range(len(thetas)):
-                    output += thetas[i]*operators[i, j]*thetas[j]
+            if operators[0, 0].shape == (1, 1): 
+                # Do not degrade the performance in this special case, which holds in the 
+                # (F,F) Riesz representor products in reduced basis error estimation.
+                #
+                # Double for loop version:
+                for i in range(len(thetas)):
+                    for j in range(len(thetas2)):
+                        output += thetas[i]*operators._content[i, j].item(0,0)*thetas2[j]
+                '''
+                # Vectorized version:
+                # Profiling has revelead that the standard approach, emplyed in the else,
+                # entails a significant overhead (~500%) with respect to the legacy version composed 
+                # of a double for loop. The double for loop proposed above limits the overhead to 
+                # ~70% for small affine expansions and ~20% for larger ones
+                output = thetas_vector*operators.as_matrix()*thetas2_vector
+                output = output.item(0, 0)
+                '''
+            else:
+                '''
+                # Double for loop version:
+                # Profiling has revelead a sensible speedup, of almost two order of magnitude for large
+                # values of N and Q in the case of (A, A) Riesz representor products when compared 
+                # to the quadruple for loop in the legacy version.
+                # Vectorized version provides an additional 25%~50% speedup.
+                for i in range(len(thetas)):
+                    for j in range(len(thetas2)):
+                        output += thetas[i]*operators._content[i, j]*thetas2[j]
+                '''
+                # Vectorized version:
+                output = thetas_vector*operators.as_matrix()*thetas2_vector
+                output = output.item(0, 0)
             return _DotProductOutput(output)
         else:
             raise RuntimeError("product(): invalid operands.")

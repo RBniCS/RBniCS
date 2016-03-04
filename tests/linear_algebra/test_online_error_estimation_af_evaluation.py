@@ -35,76 +35,78 @@ from numpy import zeros as legacy_tensor
 from numpy.linalg import norm
 
 class Test(TestBase):
-    def __init__(self, N, Q):
+    def __init__(self, N, Qa, Qf):
         self.N = N
-        self.Q = Q
+        self.Qa = Qa
+        self.Qf = Qf
         # Call parent init
         TestBase.__init__(self)
             
     def run(self):
         N = self.N
-        Q = self.Q
+        Qa = self.Qa
+        Qf = self.Qf
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                aa_product = AffineExpansionOnlineStorage(Q, Q)
-                aa_product_legacy = legacy_tensor((Q, Q, N, N))
-                for i in range(Q):
-                    for j in range(Q):
+                af_product = AffineExpansionOnlineStorage(Qa, Qf)
+                af_product_legacy = legacy_tensor((Qa, Qf, N))
+                for i in range(Qa):
+                    for j in range(Qf):
                         # Generate random matrix
-                        aa_product[i, j] = OnlineMatrix_Type(self.rand(N, N))
+                        af_product[i, j] = OnlineVector_Type(self.rand(N)).transpose()
                         for n in range(N):
-                            for m in range(N):
-                                aa_product_legacy[i, j, n, m] = aa_product[i, j][n, m]
+                            af_product_legacy[i, j, n] = af_product[i, j][n]
                 # Genereate random theta
-                theta = tuple(self.rand(Q))
+                theta_a = tuple(self.rand(Qa))
+                theta_f = tuple(self.rand(Qf))
                 # Generate random solution
                 u = OnlineVector_Type(self.rand(N)).transpose() # as column vector
-                v = OnlineVector_Type(self.rand(N)).transpose() # as column vector
                 # Store
-                self.storage[self.index] = (theta, aa_product, aa_product_legacy, u, v)
+                self.storage[self.index] = (theta_a, theta_f, af_product, af_product_legacy, u)
             else:
-                (theta, aa_product, aa_product_legacy, u, v) = self.storage[self.index]
+                (theta_a, theta_f, af_product, af_product_legacy, u) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
                 error_estimator_legacy = 0.
-                for i in range(Q):
-                    for j in range(Q):
+                for i in range(Qa):
+                    for j in range(Qf):
                         for n in range(N):
-                            for m in range(N):
-                                error_estimator_legacy += u.item(n)*theta[i]*aa_product_legacy[i, j, n, m]*theta[j]*v.item(m)
+                            error_estimator_legacy += theta_a[i]*af_product_legacy[i, j, n]*theta_f[j]*u.item(n)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
-                error_estimator_sum_product = transpose(u)*sum(product(theta, aa_product, theta))*v
+                error_estimator_sum_product = transpose(u)*sum(product(theta_a, af_product, theta_f))
         if test_id >= 2:
             return abs(error_estimator_legacy - error_estimator_sum_product)/abs(error_estimator_legacy)
 
 for i in range(4, 9):
     N = 2**i
     for j in range(1, 8):
-        Q = 2 + 4*j
-        test = Test(N, Q)
-        print("N =", N, "and Q =", Q)
-        
-        test.init_test(0)
-        (usec_0_build, usec_0_access) = test.timeit()
-        print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        test.init_test(1, "a")
-        usec_1a = test.timeit()
-        print("Legacy method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        test.init_test(1, "b")
-        usec_1b = test.timeit()
-        print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        print("Speed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
-        
-        test.init_test(2)
-        error = test.average()
-        print("Relative error:", error)
+        Qa = 2 + 4*j
+        for k in range(1, 8):
+            Qf = 2 + 4*k
+            test = Test(N, Qa, Qf)
+            print("N =", N, "and Qa =", Qa, "and Qf =", Qf)
+            
+            test.init_test(0)
+            (usec_0_build, usec_0_access) = test.timeit()
+            print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
+            print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+            
+            test.init_test(1, "a")
+            usec_1a = test.timeit()
+            print("Legacy method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+            
+            test.init_test(1, "b")
+            usec_1b = test.timeit()
+            print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+            
+            print("Speed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
+            
+            test.init_test(2)
+            error = test.average()
+            print("Relative error:", error)
     
