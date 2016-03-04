@@ -28,13 +28,16 @@ from dolfin import *
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix
 from RBniCS.linear_algebra.sum import sum
 from RBniCS.linear_algebra.product import product
+from RBniCS.linear_algebra.affine_expansion_offline_storage import AffineExpansionOfflineStorage
 
 class Test(TestBase):
     def __init__(self, Nh, Q):
         self.Q = Q
         mesh = UnitSquareMesh(Nh, Nh)
         V = FunctionSpace(mesh, "Lagrange", 1)
-        self.f = Function(V)
+        self.g = Function(V)
+        v = TestFunction(V)
+        self.f = self.g*v*dx
         # Call parent init
         TestBase.__init__(self)
             
@@ -44,13 +47,14 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                F = ()
+                f = ()
                 for i in range(self.Q):
-                    # Generate random vectors
-                    self.f.vector().set_local(self.rand(self.f.vector().array().size))
-                    self.f.vector().apply("insert")
-                    # Generate random matrix
-                    F += (self.f.vector().copy(),)
+                    # Generate random vector
+                    self.g.vector().set_local(self.rand(self.g.vector().array().size))
+                    self.g.vector().apply("insert")
+                    # Generate random form
+                    f += (self.f,)
+                F = AffineExpansionOfflineStorage(f)
                 # Genereate random theta
                 theta = tuple(self.rand(Q))
                 # Store
@@ -77,7 +81,7 @@ for i in range(3, 7):
     for j in range(1, 4):
         Q = 10 + 4*j
         test = Test(Nh, Q)
-        print("Nh =", test.f.vector().size(), "and Q =", Q)
+        print("Nh =", test.g.vector().size(), "and Q =", Q)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()

@@ -28,6 +28,7 @@ from dolfin import *
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 from RBniCS.linear_algebra.sum import sum
 from RBniCS.linear_algebra.product import product
+from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
 from numpy.linalg import norm
 
 class Test(TestBase):
@@ -44,12 +45,10 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                A = ()
+                A = AffineExpansionOnlineStorage(self.Q)
                 for i in range(self.Q):
-                    # Generate random vectors
-                    a = OnlineMatrix_Type(self.rand(N, N))
                     # Generate random matrix
-                    A += (a,)
+                    A[i] = OnlineMatrix_Type(self.rand(N, N))
                 # Genereate random theta
                 theta = tuple(self.rand(Q))
                 # Store
@@ -69,7 +68,7 @@ class Test(TestBase):
         if test_id >= 2:
             return norm(assembled_matrix_builtin - assembled_matrix_sum_product)/norm(assembled_matrix_builtin)
 
-for i in range(4, 15):
+for i in range(4, 9):
     N = 2**i
     for j in range(1, 4):
         Q = 10 + 4*j

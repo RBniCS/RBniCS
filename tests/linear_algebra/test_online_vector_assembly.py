@@ -28,6 +28,7 @@ from dolfin import *
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.sum import sum
 from RBniCS.linear_algebra.product import product
+from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
 from numpy.linalg import norm
 
 class Test(TestBase):
@@ -44,12 +45,10 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                F = ()
+                F = AffineExpansionOnlineStorage(self.Q)
                 for i in range(self.Q):
-                    # Generate random vectors
-                    f = OnlineVector_Type(self.rand(N)).transpose() # as column vector
-                    # Generate random matrix
-                    F += (f,)
+                    # Generate random vector
+                    F[i] = OnlineVector_Type(self.rand(N)).transpose() # as column vector
                 # Genereate random theta
                 theta = tuple(self.rand(Q))
                 # Store
@@ -61,7 +60,7 @@ class Test(TestBase):
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
                 assembled_vector_builtin = theta[0]*F[0]
-                for i in range(self.Q):
+                for i in range(1, self.Q):
                     assembled_vector_builtin += theta[i]*F[i]
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
@@ -69,7 +68,7 @@ class Test(TestBase):
         if test_id >= 2:
             return norm(assembled_vector_builtin - assembled_vector_sum_product)/norm(assembled_vector_builtin)
 
-for i in range(4, 15):
+for i in range(4, 9):
     N = 2**i
     for j in range(1, 4):
         Q = 10 + 4*j

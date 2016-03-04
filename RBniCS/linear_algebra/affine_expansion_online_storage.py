@@ -26,11 +26,9 @@
 ## @defgroup OnlineStage Methods related to the online stage
 #  @{
 
-# Hide the implementation of an array with two or more indices, used to store tensors
-# for error estimation. There are typically two kind of indices, either over the
-# affine expansion or over the basis functions. This container will be indicized
-# over the affine expansion. Its content will be another container, indicized over
-# the basis functions
+# Hide the implementation of the storage of online data structures, with respect to the affine expansion index q.
+# Both vectors over q (e.g. to store reduced order vectors/matrices) and matrices over q (e.g. to store the products
+# of operators representors, as required for the efficient evaluation of error estimators)
 # Requires: access with operator[]
 from numpy import empty as AffineExpansionOnlineStorageContent_Base
 from numpy import nditer as AffineExpansionOnlineStorageContent_Iterator
@@ -51,7 +49,7 @@ class AffineExpansionOnlineStorage(object):
         
     def save(self, directory, filename):
         io_utils.save_numpy_file(self._content, directory, filename)
-
+        
     def __getitem__(self, key):
         if \
             isinstance(key, slice) \
@@ -72,11 +70,14 @@ class AffineExpansionOnlineStorage(object):
         self._content[key] = item
         
     def __len__(self):
-        if len(self._content.shape) == 1: # for 1D arrays
+        if self.order() == 1: # for 1D arrays
             return self._content.size
         else:
             raise RuntimeError("Should not call len for tensors of dimension 2 or higher")
-        
+    
+    def order(self):
+        return len(self._content.shape)
+            
 #  @}
 ########################### end - ONLINE STAGE - end ########################### 
 
