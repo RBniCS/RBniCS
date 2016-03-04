@@ -26,38 +26,92 @@
 ## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
 #  @{
 
+from RBniCS.linear_algebra.affine_expansion_offline_storage import AffineExpansionOfflineStorage, _AssembledFormsAffineExpansionOfflineStorageContent, _DirichletBCsAffineExpansionOfflineStorageContent
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
+from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
-# product function to assemble truth/reduced affine expansions. To be used in combination with python's sum.
-def product(thetas, operators):
-    output = []
-    assert len(thetas) == len(operators)
-    if isinstance(operators[0], TruthMatrix):
-        for i in range(len(thetas)):
-            output.append((thetas[i], operators[i]))
-    elif isinstance(operators[0], TruthVector):
-        for i in range(len(thetas)):
-            output.append((thetas[i], operators[i]))
+# product function to assemble truth/reduced affine expansions. To be used in combination with sum.
+def product(thetas, _operators, thetas2=None):
+    if isinstance(_operators, AffineExpansionOfflineStorage) and not isinstance(_operators._content, AffineExpansionOnlineStorage):
+        assert thetas2 is None
+        operators = _operators._content
+        assert len(thetas) == len(operators)
+        if isinstance(operators, _DirichletBCsAffineExpansionOfflineStorageContent): 
+            output = _DirichletBCsProductOutput()
+            for i in range(len(thetas)):
+                # Each element of the list contains a tuple. Owing to FEniCS documentation, its second argument is the function, to be multiplied by theta
+                output_i = []
+                for j in range(len(operators[i])):
+                    operators_i_j_list = list(operators[i][j])
+                    operators_i_j_list[1] = Constant(thetas[i])*operators_i_list[1]
+                    output_i.append(tuple(operators_i_j_list))
+                output.append(output_i)
+            return output
+        elif isinstance(operators, _AssembledFormsAffineExpansionOfflineStorageContent):
+            assert isinstance(operators[0], TruthMatrix) or isinstance(operators[0], TruthVector)
+            # Carry out the dot product (with respect to the index q over the affine expansion)
+            if isinstance(operators[0], TruthMatrix):
+                output = operators[0].copy()
+                output.zero()
+                for i in range(len(thetas)):
+                    output += thetas[i]*operators[i]
+                return _DotProductOutput(output)
+            elif isinstance(operators[0], TruthVector):
+                output = operators[0].copy()
+                output.zero()
+                for i in range(len(thetas)):
+                    output.add_local(thetas[i]*operators[i].array())
+                output.apply("insert")
+                return _DotProductOutput(output)
+            else: # impossible to arrive here anyway thanks to the assert
+                raise RuntimeError("product(): invalid operands.")
+        else:
+            raise RuntimeError("product(): invalid operands.")
     elif \
-        isinstance(operators[0], OnlineMatrix_Type) or isinstance(operators[0], OnlineVector_Type) \
+        (isinstance(_operators, AffineExpansionOfflineStorage) and isinstance(_operators._content, AffineExpansionOnlineStorage)) \
+            or \
+        isinstance(_operators, AffineExpansionOnlineStorage) \
     :
-        for i in range(len(thetas)):
-            output.append((thetas[i], operators[i]))
-    elif isinstance(operators[0], list): # we use this Dirichlet BCs with FEniCS
-        for i in range(len(output)):
-            # Each element of the list contains a tuple. Owing to FEniCS documentation, its second argument is the function, to be multiplied by theta
-            output_i = []
-            for j in range(len(operators[i])):
-                operators_i_j_list = list(operators[i][j])
-                operators_i_j_list[1] = Constant(thetas[i])*operators_i_list[1]
-                output_i.append(tuple(operators_i_j_list))
-            output.append(output_i)
+        if \
+            isinstance(_operators, AffineExpansionOfflineStorage) and isinstance(_operators._content, AffineExpansionOnlineStorage) \
+        :
+            operators = _operators._content
+        else: # isinstance(_operators, AffineExpansionOnlineStorage)
+            operators = _operators
+        if operators.order() == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
+            assert isinstance(operators[0], OnlineMatrix_Type) or isinstance(operators[0], OnlineVector_Type)
+            assert thetas2 is None
+            assert len(thetas) == len(operators)
+            output = thetas[0]*operators[0]
+            for i in range(1, len(thetas)):
+                output += thetas[i]*operators[i]
+            return _DotProductOutput(output)
+        elif operators.order() == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
+            assert isinstance(operators[0, 0], OnlineMatrix_Type) or isinstance(operators[0, 0], OnlineVector_Type)
+            assert thetas2 is not None
+            assert len(thetas) == len(thetas2)
+            # no assert here on the length of operators since the current operator interface does not provide a 2D len method
+            output = 0.
+            for i in range(len(thetas)):
+                for j in range(len(thetas)):
+                    output += thetas[i]*operators[i, j]*thetas[j]
+            return _DotProductOutput(output)
+        else:
+            raise RuntimeError("product(): invalid operands.")
     else:
         raise RuntimeError("product(): invalid operands.")
-    return output
+
+# Auxiliary class to signal to the sum() function that the sum has already been performed by the dot product
+class _DotProductOutput(list):
+    def __init__(self, content):
+        self.append(content)
+        
+# Auxiliary class to signal to the sum() function that it is dealing with an expansion of Dirichlet BCs
+class _DirichletBCsProductOutput(list):
+    pass
         
 #  @}
 ########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 

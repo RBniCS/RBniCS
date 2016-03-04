@@ -26,36 +26,14 @@
 ## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
 #  @{
 
-from RBniCS.linear_algebra.truth_vector import TruthVector
-from RBniCS.linear_algebra.truth_matrix import TruthMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
+from RBniCS.linear_algebra.product import _DotProductOutput, _DirichletBCsProductOutput
 
 # sum function to assemble truth/reduced affine expansions. To be used in combination with the product method.
 __std_sum = sum
 def sum(product_output):
-    if isinstance(product_output[0], tuple):
-        if isinstance(product_output[0][1], TruthMatrix):
-            sum_output = product_output[0][1].copy()
-            sum_output.zero()
-            for i in range(len(product_output)):
-                sum_output += product_output[i][0]*product_output[i][1]
-            return sum_output
-        elif isinstance(product_output[0][1], TruthVector):
-            sum_output = product_output[0][1].copy()
-            sum_output.zero()
-            for i in range(len(product_output)):
-                sum_output.add_local(product_output[i][0]*product_output[i][1].array())
-            sum_output.apply("insert")
-            return sum_output
-        elif \
-            isinstance(product_output[0][1], OnlineMatrix_Type) or isinstance(product_output[0][1], OnlineVector_Type) \
-        :
-            sum_output = product_output[0][0]*product_output[0][1]
-            for i in range(1,len(product_output)):
-                sum_output += product_output[i][0]*product_output[i][1]
-            return sum_output
-    elif isinstance(product_output[0], list): # we use this Dirichlet BCs with FEniCS
+    if isinstance(product_output, _DotProductOutput):
+        return product_output[0] # sum has been already performed by the dot product
+    elif isinstance(product_output, _DirichletBCsProductOutput): # we use this Dirichlet BCs with FEniCS
         boundary_id_to_function_space_map = {} # first argument of the constructor
         boundary_id_to_function_map = {} # second argument of the constructor
         boundary_id_to_boundary_mesh_map = {} # third argument of the constructor
@@ -89,9 +67,9 @@ def sum(product_output):
                     boundary_id \
                 ) \
             )
+        return output
     else: # preserve the standard python sum function
         return __std_sum(product_output)
-    return output
         
 #  @}
 ########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 
