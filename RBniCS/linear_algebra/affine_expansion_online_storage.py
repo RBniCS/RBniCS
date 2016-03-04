@@ -32,42 +32,76 @@
 # Requires: access with operator[]
 from numpy import empty as AffineExpansionOnlineStorageContent_Base
 from numpy import nditer as AffineExpansionOnlineStorageContent_Iterator
+from numpy import asmatrix as AffineExpansionOnlineStorageContent_AsMatrix
 class AffineExpansionOnlineStorage(object):
     def __init__(self, *args):
         self._content = None
         if args:
             self._content = AffineExpansionOnlineStorageContent_Base(args, dtype=object)
+        self._content_as_matrix = None
+        self._content_as_matrix_needs_update = True
     
     def load(self, directory, filename):
         if self._content: # avoid loading multiple times
             return False
         if io_utils.exists_numpy_file(directory, filename):
             self._content = io_utils.load_numpy_file(directory, filename)
+            self.as_matrix()
             return True
         else:
             return False
         
     def save(self, directory, filename):
         io_utils.save_numpy_file(self._content, directory, filename)
-        
+    
+    def as_matrix(self):
+        if self._content_as_matrix_needs_update:
+            self._content_as_matrix = AffineExpansionOnlineStorageContent_AsMatrix(self._content)
+            self._content_as_matrix_needs_update = False
+        return self._content_as_matrix
+    
     def __getitem__(self, key):
         if \
             isinstance(key, slice) \
                 or \
             isinstance(key, tuple) and isinstance(key[0], slice) \
         : # return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
-            output = AffineExpansionOnlineStorage(*self._content.shape)
-            it = AffineExpansionOnlineStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
-            while not it.finished:
-                output[it.multi_index] = self._content[it.multi_index][key]
-                it.iternext()
-            return output
+            
+            if isinstance(key, slice):
+                assert key.start is None and key.step is None
+                assert key.stop <= self._content[0, 0].shape[0]
+                if key.stop == self._content[0, 0].shape[0]:
+                    return self
+                
+                output = AffineExpansionOnlineStorage(*self._content.shape)
+                for i in range(self._content.size):
+                    output[i] = self._content[i][key]
+                return output
+                
+            else: # isinstance(key, tuple)
+                it = AffineExpansionOnlineStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+                
+                is_slice_equal_to_full_tensor = True
+                for i in range(len(key)):
+                    assert key[i].start is None and key[i].step is None
+                    assert key[i].stop <= self._content[it.multi_index].shape[i]
+                    if key[i].stop < self._content[it.multi_index].shape[i]:
+                        is_slice_equal_to_full_tensor = False
+                if is_slice_equal_to_full_tensor:
+                    return self
+                
+                output = AffineExpansionOnlineStorage(*self._content.shape)
+                while not it.finished:
+                    output[it.multi_index] = self._content[it.multi_index][key]
+                    it.iternext()
+                return output
         else: # return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
             return self._content[key]
         
     def __setitem__(self, key, item):
         assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
         self._content[key] = item
+        self._content_as_matrix_needs_update = True
         
     def __len__(self):
         if self.order() == 1: # for 1D arrays

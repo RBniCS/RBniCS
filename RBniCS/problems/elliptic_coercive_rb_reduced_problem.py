@@ -101,7 +101,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         N = self._solution.size
         return \
               sum(product(self.theta_f, self.riesz_ff_product, self.theta_f)) \
-            + 2.0*sum(product(self.theta_a, self.riesz_af_product[:N], self.theta_f)*self._solution \
+            + 2.0*transpose(self._solution)*sum(product(self.theta_a, self.riesz_af_product[:N], self.theta_f) \
             + transpose(self._solution)*sum(product(self.theta_a, self.riesz_aa_product[:N, :N], self.theta_a))*self._solution
         
     #  @}
