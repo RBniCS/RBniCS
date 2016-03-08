@@ -27,16 +27,14 @@ from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 3: GEOMETRICAL PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @ShapeParametrization(
-    shape_parametrization_expression = [
-        ("2.0 - 2.0*mu[0] + mu[0]*x[0] +(2.0-2.0*mu[0])*x[1]", "2.0 -2.0*mu[1] + (2.0-mu[1])*x[1]"), # subdomain 1
-        ("2.0*mu[0]-2.0 +x[0] +(mu[0]-1.0)*x[1]", "2.0 -2.0*mu[1] + (2.0-mu[1])*x[1]"), # subdomain 2
-        ("2.0 - 2.0*mu[0] + (2.0-mu[0])*x[0]", "2.0 -2.0*mu[1] + (2.0-2.0*mu[1])*x[0] + mu[1]*x[1]"), # subdomain 3
-        ("2.0 - 2.0*mu[0] + (2.0-mu[0])*x[0]", "2.0*mu[1] -2.0 + (mu[1]-1.0)*x[0] + x[1]"), # subdomain 4
-        ("2.0*mu[0] -2.0 + (2.0-mu[0])*x[0]", "2.0 -2.0*mu[1] + (2.0*mu[1]-2.0)*x[0] + mu[1]*x[1]"), # subdomain 5
-        ("2.0*mu[0] -2.0 + (2.0-mu[0])*x[0]", "2.0*mu[1] -2.0 + (1.0 - mu[1])*x[0] + x[1]"), # subdomain 6
-        ("2.0 -2.0*mu[0] + mu[0]*x[0] + (2.0*mu[0]-2.0)*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 7
-        ("2.0*mu[0] -2.0 + x[0] + (1.0-mu[0])*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 8
-    ]
+    ("2.0 - 2.0*mu[0] + mu[0]*x[0] +(2.0-2.0*mu[0])*x[1]", "2.0 -2.0*mu[1] + (2.0-mu[1])*x[1]"), # subdomain 1
+    ("2.0*mu[0]-2.0 +x[0] +(mu[0]-1.0)*x[1]", "2.0 -2.0*mu[1] + (2.0-mu[1])*x[1]"), # subdomain 2
+    ("2.0 - 2.0*mu[0] + (2.0-mu[0])*x[0]", "2.0 -2.0*mu[1] + (2.0-2.0*mu[1])*x[0] + mu[1]*x[1]"), # subdomain 3
+    ("2.0 - 2.0*mu[0] + (2.0-mu[0])*x[0]", "2.0*mu[1] -2.0 + (mu[1]-1.0)*x[0] + x[1]"), # subdomain 4
+    ("2.0*mu[0] -2.0 + (2.0-mu[0])*x[0]", "2.0 -2.0*mu[1] + (2.0*mu[1]-2.0)*x[0] + mu[1]*x[1]"), # subdomain 5
+    ("2.0*mu[0] -2.0 + (2.0-mu[0])*x[0]", "2.0*mu[1] -2.0 + (1.0 - mu[1])*x[0] + x[1]"), # subdomain 6
+    ("2.0 -2.0*mu[0] + mu[0]*x[0] + (2.0*mu[0]-2.0)*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 7
+    ("2.0*mu[0] -2.0 + x[0] + (1.0-mu[0])*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 8
 )
 class Hole(EllipticCoerciveProblem):
     
@@ -151,27 +149,28 @@ bound = MeshFunction("size_t", mesh, "data/hole_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Hole class
-hole = Hole(V, mesh, subd, bound)
+hole_problem = Hole(V, mesh, subd, bound)
+mu_range = [(1.0, 1.5), (1.0, 1.5), (0.01, 1.0)]
+hole_problem.setmu_range(mu_range)
 
 # 4. Choose PETSc solvers as linear algebra backend
 parameters.linear_algebra_backend = 'PETSc'
 
-# 5. Set mu range, xi_train and Nmax
-mu_range = [(1.0, 1.5), (1.0, 1.5), (0.01, 1.0)]
-hole.setmu_range(mu_range)
-hole.setxi_train(500)
-hole.setNmax(20)
+# 5. Prepare reduction with a POD-Galerkin method
+pod_galerkin_method = PODGalerkin(hole_problem)
+pod_galerkin_method.setNmax(20)
 
 # 6. Perform the offline phase
 first_mu = (0.5, 0.5, 0.01)
-hole.setmu(first_mu)
-hole.offline()
+hole_problem.setmu(first_mu)
+pod_galerkin_method.setxi_train(500)
+reduced_hole_problem = hole_problem.offline()
 
 # 7. Perform an online solve
 online_mu = (0.5,0.5,0.01)
-hole.setmu(online_mu)
-hole.online_solve()
+reduced_hole_problem.setmu(online_mu)
+reduced_hole_problem.solve()
 
 # 8. Perform an error analysis
-hole.setxi_test(500)
-hole.error_analysis()
+pod_galerkin_method.setxi_test(500)
+pod_galerkin_method.error_analysis()

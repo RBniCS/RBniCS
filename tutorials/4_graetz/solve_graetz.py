@@ -27,10 +27,8 @@ from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @ShapeParametrization(
-    shape_parametrization_expression = [
-        ("x[0]", "x[1]"), # subdomain 1
-        ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
-    ]
+    ("x[0]", "x[1]"), # subdomain 1
+    ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
 )
 class Graetz(EllipticCoerciveNonCompliantBase):
     
@@ -54,32 +52,7 @@ class Graetz(EllipticCoerciveNonCompliantBase):
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
-    
-    # Propagate the values of all setters also to the SCM object
-    
-    def setNmax(self, nmax):
-        EllipticCoerciveRBNonCompliantBase.setNmax(self, nmax)
-        self.SCM_obj.setNmax(2*nmax)
-    def setmu_range(self, mu_range):
-        EllipticCoerciveRBNonCompliantBase.setmu_range(self, mu_range)
-        self.SCM_obj.setmu_range(mu_range)
-    def setxi_train(self, ntrain, enable_import=False, sampling="random"):
-        EllipticCoerciveRBNonCompliantBase.setxi_train(self, ntrain, enable_import, sampling)
-        self.SCM_obj.setxi_train(ntrain, True, sampling)
-    def setxi_test(self, ntest, enable_import=False, sampling="random"):
-        EllipticCoerciveRBNonCompliantBase.setxi_test(self, ntest, enable_import, sampling)
-        self.SCM_obj.setxi_test(ntest, True, sampling)
-    def setmu(self, mu):
-        EllipticCoerciveRBNonCompliantBase.setmu(self, mu)
-        self.SCM_obj.setmu(mu)
         
-    #  @}
-    ########################### end - SETTERS - end ########################### 
-    
     ###########################     PROBLEM SPECIFIC     ########################### 
     ## @defgroup ProblemSpecific Problem specific methods
     #  @{
@@ -152,22 +125,6 @@ class Graetz(EllipticCoerciveNonCompliantBase):
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
     
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
-    
-    ## Perform the offline phase of the reduced order model
-    def offline(self):
-        # Perform first the SCM offline phase, ...
-        bak_first_mu = tuple(list(self.mu))
-        self.SCM_obj.offline()
-        # ..., and then call the parent method.
-        self.setmu(bak_first_mu)
-        EllipticCoerciveRBNonCompliantBase.offline(self)
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods
     #  @{
@@ -180,21 +137,6 @@ class Graetz(EllipticCoerciveNonCompliantBase):
         
     #  @}
     ########################### end - I/O - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
-    
-    # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
-    def error_analysis(self, N=None):
-        # Perform first the SCM error analysis, ...
-        self.SCM_obj.error_analysis()
-        # ..., and then call the parent method.
-        EllipticCoerciveRBNonCompliantBase.error_analysis(self, N)        
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class SCM_Graetz(SCM):
@@ -244,23 +186,24 @@ bound = MeshFunction("size_t", mesh, "data/graetz_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Graetz class
-graetz = Graetz(V, mesh, subd, bound)
+graetz_problem = Graetz(V, mesh, subd, bound)
+mu_range = [(0.01, 10.0), (0.01, 10.0)]
+graetz_problem.setmu_range(mu_range)
 
 # 4. Choose PETSc solvers as linear algebra backend
 parameters.linear_algebra_backend = 'PETSc'
 
-# 5. Set mu range, xi_train and Nmax
-mu_range = [(0.01, 10.0), (0.01, 10.0)]
-graetz.setmu_range(mu_range)
-graetz.setxi_train(100)
-graetz.setNmax(10)
+# 5. Prepare reduction with a reduced basis method
+reduced_basis_method = ReducedBasis(graetz_problem)
+reduced_basis.setNmax(10)
 
 # 6. Perform the offline phase
 first_mu = (1.0, 1.0)
-graetz.setmu(first_mu)
-graetz.offline()
+graetz_problem.setmu(first_mu)
+reduced_basis.setxi_train(100)
+reduced_graetz_problem = reduced_basis.offline()
 
 # 7. Perform an online solve
 online_mu = (10.0, 0.01)
-graetz.setmu(online_mu)
-graetz.online_solve()
+reduced_graetz_problem.setmu(online_mu)
+reduced_graetz_problem.online_solve()

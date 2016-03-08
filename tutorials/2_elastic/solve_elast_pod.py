@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 2: ELASTIC BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Eblock(EllipticCoerciveProblem):
+class ElasticBlock(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -143,12 +143,7 @@ bound = MeshFunction("size_t", mesh, "data/elastic_facet_region.xml")
 V = VectorFunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Elastic Block class
-eb = Eblock(V, subd, bound)
-
-# 4. Choose PETSc solvers as linear algebra backend
-parameters.linear_algebra_backend = 'PETSc'
-
-# 5. Set mu range, xi_train and Nmax
+elastic_block_problem = ElasticBlock(V, subd, bound)
 mu_range = [ \
     (1.0, 100.0), \
     (1.0, 100.0), \
@@ -162,20 +157,26 @@ mu_range = [ \
     (-1.0, 1.0), \
     (-1.0, 1.0), \
 ]
-eb.setmu_range(mu_range)
-eb.setxi_train(500)
-eb.setNmax(20)
+elastic_block_problem.setmu_range(mu_range)
+
+# 4. Choose PETSc solvers as linear algebra backend
+parameters.linear_algebra_backend = 'PETSc'
+
+# 5. Prepare reduction with a POD-Galerkin method
+pod_galerkin_method = PODGalerkin(elastic_block_problem)
+pod_galerkin_method.setNmax(20)
 
 # 6. Perform the offline phase
 first_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0)
-eb.setmu(first_mu)
-eb.offline()
+elastic_block_problem.setmu(first_mu)
+pod_galerkin_method.setxi_train(500)
+reduced_elastic_block_problem = pod_galerkin_method.offline()
 
 # 7. Perform an online solve
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0)
-eb.setmu(online_mu)
-eb.online_solve()
+reduced_elastic_block_problem.setmu(online_mu)
+reduced_elastic_block_problem.solve()
 
 # 8. Perform an error analysis
-eb.setxi_test(500)
-eb.error_analysis()
+pod_galerkin_method.setxi_test(500)
+pod_galerkin_method.error_analysis()

@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: THERMAL BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class Tblock(EllipticCoerciveProblem):
+class ThermalBlock(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -105,27 +105,28 @@ bound = MeshFunction("size_t", mesh, "data/tblock_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Thermal Block class
-tb = Tblock(V, subd, bound)
+thermal_block_problem = ThermalBlock(V, subd, bound)
+mu_range = [(0.1, 10.0), (-1.0, 1.0)]
+thermal_block_problem.setmu_range(mu_range)
 
 # 4. Choose PETSc solvers as linear algebra backend
 parameters.linear_algebra_backend = 'PETSc'
 
-# 5. Set mu range, xi_train and Nmax
-mu_range = [(0.1, 10.0), (-1.0, 1.0)]
-tb.setmu_range(mu_range)
-tb.setxi_train(100)
-tb.setNmax(4)
+# 5. Prepare reduction with a reduced basis method
+reduced_basis_method = ReducedBasis(thermal_block_problem)
+reduced_basis_method.setNmax(4)
 
 # 6. Perform the offline phase
 first_mu = (0.5,1.0)
-tb.setmu(first_mu)
-tb.offline()
+thermal_block_problem.setmu(first_mu)
+reduced_basis_method.setxi_train(100)
+reduced_thermal_block_problem = reduced_basis_method.offline()
 
 # 7. Perform an online solve
 online_mu = (8.,-1.0)
-tb.setmu(online_mu)
-tb.online_solve()
+reduced_thermal_block_problem.setmu(online_mu)
+reduced_thermal_block_problem.solve()
 
 # 8. Perform an error analysis
-tb.setxi_test(500)
-tb.error_analysis()
+reduced_basis_method.setxi_test(500)
+reduced_basis_method.error_analysis()

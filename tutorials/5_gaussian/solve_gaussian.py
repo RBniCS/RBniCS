@@ -26,6 +26,9 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: GAUSSIAN EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
+@EIM(
+    "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )"
+)
 class Gaussian(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -42,37 +45,10 @@ class Gaussian(EllipticCoerciveProblem):
         self.dx = Measure("dx")(subdomain_data=subd)
         self.ds = Measure("ds")(subdomain_data=bound)
         # Finally, initialize an EIM object for the interpolation of the forcing term
-        self.EIM_obj = EIM(self)
-        self.EIM_obj.parametrized_function = "exp( - 2*pow(x[0]-mu_1, 2) - 2*pow(x[1]-mu_2, 2) )"
         self.EIM_N = None # if None, use the maximum number of EIM basis functions, otherwise use EIM_N
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
-    
-    # Propagate the values of all setters also to the EIM object
-    
-    def setNmax(self, nmax):
-        EllipticCoerciveRBBase.setNmax(self, nmax)
-        self.EIM_obj.setNmax(2*nmax)
-    def setmu_range(self, mu_range):
-        EllipticCoerciveRBBase.setmu_range(self, mu_range)
-        self.EIM_obj.setmu_range(mu_range)
-    def setxi_train(self, ntrain, enable_import=False, sampling="random"):
-        EllipticCoerciveRBBase.setxi_train(self, ntrain, enable_import, sampling)
-        self.EIM_obj.setxi_train(ntrain, enable_import, sampling)
-    def setxi_test(self, ntest, enable_import=False, sampling="random"):
-        EllipticCoerciveRBBase.setxi_test(self, ntest, enable_import, sampling)
-        self.EIM_obj.setxi_test(ntest, enable_import, sampling)
-    def setmu(self, mu):
-        EllipticCoerciveRBBase.setmu(self, mu)
-        self.EIM_obj.setmu(mu)
-        
-    #  @}
-    ########################### end - SETTERS - end ########################### 
     
     ###########################     PROBLEM SPECIFIC     ########################### 
     ## @defgroup ProblemSpecific Problem specific methods
@@ -87,8 +63,8 @@ class Gaussian(EllipticCoerciveProblem):
         if term == "a":
             return (1., )
         elif term == "f":
-            self.EIM_obj.setmu(self.mu)
-            return self.EIM_obj.compute_interpolated_theta(self.EIM_N)
+            self.EIM[0].setmu(self.mu)
+            return self.EIM[0].compute_interpolated_theta(self.EIM_N)
         elif term == "dirichlet_bc":
             return (0.,)
         else:
@@ -102,8 +78,8 @@ class Gaussian(EllipticCoerciveProblem):
             v = self.v
             dx = self.dx
             # Call EIM
-            self.EIM_obj.setmu(self.mu)
-            interpolated_gaussian = self.EIM_obj.assemble_mu_independent_interpolated_function()
+            self.EIM[0].setmu(self.mu)
+            interpolated_gaussian = self.EIM[0].assemble_mu_independent_interpolated_function()
             # Assemble
             all_f = ()
             for q in range(len(interpolated_gaussian)):
@@ -124,35 +100,6 @@ class Gaussian(EllipticCoerciveProblem):
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
     
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
-    
-    ## Perform the offline phase of the reduced order model
-    def offline(self):
-        # Perform first the EIM offline phase, ...
-        self.EIM_obj.offline()
-        # ..., and then call the parent method.
-        EllipticCoerciveRBBase.offline(self)
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ###########################
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
-    
-    # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
-    def error_analysis(self, N=None):
-        # Perform first the EIM error analysis, ...
-        self.EIM_obj.error_analysis(N)
-        # ..., and then call the parent method.
-        EllipticCoerciveRBBase.error_analysis(self, N)        
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
 # 1. Read the mesh for this problem
@@ -164,27 +111,28 @@ bound = MeshFunction("size_t", mesh, "data/gaussian_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Gaussian class
-gaussian = Gaussian(V, subd, bound)
+gaussian_problem = Gaussian(V, subd, bound)
+mu_range = [(-1.0, 1.0), (-1.0, 1.0)]
+gaussian_problem.setmu_range(mu_range)
 
 # 4. Choose PETSc solvers as linear algebra backend
 parameters.linear_algebra_backend = 'PETSc'
 
-# 5. Set mu range, xi_train and Nmax
-mu_range = [(-1.0, 1.0), (-1.0, 1.0)]
-gaussian.setmu_range(mu_range)
-gaussian.setxi_train(50)
-gaussian.setNmax(20)
+# 5. Prepare reduction with a reduced basis method
+reduced_basis_method = ReducedBasis(graetz_problem)
+reduced_basis_method.setNmax(20)
 
 # 6. Perform the offline phase
 first_mu = (0.5,1.0)
-gaussian.setmu(first_mu)
-gaussian.offline()
+gaussian_problem.setmu(first_mu)
+reduced_basis_method.setxi_train(50)
+reduced_gaussian_problem = reduced_basis_method.offline()
 
 # 7. Perform an online solve
 online_mu = (0.3,-1.0)
-gaussian.setmu(online_mu)
-gaussian.online_solve()
+reduced_gaussian_problem.setmu(online_mu)
+reduced_gaussian_problem.online_solve()
 
 # 8. Perform an error analysis
-gaussian.setxi_test(50)
-gaussian.error_analysis()
+reduced_basis_method.setxi_test(50)
+reduced_basis_method.error_analysis()
