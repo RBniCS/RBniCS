@@ -1,0 +1,223 @@
+# Copyright (C) 2015-2016 by the RBniCS authors
+#
+# This file is part of RBniCS.
+#
+# RBniCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RBniCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
+#
+## @file eim.py
+#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
+#
+#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
+#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
+#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
+
+from __future__ import print_function
+from numpy import log, exp, mean, sqrt # for error analysis
+import os # for path and makedir
+import shutil # for rm
+import random # to randomize selection in case of equal error bound
+from RBniCS.parametrized_problem import ParametrizedProblem
+
+def EIMDecoratedProblem(*parametrized_functions):
+    def EIMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
+    
+        class EIMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+            ## Default initialization of members
+            def __init__(self, V, *args):
+                # Call the parent initialization
+                ParametrizedProblem_DerivedClass.__init__(self, V, *args)
+                # Attach EIM reduced problems
+                self.EIM_approximation = []
+                for parametrized_function in parametrized_functions
+                    self.EIM_approximation.append(_EIMApproximation(V, parametrized_function))
+                    
+            ###########################     SETTERS     ########################### 
+            ## @defgroup Setters Set properties of the reduced order approximation
+            #  @{
+        
+            # Propagate the values of all setters also to the EIM object
+            
+            ## OFFLINE: set the range of the parameters    
+            def setmu_range(self, mu_range):
+                ParametrizedProblem_DerivedClass.setmu_range(self, mu_range)
+                for i in len(self.EIM_approximation)
+                    self.EIM_approximation[i].setmu_range(mu_range)
+                    
+            ## OFFLINE/ONLINE: set the current value of the parameter
+            def setmu(self, mu):
+                ParametrizedProblem_DerivedClass.setmu(self, mu)
+                for i in len(self.EIM_approximation)
+                    self.EIM_approximation[i].setmu(mu)
+                
+            #  @}
+            ########################### end - SETTERS - end ########################### 
+            
+        #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
+        ## @class EIM
+        #
+        # Empirical interpolation method for the interpolation of parametrized functions
+        class _EIMApproximation(ParametrizedProblem):
+
+            ###########################     CONSTRUCTORS     ########################### 
+            ## @defgroup Constructors Methods related to the construction of the EIM object
+            #  @{
+        
+            ## Default initialization of members
+            def __init__(self, V, f):
+                # Call the parent initialization
+                ParametrizedProblem.__init__(self, V, parametrized_function)
+                # Note: V may be a VectorFunctionSpace, but here
+                #       we are interested in the interpolation of a scalar function.
+                #       Create therefore a new (scalar) FunctionSpace, which will be
+                #       saved in self.V
+                self.V = FunctionSpace(V.mesh(), "Lagrange", 1)
+                self.parametrized_function = parametrized_function
+                                
+                # $$ ONLINE DATA STRUCTURES $$ #
+                # Define additional storage for EIM
+                self.interpolation_points = PointsList() # list of interpolation points selected by the greedy
+                self.interpolation_points_dof = DofsList() # list of dofs corresponding to interpolation points selected by the greedy
+                self.interpolation_matrix = OnlineMatrix() # interpolation matrix
+                # Solution
+                self._interpolation_coefficients = OnlineVector()
+                
+                # $$ OFFLINE DATA STRUCTURES $$ #
+                # 6. Basis functions matrix
+                self.Z = BasisFunctionsMatrix()
+                # 9. I/O. Since we are decorating the parametrized problem we do not want to change the name of the
+                # basis function/reduced operator folder, but rather add a new one. For this reason we use
+                # the __eim suffix in the variable name.
+                self.basis_folder = "basis__eim"
+                self.reduced_operators_folder = "reduced_matrices__eim"
+                
+            #  @}
+            ########################### end - CONSTRUCTORS - end ###########################
+        
+            ###########################     ONLINE STAGE     ########################### 
+            ## @defgroup OnlineStage Methods related to the online stage
+            #  @{
+            
+            ## Initialize data structures required for the online phase
+            def init(self, current_stage="online"):
+                self.current_stage = current_stage
+                if current_stage == "online":
+                    self.interpolation_points.load(self.reduced_operators_folder, "interpolation_points")
+                    self.interpolation_points_dof.load(self.reduced_operators_folder, "interpolation_points_dof")
+                    self.interpolation_matrix.load(self.reduced_operators_folder, "interpolation_matrix")
+                    self.Z = np.load(self.basis_folder, "basis")
+                    self.N = len(self.Z)
+                elif current_stage == "offline":
+                    # Create empty files
+                    self.interpolation_points.save(self.reduced_operators_folder, "interpolation_points")
+                    self.interpolation_points_dof.save(self.reduced_operators_folder, "interpolation_points_dof")
+                    self.interpolation_matrix.save(self.reduced_operators_folder, "interpolation_matrix")
+                    self.Z.save(self.basis_folder, "basis")
+                else:
+                    raise RuntimeError("Invalid stage in init().")
+        
+            # Perform an online solve.
+            def solve(self, N=None):
+                self.init()
+                if N is None:
+                    N = self.N
+                
+                if N == 0:
+                    return # nothing to be done
+                
+                # Evaluate the function at interpolation points
+                rhs = OnlineVector(N)
+                for p in range(N):
+                    rhs[p] = self.evaluate_parametrized_function_at_mu_and_x(self.mu, self.interpolation_points[p])
+                
+                # Extract the interpolation matrix
+                lhs = self.interpolation_matrix[:N,:N]
+                
+                # Solve the interpolation problem
+                solve(lhs == rhs, self._interpolation_coefficients)
+                
+            ## Call online_solve and then convert the result of online solve from OnlineVector to a tuple
+            def compute_interpolated_theta(self, N=None):
+                self.solve(N)
+                interpolated_theta = tuple(self._interpolation_coefficients)
+                if N is not None:
+                    # Make sure to append a 0 coefficient for each basis function
+                    # which has not been requested
+                    for n in range(N, self.N):
+                        interpolated_theta += (0.0,)
+                return interpolated_theta
+                
+            ## Evaluate the parametrized function f(x; mu)
+            def evaluate_parametrized_function_at_mu_and_x(self, mu, x):
+                expression = self.evaluate_parametrized_function_at_mu(mu)
+                out = np.array([0.])
+                expression.eval(out, x)
+                return out[0]
+        
+            #  @}
+            ########################### end - ONLINE STAGE - end ########################### 
+        
+            ###########################     OFFLINE STAGE     ########################### 
+            ## @defgroup OfflineStage Methods related to the offline stage
+            #  @{
+                            
+            ## Assemble the interpolation matrix
+            def update_interpolation_matrix(self):
+                for j in range(self.N):
+                    self.interpolation_matrix[self.N - 1, j] = self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[self.N - 1])
+                self.interpolation_matrix.save(self.reduced_operators_folder, "interpolation_matrix")
+                
+            ## Return the basis functions as tuples of functions
+            def assemble_mu_independent_interpolated_function(self):
+                output = ()
+                for n in range(self.N):
+                    fun = Function(self.V)
+                    fun.vector()[:] = np.array(self.Z[:, n], dtype=np.float)
+                    output += (fun,)
+                return output
+                
+            ## Evaluate the parametrized function f(.; mu)
+            def evaluate_parametrized_function_at_mu(self, mu):
+                expression_s = "Expression(\"" + self.parametrized_function + "\""
+                for i in range(len(mu)):
+                    expression_s += ", mu_" + str(i+1) + "=" + str(mu[i])
+                expression_s += ", element=" + str(self.V.ufl_element()) + ")"
+                expression = eval(expression_s)
+                return expression
+                
+            ## Evaluate the b-th basis function at the point corresponding to dof d
+            def evaluate_basis_function_at_dof(self, b, d):
+                return self.Z[d, b]
+                
+            #  @}
+            ########################### end - OFFLINE STAGE - end ########################### 
+        
+            ###########################     I/O     ########################### 
+            ## @defgroup IO Input/output methods
+            #  @{
+
+            ## Export solution in VTK format
+            def export_solution(self, solution, filename):
+                self._export_vtk(solution, filename, with_mesh_motion=True, with_preprocessing=True)
+                
+            #  @}
+            ########################### end - I/O - end ########################### 
+            
+        # return value (a class) for the decorator
+        return EIMDecoratedProblem_Class
+    
+    # return the decorator itself
+    return EIMDecoratedProblem_Decorator
+    
+# For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
+EIM = EIMDecoratedProblem
