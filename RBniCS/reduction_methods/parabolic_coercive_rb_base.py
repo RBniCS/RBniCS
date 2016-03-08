@@ -96,7 +96,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     ## Return an error bound for the current solution
     def get_delta(self): 
         # CHECK il resto del metodo
-        alpha = self.get_alpha_lb()
+        alpha = self.get_stability_factor()
         all_eps2 = self.get_all_eps2()
         delta = np.sqrt(np.abs(np.sum(all_eps2))*self.dt/alpha)
         return delta

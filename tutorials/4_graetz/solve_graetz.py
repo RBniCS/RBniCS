@@ -58,7 +58,7 @@ class Graetz(EllipticCoerciveNonCompliantBase):
     #  @{
     
     ## Return the alpha_lower bound.
-    def get_alpha_lb(self):
+    def get_stability_factor(self):
         return self.SCM_obj.get_alpha_LB(self.mu)
     
     ## Return theta multiplicative terms of the affine expansion of the problem.

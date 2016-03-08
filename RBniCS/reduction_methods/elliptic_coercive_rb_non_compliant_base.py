@@ -124,14 +124,14 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     #  since the energy norm is not defined generally in the non compliant case
     def get_delta(self):
         eps2 = self.get_eps2()
-        alpha = self.get_alpha_lb()
+        alpha = self.get_stability_factor()
         return np.sqrt(np.abs(eps2))/alpha
     
     ## Return an error bound for the current output
     def get_delta_output(self):
         primal_eps2 = self.get_eps2()
         dual_eps2 = self.dual_problem.get_eps2()
-        alpha = self.get_alpha_lb()
+        alpha = self.get_stability_factor()
         return np.sqrt(np.abs(primal_eps2*dual_eps2))/alpha
         
     #  @}
@@ -281,7 +281,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     #  since the energy norm is not defined generally in the non compliant case
     def get_delta(self):
         eps2 = self.get_eps2()
-        alpha = self.get_alpha_lb()
+        alpha = self.get_stability_factor()
         return np.sqrt(np.abs(eps2))/alpha
         
     #  @}
@@ -307,7 +307,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     def error_analysis(self, N=None):
         # Possibly need to initialize Qa of primal, since error_analysis of dual
         # may be performed before any primal data structures is initialized,
-        # but we may rely on the primal itself in get_alpha_lb, when querying SCM
+        # but we may rely on the primal itself in get_stability_factor, when querying SCM
         self.primal_problem.theta_a = self.primal_problem.compute_theta("a")
         self.primal_problem.Qa = len(self.primal_problem.theta_a)
         # This is almost the same as in parent, without the output computation,
@@ -376,9 +376,9 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     #  @{
     
     ## Return the alpha_lower bound.
-    def get_alpha_lb(self):
+    def get_stability_factor(self):
         self.primal_problem.setmu(self.mu)
-        return self.primal_problem.get_alpha_lb()
+        return self.primal_problem.get_stability_factor()
     
     ## Set theta multiplicative terms of the affine expansion of a.
     def compute_theta_a(self):

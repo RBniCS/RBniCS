@@ -87,13 +87,13 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     ## Return an error bound for the current solution
     def get_delta(self):
         eps2 = self.get_eps2()
-        alpha = self.get_alpha_lb()
+        alpha = self.get_stability_factor()
         return np.sqrt(np.abs(eps2)/alpha)
     
     ## Return an error bound for the current output
     def get_delta_output(self):
         eps2 = self.get_eps2()
-        alpha = self.get_alpha_lb()
+        alpha = self.get_stability_factor()
         return np.abs(eps2)/alpha
         
     ## Return the numerator of the error bound for the current solution

@@ -207,8 +207,8 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     # example of implementation:
     #    return 1.0
     # Note that this method is not needed in POD-Galerkin reduced order models.
-    def get_alpha_lb(self):
-        raise RuntimeError("The function get_alpha_lb(self) is problem-specific and needs to be overridden.")
+    def get_stability_factor(self):
+        raise RuntimeError("The function get_stability_factor(self) is problem-specific and needs to be overridden.")
     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

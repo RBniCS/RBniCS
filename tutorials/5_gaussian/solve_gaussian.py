@@ -55,7 +55,7 @@ class Gaussian(EllipticCoerciveProblem):
     #  @{
     
     ## Return the alpha_lower bound.
-    def get_alpha_lb(self):
+    def get_stability_factor(self):
         return 1.
     
     ## Return theta multiplicative terms of the affine expansion of the problem.

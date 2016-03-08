@@ -295,8 +295,8 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             raise RuntimeError("Invalid stage in assemble_operator().")
     
     ## Return a lower bound for the coercivity constant
-    def get_alpha_lb(self):
-        return self.truth_problem.get_alpha_lb()
+    def get_stability_factor(self):
+        return self.truth_problem.get_stability_factor()
                     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
