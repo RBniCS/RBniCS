@@ -26,24 +26,39 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-class _ExportableList(object):
-    def __init__(self):
+class ExportableList(object):
+    def __init__(self, import_export_backend):
         self._list = []
+        self._import_export_backend = import_export_backend
     
-    def append(self, point):
-        self._list.append(point)
+    def append(self, element):
+        self._list.append(element)
             
     def load(self, directory, filename):
         if self._list: # avoid loading multiple times
             return False
-        if io_utils.exists_numpy_file(directory, filename):
-            self._list = io_utils.load_numpy_file(directory, filename)
-            return True
+        if self._import_export_backend == "numpy":
+            if io_utils.exists_numpy_file(directory, filename):
+                self._list = io_utils.load_numpy_file(directory, filename)
+                return True
+            else:
+                return False
+        elif self._import_export_backend == "pickle":
+            if io_utils.exists_pickle_file(directory, filename):
+                self._list = io_utils.load_pickle_file(directory, filename)
+                return True
+            else:
+                return False
         else:
-            return False
+            raise RuntimeError("Invalid import/export backend")
         
     def save(self, directory, filename):
-        io_utils.save_numpy_file(self._list, directory, filename)
+        if self._import_export_backend == "numpy":
+            io_utils.save_numpy_file(self._list, directory, filename)
+        elif self._import_export_backend == "pickle":
+            io_utils.save_pickle_file(self._list, directory, filename)
+        else:
+            raise RuntimeError("Invalid import/export backend")
                  
     def __getitem__(self, key):
         return self._list[key]

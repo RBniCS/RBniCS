@@ -29,9 +29,9 @@
 # Parameter space subsets
 import itertools # for linspace sampling
 import numpy
-class ParameterSpaceSubset(object): # equivalent to a list of tuples
+class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     def __init__(self):
-        self._list = []
+        ExportableList.__init__(self, "pickle")
     
     # Method for generation of parameter space subsets
     # If the last argument is equal to "random", n parameters are drawn from a random uniform distribution
@@ -58,27 +58,6 @@ class ParameterSpaceSubset(object): # equivalent to a list of tuples
             self._list = eval(ss)
         else:
             raise RuntimeError("Invalid sampling mode.")
-
-    def load(self, directory, filename):
-        if self._list: # avoid loading multiple times
-            return False
-        if io_utils.exists_pickle_file(directory, filename):
-            self._list = io_utils.load_pickle_file(directory, filename)
-            return True
-        else:
-            return False
-        
-    def save(self, directory, filename):
-        io_utils.save_pickle_file(self._list, directory, filename)
-        
-    def __getitem__(self, key):
-        return self._list[key]
-
-    def __iter__(self):
-        return iter(self._list)
-        
-    def __len__(self):
-        return len(self._list)
         
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

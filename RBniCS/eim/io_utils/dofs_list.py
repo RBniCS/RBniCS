@@ -26,7 +26,9 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-DofsList = _ExportableList
+class DofsList(ExportableList):
+    def __init__(self):
+        ExportableList.__init__(self, "pickle")
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

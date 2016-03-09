@@ -36,9 +36,9 @@ from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
 # the same as a matrix. Indeed, given a TruthMatrix A, a TruthVector F 
 # and a FunctionsList Z, overriding __mul__ and __rmul__ operators
 # allow to write expressions like transpose(Z)*A*Z and transpose(Z)*F
-class FunctionsList(object):
+class FunctionsList(ExportableList):
     def __init__(self):
-        self._list = []
+        ExportableList.__init__(self, "pickle")
     
     def enrich(self, functions):
         from dolfin import Function
@@ -47,31 +47,18 @@ class FunctionsList(object):
         else: # more than one function
             self._list.extend(functions) # assume that they where already copied
             
-    def load(self, directory, filename):
-        if self._list: # avoid loading multiple times
-            return False
-        if io_utils.exists_pickle_file(directory, filename):
-            self._list = io_utils.load_pickle_file(directory, filename)
-            return True
-        else:
-            return False
+    def append(self, functions):
+        import warnings
+        warnings.warn("Please use the enrich() method that provides a more self explanatory name.")
+        self.enrich(functions)
         
     def save(self, directory, filename):
-        io_utils.save_pickle_file(self._list, directory, filename)
+        ExportableList.save(self, directory, filename)
         for f in range(len(self._list)):
             full_filename = directory + "/" + filename + "_" + str(f) + ".pvd"
             if not os.path.exists(full_filename):
                 file = File(filename, "compressed")
                 file << self._list[f]
-         
-    def __getitem__(self, key):
-        return self._list[key]
-        
-    def __iter__(self):
-        return iter(self._list)
-        
-    def __len__(self):
-        return len(self._list)
     
     # self * onlineMatrixOrVector [used e.g. to compute Z*u_N or S*eigv]
     def __mul__(self, onlineMatrixOrVector):
