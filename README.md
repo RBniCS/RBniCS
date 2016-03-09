@@ -33,9 +33,11 @@ python RBniCS_example.py
 ```
 
 ### 3. RBniCS virtual machine
-If you want to try **RBniCS** out but do not have **FEniCS** already installed, a virtual machine (Ubuntu 14.04 LTS) with RBniCS (and all required dependencies) installed is available. [link 1](http://1drv.ms/1LZq4VI) [link 2](https://drive.google.com/file/d/0B3Jdl3uI0HHPTUNBTzZrcU1QT0k/view?usp=sharing) 
+If you want to try **RBniCS** out but do not have **FEniCS** already installed, you can:
+* if you have VirtualBox, [download a virtual machine](http://goo.gl/Q4nQ7E) based on Ubuntu 14.04 LTS (username and password: rbnics);
+* if you have docker, [pull our docker image from Docker Hub](https://hub.docker.com/r/rbnics/rbnics/) with `docker pull rbnics/rbnics`.
 
-Username and password of the main Ubuntu user are both **rbnics**. **RBniCS** software is located in $HOME/RBniCS.
+**RBniCS** software is located in $HOME/RBniCS. All required dependencies are already installed, and a precomputed offline stage is also provided.
 
 ### 4. Tutorials
 Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials).
