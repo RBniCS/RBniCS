@@ -73,13 +73,8 @@ def ShapeParametrization(*shape_parametrization_expression):
                 for i in range(len(self.shape_parametrization_expression)):
                     displacement_expression_i = ()
                     for j in range(len(self.shape_parametrization_expression[i])):
-                        displacement_expression_ij = self.shape_parametrization_expression[i][j]
-                        for p in range(len(self.mu)):
-                            displacement_expression_ij = \
-                                displacement_expression_ij.replace("mu[" + str(p) + "]", "mu_" + str(p))
-                        displacement_expression_ij = \
-                            displacement_expression_ij + " - x[" + str(j) + "]" # convert from shape parametrization T to displacement d = T - I
-                        displacement_expression_i += (displacement_expression_ij,)
+                        # convert from shape parametrization T to displacement d = T - I
+                        displacement_expression_i += (self.shape_parametrization_expression[i][j] + " - x[" + str(j) + "]",)
                     self.displacement_expression.append(displacement_expression_i)
                 self.__init_displacement_expression.__func__.done = True
             
@@ -105,12 +100,9 @@ def ShapeParametrization(*shape_parametrization_expression):
             ## Auxiliary method to deform the domain
             def compute_displacement(self):
                 self.__init_displacement_expression() # done only once
-                mu_dict = {}
-                for p in range(len(self.mu)):
-                    mu_dict[ "mu_" + str(p) ] = self.mu[p]
                 displacement_subdomains = ()
                 for i in range(len(self.displacement_expression)):
-                    displacement_expression_i = Expression(self.displacement_expression[i], element=self.deformation_V.ufl_element(), **mu_dict)
+                    displacement_expression_i = ParametrizedExpression(self.displacement_expression[i], mu=self.mu, element=self.deformation_V.ufl_element())
                     displacement_subdomains += (interpolate(displacement_expression_i, self.deformation_V),)
                 displacement = Function(self.deformation_V)
                 for i in range(len(displacement_subdomains)):

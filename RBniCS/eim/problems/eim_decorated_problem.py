@@ -188,12 +188,7 @@ def EIMDecoratedProblem(*parametrized_functions):
                 
             ## Evaluate the parametrized function f(.; mu)
             def evaluate_parametrized_function_at_mu(self, mu):
-                expression_s = "Expression(\"" + self.parametrized_function + "\""
-                for i in range(len(mu)):
-                    expression_s += ", mu_" + str(i+1) + "=" + str(mu[i])
-                expression_s += ", element=" + str(self.V.ufl_element()) + ")"
-                expression = eval(expression_s)
-                return expression
+                return ParametrizedExpression(self.parametrized_function, mu=mu, element=self.V.ufl_element())
                 
             ## Evaluate the b-th basis function at the point corresponding to dof d
             def evaluate_basis_function_at_dof(self, b, d):
