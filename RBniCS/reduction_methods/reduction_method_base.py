@@ -62,7 +62,7 @@ class ReductionMethodBase(object):
 
     ## OFFLINE: set the elements in the training set \xi_train.
     # See the documentation of generate_train_or_test_set for more details
-    def setxi_train(self, ntrain, enable_import=False, sampling="random"):
+    def setxi_train(self, ntrain, enable_import=True, sampling="random"):
         # Create I/O folder
         if not os.path.exists(self.xi_train_folder):
             os.makedirs(self.xi_train_folder)

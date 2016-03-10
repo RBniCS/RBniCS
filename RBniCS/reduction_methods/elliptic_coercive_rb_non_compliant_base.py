@@ -84,7 +84,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     def setmu_range(self, mu_range):
         EllipticCoerciveRBBase.setmu_range(self, mu_range)
         self.dual_problem.setmu_range(mu_range)
-    def setxi_train(self, ntrain, enable_import=False, sampling="random"):
+    def setxi_train(self, ntrain, enable_import=True, sampling="random"):
         EllipticCoerciveRBBase.setxi_train(self, ntrain, enable_import, sampling)
         self.dual_problem.setxi_train(ntrain, enable_import, sampling)
     def setxi_test(self, ntest, enable_import=False, sampling="random"):

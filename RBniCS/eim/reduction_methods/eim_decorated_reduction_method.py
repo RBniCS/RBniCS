@@ -60,7 +60,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
 
                 
             ## OFFLINE: set the elements in the training set \xi_train.
-            def setxi_train(self, ntrain, enable_import=False, sampling="random"):
+            def setxi_train(self, ntrain, enable_import=True, sampling="random"):
                 EllipticCoerciveRBBase.setxi_train(self, ntrain, enable_import, sampling)
                 for i in len(self.EIM_reduction_method)
                     self.EIM_reduction_method[i].setxi_train(ntrain, enable_import, sampling)
