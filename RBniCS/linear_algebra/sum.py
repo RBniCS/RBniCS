@@ -86,7 +86,11 @@ def _EquationSide(content): # inspired by UFL Form class
             or \
         isinstance(content, OnlineMatrix_Type) or isinstance(content, OnlineVector_Type) \
     :
-        standard_eq = content.__eq__
+        if hasattr(content, "__eq__"):
+            standard_eq = content.__eq__
+        else:
+            def standard_eq(self, other):
+                raise AttributeError
         def __eq__(self, other):
             if hasattr(other, "equals"): # it means that also other was preprocessed by this function
                 return _EquationPlaceholder(self, other)
