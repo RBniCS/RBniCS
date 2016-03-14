@@ -34,6 +34,54 @@ from parametrized_problem import *
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems
 class EllipticCoerciveBase(ParametrizedProblem):
+    """This class defines and implement variables and methods needed for
+    solving an elliptic and coercive problem. This class specializes
+    in the two currently implemented reduced order methods, namely the
+    Reduced Basis Method (EllipticCoerciveRBBase), and the Proper
+    Orthogonal Decomposition (EllipticCoercivePODBase). These two
+    classes assume that the output(s) of interest is (are)
+    compliant. Whether the compliancy hypothesis does not hold, the
+    EllipticCoerciveRBNonCompliantBase must be used.
+
+    In particular, this class implements the following functions, whose name are self-explanatory:
+
+    ## Methods related to the offline stage
+    - offline() # to be overridden 
+    - truth_solve()
+    - affine_assemble_truth_matrix()
+    - affine_assemble_truth_symmetric_part_matrix()
+    - affine_assemble_truth_vector()
+    - apply_bc_to_matrix_expansion()
+    - apply_bc_to_vector_expansion()
+    - build_reduced_matrices()
+    - build_reduced_vectors()
+    - compute_scalar()
+    - compute_transpose()
+
+    ## Methods related to the online stage
+    - online_solve()
+    - affine_assemble_reduced_matrix()
+    - affine_assemble_reduced_vector()
+
+    ## Error analysis
+    - compute_error()
+    - error_analysis() # to be overridden
+
+    ## Input/output methods
+    - load_reduced_matrices()
+    - export_solution()
+    - export_basis()
+
+    ## Problem specific methods
+    - compute_theta_a() # to be overridden
+    - compute_theta_f() # to be overridden
+    - assemble_truth_a() # to be overridden
+    - assemble_truth_f() # to be overridden
+
+    If you want/need to implement an alternate reduced order method,
+    (e.g., CVT), you might want to derive from this class.
+
+    """
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
