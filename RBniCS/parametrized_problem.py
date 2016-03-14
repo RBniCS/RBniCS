@@ -32,6 +32,30 @@ import itertools # for linspace sampling
 #
 # Base class containing an offline/online decomposition of parametrized problems
 class ParametrizedProblem(object):
+    """This is the base class, which is inherited by all other
+    classes. It defines the base interface with variables and
+    functions that the derived classes have to set and/or
+    overwrite. The end user should not care about the implementation
+    of this very class but he/she should derive one of the Elliptic or
+    Parabolic class for solving an actual problem.
+
+    The following functions are implemented:
+
+    ## Set properties of the reduced order approximation
+    - setNmax()
+    - settol()
+    - setmu_range()
+    - setxi_train()
+    - setxi_test()
+    - generate_train_or_test_set()
+    - setmu()
+    
+    ## Input/output methods
+    - preprocess_solution_for_plot() # nothing to be done by default
+    - move_mesh() # nothing to be done by default
+    - reset_reference() # nothing to be done by default
+
+    """
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
