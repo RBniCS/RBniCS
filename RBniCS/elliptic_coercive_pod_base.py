@@ -33,6 +33,24 @@ from elliptic_coercive_base import *
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
 class EllipticCoercivePODBase(EllipticCoerciveBase):
+    """This class implements a reduced order method based on a POD (Proper
+    Orthogonal Decomposition) Galerkin approach. In particular, it
+    implements the offline phase and the error analysis proper for the
+    POD approach.
+
+    This class provides the following methods:
+    
+    ##  Methods related to the offline stage
+    - offline()
+    - update_snapshot_matrix()
+    - apply_POD()
+
+    ## Error analysis
+    - error_analysis()
+
+    A typical usage of this class is reported in tutorial 2.
+
+    """
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object

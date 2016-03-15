@@ -32,6 +32,17 @@ from elliptic_coercive_rb_base import *
 # Base class containing the interface of the RB method
 # for non compliant elliptic coercive problems
 class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
+    """This class relaxes the hypotesis of compliant output for elliptic
+    coercive problems. Basically, for each instance of the parameter,
+    TWO problems are solved: the problem itself and its adjoint
+    one. The two problems are cooked together in order to have a
+    better a posteriori error estimation to be used for the
+    certification of the ouput as well as for the parameter space
+    exploration.
+
+    A typical usage of this class is provided in tutorial 4.
+
+    """
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced basis object
@@ -462,4 +473,4 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         self.primal_problem.reset_reference()
                 
     #  @}
-    ########################### end - I/O - end ########################### 
+    ########################### end - I/O - end ###########################

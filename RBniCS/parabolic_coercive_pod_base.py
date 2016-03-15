@@ -32,6 +32,13 @@ from elliptic_coercive_pod_base import *
 # for parabolic coercive problems
 class ParabolicCoercivePODBase(ParabolicCoerciveBase,EllipticCoercivePODBase):
 # Beware of the diamond problem in multiple inheritance: in python precedence is depth-first and then left-to-right
+    """This class implements a POD-based approach for parabolic coercive
+    problems, assuming the compliance of the output of interest. If
+    compared to the ParabolicCoerciveRBBase class, the POD is used for
+    both the time and the parameter space.  
+    
+    """
+
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object

@@ -32,6 +32,38 @@ import shutil
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems
 class ParabolicCoerciveBase(EllipticCoerciveBase):
+    """Base interface for the parabolic coercive problems. This class
+    features the implicit backward Euler time stepping. This class is
+    derived by two classes in order to apply the reduced basis method
+    (ParabolicCoerciveRBBase) and the proper orthogonal decomposition
+    (ParabolicPODBase). Again, the output is assumed to be compliant.
+
+    This class is derived from the EllipticCoerciveBase class, since,
+    at each time step, an elliptic problem is solved. In order to
+    address time-dependent problem, the following functions are
+    provided:
+
+    ## Methods related to the contructor of the object
+    - set_dt()
+    - set_final_t()
+    
+    ## Methods related to the online stage
+    - online_solve()
+    - get_fe_functions_at_time()
+
+    ## Methods related to the offline stage
+    - offline()
+    - truth_solve()
+    - build_reduced_matrices()
+    
+    ## Error analysis
+    - compute_error()
+    
+    ## Input/output methods
+    - load_reduced_matrices()
+    - export_solution()
+
+    """
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object

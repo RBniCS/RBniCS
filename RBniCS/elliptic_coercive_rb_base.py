@@ -35,6 +35,47 @@ from elliptic_coercive_base import *
 # Base class containing the interface of the RB method
 # for (compliant) elliptic coercive problems
 class EllipticCoerciveRBBase(EllipticCoerciveBase):
+    """This class implements the Certified Reduced Basis Method for
+    elliptic and coercive problems. The output of interest are assumed to
+    be compliant.
+
+    During the offline stage, the parameters are chosen relying on a
+    greedy algorithm. The user must specify how the alpha_lb (i.e., alpha
+    lower bound) is computed since this term is needed in the a posteriori
+    error estimation. RBniCS features an implementation of the Successive
+    Constraints Method (SCM) for the estimation of the alpha_lb (take a
+    look at tutorial 4 for the usage of SCM).
+    
+    The following functions are implemented:
+
+    ## Methods related to the offline stage
+    - offline()
+    - update_basis_matrix()
+    - greedy()
+    - compute_dual_terms()
+    - compute_a_dual()
+    - compute_f_dual()
+
+    ## Methods related to the online stage
+    - online_output()
+    - get_delta()
+    - get_delta_output()
+    - get_eps2 ()
+    - truth_output()
+
+    ## Error analysis
+    - compute_error()
+    - error_analysis()
+    
+    ## Input/output methods
+    - load_reduced_matrices()
+    
+    ## Problem specific methods
+    - get_alpha_lb() # to be overridden
+
+    A typical usage of this class is given in the tutorial 1.
+
+    """
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced basis object
