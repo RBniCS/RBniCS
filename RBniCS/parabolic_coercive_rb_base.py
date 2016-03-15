@@ -33,6 +33,30 @@ from proper_orthogonal_decomposition import *
 # for parabolic coercive problems
 class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
 # Beware of the diamond problem in multiple inheritance: in python precedence is depth-first and then left-to-right
+    """This class implements the Certified Reduced Basis Method for
+    parabolic coercive problems, assuming the compliance of the output
+    of interest. It combines a POD approach on the time, with a greedy
+    exploration of the parameter space.
+
+    The strategy is the following:
+
+   1. Solve the transients with a given mu. At each time step a
+      snapshot will be stored.
+
+   2. A POD is performed on the snapshots just stored. Then, Just few
+      of the computed POD modes are retained, according to the
+      settings provided by the user (the user can choose if the number
+      of POD modes is fixed, or it must satisfy a given tolerance.
+
+   3. The reduced space is enriched with the retained POD modes.
+
+   4. The next parameter is computed with a greed algorithm like the
+      RB method for elliptic case, whit the difference that the a
+      posteriori error estimation is formulated for the parabolic
+      problem. Since the error estimator increases with the time, the
+      greedy uses the error bound computed at the LAST time step.
+
+    """
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced basis object
@@ -367,4 +391,4 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     # Nothing to be added in this case
     
     #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
+    ########################### end - PROBLEM SPECIFIC - end ###########################
