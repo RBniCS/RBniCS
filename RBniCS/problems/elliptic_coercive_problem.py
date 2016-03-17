@@ -91,14 +91,11 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         # Input arguments
         self.V = V
         # 3a. Number of terms in the affine expansion
-        self.Qa = 0
-        self.Qf = 0
+        self.Q = dict() # from string to integer
         # 3b. Theta multiplicative factors of the affine expansion
-        self.theta_a = tuple()
-        self.theta_f = tuple()
+        self.theta = dict() # from string to tuple
         # 3c. Matrices/vectors resulting from the truth discretization
-        self.operator_a = AffineExpansionOfflineStorage()
-        self.operator_f = AffineExpansionOfflineStorage()
+        self.operator = dict() # from string to AffineExpansionOnlineStorage
         self.inner_product = AffineExpansionOfflineStorage()
         self.dirichlet_bc = AffineExpansionOfflineStorage()
         # Solution
@@ -114,35 +111,35 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     
     ## Initialize data structures required for the offline phase
     def init(self):
-        self.operator_a = AffineExpansionOfflineStorage(self.assemble_operator("a"))
-        self.operator_f = AffineExpansionOfflineStorage(self.assemble_operator("f"))
+        for term in ["a", "f"]:
+            self.operator[term] = self.assemble_operator(term)
+            self.Q = len(self.operator(term))
         self.inner_product = AffineExpansionOfflineStorage(self.assemble_operator("inner_product"))
         try:
             self.dirichlet_bc = AffineExpansionOfflineStorage(self.assemble_operator("dirichlet_bc"))
         except RuntimeError: # there were no Dirichlet BCs
             self.dirichlet_bc = AffineExpansionOfflineStorage()
-        self.Qa = len(self.operator_a)
-        self.Qf = len(self.operator_f)
-        
+                    
     ## Perform a truth solve
     def solve(self):
-        self.theta_a = self.compute_theta("a")
-        self.theta_f = self.compute_theta("f")
+        assembled_operator = dict()
+        for term in ["a", "f"]:
+            self.theta[term] = self.compute_theta(term)
+            assembled_operator = sum(product(self.theta[term], self.operator[term]))
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
+            assembled_dirichlet_bc = sum(product(theta_bc, self.dirichet_bc))
         except RuntimeError: # there were no Dirichlet BCs
-            theta_bc = ()
-        assembled_operator_a = sum(product(self.theta_a, self.operator_a))
-        assembled_operator_f = sum(product(self.theta_f, self.operator_f))
-        assembled_dirichlet_bc = sum(product(theta_bc, self.dirichet_bc))
-        solve(assembled_operator_a == assembled_operator_f, self._solution, assembled_dirichlet_bc)
+            assembled_dirichlet_bc = None
+        solve(assembled_operator["a"] == assembled_operator["f"], self._solution, assembled_dirichlet_bc)
         return self._solution
         
     ## Perform a truth evaluation of the (compliant) output
     def output(self):
-        self.theta_f = self.compute_theta("f")
-        assembled_operator_f = sum(product(self.theta_f, self.operator_f))
-        self._output = transpose(assembled_operator_f)*self._solution.vector()
+        assembled_operator = dict()
+        self.theta["f"] = self.compute_theta("f")
+        assembled_ouput_operator = sum(product(self.theta["f"], self.operator["f"]))
+        self._output = transpose(assembled_output_operator)*self._solution.vector()
         return self._output
     
     #  @}

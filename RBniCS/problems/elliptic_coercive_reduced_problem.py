@@ -50,14 +50,11 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         self.N = 0
         self.N_bc = 0
         # 3a. Number of terms in the affine expansion
-        self.Qa = 0
-        self.Qf = 0
+        self.Q = dict() # from string to integer
         # 3b. Theta multiplicative factors of the affine expansion
-        self.theta_a = tuple()
-        self.theta_f = tuple()
+        self.theta = dict() # from string to tuple
         # 3c. Reduced order operators
-        self.operator_a = AffineExpansionOnlineStorage()
-        self.operator_f = AffineExpansionOnlineStorage()
+        self.operator = dict() # from string to AffineExpansionOnlineStorage
         # Solution
         self._solution = OnlineVector()
         self._output = 0
@@ -113,10 +110,9 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
                     self.N = len(self.Z) - len(theta_bc)
                     self.N_bc = len(theta_bc)
         elif current_stage == "offline":
-            self.Qa = self.truth_problem.Qa
-            self.Qf = self.truth_problem.Qf
-            self.operator_a = AffineExpansionOnlineStorage(self.Qa)
-            self.operator_f = AffineExpansionOnlineStorage(self.Qf)
+            for term in ["a", "f"]:
+                self.Q[term] = self.truth_problem.Q[term]
+                self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
             # Store the lifting functions in self.Z
             self.assemble_operator("dirichlet_bc")
         else:
@@ -127,7 +123,6 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         self.init()
         if N is None:
             N = self.N
-        N += self.N_bc
         uN = self._solve(N)
         reduced_solution = self.Z*uN
         if with_plot == True:
@@ -136,23 +131,25 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
     
     # Perform an online solve (internal)
     def _solve(self, N):
-        self.theta_a = self.compute_theta("a")
-        self.theta_f = self.compute_theta("f")
+        N += self.N_bc
+        assembled_operator = dict()
+        for term in ["a", "f"]:
+            self.theta[term] = self.compute_theta(term)
+            assembled_operator = sum(product(self.theta[term], self.operator[term]))
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
         except RuntimeError: # there were no Dirichlet BCs
             theta_bc = ()
-        assembled_operator_a = sum(product(self.theta_a, self.operator_a[:N, :N]))
-        assembled_operator_f = sum(product(self.theta_f, self.operator_f[:N]))
-        solve(assembled_operator_a == assembled_operator_f, self._solution, self.theta_bc)
+        solve(assembled_operator["a"][:N, :N] == assembled_operator["f"][:N], self._solution, assembled_dirichlet_bc)
         return self._solution
         
     # Perform an online evaluation of the (compliant) output
     def output(self):
         N = self._solution.size
-        self.theta_f = self.compute_theta("f")
-        assembled_operator_f = sum(product(self.theta_f, self.operator_f[:N]))
-        self._output = transpose(assembled_operator_f)*self._solution
+        assembled_operator = dict()
+        self.theta["f"] = self.compute_theta("f")
+        assembled_output_operator = sum(product(self.theta["f"], self.operator["f"]))
+        self._output = transpose(assembled_output_operator[:N])*self._solution
         return self._output
         
     #  @}
@@ -205,9 +202,9 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         
     # Internal method for error computation: returns the inner product matrix to be used.
     def _error_inner_product_matrix(self):
-        self.theta_a = self.compute_theta("a") # not really necessary, for symmetry with the parabolic case
-        assembled_operator_a = sum(product(self.theta_a, self.operator_a)) # use the energy norm (skew part will discarded by the scalar product)
-        return assembled_operator_a
+        self.theta["a"] = self.compute_theta("a") # not really necessary, for symmetry with the parabolic case
+        assembled_error_inner_product_operator = sum(product(self.theta["a"], self.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
+        return assembled_error_inner_product_operator
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
@@ -229,11 +226,11 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             # we would like to be able to use a reduced problem also as a 
             # truth problem for a nested reduction
             if term == "a":
-                self.operator_a.load(self.reduced_operators_folder, "operator_a")
-                return self.operator_a
+                self.operator["a"].load(self.reduced_operators_folder, "operator_a")
+                return self.operator["a"]
             elif term == "f":
-                self.operator_f.load(self.reduced_operators_folder, "operator_f")
-                return self.operator_f
+                self.operator["f"].load(self.reduced_operators_folder, "operator_f")
+                return self.operator["f"]
             elif term == "dirichlet_bc":
                 raise RuntimeError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
             else:
@@ -243,13 +240,13 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             # (we are still training the reduced order model, we cannot possibly use it 
             #  anywhere else)
             if term == "a":
-                for qa in range(self.Qa):
-                    self.operator_a[qa] = transpose(self.Z)*self.truth_problem.operator_a[qa]*self.Z
-                self.operator_a.save(self.reduced_operators_folder, "operator_a")
+                for q in range(self.Q["a"]):
+                    self.operator["a"][q] = transpose(self.Z)*self.truth_problem.operator["a"][q]*self.Z
+                self.operator["a"].save(self.reduced_operators_folder, "operator_a")
             elif term == "f":
-                for qf in range(self.Qf):
-                    self.operator_f[qf] = transpose(self.Z)*self.truth_problem.operator_f[qf]
-                self.operator_f.save(self.reduced_operators_folder, "operator_f")
+                for q in range(self.Q["f"]):
+                    self.operator["f"][q] = transpose(self.Z)*self.truth_problem.operator["f"][q]
+                self.operator["f"].save(self.reduced_operators_folder, "operator_f")
             elif term == "dirichlet_bc":
                 try:
                     theta_bc = self.compute_theta("dirichlet_bc")

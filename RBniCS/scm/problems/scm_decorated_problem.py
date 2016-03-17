@@ -384,6 +384,9 @@ def SCMDecoratedProblem(*args):
             # Assemble condensed versions of truth matrices
             def assemble_condensed_truth_matrices(self):
                 # Assemble matrices related to the LHS A of the parametrized problem
+                # TODO this probably need to be the assemble_operator method, overridden to compute the symmetric part,
+                #      and then call the init() method. Replace several truth_A/Qa
+                # Assemble matrices related to the LHS A of the parametrized problem
                 if not self.parametrized_problem.truth_A:
                     self.parametrized_problem.truth_A = [ \
                         assemble( 0.5*(a_form + adjoint(a_form)) ) for a_form in self.parametrized_problem.assemble_truth_a()
