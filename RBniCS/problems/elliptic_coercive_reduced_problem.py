@@ -43,7 +43,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         EllipticCoerciveProblem.__init__(self)
         
         self.name = truth_problem.name
-        self.current_stage=None
+        self.current_stage = None
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # 1. Online reduced space dimension
@@ -95,10 +95,9 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
     def init(self, current_stage="online"):
         self.current_stage = current_stage
         if current_stage == "online":
-            self.assemble_operator("a")
-            self.assemble_operator("f")
-            self.Qa = len(self.operator_a)
-            self.Qf = len(self.operator_f)
+            for term in ["a", "f"]:
+                self.assemble_operator(term)
+                self.Q[term] = len(self.operator(term))
             # Also load basis functions
             self.Z.load(self.basis_folder, "basis")
             # To properly initialize N and N_bc, detect how many theta terms
@@ -165,8 +164,9 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         
     ## Assemble the reduced order affine expansion.
     def build_reduced_operators(self):
-        self.assemble_operator("a")
-        self.assemble_operator("f")
+        assert self.current_stage == "offline"
+        for term in ["a", "f"]:
+            self.assemble_operator(term)
         
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
     # non-homogeneous Dirichlet boundary conditions
@@ -227,7 +227,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             # catch this return value in init()) because we want this interface
             # to be compatible with the one in EllipticCoerciveProblem, i.e.
             # we would like to be able to use a reduced problem also as a 
-            # truth problem
+            # truth problem for a nested reduction
             if term == "a":
                 self.operator_a.load(self.reduced_operators_folder, "operator_a")
                 return self.operator_a
