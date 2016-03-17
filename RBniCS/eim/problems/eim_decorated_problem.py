@@ -29,7 +29,7 @@ import shutil # for rm
 import random # to randomize selection in case of equal error bound
 from RBniCS.parametrized_problem import ParametrizedProblem
 
-def EIMDecoratedProblem(*parametrized_functions):
+def EIMDecoratedProblem(*parametrized_expressions):
     def EIMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
     
         class EIMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
@@ -39,8 +39,8 @@ def EIMDecoratedProblem(*parametrized_functions):
                 ParametrizedProblem_DerivedClass.__init__(self, V, *args)
                 # Attach EIM reduced problems
                 self.EIM_approximation = []
-                for parametrized_function in parametrized_functions
-                    self.EIM_approximation.append(_EIMApproximation(V, parametrized_function))
+                for parametrized_expression in parametrized_expressions
+                    self.EIM_approximation.append(_EIMApproximation(V, parametrized_expression))
                     
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation
@@ -51,13 +51,13 @@ def EIMDecoratedProblem(*parametrized_functions):
             ## OFFLINE: set the range of the parameters    
             def setmu_range(self, mu_range):
                 ParametrizedProblem_DerivedClass.setmu_range(self, mu_range)
-                for i in len(self.EIM_approximation)
+                for i in len(self.EIM_approximation):
                     self.EIM_approximation[i].setmu_range(mu_range)
                     
             ## OFFLINE/ONLINE: set the current value of the parameter
             def setmu(self, mu):
                 ParametrizedProblem_DerivedClass.setmu(self, mu)
-                for i in len(self.EIM_approximation)
+                for i in len(self.EIM_approximation):
                     self.EIM_approximation[i].setmu(mu)
                 
             #  @}
@@ -74,16 +74,13 @@ def EIMDecoratedProblem(*parametrized_functions):
             #  @{
         
             ## Default initialization of members
-            def __init__(self, V, f):
+            def __init__(self, V, parametrized_expression__as_string):
                 # Call the parent initialization
-                ParametrizedProblem.__init__(self, V, parametrized_function)
-                # Note: V may be a VectorFunctionSpace, but here
-                #       we are interested in the interpolation of a scalar function.
-                #       Create therefore a new (scalar) FunctionSpace, which will be
-                #       saved in self.V
-                self.V = FunctionSpace(V.mesh(), "Lagrange", 1)
-                self.parametrized_function = parametrized_function
-                                
+                ParametrizedProblem.__init__(self)
+                # Store the parametrized expression
+                self.parametrized_expression__as_string = parametrized_expression__as_string
+                self.parametrized_expression = ParametrizedExpression()
+                
                 # $$ ONLINE DATA STRUCTURES $$ #
                 # Define additional storage for EIM
                 self.interpolation_points = PointsList() # list of interpolation points selected by the greedy
@@ -103,6 +100,20 @@ def EIMDecoratedProblem(*parametrized_functions):
                 
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
+            
+            ###########################     SETTERS     ########################### 
+            ## @defgroup Setters Set properties of the reduced order approximation
+            #  @{
+        
+            # Propagate the values of all setters also to the parametrized expression object
+                                
+            ## OFFLINE/ONLINE: set the current value of the parameter
+            def setmu(self, mu):
+                ParametrizedProblem.setmu(self, mu)
+                self.parametrized_expression.setmu(mu)
+                
+            #  @}
+            ########################### end - SETTERS - end ########################### 
         
             ###########################     ONLINE STAGE     ########################### 
             ## @defgroup OnlineStage Methods related to the online stage
@@ -111,6 +122,9 @@ def EIMDecoratedProblem(*parametrized_functions):
             ## Initialize data structures required for the online phase
             def init(self, current_stage="online"):
                 self.current_stage = current_stage
+                # Initialize the parametrized expression
+                self.parametrized_expression = ParametrizedExpression(self.parametrized_expression__as_string, mu=self.mu, element=self.V.ufl_element())
+                # Read/Initialize reduced order data structures
                 if current_stage == "online":
                     self.interpolation_points.load(self.reduced_operators_folder, "interpolation_points")
                     self.interpolation_points_dof.load(self.reduced_operators_folder, "interpolation_points_dof")
@@ -138,7 +152,7 @@ def EIMDecoratedProblem(*parametrized_functions):
                 # Evaluate the function at interpolation points
                 rhs = OnlineVector(N)
                 for p in range(N):
-                    rhs[p] = self.evaluate_parametrized_function_at_mu_and_x(self.mu, self.interpolation_points[p])
+                    rhs[p] = self.evaluate_parametrized_expression_at_x(self.interpolation_points[p])
                 
                 # Extract the interpolation matrix
                 lhs = self.interpolation_matrix[:N,:N]
@@ -157,11 +171,11 @@ def EIMDecoratedProblem(*parametrized_functions):
                         interpolated_theta += (0.0,)
                 return interpolated_theta
                 
-            ## Evaluate the parametrized function f(x; mu)
-            def evaluate_parametrized_function_at_mu_and_x(self, mu, x):
-                expression = self.evaluate_parametrized_function_at_mu(mu)
-                out = np.array([0.])
-                expression.eval(out, x)
+            ## Evaluate the parametrized function f(x; mu) for the current value of mu
+            def evaluate_parametrized_expression_at_x(self, x):
+                from numpy import array as EvalOutputType
+                out = EvalOutputType([0.])
+                self.parametrized_expression.eval(out, x)
                 return out[0]
         
             #  @}
@@ -185,11 +199,7 @@ def EIMDecoratedProblem(*parametrized_functions):
                     fun.vector()[:] = np.array(self.Z[:, n], dtype=np.float)
                     output += (fun,)
                 return output
-                
-            ## Evaluate the parametrized function f(.; mu)
-            def evaluate_parametrized_function_at_mu(self, mu):
-                return ParametrizedExpression(self.parametrized_function, mu=mu, element=self.V.ufl_element())
-                
+                                
             ## Evaluate the b-th basis function at the point corresponding to dof d
             def evaluate_basis_function_at_dof(self, b, d):
                 return self.Z[d, b]

@@ -58,28 +58,52 @@ def ShapeParametrization(*shape_parametrization_expression):
                 
                 # Store the shape parametrization expression
                 self.shape_parametrization_expression = shape_parametrization_expression
-                
-                # Default value for a static variable that controls the displacement expression initialization
-                self.__init_displacement_expression.__func__.done = False
+                            
+            #  @}
+            ########################### end - CONSTRUCTORS - end ###########################
             
-            # Preprocess the shape parametrization expression, to convert mu[p] to mu_p
-            # as instant requires, and to convert it in the displacement expression
-            # It cannot be done during __init__ because at construction time the number
-            # of parameters is still unknown
-            def __init_displacement_expression(self):
-                if self.__init_displacement_expression.__func__.done:
-                    return
+            ###########################     SETTERS     ########################### 
+            ## @defgroup Setters Set properties of the reduced order approximation
+            #  @{
+        
+            # Propagate the values of all setters also to the parametrized expression object
+            
+            ## OFFLINE/ONLINE: set the current value of the parameter
+            def setmu(self, mu):
+                ParametrizedProblem_DerivedClass.setmu(self, mu)
+                for i in len(self.displacement_expression):
+                    for j in range(len(self.displacement_expression[i])):
+                        self.displacement_expression[i][j].setmu(mu)
+                
+            #  @}
+            ########################### end - SETTERS - end ########################### 
+            
+            ###########################     OFFLINE STAGE     ########################### 
+            ## @defgroup OfflineStage Methods related to the offline stage
+            #  @{
+            
+            ## Initialize data structures required for the offline phase
+            def init(self):
+                ParametrizedProblem_DerivedClass.init(self)
+                # Preprocess the shape parametrization expression to convert it in the displacement expression
+                # This cannot be done during __init__ because at construction time the number
+                # of parameters is still unknown
                 self.displacement_expression = []
                 for i in range(len(self.shape_parametrization_expression)):
                     displacement_expression_i = ()
                     for j in range(len(self.shape_parametrization_expression[i])):
                         # convert from shape parametrization T to displacement d = T - I
-                        displacement_expression_i += (self.shape_parametrization_expression[i][j] + " - x[" + str(j) + "]",)
+                        displacement_expression_i += ( \
+                            ParametrizedExpression( \
+                                self.shape_parametrization_expression[i][j] + " - x[" + str(j) + "]",
+                                mu=self.mu, \
+                                element=self.deformation_V.ufl_element() \
+                            ), \
+                        )
                     self.displacement_expression.append(displacement_expression_i)
-                self.__init_displacement_expression.__func__.done = True
             
             #  @}
-            ########################### end - CONSTRUCTORS - end ###########################
+            ########################### end - OFFLINE STAGE - end ########################### 
             
             ###########################     I/O     ########################### 
             ## @defgroup IO Input/output methods
@@ -99,11 +123,9 @@ def ShapeParametrization(*shape_parametrization_expression):
             
             ## Auxiliary method to deform the domain
             def compute_displacement(self):
-                self.__init_displacement_expression() # done only once
                 displacement_subdomains = ()
                 for i in range(len(self.displacement_expression)):
-                    displacement_expression_i = ParametrizedExpression(self.displacement_expression[i], mu=self.mu, element=self.deformation_V.ufl_element())
-                    displacement_subdomains += (interpolate(displacement_expression_i, self.deformation_V),)
+                    displacement_subdomains += (interpolate(self.displacement_expression[i], self.deformation_V),)
                 displacement = Function(self.deformation_V)
                 for i in range(len(displacement_subdomains)):
                     subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]

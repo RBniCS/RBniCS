@@ -25,18 +25,44 @@
 from dolfin import Expression
 
 class ParametrizedExpression(Expression):
+    
+    ###########################     CONSTRUCTORS     ########################### 
+    ## @defgroup Constructors Methods related to the construction of the parametrized expression object
+    #  @{    
     def __init__(self, cppcode=None, *args, **kwargs):
-        assert mu in kwargs
-        self.mu = kwargs["mu"]
-        assert self.mu is not None
-        assert isinstance(self.mu, tuple)
-        for p in range(len(self.mu)):
+        if cppcode is None:
+            Expression.__init__(self) # initialize an empty expression
+            self._is_empty = True
+        
+        assert "mu" in kwargs
+        mu = kwargs["mu"]
+        assert mu is not None
+        assert isinstance(mu, tuple)
+        for p in range(len(mu)):
             parametrized_expression_code = parametrized_expression_code.replace("mu[" + str(p) + "]", "mu_" + str(p))
         mu_dict = {}
-        for p in range(len(self.mu)):
-            mu_dict[ "mu_" + str(p) ] = self.mu[p]
+        for p in range(len(mu)):
+            mu_dict[ "mu_" + str(p) ] = mu[p]
         del kwargs["mu"]
         kwargs.update(mu_dict)
+                
         Expression.__init__(self, cppcode=parametrized_expression_code, *args, **kwargs)
+        self._is_empty = False
+        
+    #  @}
+    ########################### end - CONSTRUCTORS - end ###########################
+        
+    ###########################     SETTERS     ########################### 
+    ## @defgroup Setters Set properties of the parametrized expression
+
+    ## OFFLINE/ONLINE: set the current value of the parameter
+    def setmu(self, mu):
+        assert isinstance(mu, tuple)
+        if not self._is_empty:
+            for p in range(len(mu)):
+                getattr(self, "mu_" + str(p)) = mu[p]
+        
+    #  @}
+    ########################### end - SETTERS - end ########################### 
     
 
