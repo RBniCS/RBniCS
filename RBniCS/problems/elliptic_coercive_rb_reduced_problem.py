@@ -96,11 +96,13 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     ## Return the numerator of the error bound for the current solution
     def get_eps2(self):
         N = self._solution.size
+        theta_a = self.compute_theta["a"]
+        theta_f = self.compute_theta["f"]
         return \
-              sum(product(self.theta_f, self.riesz_product["ff"], self.theta_f)) \
-            + 2.0*transpose(self._solution)*sum(product(self.theta_a, self.riesz_product["af"][:N], self.theta_f) \
-            + transpose(self._solution)*sum(product(self.theta_a, self.riesz_product["aa"][:N, :N], self.theta_a))*self._solution
-        
+              sum(product(theta_f, self.riesz_product["ff"], theta_f)) \
+            + 2.0*transpose(self._solution)*sum(product(theta_a, self.riesz_product["af"][:N], theta_f) \
+            + transpose(self._solution)*sum(product(theta_a, self.riesz_product["aa"][:N, :N], theta_a))*self._solution
+                    
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
     

@@ -92,8 +92,6 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         self.V = V
         # 3a. Number of terms in the affine expansion
         self.Q = dict() # from string to integer
-        # 3b. Theta multiplicative factors of the affine expansion
-        self.theta = dict() # from string to tuple
         # 3c. Matrices/vectors resulting from the truth discretization
         self.operator = dict() # from string to AffineExpansionOnlineStorage
         self.inner_product = AffineExpansionOfflineStorage()
@@ -124,11 +122,9 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     def solve(self):
         assembled_operator = dict()
         for term in ["a", "f"]:
-            self.theta[term] = self.compute_theta(term)
-            assembled_operator = sum(product(self.theta[term], self.operator[term]))
+            assembled_operator = sum(product(self.compute_theta(term), self.operator[term]))
         try:
-            theta_bc = self.compute_theta("dirichlet_bc")
-            assembled_dirichlet_bc = sum(product(theta_bc, self.dirichet_bc))
+            assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc"), self.dirichet_bc))
         except RuntimeError: # there were no Dirichlet BCs
             assembled_dirichlet_bc = None
         solve(assembled_operator["a"] == assembled_operator["f"], self._solution, assembled_dirichlet_bc)
@@ -137,8 +133,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## Perform a truth evaluation of the (compliant) output
     def output(self):
         assembled_operator = dict()
-        self.theta["f"] = self.compute_theta("f")
-        assembled_ouput_operator = sum(product(self.theta["f"], self.operator["f"]))
+        assembled_ouput_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
         self._output = transpose(assembled_output_operator)*self._solution.vector()
         return self._output
     

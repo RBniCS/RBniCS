@@ -58,8 +58,6 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         # $$ ONLINE DATA STRUCTURES $$ #
         # 3a. Number of terms in the affine expansion
         self.Qs = 0
-        # 3b. Theta multiplicative factors of the affine expansion
-        self.theta_s = ()
         # 3c. Reduced order operators
         self.operator_s = ()
         self.operator_a_dp = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
@@ -112,12 +110,11 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         N = self.uN.size
         self.sN = 0.
         # Assemble output
-        self.theta_s = self.compute_theta("s")
-        assembled_operator_s = sum(product(self.theta_s, self.operator_s[:N]))
+        assembled_operator_s = sum(product(self.compute_theta("s"), self.operator_s[:N]))
         self.sN += transpose(assembled_operator_s)*self.uN
         # Assemble correction
-        assembled_operator_a_dp = sum(product(self.theta_a, self.operator_a_dp[:N, :N]))
-        assembled_operator_f_d = sum(product(self.theta_f, self.operator_f_d[:N]))
+        assembled_operator_a_dp = sum(product(self.compute_theta("a"), self.operator_a_dp[:N, :N]))
+        assembled_operator_f_d = sum(product(self.compute_theta("f"), self.operator_f_d[:N]))
         self.sN -= transpose(assembled_operator_f_d)*self.dual_problem.uN - transpose(self.dual_problem.uN)*assembled_operator_a_dp*self.uN
     
     ## Return an error bound for the current solution. Overridden to be computed in the V-norm
@@ -157,8 +154,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         
     ## Perform a truth evaluation of the output
     def truth_output(self):
-        self.theta_s = self.compute_theta("s")
-        assembled_truth_S = sum(product(self.theta_s, self.truth_S))
+        assembled_truth_S = sum(product(self.compute_theta("s"), self.truth_S))
         self.s = transpose(assembled_truth_S)*self.snapshot.vector()
     
     ## Assemble the reduced order affine expansion. Overridden to assemble also terms related to output and output correction
@@ -308,8 +304,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         # Possibly need to initialize Qa of primal, since error_analysis of dual
         # may be performed before any primal data structures is initialized,
         # but we may rely on the primal itself in get_stability_factor, when querying SCM
-        self.primal_problem.theta_a = self.primal_problem.compute_theta("a")
-        self.primal_problem.Qa = len(self.primal_problem.theta_a)
+        self.primal_problem.Qa = len(self.primal_problem.compute_theta("a"))
         # This is almost the same as in parent, without the output computation,
         # since it makes no sense here.
         self.load_reduced_data_structures()
@@ -381,11 +376,13 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         return self.primal_problem.get_stability_factor()
     
     ## Set theta multiplicative terms of the affine expansion of a.
+    # TODO update
     def compute_theta_a(self):
         self.primal_problem.setmu(self.mu)
         return self.primal_problem.compute_theta("a")
     
     ## Set theta multiplicative terms of the affine expansion of f.
+    # TODO update
     def compute_theta_f(self):
         self.primal_problem.setmu(self.mu)
         primal_theta_s = self.primal_problem.compute_theta("s")

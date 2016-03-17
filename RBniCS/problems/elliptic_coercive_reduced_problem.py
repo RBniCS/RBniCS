@@ -51,8 +51,6 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         self.N_bc = 0
         # 3a. Number of terms in the affine expansion
         self.Q = dict() # from string to integer
-        # 3b. Theta multiplicative factors of the affine expansion
-        self.theta = dict() # from string to tuple
         # 3c. Reduced order operators
         self.operator = dict() # from string to AffineExpansionOnlineStorage
         # Solution
@@ -134,8 +132,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         N += self.N_bc
         assembled_operator = dict()
         for term in ["a", "f"]:
-            self.theta[term] = self.compute_theta(term)
-            assembled_operator = sum(product(self.theta[term], self.operator[term]))
+            assembled_operator = sum(product(self.compute_theta(term), self.operator[term]))
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
         except RuntimeError: # there were no Dirichlet BCs
@@ -146,9 +143,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
     # Perform an online evaluation of the (compliant) output
     def output(self):
         N = self._solution.size
-        assembled_operator = dict()
-        self.theta["f"] = self.compute_theta("f")
-        assembled_output_operator = sum(product(self.theta["f"], self.operator["f"]))
+        assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
         self._output = transpose(assembled_output_operator[:N])*self._solution
         return self._output
         
@@ -202,8 +197,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         
     # Internal method for error computation: returns the inner product matrix to be used.
     def _error_inner_product_matrix(self):
-        self.theta["a"] = self.compute_theta("a") # not really necessary, for symmetry with the parabolic case
-        assembled_error_inner_product_operator = sum(product(self.theta["a"], self.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
+        assembled_error_inner_product_operator = sum(product(self.compute_theta("a"), self.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
         return assembled_error_inner_product_operator
         
     #  @}
