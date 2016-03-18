@@ -24,14 +24,14 @@
 
 from __future__ import print_function
 import types
-from RBniCS.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.parametrized_problem import ParametrizedProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
+class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -40,7 +40,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
     ## Default initialization of members.
     def __init__(self, truth_problem):
         # Call to parent
-        EllipticCoerciveProblem.__init__(self)
+        ParametrizedProblem.__init__(self, truth_problem.name())
         
         self.name = truth_problem.name
         self.current_stage = None
@@ -64,8 +64,8 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
         # 6. Basis functions matrix
         self.Z = BasisFunctionsMatrix()
         # 9. I/O
-        self.basis_folder = "basis"
-        self.reduced_operators_folder = "reduced_operators"
+        self.folder["basis"] = self.folder_prefix + "/" + "basis"
+        self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -94,7 +94,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
                 self.assemble_operator(term)
                 self.Q[term] = len(self.operator(term))
             # Also load basis functions
-            self.Z.load(self.basis_folder, "basis")
+            self.Z.load(self.folder["basis"], "basis")
             # To properly initialize N and N_bc, detect how many theta terms
             # are related to boundary conditions
             try:
@@ -220,10 +220,10 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             # we would like to be able to use a reduced problem also as a 
             # truth problem for a nested reduction
             if term == "a":
-                self.operator["a"].load(self.reduced_operators_folder, "operator_a")
+                self.operator["a"].load(self.folder["reduced_operators"], "operator_a")
                 return self.operator["a"]
             elif term == "f":
-                self.operator["f"].load(self.reduced_operators_folder, "operator_f")
+                self.operator["f"].load(self.folder["reduced_operators"], "operator_f")
                 return self.operator["f"]
             elif term == "dirichlet_bc":
                 raise RuntimeError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
@@ -236,11 +236,11 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
             if term == "a":
                 for q in range(self.Q["a"]):
                     self.operator["a"][q] = transpose(self.Z)*self.truth_problem.operator["a"][q]*self.Z
-                self.operator["a"].save(self.reduced_operators_folder, "operator_a")
+                self.operator["a"].save(self.folder["reduced_operators"], "operator_a")
             elif term == "f":
                 for q in range(self.Q["f"]):
                     self.operator["f"][q] = transpose(self.Z)*self.truth_problem.operator["f"][q]
-                self.operator["f"].save(self.reduced_operators_folder, "operator_f")
+                self.operator["f"].save(self.folder["reduced_operators"], "operator_f")
             elif term == "dirichlet_bc":
                 try:
                     theta_bc = self.compute_theta("dirichlet_bc")
@@ -276,7 +276,7 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
                 # Restore the standard compute_theta method
                 self.truth_problem.compute_theta = standard_compute_theta
                 # Save basis functions matrix, that contains up to now only lifting functions
-                self.Z.save(self.basis_folder, "basis")
+                self.Z.save(self.folder["basis"], "basis")
                 self.N_bc = Q_dirichlet_bcs
                 # Note that, however, self.N is not increased, so it will actually contain the number
                 # of basis functions without the lifting ones

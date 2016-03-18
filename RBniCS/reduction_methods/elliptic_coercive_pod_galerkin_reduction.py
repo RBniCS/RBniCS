@@ -66,10 +66,8 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         # 6bis. Declare a POD object
         self.POD = ProperOrthogonalDecomposition(self.compute_scalar_product, self.S)
         # 9. I/O
-        self.xi_train_folder = "xi_train__pod"
-        self.xi_test_folder = "xi_test__pod"
-        self.snapshots_folder = "snapshots__pod"
-        self.post_processing_folder = "post_processing__pod"
+        self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
+        self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -77,19 +75,6 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
     ###########################     OFFLINE STAGE     ########################### 
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
-    
-    ## Initialize data structures required for the offline phase
-    def _init_offline(self):
-        # Call the parent initialization
-        need_to_do_offline_stage = EllipticCoerciveReductionMethodBase._init_offline(self)
-        
-        # Also create folders for snapshots and postprocessing
-        folders = (self.snapshots_folder, self.post_processing_folder)
-        for f in folders:
-            if not os.path.exists(f):
-                os.makedirs(f)
-        
-        return need_to_do_offline_stage
     
     ## Perform the offline phase of the reduced order model
     def offline(self):
@@ -109,7 +94,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
             
             print("truth solve for mu = ", self.mu)
             snapshot = self.truth_problem.solve()
-            self.truth_problem.export_solution(snapshot, self.snapshots_folder, "truth_" + str(run))
+            self.truth_problem.export_solution(snapshot, self.folder["snapshots"], "truth_" + str(run))
             self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update snapshot matrix")
@@ -138,10 +123,10 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         (Z, N) = self.POD.apply(self.Nmax)
         self.reduced_problem.Z.enrich(Z)
         self.reduced_problem.N += N
-        self.reduced_problem.Z.save(self.basis_folder, "basis")
+        self.reduced_problem.Z.save(self.folder["basis"], "basis")
         self.POD.print_eigenvalues()
-        self.POD.save_eigenvalues_file(self.post_processing_folder, "eigs")
-        self.POD.save_retained_energy_file(self.post_processing_folder, "retained_energy")
+        self.POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
+        self.POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
         
     ## Update the snapshot matrix
     def update_snapshot_matrix(self, snapshot):

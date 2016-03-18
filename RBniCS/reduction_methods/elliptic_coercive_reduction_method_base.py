@@ -39,7 +39,7 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
     ## Default initialization of members
     def __init__(self, truth_problem):
         # Call to parent
-        ReductionMethodBase.__init__(self)
+        ReductionMethodBase.__init__(self, truth_problem.name())
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # 3. Reduced order problem
@@ -72,19 +72,16 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
         # gets automatically propagated to the truth problem.
         
         # Prepare folders and init reduced problem
-        if \
-            os.path.exists(self.reduced_problem.basis_folder) \
-        and \
-            os.path.exists(self.reduced_problem.reduced_operators_folder) \
-        :
+        all_folders_exist = True
+        for f in self.folder.values():
+            if not os.path.exists(f):
+                all_folders_exist = False
+                os.makedirs(f)
+        if all_folders_exist:
             self.reduced_problem.init("online")
             return False # offline construction should be skipped, since data are already available
         else:
             self.reduced_problem.init("offline")
-            folders = (self.reduced_problem.basis_folder, self.reduced_problem.reduced_operators_folder)
-            for f in folders:
-                if not os.path.exists(f):
-                    os.makedirs(f)
             return True # offline construction should be carried out
     
     #  @}

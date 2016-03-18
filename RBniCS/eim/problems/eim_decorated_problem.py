@@ -39,8 +39,8 @@ def EIMDecoratedProblem(*parametrized_expressions):
                 ParametrizedProblem_DerivedClass.__init__(self, V, *args)
                 # Attach EIM reduced problems
                 self.EIM_approximation = []
-                for parametrized_expression in parametrized_expressions
-                    self.EIM_approximation.append(_EIMApproximation(V, parametrized_expression))
+                for i in range(len(parametrized_expressions))
+                    self.EIM_approximation.append(_EIMApproximation(V, parametrized_expressions[i], ParametrizedProblem_DerivedClass.__name__ + "/eim/" + str(i)))
                     
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation
@@ -51,13 +51,13 @@ def EIMDecoratedProblem(*parametrized_expressions):
             ## OFFLINE: set the range of the parameters    
             def set_mu_range(self, mu_range):
                 ParametrizedProblem_DerivedClass.set_mu_range(self, mu_range)
-                for i in len(self.EIM_approximation):
+                for i in range(len(self.EIM_approximation)):
                     self.EIM_approximation[i].set_mu_range(mu_range)
                     
             ## OFFLINE/ONLINE: set the current value of the parameter
             def set_mu(self, mu):
                 ParametrizedProblem_DerivedClass.set_mu(self, mu)
-                for i in len(self.EIM_approximation):
+                for i in range(len(self.EIM_approximation)):
                     self.EIM_approximation[i].set_mu(mu)
                 
             #  @}
@@ -74,9 +74,9 @@ def EIMDecoratedProblem(*parametrized_expressions):
             #  @{
         
             ## Default initialization of members
-            def __init__(self, V, parametrized_expression__as_string):
+            def __init__(self, V, parametrized_expression__as_string, folder_prefix):
                 # Call the parent initialization
-                ParametrizedProblem.__init__(self)
+                ParametrizedProblem.__init__(self, folder_prefix)
                 # Store the parametrized expression
                 self.parametrized_expression__as_string = parametrized_expression__as_string
                 self.parametrized_expression = ParametrizedExpression()
@@ -95,8 +95,8 @@ def EIMDecoratedProblem(*parametrized_expressions):
                 # 9. I/O. Since we are decorating the parametrized problem we do not want to change the name of the
                 # basis function/reduced operator folder, but rather add a new one. For this reason we use
                 # the __eim suffix in the variable name.
-                self.basis_folder = "basis__eim"
-                self.reduced_operators_folder = "reduced_matrices__eim"
+                self.folder["basis"] = self.folder_prefix + "/" + "basis"
+                self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
                 
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
@@ -126,17 +126,17 @@ def EIMDecoratedProblem(*parametrized_expressions):
                 self.parametrized_expression = ParametrizedExpression(self.parametrized_expression__as_string, mu=self.mu, element=self.V.ufl_element())
                 # Read/Initialize reduced order data structures
                 if current_stage == "online":
-                    self.interpolation_points.load(self.reduced_operators_folder, "interpolation_points")
-                    self.interpolation_points_dof.load(self.reduced_operators_folder, "interpolation_points_dof")
-                    self.interpolation_matrix.load(self.reduced_operators_folder, "interpolation_matrix")
-                    self.Z = np.load(self.basis_folder, "basis")
+                    self.interpolation_points.load(self.folder["reduced_operators"], "interpolation_points")
+                    self.interpolation_points_dof.load(self.folder["reduced_operators"], "interpolation_points_dof")
+                    self.interpolation_matrix.load(self.folder["reduced_operators"], "interpolation_matrix")
+                    self.Z = np.load(self.folder["basis"], "basis")
                     self.N = len(self.Z)
                 elif current_stage == "offline":
                     # Create empty files
-                    self.interpolation_points.save(self.reduced_operators_folder, "interpolation_points")
-                    self.interpolation_points_dof.save(self.reduced_operators_folder, "interpolation_points_dof")
-                    self.interpolation_matrix.save(self.reduced_operators_folder, "interpolation_matrix")
-                    self.Z.save(self.basis_folder, "basis")
+                    self.interpolation_points.save(self.folder["reduced_operators"], "interpolation_points")
+                    self.interpolation_points_dof.save(self.folder["reduced_operators"], "interpolation_points_dof")
+                    self.interpolation_matrix.save(self.folder["reduced_operators"], "interpolation_matrix")
+                    self.Z.save(self.folder["basis"], "basis")
                 else:
                     raise RuntimeError("Invalid stage in init().")
         
@@ -189,7 +189,7 @@ def EIMDecoratedProblem(*parametrized_expressions):
             def update_interpolation_matrix(self):
                 for j in range(self.N):
                     self.interpolation_matrix[self.N - 1, j] = self.evaluate_basis_function_at_dof(j, self.interpolation_points_dof[self.N - 1])
-                self.interpolation_matrix.save(self.reduced_operators_folder, "interpolation_matrix")
+                self.interpolation_matrix.save(self.folder["reduced_operators"], "interpolation_matrix")
                 
             ## Return the basis functions as tuples of functions
             def assemble_mu_independent_interpolated_function(self):

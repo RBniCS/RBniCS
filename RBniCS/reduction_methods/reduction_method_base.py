@@ -35,15 +35,17 @@ class ReductionMethodBase(object):
     #  @{
     
     ## Default initialization of members
-    def __init__(self):
+    def __init__(self, folder_prefix):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
         self.Nmax = 10
         # 2. Parameter ranges and training set
         self.xi_train = ParameterSpaceSubset()
         # 9. I/O
-        self.xi_train_folder = "xi_train"
-        self.xi_test_folder = "xi_test"
+        self.folder_prefix = folder_prefix
+        self.folder = {}
+        self.folder["xi_train"] = self.folder_prefix + "/" + "xi_train"
+        self.folder["xi_test" ] = self.folder_prefix + "/" + "xi_test"
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
         # 2. Test set
@@ -64,33 +66,33 @@ class ReductionMethodBase(object):
     # See the documentation of generate_train_or_test_set for more details
     def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
         # Create I/O folder
-        if not os.path.exists(self.xi_train_folder):
-            os.makedirs(self.xi_train_folder)
+        if not os.path.exists(self.folder["xi_train"]):
+            os.makedirs(self.folder["xi_train"])
         # Test if can import
         import_successful = False
         if enable_import:
-            import_successful = self.xi_train.load(self.xi_train_folder, "xi_train") \
+            import_successful = self.xi_train.load(self.folder["xi_train"], "xi_train") \
                 and  (len(self.xi_train) == ntrain)
         if not import_successful:
             self.xi_train.generate(self.mu_range, ntrain, sampling)
             # Export 
-            self.xi_train.save(self.xi_train_folder, "xi_train")
+            self.xi_train.save(self.folder["xi_train"], "xi_train")
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     # See the documentation of generate_train_or_test_set for more details
     def set_xi_test(self, ntest, enable_import=False, sampling="random"):
         # Create I/O folder
-        if not os.path.exists(self.xi_test_folder):
-            os.makedirs(self.xi_test_folder)
+        if not os.path.exists(self.folder["xi_test"]):
+            os.makedirs(self.folder["xi_test"])
         # Test if can import
         import_successful = False
         if enable_import:
-            import_successful = self.xi_test.load(self.xi_test_folder, "xi_test") \
+            import_successful = self.xi_test.load(self.folder["xi_test"], "xi_test") \
                 and  (len(self.xi_test) == ntest)
         if not import_successful:
             self.xi_test.generate(self.mu_range, ntest, sampling)
             # Export 
-            self.xi_test.save(self.xi_test_folder, "xi_test")
+            self.xi_test.save(self.folder["xi_test"], "xi_test")
             
     #  @}
     ########################### end - SETTERS - end ########################### 

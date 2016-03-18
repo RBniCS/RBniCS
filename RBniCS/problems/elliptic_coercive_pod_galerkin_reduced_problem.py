@@ -31,13 +31,5 @@ from RBniCS.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProb
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 class EllipticCoercivePODGalerkinReducedProblem(EllipticCoerciveReducedProblem):
-    ## Default initialization of members
-    def __init__(self, truth_problem):
-        # Call the parent initialization
-        EllipticCoerciveReducedProblem.__init__(self, truth_problem)
-                
-        # $$ OFFLINE DATA STRUCTURES $$ #
-        # 9. I/O
-        self.basis_folder = "basis__pod"
-        self.reduced_operators_folder = "reduced_operators__pod"
+    pass
         

@@ -90,33 +90,15 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         # 6bis. Declare a GS object
         self.GS = GramSchmidt(self.compute_scalar_product, self.S)
         # 9. I/O
-        self.snapshots_folder = "snapshots"
-        self.post_processing_folder = "post_processing"
-        
+        self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
+        self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+                
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
     
     ###########################     OFFLINE STAGE     ########################### 
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
-    
-    ## Initialize data structures required for the offline phase
-    def _init_offline(self):
-        # Call the parent initialization
-        need_to_do_offline_stage = EllipticCoerciveReductionMethodBase._init_offline(self)
-        
-        # Need to check also for the existence of the error estimation folder
-        if not os.path.exists(self.reduced_problem.error_estimation_folder):
-            assert need_to_do_offline_stage is True
-            os.makedirs(self.reduced_problem.error_estimation_folder)
-            
-        # Also create folders for snapshots and postprocessing
-        folders = (self.snapshots_folder, self.post_processing_folder)
-        for f in folders:
-            if not os.path.exists(f):
-                os.makedirs(f)
-        
-        return need_to_do_offline_stage
         
     ## Perform the offline phase of the reduced order model
     def offline(self):
@@ -134,7 +116,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
             
             print("truth solve for mu = ", self.mu)
             snapshot = self.truth_problem.solve()
-            self.truth_problem.export_solution(snapshot, self.snapshots_folder, "truth_" + str(run))
+            self.truth_problem.export_solution(snapshot, self.folder["snapshots"], "truth_" + str(run))
             self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update basis matrix")
@@ -169,7 +151,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
     def update_basis_matrix(self):
         self.reduced_problem.Z.enrich(snapshot)
         self.GS.apply(self.reduced_problem.Z)
-        self.reduced_problem.Z.save(self.reduced_problem.basis_folder, "basis")
+        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
         self.reduced_problem.N += 1
         
     ## Choose the next parameter in the offline stage in a greedy fashion
@@ -187,7 +169,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         assert munew is not None
         print("absolute delta max = ", delta_max)
         self.reduced_problem.set_mu(munew)
-        self.save_greedy_post_processing_file(self.N, delta_max, munew, self.post_processing_folder)
+        self.save_greedy_post_processing_file(self.N, delta_max, munew, self.folder["post_processing"])
 
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

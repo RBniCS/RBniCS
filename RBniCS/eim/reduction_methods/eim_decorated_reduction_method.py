@@ -37,8 +37,10 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             assert isinstance(truth_problem, EIMDecoratedProblem_Class)
             # Attach EIM reduction methods
             self.EIM_reduction_method = []
-            for EIM_approximation in truth_problem.EIM_approximation:
-                self.EIM_reduction_method.append(_EIMReductionMethod(EIM_approximation))
+            for i in range(len(truth_problem.EIM_approximation)):
+                self.EIM_reduction_method.append(
+                    _EIMReductionMethod(truth_problem.EIM_approximation[i], truth_problem.name() + "/eim/" + str(i))
+                )
                                     
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation
@@ -53,24 +55,24 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 Nmax_EIM = kwargs["Nmax_EIM"]
                 if isinstance(nmax_EIM, tuple):
                     assert len(nmax_EIM) = len(self.EIM_reduction_method)
-                    for i in len(self.EIM_reduction_method)
+                    for i in range(len(self.EIM_reduction_method)):
                         self.EIM_reduction_method[i].set_Nmax(Nmax_EIM[i]) # kwargs are not needed
                 else:
                     assert isinstance(nmax_EIM, int)
-                    for i in len(self.EIM_reduction_method)
+                    for i in range(len(self.EIM_reduction_method)):
                         self.EIM_reduction_method[i].set_Nmax(Nmax_EIM) # kwargs are not needed
 
                 
             ## OFFLINE: set the elements in the training set \xi_train.
             def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
                 EllipticCoerciveRBBase.set_xi_train(self, ntrain, enable_import, sampling)
-                for i in len(self.EIM_reduction_method)
+                for i in range(len(self.EIM_reduction_method)):
                     self.EIM_reduction_method[i].set_xi_train(ntrain, enable_import, sampling)
                 
             ## ERROR ANALYSIS: set the elements in the test set \xi_test.
             def set_xi_test(self, ntest, enable_import=False, sampling="random"):
                 EllipticCoerciveRBBase.set_xi_test(self, ntest, enable_import, sampling)
-                for i in len(self.EIM_reduction_method)
+                for i in range(len(self.EIM_reduction_method)):
                     self.EIM_reduction_method[i].set_xi_test(ntest, enable_import, sampling)
                 
             #  @}
@@ -84,7 +86,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             def offline(self):
                 # Perform first the EIM offline phase, ...
                 bak_first_mu = tuple(list(self.truth_problem.mu))
-                for i in len(self.EIM_reduction_method)
+                for i in range(len(self.EIM_reduction_method)):
                     self.EIM_reduction_method[i].offline()
                 # ..., and then call the parent method.
                 self.truth_problem.set_mu(bak_first_mu)
@@ -101,7 +103,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # over the test set
             def error_analysis(self, N=None):
                 # Perform first the EIM error analysis, ...
-                for i in len(self.EIM_reduction_method)
+                for i in range(len(self.EIM_reduction_method)):
                     self.EIM_reduction_method[i].error_analysis(N)
                 # ..., and then call the parent method.
                 ReductionMethod_DerivedClass.error_analysis(self, N)        
@@ -120,9 +122,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         #  @{
         
         ## Default initialization of members
-        def __init__(self, EIM_approximation):
+        def __init__(self, EIM_approximation, folder_prefix):
             # Call the parent initialization
-            ReductionMethodBase.__init__(self)
+            ReductionMethodBase.__init__(self, folder_prefix)
             
             # $$ OFFLINE DATA STRUCTURES $$ #
             # High fidelity problem
@@ -132,10 +134,8 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # 6bis. Declare a new matrix to store the snapshots
             self.snapshot_matrix = SnapshotMatrix()
             # 9. I/O
-            self.xi_train_folder = "xi_train__eim"
-            self.xi_test_folder = "xi_test__eim"
-            self.snapshots_folder = "snapshots__eim"
-            self.post_processing_folder = "post_processing__eim"
+            self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
+            self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
             #
             self.mu_index = 0
             
@@ -148,19 +148,17 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         
         ## Initialize data structures required for the offline phase
         def _init_offline(self):
-            if \
-                os.path.exists(self.EIM_approximation.basis_folder) \
-            and \
-                os.path.exists(self.EIM_approximation.reduced_operators_folder) \
-            :
-                self.EIM_approximation.init("online")
+            # Prepare folders and init reduced problem
+            all_folders_exist = True
+            for f in self.folder.values():
+                if not os.path.exists(f):
+                    all_folders_exist = False
+                    os.makedirs(f)
+            if all_folders_exist:
+                self.reduced_problem.init("online")
                 return False # offline construction should be skipped, since data are already available
             else:
-                self.EIM_approximation.init("offline")
-                folders = (self.EIM_approximation.basis_folder, self.EIM_approximation.reduced_operators_folder, self.snapshots_folder, self.post_processing_folder)
-                for f in folders:
-                    if not os.path.exists(f):
-                        os.makedirs(f)
+                self.reduced_problem.init("offline")
                 return True # offline construction should be carried out
         
         ## Perform the offline phase of EIM
@@ -182,7 +180,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.EIM_approximation.set_mu(self.xi_train[run])
                 f = self.EIM_approximation.evaluate_parametrized_function_at_mu(self.EIM_approximation.mu)
                 snapshot = interpolate(f, self.V)
-                self.EIM_approximation.export_solution(self.snapshot, self.snapshots_folder, "truth_" + str(run))
+                self.EIM_approximation.export_solution(self.snapshot, self.folder["snapshots"], "truth_" + str(run))
                 
                 print("update snapshot matrix")
                 self.update_snapshot_matrix(snapshot)
@@ -211,16 +209,18 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.EIM_approximation.solve()
                 
                 print("compute maximum interpolation error")
+                # TODO move into a method
                 (error, maximum_error, maximum_point, maximum_point_dof) = self.compute_maximum_interpolation_error(output_error=True, output location=True)
                 self.EIM_approximation.interpolation_points.append(maximum_point)
-                self.EIM_approximation.interpolation_points.save(self.reduced_operators_folder, "interpolation_points")
+                self.EIM_approximation.interpolation_points.save(self.folder["reduced_operators"], "interpolation_points")
                 self.EIM_approximation.interpolation_points_dof.append(maximum_point_dof)
-                self.EIM_approximation.interpolation_points_dof.save(self.reduced_operators_folder, "interpolation_points_dof")
+                self.EIM_approximation.interpolation_points_dof.save(self.folder["reduced_operators"], "interpolation_points_dof")
                 
                 print("update basis matrix")
+                # TODO move into the update_basis_matrix method
                 error /= maximum_error
                 self.EIM_approximation.Z.enrich(error)
-                self.EIM_approximation.Z.save(self.EIM_approximation.basis_folder, "basis")
+                self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
                 self.EIM_approximation.N += 1
                 
                 print("update interpolation matrix")
@@ -324,7 +324,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             print("absolute error max = ", err_max)
             self.EIM_approximation.set_mu(munew)
             self.mu_index = munew_index
-            self.save_greedy_post_processing_file(self.N, err_max, munew, self.post_processing_folder)
+            self.save_greedy_post_processing_file(self.N, err_max, munew, self.folder["post_processing"])
             
         #  @}
         ########################### end - OFFLINE STAGE - end ########################### 

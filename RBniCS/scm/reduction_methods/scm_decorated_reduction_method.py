@@ -38,7 +38,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             ReductionMethod_DerivedClass.__init__(truth_problem)
             assert isinstance(truth_problem, SCMDecoratedProblem_Class)
             # Attach SCM reduction methods
-            self.SCM_reduction_method = _SCMReductionMethod(truth_problem.SCM_approximation) # TODO
+            self.SCM_reduction_method = _SCMReductionMethod(truth_problem.SCM_approximation, truth_problem.name() + "/scm") # TODO
                                                 
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation
@@ -109,7 +109,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         #  @{
         
         ## Default initialization of members
-        def __init__(self, parametrized_problem):
+        def __init__(self, parametrized_problem, folder_prefix):
             # Call the parent initialization
             ParametrizedProblem.__init__(self)
             # Store the parametrized problem object and the bc list
@@ -140,12 +140,8 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.truth_A__condensed_for_maximum_eigenvalue = ()
             self.S__condensed = ()
             # 9. I/O
-            self.xi_train_folder = "xi_train__scm/"
-            self.xi_test_folder = "xi_test__scm/"
-            self.snap_folder = "snapshots__scm/"
-            self.basis_folder = "basis__scm/"
-            self.reduced_operators_folder = "reduced_operators__scm/"
-            self.post_processing_folder = "post_processing__scm/"
+            self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
+            self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
             # 
             self.mu_index = 0 # index of the greedy select parameter at the current iteration
             

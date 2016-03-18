@@ -50,7 +50,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 9. I/O
-        self.error_estimation_folder = "error_estimation"
+        self.folder["error_estimation"] = self.folder_prefix + "/" + "error_estimation"
 
         
     #  @}
@@ -155,11 +155,11 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     def assemble_error_estimation_operators(self, term):
         if self.current_stage == "online": # load from file
             if term == "riesz_product_aa":
-                self.riesz_product["aa"].load(self.error_estimation_folder, "riesz_product_aa")
+                self.riesz_product["aa"].load(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":
-                self.riesz_product["af"].load(self.error_estimation_folder, "riesz_product_af")
+                self.riesz_product["af"].load(self.folder["error_estimation"], "riesz_product_af")
             elif term == "riesz_product_ff":
-                self.riesz_product["ff"].load(self.error_estimation_folder, "riesz_product_ff")
+                self.riesz_product["ff"].load(self.folder["error_estimation"], "riesz_product_ff")
             else:
                 raise RuntimeError("Invalid term for assemble_error_estimation_operators().")
         elif self.current_stage == "offline":
@@ -169,19 +169,19 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                         self.riesz_product["aa"][qa, qap] = transpose(self.riesz["a"][qa])*self.S*self.riesz["a"][qap]
                         if qa != qap:
                             self.riesz_product["aa"][qap, qa] = self.riesz_product["aa"][qa, qap]
-                self.riesz_product["aa"].save(self.error_estimation_folder, "riesz_product_aa")
+                self.riesz_product["aa"].save(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":
                 for qa in range(0, self.Q["a"]):
                     for qf in range(0, self.Q["f"]):
                         self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*self.S*self.riesz["f"][qf]
-                self.riesz_product["af"].save(self.error_estimation_folder, "riesz_product_af")
+                self.riesz_product["af"].save(self.folder["error_estimation"], "riesz_product_af")
             elif term == "riesz_product_ff":
                 for qf in range(0, self.Q["f"]):
                     for qfp in range(qf, self.Q["f"]):
                         self.riesz_product["ff"][qf, qfp] = transpose(self.riesz["f"][qf])*self.S*self.riesz_["f"][qfp]
                         if qf != qfp:
                             self.riesz_product["ff"][qfp, qf] = self.riesz_product["ff"][qf, qfp]
-                self.riesz_product["ff"].save(self.error_estimation_folder, "riesz_product_ff")
+                self.riesz_product["ff"].save(self.folder["error_estimation"], "riesz_product_ff")
             else:
                 raise RuntimeError("Invalid term for assemble_error_estimation_operators().")
         else:

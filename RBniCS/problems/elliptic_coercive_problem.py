@@ -86,7 +86,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## Default initialization of members
     def __init__(self, V):
         # Call to parent
-        ParametrizedProblem.__init__(self)
+        ParametrizedProblem.__init__(self, self.name())
         
         # Input arguments
         self.V = V
@@ -147,6 +147,10 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## Export solution in VTK format
     def export_solution(self, solution, filename):
         self._export_vtk(solution, filename, with_mesh_motion=True, with_preprocessing=True)
+        
+    ## Get the name of the problem, to be used as a prefix for output folders
+    def name(self):
+        return type(self).__name__
         
     #  @}
     ########################### end - I/O - end ########################### 

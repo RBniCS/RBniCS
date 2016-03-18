@@ -59,11 +59,13 @@ class ParametrizedProblem(object):
     #  @{
     
     ## Default initialization of members
-    def __init__(self):
+    def __init__(self, folder_prefix):
         # 2. Current parameters value
         self.mu = tuple()
         # 2. Parameter ranges and training set
         self.mu_range = list()
+        #
+        self.folder_prefix = folder_prefix
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
