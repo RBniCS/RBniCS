@@ -138,10 +138,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
             self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update basis matrix")
-            self.reduced_problem.Z.enrich(snapshot)
-            self.GS.apply(self.reduced_problem.Z)
-            self.reduced_problem.Z.save(self.reduced_problem.basis_folder, "basis")
-            self.reduced_problem.N += 1
+            self.update_basis_matrix()
             
             print("build reduced operators")
             self.reduced_problem.build_reduced_operators()
@@ -167,6 +164,13 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         print("")
         
         return self.reduced_problem
+        
+    ## Update basis matrix
+    def update_basis_matrix(self):
+        self.reduced_problem.Z.enrich(snapshot)
+        self.GS.apply(self.reduced_problem.Z)
+        self.reduced_problem.Z.save(self.reduced_problem.basis_folder, "basis")
+        self.reduced_problem.N += 1
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):

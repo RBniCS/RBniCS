@@ -119,13 +119,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
             run += 1
             
         print("############################## perform POD ######################################")
-        (Z, N) = self.POD.apply(self.Nmax)
-        self.reduced_problem.Z.enrich(Z)
-        self.reduced_problem.N += N
-        self.reduced_problem.Z.save(self.basis_folder, "basis")
-        self.POD.print_eigenvalues()
-        self.POD.save_eigenvalues_file(self.post_processing_folder, "eigs")
-        self.POD.save_retained_energy_file(self.post_processing_folder, "retained_energy")
+        self.compute_basis_functions()
         
         print("")
         print("build reduced operators")
@@ -138,6 +132,16 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         print("")
         
         return self.reduced_problem
+        
+    ## Compute basis functions performing POD
+    def compute_basis_functions(self):
+        (Z, N) = self.POD.apply(self.Nmax)
+        self.reduced_problem.Z.enrich(Z)
+        self.reduced_problem.N += N
+        self.reduced_problem.Z.save(self.basis_folder, "basis")
+        self.POD.print_eigenvalues()
+        self.POD.save_eigenvalues_file(self.post_processing_folder, "eigs")
+        self.POD.save_retained_energy_file(self.post_processing_folder, "retained_energy")
         
     ## Update the snapshot matrix
     def update_snapshot_matrix(self, snapshot):
