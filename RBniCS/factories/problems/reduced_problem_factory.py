@@ -59,6 +59,6 @@ def ReducedProblemFactory(truth_problem, reduction_method):
     # Create an instance of the generated class
     reduced_problem = _ReducedProblem_Type(truth_problem)
     # Make sure to pass the mu_range also to the reduced problem
-    reduced_problem.setmu_range(truth_problem.mu_range)
+    reduced_problem.set_mu_range(truth_problem.mu_range)
     # Return
     return reduced_problem

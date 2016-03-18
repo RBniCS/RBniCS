@@ -56,7 +56,7 @@ class ParametrizedExpression(Expression):
     ## @defgroup Setters Set properties of the parametrized expression
 
     ## OFFLINE/ONLINE: set the current value of the parameter
-    def setmu(self, mu):
+    def set_mu(self, mu):
         assert isinstance(mu, tuple)
         if not self._is_empty:
             for p in range(len(mu)):

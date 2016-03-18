@@ -107,26 +107,26 @@ V = FunctionSpace(mesh, "Lagrange", 1)
 # 3. Allocate an object of the Thermal Block class
 thermal_block_problem = ThermalBlock(V, subd, bound)
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
-thermal_block_problem.setmu_range(mu_range)
+thermal_block_problem.set_mu_range(mu_range)
 
 # 4. Choose PETSc solvers as linear algebra backend
 parameters.linear_algebra_backend = 'PETSc'
 
 # 5. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(thermal_block_problem)
-reduced_basis_method.setNmax(4)
+reduced_basis_method.set_Nmax(4)
 
 # 6. Perform the offline phase
 first_mu = (0.5,1.0)
-thermal_block_problem.setmu(first_mu)
-reduced_basis_method.setxi_train(100)
+thermal_block_problem.set_mu(first_mu)
+reduced_basis_method.set_xi_train(100)
 reduced_thermal_block_problem = reduced_basis_method.offline()
 
 # 7. Perform an online solve
 online_mu = (8.,-1.0)
-reduced_thermal_block_problem.setmu(online_mu)
+reduced_thermal_block_problem.set_mu(online_mu)
 reduced_thermal_block_problem.solve()
 
 # 8. Perform an error analysis
-reduced_basis_method.setxi_test(500)
+reduced_basis_method.set_xi_test(500)
 reduced_basis_method.error_analysis()

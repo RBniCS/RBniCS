@@ -157,26 +157,26 @@ mu_range = [ \
     (-1.0, 1.0), \
     (-1.0, 1.0), \
 ]
-elastic_block_problem.setmu_range(mu_range)
+elastic_block_problem.set_mu_range(mu_range)
 
 # 4. Choose PETSc solvers as linear algebra backend
 parameters.linear_algebra_backend = 'PETSc'
 
 # 5. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(elastic_block_problem)
-pod_galerkin_method.setNmax(20)
+pod_galerkin_method.set_Nmax(20)
 
 # 6. Perform the offline phase
 first_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0)
-elastic_block_problem.setmu(first_mu)
-pod_galerkin_method.setxi_train(500)
+elastic_block_problem.set_mu(first_mu)
+pod_galerkin_method.set_xi_train(500)
 reduced_elastic_block_problem = pod_galerkin_method.offline()
 
 # 7. Perform an online solve
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0)
-reduced_elastic_block_problem.setmu(online_mu)
+reduced_elastic_block_problem.set_mu(online_mu)
 reduced_elastic_block_problem.solve()
 
 # 8. Perform an error analysis
-pod_galerkin_method.setxi_test(500)
+pod_galerkin_method.set_xi_test(500)
 pod_galerkin_method.error_analysis()

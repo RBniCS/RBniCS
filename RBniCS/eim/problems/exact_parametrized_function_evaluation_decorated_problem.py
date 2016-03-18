@@ -51,10 +51,10 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem(*parametrized_expression
             # Propagate the values of all setters also to the parametrized expressions objects
                                 
             ## OFFLINE/ONLINE: set the current value of the parameter
-            def setmu(self, mu):
-                ParametrizedProblem.setmu(self, mu)
+            def set_mu(self, mu):
+                ParametrizedProblem.set_mu(self, mu)
                 for i in len(self.parametrized_expressions):
-                    self.parametrized_expressions[i].setmu(mu)
+                    self.parametrized_expressions[i].set_mu(mu)
                 
             #  @}
             ########################### end - SETTERS - end ########################### 

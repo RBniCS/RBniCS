@@ -48,14 +48,14 @@ def ExactCoercivityConstantDecoratedProblem(*args):
             # Propagate the values of all setters also to the EIM object
             
             ## OFFLINE: set the range of the parameters    
-            def setmu_range(self, mu_range):
-                ParametrizedProblem_DerivedClass.setmu_range(self, mu_range)
-                self.exact_coercivity_constant_computation__problem.setmu_range(mu_range) #TODO
+            def set_mu_range(self, mu_range):
+                ParametrizedProblem_DerivedClass.set_mu_range(self, mu_range)
+                self.exact_coercivity_constant_computation__problem.set_mu_range(mu_range) #TODO
                     
             ## OFFLINE/ONLINE: set the current value of the parameter
-            def setmu(self, mu):
-                ParametrizedProblem_DerivedClass.setmu(self, mu)
-                self.exact_coercivity_constant_computation__problem.setmu(mu) #TODO
+            def set_mu(self, mu):
+                ParametrizedProblem_DerivedClass.set_mu(self, mu)
+                self.exact_coercivity_constant_computation__problem.set_mu(mu) #TODO
                 
             #  @}
             ########################### end - SETTERS - end ########################### 

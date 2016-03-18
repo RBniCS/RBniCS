@@ -67,7 +67,7 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
         # Since we set the initial parameter before the call to offline(),
         # we also need to sync the reduced problem's mu with the
         # truth problem's mu (user prescribed)
-        self.reduced_problem.setmu(self.truth_problem.mu)
+        self.reduced_problem.set_mu(self.truth_problem.mu)
         # Note that, instead, setting the reduced problem current value of mu
         # gets automatically propagated to the truth problem.
         

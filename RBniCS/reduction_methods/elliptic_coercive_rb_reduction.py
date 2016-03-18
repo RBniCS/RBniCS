@@ -173,7 +173,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         delta_max = -1.0
         munew = None
         for mu in self.xi_train:
-            self.reduced_problem.setmu(mu)
+            self.reduced_problem.set_mu(mu)
             self.reduced_problem._solve(self.N)
             delta = self.reduced_problem.get_delta()
             if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
@@ -182,7 +182,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         assert delta_max > 0.
         assert munew is not None
         print("absolute delta max = ", delta_max)
-        self.reduced_problem.setmu(munew)
+        self.reduced_problem.set_mu(munew)
         self.save_greedy_post_processing_file(self.N, delta_max, munew, self.post_processing_folder)
 
     #  @}
@@ -213,7 +213,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         for run in range(len(self.xi_test)):
             print("############################## run = ", run, " ######################################")
             
-            self.reduced_problem.setmu(self.xi_test[run])
+            self.reduced_problem.set_mu(self.xi_test[run])
             
             for n in range(N): # n = 0, 1, ... N - 1
                 (current_error_u, current_error_s) = self.reduced_problem.compute_error(n + 1, True)

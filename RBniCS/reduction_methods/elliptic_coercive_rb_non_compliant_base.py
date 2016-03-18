@@ -76,21 +76,21 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     
     # Propagate the values of all setters also to the dual problem
     
-    def setNmax(self, Nmax, **kwargs):
-        EllipticCoerciveRBBase.setNmax(self, Nmax, **kwargs)
-        self.dual_problem.setNmax(Nmax, **kwargs) # TODO are kwargs needed?
-    def setmu_range(self, mu_range):
-        EllipticCoerciveRBBase.setmu_range(self, mu_range)
-        self.dual_problem.setmu_range(mu_range)
-    def setxi_train(self, ntrain, enable_import=True, sampling="random"):
-        EllipticCoerciveRBBase.setxi_train(self, ntrain, enable_import, sampling)
-        self.dual_problem.setxi_train(ntrain, enable_import, sampling)
-    def setxi_test(self, ntest, enable_import=False, sampling="random"):
-        EllipticCoerciveRBBase.setxi_test(self, ntest, enable_import, sampling)
-        self.dual_problem.setxi_test(ntest, enable_import, sampling)
-    def setmu(self, mu):
-        EllipticCoerciveRBBase.setmu(self, mu)
-        self.dual_problem.setmu(mu)
+    def set_Nmax(self, Nmax, **kwargs):
+        EllipticCoerciveRBBase.set_Nmax(self, Nmax, **kwargs)
+        self.dual_problem.set_Nmax(Nmax, **kwargs) # TODO are kwargs needed?
+    def set_mu_range(self, mu_range):
+        EllipticCoerciveRBBase.set_mu_range(self, mu_range)
+        self.dual_problem.set_mu_range(mu_range)
+    def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
+        EllipticCoerciveRBBase.set_xi_train(self, ntrain, enable_import, sampling)
+        self.dual_problem.set_xi_train(ntrain, enable_import, sampling)
+    def set_xi_test(self, ntest, enable_import=False, sampling="random"):
+        EllipticCoerciveRBBase.set_xi_test(self, ntest, enable_import, sampling)
+        self.dual_problem.set_xi_test(ntest, enable_import, sampling)
+    def set_mu(self, mu):
+        EllipticCoerciveRBBase.set_mu(self, mu)
+        self.dual_problem.set_mu(mu)
         
     #  @}
     ########################### end - SETTERS - end ########################### 
@@ -149,7 +149,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         self.dual_problem.offline()
         
         # Perform the offline stage of the primal problem
-        self.setmu(bak_first_mu)
+        self.set_mu(bak_first_mu)
         EllipticCoerciveRBBase.offline(self)
         
     ## Perform a truth evaluation of the output
@@ -330,7 +330,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
         for run in range(len(self.xi_test)):
             print("############################## run = ", run, " ######################################")
             
-            self.setmu(self.xi_test[run])
+            self.set_mu(self.xi_test[run])
             
             # Perform the truth solve only once
             self.truth_solve()
@@ -372,19 +372,19 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     
     ## Return the alpha_lower bound.
     def get_stability_factor(self):
-        self.primal_problem.setmu(self.mu)
+        self.primal_problem.set_mu(self.mu)
         return self.primal_problem.get_stability_factor()
     
     ## Set theta multiplicative terms of the affine expansion of a.
     # TODO update
     def compute_theta_a(self):
-        self.primal_problem.setmu(self.mu)
+        self.primal_problem.set_mu(self.mu)
         return self.primal_problem.compute_theta("a")
     
     ## Set theta multiplicative terms of the affine expansion of f.
     # TODO update
     def compute_theta_f(self):
-        self.primal_problem.setmu(self.mu)
+        self.primal_problem.set_mu(self.mu)
         primal_theta_s = self.primal_problem.compute_theta("s")
         primal_theta_s_minus = ()
         for qs in range(len(primal_theta_s)):
@@ -408,7 +408,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     
     ## Deform the mesh as a function of the geometrical parameters
     def move_mesh(self):
-        self.primal_problem.setmu(self.mu)
+        self.primal_problem.set_mu(self.mu)
         self.primal_problem.move_mesh()
     
     ## Restore the reference mesh

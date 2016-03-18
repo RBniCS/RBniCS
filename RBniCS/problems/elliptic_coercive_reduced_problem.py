@@ -75,9 +75,9 @@ class EllipticCoerciveReducedProblem(EllipticCoerciveProblem):
     #  @{
     
     ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
-    def setmu(self, mu):
+    def set_mu(self, mu):
         self.mu = mu
-        self.truth_problem.setmu(mu)
+        self.truth_problem.set_mu(mu)
     
     #  @}
     ########################### end - SETTERS - end ########################### 

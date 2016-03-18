@@ -242,7 +242,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         delta_max = -1.0
         munew = None
         for mu in self.xi_train:
-            self.setmu(mu)
+            self.set_mu(mu)
             ParabolicCoerciveBase.online_solve(self,self.N,False)
             delta = self.get_delta()
             if delta > delta_max:
@@ -260,7 +260,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
             np.save(self.post_processing_folder + "delta_max", delta_max)
             np.save(self.post_processing_folder + "mu_greedy", np.array(munew))
 
-        self.setmu(munew)
+        self.set_mu(munew)
         
     ## Build matrices for error estimation
     def build_error_estimation_matrices(self):

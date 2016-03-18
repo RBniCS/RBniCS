@@ -47,22 +47,22 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # Propagate the values of all setters also to the SCM object
             
             ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-            def setNmax(self, Nmax, **kwargs):
-                ReductionMethod_DerivedClass.setNmax(self, nmax, **kwargs)
+            def set_Nmax(self, Nmax, **kwargs):
+                ReductionMethod_DerivedClass.set_Nmax(self, nmax, **kwargs)
                 assert "Nmax_SCM" in kwargs
                 Nmax_SCM = kwargs["Nmax_SCM"]
-                self.SCM_reduction_method.setNmax(nmax_SCM) # kwargs are not needed
+                self.SCM_reduction_method.set_Nmax(nmax_SCM) # kwargs are not needed
 
                 
             ## OFFLINE: set the elements in the training set \xi_train.
-            def setxi_train(self, ntrain, enable_import=True, sampling="random"):
-                EllipticCoerciveRBBase.setxi_train(self, ntrain, enable_import, sampling)
-                self.SCM_reduction_method.setxi_train(ntrain, enable_import=True, sampling)
+            def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
+                EllipticCoerciveRBBase.set_xi_train(self, ntrain, enable_import, sampling)
+                self.SCM_reduction_method.set_xi_train(ntrain, enable_import=True, sampling)
                 
             ## ERROR ANALYSIS: set the elements in the test set \xi_test.
-            def setxi_test(self, ntest, enable_import=False, sampling="random"):
-                EllipticCoerciveRBBase.setxi_test(self, ntest, enable_import, sampling)
-                self.SCM_reduction_method.setxi_test(ntest, enable_import, sampling)
+            def set_xi_test(self, ntest, enable_import=False, sampling="random"):
+                EllipticCoerciveRBBase.set_xi_test(self, ntest, enable_import, sampling)
+                self.SCM_reduction_method.set_xi_test(ntest, enable_import, sampling)
                 
             #  @}
             ########################### end - SETTERS - end ########################### 
@@ -77,7 +77,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 bak_first_mu = tuple(list(self.truth_problem.mu))
                 self.SCM_reduction_method.offline()
                 # ..., and then call the parent method.
-                self.truth_problem.setmu(bak_first_mu)
+                self.truth_problem.set_mu(bak_first_mu)
                 ReductionMethod_DerivedClass.offline(self)
         
             #  @}
@@ -158,7 +158,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         
         ## OFFLINE: set the elements in the training set \xi_train. Overridden to resize alpha_LB_on_xi_train
         ##          Note that the default value of enable_import has been changed here to True
-        def setxi_train(self, ntrain, enable_import=True, sampling="random"):
+        def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
             if not enable_import:
                 raise RuntimeError("SCM will not work without import.")
             # Save the flag if can import from file
@@ -167,7 +167,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 xi_train = np.load(self.xi_train_folder + "xi_train.npy")
                 import_successful = (len(np.asarray(xi_train)) == ntrain)
             # Call parent
-            ParametrizedProblem.setxi_train(self, ntrain, enable_import, sampling)
+            ParametrizedProblem.set_xi_train(self, ntrain, enable_import, sampling)
             # If xi_train was not imported, be safe and remove the previous folder, so that
             # if the user overwrites the training set but forgets to run the offline
             # phase he/she will get an error
@@ -231,7 +231,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             for j in range(M_e):
                 # Overwrite parameter values
                 omega = self.xi_train[ self.C_J[ closest_C_J_indices[j] ] ]
-                self.parametrized_problem.setmu(omega)
+                self.parametrized_problem.set_mu(omega)
                 current_theta_a = self.parametrized_problem.compute_theta("a")
                 
                 # Assemble the LHS of the constraint
@@ -250,7 +250,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             closest_complement_C_J_indices = self.closest_parameters(M_p, self.complement_C_J, mu)
             for j in range(M_p):
                 nu = self.xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
-                self.parametrized_problem.setmu(nu)
+                self.parametrized_problem.set_mu(nu)
                 current_theta_a = self.parametrized_problem.compute_theta("a")
                 # Assemble first the LHS
                 for qa in range(Qa):
@@ -266,7 +266,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             glpk.glp_load_matrix(lp, array_size, matrix_row_index, matrix_column_index, matrix_content)
             
             # 4. Add cost function coefficients
-            self.parametrized_problem.setmu(mu)
+            self.parametrized_problem.set_mu(mu)
             current_theta_a = self.parametrized_problem.compute_theta("a")
             for qa in range(Qa):
                 glpk.glp_set_obj_coef(lp, qa + 1, current_theta_a[qa])
@@ -308,7 +308,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             UB_vectors_J = self.UB_vectors_J
             
             alpha_UB = sys.float_info.max
-            self.parametrized_problem.setmu(mu)
+            self.parametrized_problem.set_mu(mu)
             current_theta_a = self.parametrized_problem.compute_theta("a")
             
             for j in range(N):
@@ -387,7 +387,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.compute_bounding_box()
             
             # Arbitrarily start from the first parameter in the training set
-            self.setmu(self.xi_train[0])
+            self.set_mu(self.xi_train[0])
             self.mu_index = 0
             
             for run in range(self.Nmax):
@@ -505,7 +505,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         def truth_coercivity_constant(self):
             self.assemble_condensed_truth_matrices()
             
-            self.parametrized_problem.setmu(self.mu)
+            self.parametrized_problem.set_mu(self.mu)
             current_theta_a = self.parametrized_problem.compute_theta("a")
             A = sum(product(current_theta_a, self.truth_A__condensed_for_minimum_eigenvalue))
             A = as_backend_type(A)
@@ -543,7 +543,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             for i in range(ntrain):
                 mu = self.xi_train[i]
                 self.mu_index = i
-                self.setmu(mu)
+                self.set_mu(mu)
                 LB = self.get_alpha_LB(mu, False)
                 UB = self.get_alpha_UB(mu)
                 delta = (UB - LB)/UB
@@ -570,7 +570,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 np.save(self.post_processing_folder + "delta_max", delta_max)
                 np.save(self.post_processing_folder + "mu_greedy", np.array(munew))
 
-            self.setmu(munew)
+            self.set_mu(munew)
             self.mu_index = munew_index
             
             # Overwrite alpha_LB_on_xi_train
@@ -646,7 +646,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             for run in range(len(self.xi_test)):
                 print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 
-                self.setmu(self.xi_test[run])
+                self.set_mu(self.xi_test[run])
                 
                 # Truth solves
                 (alpha, discarded1, discarded2) = self.truth_coercivity_constant()

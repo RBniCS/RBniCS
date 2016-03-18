@@ -57,12 +57,12 @@ class ReductionMethodBase(object):
     #  @{
     
     ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-    def setNmax(self, Nmax, **kwargs):
+    def set_Nmax(self, Nmax, **kwargs):
         self.Nmax = Nmax
 
     ## OFFLINE: set the elements in the training set \xi_train.
     # See the documentation of generate_train_or_test_set for more details
-    def setxi_train(self, ntrain, enable_import=True, sampling="random"):
+    def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
         # Create I/O folder
         if not os.path.exists(self.xi_train_folder):
             os.makedirs(self.xi_train_folder)
@@ -78,7 +78,7 @@ class ReductionMethodBase(object):
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     # See the documentation of generate_train_or_test_set for more details
-    def setxi_test(self, ntest, enable_import=False, sampling="random"):
+    def set_xi_test(self, ntest, enable_import=False, sampling="random"):
         # Create I/O folder
         if not os.path.exists(self.xi_test_folder):
             os.makedirs(self.xi_test_folder)

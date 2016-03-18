@@ -39,13 +39,13 @@ class ParametrizedProblem(object):
     The following functions are implemented:
 
     ## Set properties of the reduced order approximation
-    - setNmax()
+    - set_Nmax()
     - settol()
-    - setmu_range()
-    - setxi_train()
-    - setxi_test()
+    - set_mu_range()
+    - set_xi_train()
+    - set_xi_test()
     - generate_train_or_test_set()
-    - setmu()
+    - set_mu()
     
     ## Input/output methods
     - preprocess_solution_for_plot() # nothing to be done by default
@@ -73,11 +73,11 @@ class ParametrizedProblem(object):
     #  @{
     
     ## OFFLINE: set the range of the parameters
-    def setmu_range(self, mu_range):
+    def set_mu_range(self, mu_range):
         self.mu_range = mu_range
     
     ## OFFLINE/ONLINE: set the current value of the parameter
-    def setmu(self, mu):
+    def set_mu(self, mu):
         assert (len(mu) == len(self.mu_range)), "mu and mu_range must have the same lenght"
         self.mu = mu
     

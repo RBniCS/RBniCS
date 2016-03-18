@@ -47,31 +47,31 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # Propagate the values of all setters also to the EIM object
             
             ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-            def setNmax(self, Nmax, **kwargs):
-                ReductionMethod_DerivedClass.setNmax(self, Nmax, **kwargs)
+            def set_Nmax(self, Nmax, **kwargs):
+                ReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
                 assert "Nmax_EIM" in kwargs
                 Nmax_EIM = kwargs["Nmax_EIM"]
                 if isinstance(nmax_EIM, tuple):
                     assert len(nmax_EIM) = len(self.EIM_reduction_method)
                     for i in len(self.EIM_reduction_method)
-                        self.EIM_reduction_method[i].setNmax(Nmax_EIM[i]) # kwargs are not needed
+                        self.EIM_reduction_method[i].set_Nmax(Nmax_EIM[i]) # kwargs are not needed
                 else:
                     assert isinstance(nmax_EIM, int)
                     for i in len(self.EIM_reduction_method)
-                        self.EIM_reduction_method[i].setNmax(Nmax_EIM) # kwargs are not needed
+                        self.EIM_reduction_method[i].set_Nmax(Nmax_EIM) # kwargs are not needed
 
                 
             ## OFFLINE: set the elements in the training set \xi_train.
-            def setxi_train(self, ntrain, enable_import=True, sampling="random"):
-                EllipticCoerciveRBBase.setxi_train(self, ntrain, enable_import, sampling)
+            def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
+                EllipticCoerciveRBBase.set_xi_train(self, ntrain, enable_import, sampling)
                 for i in len(self.EIM_reduction_method)
-                    self.EIM_reduction_method[i].setxi_train(ntrain, enable_import, sampling)
+                    self.EIM_reduction_method[i].set_xi_train(ntrain, enable_import, sampling)
                 
             ## ERROR ANALYSIS: set the elements in the test set \xi_test.
-            def setxi_test(self, ntest, enable_import=False, sampling="random"):
-                EllipticCoerciveRBBase.setxi_test(self, ntest, enable_import, sampling)
+            def set_xi_test(self, ntest, enable_import=False, sampling="random"):
+                EllipticCoerciveRBBase.set_xi_test(self, ntest, enable_import, sampling)
                 for i in len(self.EIM_reduction_method)
-                    self.EIM_reduction_method[i].setxi_test(ntest, enable_import, sampling)
+                    self.EIM_reduction_method[i].set_xi_test(ntest, enable_import, sampling)
                 
             #  @}
             ########################### end - SETTERS - end ########################### 
@@ -87,7 +87,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 for i in len(self.EIM_reduction_method)
                     self.EIM_reduction_method[i].offline()
                 # ..., and then call the parent method.
-                self.truth_problem.setmu(bak_first_mu)
+                self.truth_problem.set_mu(bak_first_mu)
                 ReductionMethod_DerivedClass.offline(self)
         
             #  @}
@@ -179,7 +179,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 print(":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::")
                 
                 print("evaluate parametrized function")
-                self.EIM_approximation.setmu(self.xi_train[run])
+                self.EIM_approximation.set_mu(self.xi_train[run])
                 f = self.EIM_approximation.evaluate_parametrized_function_at_mu(self.EIM_approximation.mu)
                 snapshot = interpolate(f, self.V)
                 self.EIM_approximation.export_solution(self.snapshot, self.snapshots_folder, "truth_" + str(run))
@@ -200,7 +200,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             print("")
             
             # Arbitrarily start from the first parameter in the training set
-            self.setmu(self.xi_train[0])
+            self.set_mu(self.xi_train[0])
             self.mu_index = 0
             # Resize the interpolation matrix
             self.EIM_approximation.interpolation_matrix = OnlineMatrix(self.Nmax, self.Nmax)            
@@ -305,7 +305,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             munew = None
             munew_index = None
             for i in range(len(self.xi_train)):
-                self.EIM_approximation.setmu(self.xi_train[i])
+                self.EIM_approximation.set_mu(self.xi_train[i])
                 self.mu_index = i
                 
                 # Compute the EIM approximation ...
@@ -322,7 +322,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             assert munew is not None
             assert munew_index is not None
             print("absolute error max = ", err_max)
-            self.EIM_approximation.setmu(munew)
+            self.EIM_approximation.set_mu(munew)
             self.mu_index = munew_index
             self.save_greedy_post_processing_file(self.N, err_max, munew, self.post_processing_folder)
             
@@ -350,7 +350,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             for run in range(len(self.xi_test)):
                 print(":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::")
                 
-                self.setmu(self.xi_test[run])
+                self.set_mu(self.xi_test[run])
                 
                 # Evaluate the exact function on the truth grid
                 f = self.evaluate_parametrized_function_at_mu(self.mu)

@@ -105,7 +105,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         for run in range(len(self.xi_train)):
             print("############################## run = ", run, " ######################################")
             
-            self.truth_problem.setmu(self.xi_train[run])
+            self.truth_problem.set_mu(self.xi_train[run])
             
             print("truth solve for mu = ", self.mu)
             snapshot = self.truth_problem.solve()
@@ -167,7 +167,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         for run in range(len(self.xi_test)):
             print("############################## run = ", run, " ######################################")
             
-            self.reduced_problem.setmu(self.xi_test[run])
+            self.reduced_problem.set_mu(self.xi_test[run])
                         
             for n in range(N): # n = 0, 1, ... N - 1
                 (error_u[n, run], error_s[n, run]) = self.reduced_problem.compute_error(n + 1, True)

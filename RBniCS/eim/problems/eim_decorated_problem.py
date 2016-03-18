@@ -49,16 +49,16 @@ def EIMDecoratedProblem(*parametrized_expressions):
             # Propagate the values of all setters also to the EIM object
             
             ## OFFLINE: set the range of the parameters    
-            def setmu_range(self, mu_range):
-                ParametrizedProblem_DerivedClass.setmu_range(self, mu_range)
+            def set_mu_range(self, mu_range):
+                ParametrizedProblem_DerivedClass.set_mu_range(self, mu_range)
                 for i in len(self.EIM_approximation):
-                    self.EIM_approximation[i].setmu_range(mu_range)
+                    self.EIM_approximation[i].set_mu_range(mu_range)
                     
             ## OFFLINE/ONLINE: set the current value of the parameter
-            def setmu(self, mu):
-                ParametrizedProblem_DerivedClass.setmu(self, mu)
+            def set_mu(self, mu):
+                ParametrizedProblem_DerivedClass.set_mu(self, mu)
                 for i in len(self.EIM_approximation):
-                    self.EIM_approximation[i].setmu(mu)
+                    self.EIM_approximation[i].set_mu(mu)
                 
             #  @}
             ########################### end - SETTERS - end ########################### 
@@ -108,9 +108,9 @@ def EIMDecoratedProblem(*parametrized_expressions):
             # Propagate the values of all setters also to the parametrized expression object
                                 
             ## OFFLINE/ONLINE: set the current value of the parameter
-            def setmu(self, mu):
-                ParametrizedProblem.setmu(self, mu)
-                self.parametrized_expression.setmu(mu)
+            def set_mu(self, mu):
+                ParametrizedProblem.set_mu(self, mu)
+                self.parametrized_expression.set_mu(mu)
                 
             #  @}
             ########################### end - SETTERS - end ########################### 

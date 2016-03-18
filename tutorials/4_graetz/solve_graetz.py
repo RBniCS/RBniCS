@@ -188,22 +188,22 @@ V = FunctionSpace(mesh, "Lagrange", 1)
 # 3. Allocate an object of the Graetz class
 graetz_problem = Graetz(V, mesh, subd, bound)
 mu_range = [(0.01, 10.0), (0.01, 10.0)]
-graetz_problem.setmu_range(mu_range)
+graetz_problem.set_mu_range(mu_range)
 
 # 4. Choose PETSc solvers as linear algebra backend
 parameters.linear_algebra_backend = 'PETSc'
 
 # 5. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis.setNmax(10)
+reduced_basis.set_Nmax(10)
 
 # 6. Perform the offline phase
 first_mu = (1.0, 1.0)
-graetz_problem.setmu(first_mu)
-reduced_basis.setxi_train(100)
+graetz_problem.set_mu(first_mu)
+reduced_basis.set_xi_train(100)
 reduced_graetz_problem = reduced_basis.offline()
 
 # 7. Perform an online solve
 online_mu = (10.0, 0.01)
-reduced_graetz_problem.setmu(online_mu)
+reduced_graetz_problem.set_mu(online_mu)
 reduced_graetz_problem.online_solve()

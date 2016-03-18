@@ -69,11 +69,11 @@ def ShapeParametrization(*shape_parametrization_expression):
             # Propagate the values of all setters also to the parametrized expression object
             
             ## OFFLINE/ONLINE: set the current value of the parameter
-            def setmu(self, mu):
-                ParametrizedProblem_DerivedClass.setmu(self, mu)
+            def set_mu(self, mu):
+                ParametrizedProblem_DerivedClass.set_mu(self, mu)
                 for i in len(self.displacement_expression):
                     for j in range(len(self.displacement_expression[i])):
-                        self.displacement_expression[i][j].setmu(mu)
+                        self.displacement_expression[i][j].set_mu(mu)
                 
             #  @}
             ########################### end - SETTERS - end ########################### 
