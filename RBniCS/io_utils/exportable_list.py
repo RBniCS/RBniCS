@@ -29,7 +29,12 @@
 class ExportableList(object):
     def __init__(self, import_export_backend):
         self._list = []
-        self._import_export_backend = import_export_backend
+        if import_export_backend == "numpy":
+            self._FileIO = NumpyIO
+        elif import_export_backend == "pickle":
+            self._FileIO = PickleIO
+        else:
+            raise RuntimeError("Invalid import/export backend")
     
     def append(self, element):
         self._list.append(element)
@@ -37,29 +42,15 @@ class ExportableList(object):
     def load(self, directory, filename):
         if self._list: # avoid loading multiple times
             return False
-        if self._import_export_backend == "numpy":
-            if io_utils.exists_numpy_file(directory, filename):
-                self._list = io_utils.load_numpy_file(directory, filename)
-                return True
-            else:
-                return False
-        elif self._import_export_backend == "pickle":
-            if io_utils.exists_pickle_file(directory, filename):
-                self._list = io_utils.load_pickle_file(directory, filename)
-                return True
-            else:
-                return False
+        if self._FileIO.exists_file(directory, filename):
+            self._list = self._FileIO.load_file(directory, filename)
+            return True
         else:
-            raise RuntimeError("Invalid import/export backend")
+            return False
         
     def save(self, directory, filename):
-        if self._import_export_backend == "numpy":
-            io_utils.save_numpy_file(self._list, directory, filename)
-        elif self._import_export_backend == "pickle":
-            io_utils.save_pickle_file(self._list, directory, filename)
-        else:
-            raise RuntimeError("Invalid import/export backend")
-                 
+        self._FileIO.save_file(self._list, directory, filename)
+                         
     def __getitem__(self, key):
         return self._list[key]
         

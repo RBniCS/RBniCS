@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file io.py
+## @file numpy_io.py
 #  @brief I/O helper functions
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -26,41 +26,23 @@
 ## @defgroup IO Input/output methods
 #  @{
 
-import pickle
 import numpy
 
-class utils(object):
+class NumpyIO(object):
     
-    ## Load a variable from file using pickle
+    ## Load a variable from file
     @staticmethod
-    def load_pickle_file(directory, filename):
-        with open(directory + "/" + filename + ".pkl", "rb") as infile:
-            return pickle.load(infile)
-    
-    ## Save a variable to file using pickle
-    @staticmethod
-    def save_pickle_file(subset, directory, filename):
-        with open(directory + "/" + filename + ".pkl", "wb") as outfile:
-            pickle.dump(subset, outfile, protocol=pickle.HIGHEST_PROTOCOL)
-            
-    ## Check if a pickle file exists
-    @staticmethod
-    def exists_pickle_file(directory, filename):
-        return os.path.exists(directory + "/" + filename + ".pkl")
-        
-    ## Load a variable from file using numpy
-    @staticmethod
-    def load_numpy_file(directory, filename):
+    def load_file(directory, filename):
         return numpy.load(directory + "/" + filename + ".npy")
     
-    ## Save a variable to file using numpy
+    ## Save a variable to file
     @staticmethod
-    def save_numpy_file(subset, directory, filename):
+    def save_file(subset, directory, filename):
         np.save(directory + "/" + filename, subset)
             
-    ## Check if a numpy file exists
+    ## Check if the file exists
     @staticmethod
-    def exists_numpy_file(directory, filename):
+    def exists_file(directory, filename):
         return os.path.exists(directory + "/" + filename + ".npy")
 
 #  @}

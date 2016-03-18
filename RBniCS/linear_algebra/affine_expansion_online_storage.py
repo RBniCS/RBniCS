@@ -33,6 +33,7 @@
 from numpy import empty as AffineExpansionOnlineStorageContent_Base
 from numpy import nditer as AffineExpansionOnlineStorageContent_Iterator
 from numpy import asmatrix as AffineExpansionOnlineStorageContent_AsMatrix
+from RBniCS import NumpyIO as AffineExpansionOnlineStorageContent_IO
 class AffineExpansionOnlineStorage(object):
     def __init__(self, *args):
         self._content = None
@@ -44,15 +45,15 @@ class AffineExpansionOnlineStorage(object):
     def load(self, directory, filename):
         if self._content: # avoid loading multiple times
             return False
-        if io_utils.exists_numpy_file(directory, filename):
-            self._content = io_utils.load_numpy_file(directory, filename)
+        if AffineExpansionOnlineStorageContent_IO.exists_file(directory, filename):
+            self._content = AffineExpansionOnlineStorageContent_IO.load_file(directory, filename)
             self.as_matrix()
             return True
         else:
             return False
         
     def save(self, directory, filename):
-        io_utils.save_numpy_file(self._content, directory, filename)
+        AffineExpansionOnlineStorageContent_IO.save_file(self._content, directory, filename)
     
     def as_matrix(self):
         if self._content_as_matrix_needs_update:
