@@ -57,8 +57,8 @@ class ReductionMethodBase(object):
     #  @{
     
     ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-    def setNmax(self, nmax):
-        self.Nmax = nmax
+    def setNmax(self, Nmax, **kwargs):
+        self.Nmax = Nmax
 
     ## OFFLINE: set the elements in the training set \xi_train.
     # See the documentation of generate_train_or_test_set for more details

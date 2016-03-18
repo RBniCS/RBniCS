@@ -47,9 +47,11 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # Propagate the values of all setters also to the SCM object
             
             ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-            def setNmax(self, nmax, nmax_SCM):
-                EllipticCoerciveRBBase.setNmax(self, nmax)
-                self.SCM_reduction_method.setNmax(nmax_SCM)
+            def setNmax(self, Nmax, **kwargs):
+                ReductionMethod_DerivedClass.setNmax(self, nmax, **kwargs)
+                assert "Nmax_SCM" in kwargs
+                Nmax_SCM = kwargs["Nmax_SCM"]
+                self.SCM_reduction_method.setNmax(nmax_SCM) # kwargs are not needed
 
                 
             ## OFFLINE: set the elements in the training set \xi_train.

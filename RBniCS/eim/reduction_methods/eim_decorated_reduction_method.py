@@ -47,16 +47,18 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # Propagate the values of all setters also to the EIM object
             
             ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-            def setNmax(self, nmax, nmax_EIM):
-                EllipticCoerciveRBBase.setNmax(self, nmax)
+            def setNmax(self, Nmax, **kwargs):
+                ReductionMethod_DerivedClass.setNmax(self, Nmax, **kwargs)
+                assert "Nmax_EIM" in kwargs
+                Nmax_EIM = kwargs["Nmax_EIM"]
                 if isinstance(nmax_EIM, tuple):
                     assert len(nmax_EIM) = len(self.EIM_reduction_method)
                     for i in len(self.EIM_reduction_method)
-                        self.EIM_reduction_method[i].setNmax(nmax_EIM[i])
+                        self.EIM_reduction_method[i].setNmax(Nmax_EIM[i]) # kwargs are not needed
                 else:
                     assert isinstance(nmax_EIM, int)
                     for i in len(self.EIM_reduction_method)
-                        self.EIM_reduction_method[i].setNmax(nmax_EIM)
+                        self.EIM_reduction_method[i].setNmax(Nmax_EIM) # kwargs are not needed
 
                 
             ## OFFLINE: set the elements in the training set \xi_train.

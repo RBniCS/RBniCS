@@ -76,9 +76,9 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     
     # Propagate the values of all setters also to the dual problem
     
-    def setNmax(self, nmax):
-        EllipticCoerciveRBBase.setNmax(self, nmax)
-        self.dual_problem.setNmax(nmax)
+    def setNmax(self, Nmax, **kwargs):
+        EllipticCoerciveRBBase.setNmax(self, Nmax, **kwargs)
+        self.dual_problem.setNmax(Nmax, **kwargs) # TODO are kwargs needed?
     def setmu_range(self, mu_range):
         EllipticCoerciveRBBase.setmu_range(self, mu_range)
         self.dual_problem.setmu_range(mu_range)
