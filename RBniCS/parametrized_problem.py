@@ -176,6 +176,7 @@ class ParametrizedProblem(object):
 
     ## OFFLINE/ONLINE: set the current value of the parameter
     def setmu(self, mu):
+        assert (len(mu) == len(self.mu_range)), "mu and mu_range must have the same lenght"
         self.mu = mu
     
     #  @}
