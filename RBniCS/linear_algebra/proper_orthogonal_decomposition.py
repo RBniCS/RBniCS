@@ -22,6 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.linear_algebra.snapshots_matrix import SnapshotsMatrix
+from RBniCS.linear_algebra.online_eigen_solver import OnlineEigenSolver
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PROPER ORTHOGONAL DECOMPOSITION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ProperOrthogonalDecomposition
 #
@@ -33,13 +37,12 @@ class ProperOrthogonalDecomposition(object):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, compute_scalar_product_method, X):
+    def __init__(self, X):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 6bis. Declare a matrix to store the snapshots
-        self.snapshots_matrix = SnapshotMatrix()
+        self.snapshots_matrix = SnapshotsMatrix()
         self.eigensolver = OnlineEigenSolver()
         # 7. Inner product
-        self.compute_scalar_product = compute_scalar_product_method
         self.X = X
         
     ## Clean up
@@ -56,7 +59,7 @@ class ProperOrthogonalDecomposition(object):
     
     ## Store a snapshot in the snapshot matrix
     def store_snapshot(self, snapshot):
-        self.snapshots_matrix.append(snapshot)
+        self.snapshots_matrix.enrich(snapshot)
             
     ## Perform POD on the snapshots previously computed, and store the first
     #  POD modes in the basis functions matrix.
@@ -65,11 +68,11 @@ class ProperOrthogonalDecomposition(object):
     def apply(self, Nmax):
         correlation = transpose(self.snapshots_matrix)*self.X*self.snapshots_matrix
         
-        eigensolver = OnlineEigenSolver(correlation, self.X)
-        eigensolver.parameters["problem_type"] = "gen_hermitian"
+        eigensolver = OnlineEigenSolver(correlation)
+        eigensolver.parameters["problem_type"] = "hermitian"
         eigensolver.parameters["spectrum"] = "largest real"
         eigensolver.solve()
-
+        
         Z = self.snapshots_matrix*eigensolver.get_eigenvectors(Nmax)
         for b in Z:
             b /= transpose(b)*self.X*b

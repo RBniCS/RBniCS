@@ -29,8 +29,9 @@ from __future__ import print_function
 #  @{
 
 # Declare reduced eigen solver type
-from numpy import linalg.eig as OnlineEigenSolver_Impl
 from numpy import real
+from numpy.linalg import eig as OnlineEigenSolver_Impl
+
 class OnlineEigenSolver(object):
     def __init__(self, A = None, B = None):
         if A is not None:
@@ -44,11 +45,12 @@ class OnlineEigenSolver(object):
         self.parameters = {}
         
     def solve(self):
-        assert self.parameters["problem_type"] == "gen_hermitian" # only one implemented so far
+        assert self.parameters["problem_type"] == "hermitian" # only one implemented so far
         assert self.parameters["spectrum"] == "largest real" # only one implemented so far
-        assert A is not None
+        assert self.A is not None
+        assert self.B is None # generalized version not implemented so far
         
-        eigs, eigv = OnlineEigenSolver_Impl(self.A, self.B)
+        eigs, eigv = OnlineEigenSolver_Impl(self.A)
         
         idx = eigs.argsort()
         idx = idx[::-1]
@@ -65,20 +67,20 @@ class OnlineEigenSolver(object):
     def get_eigenvalues(self, i_max):
         return self.eigs[:i_max]
         
-    def get_eigenvector(self, i)
+    def get_eigenvector(self, i):
         return self.eigv[:, i]
         
-    def get_eigenvectors(self, i_max)
+    def get_eigenvectors(self, i_max):
         return self.eigv[:, :i_max]
     
     def print_eigenvalues(self):
         for i in range(len(self.eigs)):
-            print("lambda_" + str(i) + " = " + self.eigs[i])
+            print("lambda_" + str(i) + " = " + str(self.eigs[i]))
     
     def save_eigenvalues_file(self, directory, filename):
         with open(directory + "/" + filename, "a") as outfile:
             for i in range(len(self.eigs)):
-                file.write(str(i) + " " + str(self.eigs[i]))
+                outfile.write(str(i) + " " + str(self.eigs[i]) + "\n")
     
     def save_retained_energy_file(self, directory, filename):
         from numpy import sum as np_sum
@@ -88,7 +90,7 @@ class OnlineEigenSolver(object):
         eigs_cumsum /= energy
         with open(directory + "/" + filename, "a") as outfile:
             for i in range(len(eigs_cumsum)):
-                file.write(str(i) + " " + str(eigs_cumsum[i])) 
+                file.write(str(i) + " " + str(eigs_cumsum[i]) + "\n") 
     
 #  @}
 ########################### end - ONLINE STAGE - end ########################### 

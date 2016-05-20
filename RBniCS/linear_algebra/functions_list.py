@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.io_utils.exportable_list import ExportableList
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type, OnlineVector
@@ -41,9 +42,11 @@ class FunctionsList(ExportableList):
         ExportableList.__init__(self, "pickle")
     
     def enrich(self, functions):
-        from dolfin import Function
+        from dolfin import Function, GenericVector
         if isinstance(functions, Function): # one function
             self._list.append(functions.vector().copy()) # copy it explicitly
+        elif isinstance(functions, GenericVector): # one function
+            self._list.append(functions.copy()) # copy it explicitly
         else: # more than one function
             self._list.extend(functions) # assume that they where already copied
             
@@ -52,13 +55,28 @@ class FunctionsList(ExportableList):
         warnings.warn("Please use the enrich() method that provides a more self explanatory name.")
         self.enrich(functions)
         
-    def save(self, directory, filename):
-        ExportableList.save(self, directory, filename)
+    def load(self, directory, filename, V, Nmax):
+        if self._list: # avoid loading multiple times
+            return False
+        from dolfin import File, Function
+        fun = Function(V)
+        for f in range(Nmax):
+            full_filename = directory + "/" + filename + "_" + str(f) + ".xml"
+            file = File(full_filename)
+            file >> fun
+            self.enrich(fun)
+        return True
+        
+    def save(self, directory, filename, V):
+        from dolfin import File, Function
         for f in range(len(self._list)):
+            list_f = Function(V, self._list[f])
             full_filename = directory + "/" + filename + "_" + str(f) + ".pvd"
-            if not os.path.exists(full_filename):
-                file = File(filename, "compressed")
-                file << self._list[f]
+            file = File(full_filename, "compressed")
+            file << list_f
+            full_filename = directory + "/" + filename + "_" + str(f) + ".xml"
+            file = File(full_filename)
+            file << list_f
     
     # self * onlineMatrixOrVector [used e.g. to compute Z*u_N or S*eigv]
     def __mul__(self, onlineMatrixOrVector):
@@ -66,15 +84,17 @@ class FunctionsList(ExportableList):
         if isinstance(onlineMatrixOrVector, OnlineMatrix_Type):
             output = FunctionsList()
             dim = onlineMatrixOrVector.shape[1]
-            for i in range(dim):
-                output_i = self._list[0]*onlineMatrixOrVector[i, 0]
-                for j in range(1, len(self._list)):
-                    output_i += self._list[j]*onlineMatrixOrVector[i, j]
-                output.enrich(output_i)
+            for j in range(dim):
+                output_j = self._list[0]*onlineMatrixOrVector[0, j]
+                for i in range(1, len(self._list)):
+                    output_j.add_local(self._list[i].array()*onlineMatrixOrVector[i, j])
+                output_j.apply("add")
+                output.enrich(output_j)
+            return output
         elif isinstance(onlineMatrixOrVector, OnlineVector_Type):
             output = self._list[0]*onlineMatrixOrVector.item(0)
-            for j in range(1, len(self._list)):
-                output.add_local(self._list[j].array()*onlineMatrixOrVector.item(j))
+            for i in range(1, len(self._list)):
+                output.add_local(self._list[i].array()*onlineMatrixOrVector.item(i))
             output.apply("add")
             return output
         else: # impossible to arrive here anyway, thanks to the assert

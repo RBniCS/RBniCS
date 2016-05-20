@@ -33,10 +33,9 @@ class GramSchmidt():
     #  @{
     
     ## Default initialization of members
-    def __init__(self, compute_scalar_product_method, X):
+    def __init__(self, X):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # 7. Inner product
-        self.compute_scalar_product = compute_scalar_product_method
         self.X = X
         
     #  @}
