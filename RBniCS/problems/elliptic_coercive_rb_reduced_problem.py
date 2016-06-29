@@ -22,7 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
 from RBniCS.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -65,9 +64,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         super(EllipticCoerciveRBReducedProblem, self).init(current_stage)
         # Also initialize data structures related to error estimation
         if current_stage == "online":
-            self.assemble_error_estimation_operators("riesz_product_aa")
-            self.assemble_error_estimation_operators("riesz_product_af")
-            self.assemble_error_estimation_operators("riesz_product_ff")
+            self.riesz_product["aa"] = self.assemble_error_estimation_operators("riesz_product_aa")
+            self.riesz_product["af"] = self.assemble_error_estimation_operators("riesz_product_af")
+            self.riesz_product["ff"] = self.assemble_error_estimation_operators("riesz_product_ff")
         elif current_stage == "offline":
             self.riesz["a"] = AffineExpansionOnlineStorage(self.Q["a"])
             for qa in range(self.Q["a"]):
@@ -133,7 +132,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             for n in range(len(self.riesz["a"][qa]), self.N):
                 theta_bc = (0.,)*len(self.truth_problem.dirichet_bc)
                 homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichet_bc))
-                solve(self.S, self._riesz_solve_storage.vector(), -1.*self.truth_A[qa]*self.Z[n], homogeneous_dirichlet_bc)
+                solve(self.inner_product, self._riesz_solve_storage.vector(), -1.*self.truth_A[qa]*self.Z[n], homogeneous_dirichlet_bc)
                 self.riesz["a"][qa].enrich(self._riesz_solve_storage)
     
     ## Compute the Riesz representation of f
@@ -141,7 +140,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         for qf in range(self.Q["f"]):
             theta_bc = (0.,)*len(self.truth_problem.dirichet_bc)
             homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichet_bc))
-            solve(self.S, self._riesz_solve_storage.vector(), self.truth_F[qf], homogeneous_dirichlet_bc)
+            solve(self.inner_product, self._riesz_solve_storage.vector(), self.truth_F[qf], homogeneous_dirichlet_bc)
             self.riesz["f"][qf].enrich(self._riesz_solve_storage)
             
     #  @}
@@ -154,6 +153,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     ## Assemble the reduced order affine expansion
     def assemble_error_estimation_operators(self, term):
         if self.current_stage == "online": # load from file
+            short_term = term.replace("riesz_product_", "")
+            if not short_term in self.riesz_product:
+                self.riesz_product[short_term] = AffineExpansionOnlineStorage()
             if term == "riesz_product_aa":
                 self.riesz_product["aa"].load(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":
@@ -162,23 +164,24 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                 self.riesz_product["ff"].load(self.folder["error_estimation"], "riesz_product_ff")
             else:
                 raise RuntimeError("Invalid term for assemble_error_estimation_operators().")
+            return self.riesz_product[short_term]
         elif self.current_stage == "offline":
             if term == "riesz_product_aa":
                 for qa in range(0, self.Q["a"]):
                     for qap in range(qa, self.Q["a"]):
-                        self.riesz_product["aa"][qa, qap] = transpose(self.riesz["a"][qa])*self.S*self.riesz["a"][qap]
+                        self.riesz_product["aa"][qa, qap] = transpose(self.riesz["a"][qa])*self.inner_product*self.riesz["a"][qap]
                         if qa != qap:
                             self.riesz_product["aa"][qap, qa] = self.riesz_product["aa"][qa, qap]
                 self.riesz_product["aa"].save(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":
                 for qa in range(0, self.Q["a"]):
                     for qf in range(0, self.Q["f"]):
-                        self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*self.S*self.riesz["f"][qf]
+                        self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*self.inner_product*self.riesz["f"][qf]
                 self.riesz_product["af"].save(self.folder["error_estimation"], "riesz_product_af")
             elif term == "riesz_product_ff":
                 for qf in range(0, self.Q["f"]):
                     for qfp in range(qf, self.Q["f"]):
-                        self.riesz_product["ff"][qf, qfp] = transpose(self.riesz["f"][qf])*self.S*self.riesz_["f"][qfp]
+                        self.riesz_product["ff"][qf, qfp] = transpose(self.riesz["f"][qf])*self.inner_product*self.riesz_["f"][qfp]
                         if qf != qfp:
                             self.riesz_product["ff"][qfp, qf] = self.riesz_product["ff"][qf, qfp]
                 self.riesz_product["ff"].save(self.folder["error_estimation"], "riesz_product_ff")

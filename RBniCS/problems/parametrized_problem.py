@@ -60,10 +60,10 @@ class ParametrizedProblem(object):
     
     ## Default initialization of members
     def __init__(self, folder_prefix):
-        # 2. Current parameters value
-        self.mu = tuple()
-        # 2. Parameter ranges and training set
-        self.mu_range = list()
+        # Current parameters value
+        self.mu = tuple() # tuple of real numbers
+        # Parameter ranges
+        self.mu_range = list() # list of (min, max) pairs, such that len(self.mu) == len(self.mu_range)
         #
         self.folder_prefix = folder_prefix
     
@@ -80,7 +80,7 @@ class ParametrizedProblem(object):
     
     ## OFFLINE/ONLINE: set the current value of the parameter
     def set_mu(self, mu):
-        assert (len(mu) == len(self.mu_range)), "mu and mu_range must have the same lenght"
+        assert len(mu) == len(self.mu_range), "mu and mu_range must have the same length"
         self.mu = mu
     
     #  @}

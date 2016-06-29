@@ -22,7 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
 from RBniCS.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 

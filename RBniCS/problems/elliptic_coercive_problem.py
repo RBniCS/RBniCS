@@ -22,8 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-from RBniCS.parametrized_problem import ParametrizedProblem
+from RBniCS.problems import ParametrizedProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem
@@ -90,10 +89,10 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         
         # Input arguments
         self.V = V
-        # 3a. Number of terms in the affine expansion
+        # Number of terms in the affine expansion
         self.Q = dict() # from string to integer
-        # 3c. Matrices/vectors resulting from the truth discretization
-        self.operator = dict() # from string to AffineExpansionOnlineStorage
+        # Matrices/vectors resulting from the truth discretization
+        self.operator = dict() # from string to AffineExpansionOfflineStorage
         self.inner_product = AffineExpansionOfflineStorage()
         self.dirichlet_bc = AffineExpansionOfflineStorage()
         # Solution
@@ -110,8 +109,8 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## Initialize data structures required for the offline phase
     def init(self):
         for term in ["a", "f"]:
-            self.operator[term] = self.assemble_operator(term)
-            self.Q = len(self.operator(term))
+            self.operator[term] = AffineExpansionOfflineStorage(self.assemble_operator(term))
+            self.Q = len(self.operator[term])
         self.inner_product = AffineExpansionOfflineStorage(self.assemble_operator("inner_product"))
         try:
             self.dirichlet_bc = AffineExpansionOfflineStorage(self.assemble_operator("dirichlet_bc"))
@@ -122,7 +121,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     def solve(self):
         assembled_operator = dict()
         for term in ["a", "f"]:
-            assembled_operator = sum(product(self.compute_theta(term), self.operator[term]))
+            assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         try:
             assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc"), self.dirichet_bc))
         except RuntimeError: # there were no Dirichlet BCs
@@ -132,7 +131,6 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         
     ## Perform a truth evaluation of the (compliant) output
     def output(self):
-        assembled_operator = dict()
         assembled_ouput_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
         self._output = transpose(assembled_output_operator)*self._solution.vector()
         return self._output
@@ -178,7 +176,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #   else:
     #       raise RuntimeError("Invalid term for compute_theta().")
     def compute_theta(self, term):
-        raise RuntimeError("The function compute_theta() is problem-specific and needs to be overridden.")
+        raise RuntimeError("The method compute_theta() is problem-specific and needs to be overridden.")
         
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     # Example of implementation:
@@ -197,14 +195,14 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #   else:
     #       raise RuntimeError("Invalid term for assemble_operator().")
     def assemble_operator(self, term):
-        raise RuntimeError("The function assemble_operator() is problem-specific and needs to be overridden.")
+        raise RuntimeError("The method assemble_operator() is problem-specific and needs to be overridden.")
         
     ## Return a lower bound for the coercivity constant
-    # example of implementation:
+    # Example of implementation:
     #    return 1.0
     # Note that this method is not needed in POD-Galerkin reduced order models.
     def get_stability_factor(self):
-        raise RuntimeError("The function get_stability_factor(self) is problem-specific and needs to be overridden.")
+        raise RuntimeError("The method get_stability_factor() is problem-specific and needs to be overridden.")
     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

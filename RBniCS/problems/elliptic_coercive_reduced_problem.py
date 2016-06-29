@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 import types
-from RBniCS.parametrized_problem import ParametrizedProblem
+from RBniCS.problems import ParametrizedProblem, EllipticCoerciveProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
@@ -42,16 +42,16 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         # Call to parent
         ParametrizedProblem.__init__(self, truth_problem.name())
         
-        self.name = truth_problem.name
-        self.current_stage = None
+        # Consistency check
+        assert isinstance(truth_problem, EllipticCoerciveProblem)
         
         # $$ ONLINE DATA STRUCTURES $$ #
-        # 1. Online reduced space dimension
+        # Online reduced space dimension
         self.N = 0
         self.N_bc = 0
-        # 3a. Number of terms in the affine expansion
+        # Number of terms in the affine expansion
         self.Q = dict() # from string to integer
-        # 3c. Reduced order operators
+        # Reduced order operators
         self.operator = dict() # from string to AffineExpansionOnlineStorage
         # Solution
         self._solution = OnlineVector()
@@ -59,13 +59,16 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self._compute_error.__func__.previous_mu = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 3. High fidelity problem
+        # High fidelity problem
         self.truth_problem = truth_problem
-        # 6. Basis functions matrix
+        # Basis functions matrix
         self.Z = BasisFunctionsMatrix()
-        # 9. I/O
+        # I/O
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
+        
+        # $$ OFFLINE/ONLINE DATA STRUCTURES $$ #
+        self.current_stage = None
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -91,7 +94,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self.current_stage = current_stage
         if current_stage == "online":
             for term in ["a", "f"]:
-                self.assemble_operator(term)
+                self.operator[term] = self.assemble_operator(term)
                 self.Q[term] = len(self.operator(term))
             # Also load basis functions
             self.Z.load(self.folder["basis"], "basis")
@@ -117,15 +120,19 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             raise RuntimeError("Invalid stage in init().")
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-    def solve(self, N=None, with_plot=True):
+    def solve(self, N=None, with_plot=True, return_high_fidelity=False):
         self.init()
         if N is None:
             N = self.N
         uN = self._solve(N)
-        reduced_solution = self.Z*uN
-        if with_plot == True:
-            self._plot(reduced_solution, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
-        return reduced_solution
+        if return_high_fidelity or with_plot:
+            reduced_solution = self.Z*uN
+            if with_plot:
+                self._plot(reduced_solution, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+        if return_high_fidelity:
+            return reduced_solution
+        else:
+            return uN
     
     # Perform an online solve (internal)
     def _solve(self, N):
@@ -187,9 +194,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             # Do not carry out truth solves anymore for the same parameter
             self._compute_error.__func__.previous_mu = self.mu
         # Compute the error on the solution
-        reduced_solution = self.solve(N, False)
-        reduced_solution -= self.truth_problem._solution # store the error as a function in the reduced solution
-        error = reduced_solution
+        error = self.solve(N, with_plot=False, return_high_fidelity=True)
+        error -= self.truth_problem._solution # store the error as a function in the reduced solution
         error_norm_squared = self.compute_scalar_product(error, self._error_inner_product_matrix(), error) # norm of the error
         # Compute the error on the output
         error_output = abs(self.truth_problem._output - self.online_output())
@@ -214,21 +220,22 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     ## Assemble the reduced order affine expansion
     def assemble_operator(self, term):
         if self.current_stage == "online": # load from file
-            # Note that we return the loaded operator (even though we do not need to
-            # catch this return value in init()) because we want this interface
-            # to be compatible with the one in EllipticCoerciveProblem, i.e.
-            # we would like to be able to use a reduced problem also as a 
-            # truth problem for a nested reduction
+            if not term in self.operator:
+                self.operator[term] = AffineExpansionOnlineStorage()
+            # Note that it would not be needed to return the loaded operator in 
+            # init(), since it has been already modified in-place. We do this, however,
+            # because we want this interface to be compatible with the one in 
+            # EllipticCoerciveProblem, i.e. we would like to be able to use a reduced 
+            # problem also as a truth problem for a nested reduction
             if term == "a":
                 self.operator["a"].load(self.folder["reduced_operators"], "operator_a")
-                return self.operator["a"]
             elif term == "f":
                 self.operator["f"].load(self.folder["reduced_operators"], "operator_f")
-                return self.operator["f"]
             elif term == "dirichlet_bc":
                 raise RuntimeError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
             else:
                 raise RuntimeError("Invalid term for assemble_operator().")
+            return self.operator[term]
         elif self.current_stage == "offline":
             # There is no need to return anything because the previous remark cannot hold here
             # (we are still training the reduced order model, we cannot possibly use it 
