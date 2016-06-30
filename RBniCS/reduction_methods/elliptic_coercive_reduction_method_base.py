@@ -22,7 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
 import os # for path and makedir
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -42,11 +41,11 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
         ReductionMethodBase.__init__(self, truth_problem.name())
         
         # $$ ONLINE DATA STRUCTURES $$ #
-        # 3. Reduced order problem
+        # Reduced order problem
         self.reduced_problem = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 3. High fidelity problem
+        # High fidelity problem
         self.truth_problem = truth_problem
             
     #  @}

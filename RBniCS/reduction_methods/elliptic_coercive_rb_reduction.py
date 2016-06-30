@@ -134,7 +134,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
             if self.reduced_problem.N < self.Nmax:
                 print("find next mu")
             
-            # we do a greedy even if N==Nmax in order to have in
+            # we do a greedy even if N == Nmax in order to have in
             # output the delta_max
             self.greedy()
 

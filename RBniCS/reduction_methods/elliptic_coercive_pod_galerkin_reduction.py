@@ -63,9 +63,9 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         EllipticCoerciveReductionMethodBase.__init__(self, truth_problem)
                 
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 6bis. Declare a POD object
-        self.POD = ProperOrthogonalDecomposition(self.compute_scalar_product, self.S)
-        # 9. I/O
+        # Declare a POD object
+        self.POD = ProperOrthogonalDecomposition(self.inner_product)
+        # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
         

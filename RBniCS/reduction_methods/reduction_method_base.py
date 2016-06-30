@@ -36,20 +36,23 @@ class ReductionMethodBase(object):
     
     ## Default initialization of members
     def __init__(self, folder_prefix):
-        # $$ OFFLINE DATA STRUCTURES $$ #
-        # 1. Maximum reduced order space dimension or tolerance to be used for the stopping criterion in the basis selection
-        self.Nmax = 10
-        # 2. Parameter ranges and training set
-        self.xi_train = ParameterSpaceSubset()
-        # 9. I/O
+        # I/O
         self.folder_prefix = folder_prefix
-        self.folder = {}
+        self.folder = dict() # from string to string
+        
+        # $$ OFFLINE DATA STRUCTURES $$ #
+        # Maximum reduced order space dimension to be used for the stopping criterion in the basis selection
+        self.Nmax = 10
+        # Training set
+        self.xi_train = ParameterSpaceSubset()
+        # I/O
         self.folder["xi_train"] = self.folder_prefix + "/" + "xi_train"
-        self.folder["xi_test" ] = self.folder_prefix + "/" + "xi_test"
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
-        # 2. Test set
+        # Test set
         self.xi_test = ParameterSpaceSubset()
+        # I/O
+        self.folder["xi_test" ] = self.folder_prefix + "/" + "xi_test"
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
