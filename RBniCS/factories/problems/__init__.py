@@ -16,23 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file __init__.py
-#  @brief RBniCS: reduced order modelling in FEniCS
+#  @brief Init file for auxiliary factories module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-__author__ = "Francesco Ballarin, Gianluigi Rozza, Alberto Sartori"
-__copyright__ = "Copyright 2015-2016 by the RBniCS authors"
-__license__ = "LGPL"
-__version__ = "0.0.1"
-__email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
-
-# Import the minimum subset of RBniCS required to run tutorials
-#from RBniCS.eim import *
-from RBniCS.factories import *
-#from RBniCS.io_utils import *
-from RBniCS.problems import *
-#from RBniCS.sampling import *
-#from RBniCS.scm import *
-#from RBniCS.shape_parametrization import *
