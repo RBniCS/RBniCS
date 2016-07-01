@@ -103,50 +103,34 @@ def product(thetas, _operators, thetas2=None):
             return _DotProductOutput(output)
             '''
         elif order == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
-            assert isinstance(operators[0, 0], OnlineMatrix_Type)
+            assert \
+                isinstance(operators[0, 0], OnlineMatrix_Type) or \
+                isinstance(operators[0, 0], OnlineVector_Type) or \
+                isinstance(operators[0, 0], float)
             assert thetas2 is not None
             # no checks here on the first dimension of operators should be equal to len(thetas), and
             # similarly that the second dimension should be equal to len(thetas2), because the
             # current operator interface does not provide a 2D len method
+            '''
+            # Double for loop version:
+            # Profiling has revelead a sensible speedup for large values of N and Q 
+            # when compared to the double/triple/quadruple for loop in the legacy version.
+            # Vectorized version provides an additional 25%~50% speedup when dealing with
+            # the (A, A) Riesz representor products (case of quadruple loop),
+            # while double for loop only introduces overhead when for (F, F) Riesz 
+            # representor products (case of double loop).
+            output = 0.
+            for i in range(len(thetas)):
+                for j in range(len(thetas2)):
+                    output += thetas[i]*operators[i, j]*thetas2[j]
+            # Thus we selected the following:
+            '''
+            # Vectorized version:
             from numpy import asmatrix
             thetas_vector = asmatrix(thetas)
             thetas2_vector = asmatrix(thetas2).transpose()
-            if operators[0, 0].shape == (1, 1): 
-                # Do not degrade the performance in this special case, which holds in the 
-                # (F,F) Riesz representor products in reduced basis error estimation.
-                #
-                # Double for loop version:
-                output_scalar = 0.
-                for i in range(len(thetas)):
-                    for j in range(len(thetas2)):
-                        output_scalar += thetas[i]*operators[i, j].item(0,0)*thetas2[j]
-                from RBniCS.linear_algebra.online_matrix import OnlineMatrix
-                output = OnlineMatrix(1, 1)
-                output[0, 0] = output_scalar
-                '''
-                # Vectorized version:
-                # Profiling has revelead that the standard approach, employed in the else,
-                # entails a significant overhead (~500%) with respect to the legacy version composed 
-                # of a double for loop. The double for loop proposed above limits the overhead to 
-                # ~70% for small affine expansions and ~20% for larger ones
-                output = thetas_vector*operators.as_matrix()*thetas2_vector
-                output = output.item(0, 0)
-                '''
-            else:
-                '''
-                # Double for loop version:
-                # Profiling has revelead a sensible speedup, of almost two order of magnitude for large
-                # values of N and Q in the case of (A, A) Riesz representor products when compared 
-                # to the quadruple for loop in the legacy version.
-                # Vectorized version provides an additional 25%~50% speedup.
-                for i in range(len(thetas)):
-                    for j in range(len(thetas2)):
-                        output += thetas[i]*operators[i, j]*thetas2[j]
-                '''
-                # Vectorized version:
-                output = thetas_vector*operators.as_matrix()*thetas2_vector
-                output = output.item(0, 0)
-            return _DotProductOutput(output)
+            output = thetas_vector*operators.as_matrix()*thetas2_vector
+            return _DotProductOutput(output.item(0, 0))
         else:
             raise RuntimeError("product(): invalid operands.")
     else:

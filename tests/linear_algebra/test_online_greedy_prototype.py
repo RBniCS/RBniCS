@@ -73,7 +73,7 @@ class Test(TestBase):
                 for i in range(Qf):
                     for j in range(Qf):
                         # Generate random matrix
-                        ff_product[i, j] = OnlineMatrix_Type(self.rand(1, 1))
+                        ff_product[i, j] = self.rand(1)[0]
                         ff_product_legacy[i, j] = ff_product[i, j]
                 # Genereate random theta
                 theta_a = []

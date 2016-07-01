@@ -133,16 +133,23 @@ class FunctionsList_Transpose__times__TruthMatrix(object):
         self.functionsList = functionsList
         self.truthMatrix = truthMatrix
       
-    # self * functionsList2 [used e.g. to compute Z^T*A*Z or S^T*X*S]
-    def __mul__(self, functionsList2):
-        assert isinstance(functionsList2, FunctionsList)
-        assert len(self.functionsList) == len(functionsList2)
-        dim = len(self.functionsList)
-        onlineMatrix = OnlineMatrix(dim, dim)
-        for i in range(dim):
-            for j in range(dim):
-                onlineMatrix[i, j] = Vector_Transpose(self.functionsList[i])*self.truthMatrix*functionsList2[j]
-        return onlineMatrix
+    # self * functionsList2 [used e.g. to compute Z^T*A*Z or S^T*X*S (return OnlineMatrix), or Riesz_A^T*X*Riesz_F (return OnlineVector)]
+    def __mul__(self, functionsList2OrTruthVector):
+        assert isinstance(functionsList2OrTruthVector, FunctionsList) or isinstance(functionsList2OrTruthVector, TruthVector)
+        if isinstance(functionsList2OrTruthVector, FunctionsList):
+            assert len(self.functionsList) == len(functionsList2OrTruthVector)
+            dim = len(self.functionsList)
+            onlineMatrix = OnlineMatrix(dim, dim)
+            for i in range(dim):
+                for j in range(dim):
+                    onlineMatrix[i, j] = Vector_Transpose(self.functionsList[i])*self.truthMatrix*functionsList2OrTruthVector[j]
+            return onlineMatrix
+        else:
+            dim = len(self.functionsList)
+            onlineVector = OnlineVector(dim)
+            for i in range(dim):
+                onlineVector[i] = Vector_Transpose(self.functionsList[i])*self.truthMatrix*functionsList2OrTruthVector
+            return onlineVector
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

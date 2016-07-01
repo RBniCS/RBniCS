@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file test_truth_matrix_assembly.py
-#  @brief Test sum_{i = 1}^{Q} theta_i A_i
+## @file test_v1_dot_v2.py
+#  @brief Test v1 dot v2 
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
@@ -25,60 +25,65 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
-from RBniCS.linear_algebra.sum import sum
-from RBniCS.linear_algebra.product import product
-from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
-from numpy import zeros as legacy_tensor
+from RBniCS.linear_algebra.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector
+from RBniCS.linear_algebra.transpose import transpose
 from numpy.linalg import norm
 
 class Test(TestBase):
-    def __init__(self, N, Q):
+    def __init__(self, Nh, N):
         self.N = N
-        self.Q = Q
+        mesh = UnitSquareMesh(Nh, Nh)
+        V = FunctionSpace(mesh, "Lagrange", 1)
+        self.b = Function(V)
+        self.Z = BasisFunctionsMatrix()
+        self.k = Function(V)
+        u = TrialFunction(V)
+        v = TestFunction(V)
+        self.a = self.k*inner(grad(u), grad(v))*dx
         # Call parent init
         TestBase.__init__(self)
             
     def run(self):
         N = self.N
-        Q = self.Q
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                ff_product = AffineExpansionOnlineStorage(Q, Q)
-                ff_product_legacy = legacy_tensor((Q, Q))
-                for i in range(Q):
-                    for j in range(Q):
-                        # Generate random matrix
-                        ff_product[i, j] = self.rand(1)[0]
-                        ff_product_legacy[i, j] = ff_product[i, j]
-                # Genereate random theta
-                theta = tuple(self.rand(Q))
+                # Generate random vectors
+                self.Z = BasisFunctionsMatrix()
+                for i in range(self.N + 1):
+                    self.b.vector().set_local(self.rand(self.b.vector().array().size))
+                    self.b.vector().apply("insert")
+                    if i < self.N:
+                        self.Z.enrich(self.b)
+                self.k.vector().set_local(self.rand(self.k.vector().array().size))
+                # Generate random matrix
+                A = assemble(self.a)
                 # Store
-                self.storage[self.index] = (theta, ff_product, ff_product_legacy)
+                z = self.b.vector().copy()
+                self.storage[self.index] = (self.Z, A, z)
             else:
-                (theta, ff_product, ff_product_legacy) = self.storage[self.index]
+                (self.Z, A, z) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                error_estimator_legacy = 0.
-                for i in range(Q):
-                    for j in range(Q):
-                        error_estimator_legacy += theta[i]*ff_product_legacy[i, j]*theta[j]
+                Z_T_dot_A_z_builtin = OnlineVector(self.N)
+                for i in range(self.N):
+                    Z_T_dot_A_z_builtin[i] = self.Z[i].inner(A*z)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using sum(product()) method
-                error_estimator_sum_product = sum(product(theta, ff_product, theta))
+                # Time using transpose() method
+                Z_T_dot_A_z_transpose = transpose(self.Z)*A*z
         if test_id >= 2:
-            return abs(error_estimator_legacy - error_estimator_sum_product)/abs(error_estimator_legacy)
+            return norm(Z_T_dot_A_z_builtin - Z_T_dot_A_z_transpose)/norm(Z_T_dot_A_z_builtin)
 
-for i in range(4, 9):
-    N = 2**i
-    for j in range(1, 8):
-        Q = 2 + 4*j
-        test = Test(N, Q)
-        print("N =", N, "and Q =", Q)
+for i in range(3, 7):
+    Nh = 2**i
+    for j in range(1, 4):
+        N = 10 + 4*j
+        test = Test(Nh, N)
+        print("Nh =", test.b.vector().size(), "and N =", N)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()
@@ -87,15 +92,14 @@ for i in range(4, 9):
         
         test.init_test(1, "a")
         usec_1a = test.timeit()
-        print("Legacy method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
         test.init_test(1, "b")
         usec_1b = test.timeit()
-        print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        print("transpose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        print("Speed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
+        print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
         
         test.init_test(2)
         error = test.average()
         print("Relative error:", error)
-    
