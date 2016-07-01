@@ -25,8 +25,8 @@
 from __future__ import print_function
 from numpy import log, exp, mean # for error analysis
 import os # for path and makedir
-from RBniCS.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
-from RBniCS.elliptic_coercive_base import EllipticCoerciveBase
+from RBniCS.linear_algebra.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.reduction_methods.elliptic_coercive_reduction_method_base import EllipticCoerciveReductionMethodBase
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoercivePODGalerkinReduction

@@ -98,13 +98,13 @@ class ParametrizedProblem(object):
         self.reset_reference() # undo mesh motion
         
     ## Export in VTK format
-    def _export_vtk(self, solution, filename, **output_options):
+    def _export_vtk(self, solution, folder, filename, **output_options):
         if not "with_mesh_motion" in output_options:
             output_options["with_mesh_motion"] = False
         if not "with_preprocessing" in output_options:
             output_options["with_preprocessing"] = False
         #
-        file = File(filename + ".pvd", "compressed")
+        file = File(folder + "/" + filename + ".pvd", "compressed")
         if output_options["with_mesh_motion"]:
             self.move_mesh() # deform the mesh
         if output_options["with_preprocessing"]:

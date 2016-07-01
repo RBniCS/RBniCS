@@ -26,8 +26,8 @@ from __future__ import print_function
 import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
-from RBniCS.gram_schmidt import GramSchmidt
-from RBniCS.elliptic_coercive_base import EllipticCoerciveBase
+from RBniCS.linear_algebra.gram_schmidt import GramSchmidt
+from RBniCS.reduction_methods.elliptic_coercive_reduction_method_base import EllipticCoerciveReductionMethodBase
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveRBBase
@@ -87,9 +87,9 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         EllipticCoerciveReductionMethodBase.__init__(self, truth_problem)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 6bis. Declare a GS object
-        self.GS = GramSchmidt(self.compute_scalar_product, self.S)
-        # 9. I/O
+        # Declare a GS object
+        self.GS = GramSchmidt(truth_problem.inner_product)
+        # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
                 
@@ -105,7 +105,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         need_to_do_offline_stage = self._init_offline()
         if not need_to_do_offline_stage:
             return self.reduced_problem
-        
+                    
         print("==============================================================")
         print("=             Offline phase begins                           =")
         print("==============================================================")
@@ -114,19 +114,19 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         for run in range(self.Nmax):
             print("############################## run = ", run, " ######################################")
             
-            print("truth solve for mu = ", self.mu)
+            print("truth solve for mu = ", self.truth_problem.mu)
             snapshot = self.truth_problem.solve()
             self.truth_problem.export_solution(snapshot, self.folder["snapshots"], "truth_" + str(run))
             self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update basis matrix")
-            self.update_basis_matrix()
+            self.update_basis_matrix(snapshot)
             
             print("build reduced operators")
             self.reduced_problem.build_reduced_operators()
             
             print("reduced order solve")
-            self.reduced_problem._solve(self.N)
+            self.reduced_problem._solve(self.reduced_problem.N)
             
             print("build matrices for error estimation")
             self.reduced_problem.build_error_estimation_matrices()
@@ -148,10 +148,10 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         return self.reduced_problem
         
     ## Update basis matrix
-    def update_basis_matrix(self):
+    def update_basis_matrix(self, snapshot):
         self.reduced_problem.Z.enrich(snapshot)
         self.GS.apply(self.reduced_problem.Z)
-        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis", self.truth_problem.V)
         self.reduced_problem.N += 1
         
     ## Choose the next parameter in the offline stage in a greedy fashion
@@ -160,7 +160,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         munew = None
         for mu in self.xi_train:
             self.reduced_problem.set_mu(mu)
-            self.reduced_problem._solve(self.N)
+            self.reduced_problem._solve(self.reduced_problem.N)
             delta = self.reduced_problem.get_delta()
             if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
                 delta_max = delta
@@ -182,7 +182,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
     # over the test set
     def error_analysis(self, N=None):
         if N is None:
-            N = self.N
+            N = self.reduced_problem.N
             
         print("==============================================================")
         print("=             Error analysis begins                          =")

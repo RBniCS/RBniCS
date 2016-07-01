@@ -40,6 +40,10 @@ def SCMDecoratedProblem(*args):
                 ParametrizedProblem_DerivedClass.__init__(self, V, *args)
                 # Attach SCM reduced problem
                 self.SCM_approximation = _SCMApproximation(V, ParametrizedProblem_DerivedClass.__name__ + "/scm") #TODO
+                # Signal to the factory that this problem has been decorated
+                if not hasattr(self, "_problem_decorators"):
+                    self._problem_decorators = dict() # string to bool
+                self._problem_decorators["SCM"] = True
                     
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation

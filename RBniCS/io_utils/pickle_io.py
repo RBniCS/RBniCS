@@ -27,6 +27,7 @@
 #  @{
 
 import pickle
+import os # for path
 
 class PickleIO(object):
     

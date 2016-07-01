@@ -26,6 +26,7 @@
 ## @defgroup IO Input/output methods
 #  @{
 
+import os # for path
 import numpy
 
 class NumpyIO(object):
@@ -38,7 +39,7 @@ class NumpyIO(object):
     ## Save a variable to file
     @staticmethod
     def save_file(subset, directory, filename):
-        np.save(directory + "/" + filename, subset)
+        numpy.save(directory + "/" + filename, subset)
             
     ## Check if the file exists
     @staticmethod

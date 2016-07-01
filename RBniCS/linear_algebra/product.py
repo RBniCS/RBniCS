@@ -26,6 +26,7 @@
 ## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
 #  @{
 
+from dolfin import Constant
 from RBniCS.linear_algebra.affine_expansion_offline_storage import AffineExpansionOfflineStorage, _AssembledFormsAffineExpansionOfflineStorageContent, _DirichletBCsAffineExpansionOfflineStorageContent
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
@@ -45,8 +46,9 @@ def product(thetas, _operators, thetas2=None):
                 # Each element of the list contains a tuple. Owing to FEniCS documentation, its second argument is the function, to be multiplied by theta
                 output_i = []
                 for j in range(len(operators[i])):
+                    assert len(operators[i][j]) == 4
                     operators_i_j_list = list(operators[i][j])
-                    operators_i_j_list[1] = Constant(thetas[i])*operators_i_list[1]
+                    operators_i_j_list[1] = Constant(thetas[i])*operators_i_j_list[1]
                     output_i.append(tuple(operators_i_j_list))
                 output.append(output_i)
             return output
@@ -101,7 +103,7 @@ def product(thetas, _operators, thetas2=None):
             return _DotProductOutput(output)
             '''
         elif order == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
-            assert isinstance(operators[0, 0], OnlineMatrix_Type) or isinstance(operators[0, 0], OnlineVector_Type)
+            assert isinstance(operators[0, 0], OnlineMatrix_Type)
             assert thetas2 is not None
             # no checks here on the first dimension of operators should be equal to len(thetas), and
             # similarly that the second dimension should be equal to len(thetas2), because the
@@ -109,18 +111,21 @@ def product(thetas, _operators, thetas2=None):
             from numpy import asmatrix
             thetas_vector = asmatrix(thetas)
             thetas2_vector = asmatrix(thetas2).transpose()
-            output = 0.
             if operators[0, 0].shape == (1, 1): 
                 # Do not degrade the performance in this special case, which holds in the 
                 # (F,F) Riesz representor products in reduced basis error estimation.
                 #
                 # Double for loop version:
+                output_scalar = 0.
                 for i in range(len(thetas)):
                     for j in range(len(thetas2)):
-                        output += thetas[i]*operators._content[i, j].item(0,0)*thetas2[j]
+                        output_scalar += thetas[i]*operators[i, j].item(0,0)*thetas2[j]
+                from RBniCS.linear_algebra.online_matrix import OnlineMatrix
+                output = OnlineMatrix(1, 1)
+                output[0, 0] = output_scalar
                 '''
                 # Vectorized version:
-                # Profiling has revelead that the standard approach, emplyed in the else,
+                # Profiling has revelead that the standard approach, employed in the else,
                 # entails a significant overhead (~500%) with respect to the legacy version composed 
                 # of a double for loop. The double for loop proposed above limits the overhead to 
                 # ~70% for small affine expansions and ~20% for larger ones
@@ -136,7 +141,7 @@ def product(thetas, _operators, thetas2=None):
                 # Vectorized version provides an additional 25%~50% speedup.
                 for i in range(len(thetas)):
                     for j in range(len(thetas2)):
-                        output += thetas[i]*operators._content[i, j]*thetas2[j]
+                        output += thetas[i]*operators[i, j]*thetas2[j]
                 '''
                 # Vectorized version:
                 output = thetas_vector*operators.as_matrix()*thetas2_vector

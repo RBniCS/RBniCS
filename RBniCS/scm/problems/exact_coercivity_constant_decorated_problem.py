@@ -40,6 +40,10 @@ def ExactCoercivityConstantDecoratedProblem(*args):
                 ParametrizedProblem_DerivedClass.__init__(self, V, *args)
                 # Attach the exact coercivity constant computation problem
                 self.exact_coercivity_constant_computation__problem = _ExactCoercivityConstantComputation_Problem(V) #TODO
+                # Signal to the factory that this problem has been decorated
+                if not hasattr(self, "_problem_decorators"):
+                    self._problem_decorators = dict() # string to bool
+                self._problem_decorators["ExactCoercivityConstant"] = True
                     
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation

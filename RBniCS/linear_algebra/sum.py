@@ -26,6 +26,7 @@
 ## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
 #  @{
 
+from dolfin import DirichletBC
 from RBniCS.linear_algebra.product import _DotProductOutput, _DirichletBCsProductOutput
 
 # sum function to assemble truth/reduced affine expansions. To be used in combination with the product method.
@@ -34,27 +35,28 @@ def sum(product_output):
     if isinstance(product_output, _DotProductOutput):
         return _EquationSide(product_output[0]) # sum has been already performed by the dot product
     elif isinstance(product_output, _DirichletBCsProductOutput): # we use this Dirichlet BCs with FEniCS
-        boundary_id_to_function_space_map = {} # first argument of the constructor
-        boundary_id_to_function_map = {} # second argument of the constructor
-        boundary_id_to_boundary_mesh_map = {} # third argument of the constructor
+        boundary_id_to_function_space_map = dict() # first argument of the constructor
+        boundary_id_to_function_map = dict() # second argument of the constructor
+        boundary_id_to_boundary_mesh_map = dict() # third argument of the constructor
         for i in range(len(product_output)):
-            # Each element of the list contains a tuple. Owing to FEniCS documentation (overloaded version with MeshFunction argument),
-            # its fourth argument is the subdomain id, to be collected and used as map index.
-            assert len(product_output[i]) == 4
-            function_space = product_output[0]
-            function = product_output[1]
-            boundary_mesh = product_output[2]
-            boundary_id = product_output[3]
-            if not boundary_id in boundary_id_to_function_map:
-                assert not boundary_id in boundary_id_to_function_space_map
-                assert not boundary_id in boundary_id_to_boundary_mesh_map
-                boundary_id_to_function_space_map[boundary_id] = function_space
-                boundary_id_to_function_map[boundary_id] = function
-                boundary_id_to_boundary_mesh_map[boundary_id] = boundary_mesh
-            else:
-                assert boundary_id_to_function_space_map[boundary_id] == function_space
-                assert boundary_id_to_boundary_mesh_map[boundary_id] == boundary_mesh
-                boundary_id_to_function_map[boundary_id] += function
+            for j in range(len(product_output[i])):
+                # Each element of the list contains a tuple. Owing to FEniCS documentation (overloaded version with MeshFunction argument),
+                # its fourth argument is the subdomain id, to be collected and used as map index.
+                assert len(product_output[i][j]) == 4
+                function_space = product_output[i][j][0]
+                function = product_output[i][j][1]
+                boundary_mesh = product_output[i][j][2]
+                boundary_id = product_output[i][j][3]
+                if not boundary_id in boundary_id_to_function_map:
+                    assert not boundary_id in boundary_id_to_function_space_map
+                    assert not boundary_id in boundary_id_to_boundary_mesh_map
+                    boundary_id_to_function_space_map[boundary_id] = function_space
+                    boundary_id_to_function_map[boundary_id] = function
+                    boundary_id_to_boundary_mesh_map[boundary_id] = boundary_mesh
+                else:
+                    assert boundary_id_to_function_space_map[boundary_id] == function_space
+                    assert boundary_id_to_boundary_mesh_map[boundary_id] == boundary_mesh
+                    boundary_id_to_function_map[boundary_id] += function
         output = []
         for boundary_id in boundary_id_to_function_map.keys():
             assert boundary_id in boundary_id_to_function_space_map

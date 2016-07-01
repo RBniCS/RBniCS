@@ -24,7 +24,15 @@
 
 from __future__ import print_function
 import types
-from RBniCS.problems import ParametrizedProblem, EllipticCoerciveProblem
+from RBniCS.problems.parametrized_problem import ParametrizedProblem
+from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
+from RBniCS.linear_algebra.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector
+from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.linear_algebra.sum import sum
+from RBniCS.linear_algebra.product import product
+from RBniCS.linear_algebra.solve import solve
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
@@ -56,7 +64,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         # Solution
         self._solution = OnlineVector()
         self._output = 0
-        self._compute_error.__func__.previous_mu = None
+        self.compute_error.__func__.previous_mu = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -96,7 +104,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         if current_stage == "online":
             for term in ["a", "f"]:
                 self.operator[term] = self.assemble_operator(term)
-                self.Q[term] = len(self.operator(term))
+                self.Q[term] = len(self.operator[term])
             # Also load basis functions
             self.Z.load(self.folder["basis"], "basis")
             # To properly initialize N and N_bc, detect how many theta terms
@@ -106,7 +114,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             except RuntimeError: # there were no Dirichlet BCs
                 self.N = len(self.Z)
             else: # there were Dirichlet BCs
-                if not theta_bc or theta_bc.count(0.) == len(theta_bc):
+                if theta_bc.count(0.) == len(theta_bc):
                     self.N = len(self.Z)
                 else:
                     self.N = len(self.Z) - len(theta_bc)
@@ -140,12 +148,16 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         N += self.N_bc
         assembled_operator = dict()
         for term in ["a", "f"]:
-            assembled_operator = sum(product(self.compute_theta(term), self.operator[term]))
+            assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
         except RuntimeError: # there were no Dirichlet BCs
             theta_bc = ()
-        solve(assembled_operator["a"][:N, :N] == assembled_operator["f"][:N], self._solution, assembled_dirichlet_bc)
+        else:
+            if theta_bc.count(0.) == len(theta_bc):
+                theta_bc = ()
+        self._solution = OnlineVector(N)
+        solve(assembled_operator["a"][:N, :N], self._solution, assembled_operator["f"][:N], theta_bc)
         return self._solution
         
     # Perform an online evaluation of the (compliant) output
@@ -176,8 +188,9 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         except RuntimeError: # there were no Dirichlet BCs
             pass # nothing to be done
         else: # there were Dirichlet BCs
-            assert N_bc == len(theta_bc)
-            snapshot -= self.Z[:N_bc]*theta_bc
+            if theta_bc.count(0.) != len(theta_bc):
+                assert self.N_bc == len(theta_bc)
+                snapshot -= self.Z[:self.N_bc]*theta_bc
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -189,11 +202,11 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
     def compute_error(self, N=None):
-        if self._compute_error.__func__.previous_mu != self.mu:
+        if self.compute_error.__func__.previous_mu != self.mu:
             self.truth_problem.solve()
             self.truth_problem.output()
             # Do not carry out truth solves anymore for the same parameter
-            self._compute_error.__func__.previous_mu = self.mu
+            self.compute_error.__func__.previous_mu = self.mu
         # Compute the error on the solution
         error = self.solve(N, with_plot=False, return_high_fidelity=True)
         error -= self.truth_problem._solution # store the error as a function in the reduced solution
@@ -216,7 +229,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
 
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
-        return self.truth_problem.compute_theta(theta)
+        return self.truth_problem.compute_theta(term)
         
     ## Assemble the reduced order affine expansion
     def assemble_operator(self, term):

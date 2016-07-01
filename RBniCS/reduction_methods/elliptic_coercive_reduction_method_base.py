@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import os # for path and makedir
+from RBniCS.reduction_methods.reduction_method_base import ReductionMethodBase
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase
@@ -35,10 +36,14 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
     #  @{
     
+    from RBniCS.factories.problems.reduced_problem_factory import ReducedProblemFactory as ReducedProblemFactory_Function
+    ReducedProblemFactory = staticmethod(ReducedProblemFactory_Function)
+    # In this way we allow the final user to possibly override ReducedProblemFactory
+    
     ## Default initialization of members
     def __init__(self, truth_problem):
         # Call to parent
-        ReductionMethodBase.__init__(self, truth_problem.name())
+        ReductionMethodBase.__init__(self, truth_problem.name(), truth_problem.mu_range)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Reduced order problem
@@ -61,7 +66,7 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
         self.truth_problem.init()
         
         # Initialize reduced order data structures in the reduced problem
-        self.reduced_problem = ReducedProblemFactory(self.truth_problem, self)
+        self.reduced_problem = self.ReducedProblemFactory(self.truth_problem, self)
         
         # Since we set the initial parameter before the call to offline(),
         # we also need to sync the reduced problem's mu with the
@@ -72,17 +77,23 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
         
         # Prepare folders and init reduced problem
         all_folders_exist = True
-        for f in self.folder.values():
+        all_folders = list()
+        all_folders.extend(self.folder.values())
+        all_folders.extend(self.reduced_problem.folder.values())
+        for f in all_folders:
             if not os.path.exists(f):
                 all_folders_exist = False
                 os.makedirs(f)
+        """
         if all_folders_exist:
             self.reduced_problem.init("online")
             return False # offline construction should be skipped, since data are already available
         else:
             self.reduced_problem.init("offline")
             return True # offline construction should be carried out
-    
+        """
+        self.reduced_problem.init("offline")
+        return True # offline construction should be carried out
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     

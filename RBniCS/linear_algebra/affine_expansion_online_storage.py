@@ -33,7 +33,7 @@
 from numpy import empty as AffineExpansionOnlineStorageContent_Base
 from numpy import nditer as AffineExpansionOnlineStorageContent_Iterator
 from numpy import asmatrix as AffineExpansionOnlineStorageContent_AsMatrix
-from RBniCS import NumpyIO as AffineExpansionOnlineStorageContent_IO
+from RBniCS.io_utils.numpy_io import NumpyIO as AffineExpansionOnlineStorageContent_IO
 class AffineExpansionOnlineStorage(object):
     def __init__(self, *args):
         self._content = None
@@ -111,6 +111,7 @@ class AffineExpansionOnlineStorage(object):
             raise RuntimeError("Should not call len for tensors of dimension 2 or higher")
     
     def order(self):
+        assert self._content is not None
         return len(self._content.shape)
             
 #  @}

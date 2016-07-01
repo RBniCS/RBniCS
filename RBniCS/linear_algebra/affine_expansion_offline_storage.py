@@ -32,25 +32,28 @@
 # Requires: access with operator[]
 from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
 class AffineExpansionOfflineStorage(object):
-    def __init__(self, args):
+    def __init__(self, args=None):
         self._content = None
-        if args:
-            if isinstance(args, AffineExpansionOnlineStorage):
-                self._content = args
-            else:
-                if isinstance(args[0], list): # for Dirichlet boundary conditions
-                    self._content = _DirichletBCsAffineExpansionOfflineStorageContent(args)
-                else: # FEniCS forms
-                    self._content = _AssembledFormsAffineExpansionOfflineStorageContent()
-                    for i in range(len(args)):
-                        from dolfin import assemble as dolfin_assemble
-                        self._content.append(dolfin_assemble(args[i]))
+        if args is not None:
+            self.init(args)
     
     def __getitem__(self, key):
         return self._content[key]
                 
     def __len__(self):
         return len(self._content)
+        
+    def init(self, args):
+        if isinstance(args, AffineExpansionOnlineStorage):
+            self._content = args
+        else:
+            if isinstance(args[0], list): # for Dirichlet boundary conditions
+                self._content = _DirichletBCsAffineExpansionOfflineStorageContent(args)
+            else: # FEniCS forms
+                self._content = _AssembledFormsAffineExpansionOfflineStorageContent()
+                for i in range(len(args)):
+                    from dolfin import assemble as dolfin_assemble
+                    self._content.append(dolfin_assemble(args[i]))
 
 # Auxiliary class employed to properly differentiate cases in product(): copy of a list of Dirichlet boundary conditions
 class _DirichletBCsAffineExpansionOfflineStorageContent(list):

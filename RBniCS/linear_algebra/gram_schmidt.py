@@ -25,6 +25,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~     GRAM SCHMIDT CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class GramSchmidt
 #
+
+from RBniCS.linear_algebra.transpose import transpose
+
 # Class containing the implementation of Gram Schmidt
 class GramSchmidt():
 
@@ -35,7 +38,7 @@ class GramSchmidt():
     ## Default initialization of members
     def __init__(self, X):
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 7. Inner product
+        # Inner product
         self.X = X
         
     #  @}
@@ -47,11 +50,14 @@ class GramSchmidt():
             
     ## Apply Gram Schmidt on the basis functions matrix Z
     def apply(self, Z):
+        assert len(self.X) == 1 # note that we cannot move this assert in __init__ because
+                                # self.X has not been assembled yet there
+        X = self.X[0]
         n_basis = len(Z) # basis are store as a list of FE vectors
         b = Z[n_basis - 1] # reference to the last basis
         for i in range(n_basis - 1):
-            b -= (transpose(b)*self.X*Z[i]) * Z[i]
-        b /= transpose(b)*self.X*b
+            b -= (transpose(b)*X*Z[i]) * Z[i]
+        b /= transpose(b)*X*b
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

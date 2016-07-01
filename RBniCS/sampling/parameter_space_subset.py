@@ -29,6 +29,8 @@
 # Parameter space subsets
 import itertools # for linspace sampling
 import numpy
+from RBniCS.io_utils.exportable_list import ExportableList
+
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     def __init__(self):
         ExportableList.__init__(self, "pickle")

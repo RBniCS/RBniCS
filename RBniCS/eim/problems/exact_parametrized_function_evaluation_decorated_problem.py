@@ -33,6 +33,7 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem(*parametrized_expression
     def ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
     
         class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+            
             ## Default initialization of members
             def __init__(self, V, *args):
                 # Call the parent initialization
@@ -43,6 +44,10 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem(*parametrized_expression
                 for parametrized_expression__as_string in parametrized_expressions:
                     self.parametrized_expressions__as_strings.append(parametrized_expression__as_string)
                     self.parametrized_expressions.append(ParametrizedExpression())
+                # Signal to the factory that this problem has been decorated
+                if not hasattr(self, "_problem_decorators"):
+                    self._problem_decorators = dict() # string to bool
+                self._problem_decorators["ExactParametrizedFunctionEvaluation"] = True
             
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation

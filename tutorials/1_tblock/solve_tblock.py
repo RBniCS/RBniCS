@@ -33,14 +33,16 @@ class ThermalBlock(EllipticCoerciveProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, subd, bound):
+    def __init__(self, V, subdomains, boundaries):
         # Call the standard initialization
-        super(Tblock, self).__init__(V)
+        super(ThermalBlock, self).__init__(V)
         # ... and also store FEniCS data structures for assembly
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
-        self.dx = Measure("dx")(subdomain_data=subd)
-        self.ds = Measure("ds")(subdomain_data=bound)
+        self.dx = Measure("dx")(subdomain_data=subdomains)
+        self.ds = Measure("ds")(subdomain_data=boundaries)
+        self.subdomains = subdomains
+        self.boundaries = boundaries
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -83,9 +85,10 @@ class ThermalBlock(EllipticCoerciveProblem):
             f0 = v*ds(1) + 1e-15*v*dx
             return (f0,)
         elif term == "dirichlet_bc":
-            bc0 = [(self.V, Constant(0.0), self.bound, 3)]
+            bc0 = [(self.V, Constant(0.0), self.boundaries, 3)]
             return (bc0,)
         elif term == "inner_product":
+            u = self.u
             x0 = inner(grad(u),grad(v))*dx
             return (x0,)
         else:
@@ -98,14 +101,14 @@ class ThermalBlock(EllipticCoerciveProblem):
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/tblock.xml")
-subd = MeshFunction("size_t", mesh, "data/tblock_physical_region.xml")
-bound = MeshFunction("size_t", mesh, "data/tblock_facet_region.xml")
+subdomains = MeshFunction("size_t", mesh, "data/tblock_physical_region.xml")
+boundaries = MeshFunction("size_t", mesh, "data/tblock_facet_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Thermal Block class
-thermal_block_problem = ThermalBlock(V, subd, bound)
+thermal_block_problem = ThermalBlock(V, subdomains, boundaries)
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
 thermal_block_problem.set_mu_range(mu_range)
 

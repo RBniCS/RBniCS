@@ -22,7 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems import ParametrizedProblem
+from dolfin import Function
+from RBniCS.problems.parametrized_problem import ParametrizedProblem
+from RBniCS.linear_algebra.affine_expansion_offline_storage import AffineExpansionOfflineStorage
+from RBniCS.linear_algebra.sum import sum
+from RBniCS.linear_algebra.product import product
+from RBniCS.linear_algebra.solve import solve
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem
@@ -93,7 +98,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         self.Q = dict() # from string to integer
         # Matrices/vectors resulting from the truth discretization
         self.operator = dict() # from string to AffineExpansionOfflineStorage
-        self.inner_product = AffineExpansionOfflineStorage()
+        self.inner_product = AffineExpansionOfflineStorage() # even though it will contain only one matrix
         self.dirichlet_bc = AffineExpansionOfflineStorage()
         # Solution
         self._solution = Function(self.V)
@@ -110,12 +115,12 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     def init(self):
         for term in ["a", "f"]:
             self.operator[term] = AffineExpansionOfflineStorage(self.assemble_operator(term))
-            self.Q = len(self.operator[term])
-        self.inner_product = AffineExpansionOfflineStorage(self.assemble_operator("inner_product"))
+            self.Q[term] = len(self.operator[term])
+        self.inner_product.init(self.assemble_operator("inner_product"))
         try:
-            self.dirichlet_bc = AffineExpansionOfflineStorage(self.assemble_operator("dirichlet_bc"))
+            self.dirichlet_bc.init(self.assemble_operator("dirichlet_bc"))
         except RuntimeError: # there were no Dirichlet BCs
-            self.dirichlet_bc = AffineExpansionOfflineStorage()
+            pass
                     
     ## Perform a truth solve
     def solve(self):
@@ -123,10 +128,10 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         for term in ["a", "f"]:
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         try:
-            assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc"), self.dirichet_bc))
+            assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc"), self.dirichlet_bc))
         except RuntimeError: # there were no Dirichlet BCs
             assembled_dirichlet_bc = None
-        solve(assembled_operator["a"] == assembled_operator["f"], self._solution, assembled_dirichlet_bc)
+        solve(assembled_operator["a"], self._solution.vector(), assembled_operator["f"], assembled_dirichlet_bc)
         return self._solution
         
     ## Perform a truth evaluation of the (compliant) output
@@ -143,8 +148,8 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #  @{
     
     ## Export solution in VTK format
-    def export_solution(self, solution, filename):
-        self._export_vtk(solution, filename, with_mesh_motion=True, with_preprocessing=True)
+    def export_solution(self, solution, folder, filename):
+        self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
         
     ## Get the name of the problem, to be used as a prefix for output folders
     def name(self):

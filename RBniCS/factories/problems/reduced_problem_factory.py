@@ -25,8 +25,14 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARAMETRIZED PROBLEM BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ReducedProblemFactory
 #
+
 # Factory to associate reduced problem classes to reduction method classes.
 def ReducedProblemFactory(truth_problem, reduction_method):
+    from RBniCS.reduction_methods.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
+    from RBniCS.reduction_methods.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
+    from RBniCS.problems.elliptic_coercive_pod_galerkin_reduced_problem import EllipticCoercivePODGalerkinReducedProblem
+    from RBniCS.problems.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
+    
     # Determine whether RB or POD-Galerkin method is used
     def _ReducedProblem_TypeFactory(reduction_method):
         if isinstance(reduction_method, EllipticCoercivePODGalerkinReduction):
@@ -40,14 +46,16 @@ def ReducedProblemFactory(truth_problem, reduction_method):
     def _DecoratedReducedProblem_TypeFactory(truth_problem):
         def _DecoratedReducedProblem_TypeFactory__Decorator(ParametrizedProblem_DerivedClass):
             DecoratedReducedProblem_Type = ParametrizedProblem_DerivedClass
-            if isinstance(truth_problem, EIMDecoratedProblem_Class):
-                pass # EIM operates on the truth problem, rather than the reduced one
-            if isinstance(truth_problem, ExactParametrizedFunctionEvaluationDecoratedProblem_Class):
-                DecoratedReducedProblem_Type = ExactParametrizedFunctionEvaluationDecoratedReducedProblem(DecoratedReducedProblem_Type)
-            if isinstance(truth_problem, SCMDecoratedProblem_Class):
-                pass # SCM operates on the truth problem, rather than the reduced one
-            if isinstance(truth_problem, ExactCoercivityConstantDecoratedProblem_Class):
-                DecoratedReducedProblem_Type = ExactCoercivityConstantDecoratedReducedProblem(DecoratedReducedProblem_Type)
+            if hasattr(truth_problem, "_problem_decorators"):
+                problem_decorators = truth_problem._problem_decorators
+                if "EIM" in problem_decorators and problem_decorators["EIM"]:
+                    pass # EIM operates on the truth problem, rather than the reduced one
+                if "ExactParametrizedFunction" in problem_decorators and problem_decorators["ExactParametrizedFunction"]:
+                    DecoratedReducedProblem_Type = ExactParametrizedFunctionEvaluationDecoratedReducedProblem(DecoratedReducedProblem_Type)
+                if "SCM" in problem_decorators and problem_decorators["SCM"]:
+                    pass # SCM operates on the truth problem, rather than the reduced one
+                if "ExactCoercivityConstant" in problem_decorators and problem_decorators["ExactCoercivityConstant"]:
+                    DecoratedReducedProblem_Type = ExactCoercivityConstantDecoratedReducedProblem(DecoratedReducedProblem_Type)
             return DecoratedReducedProblem_Type
         return _DecoratedReducedProblem_TypeFactory__Decorator
             

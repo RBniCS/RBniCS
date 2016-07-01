@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import os # for path and makedir
+from RBniCS.sampling.parameter_space_subset import ParameterSpaceSubset
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ReductionMethodBase
@@ -35,7 +36,7 @@ class ReductionMethodBase(object):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, folder_prefix):
+    def __init__(self, folder_prefix, mu_range):
         # I/O
         self.folder_prefix = folder_prefix
         self.folder = dict() # from string to string
@@ -53,6 +54,10 @@ class ReductionMethodBase(object):
         self.xi_test = ParameterSpaceSubset()
         # I/O
         self.folder["xi_test" ] = self.folder_prefix + "/" + "xi_test"
+        
+        # $$ OFFLINE/ERROR ANALYSIS DATA STRUCTURES $$ #
+        self._mu_range = mu_range # local copy to generate training/test sets,
+                                  # should not be used anywhere else
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -77,7 +82,7 @@ class ReductionMethodBase(object):
             import_successful = self.xi_train.load(self.folder["xi_train"], "xi_train") \
                 and  (len(self.xi_train) == ntrain)
         if not import_successful:
-            self.xi_train.generate(self.mu_range, ntrain, sampling)
+            self.xi_train.generate(self._mu_range, ntrain, sampling)
             # Export 
             self.xi_train.save(self.folder["xi_train"], "xi_train")
         
@@ -93,7 +98,7 @@ class ReductionMethodBase(object):
             import_successful = self.xi_test.load(self.folder["xi_test"], "xi_test") \
                 and  (len(self.xi_test) == ntest)
         if not import_successful:
-            self.xi_test.generate(self.mu_range, ntest, sampling)
+            self.xi_test.generate(self._mu_range, ntest, sampling)
             # Export 
             self.xi_test.save(self.folder["xi_test"], "xi_test")
             

@@ -27,20 +27,25 @@ from numpy import log, exp, mean, sqrt # for error analysis
 import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
-from RBniCS.parametrized_problem import ParametrizedProblem
+from RBniCS.problems.parametrized_problem import ParametrizedProblem
 
 def EIMDecoratedProblem(*parametrized_expressions):
     def EIMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
     
         class EIMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+            
             ## Default initialization of members
             def __init__(self, V, *args):
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, *args)
                 # Attach EIM reduced problems
                 self.EIM_approximation = []
-                for i in range(len(parametrized_expressions))
+                for i in range(len(parametrized_expressions)):
                     self.EIM_approximation.append(_EIMApproximation(V, parametrized_expressions[i], ParametrizedProblem_DerivedClass.__name__ + "/eim/" + str(i)))
+                # Signal to the factory that this problem has been decorated
+                if not hasattr(self, "_problem_decorators"):
+                    self._problem_decorators = dict() # string to bool
+                self._problem_decorators["EIM"] = True
                     
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation
