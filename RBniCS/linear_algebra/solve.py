@@ -32,22 +32,25 @@ from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
 # Similarly to FEniCS' solve define a solve for online problems
-def solve(equation, solution, bcs, solver_parameters=None):
-    if isinstance(equation.lhs, TruthMatrix) and isinstance(solution.vector(), TruthVector) and isinstance(equation.rhs, TruthVector):
+def solve(lhs, solution, rhs, bcs):
+    assert \
+        (isinstance(lhs, TruthMatrix) and isinstance(solution, TruthVector) and isinstance(rhs, TruthVector)) \
+            or \
+        (isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineVector_Type) and isinstance(rhs, OnlineVector_Type))
+    if isinstance(lhs, TruthMatrix) and isinstance(solution, TruthVector) and isinstance(rhs, TruthVector):
         for bc in bcs:
-            bc.apply(equation.lhs, equation.rhs)
+            bc.apply(lhs, rhs)
         from dolfin import solve as dolfin_solve
-        dolfin_solve(equation.lhs, solution.vector(), equation.rhs)
-    elif isinstance(equation.lhs, OnlineMatrix_Type) and isinstance(solution, OnlineVector_Type) and isinstance(equation.rhs, OnlineVector_Type):
+        dolfin_solve(lhs, solution, rhs)
+    elif isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineVector_Type) and isinstance(rhs, OnlineVector_Type):
         for i in range(len(bcs)):
-            equation.rhs[i] = bcs[i]
-            equation.lhs[i, :] = 0.
-            equation.lhs[i, i] = 1.
+            rhs[i] = bcs[i]
+            lhs[i, :] = 0.
+            lhs[i, i] = 1.
         from numpy.linalg import solve as numpy_solve
-        solution = numpy_solve(equation.lhs, equation.rhs)
+        solution = numpy_solve(lhs, rhs)
     else:
-        from dolfin import solve as dolfin_solve
-        dolfin_solve(equation, solution, bcs, solver_parameters)
+        raise RuntimeError("Invalid arguments in RBniCS solve()")
         
 #  @}
 ########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 
