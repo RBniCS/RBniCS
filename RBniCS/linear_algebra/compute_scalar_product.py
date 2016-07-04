@@ -47,7 +47,9 @@ class Vector_Transpose(object):
         elif isinstance(matrixOrVector, TruthVector):
             return self.vector.inner(matrixOrVector)
         elif isinstance(matrixOrVector, OnlineVector_Type):
-            return self.vector.T*matrixOrVector
+            output = self.vector.T*matrixOrVector
+            assert output.shape == (1, 1)
+            return output.item(0, 0)
         else: # impossible to arrive here anyway, thanks to the assert
             raise RuntimeError("Invalid arguments in Vector_Transpose.__mul__.")
               
@@ -65,7 +67,9 @@ class Vector_Transpose__times__Matrix(object):
         if isinstance(vector2, TruthVector):
             return self.vector.inner(self.matrix*vector2)
         elif isinstance(vector2, OnlineVector_Type):
-            return self.vector.T*(self.matrix*vector2)
+            output = self.vector.T*(self.matrix*vector2)
+            assert output.shape == (1, 1)
+            return output.item(0, 0)
         else: # impossible to arrive here anyway, thanks to the assert
             raise RuntimeError("Invalid arguments in Vector_Transpose__times__Matrix.__mul__.")
 #  @}

@@ -24,6 +24,7 @@
 
 from __future__ import print_function
 import types
+from dolfin import Function
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
@@ -106,7 +107,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 self.operator[term] = self.assemble_operator(term)
                 self.Q[term] = len(self.operator[term])
             # Also load basis functions
-            self.Z.load(self.folder["basis"], "basis")
+            self.Z.load(self.folder["basis"], "basis", self.truth_problem.V)
             # To properly initialize N and N_bc, detect how many theta terms
             # are related to boundary conditions
             try:
@@ -135,7 +136,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             N = self.N
         uN = self._solve(N)
         if return_high_fidelity or with_plot:
-            reduced_solution = self.Z*uN
+            reduced_solution = Function(self.truth_problem.V, self.Z*uN)
             if with_plot:
                 self._plot(reduced_solution, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
         if return_high_fidelity:

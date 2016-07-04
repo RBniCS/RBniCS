@@ -169,7 +169,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         assert munew is not None
         print("absolute delta max = ", delta_max)
         self.reduced_problem.set_mu(munew)
-        self.save_greedy_post_processing_file(self.N, delta_max, munew, self.folder["post_processing"])
+        self.save_greedy_post_processing_file(self.reduced_problem.N, delta_max, munew, self.folder["post_processing"])
 
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -256,9 +256,9 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
     @staticmethod
     def save_greedy_post_processing_file(N, delta_max, mu_greedy, directory):
         with open(directory + "/delta_max.txt", "a") as outfile:
-            file.write(str(N) + " " + str(delta_max))
+            outfile.write(str(N) + " " + str(delta_max))
         with open(directory + "/mu_greedy.txt", "a") as outfile:
-            file.write(str(mu_greedy))
+            outfile.write(str(mu_greedy))
         
     #  @}
     ########################### end - I/O - end ########################### 

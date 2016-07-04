@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from math import sqrt
 from dolfin import Function
 from RBniCS.problems.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
@@ -80,7 +81,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                 self.riesz["a"][qa] = FunctionsList()
             self.riesz["f"] = AffineExpansionOnlineStorage(self.Q["f"])
             for qf in range(self.Q["f"]):
-                self.riesz["f"][qf] = FunctionsList() # even though it will be composed of only one function
+                self.riesz["f"][qf] = None # will be of type TruthVector
             self.riesz_product["aa"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["a"])
             self.riesz_product["af"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["f"])
             self.riesz_product["ff"] = AffineExpansionOnlineStorage(self.Q["f"], self.Q["f"])
@@ -91,13 +92,19 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     def get_delta(self):
         eps2 = self.get_eps2()
         alpha = self.get_stability_factor()
-        return np.sqrt(np.abs(eps2)/alpha)
+        from numpy import isclose
+        assert eps2 >= 0. or isclose(eps2, 0.)
+        assert alpha >= 0.
+        return sqrt(abs(eps2)/alpha)
     
     ## Return an error bound for the current output
     def get_delta_output(self):
         eps2 = self.get_eps2()
         alpha = self.get_stability_factor()
-        return np.abs(eps2)/alpha
+        from numpy import isclose
+        assert eps2 >= 0. or isclose(eps2, 0.)
+        assert alpha >= 0.
+        return abs(eps2)/alpha
         
     ## Return the numerator of the error bound for the current solution
     def get_eps2(self):
@@ -108,7 +115,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
               sum(product(theta_f, self.riesz_product["ff"], theta_f)) \
             + 2.0*(transpose(self._solution)*sum(product(theta_a, self.riesz_product["af"][:N], theta_f))) \
             + transpose(self._solution)*sum(product(theta_a, self.riesz_product["aa"][:N, :N], theta_a))*self._solution
-                    
+            
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
     
@@ -150,7 +157,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
             homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
             solve(self.truth_problem.inner_product[0], self._riesz_solve_storage.vector(), self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
-            self.riesz["f"][qf].enrich(self._riesz_solve_storage)
+            self.riesz["f"][qf] = self._riesz_solve_storage.vector().copy()
             
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

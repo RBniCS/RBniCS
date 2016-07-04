@@ -43,7 +43,7 @@ class AffineExpansionOnlineStorage(object):
         self._content_as_matrix_needs_update = True
     
     def load(self, directory, filename):
-        if self._content: # avoid loading multiple times
+        if self._content is not None: # avoid loading multiple times
             return False
         if AffineExpansionOnlineStorageContent_IO.exists_file(directory, filename):
             self._content = AffineExpansionOnlineStorageContent_IO.load_file(directory, filename)

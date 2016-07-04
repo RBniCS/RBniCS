@@ -58,9 +58,8 @@ class FunctionsList(ExportableList):
     def load(self, directory, filename, V):
         if self._list: # avoid loading multiple times
             return False
-        length = open(directory + "/" + filename + ".length", "r")
-        Nmax = int(length.readline())
-        length.close()
+        with open(directory + "/" + filename + ".length", "r") as length:
+            Nmax = int(length.readline())
         from dolfin import File, Function
         fun = Function(V)
         for f in range(Nmax):
@@ -71,9 +70,8 @@ class FunctionsList(ExportableList):
         return True
         
     def save(self, directory, filename, V):
-        length = open(directory + "/" + filename + ".length", "w")
-        length.write(str(len(self._list)))
-        length.close()
+        with open(directory + "/" + filename + ".length", "w") as length:
+            length.write(str(len(self._list)))
         from dolfin import File, Function
         for f in range(len(self._list)):
             list_f = Function(V, self._list[f])

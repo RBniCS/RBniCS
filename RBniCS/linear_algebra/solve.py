@@ -48,7 +48,8 @@ def solve(lhs, solution, rhs, bcs):
             lhs[i, :] = 0.
             lhs[i, i] = 1.
         from numpy.linalg import solve as numpy_solve
-        solution = numpy_solve(lhs, rhs)
+        solution_ = numpy_solve(lhs, rhs)
+        solution[:] = solution_
     else:
         raise RuntimeError("Invalid arguments in RBniCS solve()")
         
