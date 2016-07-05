@@ -66,22 +66,27 @@ class ProperOrthogonalDecomposition(object):
     #  Input arguments are: Nmax
     #  Output arguments are: POD modes, number of POD modes
     def apply(self, Nmax):
-        correlation = transpose(self.snapshots_matrix)*self.X*self.snapshots_matrix
+        assert len(self.X) == 1 # note that we cannot move this assert in __init__ because
+                                # self.X has not been assembled yet there
+        X = self.X[0]
+        snapshots_matrix = self.snapshots_matrix
+        
+        correlation = transpose(snapshots_matrix)*X*snapshots_matrix
         
         eigensolver = OnlineEigenSolver(correlation)
         eigensolver.parameters["problem_type"] = "hermitian"
         eigensolver.parameters["spectrum"] = "largest real"
         eigensolver.solve()
         
-        Z = self.snapshots_matrix*eigensolver.get_eigenvectors(Nmax)
+        Z = snapshots_matrix*eigensolver.get_eigenvectors(Nmax)
         for b in Z:
-            b /= transpose(b)*self.X*b
+            b /= transpose(b)*X*b
         
         self.eigensolver = eigensolver
         return (Z, Nmax)
 
-    def print_eigenvalues(self):
-        self.eigensolver.print_eigenvalues()
+    def print_eigenvalues(self, N=None):
+        self.eigensolver.print_eigenvalues(N)
         
     def save_eigenvalues_file(self, output_directory, eigenvalues_file):
         self.eigensolver.save_eigenvalues_file(output_directory, eigenvalues_file)

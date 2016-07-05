@@ -33,14 +33,16 @@ class ElasticBlock(EllipticCoerciveProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, subd, bound):
+    def __init__(self, V, subdomains, boundaries):
         # Call the standard initialization
-        super(Eblock, self).__init__(V)
+        super(ElasticBlock, self).__init__(V)
         # ... and also store FEniCS data structures for assembly
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
-        self.dx = Measure("dx")(subdomain_data=subd)
-        self.ds = Measure("ds")(subdomain_data=bound)
+        self.dx = Measure("dx")(subdomain_data=subdomains)
+        self.ds = Measure("ds")(subdomain_data=boundaries)
+        self.subdomains = subdomains
+        self.boundaries = boundaries
         # ...
         self.f = Constant((1.0, 0.0))
         self.E  = 1.0
@@ -115,10 +117,11 @@ class ElasticBlock(EllipticCoerciveProblem):
             f2 = inner(f,v)*ds(4) + inner(l,v)*dx
             return (f0,f1,f2)
         elif term == "dirichlet_bc":
-            bc0 = [(self.V, Constant((0.0, 0.0)), self.bound, 6)]
+            bc0 = [(self.V, Constant((0.0, 0.0)), self.boundaries, 6)]
             return (bc0,)
         elif term == "inner_product":
-            x0 = u*v*dx + inner(grad(u),grad(v))*dx
+            u = self.u
+            x0 = inner(u, v)*dx + inner(grad(u),grad(v))*dx
             return (x0,)
         else:
             raise RuntimeError("Invalid term for assemble_operator().")
@@ -136,14 +139,14 @@ class ElasticBlock(EllipticCoerciveProblem):
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/elastic.xml")
-subd = MeshFunction("size_t", mesh, "data/elastic_physical_region.xml")
-bound = MeshFunction("size_t", mesh, "data/elastic_facet_region.xml")
+subdomains = MeshFunction("size_t", mesh, "data/elastic_physical_region.xml")
+boundaries = MeshFunction("size_t", mesh, "data/elastic_facet_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1, two components)
 V = VectorFunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Elastic Block class
-elastic_block_problem = ElasticBlock(V, subd, bound)
+elastic_block_problem = ElasticBlock(V, subdomains, boundaries)
 mu_range = [ \
     (1.0, 100.0), \
     (1.0, 100.0), \

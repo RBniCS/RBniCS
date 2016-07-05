@@ -73,8 +73,10 @@ class OnlineEigenSolver(object):
     def get_eigenvectors(self, i_max):
         return self.eigv[:, :i_max]
     
-    def print_eigenvalues(self):
-        for i in range(len(self.eigs)):
+    def print_eigenvalues(self, i_max=None):
+        if i_max is None:
+            i_max = len(self.eigs)
+        for i in range(i_max):
             print("lambda_" + str(i) + " = " + str(self.eigs[i]))
     
     def save_eigenvalues_file(self, directory, filename):
@@ -90,7 +92,7 @@ class OnlineEigenSolver(object):
         eigs_cumsum /= energy
         with open(directory + "/" + filename, "a") as outfile:
             for i in range(len(eigs_cumsum)):
-                file.write(str(i) + " " + str(eigs_cumsum[i]) + "\n") 
+                outfile.write(str(i) + " " + str(eigs_cumsum[i]) + "\n") 
     
 #  @}
 ########################### end - ONLINE STAGE - end ########################### 

@@ -27,6 +27,8 @@ from numpy import log, exp, mean # for error analysis
 import os # for path and makedir
 from RBniCS.linear_algebra.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.reduction_methods.elliptic_coercive_reduction_method_base import EllipticCoerciveReductionMethodBase
+from RBniCS.io_utils.error_analysis_table import ErrorAnalysisTable
+from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoercivePODGalerkinReduction
@@ -64,7 +66,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
                 
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a POD object
-        self.POD = ProperOrthogonalDecomposition(self.inner_product)
+        self.POD = ProperOrthogonalDecomposition(truth_problem.inner_product)
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
@@ -92,7 +94,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
             
             self.truth_problem.set_mu(self.xi_train[run])
             
-            print("truth solve for mu = ", self.mu)
+            print("truth solve for mu = ", self.truth_problem.mu)
             snapshot = self.truth_problem.solve()
             self.truth_problem.export_solution(snapshot, self.folder["snapshots"], "truth_" + str(run))
             self.reduced_problem.postprocess_snapshot(snapshot)
@@ -123,8 +125,8 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         (Z, N) = self.POD.apply(self.Nmax)
         self.reduced_problem.Z.enrich(Z)
         self.reduced_problem.N += N
-        self.reduced_problem.Z.save(self.folder["basis"], "basis")
-        self.POD.print_eigenvalues()
+        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis", self.truth_problem.V)
+        self.POD.print_eigenvalues(N)
         self.POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
         self.POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
         
@@ -150,29 +152,22 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
         print("==============================================================")
         print("")
         
-        error_u = MultiIndexArray((N, len(self.xi_test)))
-        error_s = MultiIndexArray((N, len(self.xi_test)))
+        error_analysis_table = ErrorAnalysisTable(self.xi_test)
+        error_analysis_table.set_Nmax(N)
+        error_analysis_table.add_column("error_u", group_name="u", operations="mean")
+        error_analysis_table.add_column("error_s", group_name="s", operations="mean")
         
         for run in range(len(self.xi_test)):
             print("############################## run = ", run, " ######################################")
             
             self.reduced_problem.set_mu(self.xi_test[run])
                         
-            for n in range(N): # n = 0, 1, ... N - 1
-                (error_u[n, run], error_s[n, run]) = self.reduced_problem.compute_error(n + 1, True)
+            for n in range(1, N + 1): # n = 1, ... N
+                (error_analysis_table["error_u", n, run], error_analysis_table["error_s", n, run]) = self.reduced_problem.compute_error(n)
         
-        # Print some statistics
+        # Print
         print("")
-        print("N \t gmean(err_u)")
-        for n in range(N): # n = 0, 1, ... N - 1
-            mean_error_u = exp(mean(log((error_u[n, :]))))
-            print(str(n+1) + " \t " + str(mean_error_u))
-        
-        print("")
-        print("N \t gmean(err_s)")
-        for n in range(N): # n = 0, 1, ... N - 1
-            mean_error_s = exp(mean(log((error_s[n, :]))))
-            print(str(n+1) + " \t " + str(mean_error_s))
+        print(error_analysis_table)
         
         print("")
         print("==============================================================")
