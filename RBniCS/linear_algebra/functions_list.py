@@ -38,8 +38,8 @@ from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
 # and a FunctionsList Z, overriding __mul__ and __rmul__ operators
 # allow to write expressions like transpose(Z)*A*Z and transpose(Z)*F
 class FunctionsList(ExportableList):
-    def __init__(self):
-        ExportableList.__init__(self, "pickle")
+    def __init__(self, original_list=None):
+        ExportableList.__init__(self, "pickle", original_list)
     
     def enrich(self, functions):
         from dolfin import Function, GenericVector
@@ -89,6 +89,7 @@ class FunctionsList(ExportableList):
             output = FunctionsList()
             dim = onlineMatrixOrVector.shape[1]
             for j in range(dim):
+                assert len(onlineMatrixOrVector[:, j]) == len(self._list)
                 output_j = self._list[0]*onlineMatrixOrVector[0, j]
                 for i in range(1, len(self._list)):
                     output_j.add_local(self._list[i].array()*onlineMatrixOrVector[i, j])
@@ -96,6 +97,7 @@ class FunctionsList(ExportableList):
                 output.enrich(output_j)
             return output
         elif isinstance(onlineMatrixOrVector, OnlineVector_Type):
+            assert len(onlineMatrixOrVector) == len(self._list)
             output = self._list[0]*onlineMatrixOrVector.item(0)
             for i in range(1, len(self._list)):
                 output.add_local(self._list[i].array()*onlineMatrixOrVector.item(i))
@@ -103,6 +105,19 @@ class FunctionsList(ExportableList):
             return output
         else: # impossible to arrive here anyway, thanks to the assert
             raise RuntimeError("Invalid arguments in FunctionsList.__mul__.")
+            
+    def __getitem__(self, key):
+        if isinstance(key, slice): # e.g. key = :N, return the first N functions
+            assert key.start is None and key.step is None
+            assert key.stop <= len(self._list)
+            if key.stop == len(self._list):
+                return self
+            
+            output = FunctionsList(self._list[key])
+            return output
+                
+        else: # return the element at position "key" in the storage
+            return self._list[key]
         
 # Auxiliary class: transpose of a FunctionsList
 class FunctionsList_Transpose(object):

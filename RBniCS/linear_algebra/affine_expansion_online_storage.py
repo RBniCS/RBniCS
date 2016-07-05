@@ -69,33 +69,26 @@ class AffineExpansionOnlineStorage(object):
         : # return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
             
             if isinstance(key, slice):
-                assert key.start is None and key.step is None
-                assert key.stop <= self._content[0, 0].shape[0]
-                if key.stop == self._content[0, 0].shape[0]:
-                    return self
+                key = (key,)
                 
-                output = AffineExpansionOnlineStorage(*self._content.shape)
-                for i in range(self._content.size):
-                    output[i] = self._content[i][key]
-                return output
-                
-            else: # isinstance(key, tuple)
-                it = AffineExpansionOnlineStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
-                
-                is_slice_equal_to_full_tensor = True
-                for i in range(len(key)):
-                    assert key[i].start is None and key[i].step is None
-                    assert key[i].stop <= self._content[it.multi_index].shape[i]
-                    if key[i].stop < self._content[it.multi_index].shape[i]:
-                        is_slice_equal_to_full_tensor = False
-                if is_slice_equal_to_full_tensor:
-                    return self
-                
-                output = AffineExpansionOnlineStorage(*self._content.shape)
-                while not it.finished:
-                    output[it.multi_index] = self._content[it.multi_index][key]
-                    it.iternext()
-                return output
+            assert isinstance(key, tuple) and isinstance(key[0], slice)
+            
+            it = AffineExpansionOnlineStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+            
+            is_slice_equal_to_full_tensor = True
+            for i in range(len(key)):
+                assert key[i].start is None and key[i].step is None
+                assert key[i].stop <= self._content[it.multi_index].shape[i]
+                if key[i].stop < self._content[it.multi_index].shape[i]:
+                    is_slice_equal_to_full_tensor = False
+            if is_slice_equal_to_full_tensor:
+                return self
+            
+            output = AffineExpansionOnlineStorage(*self._content.shape)
+            while not it.finished:
+                output[it.multi_index] = self._content[it.multi_index][key]
+                it.iternext()
+            return output
         else: # return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
             return self._content[key]
         

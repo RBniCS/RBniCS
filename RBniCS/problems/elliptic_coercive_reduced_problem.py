@@ -25,6 +25,7 @@
 from __future__ import print_function
 import types
 from dolfin import Function
+from math import sqrt
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
@@ -136,7 +137,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             N = self.N
         uN = self._solve(N)
         if return_high_fidelity or with_plot:
-            reduced_solution = Function(self.truth_problem.V, self.Z*uN)
+            reduced_solution = Function(self.truth_problem.V, self.Z[:N]*uN)
             if with_plot:
                 self._plot(reduced_solution, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
         if return_high_fidelity:
@@ -210,15 +211,16 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             self.compute_error.__func__.previous_mu = self.mu
         # Compute the error on the solution
         error = self.solve(N, with_plot=False, return_high_fidelity=True)
-        error -= self.truth_problem._solution # store the error as a function in the reduced solution
-        error_norm_squared = self.compute_scalar_product(error, self._error_inner_product_matrix(), error) # norm of the error
+        error.vector().add_local(- self.truth_problem._solution.vector().array())
+        error.vector().apply("") # store the error as a function in the reduced solution
+        error_norm_squared = transpose(error.vector())*self._error_inner_product_matrix()*error.vector() # norm of the error
         # Compute the error on the output
-        error_output = abs(self.truth_problem._output - self.online_output())
+        error_output = abs(self.truth_problem._output - self.output())
         return (sqrt(error_norm_squared), error_output)
         
     # Internal method for error computation: returns the inner product matrix to be used.
     def _error_inner_product_matrix(self):
-        assembled_error_inner_product_operator = sum(product(self.compute_theta("a"), self.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
+        assembled_error_inner_product_operator = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
         return assembled_error_inner_product_operator
         
     #  @}

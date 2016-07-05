@@ -29,7 +29,7 @@ from RBniCS.io_utils.pickle_io import PickleIO
 #  @{
 
 class ExportableList(object):
-    def __init__(self, import_export_backend):
+    def __init__(self, import_export_backend, original_list=None):
         self._list = []
         if import_export_backend == "numpy":
             self._FileIO = NumpyIO
@@ -37,6 +37,8 @@ class ExportableList(object):
             self._FileIO = PickleIO
         else:
             raise RuntimeError("Invalid import/export backend")
+        if original_list is not None:
+            self._list.extend(original_list)
     
     def append(self, element):
         self._list.append(element)

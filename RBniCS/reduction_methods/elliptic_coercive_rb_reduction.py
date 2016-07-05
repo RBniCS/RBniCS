@@ -28,6 +28,8 @@ import shutil # for rm
 import random # to randomize selection in case of equal error bound
 from RBniCS.linear_algebra.gram_schmidt import GramSchmidt
 from RBniCS.reduction_methods.elliptic_coercive_reduction_method_base import EllipticCoerciveReductionMethodBase
+from RBniCS.io_utils.error_analysis_table import ErrorAnalysisTable
+from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveRBBase
@@ -189,55 +191,36 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
         print("==============================================================")
         print("")
         
-        error_u = np.zeros((N, len(self.xi_test)))
-        delta_u = np.zeros((N, len(self.xi_test)))
-        effectivity_u = np.zeros((N, len(self.xi_test)))
-        error_s = np.zeros((N, len(self.xi_test)))
-        delta_s = np.zeros((N, len(self.xi_test)))
-        effectivity_s = np.zeros((N, len(self.xi_test)))
+        error_analysis_table = ErrorAnalysisTable(self.xi_test)
+        error_analysis_table.set_Nmax(N)
+        error_analysis_table.add_column("error_u", group_name="u", operations="mean")
+        error_analysis_table.add_column("delta_u", group_name="u", operations="mean")
+        error_analysis_table.add_column("effectivity_u", group_name="u", operations=("min", "mean", "max"))
+        error_analysis_table.add_column("error_s", group_name="s", operations="mean")
+        error_analysis_table.add_column("delta_s", group_name="s", operations="mean")
+        error_analysis_table.add_column("effectivity_s", group_name="s", operations=("min", "mean", "max"))
         
         for run in range(len(self.xi_test)):
             print("############################## run = ", run, " ######################################")
             
             self.reduced_problem.set_mu(self.xi_test[run])
             
-            for n in range(N): # n = 0, 1, ... N - 1
-                (current_error_u, current_error_s) = self.reduced_problem.compute_error(n + 1, True)
+            for n in range(1, N + 1): # n = 1, ... N
+                (current_error_u, current_error_s) = self.reduced_problem.compute_error(n)
                 
-                error_u[n, run] = current_error_u
-                delta_u[n, run] = self.get_delta()
-                effectivity_u[n, run] = delta_u[n, run]/error_u[n, run]
+                error_analysis_table["error_u", n, run] = current_error_u
+                error_analysis_table["delta_u", n, run] = self.reduced_problem.get_delta()
+                error_analysis_table["effectivity_u", n, run] = \
+                    error_analysis_table["delta_u", n, run]/error_analysis_table["error_u", n, run]
                 
-                error_s[n, run] = current_error_s
-                delta_s[n, run] = self.get_delta_output()
-                effectivity_s[n, run] = delta_s[n, run]/error_s[n, run]
+                error_analysis_table["error_s", n, run] = current_error_s
+                error_analysis_table["delta_s", n, run] = self.reduced_problem.get_delta_output()
+                error_analysis_table["effectivity_s", n, run] = \
+                    error_analysis_table["delta_s", n, run]/error_analysis_table["error_s", n, run]
         
-        # Print some statistics
+        # Print
         print("")
-        print("N \t gmean(err_u) \t\t gmean(delta_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)")
-        for n in range(N): # n = 0, 1, ... N - 1
-            mean_error_u = np.exp(np.mean(np.log(error_u[n, :])))
-            mean_delta_u = np.exp(np.mean(np.log(delta_u[n, :])))
-            min_effectivity_u = np.min(effectivity_u[n, :])
-            mean_effectivity_u = np.exp(np.mean(np.log(effectivity_u[n, :])))
-            max_effectivity_u = np.max(effectivity_u[n, :])
-            print(str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
-                  + " \t " + str(min_effectivity_u) + " \t " + str(mean_effectivity_u) \
-                  + " \t " + str(max_effectivity_u) \
-                 )
-        
-        print("")
-        print("N \t gmean(err_s) \t\t gmean(delta_s) \t min(eff_s) \t gmean(eff_s) \t max(eff_s)")
-        for n in range(N): # n = 0, 1, ... N - 1
-            mean_error_s = np.exp(np.mean(np.log(error_s[n, :])))
-            mean_delta_s = np.exp(np.mean(np.log(delta_s[n, :])))
-            min_effectivity_s = np.min(effectivity_s[n, :])
-            mean_effectivity_s = np.exp(np.mean(np.log(effectivity_s[n, :])))
-            max_effectivity_s = np.max(effectivity_s[n, :])
-            print(str(n+1) + " \t " + str(mean_error_s) + " \t " + str(mean_delta_s) \
-                  + " \t " + str(min_effectivity_s) + " \t " + str(mean_effectivity_s) \
-                  + " \t " + str(max_effectivity_s) \
-                 )
+        print(error_analysis_table)
         
         print("")
         print("==============================================================")

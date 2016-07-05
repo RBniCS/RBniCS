@@ -28,6 +28,7 @@ from RBniCS.linear_algebra.affine_expansion_offline_storage import AffineExpansi
 from RBniCS.linear_algebra.sum import sum
 from RBniCS.linear_algebra.product import product
 from RBniCS.linear_algebra.solve import solve
+from RBniCS.linear_algebra.transpose import transpose
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem
@@ -136,7 +137,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         
     ## Perform a truth evaluation of the (compliant) output
     def output(self):
-        assembled_ouput_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
+        assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
         self._output = transpose(assembled_output_operator)*self._solution.vector()
         return self._output
     
