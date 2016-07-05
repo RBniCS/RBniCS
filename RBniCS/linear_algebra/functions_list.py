@@ -153,15 +153,17 @@ class FunctionsList_Transpose__times__TruthMatrix(object):
             assert len(self.functionsList) == len(functionsList2OrTruthVector)
             dim = len(self.functionsList)
             onlineMatrix = OnlineMatrix(dim, dim)
-            for i in range(dim):
-                for j in range(dim):
-                    onlineMatrix[i, j] = Vector_Transpose(self.functionsList[i])*self.truthMatrix*functionsList2OrTruthVector[j]
+            for j in range(dim):
+                matrixTimesVectorj = self.truthMatrix*functionsList2OrTruthVector[j]
+                for i in range(dim):
+                    onlineMatrix[i, j] = Vector_Transpose(self.functionsList[i])*matrixTimesVectorj
             return onlineMatrix
         else:
             dim = len(self.functionsList)
             onlineVector = OnlineVector(dim)
+            matrixTimesVector = self.truthMatrix*functionsList2OrTruthVector
             for i in range(dim):
-                onlineVector[i] = Vector_Transpose(self.functionsList[i])*self.truthMatrix*functionsList2OrTruthVector
+                onlineVector[i] = Vector_Transpose(self.functionsList[i])*matrixTimesVector
             return onlineVector
      
 #  @}

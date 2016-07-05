@@ -68,9 +68,10 @@ class Test(TestBase):
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
                 Z_T_dot_A_Z_builtin = OnlineMatrix(self.N, self.N)
-                for i in range(self.N):
-                    for j in range(self.N):
-                        Z_T_dot_A_Z_builtin[i, j] = self.Z[i].inner(A*self.Z[j])
+                for j in range(self.N):
+                    A_Z_j = A*self.Z[j]
+                    for i in range(self.N):
+                        Z_T_dot_A_Z_builtin[i, j] = self.Z[i].inner(A_Z_j)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
                 Z_T_dot_A_Z_transpose = transpose(self.Z)*A*self.Z

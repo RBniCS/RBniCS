@@ -70,8 +70,9 @@ class Test(TestBase):
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
                 Z_T_dot_A_z_builtin = OnlineVector(self.N)
+                A_z = A*z
                 for i in range(self.N):
-                    Z_T_dot_A_z_builtin[i] = self.Z[i].inner(A*z)
+                    Z_T_dot_A_z_builtin[i] = self.Z[i].inner(A_z)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
                 Z_T_dot_A_z_transpose = transpose(self.Z)*A*z
