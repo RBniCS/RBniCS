@@ -25,7 +25,6 @@
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.functions_list import FunctionsList, FunctionsList_Transpose
-from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
 
 ###########################     OFFLINE STAGE     ########################### 
 ## @defgroup OfflineStage Methods related to the offline stage
@@ -40,6 +39,48 @@ def transpose(arg):
         return Vector_Transpose(arg)
     else: # impossible to arrive here anyway, thanks to the assert
         raise RuntimeError("Invalid arguments in transpose.")
+        
+# Auxiliary class: transpose of a vector
+class Vector_Transpose(object):
+    def __init__(self, vector):
+          assert isinstance(vector, TruthVector) or isinstance(vector, OnlineVector_Type)
+          self.vector = vector
+    
+    def __mul__(self, matrixOrVector): # self * matrixOrVector
+        assert \
+            isinstance(matrixOrVector, TruthMatrix) or isinstance(matrixOrVector, TruthVector) \
+                or \
+            isinstance(matrixOrVector, OnlineMatrix_Type) or isinstance(matrixOrVector, OnlineVector_Type)
+        if isinstance(matrixOrVector, TruthMatrix) or isinstance(matrixOrVector, OnlineMatrix_Type):
+            return Vector_Transpose__times__Matrix(self.vector, matrixOrVector)
+        elif isinstance(matrixOrVector, TruthVector):
+            return self.vector.inner(matrixOrVector)
+        elif isinstance(matrixOrVector, OnlineVector_Type):
+            output = self.vector.T*matrixOrVector
+            assert output.shape == (1, 1)
+            return output.item(0, 0)
+        else: # impossible to arrive here anyway, thanks to the assert
+            raise RuntimeError("Invalid arguments in Vector_Transpose.__mul__.")
+              
+# Auxiliary class: multiplication of the transpose of a Vector with a Matrix
+class Vector_Transpose__times__Matrix(object):
+    def __init__(self, vector, matrix):
+        assert isinstance(vector, TruthVector) or isinstance(vector, OnlineVector_Type)
+        assert isinstance(matrix, TruthMatrix) or isinstance(matrix, OnlineMatrix_Type)
+        self.vector = vector
+        self.matrix = matrix
+          
+    # self * vector2
+    def __mul__(self, vector2):
+        assert isinstance(vector2, TruthVector) or isinstance(vector2, OnlineVector_Type)
+        if isinstance(vector2, TruthVector):
+            return self.vector.inner(self.matrix*vector2)
+        elif isinstance(vector2, OnlineVector_Type):
+            output = self.vector.T*(self.matrix*vector2)
+            assert output.shape == (1, 1)
+            return output.item(0, 0)
+        else: # impossible to arrive here anyway, thanks to the assert
+            raise RuntimeError("Invalid arguments in Vector_Transpose__times__Matrix.__mul__.")
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

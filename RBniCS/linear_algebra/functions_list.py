@@ -27,7 +27,7 @@ from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type, OnlineVector
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type, OnlineMatrix
-from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
+from RBniCS.linear_algebra.transpose import Vector_Transpose
 
 ###########################     OFFLINE STAGE     ########################### 
 ## @defgroup OfflineStage Methods related to the offline stage
