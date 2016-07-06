@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_base.py
+## @file elliptic_coercive.py
 #  @brief Implementation of projection based reduced order models for parabolic coervice problems: base class
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -25,21 +25,21 @@
 from __future__ import print_function
 import os
 import shutil
-from RBniCS.elliptic_coercive_base import EllipticCoerciveBase
+from RBniCS.elliptic_coercive import EllipticCoercive
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ParablicCoerciveBase
+## @class ParablicCoercive
 #
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems
-class ParabolicCoerciveBase(EllipticCoerciveBase):
+class ParabolicCoercive(EllipticCoercive):
     """Base interface for the parabolic coercive problems. This class
     features the implicit backward Euler time stepping. This class is
     derived by two classes in order to apply the reduced basis method
-    (ParabolicCoerciveRBBase) and the proper orthogonal decomposition
-    (ParabolicPODBase). Again, the output is assumed to be compliant.
+    (ParabolicCoerciveRB) and the proper orthogonal decomposition
+    (ParabolicPOD). Again, the output is assumed to be compliant.
 
-    This class is derived from the EllipticCoerciveBase class, since,
+    This class is derived from the EllipticCoercive class, since,
     at each time step, an elliptic problem is solved. In order to
     address time-dependent problem, the following functions are
     provided:
@@ -73,7 +73,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     ## Default initialization of members
     def __init__(self, V, bc_list):
         # Call the parent initialization
-        EllipticCoerciveBase.__init__(self, V, bc_list)
+        EllipticCoercive.__init__(self, V, bc_list)
         
         # $$ PROBLEM SPECIFIC $$ #
         # Time step
@@ -216,7 +216,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
             self.build_reduced_operators()
             
             print("reduced order solve")
-            ParabolicCoerciveBase.online_solve(self,self.N,False)
+            ParabolicCoercive.online_solve(self,self.N,False)
             
             print("build matrices for error estimation (it may take a while)")
             self.build_error_estimation_matrices()
@@ -261,7 +261,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     ## Assemble the reduced order affine expansion
     def build_reduced_operators(self):
         # Assemble the reduced matrix A, as in parent
-        EllipticCoerciveBase.build_reduced_operators(self)
+        EllipticCoercive.build_reduced_operators(self)
         # Moreover, assemble also the reduced matrix M
         # TODO
         reduced_M = ()
@@ -311,7 +311,7 @@ class ParabolicCoerciveBase(EllipticCoerciveBase):
     ## Load reduced order data structures
     def load_reduced_data_structures(self):
         # Read in data structures as in parent
-        EllipticCoerciveBase.load_reduced_data_structures(self)
+        EllipticCoercive.load_reduced_data_structures(self)
         # Moreover, read in also the reduced matrix M
         if not self.reduced_M: # avoid loading multiple times
             self.reduced_M = tuple(np.load(self.reduced_operators_folder + "reduced_M.npy"))

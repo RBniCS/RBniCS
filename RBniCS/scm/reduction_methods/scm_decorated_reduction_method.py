@@ -56,12 +56,12 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 
             ## OFFLINE: set the elements in the training set \xi_train.
             def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
-                EllipticCoerciveRBBase.set_xi_train(self, ntrain, enable_import, sampling)
+                EllipticCoerciveRB.set_xi_train(self, ntrain, enable_import, sampling)
                 self.SCM_reduction_method.set_xi_train(ntrain, enable_import=True, sampling)
                 
             ## ERROR ANALYSIS: set the elements in the test set \xi_test.
             def set_xi_test(self, ntest, enable_import=False, sampling="random"):
-                EllipticCoerciveRBBase.set_xi_test(self, ntest, enable_import, sampling)
+                EllipticCoerciveRB.set_xi_test(self, ntest, enable_import, sampling)
                 self.SCM_reduction_method.set_xi_test(ntest, enable_import, sampling)
                 
             #  @}

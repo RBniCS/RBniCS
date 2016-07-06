@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_rb_non_compliant_base.py
+## @file elliptic_coercive_rb_non_compliant.py
 #  @brief Implementation of the reduced basis method for non compliant elliptic coervice problems
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -23,14 +23,14 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from RBniCS.elliptic_coercive_rb_base import EllipticCoerciveRBBase
+from RBniCS.elliptic_coercive_rb import EllipticCoerciveRB
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB NON COMPLIANT BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveRBNonCompliantBase
+## @class EllipticCoerciveRBNonCompliant
 #
 # Base class containing the interface of the RB method
 # for non compliant elliptic coercive problems
-class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
+class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
     """This class relaxes the hypotesis of compliant output for elliptic
     coercive problems. Basically, for each instance of the parameter,
     TWO problems are solved: the problem itself and its adjoint
@@ -50,10 +50,10 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     ## Default initialization of members
     def __init__(self, V, bc_list):
         # Call the parent initialization
-        EllipticCoerciveRBBase.__init__(self, V, bc_list)
+        EllipticCoerciveRB.__init__(self, V, bc_list)
         
         # Attach a dual problem
-        self.dual_problem = _EllipticCoerciveRBNonCompliantBase_Dual(self)
+        self.dual_problem = _EllipticCoerciveRBNonCompliant_Dual(self)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # 3a. Number of terms in the affine expansion
@@ -77,19 +77,19 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     # Propagate the values of all setters also to the dual problem
     
     def set_Nmax(self, Nmax, **kwargs):
-        EllipticCoerciveRBBase.set_Nmax(self, Nmax, **kwargs)
+        EllipticCoerciveRB.set_Nmax(self, Nmax, **kwargs)
         self.dual_problem.set_Nmax(Nmax, **kwargs) # TODO are kwargs needed?
     def set_mu_range(self, mu_range):
-        EllipticCoerciveRBBase.set_mu_range(self, mu_range)
+        EllipticCoerciveRB.set_mu_range(self, mu_range)
         self.dual_problem.set_mu_range(mu_range)
     def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
-        EllipticCoerciveRBBase.set_xi_train(self, ntrain, enable_import, sampling)
+        EllipticCoerciveRB.set_xi_train(self, ntrain, enable_import, sampling)
         self.dual_problem.set_xi_train(ntrain, enable_import, sampling)
     def set_xi_test(self, ntest, enable_import=False, sampling="random"):
-        EllipticCoerciveRBBase.set_xi_test(self, ntest, enable_import, sampling)
+        EllipticCoerciveRB.set_xi_test(self, ntest, enable_import, sampling)
         self.dual_problem.set_xi_test(ntest, enable_import, sampling)
     def set_mu(self, mu):
-        EllipticCoerciveRBBase.set_mu(self, mu)
+        EllipticCoerciveRB.set_mu(self, mu)
         self.dual_problem.set_mu(mu)
         
     #  @}
@@ -103,7 +103,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     # and error estimation
     def online_solve(self, N=None, with_plot=True):
         self.dual_problem.online_solve(N, False)
-        EllipticCoerciveRBBase.online_solve(self, N, with_plot)
+        EllipticCoerciveRB.online_solve(self, N, with_plot)
     
     # Perform an online evaluation of the non-compliant output
     def online_output(self):
@@ -150,7 +150,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         
         # Perform the offline stage of the primal problem
         self.set_mu(bak_first_mu)
-        EllipticCoerciveRBBase.offline(self)
+        EllipticCoerciveRB.offline(self)
         
     ## Perform a truth evaluation of the output
     def truth_output(self):
@@ -159,7 +159,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     
     ## Assemble the reduced order affine expansion. Overridden to assemble also terms related to output and output correction
     def build_reduced_operators(self):
-        EllipticCoerciveRBBase.build_reduced_operators(self)
+        EllipticCoerciveRB.build_reduced_operators(self)
         
         # Output correction terms
         operator_a_dp = AffineExpansionOnlineStorage(self.Qa)
@@ -213,7 +213,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
         # Perform the error analysis of the dual problem
         self.dual_problem.error_analysis(N)
         # Perform the error analysis of the primal problem
-        EllipticCoerciveRBBase.error_analysis(self, N)
+        EllipticCoerciveRB.error_analysis(self, N)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
@@ -224,7 +224,7 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     
     def load_reduced_data_structures(self):
         # Read in data structures as in parent
-        EllipticCoerciveRBBase.load_reduced_data_structures(self)
+        EllipticCoerciveRB.load_reduced_data_structures(self)
         # Moreover, read also data structures related to the dual problem
         self.dual_problem.load_reduced_data_structures()
         # ... and those related to output and output correction
@@ -239,10 +239,10 @@ class EllipticCoerciveRBNonCompliantBase(EllipticCoerciveRBBase):
     ########################### end - I/O - end ########################### 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB NON COMPLIANT: AUXILIARY CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class _EllipticCoerciveRBNonCompliantBase_Dual
+## @class _EllipticCoerciveRBNonCompliant_Dual
 #
 # Class containing the dual problem
-class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
+class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced basis object
@@ -251,7 +251,7 @@ class _EllipticCoerciveRBNonCompliantBase_Dual(EllipticCoerciveRBBase):
     ## Default initialization of members
     def __init__(self, primal_problem):
         # Call the parent initialization
-        EllipticCoerciveRBBase.__init__(self, primal_problem.V, primal_problem.bc_list)
+        EllipticCoerciveRB.__init__(self, primal_problem.V, primal_problem.bc_list)
         self.primal_problem = primal_problem
         
         # Possibly copy the inner product matrix, if the primal problem has redefined it

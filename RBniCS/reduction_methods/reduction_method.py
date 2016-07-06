@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file reduction_method_base.py
+## @file reduction_method.py
 #  @brief Implementation of a class containing an offline/online decomposition for ROM for parametrized problems
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -26,10 +26,10 @@ import os # for path and makedir
 from RBniCS.sampling.parameter_space_subset import ParameterSpaceSubset
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ReductionMethodBase
+## @class ReductionMethod
 #
 # Implementation of a class containing an offline/online decomposition of ROM for parametrized problems
-class ReductionMethodBase(object):
+class ReductionMethod(object):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object

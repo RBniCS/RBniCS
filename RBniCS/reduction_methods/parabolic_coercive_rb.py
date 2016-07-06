@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parabolic_coercive_rb_base.py
+## @file parabolic_coercive_rb.py
 #  @brief Implementation of the reduced basis method for parabolic coervice problems
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -23,16 +23,16 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from RBniCS.elliptic_coercive_rb_base import EllipticCoerciveRBBase
-from RBniCS.parabolic_coercive_base import ParabolicCoerciveBase
+from RBniCS.elliptic_coercive_rb import EllipticCoerciveRB
+from RBniCS.parabolic_coercive import ParabolicCoercive
 from RBniCS.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ParabolicCoerciveBase
+## @class ParabolicCoercive
 #
 # Base class containing the interface of the RB method
 # for parabolic coercive problems
-class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
+class ParabolicCoerciveRB(ParabolicCoercive,EllipticCoerciveRB):
 # Beware of the diamond problem in multiple inheritance: in python precedence is depth-first and then left-to-right
     """This class implements the Certified Reduced Basis Method for
     parabolic coercive problems, assuming the compliance of the output
@@ -66,8 +66,8 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     ## Default initialization of members
     def __init__(self, V, bc_list):
         # Call the parent initialization
-        ParabolicCoerciveBase.__init__(self, V, bc_list)
-        EllipticCoerciveRBBase.__init__(self, V, bc_list)
+        ParabolicCoercive.__init__(self, V, bc_list)
+        EllipticCoerciveRB.__init__(self, V, bc_list)
 
         self.POD = ProperOrthogonalDecomposition(self.compute_scalar_product, self.S)
         self.M1 = 2
@@ -243,7 +243,7 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
         munew = None
         for mu in self.xi_train:
             self.set_mu(mu)
-            ParabolicCoerciveBase.online_solve(self,self.N,False)
+            ParabolicCoercive.online_solve(self,self.N,False)
             delta = self.get_delta()
             if delta > delta_max:
                 delta_max = delta
@@ -380,8 +380,8 @@ class ParabolicCoerciveRBBase(ParabolicCoerciveBase,EllipticCoerciveRBBase):
     def load_reduced_data_structures(self):
         # Read in data structures as in parents
         # (need to call them explicitly because this method was overridden in both parents)
-        ParabolicCoerciveBase.load_reduced_data_structures(self)
-        EllipticCoerciveBase.load_reduced_data_structures(self)
+        ParabolicCoercive.load_reduced_data_structures(self)
+        EllipticCoercive.load_reduced_data_structures(self)
     
     #  @}
     ########################### end - I/O - end ###########################  

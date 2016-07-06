@@ -26,7 +26,7 @@ from __future__ import print_function
 from numpy import log, exp, mean # for error analysis
 import os # for path and makedir
 from RBniCS.linear_algebra.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
-from RBniCS.reduction_methods.elliptic_coercive_reduction_method_base import EllipticCoerciveReductionMethodBase
+from RBniCS.reduction_methods.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 from RBniCS.io_utils.error_analysis_table import ErrorAnalysisTable
 from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
 
@@ -35,7 +35,7 @@ from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
 #
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
-class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
+class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     """This class implements a reduced order method based on a POD (Proper
     Orthogonal Decomposition) Galerkin approach. In particular, it
     implements the offline phase and the error analysis proper for the
@@ -62,7 +62,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethodBase):
     ## Default initialization of members
     def __init__(self, truth_problem):
         # Call the parent initialization
-        EllipticCoerciveReductionMethodBase.__init__(self, truth_problem)
+        EllipticCoerciveReductionMethod.__init__(self, truth_problem)
                 
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a POD object

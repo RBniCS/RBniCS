@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_rb_base.py
+## @file elliptic_coercive_rb.py
 #  @brief Implementation of the reduced basis method for (compliant) elliptic coervice problems
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -27,16 +27,16 @@ import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
 from RBniCS.linear_algebra.gram_schmidt import GramSchmidt
-from RBniCS.reduction_methods.elliptic_coercive_reduction_method_base import EllipticCoerciveReductionMethodBase
+from RBniCS.reduction_methods.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 from RBniCS.io_utils.error_analysis_table import ErrorAnalysisTable
 from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveRBBase
+## @class EllipticCoerciveRB
 #
 # Base class containing the interface of the RB method
 # for (compliant) elliptic coercive problems
-class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
+class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     """This class implements the Certified Reduced Basis Method for
     elliptic and coercive problems. The output of interest are assumed to
     be compliant.
@@ -86,7 +86,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethodBase):
     ## Default initialization of members
     def __init__(self, truth_problem):
         # Call the parent initialization
-        EllipticCoerciveReductionMethodBase.__init__(self, truth_problem)
+        EllipticCoerciveReductionMethod.__init__(self, truth_problem)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a GS object

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduction_method_base.py
+## @file elliptic_coercive_reduction_method.py
 #  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -23,14 +23,14 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import os # for path and makedir
-from RBniCS.reduction_methods.reduction_method_base import ReductionMethodBase
+from RBniCS.reduction_methods.reduction_method import ReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
+class EllipticCoerciveReductionMethod(ReductionMethod):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -43,7 +43,7 @@ class EllipticCoerciveReductionMethodBase(ReductionMethodBase):
     ## Default initialization of members
     def __init__(self, truth_problem):
         # Call to parent
-        ReductionMethodBase.__init__(self, truth_problem.name(), truth_problem.mu_range)
+        ReductionMethod.__init__(self, truth_problem.name(), truth_problem.mu_range)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Reduced order problem

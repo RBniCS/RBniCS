@@ -15,26 +15,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parabolic_coercive_pod_base.py
+## @file parabolic_coercive_pod.py
 #  @brief Implementation of a POD-Galerkin ROM for parabolic coervice problems
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.elliptic_coercive_pod_base import EllipticCoercivePODBase
-from RBniCS.parabolic_coercive_base import ParabolicCoerciveBase
+from RBniCS.elliptic_coercive_pod import EllipticCoercivePOD
+from RBniCS.parabolic_coercive import ParabolicCoercive
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ParabolicCoercivePODBase
+## @class ParabolicCoercivePOD
 #
 # Base class containing the interface of a POD-Galerkin ROM
 # for parabolic coercive problems
-class ParabolicCoercivePODBase(ParabolicCoerciveBase,EllipticCoercivePODBase):
+class ParabolicCoercivePOD(ParabolicCoercive,EllipticCoercivePOD):
 # Beware of the diamond problem in multiple inheritance: in python precedence is depth-first and then left-to-right
     """This class implements a POD-based approach for parabolic coercive
     problems, assuming the compliance of the output of interest. If
-    compared to the ParabolicCoerciveRBBase class, the POD is used for
+    compared to the ParabolicCoerciveRB class, the POD is used for
     both the time and the parameter space.  
     
     """
@@ -47,8 +47,8 @@ class ParabolicCoercivePODBase(ParabolicCoerciveBase,EllipticCoercivePODBase):
     ## Default initialization of members
     def __init__(self, V, bc_list):
         # Call the parent initialization
-        ParabolicCoerciveBase.__init__(self, V, bc_list)
-        EllipticCoercivePODBase.__init__(self, V, bc_list)
+        ParabolicCoercive.__init__(self, V, bc_list)
+        EllipticCoercivePOD.__init__(self, V, bc_list)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
