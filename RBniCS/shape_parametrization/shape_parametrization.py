@@ -38,20 +38,20 @@ def ShapeParametrization(*shape_parametrization_expression):
             # The shape parametrization expression is a list of tuples. The i-th list element
             # corresponds to shape parametrization of the i-th subdomain, the j-th tuple element
             # corresponds to the expression of the j-th component of the shape parametrization
-            def __init__(self, V, subd, bound):
+            def __init__(self, V, **kwargs):
                 # Call the standard initialization
-                ParametrizedProblem_DerivedClass.__init__(self, V, bc_list)
+                ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Store FEniCS data structure related to the geometrical parametrization
-                self.mesh = mesh # TODO you should be able to obtain it from V
-                self.subd = subd
-                self.xref = mesh.coordinates()[:,0].copy()
-                self.yref = mesh.coordinates()[:,1].copy()
+                assert "subdomains" in kwargs
+                self.subdomains = kwargs["subdomains"]
+                self.mesh = V.mesh()
+                self.reference_coordinates = self.mesh.coordinates().copy()
                 self.deformation_V = VectorFunctionSpace(self.mesh, "Lagrange", 1)
-                self.subdomain_id_to_deformation_dofs = ()
-                for subdomain_id in np.unique(self.subd.array()):
-                    self.subdomain_id_to_deformation_dofs += ([],)
-                for cell in cells(mesh):
-                    subdomain_id = int(self.subd.array()[cell.index()] - 1) # tuple start from 0, while subdomains from 1
+                self.subdomain_id_to_deformation_dofs = dict() # from int to list
+                for cell in cells(self.mesh):
+                    subdomain_id = int(self.subdomains[cell])
+                    if subdomain_id not in self.subdomain_id_to_deformation_dofs:
+                        self.subdomain_id_to_deformation_dofs[subdomain_id] = list()
                     dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
                     for dof in dofs:
                         self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
@@ -118,18 +118,17 @@ def ShapeParametrization(*shape_parametrization_expression):
             ## Restore the reference mesh
             def reset_reference(self):
                 print("back to the reference mesh")
-                new_coor = np.array([self.xref, self.yref]).transpose()
-                self.mesh.coordinates()[:] = new_coor
+                self.mesh.coordinates()[:] = self.reference_coordinates
             
             ## Auxiliary method to deform the domain
             def compute_displacement(self):
-                displacement_subdomains = ()
-                for i in range(len(self.displacement_expression)):
-                    displacement_subdomains += (interpolate(self.displacement_expression[i], self.deformation_V),)
+                interpolator = LagrangeInterpolator()
                 displacement = Function(self.deformation_V)
-                for i in range(len(displacement_subdomains)):
+                for i in range(len(self.displacement_expression)):
+                    displacement_subdomain_i = Function(self.deformation_V)
+                    interpolator.interpolate(self.displacement_expression[i])
                     subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]
-                    displacement.vector()[subdomain_dofs] = displacement_subdomains[i].vector()[subdomain_dofs]
+                    displacement.vector()[subdomain_dofs] = displacement_subdomains_i.vector()[subdomain_dofs]                    
                 return displacement
                         
             #  @}

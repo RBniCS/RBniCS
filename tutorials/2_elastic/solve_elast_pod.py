@@ -33,16 +33,16 @@ class ElasticBlock(EllipticCoerciveProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, subdomains, boundaries):
+    def __init__(self, V, **kwargs):
         # Call the standard initialization
-        super(ElasticBlock, self).__init__(V)
+        super(ElasticBlock, self).__init__(V, **kwargs)
         # ... and also store FEniCS data structures for assembly
+        assert "subdomains" in kwargs and "boundaries" in kwargs
+        self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
-        self.dx = Measure("dx")(subdomain_data=subdomains)
-        self.ds = Measure("ds")(subdomain_data=boundaries)
-        self.subdomains = subdomains
-        self.boundaries = boundaries
+        self.dx = Measure("dx")(subdomain_data=self.subdomains)
+        self.ds = Measure("ds")(subdomain_data=self.boundaries)
         # ...
         self.f = Constant((1.0, 0.0))
         self.E  = 1.0
@@ -146,7 +146,7 @@ boundaries = MeshFunction("size_t", mesh, "data/elastic_facet_region.xml")
 V = VectorFunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Elastic Block class
-elastic_block_problem = ElasticBlock(V, subdomains, boundaries)
+elastic_block_problem = ElasticBlock(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [ \
     (1.0, 100.0), \
     (1.0, 100.0), \

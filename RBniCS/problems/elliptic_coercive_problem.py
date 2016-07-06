@@ -89,7 +89,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V):
+    def __init__(self, V, **kwargs):
         # Call to parent
         ParametrizedProblem.__init__(self, self.name())
         

@@ -43,14 +43,18 @@ class Hole(EllipticCoerciveProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, mesh, subd, bound):
+    def __init__(self, V, **kwargs):
         # Call the standard initialization
-        super(Hole, self).__init__(mesh, subd, V, None, shape_parametrization_expression)      
+        super(Hole, self).__init__(V, **kwargs)
         # ... and also store FEniCS data structures for assembly
+        assert "subdomains" in kwargs and "boundaries" in kwargs
+        self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
-        self.dx = Measure("dx")(subdomain_data=subd)
-        self.ds = Measure("ds")(subdomain_data=bound)
+        self.dx = Measure("dx")(subdomain_data=subdomains)
+        self.ds = Measure("ds")(subdomain_data=boundaries)
+        self.subdomains = subdomains
+        self.boundaries = boundaries
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -142,14 +146,14 @@ class Hole(EllipticCoerciveProblem):
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/hole.xml")
-subd = MeshFunction("size_t", mesh, "data/hole_physical_region.xml")
-bound = MeshFunction("size_t", mesh, "data/hole_facet_region.xml")
+subdomains = MeshFunction("size_t", mesh, "data/hole_physical_region.xml")
+boundaries = MeshFunction("size_t", mesh, "data/hole_facet_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Hole class
-hole_problem = Hole(V, mesh, subd, bound)
+hole_problem = Hole(V, mesh, subdomains, boundaries)
 mu_range = [(1.0, 1.5), (1.0, 1.5), (0.01, 1.0)]
 hole_problem.set_mu_range(mu_range)
 
