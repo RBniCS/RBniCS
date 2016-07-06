@@ -149,8 +149,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     def _solve(self, N):
         N += self.N_bc
         assembled_operator = dict()
-        for term in ["a", "f"]:
-            assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
+        assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
+        assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
         except RuntimeError: # there were no Dirichlet BCs
@@ -159,14 +159,14 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             if theta_bc.count(0.) == len(theta_bc):
                 theta_bc = ()
         self._solution = OnlineVector(N)
-        solve(assembled_operator["a"][:N, :N], self._solution, assembled_operator["f"][:N], theta_bc)
+        solve(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
         return self._solution
         
     # Perform an online evaluation of the (compliant) output
     def output(self):
         N = self._solution.size
-        assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
-        self._output = transpose(assembled_output_operator[:N])*self._solution
+        assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
+        self._output = transpose(assembled_output_operator)*self._solution
         return self._output
         
     #  @}

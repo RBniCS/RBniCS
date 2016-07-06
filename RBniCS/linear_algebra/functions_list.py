@@ -40,6 +40,7 @@ from RBniCS.linear_algebra.compute_scalar_product import Vector_Transpose
 class FunctionsList(ExportableList):
     def __init__(self, original_list=None):
         ExportableList.__init__(self, "pickle", original_list)
+        self._precomputed_slices = dict() # from tuple to AffineExpansionOnlineStorage
     
     def enrich(self, functions):
         from dolfin import Function, GenericVector
@@ -49,7 +50,9 @@ class FunctionsList(ExportableList):
             self._list.append(functions.copy()) # copy it explicitly
         else: # more than one function
             self._list.extend(functions) # assume that they where already copied
-            
+        # Reset precomputed slices
+        self._precomputed_slices = dict()
+        
     def append(self, functions):
         import warnings
         warnings.warn("Please use the enrich() method that provides a more self explanatory name.")
@@ -109,11 +112,16 @@ class FunctionsList(ExportableList):
     def __getitem__(self, key):
         if isinstance(key, slice): # e.g. key = :N, return the first N functions
             assert key.start is None and key.step is None
-            assert key.stop <= len(self._list)
+            if key.stop in self._precomputed_slices:
+                return self._precomputed_slices[key.stop]
+                            
+            assert key.stop <= len(self._list)            
             if key.stop == len(self._list):
+                self._precomputed_slices[key.stop] = self
                 return self
             
             output = FunctionsList(self._list[key])
+            self._precomputed_slices[key.stop] = output
             return output
                 
         else: # return the element at position "key" in the storage

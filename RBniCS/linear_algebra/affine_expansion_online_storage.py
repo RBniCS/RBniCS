@@ -40,14 +40,18 @@ class AffineExpansionOnlineStorage(object):
         if args:
             self._content = AffineExpansionOnlineStorageContent_Base(args, dtype=object)
         self._content_as_matrix = None
-        self._content_as_matrix_needs_update = True
+        self._precomputed_slices = dict() # from tuple to AffineExpansionOnlineStorage
     
     def load(self, directory, filename):
         if self._content is not None: # avoid loading multiple times
             return False
         if AffineExpansionOnlineStorageContent_IO.exists_file(directory, filename):
             self._content = AffineExpansionOnlineStorageContent_IO.load_file(directory, filename)
+            # Create internal copy as matrix
+            self._content_as_matrix = None
             self.as_matrix()
+            # Reset precomputed slices
+            self._precomputed_slices = dict()
             return True
         else:
             return False
@@ -56,9 +60,8 @@ class AffineExpansionOnlineStorage(object):
         AffineExpansionOnlineStorageContent_IO.save_file(self._content, directory, filename)
     
     def as_matrix(self):
-        if self._content_as_matrix_needs_update:
+        if self._content_as_matrix is None:
             self._content_as_matrix = AffineExpansionOnlineStorageContent_AsMatrix(self._content)
-            self._content_as_matrix_needs_update = False
         return self._content_as_matrix
     
     def __getitem__(self, key):
@@ -73,6 +76,15 @@ class AffineExpansionOnlineStorage(object):
                 
             assert isinstance(key, tuple) and isinstance(key[0], slice)
             
+            dict_key = list()
+            for i in range(len(key)):
+                assert key[i].start is None and key[i].step is None
+                dict_key.append(key[i].stop)
+            dict_key = tuple(dict_key)
+            
+            if dict_key in self._precomputed_slices:
+                return self._precomputed_slices[dict_key]
+                            
             it = AffineExpansionOnlineStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             
             is_slice_equal_to_full_tensor = True
@@ -82,12 +94,14 @@ class AffineExpansionOnlineStorage(object):
                 if key[i].stop < self._content[it.multi_index].shape[i]:
                     is_slice_equal_to_full_tensor = False
             if is_slice_equal_to_full_tensor:
+                self._precomputed_slices[dict_key] = self
                 return self
             
             output = AffineExpansionOnlineStorage(*self._content.shape)
             while not it.finished:
                 output[it.multi_index] = self._content[it.multi_index][key]
                 it.iternext()
+            self._precomputed_slices[dict_key] = output
             return output
         else: # return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
             return self._content[key]
@@ -95,7 +109,9 @@ class AffineExpansionOnlineStorage(object):
     def __setitem__(self, key, item):
         assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
         self._content[key] = item
-        self._content_as_matrix_needs_update = True
+        # Reset internal copies
+        self._content_as_matrix = None
+        self._precomputed_slices = dict()
         
     def __len__(self):
         if self.order() == 1: # for 1D arrays
