@@ -64,7 +64,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
-        super(EllipticCoerciveRBReducedProblem, self).init(current_stage)
+        EllipticCoerciveReducedProblem.init(self, current_stage)
         # Also initialize data structures related to error estimation
         if current_stage == "online":
             self.riesz_product["aa"] = self.assemble_error_estimation_operators("riesz_product_aa")

@@ -36,14 +36,16 @@ class Gaussian(EllipticCoerciveProblem):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, subd, bound):
+    def __init__(self, V, **kwargs):
         # Call the standard initialization
-        super(Gaussian, self).__init__(V, bc_list)
+        EllipticCoerciveProblem.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
+        assert "subdomains" in kwargs and "boundaries" in kwargs
+        self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
-        self.dx = Measure("dx")(subdomain_data=subd)
-        self.ds = Measure("ds")(subdomain_data=bound)
+        self.dx = Measure("dx")(subdomain_data=subdomains)
+        self.ds = Measure("ds")(subdomain_data=boundaries)
         # Finally, initialize an EIM object for the interpolation of the forcing term
         self.EIM_N = None # if None, use the maximum number of EIM basis functions, otherwise use EIM_N
         
@@ -65,8 +67,6 @@ class Gaussian(EllipticCoerciveProblem):
         elif term == "f":
             self.EIM[0].set_mu(self.mu)
             return self.EIM[0].compute_interpolated_theta(self.EIM_N)
-        elif term == "dirichlet_bc":
-            return (0.,)
         else:
             raise RuntimeError("Invalid term for compute_theta().")
                 
@@ -87,9 +87,9 @@ class Gaussian(EllipticCoerciveProblem):
             # Return
             return all_f
         elif term == "dirichlet_bc":
-            bc0 = [(self.V, Constant(0.0), self.bound, 1),
-                   (self.V, Constant(0.0), self.bound, 2),
-                   (self.V, Constant(0.0), self.bound, 3)]
+            bc0 = [(self.V, Constant(0.0), self.boundaries, 1),
+                   (self.V, Constant(0.0), self.boundaries, 2),
+                   (self.V, Constant(0.0), self.boundaries, 3)]
             return (bc0,)
         elif term == "inner_product":
             x0 = inner(grad(u),grad(v))*dx
@@ -104,14 +104,14 @@ class Gaussian(EllipticCoerciveProblem):
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/gaussian.xml")
-subd = MeshFunction("size_t", mesh, "data/gaussian_physical_region.xml")
-bound = MeshFunction("size_t", mesh, "data/gaussian_facet_region.xml")
+subdomains = MeshFunction("size_t", mesh, "data/gaussian_physical_region.xml")
+boundaries = MeshFunction("size_t", mesh, "data/gaussian_facet_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Gaussian class
-gaussian_problem = Gaussian(V, subd, bound)
+gaussian_problem = Gaussian(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(-1.0, 1.0), (-1.0, 1.0)]
 gaussian_problem.set_mu_range(mu_range)
 

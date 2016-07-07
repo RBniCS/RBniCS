@@ -37,14 +37,16 @@ class Graetz(EllipticCoerciveNonCompliantBase):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, subd, bound):
+    def __init__(self, V, **kwargs):
         # Call the standard initialization
-        super(Graetz, self).__init__(mesh, subd, V)
+        EllipticCoerciveNonCompliantBase.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
+        assert "subdomains" in kwargs and "boundaries" in kwargs
+        self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
-        self.dx = Measure("dx")(subdomain_data=subd)
-        self.ds = Measure("ds")(subdomain_data=bound)
+        self.dx = Measure("dx")(subdomain_data=subdomains)
+        self.ds = Measure("ds")(subdomain_data=boundaries)
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
         # Finally, initialize an SCM object to approximate alpha LB
@@ -110,11 +112,11 @@ class Graetz(EllipticCoerciveNonCompliantBase):
             s0 = v*dx(2)
             return (s0,)
         elif term == "dirichlet_bc":
-            bc0 = [(self.V, Constant(0.0), self.bound, 1),
-                   (self.V, Constant(0.0), self.bound, 5),
-                   (self.V, Constant(0.0), self.bound, 6),
-                   (self.V, Constant(1.0), self.bound, 2),
-                   (self.V, Constant(1.0), self.bound, 4)]
+            bc0 = [(self.V, Constant(0.0), self.boundaries, 1),
+                   (self.V, Constant(0.0), self.boundaries, 5),
+                   (self.V, Constant(0.0), self.boundaries, 6),
+                   (self.V, Constant(1.0), self.boundaries, 2),
+                   (self.V, Constant(1.0), self.boundaries, 4)]
             return (bc0,)
         elif term == "inner_product":
             x0 = u*v*dx + inner(grad(u),grad(v))*dx
@@ -179,14 +181,14 @@ class SCM_Graetz(SCM):
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/graetz.xml")
-subd = MeshFunction("size_t", mesh, "data/graetz_physical_region.xml")
-bound = MeshFunction("size_t", mesh, "data/graetz_facet_region.xml")
+subdomains = MeshFunction("size_t", mesh, "data/graetz_physical_region.xml")
+boundaries = MeshFunction("size_t", mesh, "data/graetz_facet_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Graetz class
-graetz_problem = Graetz(V, mesh, subd, bound)
+graetz_problem = Graetz(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.01, 10.0), (0.01, 10.0)]
 graetz_problem.set_mu_range(mu_range)
 

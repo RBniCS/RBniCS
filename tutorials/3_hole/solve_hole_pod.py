@@ -45,7 +45,7 @@ class Hole(EllipticCoerciveProblem):
     ## Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
-        super(Hole, self).__init__(V, **kwargs)
+        EllipticCoerciveProblem.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
         assert "subdomains" in kwargs and "boundaries" in kwargs
         self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
@@ -64,7 +64,7 @@ class Hole(EllipticCoerciveProblem):
     #  @{
     
     ## Return theta multiplicative terms of the affine expansion of the problem.
-    def compute_theta_a(self, term):
+    def compute_theta(self, term):
         m1 = self.mu[0]
         m2 = self.mu[1]
         m3 = self.mu[2]
@@ -153,7 +153,7 @@ boundaries = MeshFunction("size_t", mesh, "data/hole_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Hole class
-hole_problem = Hole(V, mesh, subdomains, boundaries)
+hole_problem = Hole(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(1.0, 1.5), (1.0, 1.5), (0.01, 1.0)]
 hole_problem.set_mu_range(mu_range)
 
@@ -168,7 +168,7 @@ pod_galerkin_method.set_Nmax(20)
 first_mu = (0.5, 0.5, 0.01)
 hole_problem.set_mu(first_mu)
 pod_galerkin_method.set_xi_train(500)
-reduced_hole_problem = hole_problem.offline()
+reduced_hole_problem = pod_galerkin_method.offline()
 
 # 7. Perform an online solve
 online_mu = (0.5,0.5,0.01)
