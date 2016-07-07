@@ -66,8 +66,6 @@ class ThermalBlock(EllipticCoerciveProblem):
         elif term == "f":
             theta_f0 = mu2
             return (theta_f0,)
-        elif term == "dirichlet_bc":
-            return (0.,)
         else:
             raise RuntimeError("Invalid term for compute_theta().")
     

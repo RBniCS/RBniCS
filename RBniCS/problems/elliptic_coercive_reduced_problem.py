@@ -107,14 +107,11 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             # are related to boundary conditions
             try:
                 theta_bc = self.compute_theta("dirichlet_bc")
-            except RuntimeError: # there were no Dirichlet BCs
+            except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
                 self.N = len(self.Z)
-            else: # there were Dirichlet BCs
-                if theta_bc.count(0.) == len(theta_bc):
-                    self.N = len(self.Z)
-                else:
-                    self.N = len(self.Z) - len(theta_bc)
-                    self.N_bc = len(theta_bc)
+            else: # there were Dirichlet BCs to be imposed by lifting
+                self.N = len(self.Z) - len(theta_bc)
+                self.N_bc = len(theta_bc)
         elif current_stage == "offline":
             for term in ["a", "f"]:
                 self.Q[term] = self.truth_problem.Q[term]
@@ -147,11 +144,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
-        except RuntimeError: # there were no Dirichlet BCs
+        except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
             theta_bc = ()
-        else:
-            if theta_bc.count(0.) == len(theta_bc):
-                theta_bc = ()
         self._solution = OnlineVector(N)
         solve(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
         return self._solution
@@ -181,12 +175,11 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     def postprocess_snapshot(self, snapshot):
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
-        except RuntimeError: # there were no Dirichlet BCs
+        except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
             pass # nothing to be done
         else: # there were Dirichlet BCs
-            if theta_bc.count(0.) != len(theta_bc):
-                assert self.N_bc == len(theta_bc)
-                snapshot -= self.Z[:self.N_bc]*theta_bc
+            assert self.N_bc == len(theta_bc)
+            snapshot -= self.Z[:self.N_bc]*theta_bc
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -262,13 +255,9 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             elif term == "dirichlet_bc":
                 try:
                     theta_bc = self.compute_theta("dirichlet_bc")
-                except RuntimeError: # there were no Dirichlet BCs
+                except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
                     return
                 Q_dirichlet_bcs = len(theta_bc)
-                # By convention, an homogeneous Dirichlet BC has all theta terms equal to 0.
-                # In this case, no additional basis functions will need to be added.
-                if theta_bc.count(0.) == Q_dirichlet_bcs:
-                    return
                 # Temporarily override compute_theta method to return only one nonzero 
                 # theta term related to boundary conditions
                 standard_compute_theta = self.truth_problem.compute_theta

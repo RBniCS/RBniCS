@@ -87,8 +87,6 @@ class ElasticBlock(EllipticCoerciveProblem):
             theta_f1 = mu10
             theta_f2 = mu11
             return (theta_f0, theta_f1, theta_f2)
-        elif term == "dirichlet_bc":
-            return (0.,)
         else:
             raise RuntimeError("Invalid term for compute_theta().")
                 

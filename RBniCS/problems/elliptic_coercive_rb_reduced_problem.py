@@ -140,8 +140,11 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         assert len(self.truth_problem.inner_product) == 1
         for qa in range(self.Q["a"]):
             for n in range(len(self.riesz["a"][qa]), self.N):
-                theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
-                homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
+                if len(self.truth_problem.dirichlet_bc) > 0:
+                    theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
+                    homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
+                else:
+                    homogeneous_dirichlet_bc = None
                 solve(self.truth_problem.inner_product[0], self._riesz_solve_storage.vector(), -1.*self.truth_problem.operator["a"][qa]*self.Z[n], homogeneous_dirichlet_bc)
                 self.riesz["a"][qa].enrich(self._riesz_solve_storage)
     
@@ -149,8 +152,11 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     def compute_riesz_f(self):
         assert len(self.truth_problem.inner_product) == 1
         for qf in range(self.Q["f"]):
-            theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
-            homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
+            if len(self.truth_problem.dirichlet_bc) > 0:
+                theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
+                homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
+            else:
+                homogeneous_dirichlet_bc = None
             solve(self.truth_problem.inner_product[0], self._riesz_solve_storage.vector(), self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
             self.riesz["f"][qf] = self._riesz_solve_storage.vector().copy()
             

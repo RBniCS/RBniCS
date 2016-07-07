@@ -124,9 +124,18 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         assembled_operator = dict()
         for term in ["a", "f"]:
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
-        try:
-            assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc"), self.dirichlet_bc))
-        except RuntimeError: # there were no Dirichlet BCs
+        if len(self.dirichlet_bc) > 0:
+            try:
+                theta_dirichlet_bc = self.compute_theta("dirichlet_bc")
+            except RuntimeError: # there were no theta functions
+                # We provide in this case a shortcut for the case of homogeneous Dirichlet BCs,
+                # that do not require an additional lifting functions.
+                # The user needs to implement the dirichlet_bc case for assemble_operator, 
+                # but not the one in compute_theta (since theta would not matter, being multiplied by zero)
+                theta_dirichlet_bc = (0,)*len(self.dirichlet_bc)
+                
+            assembled_dirichlet_bc = sum(product(theta_dirichlet_bc, self.dirichlet_bc))
+        else:
             assembled_dirichlet_bc = None
         solve(assembled_operator["a"], self._solution.vector(), assembled_operator["f"], assembled_dirichlet_bc)
         return self._solution
