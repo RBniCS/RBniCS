@@ -38,8 +38,10 @@ def solve(lhs, solution, rhs, bcs):
             or \
         (isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineVector_Type) and isinstance(rhs, OnlineVector_Type))
     if isinstance(lhs, TruthMatrix) and isinstance(solution, TruthVector) and isinstance(rhs, TruthVector):
-        for bc in bcs:
-            bc.apply(lhs, rhs)
+        if bcs is not None:
+            assert isinstance(bcs, list)
+            for bc in bcs:
+                bc.apply(lhs, rhs)
         from dolfin import solve as dolfin_solve
         dolfin_solve(lhs, solution, rhs)
     elif isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineVector_Type) and isinstance(rhs, OnlineVector_Type):

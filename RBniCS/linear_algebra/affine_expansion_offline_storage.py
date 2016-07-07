@@ -41,7 +41,10 @@ class AffineExpansionOfflineStorage(object):
         return self._content[key]
                 
     def __len__(self):
-        return len(self._content)
+        if self._content is None:
+            return 0
+        else:
+            return len(self._content)
         
     def init(self, args):
         if isinstance(args, AffineExpansionOnlineStorage):
