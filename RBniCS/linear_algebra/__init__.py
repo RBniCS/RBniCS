@@ -21,3 +21,41 @@
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
+
+from RBniCS.linear_algebra.affine_expansion_offline_storage import AffineExpansionOfflineStorage
+from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
+from RBniCS.linear_algebra.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.linear_algebra.functions_list import FunctionsList
+from RBniCS.linear_algebra.gram_schmidt import GramSchmidt
+from RBniCS.linear_algebra.online_eigen_solver import OnlineEigenSolver
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix
+from RBniCS.linear_algebra.online_vector import OnlineVector
+from RBniCS.linear_algebra.product import product
+from RBniCS.linear_algebra.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.linear_algebra.snapshots_matrix import SnapshotsMatrix
+from RBniCS.linear_algebra.solve import solve
+from RBniCS.linear_algebra.sum import sum
+from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.linear_algebra.truth_eigen_solver import TruthEigenSolver
+from RBniCS.linear_algebra.truth_matrix import TruthMatrix
+from RBniCS.linear_algebra.truth_vector import TruthVector
+
+__all__ = [
+    'AffineExpansionOfflineStorage',
+    'AffineExpansionOnlineStorage',
+    'BasisFunctionsMatrix',
+    'FunctionsList',
+    'GramSchmidt',
+    'OnlineEigenSolver',
+    'OnlineMatrix',
+    'OnlineVector',
+    'product',
+    'ProperOrthogonalDecomposition',
+    'SnapshotsMatrix',
+    'solve',
+    'sum',
+    'transpose',
+    'TruthEigenSolver',
+    'TruthMatrix',
+    'TruthVector'
+]

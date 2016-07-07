@@ -25,7 +25,6 @@
 from __future__ import print_function
 import os
 import shutil
-from RBniCS.elliptic_coercive import EllipticCoercive
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParablicCoercive

@@ -28,10 +28,8 @@
 
 # Factory to associate reduced problem classes to reduction method classes.
 def ReducedProblemFactory(truth_problem, reduction_method):
-    from RBniCS.reduction_methods.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
-    from RBniCS.reduction_methods.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
-    from RBniCS.problems.elliptic_coercive_pod_galerkin_reduced_problem import EllipticCoercivePODGalerkinReducedProblem
-    from RBniCS.problems.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
+    from RBniCS.reduction_methods import EllipticCoercivePODGalerkinReduction, EllipticCoerciveRBReduction
+    from RBniCS.problems import EllipticCoercivePODGalerkinReducedProblem, EllipticCoerciveRBReducedProblem
     
     # Determine whether RB or POD-Galerkin method is used
     def _ReducedProblem_TypeFactory(reduction_method):

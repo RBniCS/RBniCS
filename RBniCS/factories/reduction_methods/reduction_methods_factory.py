@@ -29,8 +29,8 @@
 # Factories to associate parametrized problem classes to reduction method classes: reduced basis method
 def ReducedBasis(truth_problem):
     # This imports are local to avoid circular dependence between problem and reduction_methods modules
-    from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
-    from RBniCS.reduction_methods.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
+    from RBniCS.problems import EllipticCoerciveProblem
+    from RBniCS.reduction_methods import EllipticCoerciveRBReduction
 
     # Determine what kind of RB method is need
     def _ReducedBasis_TypeFactory(truth_problem):
@@ -53,8 +53,8 @@ def ReducedBasis(truth_problem):
 # Factories to associate parametrized problem classes to reduction method classes: POD-Galerkin method
 def PODGalerkin(truth_problem):
     # This imports are local to avoid circular dependence between problem and reduction_methods modules
-    from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
-    from RBniCS.reduction_methods.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
+    from RBniCS.problems import EllipticCoerciveProblem
+    from RBniCS.reduction_methods import EllipticCoercivePODGalerkinReduction
     
     # Determine what kind of RB method is need
     def _PODGalerkin_TypeFactory(truth_problem):

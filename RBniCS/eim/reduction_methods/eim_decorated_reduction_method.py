@@ -27,7 +27,6 @@ from numpy import log, exp, mean, sqrt # for error analysis
 import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
-from RBniCS.gram_schmidt import GramSchmidt
 
 def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
     class EIMDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):

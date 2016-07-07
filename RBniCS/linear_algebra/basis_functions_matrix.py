@@ -26,8 +26,10 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from functions_list import *
-BasisFunctionsMatrix = FunctionsList
+from RBniCS.linear_algebra.functions_list import FunctionsList
+
+class BasisFunctionsMatrix(FunctionsList):
+    pass
 
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

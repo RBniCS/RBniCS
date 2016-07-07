@@ -27,7 +27,7 @@ from numpy import log, exp, mean, sqrt # for error analysis
 import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
-from RBniCS.parametrized_problem import ParametrizedProblem
+from RBniCS.problems import ParametrizedProblem
 
 def ExactParametrizedFunctionEvaluationDecoratedProblem(*parametrized_expressions):
     def ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):

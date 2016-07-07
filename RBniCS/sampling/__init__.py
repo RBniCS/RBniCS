@@ -22,3 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.sampling.parameter_space_subset import ParameterSpaceSubset
+
+__all__ = [
+    'ParameterSpaceSubset'
+]

@@ -36,7 +36,7 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
     #  @{
     
-    from RBniCS.factories.problems.reduced_problem_factory import ReducedProblemFactory as ReducedProblemFactory_Function
+    from RBniCS.factories.problems import ReducedProblemFactory as ReducedProblemFactory_Function
     ReducedProblemFactory = staticmethod(ReducedProblemFactory_Function)
     # In this way we allow the final user to possibly override ReducedProblemFactory
     

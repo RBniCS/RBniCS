@@ -22,3 +22,20 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.io_utils.error_analysis_table import ErrorAnalysisTable
+from RBniCS.io_utils.exportable_list import ExportableList
+from RBniCS.io_utils.numpy_io import NumpyIO
+from RBniCS.io_utils.parametrized_expression import ParametrizedExpression
+#from RBniCS.io_utils.performance_table import PerformanceTable # not needed, only used internally inside this module
+from RBniCS.io_utils.pickle_io import PickleIO
+#from RBniCS.io_utils.print import print # TODO enable
+from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
+
+__all__ = [
+    'ErrorAnalysisTable',
+    'ExportableList',
+    'NumpyIO',
+    'ParametrizedExpression',
+    'PickleIO',
+    'SpeedupAnalysisTable'
+]

@@ -23,8 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.linear_algebra.truth_vector import TruthVector
+from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type
-from RBniCS.linear_algebra.functions_list import FunctionsList, FunctionsList_Transpose
+from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
 ###########################     OFFLINE STAGE     ########################### 
 ## @defgroup OfflineStage Methods related to the offline stage
@@ -32,6 +33,7 @@ from RBniCS.linear_algebra.functions_list import FunctionsList, FunctionsList_Tr
 
 # Auxiliary transpose method to be used in RBniCS. See functions_list.py and compute_scalar_product.py for more details.
 def transpose(arg):
+    from RBniCS.linear_algebra.functions_list import FunctionsList, FunctionsList_Transpose
     assert isinstance(arg, FunctionsList) or isinstance(arg, TruthVector) or isinstance(arg, OnlineVector_Type)
     if isinstance(arg, FunctionsList):
         return FunctionsList_Transpose(arg)

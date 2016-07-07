@@ -25,12 +25,7 @@
 from math import sqrt
 from dolfin import Function
 from RBniCS.problems.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
-from RBniCS.linear_algebra.functions_list import FunctionsList
-from RBniCS.linear_algebra.sum import sum
-from RBniCS.linear_algebra.product import product
-from RBniCS.linear_algebra.solve import solve
-from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.linear_algebra import AffineExpansionOnlineStorage, FunctionsList, product, transpose, solve, sum
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase

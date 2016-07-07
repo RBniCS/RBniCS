@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import os # for path and makedir
-from RBniCS.sampling.parameter_space_subset import ParameterSpaceSubset
+from RBniCS.sampling import ParameterSpaceSubset
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ReductionMethod

@@ -27,7 +27,6 @@ from numpy import log, exp, mean, sqrt # for error analysis
 import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
-from RBniCS.gram_schmidt import GramSchmidt
 
 def ExactParametrizedFunctionEvaluationDecoratedReductionMethod(ReductionMethod_DerivedClass):
     class ExactParametrizedFunctionEvaluationDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):

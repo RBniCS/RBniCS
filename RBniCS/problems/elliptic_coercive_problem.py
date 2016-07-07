@@ -24,11 +24,7 @@
 
 from dolfin import Function
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
-from RBniCS.linear_algebra.affine_expansion_offline_storage import AffineExpansionOfflineStorage
-from RBniCS.linear_algebra.sum import sum
-from RBniCS.linear_algebra.product import product
-from RBniCS.linear_algebra.solve import solve
-from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.linear_algebra import AffineExpansionOfflineStorage, product, transpose, solve, sum
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem

@@ -33,7 +33,7 @@
 from numpy import empty as AffineExpansionOnlineStorageContent_Base
 from numpy import nditer as AffineExpansionOnlineStorageContent_Iterator
 from numpy import asmatrix as AffineExpansionOnlineStorageContent_AsMatrix
-from RBniCS.io_utils.numpy_io import NumpyIO as AffineExpansionOnlineStorageContent_IO
+from RBniCS.io_utils import NumpyIO as AffineExpansionOnlineStorageContent_IO
 class AffineExpansionOnlineStorage(object):
     def __init__(self, *args):
         self._content = None

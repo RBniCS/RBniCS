@@ -29,7 +29,7 @@
 # Parameter space subsets
 import itertools # for linspace sampling
 import numpy
-from RBniCS.io_utils.exportable_list import ExportableList
+from RBniCS.io_utils import ExportableList
 
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     def __init__(self):

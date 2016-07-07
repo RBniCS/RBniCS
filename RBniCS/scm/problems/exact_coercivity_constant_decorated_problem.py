@@ -29,7 +29,7 @@ import glpk # for LB computation
 import sys # for sys.float_info.max
 import random # to randomize selection in case of equal error bound
 import operator # to find closest parameters
-from RBniCS.parametrized_problem import ParametrizedProblem
+from RBniCS.problems import ParametrizedProblem
 
 def ExactCoercivityConstantDecoratedProblem(*args):
     def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):

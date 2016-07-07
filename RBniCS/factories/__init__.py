@@ -22,5 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.factories.problems import *
-from RBniCS.factories.reduction_methods import *
+# Import the minimum subset of RBniCS required to run tutorials
+from RBniCS.factories.reduction_methods import ReducedBasis, PODGalerkin
+
+__all__ = [
+    # RBniCS.factories.reduction_methods
+    'ReducedBasis',
+    'PODGalerkin',
+]

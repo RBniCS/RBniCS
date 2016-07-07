@@ -26,10 +26,9 @@ from __future__ import print_function
 import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
-from RBniCS.linear_algebra.gram_schmidt import GramSchmidt
+from RBniCS.linear_algebra import GramSchmidt
+from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable
 from RBniCS.reduction_methods.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
-from RBniCS.io_utils.error_analysis_table import ErrorAnalysisTable
-from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveRB

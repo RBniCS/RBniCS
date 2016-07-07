@@ -29,10 +29,22 @@ __version__ = "0.0.1"
 __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
 
 # Import the minimum subset of RBniCS required to run tutorials
-#from RBniCS.eim import *
-from RBniCS.factories import *
-#from RBniCS.io_utils import *
-from RBniCS.problems import *
-#from RBniCS.sampling import *
-#from RBniCS.scm import *
-#from RBniCS.shape_parametrization import *
+#from RBniCS.eim import EIM # TODO enable
+from RBniCS.factories import ReducedBasis, PODGalerkin
+from RBniCS.problems import EllipticCoerciveProblem
+#from RBniCS.scm import SCM # TODO enable
+from RBniCS.shape_parametrization import ShapeParametrization
+
+__all__ = [
+    # RBniCS.eim
+    #'EIM', # TODO enable
+    # RBniCS.factories
+    'ReducedBasis',
+    'PODGalerkin',
+    # RBniCS.problems
+    'EllipticCoerciveProblem',
+    # RBniCS.scm
+    #'SCM', # TODO enable
+    # RBniCS.shape_parametrization
+    'ShapeParametrization'
+]
