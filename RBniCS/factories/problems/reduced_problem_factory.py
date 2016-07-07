@@ -30,6 +30,7 @@
 def ReducedProblemFactory(truth_problem, reduction_method):
     from RBniCS.reduction_methods import EllipticCoercivePODGalerkinReduction, EllipticCoerciveRBReduction
     from RBniCS.problems import EllipticCoercivePODGalerkinReducedProblem, EllipticCoerciveRBReducedProblem
+    from RBniCS.shape_parametrization.problems import ShapeParametrizationDecoratedReducedProblem
     
     # Determine whether RB or POD-Galerkin method is used
     def _ReducedProblem_TypeFactory(reduction_method):
@@ -54,6 +55,8 @@ def ReducedProblemFactory(truth_problem, reduction_method):
                     pass # SCM operates on the truth problem, rather than the reduced one
                 if "ExactCoercivityConstant" in problem_decorators and problem_decorators["ExactCoercivityConstant"]:
                     DecoratedReducedProblem_Type = ExactCoercivityConstantDecoratedReducedProblem(DecoratedReducedProblem_Type)
+                if "ShapeParametrization" in problem_decorators and problem_decorators["ShapeParametrization"]:
+                    DecoratedReducedProblem_Type = ShapeParametrizationDecoratedReducedProblem(DecoratedReducedProblem_Type)
             return DecoratedReducedProblem_Type
         return _DecoratedReducedProblem_TypeFactory__Decorator
             

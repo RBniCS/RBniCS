@@ -1,0 +1,56 @@
+# Copyright (C) 2015-2016 by the RBniCS authors
+#
+# This file is part of RBniCS.
+#
+# RBniCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RBniCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
+#
+## @file scm.py
+#  @brief Implementation of the successive constraints method for the approximation of the coercivity constant
+#
+#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
+#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
+#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
+
+def ShapeParametrizationDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
+    #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
+    ## @class ShapeParametrizationDecoratedReducedProblem
+    #
+    # A decorator class that allows to overload methods related to shape parametrization and mesh motion
+    class ShapeParametrizationDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
+    
+        ###########################     CONSTRUCTORS     ########################### 
+        ## @defgroup Constructors Methods related to the construction of the SCM object
+        #  @{
+        
+        def __init__(self, truth_problem):
+            # Call the standard initialization
+            ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+                         
+        #  @}
+        ########################### end - CONSTRUCTORS - end ###########################
+                    
+        ## Deform the mesh as a function of the geometrical parameters
+        def move_mesh(self):
+            self.truth_problem.move_mesh()
+        
+        ## Restore the reference mesh
+        def reset_reference(self):
+            self.truth_problem.reset_reference()
+        
+        #  @}
+        ########################### end - I/O - end ########################### 
+    
+    # return value (a class) for the decorator
+    return ShapeParametrizationDecoratedReducedProblem_Class
+    

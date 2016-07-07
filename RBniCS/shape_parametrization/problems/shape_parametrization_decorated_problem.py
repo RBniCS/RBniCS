@@ -22,16 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function
+from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function, ALE
 from RBniCS.io_utils import ParametrizedExpression
 
-def ShapeParametrization(*shape_parametrization_expression):
-    def ShapeParametrization_Decorator(ParametrizedProblem_DerivedClass):
+def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
+    def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-        ## @class ShapeParametrization
+        ## @class ShapeParametrizationDecoratedProblem
         #
         # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-        class ShapeParametrization_Class(ParametrizedProblem_DerivedClass):
+        class ShapeParametrizationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
         
             ###########################     CONSTRUCTORS     ########################### 
             ## @defgroup Constructors Methods related to the construction of the SCM object
@@ -52,15 +52,23 @@ def ShapeParametrization(*shape_parametrization_expression):
                 self.deformation_V = VectorFunctionSpace(self.mesh, "Lagrange", 1)
                 self.subdomain_id_to_deformation_dofs = dict() # from int to list
                 for cell in cells(self.mesh):
-                    subdomain_id = int(self.subdomains[cell])
+                    subdomain_id = int(self.subdomains[cell]) - 1 # tuple start from 0, while subdomains from 1
                     if subdomain_id not in self.subdomain_id_to_deformation_dofs:
                         self.subdomain_id_to_deformation_dofs[subdomain_id] = list()
                     dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
                     for dof in dofs:
                         self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
+                assert min(self.subdomain_id_to_deformation_dofs.keys()) == 0
+                assert len(self.subdomain_id_to_deformation_dofs.keys()) == max(self.subdomain_id_to_deformation_dofs.keys()) + 1
                 
                 # Store the shape parametrization expression
                 self.shape_parametrization_expression = shape_parametrization_expression
+                assert len(self.shape_parametrization_expression) == len(self.subdomain_id_to_deformation_dofs.keys())
+                
+                # Signal to the factory that this problem has been decorated
+                if not hasattr(self, "_problem_decorators"):
+                    self._problem_decorators = dict() # string to bool
+                self._problem_decorators["ShapeParametrization"] = True
                  
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
@@ -77,7 +85,7 @@ def ShapeParametrization(*shape_parametrization_expression):
                 try:
                     self._set_mu_for_displacement_expression(mu)
                 except AttributeError:
-                    # this will happen when setting mu for the first time,
+                    # this will happen when setting mu for the initial parameter in RB methods,
                     # because the init() method has not been called yet
                     pass
                 
@@ -142,9 +150,9 @@ def ShapeParametrization(*shape_parametrization_expression):
                 displacement = Function(self.deformation_V)
                 for i in range(len(self.displacement_expression)):
                     displacement_subdomain_i = Function(self.deformation_V)
-                    interpolator.interpolate(self.displacement_expression[i])
+                    interpolator.interpolate(displacement_subdomain_i, self.displacement_expression[i])
                     subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]
-                    displacement.vector()[subdomain_dofs] = displacement_subdomains_i.vector()[subdomain_dofs]                    
+                    displacement.vector()[subdomain_dofs] = displacement_subdomain_i.vector()[subdomain_dofs]
                 return displacement
                 
             ## Get the name of the problem, to be used as a prefix for output folders.
@@ -158,7 +166,10 @@ def ShapeParametrization(*shape_parametrization_expression):
             ########################### end - I/O - end ########################### 
         
         # return value (a class) for the decorator
-        return ShapeParametrization_Class
+        return ShapeParametrizationDecoratedProblem_Class
     
     # return the decorator itself
-    return ShapeParametrization_Decorator
+    return ShapeParametrizationDecoratedProblem_Decorator
+    
+# For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
+ShapeParametrization = ShapeParametrizationDecoratedProblem
