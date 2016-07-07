@@ -22,8 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from dolfin import VectorFunctionSpace, cells
+from RBniCS.io_utils import ParametrizedExpression
+
 def ShapeParametrization(*shape_parametrization_expression):
-    def ShapeParametrization_Decorator(ParametrizedProblem_DerivedClass)
+    def ShapeParametrization_Decorator(ParametrizedProblem_DerivedClass):
         #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
         ## @class ShapeParametrization
         #
@@ -71,9 +74,16 @@ def ShapeParametrization(*shape_parametrization_expression):
             ## OFFLINE/ONLINE: set the current value of the parameter
             def set_mu(self, mu):
                 ParametrizedProblem_DerivedClass.set_mu(self, mu)
-                for i in len(self.displacement_expression):
-                    for j in range(len(self.displacement_expression[i])):
-                        self.displacement_expression[i][j].set_mu(mu)
+                try:
+                    self._set_mu_for_displacement_expression(mu)
+                except AttributeError:
+                    # this will happen when setting mu for the first time,
+                    # because the init() method has not been called yet
+                    pass
+                
+            def _set_mu_for_displacement_expression(self, mu):
+                for i in range(len(self.displacement_expression)):
+                    self.displacement_expression[i].set_mu(mu)
                 
             #  @}
             ########################### end - SETTERS - end ########################### 
@@ -88,19 +98,25 @@ def ShapeParametrization(*shape_parametrization_expression):
                 # Preprocess the shape parametrization expression to convert it in the displacement expression
                 # This cannot be done during __init__ because at construction time the number
                 # of parameters is still unknown
-                self.displacement_expression = []
+                self.displacement_expression = list()
                 for i in range(len(self.shape_parametrization_expression)):
-                    displacement_expression_i = ()
+                    displacement_expression_i = list()
+                    assert len(self.shape_parametrization_expression[i]) == self.mesh.geometry().dim()
                     for j in range(len(self.shape_parametrization_expression[i])):
                         # convert from shape parametrization T to displacement d = T - I
-                        displacement_expression_i += ( \
-                            ParametrizedExpression( \
-                                self.shape_parametrization_expression[i][j] + " - x[" + str(j) + "]",
-                                mu=self.mu, \
-                                element=self.deformation_V.ufl_element() \
-                            ), \
+                        displacement_expression_i.append(
+                            self.shape_parametrization_expression[i][j] + " - x[" + str(j) + "]",
                         )
-                    self.displacement_expression.append(displacement_expression_i)
+                    self.displacement_expression.append(
+                        ParametrizedExpression(
+                            tuple(displacement_expression_i),
+                            mu=self.mu,
+                            element=self.deformation_V.ufl_element()
+                        )
+                    )
+                # Now that displacement_expression has been initialized, make sure
+                # that the mu is up-to-date (see the try/except in the set_mu method)
+                self._set_mu_for_displacement_expression(self.mu)
             
             #  @}
             ########################### end - OFFLINE STAGE - end ########################### 

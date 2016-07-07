@@ -23,46 +23,47 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import Expression
+import types
 
-class ParametrizedExpression(Expression):
+# This ideally should be a subclass of Expression. However, dolfin manual
+# states that subclassing Expression may be significantly slower than using 
+# JIT-compiled expressions. To this end we havoid subclassing expression and
+# just add the set_mu method using the types library
+def ParametrizedExpression(parametrized_expression_code=None, *args, **kwargs):    
+    if parametrized_expression_code is None:
+        return None
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the parametrized expression object
-    #  @{    
-    def __init__(self, cppcode=None, *args, **kwargs):
-        if cppcode is None:
-            Expression.__init__(self) # initialize an empty expression
-            self._is_empty = True
-        
-        assert "mu" in kwargs
-        mu = kwargs["mu"]
-        assert mu is not None
-        assert isinstance(mu, tuple)
-        for p in range(len(mu)):
+    assert "mu" in kwargs
+    mu = kwargs["mu"]
+    assert mu is not None
+    assert isinstance(mu, tuple)
+    for p in range(len(mu)):
+        if isinstance(parametrized_expression_code, tuple):
+            new_parametrized_expression_code = list()
+            for i in range(len(parametrized_expression_code)):
+                assert isinstance(parametrized_expression_code[i], str)
+                new_parametrized_expression_code.append(parametrized_expression_code[i].replace("mu[" + str(p) + "]", "mu_" + str(p)))
+            parametrized_expression_code = tuple(new_parametrized_expression_code)
+        elif isinstance(parametrized_expression_code, str):
             parametrized_expression_code = parametrized_expression_code.replace("mu[" + str(p) + "]", "mu_" + str(p))
-        mu_dict = {}
-        for p in range(len(mu)):
-            mu_dict[ "mu_" + str(p) ] = mu[p]
-        del kwargs["mu"]
-        kwargs.update(mu_dict)
-                
-        Expression.__init__(self, cppcode=parametrized_expression_code, *args, **kwargs)
-        self._is_empty = False
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ###########################
-        
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the parametrized expression
-
-    ## OFFLINE/ONLINE: set the current value of the parameter
+        else:
+            raise RuntimeError("Invalid expression type in ParametrizedExpression")
+    
+    mu_dict = {}
+    for p in range(len(mu)):
+        mu_dict[ "mu_" + str(p) ] = mu[p]
+    del kwargs["mu"]
+    kwargs.update(mu_dict)
+            
+    expression = Expression(parametrized_expression_code, *args, **kwargs)
+    expression.len_mu = len(mu)
+    
     def set_mu(self, mu):
         assert isinstance(mu, tuple)
-        if not self._is_empty:
-            for p in range(len(mu)):
-                getattr(self, "mu_" + str(p)) = mu[p]
-        
-    #  @}
-    ########################### end - SETTERS - end ########################### 
+        assert len(mu) == self.len_mu
+        for p in range(len(mu)):
+            setattr(self, "mu_" + str(p), mu[p])
+    expression.set_mu = types.MethodType(set_mu, expression)
     
+    return expression
 
