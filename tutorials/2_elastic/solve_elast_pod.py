@@ -168,8 +168,6 @@ pod_galerkin_method = PODGalerkin(elastic_block_problem)
 pod_galerkin_method.set_Nmax(20)
 
 # 6. Perform the offline phase
-first_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0)
-elastic_block_problem.set_mu(first_mu)
 pod_galerkin_method.set_xi_train(500)
 reduced_elastic_block_problem = pod_galerkin_method.offline()
 

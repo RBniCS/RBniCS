@@ -154,7 +154,7 @@ V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Hole class
 hole_problem = Hole(V, subdomains=subdomains, boundaries=boundaries)
-mu_range = [(1.0, 1.5), (1.0, 1.5), (0.01, 1.0)]
+mu_range = [(0.5, 1.5), (0.5, 1.5), (0.01, 1.0)]
 hole_problem.set_mu_range(mu_range)
 
 # 4. Choose PETSc solvers as linear algebra backend
@@ -165,13 +165,11 @@ pod_galerkin_method = PODGalerkin(hole_problem)
 pod_galerkin_method.set_Nmax(20)
 
 # 6. Perform the offline phase
-first_mu = (0.5, 0.5, 0.01)
-hole_problem.set_mu(first_mu)
 pod_galerkin_method.set_xi_train(500)
 reduced_hole_problem = pod_galerkin_method.offline()
 
 # 7. Perform an online solve
-online_mu = (0.5,0.5,0.01)
+online_mu = (0.5, 0.5, 0.01)
 reduced_hole_problem.set_mu(online_mu)
 reduced_hole_problem.solve()
 
