@@ -26,7 +26,7 @@ from RBniCS.problems.elliptic_coercive_pod_galerkin_reduced_problem import Ellip
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.problems.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
 from RBniCS.problems.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-#from RBniCS.problems.parametrized_problem import ParametrizedProblem # not needed, only used internally inside this module
+from RBniCS.problems.parametrized_problem import ParametrizedProblem
 
 
 __all__ = [

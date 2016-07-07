@@ -21,3 +21,15 @@
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
+
+#from RBniCS.eim.problems.eim_decorated_problem import EIM #, EIMDecoratedProblem # not needed # TODO enable
+#from RBniCS.eim.problems.eim_decorated_reduced_problem import EIMDecoratedReducedProblem # TODO enable
+from RBniCS.eim.problems.exact_parametrized_function_evaluation_decorated_problem import ExactParametrizedFunctionEvaluation #, ExactParametrizedFunctionEvaluationDecoratedProblem # not needed
+from RBniCS.eim.problems.exact_parametrized_function_evaluation_decorated_reduced_problem import ExactParametrizedFunctionEvaluationDecoratedReducedProblem
+
+__all__ = [
+    #'EIM', # TODO enable
+    #'EIMDecoratedReducedProblem', # TODO enable
+    'ExactParametrizedFunctionEvaluation',
+    'ExactParametrizedFunctionEvaluationDecoratedReducedProblem'
+]

@@ -21,3 +21,11 @@
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
+
+from RBniCS.eim.io_utils.dofs_list import DOFsList
+from RBniCS.eim.io_utils.points_list import PointsList
+
+__all__ = [
+    'DOFsList',
+    'PointsList'
+]

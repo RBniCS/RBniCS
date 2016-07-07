@@ -26,6 +26,8 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
+from RBniCS.io_utils import ExportableList
+
 class PointsList(ExportableList):
     def __init__(self):
         ExportableList.__init__(self, "pickle")
