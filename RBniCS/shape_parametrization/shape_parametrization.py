@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import VectorFunctionSpace, cells
+from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function
 from RBniCS.io_utils import ParametrizedExpression
 
 def ShapeParametrization(*shape_parametrization_expression):
@@ -61,7 +61,7 @@ def ShapeParametrization(*shape_parametrization_expression):
                 
                 # Store the shape parametrization expression
                 self.shape_parametrization_expression = shape_parametrization_expression
-                            
+                 
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
             
@@ -146,6 +146,13 @@ def ShapeParametrization(*shape_parametrization_expression):
                     subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]
                     displacement.vector()[subdomain_dofs] = displacement_subdomains_i.vector()[subdomain_dofs]                    
                 return displacement
+                
+            ## Get the name of the problem, to be used as a prefix for output folders.
+            # Overridden to use the parent name
+            @classmethod
+            def name(cls):
+                assert len(cls.__bases__) == 1
+                return cls.__bases__[0].name()
                         
             #  @}
             ########################### end - I/O - end ########################### 

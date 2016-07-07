@@ -158,8 +158,9 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
         
     ## Get the name of the problem, to be used as a prefix for output folders
-    def name(self):
-        return type(self).__name__
+    @classmethod
+    def name(cls):
+        return cls.__name__
         
     #  @}
     ########################### end - I/O - end ########################### 
