@@ -77,6 +77,8 @@ class ParametrizedProblem(object):
     ## OFFLINE: set the range of the parameters
     def set_mu_range(self, mu_range):
         self.mu_range = mu_range
+        # Initialize mu so that it has the correct length
+        self.mu = tuple([r[0] for r in self.mu_range])
     
     ## OFFLINE/ONLINE: set the current value of the parameter
     def set_mu(self, mu):

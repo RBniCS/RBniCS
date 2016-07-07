@@ -37,6 +37,7 @@ def ParametrizedExpression(parametrized_expression_code=None, *args, **kwargs):
     mu = kwargs["mu"]
     assert mu is not None
     assert isinstance(mu, tuple)
+    assert len(mu) > 0
     for p in range(len(mu)):
         if isinstance(parametrized_expression_code, tuple):
             new_parametrized_expression_code = list()
