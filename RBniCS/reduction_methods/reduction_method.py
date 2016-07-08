@@ -45,19 +45,15 @@ class ReductionMethod(object):
         # Maximum reduced order space dimension to be used for the stopping criterion in the basis selection
         self.Nmax = 10
         # Training set
-        self.xi_train = ParameterSpaceSubset()
+        self.xi_train = ParameterSpaceSubset(mu_range)
         # I/O
         self.folder["xi_train"] = self.folder_prefix + "/" + "xi_train"
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
         # Test set
-        self.xi_test = ParameterSpaceSubset()
+        self.xi_test = ParameterSpaceSubset(mu_range)
         # I/O
         self.folder["xi_test" ] = self.folder_prefix + "/" + "xi_test"
-        
-        # $$ OFFLINE/ERROR ANALYSIS DATA STRUCTURES $$ #
-        self._mu_range = mu_range # local copy to generate training/test sets,
-                                  # should not be used anywhere else
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -79,9 +75,9 @@ class ReductionMethod(object):
         import_successful = False
         if enable_import:
             import_successful = self.xi_train.load(self.folder["xi_train"], "xi_train") \
-                and  (len(self.xi_train) == ntrain)
+                and (len(self.xi_train) == ntrain)
         if not import_successful:
-            self.xi_train.generate(self._mu_range, ntrain, sampling)
+            self.xi_train.generate(ntrain, sampling)
             # Export 
             self.xi_train.save(self.folder["xi_train"], "xi_train")
         
@@ -96,7 +92,7 @@ class ReductionMethod(object):
             import_successful = self.xi_test.load(self.folder["xi_test"], "xi_test") \
                 and  (len(self.xi_test) == ntest)
         if not import_successful:
-            self.xi_test.generate(self._mu_range, ntest, sampling)
+            self.xi_test.generate(ntest, sampling)
             # Export 
             self.xi_test.save(self.folder["xi_test"], "xi_test")
             

@@ -33,14 +33,35 @@ from RBniCS.io_utils import ExportableList
 from RBniCS.sampling.distributions import UniformDistribution
 
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
-    def __init__(self):
+    def __init__(self, box):
         ExportableList.__init__(self, "pickle")
+        self.box = box
     
     # Method for generation of parameter space subsets
-    def generate(self, box, n, sampling):
+    def generate(self, n, sampling):
         if sampling == None:
             sampling = UniformDistribution()
-        self._list = sampling.sample(box, n)
+        self._list = sampling.sample(self.box, n)
+        
+    def load(self, directory, filename):
+        result = ExportableList.load(self, directory, filename)
+        if not result:
+            return False
+        # Also load the box
+        assert self._FileIO.exists_file(directory, filename + "_box")
+        box = self._FileIO.load_file(directory, filename + "_box")
+        if len(box) != len(self.box):
+            return False
+        for p in range(len(box)):
+            if box[p][0] != self.box[p][0] or box[p][1] != self.box[p][1]:
+                return False
+        return True
+        
+        
+    def save(self, directory, filename):
+        ExportableList.save(self, directory, filename)
+        # Also save box
+        self._FileIO.save_file(self.box, directory, filename + "_box")
         
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 
