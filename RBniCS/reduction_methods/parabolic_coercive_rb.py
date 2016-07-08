@@ -61,10 +61,10 @@ class ParabolicCoerciveRB(ParabolicCoercive,EllipticCoerciveRB):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, bc_list):
+    def __init__(self, truth_problem):
         # Call the parent initialization
-        ParabolicCoercive.__init__(self, V, bc_list)
-        EllipticCoerciveRB.__init__(self, V, bc_list)
+        ParabolicCoercive.__init__(self, truth_problem)
+        EllipticCoerciveRB.__init__(self, truth_problem)
 
         self.POD = ProperOrthogonalDecomposition(self.compute_scalar_product, self.S)
         self.M1 = 2

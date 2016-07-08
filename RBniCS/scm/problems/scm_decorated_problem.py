@@ -80,7 +80,7 @@ def SCMDecoratedProblem(*args):
                 ParametrizedProblem.__init__(self, folder_prefix)
                 # Store the parametrized problem object and the bc list
                 self.parametrized_problem = parametrized_problem
-                self.bc_list = parametrized_problem.bc_list
+                self.operator["dirichlet_bc"] = parametrized_problem.operator["dirichlet_bc"]
                 
                 # $$ ONLINE DATA STRUCTURES $$ #
                 # Define additional storage for SCM
@@ -539,10 +539,10 @@ def SCMDecoratedProblem(*args):
             # Clear constrained dofs
             def clear_constrained_dofs(self, M_in, diag_value):
                 M = M_in.copy()
-                if self.bc_list != None:
+                if self.operator["dirichlet_bc"] != None:
                     fake_vector = Function(self.parametrized_problem.V)
                     FAKE_VECTOR = fake_vector.vector()
-                    for bc in self.bc_list:
+                    for bc in self.operator["dirichlet_bc"]:
                         bc.zero(M)
                         bc.zero_columns(M, FAKE_VECTOR, diag_value)
                 return M

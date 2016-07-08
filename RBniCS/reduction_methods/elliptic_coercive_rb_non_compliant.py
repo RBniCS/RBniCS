@@ -47,9 +47,9 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, bc_list):
+    def __init__(self, truth_problem):
         # Call the parent initialization
-        EllipticCoerciveRB.__init__(self, V, bc_list)
+        EllipticCoerciveRB.__init__(self, truth_problem)
         
         # Attach a dual problem
         self.dual_problem = _EllipticCoerciveRBNonCompliant_Dual(self)
@@ -250,7 +250,7 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
     ## Default initialization of members
     def __init__(self, primal_problem):
         # Call the parent initialization
-        EllipticCoerciveRB.__init__(self, primal_problem.V, primal_problem.bc_list)
+        EllipticCoerciveRB.__init__(self, primal_problem)
         self.primal_problem = primal_problem
         
         # Possibly copy the inner product matrix, if the primal problem has redefined it

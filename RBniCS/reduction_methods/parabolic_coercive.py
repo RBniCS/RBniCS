@@ -70,9 +70,9 @@ class ParabolicCoercive(EllipticCoercive):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, V, bc_list):
+    def __init__(self, truth_problem):
         # Call the parent initialization
-        EllipticCoercive.__init__(self, V, bc_list)
+        EllipticCoercive.__init__(self, truth_problem)
         
         # $$ PROBLEM SPECIFIC $$ #
         # Time step
@@ -195,7 +195,7 @@ class ParabolicCoercive(EllipticCoercive):
         self.apply_bc_to_matrix_expansion(self.truth_A)
         #self.truth_M = [assemble(m_form) for m_form in self.assemble_truth_m()]
         self.apply_bc_to_matrix_expansion(self.truth_M)
-        [bc.zero(self.truth_M[0]) for bc in self.bc_list]
+        [bc.zero(self.truth_M[0]) for bc in self.operator["dirichlet_bc"]]
         self.truth_F = [assemble(f_form) for f_form in self.assemble_truth_f()]
         self.apply_bc_to_vector_expansion(self.truth_F)
         self.Qa = len(self.truth_A)
