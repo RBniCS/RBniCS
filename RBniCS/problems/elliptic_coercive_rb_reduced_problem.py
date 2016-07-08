@@ -74,9 +74,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             self.riesz["a"] = AffineExpansionOnlineStorage(self.Q["a"])
             for qa in range(self.Q["a"]):
                 self.riesz["a"][qa] = FunctionsList()
-            self.riesz["f"] = AffineExpansionOnlineStorage(self.Q["f"])
-            for qf in range(self.Q["f"]):
-                self.riesz["f"][qf] = None # will be of type TruthVector
+            self.riesz["f"] = FunctionsList() # equivalent to a AffineExpansionOnlineStorage(self.Q["f"])
+                                              # of (a single) TruthVector
             self.riesz_product["aa"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["a"])
             self.riesz_product["af"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["f"])
             self.riesz_product["ff"] = AffineExpansionOnlineStorage(self.Q["f"], self.Q["f"])
@@ -158,7 +157,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             else:
                 homogeneous_dirichlet_bc = None
             solve(self.truth_problem.inner_product[0], self._riesz_solve_storage.vector(), self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
-            self.riesz["f"][qf] = self._riesz_solve_storage.vector().copy()
+            assert qf == len(self.riesz["f"])
+            self.riesz["f"].enrich(self._riesz_solve_storage)
             
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
