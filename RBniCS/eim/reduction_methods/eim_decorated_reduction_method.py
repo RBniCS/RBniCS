@@ -63,13 +63,13 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
 
                 
             ## OFFLINE: set the elements in the training set \xi_train.
-            def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
+            def set_xi_train(self, ntrain, enable_import=True, sampling=None):
                 EllipticCoerciveRBBase.set_xi_train(self, ntrain, enable_import, sampling)
                 for i in range(len(self.EIM_reduction_method)):
                     self.EIM_reduction_method[i].set_xi_train(ntrain, enable_import, sampling)
                 
             ## ERROR ANALYSIS: set the elements in the test set \xi_test.
-            def set_xi_test(self, ntest, enable_import=False, sampling="random"):
+            def set_xi_test(self, ntest, enable_import=False, sampling=None):
                 EllipticCoerciveRBBase.set_xi_test(self, ntest, enable_import, sampling)
                 for i in range(len(self.EIM_reduction_method)):
                     self.EIM_reduction_method[i].set_xi_test(ntest, enable_import, sampling)

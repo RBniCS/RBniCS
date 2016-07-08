@@ -120,7 +120,7 @@ def SCMDecoratedProblem(*args):
         
             ## OFFLINE: set the elements in the training set \xi_train. Overridden to resize alpha_LB_on_xi_train
             ##          Note that the default value of enable_import has been changed here to True
-            def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
+            def set_xi_train(self, ntrain, enable_import=True, sampling=None):
                 if not enable_import:
                     raise RuntimeError("SCM will not work without import.")
                 # Save the flag if can import from file

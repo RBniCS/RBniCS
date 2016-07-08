@@ -23,7 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.sampling.parameter_space_subset import ParameterSpaceSubset
+from RBniCS.sampling.distributions import EquispacedDistribution, UniformDistribution
 
 __all__ = [
+    # RBniCS.sampling
     'ParameterSpaceSubset'
+    # RBniCS.sampling.distributions
+    'EquispacedDistribution',
+    'UniformDistribution'
 ]

@@ -15,33 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parameter_space_subset.py
-#  @brief Type for parameter space subsets
+## @file distribution.py
+#  @brief Type for distribution
 #
+#  @author Luca      Venturi  <luca.venturi@sissa.it>
+#  @author Davide    Torlo    <davide.torlo@sissa.it>
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-###########################     OFFLINE STAGE     ########################### 
-## @defgroup OfflineStage Methods related to the offline stage
-#  @{
-
-# Parameter space subsets
-import itertools # for linspace sampling
-import numpy
-from RBniCS.io_utils import ExportableList
-from RBniCS.sampling.distributions import UniformDistribution
-
-class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
-    def __init__(self):
-        ExportableList.__init__(self, "pickle")
-    
-    # Method for generation of parameter space subsets
-    def generate(self, box, n, sampling):
-        if sampling == None:
-            sampling = UniformDistribution()
-        self._list = sampling.sample(box, n)
-        
-#  @}
-########################### end - OFFLINE STAGE - end ########################### 
-
+class Distribution(object):        
+    ## Sample n points from the distribution
+    def sample(self, box, n):
+        raise RuntimeError("The method sample is distribution-specific and needs to be overridden.")

@@ -71,8 +71,7 @@ class ReductionMethod(object):
         self.Nmax = Nmax
 
     ## OFFLINE: set the elements in the training set \xi_train.
-    # See the documentation of generate_train_or_test_set for more details
-    def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
+    def set_xi_train(self, ntrain, enable_import=True, sampling=None):
         # Create I/O folder
         if not os.path.exists(self.folder["xi_train"]):
             os.makedirs(self.folder["xi_train"])
@@ -87,8 +86,7 @@ class ReductionMethod(object):
             self.xi_train.save(self.folder["xi_train"], "xi_train")
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
-    # See the documentation of generate_train_or_test_set for more details
-    def set_xi_test(self, ntest, enable_import=False, sampling="random"):
+    def set_xi_test(self, ntest, enable_import=False, sampling=None):
         # Create I/O folder
         if not os.path.exists(self.folder["xi_test"]):
             os.makedirs(self.folder["xi_test"])

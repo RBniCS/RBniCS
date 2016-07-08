@@ -81,10 +81,10 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
     def set_mu_range(self, mu_range):
         EllipticCoerciveRB.set_mu_range(self, mu_range)
         self.dual_problem.set_mu_range(mu_range)
-    def set_xi_train(self, ntrain, enable_import=True, sampling="random"):
+    def set_xi_train(self, ntrain, enable_import=True, sampling=None):
         EllipticCoerciveRB.set_xi_train(self, ntrain, enable_import, sampling)
         self.dual_problem.set_xi_train(ntrain, enable_import, sampling)
-    def set_xi_test(self, ntest, enable_import=False, sampling="random"):
+    def set_xi_test(self, ntest, enable_import=False, sampling=None):
         EllipticCoerciveRB.set_xi_test(self, ntest, enable_import, sampling)
         self.dual_problem.set_xi_test(ntest, enable_import, sampling)
     def set_mu(self, mu):

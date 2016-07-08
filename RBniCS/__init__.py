@@ -38,6 +38,7 @@ assert has_slepc()
 from RBniCS.eim import ExactParametrizedFunctionEvaluation #EIM,  # TODO enable
 from RBniCS.factories import ReducedBasis, PODGalerkin
 from RBniCS.problems import EllipticCoerciveProblem
+from RBniCS.sampling import EquispacedDistribution, UniformDistribution
 from RBniCS.scm import ExactCoercivityConstant # SCM, # TODO enable
 from RBniCS.shape_parametrization import ShapeParametrization
 
@@ -50,6 +51,9 @@ __all__ = [
     'PODGalerkin',
     # RBniCS.problems
     'EllipticCoerciveProblem',
+    # RBniCS.sampling
+    'EquispacedDistribution',
+    'UniformDistribution',
     # RBniCS.scm
     #'SCM', # TODO enable
     'ExactCoercivityConstant',
