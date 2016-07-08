@@ -217,8 +217,8 @@ def EIMDecoratedProblem(*parametrized_expressions):
             #  @{
 
             ## Export solution in VTK format
-            def export_solution(self, solution, filename):
-                self._export_vtk(solution, filename, with_mesh_motion=True, with_preprocessing=True)
+            def export_solution(self, solution, folder, filename):
+                self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
                 
             #  @}
             ########################### end - I/O - end ########################### 

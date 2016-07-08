@@ -316,13 +316,13 @@ class ParabolicCoercive(EllipticCoercive):
             self.reduced_M = tuple(np.load(self.reduced_operators_folder + "reduced_M.npy"))
         
     ## Export snapshot in VTK format
-    def export_solution(self, solution, filename):
-        self._export_vtk_all_times(solution, filename, with_mesh_motion=True, with_preprocessing=True)
+    def export_solution(self, solution, folder, filename):
+        self._export_vtk_all_times(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
         
     # Note that there is no need to override the export basis method. Basis are steady!
             
     ## Export in VTK format
-    def _export_vtk_all_times(self, solution, filename, **output_options):
+    def _export_vtk_all_times(self, solution, folder, filename, **output_options):
         if not "with_mesh_motion" in output_options:
             output_options["with_mesh_motion"] = False
         if not "with_preprocessing" in output_options:

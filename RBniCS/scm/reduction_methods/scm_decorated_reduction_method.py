@@ -398,7 +398,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.alpha_J += [alpha]; np.save(self.reduced_operators_folder + "alpha_J", self.alpha_J)
                 self.eigenvector_J += [eigenvector]
                 self.UB_vectors_J += [UB_vector]; np.save(self.reduced_operators_folder + "UB_vectors_J", self.UB_vectors_J)
-                self.export_solution(eigenvector, self.snap_folder + "eigenvector_" + str(run))
+                self.export_solution(eigenvector, self.snap_folder, "eigenvector_" + str(run))
                 
                 # Prepare for next iteration
                 if self.N < self.Nmax:
@@ -618,8 +618,8 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.xi_train = np.load(self.reduced_operators_folder + "xi_train.npy")
         
         ## Export solution in VTK format
-        def export_solution(self, solution, filename):
-            self._export_vtk(solution, filename, with_mesh_motion=True, with_preprocessing=True)
+        def export_solution(self, solution, folder, filename):
+            self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
             
         #  @}
         ########################### end - I/O - end ###########################
