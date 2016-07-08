@@ -131,19 +131,14 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             raise RuntimeError("Invalid stage in init().")
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-    def solve(self, N=None, with_plot=True, return_high_fidelity=False):
+    def solve(self, N=None, with_plot=True):
         self.init()
         if N is None:
             N = self.N
         uN = self._solve(N)
-        if return_high_fidelity or with_plot:
-            reduced_solution = Function(self.truth_problem.V, self.Z[:N]*uN)
-            if with_plot:
-                self._plot(reduced_solution, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
-        if return_high_fidelity:
-            return reduced_solution
-        else:
-            return uN
+        if with_plot:
+            self._plot(uN, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
+        return uN
     
     # Perform an online solve (internal)
     def _solve(self, N):
@@ -200,13 +195,16 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
     def compute_error(self, N=None):
+        if N is None:
+            N = self.N
         if self.compute_error.__func__.previous_mu != self.mu:
             self.truth_problem.solve()
             self.truth_problem.output()
             # Do not carry out truth solves anymore for the same parameter
             self.compute_error.__func__.previous_mu = self.mu
         # Compute the error on the solution
-        error = self.solve(N, with_plot=False, return_high_fidelity=True)
+        uN = self.solve(N, with_plot=False)
+        error = Function(self.truth_problem.V, self.Z[:N]*uN)
         error.vector().add_local(- self.truth_problem._solution.vector().array())
         error.vector().apply("") # store the error as a function in the reduced solution
         error_norm_squared = transpose(error.vector())*self._error_inner_product_matrix()*error.vector() # norm of the error
@@ -312,4 +310,23 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
+    
+    ###########################     I/O     ########################### 
+    ## @defgroup IO Input/output methods
+    #  @{
+    
+    ## Interactive plot
+    def _plot(self, solution, *args, **kwargs):
+        N = solution.size
+        solution_on_high_fidelity = Function(self.truth_problem.V, self.Z[:N]*solution)
+        self.truth_problem._plot(solution_on_high_fidelity, *args, **kwargs)
+        
+    ## Export in VTK format
+    def _export_vtk(self, solution, folder, filename, **output_options):
+        N = solution.size
+        solution_on_high_fidelity = Function(self.truth_problem.V, self.Z[:N]*solution)
+        self.truth_problem._export_vtk(solution_on_high_fidelity, folder, filename, **output_options)
+            
+    #  @}
+    ########################### end - I/O - end ########################### 
 

@@ -39,17 +39,6 @@ def ShapeParametrizationDecoratedReducedProblem(ReducedParametrizedProblem_Deriv
                          
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################
-                    
-        ## Deform the mesh as a function of the geometrical parameters
-        def move_mesh(self):
-            self.truth_problem.move_mesh()
-        
-        ## Restore the reference mesh
-        def reset_reference(self):
-            self.truth_problem.reset_reference()
-        
-        #  @}
-        ########################### end - I/O - end ########################### 
     
     # return value (a class) for the decorator
     return ShapeParametrizationDecoratedReducedProblem_Class
