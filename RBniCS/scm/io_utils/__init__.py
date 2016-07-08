@@ -22,11 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-# Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.scm.problems import ExactCoercivityConstant # SCM,  # TODO enable
+from RBniCS.scm.io_utils.bounding_box_side_list import BoundingBoxSideList
+from RBniCS.scm.io_utils.coercivity_constants_list import CoercivityConstantsList
+from RBniCS.scm.io_utils.training_set_indices import TrainingSetIndices
 
 __all__ = [
-    # RBniCS.scm.problems
-    #'SCM', # TODO enable
-    'ExactCoercivityConstant'
+    'BoundingBoxSideList',
+    'CoercivityConstantsList',
+    'TrainingSetIndices'
 ]

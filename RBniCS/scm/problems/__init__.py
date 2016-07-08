@@ -16,37 +16,20 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file __init__.py
-#  @brief RBniCS: reduced order modelling in FEniCS
+#  @brief Init file for auxiliary scm module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-__author__ = "Francesco Ballarin, Gianluigi Rozza, Alberto Sartori"
-__copyright__ = "Copyright 2015-2016 by the RBniCS authors"
-__license__ = "LGPL"
-__version__ = "0.0.1"
-__email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
-
-# Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.eim import ExactParametrizedFunctionEvaluation #EIM,  # TODO enable
-from RBniCS.factories import ReducedBasis, PODGalerkin
-from RBniCS.problems import EllipticCoerciveProblem
-from RBniCS.scm import ExactCoercivityConstant # SCM, # TODO enable
-from RBniCS.shape_parametrization import ShapeParametrization
+#from RBniCS.scm.problems.scm_decorated_problem import SCM #, SCMDecoratedProblem # not needed # TODO enable
+#from RBniCS.scm.problems.scm_decorated_reduced_problem import SCMDecoratedReducedProblem # TODO enable
+from RBniCS.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstant #, ExactCoercivityConstantDecoratedProblem # not needed
+#from RBniCS.scm.problems.exact_coercivity_constant_decorated_reduced_problem import ExactCoercivityConstantDecoratedReducedProblem # TODO enable
 
 __all__ = [
-    # RBniCS.eim
     #'EIM', # TODO enable
-    'ExactParametrizedFunctionEvaluation',
-    # RBniCS.factories
-    'ReducedBasis',
-    'PODGalerkin',
-    # RBniCS.problems
-    'EllipticCoerciveProblem',
-    # RBniCS.scm
-    #'SCM', # TODO enable
+    #'EIMDecoratedReducedProblem', # TODO enable
     'ExactCoercivityConstant',
-    # RBniCS.shape_parametrization
-    'ShapeParametrization'
+    #'ExactCoercivityConstantDecoratedReducedProblem' # TODO enable
 ]

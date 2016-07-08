@@ -22,11 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-# Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.scm.problems import ExactCoercivityConstant # SCM,  # TODO enable
+#from RBniCS.scm.problems.scm_decorated_reduced_problem import SCMDecoratedReductionMethod # TODO enable
+from RBniCS.scm.problems.exact_coercivity_constant_decorated_reduction_method import ExactCoercivityConstantDecoratedReductionMethod
 
 __all__ = [
-    # RBniCS.scm.problems
-    #'SCM', # TODO enable
-    'ExactCoercivityConstant'
+    #'SCMDecoratedReductionMethod', # TODO enable
+    'ExactCoercivityConstantDecoratedReductionMethod'
 ]
