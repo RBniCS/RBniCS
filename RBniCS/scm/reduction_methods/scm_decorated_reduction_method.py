@@ -135,11 +135,11 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # will not be the minimum/maximum
             self.invalid_minimum_eigenvalue = 1.e4
             self.invalid_maximum_eigenvalue = 1.e-4
-            # 3c. Matrices/vectors resulting from the truth discretization
+            # Matrices/vectors resulting from the truth discretization
             self.truth_A__condensed_for_minimum_eigenvalue = ()
             self.truth_A__condensed_for_maximum_eigenvalue = ()
             self.S__condensed = ()
-            # 9. I/O
+            # I/O
             self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
             self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
             # 

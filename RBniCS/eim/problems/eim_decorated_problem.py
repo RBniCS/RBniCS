@@ -95,9 +95,9 @@ def EIMDecoratedProblem(*parametrized_expressions):
                 self._interpolation_coefficients = OnlineVector()
                 
                 # $$ OFFLINE DATA STRUCTURES $$ #
-                # 6. Basis functions matrix
+                # Basis functions matrix
                 self.Z = BasisFunctionsMatrix()
-                # 9. I/O. Since we are decorating the parametrized problem we do not want to change the name of the
+                # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
                 # basis function/reduced operator folder, but rather add a new one. For this reason we use
                 # the __eim suffix in the variable name.
                 self.folder["basis"] = self.folder_prefix + "/" + "basis"

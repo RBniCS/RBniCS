@@ -55,15 +55,15 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
         self.dual_problem = _EllipticCoerciveRBNonCompliant_Dual(self)
         
         # $$ ONLINE DATA STRUCTURES $$ #
-        # 3a. Number of terms in the affine expansion
+        # Number of terms in the affine expansion
         self.Qs = 0
-        # 3c. Reduced order operators
+        # Reduced order operators
         self.operator_s = ()
         self.operator_a_dp = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
         self.operator_f_d = () # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 3c. Matrices/vectors resulting from the truth discretization
+        # Matrices/vectors resulting from the truth discretization
         self.truth_S = ()
         
     #  @}
@@ -256,7 +256,7 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
         # Possibly copy the inner product matrix, if the primal problem has redefined it
         self.S = self.primal_problem.S
         
-        # 9. I/O
+        # I/O
         self.xi_train_folder = "xi_train__dual/"
         self.xi_test_folder = "xi_test__dual/"
         self.snapshots_folder = "snapshots__dual/"

@@ -44,14 +44,14 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         EllipticCoerciveReducedProblem.__init__(self, truth_problem)
         
         # $$ ONLINE DATA STRUCTURES $$ #
-        # 5. Residual terms
+        # Residual terms
         self._riesz_solve_storage = Function(self.truth_problem.V)
         self.riesz = dict() # from string to AffineExpansionOnlineStorage
         self.riesz_product = dict() # from string to AffineExpansionOnlineStorage
         self.build_error_estimation_matrices.__func__.initialized = False
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 9. I/O
+        # I/O
         self.folder["error_estimation"] = self.folder_prefix + "/" + "error_estimation"
 
         

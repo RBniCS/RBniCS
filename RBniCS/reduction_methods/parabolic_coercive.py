@@ -85,22 +85,22 @@ class ParabolicCoercive(EllipticCoercive):
         self.t = 0.
 
         # $$ ONLINE DATA STRUCTURES $$ #
-        # 3a. Number of terms in the affine expansion
+        # Number of terms in the affine expansion
         self.Qm = 1
-        # 3b. Theta multiplicative factors of the affine expansion
+        # Theta multiplicative factors of the affine expansion
         self.theta_m = [1.]
-        # 3c. Reduced order operators
+        # Reduced order operators
         self.reduced_M = []
-        # 4. Online solution
+        # Online solution
         self.all_uN = np.array([]) # array (size of T/dt + 1) of vectors of dimension N storing the reduced order solution
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        # 3c. Matrices/vectors resulting from the truth discretization
+        # Matrices/vectors resulting from the truth discretization
         u = self.u
         v = self.v
         truth_m = inner(u,v)*dx
         self.truth_M = (assemble(truth_m), )
-        # 4. Auxiliary functions
+        # Auxiliary functions
         self.all_snapshot = np.array([]) # array (size of T/dt + 1) of vectors for storage of a truth solution
         self.all_reduced = np.array([]) # array (size of T/dt + 1) of vectors for storage of the FE reconstruction of the reduced solution
         self.all_error = np.array([]) # array (size of T/dt + 1) of vectors for storage of the error

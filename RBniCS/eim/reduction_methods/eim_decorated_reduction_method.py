@@ -130,9 +130,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.EIM_approximation = EIM_approximation
             # Store the dof to vertex map to locate maximum of functions
             self.dof_to_vertex_map = dof_to_vertex_map(self.EIM_approximation.V)
-            # 6bis. Declare a new matrix to store the snapshots
+            # Declare a new matrix to store the snapshots
             self.snapshot_matrix = SnapshotMatrix()
-            # 9. I/O
+            # I/O
             self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
             self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
             #

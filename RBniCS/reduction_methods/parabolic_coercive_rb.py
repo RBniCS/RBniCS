@@ -72,7 +72,7 @@ class ParabolicCoerciveRB(ParabolicCoercive,EllipticCoerciveRB):
         
         # CHECK il resto del metodo
         # $$ ONLINE DATA STRUCTURES $$ #
-        # 4. Residual terms
+        # Residual terms
         self.Cf = []
         self.CC = [] # C_ff
         self.CL = [] # C_fa
