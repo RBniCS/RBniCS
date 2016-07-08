@@ -257,13 +257,13 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
         self.S = self.primal_problem.S
         
         # I/O
-        self.xi_train_folder = "xi_train__dual/"
-        self.xi_test_folder = "xi_test__dual/"
-        self.snapshots_folder = "snapshots__dual/"
-        self.basis_folder = "basis__dual/"
-        self.error_estimation_folder = "error_estimation__dual/"
-        self.reduced_operators_folder = "reduced_matrices__dual/"
-        self.post_processing_folder = "post_processing__dual/"
+        self.xi_train_folder = "xi_train__dual"
+        self.xi_test_folder = "xi_test__dual"
+        self.snapshots_folder = "snapshots__dual"
+        self.basis_folder = "basis__dual"
+        self.error_estimation_folder = "error_estimation__dual"
+        self.reduced_operators_folder = "reduced_matrices__dual"
+        self.post_processing_folder = "post_processing__dual"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
