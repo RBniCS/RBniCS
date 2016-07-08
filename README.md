@@ -11,7 +11,7 @@ Several tutorials are provided. This software is also a companion of the introdu
 
 ### 1. Prerequisites
 **RBniCS** requires
-* **FEniCS**, with petsc4py and slepc4py, for computations during the offline stage;
+* **FEniCS**, with PETSc and SLEPc, for computations during the offline stage;
 * **numpy** for computations during the online stage;
 * **python-glpk**, a python interface to the glpk library for linear programming, necessary for the successive constraints method.
 
