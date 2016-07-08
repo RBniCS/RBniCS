@@ -75,6 +75,14 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         # $$ OFFLINE/ONLINE DATA STRUCTURES $$ #
         self.current_stage = None
         
+        # Change the set_mu method to propagate to reduced problem
+        standard_set_mu = self.truth_problem.set_mu
+        def overridden_set_mu(self_, mu): # self_ is self.truth_problem, self is the reduced problem
+            standard_set_mu(mu)
+            if self.mu is not mu:
+                self.set_mu(mu)
+        self.truth_problem.set_mu = types.MethodType(overridden_set_mu, self.truth_problem)
+        
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
     
@@ -85,7 +93,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
     def set_mu(self, mu):
         self.mu = mu
-        self.truth_problem.set_mu(mu)
+        if self.truth_problem.mu is not mu:
+            self.truth_problem.set_mu(mu)
     
     #  @}
     ########################### end - SETTERS - end ########################### 

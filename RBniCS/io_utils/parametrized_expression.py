@@ -29,7 +29,7 @@ import types
 # states that subclassing Expression may be significantly slower than using 
 # JIT-compiled expressions. To this end we havoid subclassing expression and
 # just add the set_mu method using the types library
-def ParametrizedExpression(parametrized_expression_code=None, *args, **kwargs):    
+def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *args, **kwargs):    
     if parametrized_expression_code is None:
         return None
     
@@ -57,14 +57,18 @@ def ParametrizedExpression(parametrized_expression_code=None, *args, **kwargs):
     kwargs.update(mu_dict)
             
     expression = Expression(parametrized_expression_code, *args, **kwargs)
-    expression.len_mu = len(mu)
-    
-    def set_mu(self, mu):
-        assert isinstance(mu, tuple)
-        assert len(mu) == self.len_mu
-        for p in range(len(mu)):
-            setattr(self, "mu_" + str(p), mu[p])
-    expression.set_mu = types.MethodType(set_mu, expression)
+    expression.mu = mu # to avoid repeated assignments
+        
+    standard_set_mu = truth_problem.set_mu
+    def overridden_set_mu(self, mu):
+        standard_set_mu(mu)
+        if expression.mu is not mu:
+            assert isinstance(mu, tuple)
+            assert len(mu) == len(expression.mu)
+            for p in range(len(mu)):
+                setattr(expression, "mu_" + str(p), mu[p])
+            expression.mu = mu
+    truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
     
     return expression
 

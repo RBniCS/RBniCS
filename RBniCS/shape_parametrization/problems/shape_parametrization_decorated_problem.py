@@ -73,29 +73,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
             
-            ###########################     SETTERS     ########################### 
-            ## @defgroup Setters Set properties of the reduced order approximation
-            #  @{
-        
-            # Propagate the values of all setters also to the parametrized expression object
-            
-            ## OFFLINE/ONLINE: set the current value of the parameter
-            def set_mu(self, mu):
-                ParametrizedProblem_DerivedClass.set_mu(self, mu)
-                try:
-                    self._set_mu_for_displacement_expression(mu)
-                except AttributeError:
-                    # this will happen when setting mu for the initial parameter in RB methods,
-                    # because the init() method has not been called yet
-                    pass
-                
-            def _set_mu_for_displacement_expression(self, mu):
-                for i in range(len(self.displacement_expression)):
-                    self.displacement_expression[i].set_mu(mu)
-                
-            #  @}
-            ########################### end - SETTERS - end ########################### 
-            
             ###########################     OFFLINE STAGE     ########################### 
             ## @defgroup OfflineStage Methods related to the offline stage
             #  @{
@@ -117,14 +94,12 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
                         )
                     self.displacement_expression.append(
                         ParametrizedExpression(
+                            self,
                             tuple(displacement_expression_i),
                             mu=self.mu,
                             element=self.deformation_V.ufl_element()
                         )
                     )
-                # Now that displacement_expression has been initialized, make sure
-                # that the mu is up-to-date (see the try/except in the set_mu method)
-                self._set_mu_for_displacement_expression(self.mu)
             
             #  @}
             ########################### end - OFFLINE STAGE - end ########################### 
