@@ -26,10 +26,11 @@
 ## @class GramSchmidt
 #
 
+from math import sqrt
 from RBniCS.linear_algebra.transpose import transpose
 
 # Class containing the implementation of Gram Schmidt
-class GramSchmidt():
+class GramSchmidt(object):
 
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of a GS object
@@ -57,7 +58,7 @@ class GramSchmidt():
         b = Z[n_basis - 1] # reference to the last basis
         for i in range(n_basis - 1):
             b -= (transpose(b)*X*Z[i]) * Z[i]
-        b /= transpose(b)*X*b
+        b /= sqrt(transpose(b)*X*b)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

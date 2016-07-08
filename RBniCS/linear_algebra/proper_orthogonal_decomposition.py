@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from math import sqrt
 from RBniCS.linear_algebra.transpose import transpose
 from RBniCS.linear_algebra.snapshots_matrix import SnapshotsMatrix
 from RBniCS.linear_algebra.online_eigen_solver import OnlineEigenSolver
@@ -80,7 +81,7 @@ class ProperOrthogonalDecomposition(object):
         
         Z = snapshots_matrix*eigensolver.get_eigenvectors(Nmax)
         for b in Z:
-            b /= transpose(b)*X*b
+            b /= sqrt(transpose(b)*X*b)
         
         self.eigensolver = eigensolver
         return (Z, Nmax)
