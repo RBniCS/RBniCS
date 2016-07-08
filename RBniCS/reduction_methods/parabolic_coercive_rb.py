@@ -73,15 +73,15 @@ class ParabolicCoerciveRB(ParabolicCoercive,EllipticCoerciveRB):
         # CHECK il resto del metodo
         # $$ ONLINE DATA STRUCTURES $$ #
         # Residual terms
-        self.Cf = []
-        self.CC = [] # C_ff
-        self.CL = [] # C_fa
-        self.LL = [] # C_aa
-        self.MM = [] # C_mm
-        self.CM = [] # C_fm
-        self.LM = [] # C_am
-        self.lnq = []
-        self.mnq = []
+        self.Cf = list()
+        self.CC = list() # C_ff
+        self.CL = list() # C_fa
+        self.LL = list() # C_aa
+        self.MM = list() # C_mm
+        self.CM = list() # C_fm
+        self.LM = list() # C_am
+        self.lnq = list()
+        self.mnq = list()
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -288,8 +288,8 @@ class ParabolicCoerciveRB(ParabolicCoercive,EllipticCoerciveRB):
         self.CM = np.zeros((self.N,Qf,Qm))
         self.MM = np.zeros((self.N,self.N,self.Qm,self.Qm))
         self.LM = np.zeros((self.N,self.N,self.Qm,self.Qa))
-        self.lnq = ()
-        self.mnq = ()
+        self.lnq = tuple()
+        self.mnq = tuple()
 
         for n in range(self.N):
             RBu.vector()[:] = np.array(self.Z[:, n], dtype=np.float_)

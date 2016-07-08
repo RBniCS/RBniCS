@@ -39,8 +39,8 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem(*parametrized_expression
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, *args)
                 # Attach parametrized function objects
-                self.parametrized_expressions__as_strings = []
-                self.parametrized_expressions = []
+                self.parametrized_expressions__as_strings = list()
+                self.parametrized_expressions = list()
                 for parametrized_expression__as_string in parametrized_expressions:
                     self.parametrized_expressions__as_strings.append(parametrized_expression__as_string)
                     self.parametrized_expressions.append(ParametrizedExpression())

@@ -90,9 +90,9 @@ class ParabolicCoercive(EllipticCoercive):
         # Theta multiplicative factors of the affine expansion
         self.theta_m = [1.]
         # Reduced order operators
-        self.reduced_M = []
+        self.reduced_M = list()
         # Online solution
-        self.all_uN = np.array([]) # array (size of T/dt + 1) of vectors of dimension N storing the reduced order solution
+        self.all_uN = np.array(list()) # array (size of T/dt + 1) of vectors of dimension N storing the reduced order solution
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Matrices/vectors resulting from the truth discretization
@@ -101,9 +101,9 @@ class ParabolicCoercive(EllipticCoercive):
         truth_m = inner(u,v)*dx
         self.truth_M = (assemble(truth_m), )
         # Auxiliary functions
-        self.all_snapshot = np.array([]) # array (size of T/dt + 1) of vectors for storage of a truth solution
-        self.all_reduced = np.array([]) # array (size of T/dt + 1) of vectors for storage of the FE reconstruction of the reduced solution
-        self.all_error = np.array([]) # array (size of T/dt + 1) of vectors for storage of the error
+        self.all_snapshot = np.array(list()) # array (size of T/dt + 1) of vectors for storage of a truth solution
+        self.all_reduced = np.array(list()) # array (size of T/dt + 1) of vectors for storage of the FE reconstruction of the reduced solution
+        self.all_error = np.array(list()) # array (size of T/dt + 1) of vectors for storage of the error
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -263,7 +263,7 @@ class ParabolicCoercive(EllipticCoercive):
         EllipticCoercive.build_reduced_operators(self)
         # Moreover, assemble also the reduced matrix M
         # TODO
-        reduced_M = ()
+        reduced_M = tuple()
         i = 0
         for M in self.truth_M:
             M = as_backend_type(M)
@@ -290,7 +290,7 @@ class ParabolicCoercive(EllipticCoercive):
         if not skip_truth_solve:
             self.truth_solve()
         self.online_solve(N, False)
-        self.error = np.array([])
+        self.error = np.array(list())
         error_norm_squared = 0.
         for k in range(len(self.all_times)):
             current_error.vector()[:] = self.all_snapshot[:, k].vector()[:] - self.all_reduced[:, k].vector()[:] # error as a function

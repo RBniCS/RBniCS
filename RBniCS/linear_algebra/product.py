@@ -44,7 +44,7 @@ def product(thetas, _operators, thetas2=None):
             output = _DirichletBCsProductOutput()
             for i in range(len(thetas)):
                 # Each element of the list contains a tuple. Owing to FEniCS documentation, its second argument is the function, to be multiplied by theta
-                output_i = []
+                output_i = list()
                 for j in range(len(operators[i])):
                     assert len(operators[i][j]) == 4
                     operators_i_j_list = list(operators[i][j])

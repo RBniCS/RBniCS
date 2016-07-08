@@ -30,7 +30,7 @@ from RBniCS.io_utils.pickle_io import PickleIO
 
 class ExportableList(object):
     def __init__(self, import_export_backend, original_list=None):
-        self._list = []
+        self._list = list()
         if import_export_backend == "numpy":
             self._FileIO = NumpyIO
         elif import_export_backend == "pickle":

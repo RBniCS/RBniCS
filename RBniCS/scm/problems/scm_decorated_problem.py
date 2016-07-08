@@ -84,14 +84,14 @@ def SCMDecoratedProblem(*args):
                 
                 # $$ ONLINE DATA STRUCTURES $$ #
                 # Define additional storage for SCM
-                self.B_min = np.array([]) # minimum values of the bounding box mathcal{B}. Vector of size Qa
-                self.B_max = np.array([]) # maximum values of the bounding box mathcal{B}. Vector of size Qa
-                self.C_J = [] # vector storing the indices of greedily selected parameters during the training phase
-                self.complement_C_J = [] # vector storing the indices of the complement of greedily selected parameters during the training phase
-                self.alpha_J = [] # vector storing the truth coercivity constants at the greedy parameters in C_J
-                self.alpha_LB_on_xi_train = np.array([]) # vector storing the approximation of the coercivity constant on the complement of C_J (at the previous iteration, during the offline phase)
-                self.eigenvector_J = [] # vector of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
-                self.UB_vectors_J = [] # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
+                self.B_min = np.array(list()) # minimum values of the bounding box mathcal{B}. Vector of size Qa
+                self.B_max = np.array(list()) # maximum values of the bounding box mathcal{B}. Vector of size Qa
+                self.C_J = list() # vector storing the indices of greedily selected parameters during the training phase
+                self.complement_C_J = list() # vector storing the indices of the complement of greedily selected parameters during the training phase
+                self.alpha_J = list() # vector storing the truth coercivity constants at the greedy parameters in C_J
+                self.alpha_LB_on_xi_train = np.array(list()) # vector storing the approximation of the coercivity constant on the complement of C_J (at the previous iteration, during the offline phase)
+                self.eigenvector_J = list() # vector of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
+                self.UB_vectors_J = list() # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
                 self.M_e = -1 # integer denoting the number of constraints based on the exact eigenvalues. If < 0, then it is assumed to be len(C_J)
                 self.M_p = -1 # integer denoting the number of constraints based on the previous lower bounds. If < 0, then it is assumed to be len(C_J)
                 
@@ -102,9 +102,9 @@ def SCMDecoratedProblem(*args):
                 self.invalid_minimum_eigenvalue = 1.e4
                 self.invalid_maximum_eigenvalue = 1.e-4
                 # Matrices/vectors resulting from the truth discretization
-                self.truth_A__condensed_for_minimum_eigenvalue = ()
-                self.truth_A__condensed_for_maximum_eigenvalue = ()
-                self.S__condensed = ()
+                self.truth_A__condensed_for_minimum_eigenvalue = tuple()
+                self.truth_A__condensed_for_maximum_eigenvalue = tuple()
+                self.S__condensed = tuple()
                 # I/O
                 self.folder["basis"] = self.folder_prefix + "/" + "basis"
                 self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
@@ -300,12 +300,12 @@ def SCMDecoratedProblem(*args):
                 if M > len(all_mu_indices):
                     raise RuntimeError("SCM error in closest parameters: this should never happen")
                 
-                indices_and_distances = []
+                indices_and_distances = list()
                 for p in range(len(all_mu_indices)):
                     distance = self.parameters_distance(mu, self.xi_train[ all_mu_indices[p] ])
                     indices_and_distances.append((p, distance))
                 indices_and_distances.sort(key=operator.itemgetter(1))
-                neighbors = []
+                neighbors = list()
                 for p in range(M):
                     neighbors += [indices_and_distances[p][0]]
                 return neighbors

@@ -61,7 +61,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     - online_output()
     - get_delta()
     - get_delta_output()
-    - get_eps2 ()
+    - get_eps2()
     - truth_output()
 
     ## Error analysis

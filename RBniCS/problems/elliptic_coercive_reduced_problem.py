@@ -145,7 +145,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
         except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
-            theta_bc = ()
+            theta_bc = tuple() # deliberately empty
         self._solution = OnlineVector(N)
         solve(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
         return self._solution
@@ -264,13 +264,13 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 for i in range(Q_dirichlet_bcs):
                     def modified_compute_theta(self, term):
                         if term == "dirichlet_bc":
-                            modified_theta_bc = ()
+                            modified_theta_bc = list()
                             for j in range(Q_dirichlet_bcs):
                                 if j != i:
-                                    modified_theta_bc += (0.,)
+                                    modified_theta_bc.append(0.)
                                 else:
-                                    modified_theta_bc += (theta_bc[i],)
-                            return modified_theta
+                                    modified_theta_bc.append(theta_bc[i])
+                            return tuple(modified_theta)
                         else:
                             return standard_compute_theta()
                     self.truth_problem.compute_theta = types.MethodType(modified_compute_theta, self.truth_problem)

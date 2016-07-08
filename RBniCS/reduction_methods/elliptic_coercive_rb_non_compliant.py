@@ -58,13 +58,13 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
         # Number of terms in the affine expansion
         self.Qs = 0
         # Reduced order operators
-        self.operator_s = ()
-        self.operator_a_dp = () # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
-        self.operator_f_d = () # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
+        self.operator_s = tuple()
+        self.operator_a_dp = tuple() # precoumpted expansion of a_q(\phi_j, \psi_i) for \phi_j primal basis function and \psi_i dual basis function
+        self.operator_f_d = tuple() # precoumpted expansion of f_q(\psi_i) for \psi_i dual basis function
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Matrices/vectors resulting from the truth discretization
-        self.truth_S = ()
+        self.truth_S = tuple()
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -385,7 +385,7 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
     def compute_theta_f(self):
         self.primal_problem.set_mu(self.mu)
         primal_theta_s = self.primal_problem.compute_theta("s")
-        primal_theta_s_minus = ()
+        primal_theta_s_minus = tuple()
         for qs in range(len(primal_theta_s)):
             primal_theta_s_minus += (- primal_theta_s[qs],)
         return primal_theta_s_minus

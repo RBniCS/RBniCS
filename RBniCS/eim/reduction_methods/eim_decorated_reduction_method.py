@@ -35,7 +35,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             ReductionMethod_DerivedClass.__init__(truth_problem)
             assert isinstance(truth_problem, EIMDecoratedProblem_Class)
             # Attach EIM reduction methods
-            self.EIM_reduction_method = []
+            self.EIM_reduction_method = list()
             for i in range(len(truth_problem.EIM_approximation)):
                 self.EIM_reduction_method.append(
                     _EIMReductionMethod(truth_problem.EIM_approximation[i], truth_problem.name() + "/eim/" + str(i))

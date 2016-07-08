@@ -57,7 +57,7 @@ def sum(product_output):
                     assert boundary_id_to_function_space_map[boundary_id] == function_space
                     assert boundary_id_to_boundary_mesh_map[boundary_id] == boundary_mesh
                     boundary_id_to_function_map[boundary_id] += function
-        output = []
+        output = list()
         for boundary_id in boundary_id_to_function_map.keys():
             assert boundary_id in boundary_id_to_function_space_map
             assert boundary_id in boundary_id_to_boundary_mesh_map

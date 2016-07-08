@@ -39,7 +39,7 @@ def EIMDecoratedProblem(*parametrized_expressions):
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, *args)
                 # Attach EIM reduced problems
-                self.EIM_approximation = []
+                self.EIM_approximation = list()
                 for i in range(len(parametrized_expressions)):
                     self.EIM_approximation.append(_EIMApproximation(V, parametrized_expressions[i], ParametrizedProblem_DerivedClass.__name__ + "/eim/" + str(i)))
                 # Signal to the factory that this problem has been decorated
@@ -198,11 +198,11 @@ def EIMDecoratedProblem(*parametrized_expressions):
                 
             ## Return the basis functions as tuples of functions
             def assemble_mu_independent_interpolated_function(self):
-                output = ()
+                output = list()
                 for n in range(self.N):
                     fun = Function(self.V)
                     fun.vector()[:] = np.array(self.Z[:, n], dtype=np.float)
-                    output += (fun,)
+                    output.append(fun)
                 return output
                                 
             ## Evaluate the b-th basis function at the point corresponding to dof d
