@@ -126,7 +126,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 self.Q[term] = self.truth_problem.Q[term]
                 self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
             # Store the lifting functions in self.Z
-            self.assemble_operator("dirichlet_bc")
+            self.assemble_operator("dirichlet_bc") # no return value from assemble_operator in this case
         else:
             raise RuntimeError("Invalid stage in init().")
             
@@ -177,7 +177,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     def build_reduced_operators(self):
         assert self.current_stage == "offline"
         for term in ["a", "f"]:
-            self.assemble_operator(term)
+            self.operator[term] = self.assemble_operator(term)
         
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
     # non-homogeneous Dirichlet boundary conditions
@@ -242,25 +242,30 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             # problem also as a truth problem for a nested reduction
             if term == "a":
                 self.operator["a"].load(self.folder["reduced_operators"], "operator_a")
+                return self.operator["a"]
             elif term == "f":
                 self.operator["f"].load(self.folder["reduced_operators"], "operator_f")
+                return self.operator["f"]
             elif term == "dirichlet_bc":
                 raise RuntimeError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
             else:
                 raise RuntimeError("Invalid term for assemble_operator().")
-            return self.operator[term]
         elif self.current_stage == "offline":
-            # There is no need to return anything because the previous remark cannot hold here
-            # (we are still training the reduced order model, we cannot possibly use it 
-            #  anywhere else)
+            # As in the previous case, there is no need to return anything because 
+            # we are still training the reduced order model, so the previous remark 
+            # (on the usage of a reduced problem as a truth one) cannot hold here.
+            # However, in order to have a consistent interface we return the assembled
+            # operator
             if term == "a":
                 for q in range(self.Q["a"]):
                     self.operator["a"][q] = transpose(self.Z)*self.truth_problem.operator["a"][q]*self.Z
                 self.operator["a"].save(self.folder["reduced_operators"], "operator_a")
+                return self.operator["a"]
             elif term == "f":
                 for q in range(self.Q["f"]):
                     self.operator["f"][q] = transpose(self.Z)*self.truth_problem.operator["f"][q]
                 self.operator["f"].save(self.folder["reduced_operators"], "operator_f")
+                return self.operator["f"]
             elif term == "dirichlet_bc":
                 try:
                     theta_bc = self.compute_theta("dirichlet_bc")

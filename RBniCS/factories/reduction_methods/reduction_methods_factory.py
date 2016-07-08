@@ -73,13 +73,18 @@ def PODGalerkin(truth_problem):
 
 # Decorator to add EIM or SCM, as required
 def _DecoratedReductionMethod_TypeFactory(truth_problem):
+    #from RBniCS.eim.reduction_methods import EIMDecoratedReductionMethod # TODO enable
+    from RBniCS.eim.reduction_methods import ExactParametrizedFunctionEvaluationDecoratedReductionMethod
+    #from RBniCS.scm.reduction_methods import SCMDecoratedReductionMethod # TODO enable
+    #from RBniCS.scm.reduction_methods import ExactCoercivityConstantDecoratedReductionMethod # TODO enable
+    
     def _DecoratedReductionMethod_TypeFactory__Decorator(ReductionMethod_DerivedClass):
         DecoratedReductionMethod_Type = ReductionMethod_DerivedClass
         if hasattr(truth_problem, "_problem_decorators"):
             problem_decorators = truth_problem._problem_decorators
             if "EIM" in problem_decorators and problem_decorators["EIM"]:
                 DecoratedReductionMethod_Type = EIMDecoratedReductionMethod(DecoratedReductionMethod_Type)
-            if "ExactParametrizedFunction" in problem_decorators and problem_decorators["ExactParametrizedFunction"]:
+            if "ExactParametrizedFunctionEvaluation" in problem_decorators and problem_decorators["ExactParametrizedFunctionEvaluation"]:
                 DecoratedReductionMethod_Type = ExactParametrizedFunctionEvaluationDecoratedReductionMethod(DecoratedReductionMethod_Type)
             if "SCM" in problem_decorators and problem_decorators["SCM"]:
                 DecoratedReductionMethod_Type = SCMDecoratedReductionMethod(DecoratedReductionMethod_Type)

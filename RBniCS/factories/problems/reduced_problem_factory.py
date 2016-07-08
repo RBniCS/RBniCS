@@ -30,8 +30,7 @@
 def ReducedProblemFactory(truth_problem, reduction_method):
     from RBniCS.reduction_methods import EllipticCoercivePODGalerkinReduction, EllipticCoerciveRBReduction
     from RBniCS.problems import EllipticCoercivePODGalerkinReducedProblem, EllipticCoerciveRBReducedProblem
-    from RBniCS.shape_parametrization.problems import ShapeParametrizationDecoratedReducedProblem
-    
+        
     # Determine whether RB or POD-Galerkin method is used
     def _ReducedProblem_TypeFactory(reduction_method):
         if isinstance(reduction_method, EllipticCoercivePODGalerkinReduction):
@@ -40,25 +39,6 @@ def ReducedProblemFactory(truth_problem, reduction_method):
             return EllipticCoerciveRBReducedProblem
         else:
             raise RuntimeError("Invalid arguments in ReducedProblemFactory.")
-            
-    # Decorator to add EIM or SCM, as required
-    def _DecoratedReducedProblem_TypeFactory(truth_problem):
-        def _DecoratedReducedProblem_TypeFactory__Decorator(ParametrizedProblem_DerivedClass):
-            DecoratedReducedProblem_Type = ParametrizedProblem_DerivedClass
-            if hasattr(truth_problem, "_problem_decorators"):
-                problem_decorators = truth_problem._problem_decorators
-                if "EIM" in problem_decorators and problem_decorators["EIM"]:
-                    pass # EIM operates on the truth problem, rather than the reduced one
-                if "ExactParametrizedFunction" in problem_decorators and problem_decorators["ExactParametrizedFunction"]:
-                    DecoratedReducedProblem_Type = ExactParametrizedFunctionEvaluationDecoratedReducedProblem(DecoratedReducedProblem_Type)
-                if "SCM" in problem_decorators and problem_decorators["SCM"]:
-                    pass # SCM operates on the truth problem, rather than the reduced one
-                if "ExactCoercivityConstant" in problem_decorators and problem_decorators["ExactCoercivityConstant"]:
-                    DecoratedReducedProblem_Type = ExactCoercivityConstantDecoratedReducedProblem(DecoratedReducedProblem_Type)
-                if "ShapeParametrization" in problem_decorators and problem_decorators["ShapeParametrization"]:
-                    DecoratedReducedProblem_Type = ShapeParametrizationDecoratedReducedProblem(DecoratedReducedProblem_Type)
-            return DecoratedReducedProblem_Type
-        return _DecoratedReducedProblem_TypeFactory__Decorator
             
     # Combine them
     @_DecoratedReducedProblem_TypeFactory(truth_problem)
@@ -71,3 +51,28 @@ def ReducedProblemFactory(truth_problem, reduction_method):
     reduced_problem.set_mu_range(truth_problem.mu_range)
     # Return
     return reduced_problem
+    
+# Decorator to add EIM or SCM, as required
+def _DecoratedReducedProblem_TypeFactory(truth_problem):
+    #from RBniCS.eim.problems import EIMDecoratedReducedProblem # TODO enable
+    from RBniCS.eim.problems import ExactParametrizedFunctionEvaluationDecoratedReducedProblem
+    #from RBniCS.scm.problems import SCMDecoratedReducedProblem # TODO enable
+    #from RBniCS.scm.problems import ExactCoercivityConstantDecoratedReducedProblem # TODO enable
+    from RBniCS.shape_parametrization.problems import ShapeParametrizationDecoratedReducedProblem
+    
+    def _DecoratedReducedProblem_TypeFactory__Decorator(ParametrizedProblem_DerivedClass):
+        DecoratedReducedProblem_Type = ParametrizedProblem_DerivedClass
+        if hasattr(truth_problem, "_problem_decorators"):
+            problem_decorators = truth_problem._problem_decorators
+            if "EIM" in problem_decorators and problem_decorators["EIM"]:
+                pass # EIM operates on the truth problem, rather than the reduced one
+            if "ExactParametrizedFunctionEvaluation" in problem_decorators and problem_decorators["ExactParametrizedFunctionEvaluation"]:
+                DecoratedReducedProblem_Type = ExactParametrizedFunctionEvaluationDecoratedReducedProblem(DecoratedReducedProblem_Type)
+            if "SCM" in problem_decorators and problem_decorators["SCM"]:
+                pass # SCM operates on the truth problem, rather than the reduced one
+            if "ExactCoercivityConstant" in problem_decorators and problem_decorators["ExactCoercivityConstant"]:
+                DecoratedReducedProblem_Type = ExactCoercivityConstantDecoratedReducedProblem(DecoratedReducedProblem_Type)
+            if "ShapeParametrization" in problem_decorators and problem_decorators["ShapeParametrization"]:
+                DecoratedReducedProblem_Type = ShapeParametrizationDecoratedReducedProblem(DecoratedReducedProblem_Type)
+        return DecoratedReducedProblem_Type
+    return _DecoratedReducedProblem_TypeFactory__Decorator

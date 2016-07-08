@@ -136,7 +136,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
             def name(cls):
                 assert len(cls.__bases__) == 1
                 return cls.__bases__[0].name()
-                        
+                
             #  @}
             ########################### end - I/O - end ########################### 
         

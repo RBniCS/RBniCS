@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-#from RBniCS.eim.problems.eim_decorated_reduction_method import EIMDecoratedReductionMethod # TODO enable
-from RBniCS.eim.problems.exact_parametrized_function_evaluation_decorated_reduction_method import ExactParametrizedFunctionEvaluationDecoratedReductionMethod
+#from RBniCS.eim.reduction_methods.eim_decorated_reduction_method import EIMDecoratedReductionMethod # TODO enable
+from RBniCS.eim.reduction_methods.exact_parametrized_function_evaluation_decorated_reduction_method import ExactParametrizedFunctionEvaluationDecoratedReductionMethod
 
 __all__ = [
     #'EIMDecoratedReductionMethod', # TODO enable

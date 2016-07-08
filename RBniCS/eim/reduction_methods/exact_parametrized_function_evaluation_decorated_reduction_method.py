@@ -32,8 +32,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReductionMethod(ReductionMethod_
     class ExactParametrizedFunctionEvaluationDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReductionMethod_DerivedClass.__init__(truth_problem)
-            assert isinstance(truth_problem, ExactParametrizedFunctionEvaluationDecoratedProblem_Class)
+            ReductionMethod_DerivedClass.__init__(self, truth_problem)
         
     # return value (a class) for the decorator
     return ExactParametrizedFunctionEvaluationDecoratedReductionMethod_Class

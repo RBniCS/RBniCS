@@ -28,69 +28,53 @@ import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
 from RBniCS.problems import ParametrizedProblem
+from RBniCS.linear_algebra import AffineExpansionOfflineStorage
 
-def ExactParametrizedFunctionEvaluationDecoratedProblem(*parametrized_expressions):
-    def ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
-    
-        class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
-            
-            ## Default initialization of members
-            def __init__(self, V, *args):
-                # Call the parent initialization
-                ParametrizedProblem_DerivedClass.__init__(self, V, *args)
-                # Attach parametrized function objects
-                self.parametrized_expressions__as_strings = list()
-                self.parametrized_expressions = list()
-                for parametrized_expression__as_string in parametrized_expressions:
-                    self.parametrized_expressions__as_strings.append(parametrized_expression__as_string)
-                    self.parametrized_expressions.append(ParametrizedExpression())
-                # Signal to the factory that this problem has been decorated
-                if not hasattr(self, "_problem_decorators"):
-                    self._problem_decorators = dict() # string to bool
-                self._problem_decorators["ExactParametrizedFunctionEvaluation"] = True
-            
-            ###########################     SETTERS     ########################### 
-            ## @defgroup Setters Set properties of the reduced order approximation
-            #  @{
+def ExactParametrizedFunctionEvaluationDecoratedProblem(ParametrizedProblem_DerivedClass):
+
+    class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
         
-            # Propagate the values of all setters also to the parametrized expressions objects
-                                
-            ## OFFLINE/ONLINE: set the current value of the parameter
-            def set_mu(self, mu):
-                ParametrizedProblem.set_mu(self, mu)
-                for i in len(self.parametrized_expressions):
-                    self.parametrized_expressions[i].set_mu(mu)
-                
-            #  @}
-            ########################### end - SETTERS - end ########################### 
+        ## Default initialization of members
+        def __init__(self, V, **kwargs):
+            # Call the parent initialization
+            ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
             
-            ###########################     OFFLINE STAGE     ########################### 
-            ## @defgroup OfflineStage Methods related to the offline stage
-            #  @{
-            
-            ## Initialize data structures required for the offline phase
-            def init(self):
-                ParametrizedProblem_DerivedClass.init(self)
-                # Initialize the parametrized expressions
-                for i in len(self.parametrized_expressions):
-                    self.parametrized_expressions[i] = ParametrizedExpression(self.parametrized_expressions__as_strings[i], mu=self.mu, element=self.V.ufl_element())
+            # Signal to the factory that this problem has been decorated
+            if not hasattr(self, "_problem_decorators"):
+                self._problem_decorators = dict() # string to bool
+            self._problem_decorators["ExactParametrizedFunctionEvaluation"] = True
+        
+        ###########################     OFFLINE STAGE     ########################### 
+        ## @defgroup OfflineStage Methods related to the offline stage
+        #  @{
+        
+        ## Perform a truth solve
+        def solve(self):
+            # The offline/online separation does not hold anymore, so we need to re-assemble operators,
+            # because the assemble_operator() *may* return parameter dependent operators.
+            for term in self.operator:
+                self.operator[term] = AffineExpansionOfflineStorage(self.assemble_operator(term))
+            return ParametrizedProblem_DerivedClass.solve(self)
+        
+        #  @}
+        ########################### end - OFFLINE STAGE - end ########################### 
+        
+        ###########################     I/O     ########################### 
+        ## @defgroup IO Input/output methods
+        #  @{
                     
-            ## Perform a truth solve
-            def solve(self):
-                # The offline/online separation does not hold anymore, so we need to re-assemble operators,
-                # because the assemble_operator() *may* return parameter dependent operators.
-                for term in self.operator:
-                    self.operator[term] = AffineExpansionOfflineStorage(self.assemble_operator(term))
-                return ParametrizedProblem_DerivedClass.solve(self)
+        ## Get the name of the problem, to be used as a prefix for output folders.
+        # Overridden to use the parent name
+        @classmethod
+        def name(cls):
+            assert len(cls.__bases__) == 1
+            return cls.__bases__[0].name()
             
-            #  @}
-            ########################### end - OFFLINE STAGE - end ########################### 
-            
-        # return value (a class) for the decorator
-        return ExactParametrizedFunctionEvaluationDecoratedProblem_Class
-    
-    # return the decorator itself
-    return ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator
+        #  @}
+        ########################### end - I/O - end ########################### 
+        
+    # return value (a class) for the decorator
+    return ExactParametrizedFunctionEvaluationDecoratedProblem_Class
     
 # For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
 ExactParametrizedFunctionEvaluation = ExactParametrizedFunctionEvaluationDecoratedProblem
