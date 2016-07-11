@@ -38,6 +38,8 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem(ParametrizedProblem_Deri
         def __init__(self, V, **kwargs):
             # Call the parent initialization
             ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
+            # Avoid useless assemblies
+            self.solve.__func__.previous_mu = None
             
             # Signal to the factory that this problem has been decorated
             if not hasattr(self, "_problem_decorators"):
@@ -52,8 +54,10 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem(ParametrizedProblem_Deri
         def solve(self):
             # The offline/online separation does not hold anymore, so we need to re-assemble operators,
             # because the assemble_operator() *may* return parameter dependent operators.
-            for term in self.operator:
-                self.operator[term] = AffineExpansionOfflineStorage(self.assemble_operator(term))
+            if self.solve.__func__.previous_mu != self.mu:
+                self.init()
+                # Avoid useless assemblies
+                self.solve.__func__.previous_mu = self.mu
             return ParametrizedProblem_DerivedClass.solve(self)
         
         #  @}

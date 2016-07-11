@@ -232,6 +232,10 @@ class ParabolicCoercive(EllipticCoercive):
         print("=             Offline phase ends                             =")
         print("==============================================================")
         print("")
+        
+        reduced_problem.init("online")
+        return reduced_problem
+        
     ## Perform a truth solve
     def truth_solve(self):
         # Set the initial condition

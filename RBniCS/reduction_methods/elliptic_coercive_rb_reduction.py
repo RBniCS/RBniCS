@@ -129,8 +129,8 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
             print("reduced order solve")
             self.reduced_problem._solve(self.reduced_problem.N)
             
-            print("build matrices for error estimation")
-            self.reduced_problem.build_error_estimation_matrices()
+            print("build operators for error estimation")
+            self.reduced_problem.build_error_estimation_operators()
             
             if self.reduced_problem.N < self.Nmax:
                 print("find next mu")
@@ -146,6 +146,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
+        self.reduced_problem.init("online")
         return self.reduced_problem
         
     ## Update basis matrix

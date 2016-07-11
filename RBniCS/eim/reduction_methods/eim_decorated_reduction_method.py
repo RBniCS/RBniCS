@@ -241,6 +241,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # mu_index does not make any sense from now on
             self.mu_index = None
             
+            self.EIM_approximation.init("online")
+            return self.EIM_approximation
+            
         ## Update the snapshot matrix
         def update_snapshot_matrix(self, snapshot):
             self.snapshot_matrix.append(snapshot)
@@ -335,7 +338,6 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         # Compute the error of the empirical interpolation approximation with respect to the
         # exact function over the test set
         def error_analysis(self, N=None):
-            self.init()
             if N is None:
                 N = self.N
                 

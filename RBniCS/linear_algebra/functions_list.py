@@ -58,6 +58,11 @@ class FunctionsList(ExportableList):
         warnings.warn("Please use the enrich() method that provides a more self explanatory name.")
         self.enrich(functions)
         
+    def clear(self):
+        self._list = list()
+        # Reset precomputed slices
+        self._precomputed_slices = dict()
+        
     def load(self, directory, filename, V):
         if self._list: # avoid loading multiple times
             return False

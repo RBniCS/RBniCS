@@ -117,6 +117,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
+        self.reduced_problem.init("online")
         return self.reduced_problem
         
     ## Compute basis functions performing POD

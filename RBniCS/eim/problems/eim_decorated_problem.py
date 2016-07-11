@@ -147,7 +147,6 @@ def EIMDecoratedProblem(*parametrized_expressions):
         
             # Perform an online solve.
             def solve(self, N=None):
-                self.init()
                 if N is None:
                     N = self.N
                 

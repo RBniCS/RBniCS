@@ -132,7 +132,6 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def solve(self, N=None, with_plot=True):
-        self.init()
         if N is None:
             N = self.N
         uN = self._solve(N)

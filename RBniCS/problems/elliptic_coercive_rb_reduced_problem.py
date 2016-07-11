@@ -48,7 +48,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         self._riesz_solve_storage = Function(self.truth_problem.V)
         self.riesz = dict() # from string to AffineExpansionOnlineStorage
         self.riesz_product = dict() # from string to AffineExpansionOnlineStorage
-        self.build_error_estimation_matrices.__func__.initialized = False
+        self.build_error_estimation_operators.__func__.initialized = False
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # I/O
@@ -74,8 +74,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             self.riesz["a"] = AffineExpansionOnlineStorage(self.Q["a"])
             for qa in range(self.Q["a"]):
                 self.riesz["a"][qa] = FunctionsList()
-            self.riesz["f"] = FunctionsList() # equivalent to a AffineExpansionOnlineStorage(self.Q["f"])
-                                              # of (a single) TruthVector
+            self.riesz["f"] = AffineExpansionOnlineStorage(self.Q["f"])
+            for qf in range(self.Q["f"]):
+                self.riesz["f"][qf] = FunctionsList() # even though it will be composed of only one function
             self.riesz_product["aa"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["a"])
             self.riesz_product["af"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["f"])
             self.riesz_product["ff"] = AffineExpansionOnlineStorage(self.Q["f"], self.Q["f"])
@@ -117,15 +118,16 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
     
-    ## Build matrices for error estimation
-    def build_error_estimation_matrices(self):
-        if not self.build_error_estimation_matrices.__func__.initialized: # this part does not depend on N, so we compute it only once
+    ## Build operators for error estimation
+    def build_error_estimation_operators(self):
+        assert self.current_stage == "offline"
+        if not self.build_error_estimation_operators.__func__.initialized: # this part does not depend on N, so we compute it only once
             # Compute the Riesz representation of f
             self.compute_riesz_f()
             # Compute the (f, f) Riesz representors product
             self.assemble_error_estimation_operators("riesz_product_ff")
             #
-            self.build_error_estimation_matrices.__func__.initialized = True
+            self.build_error_estimation_operators.__func__.initialized = True
             
         # Update the Riesz representation of -A*Z with the new basis function(s)
         self.update_riesz_a()
@@ -157,8 +159,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             else:
                 homogeneous_dirichlet_bc = None
             solve(self.truth_problem.inner_product[0], self._riesz_solve_storage.vector(), self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
-            assert qf == len(self.riesz["f"])
-            self.riesz["f"].enrich(self._riesz_solve_storage)
+            self.riesz["f"][qf].enrich(self._riesz_solve_storage)
             
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -167,10 +168,10 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     ## @defgroup ProblemSpecific Problem specific methods
     #  @{
     
-    ## Assemble the reduced order affine expansion
+    ## Assemble operators for error estimation
     def assemble_error_estimation_operators(self, term):
+        short_term = term.replace("riesz_product_", "")
         if self.current_stage == "online": # load from file
-            short_term = term.replace("riesz_product_", "")
             if not short_term in self.riesz_product:
                 self.riesz_product[short_term] = AffineExpansionOnlineStorage()
             if term == "riesz_product_aa":
@@ -186,25 +187,32 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             assert len(self.truth_problem.inner_product) == 1
             if term == "riesz_product_aa":
                 for qa in range(0, self.Q["a"]):
+                    assert len(self.riesz["a"][qa]) == self.N
                     for qap in range(qa, self.Q["a"]):
+                        assert len(self.riesz["a"][qap]) == self.N
                         self.riesz_product["aa"][qa, qap] = transpose(self.riesz["a"][qa])*self.truth_problem.inner_product[0]*self.riesz["a"][qap]
                         if qa != qap:
                             self.riesz_product["aa"][qap, qa] = self.riesz_product["aa"][qa, qap]
                 self.riesz_product["aa"].save(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":
                 for qa in range(0, self.Q["a"]):
+                    assert len(self.riesz["a"][qa]) == self.N
                     for qf in range(0, self.Q["f"]):
-                        self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*self.truth_problem.inner_product[0]*self.riesz["f"][qf]
+                        assert len(self.riesz["f"][qf]) == 1
+                        self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*self.truth_problem.inner_product[0]*self.riesz["f"][qf][0]
                 self.riesz_product["af"].save(self.folder["error_estimation"], "riesz_product_af")
             elif term == "riesz_product_ff":
                 for qf in range(0, self.Q["f"]):
+                    assert len(self.riesz["f"][qf]) == 1
                     for qfp in range(qf, self.Q["f"]):
-                        self.riesz_product["ff"][qf, qfp] = transpose(self.riesz["f"][qf])*self.truth_problem.inner_product[0]*self.riesz["f"][qfp]
+                        assert len(self.riesz["f"][qfp]) == 1
+                        self.riesz_product["ff"][qf, qfp] = transpose(self.riesz["f"][qf][0])*self.truth_problem.inner_product[0]*self.riesz["f"][qfp][0]
                         if qf != qfp:
                             self.riesz_product["ff"][qfp, qf] = self.riesz_product["ff"][qf, qfp]
                 self.riesz_product["ff"].save(self.folder["error_estimation"], "riesz_product_ff")
             else:
                 raise RuntimeError("Invalid term for assemble_error_estimation_operators().")
+            return self.riesz_product[short_term]
         else:
             raise RuntimeError("Invalid stage in assemble_error_estimation_operators().")
             

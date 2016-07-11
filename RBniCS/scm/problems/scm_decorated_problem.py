@@ -374,6 +374,9 @@ def SCMDecoratedProblem(*args):
                 
                 # mu_index does not make any sense from now on
                 self.mu_index = None
+                
+                reduced_problem.init("online")
+                return reduced_problem
         
             # Assemble condensed versions of truth matrices
             def assemble_condensed_truth_matrices(self):
