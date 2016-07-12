@@ -48,7 +48,7 @@ class ProperOrthogonalDecomposition(object):
         
     ## Clean up
     def clear(self):
-        self.snapshots_matrix = SnapshotMatrix()
+        self.snapshots_matrix = SnapshotsMatrix()
         self.eigensolver = OnlineEigenSolver()
         
     #  @}

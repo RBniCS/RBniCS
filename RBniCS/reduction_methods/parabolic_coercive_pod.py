@@ -63,8 +63,8 @@ class ParabolicCoercivePOD(ParabolicCoercive,EllipticCoercivePOD):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
 
-    ## Update the snapshot matrix
-    def update_snapshot_matrix(self):
+    ## Update the snapshots matrix
+    def update_snapshots_matrix(self):
         self.POD.store_snapshot(self.all_snap)
     
     #  @}

@@ -26,9 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: GAUSSIAN EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-@EIM(
-    "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )"
-)
+@EIM
 class Gaussian(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -45,9 +43,8 @@ class Gaussian(EllipticCoerciveProblem):
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subdomains)
-        self.ds = Measure("ds")(subdomain_data=boundaries)
-        # Finally, initialize an EIM object for the interpolation of the forcing term
-        self.EIM_N = None # if None, use the maximum number of EIM basis functions, otherwise use EIM_N
+        self.f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
+        # note that we cannot use self.mu in the initialization of self.f, because self.mu has not been initialized yet
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -65,33 +62,29 @@ class Gaussian(EllipticCoerciveProblem):
         if term == "a":
             return (1., )
         elif term == "f":
-            self.EIM[0].set_mu(self.mu)
-            return self.EIM[0].compute_interpolated_theta(self.EIM_N)
+            return (1., )
         else:
             raise RuntimeError("Invalid term for compute_theta().")
                 
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
+        v = self.v
+        dx = self.dx
         if term == "a":
-            return (self.S,)
+            u = self.u
+            a0 = inner(grad(u),grad(v))*dx
+            return (a0,)
         elif term == "f":
-            v = self.v
-            dx = self.dx
-            # Call EIM
-            self.EIM[0].set_mu(self.mu)
-            interpolated_gaussian = self.EIM[0].assemble_mu_independent_interpolated_function()
-            # Assemble
-            all_f = ()
-            for q in range(len(interpolated_gaussian)):
-                all_f += (interpolated_gaussian[q]*v*dx,)
-            # Return
-            return all_f
+            f = self.f
+            f0 = f*v*dx
+            return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [(self.V, Constant(0.0), self.boundaries, 1),
                    (self.V, Constant(0.0), self.boundaries, 2),
                    (self.V, Constant(0.0), self.boundaries, 3)]
             return (bc0,)
         elif term == "inner_product":
+            u = self.u
             x0 = inner(grad(u),grad(v))*dx
             return (x0,)
         else:
@@ -119,8 +112,8 @@ gaussian_problem.set_mu_range(mu_range)
 parameters.linear_algebra_backend = 'PETSc'
 
 # 5. Prepare reduction with a reduced basis method
-reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis_method.set_Nmax(20)
+reduced_basis_method = ReducedBasis(gaussian_problem)
+reduced_basis_method.set_Nmax(20, EIM=20)
 
 # 6. Perform the offline phase
 first_mu = (0.5,1.0)

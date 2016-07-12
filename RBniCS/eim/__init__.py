@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.eim.problems import ExactParametrizedFunctionEvaluation # EIM,  # TODO enable
+from RBniCS.eim.problems import EIM, ExactParametrizedFunctionEvaluation
 
 __all__ = [
     # RBniCS.eim.problems
-    #'EIM', # TODO enable
+    'EIM',
     'ExactParametrizedFunctionEvaluation'
 ]

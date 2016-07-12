@@ -98,8 +98,8 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
             self.truth_problem.export_solution(snapshot, self.folder["snapshots"], "truth_" + str(run))
             self.reduced_problem.postprocess_snapshot(snapshot)
             
-            print("update snapshot matrix")
-            self.update_snapshot_matrix(snapshot)
+            print("update snapshots matrix")
+            self.update_snapshots_matrix(snapshot)
 
             print("")
             run += 1
@@ -130,8 +130,8 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         self.POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
         self.POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
         
-    ## Update the snapshot matrix
-    def update_snapshot_matrix(self, snapshot):
+    ## Update the snapshots matrix
+    def update_snapshots_matrix(self, snapshot):
         self.POD.store_snapshot(snapshot)
         
     #  @}

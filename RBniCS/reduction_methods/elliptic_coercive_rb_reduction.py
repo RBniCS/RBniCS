@@ -239,9 +239,9 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     @staticmethod
     def save_greedy_post_processing_file(N, delta_max, mu_greedy, directory):
         with open(directory + "/delta_max.txt", "a") as outfile:
-            outfile.write(str(N) + " " + str(delta_max))
+            outfile.write(str(N) + " " + str(delta_max) + "\n")
         with open(directory + "/mu_greedy.txt", "a") as outfile:
-            outfile.write(str(mu_greedy))
+            outfile.write(str(mu_greedy) + "\n")
         
     #  @}
     ########################### end - I/O - end ########################### 

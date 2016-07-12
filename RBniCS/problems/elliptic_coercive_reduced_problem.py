@@ -54,6 +54,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self.N = 0
         self.N_bc = 0
         # Number of terms in the affine expansion
+        self.terms = truth_problem.terms
         self.Q = dict() # from string to integer
         # Reduced order operators
         self.operator = dict() # from string to AffineExpansionOnlineStorage
@@ -107,7 +108,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     def init(self, current_stage="online"):
         self.current_stage = current_stage
         if current_stage == "online":
-            for term in ["a", "f"]:
+            for term in self.terms:
                 self.operator[term] = self.assemble_operator(term)
                 self.Q[term] = len(self.operator[term])
             # Also load basis functions
@@ -122,7 +123,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 self.N = len(self.Z) - len(theta_bc)
                 self.N_bc = len(theta_bc)
         elif current_stage == "offline":
-            for term in ["a", "f"]:
+            for term in self.terms:
                 self.Q[term] = self.truth_problem.Q[term]
                 self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
             # Store the lifting functions in self.Z
@@ -148,7 +149,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
         except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
-            theta_bc = tuple() # deliberately empty
+            theta_bc = None
         self._solution = OnlineVector(N)
         solve(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
         return self._solution
@@ -170,7 +171,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     ## Assemble the reduced order affine expansion.
     def build_reduced_operators(self):
         assert self.current_stage == "offline"
-        for term in ["a", "f"]:
+        for term in self.terms:
             self.operator[term] = self.assemble_operator(term)
         
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing

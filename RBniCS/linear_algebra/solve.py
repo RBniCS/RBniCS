@@ -32,7 +32,7 @@ from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
 # Similarly to FEniCS' solve define a solve for online problems
-def solve(lhs, solution, rhs, bcs):
+def solve(lhs, solution, rhs, bcs=None):
     assert \
         (isinstance(lhs, TruthMatrix) and isinstance(solution, TruthVector) and isinstance(rhs, TruthVector)) \
             or \
@@ -45,10 +45,12 @@ def solve(lhs, solution, rhs, bcs):
         from dolfin import solve as dolfin_solve
         dolfin_solve(lhs, solution, rhs)
     elif isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineVector_Type) and isinstance(rhs, OnlineVector_Type):
-        for i in range(len(bcs)):
-            rhs[i] = bcs[i]
-            lhs[i, :] = 0.
-            lhs[i, i] = 1.
+        if bcs is not None:
+            assert isinstance(bcs, tuple)
+            for i in range(len(bcs)):
+                rhs[i] = bcs[i]
+                lhs[i, :] = 0.
+                lhs[i, i] = 1.
         from numpy.linalg import solve as numpy_solve
         solution_ = numpy_solve(lhs, rhs)
         solution[:] = solution_

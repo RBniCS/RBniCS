@@ -81,19 +81,19 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
         all_folders.extend(self.folder.values())
         all_folders.extend(self.reduced_problem.folder.values())
         for f in all_folders:
+            if os.path.exists(f) and len(os.listdir(f)) == 0: # already created, but empty
+                all_folders_exist = False
+                print("EMPTY", f)
             if not os.path.exists(f):
                 all_folders_exist = False
                 os.makedirs(f)
-        """
         if all_folders_exist:
             self.reduced_problem.init("online")
             return False # offline construction should be skipped, since data are already available
         else:
             self.reduced_problem.init("offline")
             return True # offline construction should be carried out
-        """
-        self.reduced_problem.init("offline")
-        return True # offline construction should be carried out
+        
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     

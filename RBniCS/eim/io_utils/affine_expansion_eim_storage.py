@@ -26,11 +26,20 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from RBniCS.io_utils import ExportableList
+from numpy import empty as AffineExpansionEIMStorageContent_Base
 
-class DOFsList(ExportableList):
-    def __init__(self):
-        ExportableList.__init__(self, "pickle")
+class AffineExpansionEIMStorage(object):
+    def __init__(self, Q):
+        self._content = AffineExpansionEIMStorageContent_Base((Q,), dtype=object)
+        
+    def __getitem__(self, key):
+        return self._content[key]
+        
+    def __setitem__(self, key, item):
+        self._content[key] = item
+        
+    def __len__(self):
+        return self._content.size
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

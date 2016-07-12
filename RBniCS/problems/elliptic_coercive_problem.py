@@ -92,6 +92,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         # Input arguments
         self.V = V
         # Number of terms in the affine expansion
+        self.terms = ["a", "f"]
         self.Q = dict() # from string to integer
         # Matrices/vectors resulting from the truth discretization
         self.operator = dict() # from string to AffineExpansionOfflineStorage
@@ -110,7 +111,8 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     
     ## Initialize data structures required for the offline phase
     def init(self):
-        for term in ["a", "f"]:
+        for term in self.terms:
+            print term
             self.operator[term] = AffineExpansionOfflineStorage(self.assemble_operator(term))
             self.Q[term] = len(self.operator[term])
         self.inner_product.init(self.assemble_operator("inner_product"))
@@ -122,7 +124,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## Perform a truth solve
     def solve(self):
         assembled_operator = dict()
-        for term in ["a", "f"]:
+        for term in self.terms:
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         if len(self.dirichlet_bc) > 0:
             try:

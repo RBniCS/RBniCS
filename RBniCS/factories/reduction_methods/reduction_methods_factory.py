@@ -73,7 +73,7 @@ def PODGalerkin(truth_problem):
 
 # Decorator to add EIM or SCM, as required
 def _DecoratedReductionMethod_TypeFactory(truth_problem):
-    #from RBniCS.eim.reduction_methods import EIMDecoratedReductionMethod # TODO enable
+    from RBniCS.eim.reduction_methods import EIMDecoratedReductionMethod
     from RBniCS.eim.reduction_methods import ExactParametrizedFunctionEvaluationDecoratedReductionMethod
     #from RBniCS.scm.reduction_methods import SCMDecoratedReductionMethod # TODO enable
     #from RBniCS.scm.reduction_methods import ExactCoercivityConstantDecoratedReductionMethod # TODO enable
