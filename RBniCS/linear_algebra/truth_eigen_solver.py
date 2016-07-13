@@ -27,8 +27,14 @@
 #  @{
 
 # Declare truth eigen solver type (from FEniCS)
-from dolfin import SLEPcEigenSolver
-TruthEigenSolver = SLEPcEigenSolver
+from dolfin import SLEPcEigenSolver, as_backend_type
+class TruthEigenSolver(SLEPcEigenSolver):
+    def __init__(self, A=None, B=None):
+        if A is not None:
+            A = as_backend_type(A)
+        if B is not None:
+            B = as_backend_type(B)
+        SLEPcEigenSolver.__init__(self, A, B)
     
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

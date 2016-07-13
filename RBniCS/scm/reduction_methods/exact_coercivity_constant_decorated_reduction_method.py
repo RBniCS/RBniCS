@@ -22,35 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-import os # for path and makedir
-import shutil # for rm
-import glpk # for LB computation
-import sys # for sys.float_info.max
-import random # to randomize selection in case of equal error bound
-import operator # to find closest parameters
-from RBniCS.problems import ParametrizedProblem
-
 def ExactCoercivityConstantDecoratedReductionMethod(ReductionMethod_DerivedClass):
     class ExactCoercivityConstantDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReductionMethod_DerivedClass.__init__(truth_problem)
-            assert isinstance(truth_problem, ExactCoercivityConstantDecoratedProblem_Class)
-            # Attach the exact coercivity constant computation method
-            self.exact_coercivity_constant_computation__method = _ExactCoercivityConstantComputation_Method(truth_problem.SCM_approximation) # TODO
-            
-    #~~~~~~~~~~~~~~~~~~~~~~~~~     EXACT COERCIVITY CONSTANT COMPUTATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-    ## @class _ExactCoercivityConstantComputation_Method
-    #
-    # Successive constraint method for the approximation of the coercivity constant
-    class _ExactCoercivityConstantComputation_Method(object): # TODO
-
-        ###########################     CONSTRUCTORS     ########################### 
-        ## @defgroup Constructors Methods related to the construction of the exact computation of coercivity constant
-        #  @{
+            ReductionMethod_DerivedClass.__init__(self, truth_problem)
         
-        ## Default initialization of members
-        def __init__(self, parametrized_problem):
-            pass # TODO
-    
+    # return value (a class) for the decorator
+    return ExactCoercivityConstantDecoratedReductionMethod_Class

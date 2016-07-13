@@ -112,7 +112,6 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## Initialize data structures required for the offline phase
     def init(self):
         for term in self.terms:
-            print term
             self.operator[term] = AffineExpansionOfflineStorage(self.assemble_operator(term))
             self.Q[term] = len(self.operator[term])
         self.inner_product.init(self.assemble_operator("inner_product"))

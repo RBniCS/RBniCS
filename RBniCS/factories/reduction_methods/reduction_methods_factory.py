@@ -76,7 +76,7 @@ def _DecoratedReductionMethod_TypeFactory(truth_problem):
     from RBniCS.eim.reduction_methods import EIMDecoratedReductionMethod
     from RBniCS.eim.reduction_methods import ExactParametrizedFunctionEvaluationDecoratedReductionMethod
     #from RBniCS.scm.reduction_methods import SCMDecoratedReductionMethod # TODO enable
-    #from RBniCS.scm.reduction_methods import ExactCoercivityConstantDecoratedReductionMethod # TODO enable
+    from RBniCS.scm.reduction_methods import ExactCoercivityConstantDecoratedReductionMethod
     
     def _DecoratedReductionMethod_TypeFactory__Decorator(ReductionMethod_DerivedClass):
         DecoratedReductionMethod_Type = ReductionMethod_DerivedClass

@@ -30,7 +30,8 @@ from RBniCS import *
     ("x[0]", "x[1]"), # subdomain 1
     ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
 )
-class Graetz(EllipticCoerciveNonCompliantBase):
+@ExactCoercivityConstant()
+class Graetz(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -39,7 +40,7 @@ class Graetz(EllipticCoerciveNonCompliantBase):
     ## Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
-        EllipticCoerciveNonCompliantBase.__init__(self, V, **kwargs)
+        EllipticCoerciveProblem.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
         assert "subdomains" in kwargs and "boundaries" in kwargs
         self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
@@ -47,21 +48,16 @@ class Graetz(EllipticCoerciveNonCompliantBase):
         self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subdomains)
         self.ds = Measure("ds")(subdomain_data=boundaries)
+        self.lifting = self.solve_lifting()
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
-        # Finally, initialize an SCM object to approximate alpha LB
-        self.SCM_obj = SCM_Graetz(self)
-        
+                
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
         
     ###########################     PROBLEM SPECIFIC     ########################### 
     ## @defgroup ProblemSpecific Problem specific methods
     #  @{
-    
-    ## Return the alpha_lower bound.
-    def get_stability_factor(self):
-        return self.SCM_obj.get_alpha_LB(self.mu)
     
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
@@ -80,8 +76,6 @@ class Graetz(EllipticCoerciveNonCompliantBase):
             theta_f3 = - 1.0
             return (theta_f0, theta_f1, theta_f2, theta_f3)
         elif term == "s":
-            return (1.0,)
-        elif term == "dirichlet_bc":
             return (1.0,)
         else:
             raise RuntimeError("Invalid term for compute_theta().")
@@ -107,22 +101,44 @@ class Graetz(EllipticCoerciveNonCompliantBase):
             f3 = vel*lifting.dx(0)*v*dx(1) + vel*lifting.dx(0)*v*dx(2) + 1e-15*lifting*v*dx
             return (f0, f1, f2, f3)
         elif term == "s":
-#            ds = self.ds
-#            s0 = v*ds(3)
             s0 = v*dx(2)
             return (s0,)
         elif term == "dirichlet_bc":
             bc0 = [(self.V, Constant(0.0), self.boundaries, 1),
                    (self.V, Constant(0.0), self.boundaries, 5),
                    (self.V, Constant(0.0), self.boundaries, 6),
-                   (self.V, Constant(1.0), self.boundaries, 2),
-                   (self.V, Constant(1.0), self.boundaries, 4)]
+                   (self.V, Constant(0.0), self.boundaries, 2),
+                   (self.V, Constant(0.0), self.boundaries, 4)]
             return (bc0,)
         elif term == "inner_product":
+            u = self.u
             x0 = u*v*dx + inner(grad(u),grad(v))*dx
             return (x0,)
         else:
             raise RuntimeError("Invalid term for assemble_operator().")
+        
+    def solve_lifting(self):
+        # We will consider non-homogeneous Dirichlet BCs with a lifting.
+        # First of all, assemble a suitable lifting function
+        lifting_bc = [ 
+            DirichletBC(self.V, Constant(0.0), self.boundaries, 1), # homog. bcs
+            DirichletBC(self.V, Constant(0.0), self.boundaries, 5), # homog. bcs
+            DirichletBC(self.V, Constant(0.0), self.boundaries, 6), # homog. bcs
+            DirichletBC(self.V, Constant(1.0), self.boundaries, 2), # non-homog. bcs
+            DirichletBC(self.V, Constant(1.0), self.boundaries, 4)  # non-homog. bcs
+        ]
+        u = self.u
+        v = self.v
+        dx = self.dx
+        lifting_a = inner(grad(u),grad(v))*dx
+        lifting_A = assemble(lifting_a)
+        lifting_f = 1e-15*v*dx
+        lifting_F = assemble(lifting_f)
+        [bc.apply(lifting_A) for bc in lifting_bc] # Apply BCs on LHS
+        [bc.apply(lifting_F) for bc in lifting_bc] # Apply BCs on RHS
+        lifting = Function(V)
+        solve(lifting_A, lifting.vector(), lifting_F)
+        return lifting
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
@@ -140,43 +156,6 @@ class Graetz(EllipticCoerciveNonCompliantBase):
     #  @}
     ########################### end - I/O - end ########################### 
     
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-class SCM_Graetz(SCM):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
-    
-    ## Default initialization of members
-    def __init__(self, parametrized_problem):
-        # Call the standard initialization
-        SCM.__init__(self, parametrized_problem)
-        
-        # Good guesses to help convergence of bounding box
-        self.guess_bounding_box_minimum = (1.e-5, 1.e-5, 1.e-5, 1.e-5)
-        self.guess_bounding_box_maximum = (1., 1., 1., 1.)
-    
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
-    ## Set additional options for the eigensolver (bounding box minimum)
-    def set_additional_eigensolver_options_for_bounding_box_minimum(self, eigensolver, qa):
-        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
-        eigensolver.parameters["spectral_shift"] = self.guess_bounding_box_minimum[qa]
-        
-    ## Set additional options for the eigensolver (bounding box maximimum)
-    def set_additional_eigensolver_options_for_bounding_box_maximum(self, eigensolver, qa):
-        eigensolver.parameters["spectral_transform"] = "shift-and-invert"
-        eigensolver.parameters["spectral_shift"] = self.guess_bounding_box_maximum[qa]
-        
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
 # 1. Read the mesh for this problem
@@ -197,15 +176,19 @@ parameters.linear_algebra_backend = 'PETSc'
 
 # 5. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis.set_Nmax(10)
+reduced_basis_method.set_Nmax(10)
 
 # 6. Perform the offline phase
 first_mu = (1.0, 1.0)
 graetz_problem.set_mu(first_mu)
-reduced_basis.set_xi_train(100)
-reduced_graetz_problem = reduced_basis.offline()
+reduced_basis_method.set_xi_train(100)
+reduced_graetz_problem = reduced_basis_method.offline()
 
 # 7. Perform an online solve
 online_mu = (10.0, 0.01)
 reduced_graetz_problem.set_mu(online_mu)
-reduced_graetz_problem.online_solve()
+reduced_graetz_problem.solve()
+
+# 8. Perform an error analysis
+reduced_basis_method.set_xi_test(100)
+reduced_basis_method.error_analysis()

@@ -96,15 +96,7 @@ def SCMDecoratedProblem(*args):
                 self.M_p = -1 # integer denoting the number of constraints based on the previous lower bounds. If < 0, then it is assumed to be len(C_J)
                 
                 # $$ OFFLINE DATA STRUCTURES $$ #
-                # We need to discard dofs related to bcs in eigenvalue computations. To avoid having to create a PETSc submatrix
-                # we simply zero rows and columns and replace the diagonal element with an eigenvalue that for sure
-                # will not be the minimum/maximum
-                self.invalid_minimum_eigenvalue = 1.e4
-                self.invalid_maximum_eigenvalue = 1.e-4
                 # Matrices/vectors resulting from the truth discretization
-                self.truth_A__condensed_for_minimum_eigenvalue = tuple()
-                self.truth_A__condensed_for_maximum_eigenvalue = tuple()
-                self.S__condensed = tuple()
                 # I/O
                 self.folder["basis"] = self.folder_prefix + "/" + "basis"
                 self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
@@ -378,33 +370,6 @@ def SCMDecoratedProblem(*args):
                 reduced_problem.init("online")
                 return reduced_problem
         
-            # Assemble condensed versions of truth matrices
-            def assemble_condensed_truth_matrices(self):
-                # Assemble matrices related to the LHS A of the parametrized problem
-                # TODO this probably need to be the assemble_operator method, overridden to compute the symmetric part,
-                #      and then call the init() method. Replace several truth_A/Qa
-                # Assemble matrices related to the LHS A of the parametrized problem
-                if not self.parametrized_problem.truth_A:
-                    self.parametrized_problem.truth_A = [ \
-                        assemble( 0.5*(a_form + adjoint(a_form)) ) for a_form in self.parametrized_problem.assemble_truth_a()
-                    ]
-                if self.parametrized_problem.Qa == 0:
-                    self.parametrized_problem.Qa = len(self.parametrized_problem.truth_A)
-                
-                # Assemble condensed matrices
-                if not self.S__condensed:
-                    self.S__condensed = self.clear_constrained_dofs(self.parametrized_problem.S, 1.)
-                if not self.truth_A__condensed_for_minimum_eigenvalue:
-                    for qa in range(self.parametrized_problem.Qa):
-                        self.truth_A__condensed_for_minimum_eigenvalue +=(
-                            self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa], self.invalid_minimum_eigenvalue), 
-                        )
-                if not self.truth_A__condensed_for_maximum_eigenvalue:
-                    for qa in range(self.parametrized_problem.Qa):
-                        self.truth_A__condensed_for_maximum_eigenvalue +=(
-                            self.clear_constrained_dofs(self.parametrized_problem.truth_A[qa], self.invalid_maximum_eigenvalue), 
-                        )
-                    
             # Compute the bounding box \mathcal{B}
             def compute_bounding_box(self):
                 # Resize the bounding box storage
@@ -467,19 +432,6 @@ def SCMDecoratedProblem(*args):
             def truth_coercivity_constant(self):
                 self.assemble_condensed_truth_matrices()
                 
-                self.parametrized_problem.set_mu(self.mu)
-                current_theta_a = self.parametrized_problem.compute_theta("a")
-                A = sum(product(current_theta_a, self.truth_A__condensed_for_minimum_eigenvalue))
-                A = as_backend_type(A)
-                S = self.S__condensed
-                S = as_backend_type(S)
-                
-                eigensolver = SLEPcEigenSolver(A, S)
-                eigensolver.parameters["problem_type"] = "gen_hermitian"
-                eigensolver.parameters["spectrum"] = "smallest real"
-                self.set_additional_eigensolver_options_for_truth_coercivity_constant(eigensolver)
-                eigensolver.solve(1)
-                
                 r, c, rv, cv = eigensolver.get_eigenpair(0) # real and complex part of the (eigenvalue, eigenvectors)
                 rv_f = Function(self.parametrized_problem.V, rv)
                 UB_vector = self.compute_UB_vector(self.parametrized_problem.truth_A, self.parametrized_problem.S, rv_f)
@@ -538,17 +490,6 @@ def SCMDecoratedProblem(*args):
                 # Overwrite alpha_LB_on_xi_train
                 self.alpha_LB_on_xi_train = alpha_LB_on_xi_train
                 np.save(self.folder["reduced_operators"] + "alpha_LB_on_xi_train", self.alpha_LB_on_xi_train)
-        
-            # Clear constrained dofs
-            def clear_constrained_dofs(self, M_in, diag_value):
-                M = M_in.copy()
-                if self.operator["dirichlet_bc"] != None:
-                    fake_vector = Function(self.parametrized_problem.V)
-                    FAKE_VECTOR = fake_vector.vector()
-                    for bc in self.operator["dirichlet_bc"]:
-                        bc.zero(M)
-                        bc.zero_columns(M, FAKE_VECTOR, diag_value)
-                return M
         
             #  @}
             ########################### end - OFFLINE STAGE - end ########################### 
@@ -657,11 +598,6 @@ def SCMDecoratedProblem(*args):
             def set_additional_eigensolver_options_for_bounding_box_maximum(self, eigensolver, qa):
                 eigensolver.parameters["spectral_transform"] = "shift-and-invert"
                 eigensolver.parameters["spectral_shift"] = 1.e5
-                
-            ## Set additional options for the eigensolver (truth_coercivity constant)
-            def set_additional_eigensolver_options_for_truth_coercivity_constant(self, eigensolver):
-                eigensolver.parameters["spectral_transform"] = "shift-and-invert"
-                eigensolver.parameters["spectral_shift"] = 1.e-5
                 
             #  @}
             ########################### end - PROBLEM SPECIFIC - end ########################### 

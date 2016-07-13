@@ -57,7 +57,7 @@ def _DecoratedReducedProblem_TypeFactory(truth_problem):
     from RBniCS.eim.problems import EIMDecoratedReducedProblem
     from RBniCS.eim.problems import ExactParametrizedFunctionEvaluationDecoratedReducedProblem
     #from RBniCS.scm.problems import SCMDecoratedReducedProblem # TODO enable
-    #from RBniCS.scm.problems import ExactCoercivityConstantDecoratedReducedProblem # TODO enable
+    from RBniCS.scm.problems import ExactCoercivityConstantDecoratedReducedProblem
     from RBniCS.shape_parametrization.problems import ShapeParametrizationDecoratedReducedProblem
     
     def _DecoratedReducedProblem_TypeFactory__Decorator(ParametrizedProblem_DerivedClass):
