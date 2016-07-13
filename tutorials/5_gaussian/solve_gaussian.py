@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: GAUSSIAN EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-@EIM
+@EIM()
 class Gaussian(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 

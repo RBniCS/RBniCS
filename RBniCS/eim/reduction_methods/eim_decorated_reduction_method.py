@@ -70,10 +70,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         
         ## Initialize data structures required for the offline phase
         def _init_offline(self):
-            # Initialize data structures
-            self.EIM_approximation.init("offline")
-        
-            # Prepare folders and init reduced problem
+            # Prepare folders and init EIM approximation
             all_folders_exist = True
             all_folders = list()
             all_folders.extend(self.folder.values())
@@ -84,7 +81,12 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 if not os.path.exists(f):
                     all_folders_exist = False
                     os.makedirs(f)
-            return not all_folders_exist
+            if all_folders_exist:
+                self.EIM_approximation.init("online")
+                return False # offline construction should be skipped, since data are already available
+            else:
+                self.EIM_approximation.init("offline")
+                return True # offline construction should be carried out
         
         ## Perform the offline phase of EIM
         def offline(self):

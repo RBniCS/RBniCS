@@ -30,55 +30,59 @@ import random # to randomize selection in case of equal error bound
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage
 
-def ExactParametrizedFunctionEvaluationDecoratedProblem(ParametrizedProblem_DerivedClass):
+def ExactParametrizedFunctionEvaluationDecoratedProblem():
+    def ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
 
-    class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
-        
-        ## Default initialization of members
-        def __init__(self, V, **kwargs):
-            # Call the parent initialization
-            ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
-            # Avoid useless assemblies
-            self.solve.__func__.previous_mu = None
+        class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
             
-            # Signal to the factory that this problem has been decorated
-            if not hasattr(self, "_problem_decorators"):
-                self._problem_decorators = dict() # string to bool
-            self._problem_decorators["ExactParametrizedFunctionEvaluation"] = True
-        
-        ###########################     OFFLINE STAGE     ########################### 
-        ## @defgroup OfflineStage Methods related to the offline stage
-        #  @{
-        
-        ## Perform a truth solve
-        def solve(self):
-            # The offline/online separation does not hold anymore, so we need to re-assemble operators,
-            # because the assemble_operator() *may* return parameter dependent operators.
-            if self.solve.__func__.previous_mu != self.mu:
-                self.init()
+            ## Default initialization of members
+            def __init__(self, V, **kwargs):
+                # Call the parent initialization
+                ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Avoid useless assemblies
-                self.solve.__func__.previous_mu = self.mu
-            return ParametrizedProblem_DerivedClass.solve(self)
-        
-        #  @}
-        ########################### end - OFFLINE STAGE - end ########################### 
-        
-        ###########################     I/O     ########################### 
-        ## @defgroup IO Input/output methods
-        #  @{
-                    
-        ## Get the name of the problem, to be used as a prefix for output folders.
-        # Overridden to use the parent name
-        @classmethod
-        def name(cls):
-            assert len(cls.__bases__) == 1
-            return cls.__bases__[0].name()
+                self.solve.__func__.previous_mu = None
+                
+                # Signal to the factory that this problem has been decorated
+                if not hasattr(self, "_problem_decorators"):
+                    self._problem_decorators = dict() # string to bool
+                self._problem_decorators["ExactParametrizedFunctionEvaluation"] = True
             
-        #  @}
-        ########################### end - I/O - end ########################### 
+            ###########################     OFFLINE STAGE     ########################### 
+            ## @defgroup OfflineStage Methods related to the offline stage
+            #  @{
+            
+            ## Perform a truth solve
+            def solve(self):
+                # The offline/online separation does not hold anymore, so we need to re-assemble operators,
+                # because the assemble_operator() *may* return parameter dependent operators.
+                if self.solve.__func__.previous_mu != self.mu:
+                    self.init()
+                    # Avoid useless assemblies
+                    self.solve.__func__.previous_mu = self.mu
+                return ParametrizedProblem_DerivedClass.solve(self)
+            
+            #  @}
+            ########################### end - OFFLINE STAGE - end ########################### 
+            
+            ###########################     I/O     ########################### 
+            ## @defgroup IO Input/output methods
+            #  @{
+                        
+            ## Get the name of the problem, to be used as a prefix for output folders.
+            # Overridden to use the parent name
+            @classmethod
+            def name(cls):
+                assert len(cls.__bases__) == 1
+                return cls.__bases__[0].name()
+                
+            #  @}
+            ########################### end - I/O - end ########################### 
+            
+        # return value (a class) for the decorator
+        return ExactParametrizedFunctionEvaluationDecoratedProblem_Class
         
-    # return value (a class) for the decorator
-    return ExactParametrizedFunctionEvaluationDecoratedProblem_Class
+    # return the decorator itself
+    return ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator
     
 # For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
 ExactParametrizedFunctionEvaluation = ExactParametrizedFunctionEvaluationDecoratedProblem
