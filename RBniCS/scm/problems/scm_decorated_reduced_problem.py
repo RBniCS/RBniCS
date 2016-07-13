@@ -15,23 +15,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file eim.py
+#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-###########################     OFFLINE STAGE     ########################### 
-## @defgroup OfflineStage Methods related to the offline stage
-#  @{
-
-class BoundingBoxSideList(ExportableList):
-    def __init__(self, size=None):
-        ExportableList.__init__(self, "pickle")
-        if size is not None:
-            self.extend([0. for x in range(size)])
-     
-#  @}
-########################### end - OFFLINE STAGE - end ########################### 
-
+def SCMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
+    
+    class SCMDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
+        ## Default initialization of members
+        def __init__(self, truth_problem):
+            # Call the parent initialization
+            ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+        
+    # return value (a class) for the decorator
+    return SCMDecoratedReducedProblem_Class

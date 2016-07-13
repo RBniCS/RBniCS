@@ -26,11 +26,8 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-class BoundingBoxSideList(ExportableList):
-    def __init__(self, size=None):
-        ExportableList.__init__(self, "pickle")
-        if size is not None:
-            self.extend([0. for x in range(size)])
+class EigenVectorsList(list):
+    pass
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

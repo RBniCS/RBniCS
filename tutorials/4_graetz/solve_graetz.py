@@ -26,11 +26,11 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
+@SCM()
 @ShapeParametrization(
     ("x[0]", "x[1]"), # subdomain 1
     ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
 )
-@ExactCoercivityConstant()
 class Graetz(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -176,7 +176,7 @@ parameters.linear_algebra_backend = 'PETSc'
 
 # 5. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis_method.set_Nmax(10)
+reduced_basis_method.set_Nmax(10, SCM=10)
 
 # 6. Perform the offline phase
 first_mu = (1.0, 1.0)

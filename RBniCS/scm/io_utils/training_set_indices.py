@@ -27,8 +27,11 @@
 #  @{
 
 class TrainingSetIndices(ExportableList):
-    def __init__(self):
+    def __init__(self, slice_=None):
         ExportableList.__init__(self, "pickle")
+        if slice_ is not None:
+            assert slice_.start is None and slice_.step is None
+            self.extend(range(slice_.stop))
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

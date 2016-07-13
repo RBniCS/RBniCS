@@ -82,6 +82,7 @@ class ReductionMethod(object):
             self.xi_train.generate(ntrain, sampling)
             # Export 
             self.xi_train.save(self.folder["xi_train"], "xi_train")
+        return import_successful
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     def set_xi_test(self, ntest, enable_import=False, sampling=None):
@@ -97,6 +98,7 @@ class ReductionMethod(object):
             self.xi_test.generate(ntest, sampling)
             # Export 
             self.xi_test.save(self.folder["xi_test"], "xi_test")
+        return import_successful
             
     #  @}
     ########################### end - SETTERS - end ########################### 

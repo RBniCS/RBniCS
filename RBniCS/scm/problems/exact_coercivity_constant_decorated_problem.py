@@ -38,7 +38,7 @@ def ExactCoercivityConstantDecoratedProblem(
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 
-                self.exact_coercivity_constant_calculator = ParametrizedHermitianEigenProblem(self, "a", constrain_minimum_eigenvalue, "smallest", eigensolver_parameters)
+                self.exact_coercivity_constant_calculator = ParametrizedHermitianEigenProblem(self, "a", True, constrain_minimum_eigenvalue, "smallest", eigensolver_parameters)
                 
                 # Signal to the factory that this problem has been decorated
                 if not hasattr(self, "_problem_decorators"):

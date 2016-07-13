@@ -35,7 +35,7 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
     #  @{
 
     ## Default initialization of members
-    def __init__(self, truth_problem, term, constrain_eigenvalue, spectrum, eigensolver_parameters):
+    def __init__(self, truth_problem, term, multiply_by_theta, constrain_eigenvalue, spectrum, eigensolver_parameters):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix="") # this class does not export anything
         self.truth_problem = truth_problem
@@ -47,6 +47,13 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
         # Matrices/vectors resulting from the truth discretization: condensed version discard
         # Dirichlet DOFs
         self.term = term
+        assert isinstance(self.term, tuple) or isinstance(self.term, str)
+        if isinstance(self.term, tuple):
+            assert len(self.term) == 2
+            isinstance(self.term[0], str)
+            isinstance(self.term[1], int)
+        self.multiply_by_theta = multiply_by_theta
+        assert isinstance(self.multiply_by_theta, bool)
         self.operator__condensed = AffineExpansionOfflineStorage()
         self.inner_product__condensed = AffineExpansionOfflineStorage() # even though it will contain only one matrix
         self.spectrum = spectrum
@@ -83,7 +90,12 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
     
     def init(self):
         # Condense the symmetric part of the required term
-        symmetric_forms = [ 0.5*(form + adjoint(form)) for form in self.truth_problem.assemble_operator(self.term) ]
+        if isinstance(self.term, tuple):
+            forms = (self.truth_problem.assemble_operator(self.term[0])[ self.term[1] ], )
+        else:
+            assert isinstance(self.term, str)
+            forms = self.truth_problem.assemble_operator(self.term)
+        symmetric_forms = [ 0.5*(form + adjoint(form)) for form in forms]
         self.operator__condensed.init(symmetric_forms)
         self.clear_constrained_dofs(self.operator__condensed, self.constrain_eigenvalue)
         
@@ -108,7 +120,14 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
         if self.solve.__func__.previous_mu == self.mu:
             return (self.solve.__func__.previous_eigenvalue, self.solve.__func__.previous_eigenvector)
         else:
-            O = sum(product(self.truth_problem.compute_theta(self.term), self.operator__condensed))
+            if self.multiply_by_theta:
+                assert isinstance(self.term, str) # method untested otherwise
+                O = sum(product(self.truth_problem.compute_theta(self.term), self.operator__condensed))
+            else:
+                assert isinstance(self.term, tuple) # method untested otherwise
+                theta = (1.,)
+                assert len(theta) == len(self.operator__condensed)
+                O = sum(product(theta, self.operator__condensed))
             assert len(self.inner_product__condensed) == 1
             X = self.inner_product__condensed[0]
             

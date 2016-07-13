@@ -30,40 +30,19 @@ import sys # for sys.float_info.max
 import random # to randomize selection in case of equal error bound
 import operator # to find closest parameters
 from RBniCS.problems import ParametrizedProblem
+from RBniCS.scm.io_utils import BoundingBoxSideList
 
-def SCMDecoratedProblem(*args):
+def SCMDecoratedProblem(
+    M_e = -1,
+    M_p = -1,
+    constrain_minimum_eigenvalue = 1.e5,
+    constrain_maximum_eigenvalue = 1.e-5,
+    bounding_box_minimum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5),
+    bounding_box_maximum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e5),
+    coercivity_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
+):
     def SCMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
-        class SCMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
-            ## Default initialization of members
-            def __init__(self, V, *args):
-                # Call the parent initialization
-                ParametrizedProblem_DerivedClass.__init__(self, V, *args)
-                # Attach SCM reduced problem
-                self.SCM_approximation = _SCMApproximation(V, ParametrizedProblem_DerivedClass.__name__ + "/scm") #TODO
-                # Signal to the factory that this problem has been decorated
-                if not hasattr(self, "_problem_decorators"):
-                    self._problem_decorators = dict() # string to bool
-                self._problem_decorators["SCM"] = True
-                    
-            ###########################     SETTERS     ########################### 
-            ## @defgroup Setters Set properties of the reduced order approximation
-            #  @{
-        
-            # Propagate the values of all setters also to the EIM object
-            
-            ## OFFLINE: set the range of the parameters    
-            def set_mu_range(self, mu_range):
-                ParametrizedProblem_DerivedClass.set_mu_range(self, mu_range)
-                self.SCM_approximation.set_mu_range(mu_range)
-                    
-            ## OFFLINE/ONLINE: set the current value of the parameter
-            def set_mu(self, mu):
-                ParametrizedProblem_DerivedClass.set_mu(self, mu)
-                self.SCM_approximation.set_mu(mu)
-                
-            #  @}
-            ########################### end - SETTERS - end ########################### 
-
+    
         #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
         ## @class SCM
         #
@@ -75,25 +54,24 @@ def SCMDecoratedProblem(*args):
             #  @{
         
             ## Default initialization of members
-            def __init__(self, parametrized_problem, folder_prefix):
+            def __init__(self, truth_problem, folder_prefix):
                 # Call the parent initialization
                 ParametrizedProblem.__init__(self, folder_prefix)
                 # Store the parametrized problem object and the bc list
-                self.parametrized_problem = parametrized_problem
-                self.operator["dirichlet_bc"] = parametrized_problem.operator["dirichlet_bc"]
-                
+                self.truth_problem = truth_problem
+                                
                 # $$ ONLINE DATA STRUCTURES $$ #
                 # Define additional storage for SCM
-                self.B_min = np.array(list()) # minimum values of the bounding box mathcal{B}. Vector of size Qa
-                self.B_max = np.array(list()) # maximum values of the bounding box mathcal{B}. Vector of size Qa
-                self.C_J = list() # vector storing the indices of greedily selected parameters during the training phase
-                self.complement_C_J = list() # vector storing the indices of the complement of greedily selected parameters during the training phase
-                self.alpha_J = list() # vector storing the truth coercivity constants at the greedy parameters in C_J
-                self.alpha_LB_on_xi_train = np.array(list()) # vector storing the approximation of the coercivity constant on the complement of C_J (at the previous iteration, during the offline phase)
-                self.eigenvector_J = list() # vector of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
-                self.UB_vectors_J = list() # array of Qa-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
-                self.M_e = -1 # integer denoting the number of constraints based on the exact eigenvalues. If < 0, then it is assumed to be len(C_J)
-                self.M_p = -1 # integer denoting the number of constraints based on the previous lower bounds. If < 0, then it is assumed to be len(C_J)
+                self.B_min = BoundingBoxSideList() # minimum values of the bounding box mathcal{B}. Vector of size Q
+                self.B_max = BoundingBoxSideList() # maximum values of the bounding box mathcal{B}. Vector of size Q
+                self.C_J = TrainingSetIndices() # list storing the indices of greedily selected parameters during the training phase
+                self.complement_C_J = TrainingSetIndices() # list storing the indices of the complement of greedily selected parameters during the training phase
+                self.alpha_J = CoercivityConstantsList() # list storing the truth coercivity constants at the greedy parameters in C_J
+                self.alpha_LB_on_xi_train = CoercivityConstantsList() # list storing the approximation of the coercivity constant on the complement of C_J (at the previous iteration, during the offline phase)
+                self.eigenvector_J = EigenVectorsList() # list of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
+                self.UB_vectors_J = UpperBoundsList() # list of Q-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
+                self.M_e = M_e # integer denoting the number of constraints based on the exact eigenvalues. If < 0, then it is assumed to be len(C_J)
+                self.M_p = M_p # integer denoting the number of constraints based on the previous lower bounds. If < 0, then it is assumed to be len(C_J)
                 
                 # $$ OFFLINE DATA STRUCTURES $$ #
                 # Matrices/vectors resulting from the truth discretization
@@ -101,52 +79,82 @@ def SCMDecoratedProblem(*args):
                 self.folder["basis"] = self.folder_prefix + "/" + "basis"
                 self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
                 # 
-                self.mu_index = 0 # index of the greedy select parameter at the current iteration
+                self.exact_coercivity_constant_calculator = ParametrizedHermitianEigenProblem(truth_problem, "a", True, constrain_minimum_eigenvalue, "smallest", coercivity_eigensolver_parameters)
+                
+                # Override truth_problem's set_mu to propogate the value of the parameters to EIM
+                standard_set_mu = truth_problem.set_mu
+                def overridden_set_mu(self_, mu): # self_ is truth_problem, self is the EIM approximation
+                    standard_set_mu(mu)
+                    if self.mu is not mu:
+                        self.set_mu(mu)
+                truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
+                
+                # In a similar way, also override truth_problem's set_mu_range, even though it should have been called before this constructor and never called again
+                standard_set_mu_range = truth_problem.set_mu_range
+                def overridden_set_mu_range(self_, mu_range): # self_ is truth_problem, self is the EIM approximation
+                    standard_set_mu_range(mu_range)
+                    self.set_mu_range(mu_range)
+                truth_problem.set_mu_range = types.MethodType(overridden_set_mu_range, truth_problem)
+                # Make sure that in any case that the current mu_range is up to date
+                self.set_mu_range(truth_problem.mu_range)
                 
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
-        
+            
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation
             #  @{
-        
-            ## OFFLINE: set the elements in the training set \xi_train. Overridden to resize alpha_LB_on_xi_train
-            ##          Note that the default value of enable_import has been changed here to True
-            def set_xi_train(self, ntrain, enable_import=True, sampling=None):
-                if not enable_import:
-                    raise RuntimeError("SCM will not work without import.")
-                # Save the flag if can import from file
-                import_successful = False
-                if os.path.exists(self.folder["xi_train"] + "xi_train.npy"):
-                    xi_train = np.load(self.older["xi_train"] + "xi_train.npy")
-                    import_successful = (len(np.asarray(xi_train)) == ntrain)
-                # Call parent
-                ParametrizedProblem.set_xi_train(self, ntrain, enable_import, sampling)
-                # If xi_train was not imported, be safe and remove the previous folder, so that
-                # if the user overwrites the training set but forgets to run the offline
-                # phase he/she will get an error
-                if import_successful == False:
-                    if os.path.exists(self.folder["reduced_operators"]):
-                        shutil.rmtree(self.folder["reduced_operators"])
-                    os.makedirs(self.folder["reduced_operators"])
-                # Properly resize related structures
-                self.alpha_LB_on_xi_train = np.zeros([ntrain])
-                self.complement_C_J = range(ntrain)
-                
+            
+            ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
+            def set_mu(self, mu):
+                self.mu = mu
+                if self.truth_problem.mu is not mu:
+                    self.truth_problem.set_mu(mu)
+                    
+            ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
+            def set_mu_range(self, mu_range):
+                self.mu_range = mu_range
+                if self.truth_problem.mu_range is not mu_range:
+                    self.truth_problem.set_mu(mu_range)
+            
             #  @}
             ########################### end - SETTERS - end ########################### 
         
             ###########################     ONLINE STAGE     ########################### 
             ## @defgroup OnlineStage Methods related to the online stage
             #  @{
+            
+            ## Initialize data structures required for the online phase
+            def init(self, current_stage="online"):
+                self.current_stage = current_stage
+                # Read/Initialize reduced order data structures
+                if current_stage == "online":
+                    self.B_min.load(self.folder["reduced_operators"], "B_min")
+                    self.B_max.load(self.folder["reduced_operators"], "B_max")
+                    self.C_J.load(self.folder["reduced_operators"], "C_J")
+                    self.complement_C_J.load(self.folder["reduced_operators"], "complement_C_J")
+                    self.alpha_J.load(self.folder["reduced_operators"], "alpha_J")
+                    self.alpha_LB_on_xi_train.load(self.folder["reduced_operators"], "alpha_LB_on_xi_train")
+                    self.UB_vectors_J.load(self.folder["reduced_operators"], "UB_vectors_J")
+                    # Set the value of N
+                    self.N = len(self.C_J)
+                elif current_stage == "offline":
+                    # Properly resize structures related to operator
+                    Q = self.truth_problem.Q["a"]
+                    self.Bmin = BoundingBoxSideList(Q)
+                    self.Bmax = BoundingBoxSideList(Q)
+                    # Properly resize structures related to xi_train
+                    ntrain = len(self.xi_train)
+                    self.alpha_LB_on_xi_train = CoercivityConstantsList(ntrain)
+                    self.complement_C_J = TrainingSetIndices(:ntrain)
+                else:
+                    raise RuntimeError("Invalid stage in init().")
         
             ## Get a lower bound for alpha
-            def get_alpha_LB(self, mu, safeguard=True):
-                self.load_reduced_data_structures()
-                
+            def get_stability_factor_lower_bound(self, mu, safeguard=True):
                 lp = glpk.glp_create_prob()
                 glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
-                Qa = self.parametrized_problem.Qa
+                Q = self.parametrized_problem.Q["a"]
                 N = self.N
                 M_e = self.M_e
                 if M_e < 0:
@@ -159,22 +167,22 @@ def SCMDecoratedProblem(*args):
                 if M_p > len(self.complement_C_J):
                     M_p = len(self.complement_C_J)
                 
-                # 1. Linear program unknowns: Qa variables, y_1, ..., y_{Q_a}
-                glpk.glp_add_cols(lp, Qa)
+                # 1. Linear program unknowns: Q variables, y_1, ..., y_{Q_a}
+                glpk.glp_add_cols(lp, Q)
                 
                 # 2. Range: constrain the variables to be in the bounding box (note: GLPK indexing starts from 1)
-                for qa in range(Qa):
-                    if self.B_min[qa] < self.B_max[qa]: # the usual case
-                        glpk.glp_set_col_bnds(lp, qa + 1, glpk.GLP_DB, self.B_min[qa], self.B_max[qa])
-                    elif self.B_min[qa] == self.B_max[qa]: # unlikely, but possible
-                        glpk.glp_set_col_bnds(lp, qa + 1, glpk.GLP_FX, self.B_min[qa], self.B_max[qa])
+                for q in range(Q):
+                    if self.B_min[q] < self.B_max[q]: # the usual case
+                        glpk.glp_set_col_bnds(lp, q + 1, glpk.GLP_DB, self.B_min[q], self.B_max[q])
+                    elif self.B_min[q] == self.B_max[q]: # unlikely, but possible
+                        glpk.glp_set_col_bnds(lp, q + 1, glpk.GLP_FX, self.B_min[q], self.B_max[q])
                     else: # there is something wrong in the bounding box: set as unconstrained variable
-                        print("Warning: wrong bounding box for affine expansion element #", qa)
-                        glpk.glp_set_col_bnds(lp, qa + 1, glpk.GLP_FR, 0., 0.)
+                        print("Warning: wrong bounding box for affine expansion element #", q)
+                        glpk.glp_set_col_bnds(lp, q + 1, glpk.GLP_FR, 0., 0.)
                 
                 # 3. Add two different sets of constraints
                 glpk.glp_add_rows(lp, M_e + M_p)
-                array_size = (M_e + M_p)*Qa
+                array_size = (M_e + M_p)*Q
                 matrix_row_index = glpk.intArray(array_size + 1) # + 1 since GLPK indexing starts from 1
                 matrix_column_index = glpk.intArray(array_size + 1)
                 matrix_content = glpk.doubleArray(array_size + 1)
@@ -189,10 +197,10 @@ def SCMDecoratedProblem(*args):
                     current_theta_a = self.parametrized_problem.compute_theta("a")
                     
                     # Assemble the LHS of the constraint
-                    for qa in range(Qa):
+                    for q in range(Q):
                         matrix_row_index[glpk_container_size + 1] = int(j + 1)
-                        matrix_column_index[glpk_container_size + 1] = int(qa + 1)
-                        matrix_content[glpk_container_size + 1] = current_theta_a[qa]
+                        matrix_column_index[glpk_container_size + 1] = int(q + 1)
+                        matrix_content[glpk_container_size + 1] = current_theta_a[q]
                         glpk_container_size += 1
                     
                     # Assemble the RHS of the constraint
@@ -201,16 +209,16 @@ def SCMDecoratedProblem(*args):
                 
                 # 3b. Add constraints: also constrain the closest point in the complement of C_J, 
                 #                      with RHS depending on previously computed lower bounds
-                closest_complement_C_J_indices = self.closest_parameters(M_p, self.complement_C_J, mu)
+                closest_complement_C_J_indices = self._closest_parameters(M_p, self.complement_C_J, mu)
                 for j in range(M_p):
                     nu = self.xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
                     self.parametrized_problem.set_mu(nu)
                     current_theta_a = self.parametrized_problem.compute_theta("a")
                     # Assemble first the LHS
-                    for qa in range(Qa):
+                    for q in range(Q):
                         matrix_row_index[glpk_container_size + 1] = int(M_e + j + 1)
-                        matrix_column_index[glpk_container_size + 1] = int(qa + 1)
-                        matrix_content[glpk_container_size + 1] = current_theta_a[qa]
+                        matrix_column_index[glpk_container_size + 1] = int(q + 1)
+                        matrix_content[glpk_container_size + 1] = current_theta_a[q]
                         glpk_container_size += 1
                     # ... and then the RHS
                     glpk.glp_set_row_bnds(lp, M_e + j + 1, glpk.GLP_LO, self.alpha_LB_on_xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ], 0.)
@@ -222,8 +230,8 @@ def SCMDecoratedProblem(*args):
                 # 4. Add cost function coefficients
                 self.parametrized_problem.set_mu(mu)
                 current_theta_a = self.parametrized_problem.compute_theta("a")
-                for qa in range(Qa):
-                    glpk.glp_set_obj_coef(lp, qa + 1, current_theta_a[qa])
+                for q in range(Q):
+                    glpk.glp_set_obj_coef(lp, q + 1, current_theta_a[q])
                 
                 # 5. Solve the linear programming problem
                 options = glpk.glp_smcp()
@@ -238,26 +246,22 @@ def SCMDecoratedProblem(*args):
                 #    we check the resulting value of alpha_LB. In order to avoid divisions by zero
                 #    or taking the square root of a negative number, we allow an inefficient evaluation.
                 if safeguard == True:
-                    tol = 1e-10
+                    from numpy import isclose
                     alpha_UB = self.get_alpha_UB(mu)
-                    if alpha_LB/alpha_UB < tol:
+                    if alpha_LB/alpha_UB < 0 or isclose(alpha_LB/alpha_UB, 0.):
                         print("SCM warning: alpha_LB is <= 0 at mu = " + str(mu) + ".", end=" ")
                         print("Please consider a larger Nmax for SCM. Meanwhile, a truth", end=" ")
                         print("eigensolve is performed.")
                         
-                        (alpha_LB, discarded1, discarded2) = self.truth_coercivity_constant()
+                        (alpha_LB, _) = self.exact_coercivity_constant_calculator.solve()
                         
-                    if alpha_LB/alpha_UB > 1 + tol:
-                        print("SCM warning: alpha_LB is > alpha_UB at mu = " + str(mu) + ".", end=" ")
-                        print("This should never happen!")
+                    assert alpha_LB < alpha_UB, "alpha_LB is > alpha_UB at mu = " + str(mu) + "."
                 
                 return alpha_LB
         
             ## Get an upper bound for alpha
-            def get_alpha_UB(self, mu):
-                self.load_reduced_data_structures()
-                
-                Qa = self.parametrized_problem.Qa
+            def get_stability_factor_upper_bound(self, mu):
+                Q = self.parametrized_problem.Q["a"]
                 N = self.N
                 UB_vectors_J = self.UB_vectors_J
                 
@@ -270,8 +274,8 @@ def SCMDecoratedProblem(*args):
                     
                     # Compute the cost function for fixed omega
                     obj = 0.
-                    for qa in range(Qa):
-                        obj += UB_vector[qa]*current_theta_a[qa]
+                    for q in range(Q):
+                        obj += UB_vector[q]*current_theta_a[q]
                     
                     if obj < alpha_UB:
                         alpha_UB = obj
@@ -279,7 +283,7 @@ def SCMDecoratedProblem(*args):
                 return alpha_UB
 
             ## Auxiliary function: M parameters in the set all_mu closest to mu
-            def closest_parameters(self, M, all_mu_indices, mu):
+            def _closest_parameters(self, M, all_mu_indices, mu):
                 # Trivial case 1:
                 if M == 0:
                     return
@@ -294,7 +298,7 @@ def SCMDecoratedProblem(*args):
                 
                 indices_and_distances = list()
                 for p in range(len(all_mu_indices)):
-                    distance = self.parameters_distance(mu, self.xi_train[ all_mu_indices[p] ])
+                    distance = self._parameters_distance(mu, self.xi_train[ all_mu_indices[p] ])
                     indices_and_distances.append((p, distance))
                 indices_and_distances.sort(key=operator.itemgetter(1))
                 neighbors = list()
@@ -303,7 +307,7 @@ def SCMDecoratedProblem(*args):
                 return neighbors
                 
             ## Auxiliary function: distance bewteen two parameters
-            def parameters_distance(self, mu1, mu2):
+            def _parameters_distance(self, mu1, mu2):
                 P = len(mu1)
                 distance = 0.
                 for c in range(P):
@@ -313,216 +317,9 @@ def SCMDecoratedProblem(*args):
             #  @}
             ########################### end - ONLINE STAGE - end ########################### 
         
-            ###########################     OFFLINE STAGE     ########################### 
-            ## @defgroup OfflineStage Methods related to the offline stage
-            #  @{
-        
-            ## Perform the offline phase of SCM
-            def offline(self):
-                print("==============================================================")
-                print("=             SCM offline phase begins                       =")
-                print("==============================================================")
-                print("")
-                
-                # Save M_e and M_p
-                np.save(self.folder["reduced_operators"] + "M_e", self.M_e)
-                np.save(self.folder["reduced_operators"] + "M_p", self.M_p)
-                
-                # Assemble the condensed versions of truth_A and S matrices
-                self.assemble_condensed_truth_matrices()
-                
-                # Compute the bounding box \mathcal{B}
-                self.compute_bounding_box()
-                
-                # Arbitrarily start from the first parameter in the training set
-                self.set_mu(self.xi_train[0])
-                self.mu_index = 0
-                
-                for run in range(self.Nmax):
-                    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                    
-                    # Store the greedy parameter
-                    self.update_C_J()
-                    
-                    # Evaluate the coercivity constant
-                    print("evaluate the coercivity constant for mu = ", self.mu)
-                    (alpha, eigenvector, UB_vector) = self.truth_coercivity_constant()
-                    self.alpha_J += [alpha]; np.save(self.folder["reduced_operators"] + "alpha_J", self.alpha_J)
-                    self.eigenvector_J += [eigenvector]
-                    self.UB_vectors_J += [UB_vector]; np.save(self.folder["reduced_operators"] + "UB_vectors_J", self.UB_vectors_J)
-                    self.export_solution(eigenvector, self.folder["snapshots"], "eigenvector_" + str(run))
-                    
-                    # Prepare for next iteration
-                    if self.N < self.Nmax:
-                        print("find next mu")
-                        self.greedy()
-                    else:
-                        self.greedy()
-                
-                print("==============================================================")
-                print("=             SCM offline phase ends                         =")
-                print("==============================================================")
-                print("")
-                
-                # mu_index does not make any sense from now on
-                self.mu_index = None
-                
-                reduced_problem.init("online")
-                return reduced_problem
-        
-            # Compute the bounding box \mathcal{B}
-            def compute_bounding_box(self):
-                # Resize the bounding box storage
-                Qa = self.parametrized_problem.Qa
-                self.B_min = np.zeros((Qa))
-                self.B_max = np.zeros((Qa))
-                
-                # RHS matrix
-                S = self.S__condensed
-                S = as_backend_type(S)
-                
-                for qa in range(Qa):
-                    # Compute the minimum eigenvalue
-                    A = self.truth_A__condensed_for_minimum_eigenvalue[qa]
-                    A = as_backend_type(A)
-                    
-                    eigensolver = SLEPcEigenSolver(A, S)
-                    eigensolver.parameters["problem_type"] = "gen_hermitian"
-                    eigensolver.parameters["spectrum"] = "smallest real"
-                    self.set_additional_eigensolver_options_for_bounding_box_minimum(eigensolver, qa)
-                    eigensolver.solve(1)
-                    r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
-                    self.B_min[qa] = r
-                    print("B_min[" + str(qa) + "] = " + str(r))
-                    
-                    # Compute the maximum eigenvalue
-                    A = self.truth_A__condensed_for_maximum_eigenvalue[qa]
-                    A = as_backend_type(A)
-                    
-                    eigensolver = SLEPcEigenSolver(A, S)
-                    eigensolver.parameters["problem_type"] = "gen_hermitian"
-                    eigensolver.parameters["spectrum"] = "largest real"
-                    self.set_additional_eigensolver_options_for_bounding_box_maximum(eigensolver, qa)
-                    eigensolver.solve(1)
-                    r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
-                    self.B_max[qa] = r
-                    print("B_max[" + str(qa) + "] = " + str(r))
-                
-                # Save to file
-                np.save(self.folder["reduced_operators"] + "B_min", self.B_min)
-                np.save(self.folder["reduced_operators"] + "B_max", self.B_max)
-        
-            # Store the greedy parameter
-            def update_C_J(self):
-                if self.mu != self.xi_train[self.mu_index]:
-                    # There is something wrong if we are here...
-                    raise RuntimeError("Should never arrive here")
-                
-                self.C_J += [self.mu_index]
-                if self.mu_index in self.complement_C_J: # if not SCM selects twice the same parameter
-                    self.complement_C_J.remove(self.mu_index)
-                
-                self.N = len(self.C_J)
-                
-                # Save to file
-                np.save(self.folder["reduced_operators"] + "C_J", self.C_J)
-                np.save(self.folder["reduced_operators"] + "complement_C_J", self.complement_C_J)
-                
-            # Evaluate the coercivity constant
-            def truth_coercivity_constant(self):
-                self.assemble_condensed_truth_matrices()
-                
-                r, c, rv, cv = eigensolver.get_eigenpair(0) # real and complex part of the (eigenvalue, eigenvectors)
-                rv_f = Function(self.parametrized_problem.V, rv)
-                UB_vector = self.compute_UB_vector(self.parametrized_problem.truth_A, self.parametrized_problem.S, rv_f)
-                
-                return (r, rv_f, UB_vector)
-                
-            ## Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
-            def compute_UB_vector(self, vec, S, u):
-                UB_vector = np.zeros((len(vec)))
-                norm_S_squared = self.parametrized_problem.compute_scalar_product(u, S, u)
-                for qa in range(len(vec)):
-                    UB_vector[qa] = self.parametrized_problem.compute_scalar_product(u, vec[qa], u)/norm_S_squared
-                return UB_vector
-                
-            ## Choose the next parameter in the offline stage in a greedy fashion
-            def greedy(self):
-                ntrain = len(self.xi_train)
-                alpha_LB_on_xi_train = np.zeros([ntrain])
-                #
-                delta_max = -1.0
-                munew = None
-                munew_index = None
-                for i in range(ntrain):
-                    mu = self.xi_train[i]
-                    self.mu_index = i
-                    self.set_mu(mu)
-                    LB = self.get_alpha_LB(mu, False)
-                    UB = self.get_alpha_UB(mu)
-                    delta = (UB - LB)/UB
-                    tol = 1.e-10
-                    if LB/UB < -tol:
-                        print("SCM warning at mu = ", mu , ": LB = ", LB, " < 0")
-                    if LB/UB > 1 + tol:
-                        print("SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB)
-                    alpha_LB_on_xi_train[i] = max(0, LB)
-                    if ((delta > delta_max) or (delta == delta_max and random.random() >= 0.5)):
-                        delta_max = delta
-                        munew = mu
-                        munew_index = i
-                        
-                print("absolute SCM delta max = ", delta_max)
-                if os.path.isfile(self.folder["post_processing"] + "delta_max.npy") == True:
-                    d = np.load(self.folder["post_processing"] + "delta_max.npy")
-                    
-                    np.save(self.folder["post_processing"] + "delta_max", np.append(d, delta_max))
-        
-                    m = np.load(self.folder["post_processing"] + "mu_greedy.npy")
-                    np.save(self.folder["post_processing"] + "mu_greedy", np.append(m, munew))
-                else:
-                    np.save(self.folder["post_processing"] + "delta_max", delta_max)
-                    np.save(self.folder["post_processing"] + "mu_greedy", np.array(munew))
-
-                self.set_mu(munew)
-                self.mu_index = munew_index
-                
-                # Overwrite alpha_LB_on_xi_train
-                self.alpha_LB_on_xi_train = alpha_LB_on_xi_train
-                np.save(self.folder["reduced_operators"] + "alpha_LB_on_xi_train", self.alpha_LB_on_xi_train)
-        
-            #  @}
-            ########################### end - OFFLINE STAGE - end ########################### 
-        
             ###########################     I/O     ########################### 
             ## @defgroup IO Input/output methods
             #  @{
-
-            ## Load reduced order data structures
-            def load_reduced_data_structures(self):
-                if len(np.asarray(self.B_min)) == 0: # avoid loading multiple times
-                    self.B_min = np.load(self.folder["reduced_operators"] + "B_min.npy")
-                if len(np.asarray(self.B_max)) == 0: # avoid loading multiple times
-                    self.B_max = np.load(self.folder["reduced_operators"] + "B_max.npy")
-                if len(np.asarray(self.C_J)) == 0: # avoid loading multiple times
-                    self.C_J = np.load(self.folder["reduced_operators"] + "C_J.npy")
-                    self.N = len(self.C_J)
-                if len(np.asarray(self.complement_C_J)) == 0: # avoid loading multiple times
-                    self.complement_C_J = np.load(self.folder["reduced_operators"] + "complement_C_J.npy")
-                if len(np.asarray(self.alpha_J)) == 0: # avoid loading multiple times
-                    self.alpha_J = np.load(self.folder["reduced_operators"] + "alpha_J.npy")
-                if len(np.asarray(self.alpha_LB_on_xi_train)) == 0: # avoid loading multiple times
-                    self.alpha_LB_on_xi_train = np.load(self.folder["reduced_operators"] + "alpha_LB_on_xi_train.npy")
-                if len(np.asarray(self.UB_vectors_J)) == 0: # avoid loading multiple times
-                    self.UB_vectors_J = np.load(self.folder["reduced_operators"] + "UB_vectors_J.npy")
-                if not self.M_e: # avoid loading multiple times
-                    self.M_e = np.load(self.folder["reduced_operators"] + "M_e.npy")
-                    self.M_e = int(self.M_e)
-                if not self.M_p: # avoid loading multiple times
-                    self.M_p = np.load(self.folder["reduced_operators"] + "M_p.npy")
-                    self.M_p = int(self.M_p)
-                if len(np.asarray(self.xi_train)) == 0: # avoid loading multiple times
-                    self.xi_train = np.load(self.folder["reduced_operators"] + "xi_train.npy")
         
             ## Export solution in VTK format
             def export_solution(self, solution, folder, filename):
@@ -531,77 +328,36 @@ def SCMDecoratedProblem(*args):
             #  @}
             ########################### end - I/O - end ###########################
         
-        
-            ###########################     ERROR ANALYSIS     ########################### 
-            ## @defgroup ErrorAnalysis Error analysis
-            #  @{
-        
-            # Compute the error of the reduced order approximation with respect to the full order one
-            # over the test set
-            def error_analysis(self):
-                print("==============================================================")
-                print("=             SCM error analysis begins                      =")
-                print("==============================================================")
-                print("")
+        class SCMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+            ## Default initialization of members
+            def __init__(self, V, *args):
+                # Call the parent initialization
+                ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
+                # Storage for SCM reduced problems
+                self.SCM_approximation = _SCMApproximation(self, self.name() + "/scm")
                 
-                normalized_error = np.zeros((len(self.xi_test)))
+                # Store here input parameters provided by the user that are needed by the reduction method
+                self._input_storage_for_SCM_reduction.constrain_minimum_eigenvalue = constrain_minimum_eigenvalue
+                self._input_storage_for_SCM_reduction.constrain_maximum_eigenvalue = constrain_minimum_eigenvalue
+                self._input_storage_for_SCM_reduction.bounding_box_minimum_eigensolver_parameters = bounding_box_minimum_eigensolver_parameters
+                self._input_storage_for_SCM_reduction.bounding_box_maximum_eigensolver_parameters = bounding_box_maximum_eigensolver_parameters
                 
-                for run in range(len(self.xi_test)):
-                    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                    
-                    self.set_mu(self.xi_test[run])
-                    
-                    # Truth solves
-                    (alpha, discarded1, discarded2) = self.truth_coercivity_constant()
-                    
-                    # Reduced solves
-                    alpha_LB = self.get_alpha_LB(self.mu, False)
-                    alpha_UB = self.get_alpha_UB(self.mu)
-                    tol = 1.e-10
-                    if alpha_LB/alpha_UB < -tol:
-                        print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " < 0")
-                    if alpha_LB/alpha_UB > 1 + tol:
-                        print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > UB = ", alpha_UB)
-                    if alpha_LB/alpha > 1 + tol:
-                        print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > exact = ", alpha)
-                    
-                    normalized_error[run] = (alpha - alpha_LB)/alpha_UB
+                # Signal to the factory that this problem has been decorated
+                if not hasattr(self, "_problem_decorators"):
+                    self._problem_decorators = dict() # string to bool
+                self._problem_decorators["SCM"] = True
                 
-                # Print some statistics
-                print("")
-                print("min(nerr) \t\t mean(nerr) \t\t max(nerr)")
-                min_normalized_error = np.min(normalized_error[:]) # it should not be negative!
-                mean_normalized_error = np.mean(normalized_error[:])
-                max_normalized_error = np.max(normalized_error[:])
-                print(str(min_normalized_error) + " \t " + str(mean_normalized_error) \
-                      + " \t " + str(max_normalized_error))
+            ## Return the alpha_lower bound.
+            def get_stability_factor(self):
+                return self.SCM_approximation.solve()
                 
-                print("")
-                print("==============================================================")
-                print("=             SCM error analysis ends                        =")
-                print("==============================================================")
-                print("")
-                
-            #  @}
-            ########################### end - ERROR ANALYSIS - end ########################### 
-        
-            ###########################     PROBLEM SPECIFIC     ########################### 
-            ## @defgroup ProblemSpecific Problem specific methods
-            #  @{
-        
-            ## Set additional options for the eigensolver (bounding box minimum)
-            def set_additional_eigensolver_options_for_bounding_box_minimum(self, eigensolver, qa):
-                eigensolver.parameters["spectral_transform"] = "shift-and-invert"
-                eigensolver.parameters["spectral_shift"] = 1.e-5
-                
-            ## Set additional options for the eigensolver (bounding box maximimum)
-            def set_additional_eigensolver_options_for_bounding_box_maximum(self, eigensolver, qa):
-                eigensolver.parameters["spectral_transform"] = "shift-and-invert"
-                eigensolver.parameters["spectral_shift"] = 1.e5
-                
-            #  @}
-            ########################### end - PROBLEM SPECIFIC - end ########################### 
-                        
+            ## Get the name of the problem, to be used as a prefix for output folders.
+            # Overridden to use the parent name
+            @classmethod
+            def name(cls):
+                assert len(cls.__bases__) == 1
+                return cls.__bases__[0].name()
+
         # return value (a class) for the decorator
         return SCMDecoratedProblem_Class
     

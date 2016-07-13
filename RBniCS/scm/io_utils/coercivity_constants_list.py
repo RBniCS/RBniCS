@@ -27,8 +27,10 @@
 #  @{
 
 class CoercivityConstantsList(ExportableList):
-    def __init__(self):
+    def __init__(self, size=None):
         ExportableList.__init__(self, "pickle")
+        if size is not None:
+            self.extend([0. for x in range(size)])
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 
