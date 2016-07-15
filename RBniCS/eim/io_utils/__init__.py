@@ -24,8 +24,10 @@
 
 from RBniCS.eim.io_utils.affine_expansion_eim_storage import AffineExpansionEIMStorage
 from RBniCS.eim.io_utils.points_list import PointsList
+from RBniCS.eim.io_utils.separated_parametrized_form import SeparatedParametrizedForm
 
 __all__ = [
     'AffineExpansionEIMStorage',
-    'PointsList'
+    'PointsList',
+    'SeparatedParametrizedForm'
 ]
