@@ -171,24 +171,21 @@ graetz_problem = Graetz(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.01, 10.0), (0.01, 10.0)]
 graetz_problem.set_mu_range(mu_range)
 
-# 4. Choose PETSc solvers as linear algebra backend
-parameters.linear_algebra_backend = 'PETSc'
-
-# 5. Prepare reduction with a reduced basis method
+# 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
 reduced_basis_method.set_Nmax(10, SCM=10)
 
-# 6. Perform the offline phase
+# 5. Perform the offline phase
 first_mu = (1.0, 1.0)
 graetz_problem.set_mu(first_mu)
 reduced_basis_method.set_xi_train(100)
 reduced_graetz_problem = reduced_basis_method.offline()
 
-# 7. Perform an online solve
+# 6. Perform an online solve
 online_mu = (10.0, 0.01)
 reduced_graetz_problem.set_mu(online_mu)
 reduced_graetz_problem.solve()
 
-# 8. Perform an error analysis
+# 7. Perform an error analysis
 reduced_basis_method.set_xi_test(100)
 reduced_basis_method.error_analysis()

@@ -157,22 +157,19 @@ hole_problem = Hole(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.5, 1.5), (0.5, 1.5), (0.01, 1.0)]
 hole_problem.set_mu_range(mu_range)
 
-# 4. Choose PETSc solvers as linear algebra backend
-parameters.linear_algebra_backend = 'PETSc'
-
-# 5. Prepare reduction with a POD-Galerkin method
+# 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(hole_problem)
 pod_galerkin_method.set_Nmax(20)
 
-# 6. Perform the offline phase
+# 5. Perform the offline phase
 pod_galerkin_method.set_xi_train(500)
 reduced_hole_problem = pod_galerkin_method.offline()
 
-# 7. Perform an online solve
+# 6. Perform an online solve
 online_mu = (0.5, 0.5, 0.01)
 reduced_hole_problem.set_mu(online_mu)
 reduced_hole_problem.solve()
 
-# 8. Perform an error analysis
+# 7. Perform an error analysis
 pod_galerkin_method.set_xi_test(500)
 pod_galerkin_method.error_analysis()
