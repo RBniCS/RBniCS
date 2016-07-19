@@ -40,11 +40,23 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     assert len(mu) > 0
     for p in range(len(mu)):
         if isinstance(parametrized_expression_code, tuple):
-            new_parametrized_expression_code = list()
-            for i in range(len(parametrized_expression_code)):
-                assert isinstance(parametrized_expression_code[i], str)
-                new_parametrized_expression_code.append(parametrized_expression_code[i].replace("mu[" + str(p) + "]", "mu_" + str(p)))
-            parametrized_expression_code = tuple(new_parametrized_expression_code)
+            if isinstance(parametrized_expression_code[0], tuple):
+                new_parametrized_expression_code = list()
+                for i in range(len(parametrized_expression_code)):
+                    assert isinstance(parametrized_expression_code[i], tuple)
+                    new_parametrized_expression_code_i = list()
+                    for j in range(len(parametrized_expression_code[i])):
+                        assert isinstance(parametrized_expression_code[i][j], str)
+                        new_parametrized_expression_code_i.append(parametrized_expression_code[i][j].replace("mu[" + str(p) + "]", "mu_" + str(p)))
+                    parametrized_expression_code_i = tuple(new_parametrized_expression_code_i)
+                    new_parametrized_expression_code.append(parametrized_expression_code_i)
+                parametrized_expression_code = tuple(new_parametrized_expression_code)
+            else:
+                new_parametrized_expression_code = list()
+                for i in range(len(parametrized_expression_code)):
+                    assert isinstance(parametrized_expression_code[i], str)
+                    new_parametrized_expression_code.append(parametrized_expression_code[i].replace("mu[" + str(p) + "]", "mu_" + str(p)))
+                parametrized_expression_code = tuple(new_parametrized_expression_code)
         elif isinstance(parametrized_expression_code, str):
             parametrized_expression_code = parametrized_expression_code.replace("mu[" + str(p) + "]", "mu_" + str(p))
         else:
