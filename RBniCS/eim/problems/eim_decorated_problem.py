@@ -27,6 +27,7 @@ import types
 from dolfin import Function
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
+from RBniCS.io_utils import KeepClassName
 from RBniCS.eim.io_utils import PointsList
 
 def EIMDecoratedProblem():
@@ -177,7 +178,9 @@ def EIMDecoratedProblem():
             #  @}
             ########################### end - I/O - end ########################### 
         
-        class EIMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        class EIMDecoratedProblem_Class(
+            KeepClassName(ParametrizedProblem_DerivedClass)
+        ):
             
             ## Default initialization of members
             def __init__(self, V, **kwargs):
@@ -231,13 +234,6 @@ def EIMDecoratedProblem():
                     return tuple(eim_thetas)
                 else:
                     return original_thetas
-                    
-            ## Get the name of the problem, to be used as a prefix for output folders.
-            # Overridden to use the parent name
-            @classmethod
-            def name(cls):
-                assert len(cls.__bases__) == 1
-                return cls.__bases__[0].name()
                         
             #  @}
             ########################### end - PROBLEM SPECIFIC - end ########################### 

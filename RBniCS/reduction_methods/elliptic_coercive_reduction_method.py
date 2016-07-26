@@ -83,7 +83,6 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
         for f in all_folders:
             if os.path.exists(f) and len(os.listdir(f)) == 0: # already created, but empty
                 all_folders_exist = False
-                print("EMPTY", f)
             if not os.path.exists(f):
                 all_folders_exist = False
                 os.makedirs(f)

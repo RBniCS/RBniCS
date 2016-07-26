@@ -29,11 +29,14 @@ import shutil # for rm
 import random # to randomize selection in case of equal error bound
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage
+from RBniCS.io_utils import KeepClassName
 
 def ExactParametrizedFunctionEvaluationDecoratedProblem():
     def ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
-
-        class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        
+        class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(
+            KeepClassName(ParametrizedProblem_DerivedClass)
+        ):
             
             ## Default initialization of members
             def __init__(self, V, **kwargs):
@@ -63,20 +66,6 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem():
             
             #  @}
             ########################### end - OFFLINE STAGE - end ########################### 
-            
-            ###########################     I/O     ########################### 
-            ## @defgroup IO Input/output methods
-            #  @{
-                        
-            ## Get the name of the problem, to be used as a prefix for output folders.
-            # Overridden to use the parent name
-            @classmethod
-            def name(cls):
-                assert len(cls.__bases__) == 1
-                return cls.__bases__[0].name()
-                
-            #  @}
-            ########################### end - I/O - end ########################### 
             
         # return value (a class) for the decorator
         return ExactParametrizedFunctionEvaluationDecoratedProblem_Class

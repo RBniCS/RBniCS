@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function, ALE
-from RBniCS.io_utils import ParametrizedExpression
+from RBniCS.io_utils import KeepClassName, ParametrizedExpression
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
     def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
@@ -31,7 +31,9 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
         ## @class ShapeParametrizationDecoratedProblem
         #
         # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-        class ShapeParametrizationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        class ShapeParametrizationDecoratedProblem_Class(
+            KeepClassName(ParametrizedProblem_DerivedClass)
+        ):
         
             ###########################     CONSTRUCTORS     ########################### 
             ## @defgroup Constructors Methods related to the construction of the SCM object
@@ -129,13 +131,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
                     subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]
                     displacement.vector()[subdomain_dofs] = displacement_subdomain_i.vector()[subdomain_dofs]
                 return displacement
-                
-            ## Get the name of the problem, to be used as a prefix for output folders.
-            # Overridden to use the parent name
-            @classmethod
-            def name(cls):
-                assert len(cls.__bases__) == 1
-                return cls.__bases__[0].name()
                 
             #  @}
             ########################### end - I/O - end ########################### 

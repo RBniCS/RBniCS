@@ -15,29 +15,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary I/O module
+## @file numpy_io.py
+#  @brief I/O helper functions
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.io_utils.error_analysis_table import ErrorAnalysisTable
-from RBniCS.io_utils.exportable_list import ExportableList
-from RBniCS.io_utils.keep_class_name import KeepClassName
-from RBniCS.io_utils.numpy_io import NumpyIO
-from RBniCS.io_utils.parametrized_expression import ParametrizedExpression
-#from RBniCS.io_utils.performance_table import PerformanceTable # not needed, only used internally inside this module
-from RBniCS.io_utils.pickle_io import PickleIO
-#from RBniCS.io_utils.print import print # TODO enable
-from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
+def KeepClassName(Parent):
+    
+    class KeepClassName_Class(Parent):
+        @classmethod
+        def name(cls):
+            assert len(cls.__bases__) == 1
+            return cls.__bases__[0].name()
+    
+    return KeepClassName_Class
 
-__all__ = [
-    'ErrorAnalysisTable',
-    'ExportableList',
-    'KeepClassName',
-    'NumpyIO',
-    'ParametrizedExpression',
-    'PickleIO',
-    'SpeedupAnalysisTable'
-]

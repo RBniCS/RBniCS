@@ -30,6 +30,7 @@ import sys # for sys.float_info.max
 import random # to randomize selection in case of equal error bound
 import operator # to find closest parameters
 from RBniCS.problems import ParametrizedProblem
+from RBniCS.io_utils import KeepClassName
 from RBniCS.scm.io_utils import BoundingBoxSideList
 
 def SCMDecoratedProblem(
@@ -327,7 +328,9 @@ def SCMDecoratedProblem(
             #  @}
             ########################### end - I/O - end ###########################
         
-        class SCMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        class SCMDecoratedProblem_Class(
+            KeepClassName(ParametrizedProblem_DerivedClass)
+        ):
             ## Default initialization of members
             def __init__(self, V, *args):
                 # Call the parent initialization
@@ -349,13 +352,6 @@ def SCMDecoratedProblem(
             ## Return the alpha_lower bound.
             def get_stability_factor(self):
                 return self.SCM_approximation.solve()
-                
-            ## Get the name of the problem, to be used as a prefix for output folders.
-            # Overridden to use the parent name
-            @classmethod
-            def name(cls):
-                assert len(cls.__bases__) == 1
-                return cls.__bases__[0].name()
 
         # return value (a class) for the decorator
         return SCMDecoratedProblem_Class

@@ -24,6 +24,7 @@
 
 from __future__ import print_function
 from RBniCS.problems import ParametrizedProblem
+from RBniCS.io_utils import KeepClassName
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 def ExactCoercivityConstantDecoratedProblem(
@@ -31,8 +32,10 @@ def ExactCoercivityConstantDecoratedProblem(
     eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
 ):
     def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
-    
-        class ExactCoercivityConstantDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        
+        class ExactCoercivityConstantDecoratedProblem_Class(
+            KeepClassName(ParametrizedProblem_DerivedClass)
+        ):
             ## Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
@@ -56,13 +59,6 @@ def ExactCoercivityConstantDecoratedProblem(
             def get_stability_factor(self):
                 (minimum_eigenvalue, _) = self.exact_coercivity_constant_calculator.solve()
                 return minimum_eigenvalue
-                
-            ## Get the name of the problem, to be used as a prefix for output folders.
-            # Overridden to use the parent name
-            @classmethod
-            def name(cls):
-                assert len(cls.__bases__) == 1
-                return cls.__bases__[0].name()
                 
                         
         # return value (a class) for the decorator
