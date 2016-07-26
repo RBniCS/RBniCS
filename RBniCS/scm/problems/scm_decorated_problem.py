@@ -29,9 +29,12 @@ import glpk # for LB computation
 import sys # for sys.float_info.max
 import random # to randomize selection in case of equal error bound
 import operator # to find closest parameters
+from math import sqrt
+from RBniCS.linear_algebra import sum, product
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.io_utils import KeepClassName, SyncSetters
-from RBniCS.scm.io_utils import BoundingBoxSideList
+from RBniCS.scm.io_utils import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
+from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 def SCMDecoratedProblem(
     M_e = -1,
@@ -75,14 +78,21 @@ def SCMDecoratedProblem(
                 self.UB_vectors_J = UpperBoundsList() # list of Q-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
                 self.M_e = M_e # integer denoting the number of constraints based on the exact eigenvalues. If < 0, then it is assumed to be len(C_J)
                 self.M_p = M_p # integer denoting the number of constraints based on the previous lower bounds. If < 0, then it is assumed to be len(C_J)
+                self.xi_train = None # SCM algorithms needs the xi_train also in the online stage, e.g. to query alpha_LB_on_xi_train
                 
                 # $$ OFFLINE DATA STRUCTURES $$ #
                 # Matrices/vectors resulting from the truth discretization
                 # I/O
-                self.folder["basis"] = self.folder_prefix + "/" + "basis"
                 self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
                 # 
                 self.exact_coercivity_constant_calculator = ParametrizedHermitianEigenProblem(truth_problem, "a", True, constrain_minimum_eigenvalue, "smallest", coercivity_eigensolver_parameters)
+                
+                # Store here input parameters provided by the user that are needed by the reduction method
+                self._input_storage_for_SCM_reduction = dict()
+                self._input_storage_for_SCM_reduction["constrain_minimum_eigenvalue"] = constrain_minimum_eigenvalue
+                self._input_storage_for_SCM_reduction["constrain_maximum_eigenvalue"] = constrain_maximum_eigenvalue
+                self._input_storage_for_SCM_reduction["bounding_box_minimum_eigensolver_parameters"] = bounding_box_minimum_eigensolver_parameters
+                self._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"] = bounding_box_maximum_eigensolver_parameters
                 
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
@@ -102,17 +112,25 @@ def SCMDecoratedProblem(
                     self.alpha_J.load(self.folder["reduced_operators"], "alpha_J")
                     self.alpha_LB_on_xi_train.load(self.folder["reduced_operators"], "alpha_LB_on_xi_train")
                     self.UB_vectors_J.load(self.folder["reduced_operators"], "UB_vectors_J")
+                    self.xi_train.load(self.folder["reduced_operators"], "xi_train")
                     # Set the value of N
                     self.N = len(self.C_J)
                 elif current_stage == "offline":
+                    if len(self.truth_problem.Q) == 0:
+                        self.truth_problem.init()
                     # Properly resize structures related to operator
                     Q = self.truth_problem.Q["a"]
-                    self.Bmin = BoundingBoxSideList(Q)
-                    self.Bmax = BoundingBoxSideList(Q)
+                    self.B_min = BoundingBoxSideList(Q)
+                    self.B_max = BoundingBoxSideList(Q)
                     # Properly resize structures related to xi_train
                     ntrain = len(self.xi_train)
                     self.alpha_LB_on_xi_train = CoercivityConstantsList(ntrain)
-                    self.complement_C_J = TrainingSetIndices(:ntrain)
+                    self.complement_C_J = TrainingSetIndices(ntrain)
+                    # Save the xi_train, which was passed by the reduction method,
+                    # in order to use it online
+                    self.xi_train.save(self.folder["reduced_operators"], "xi_train")
+                    # Init exact coercivity constant computations
+                    self.exact_coercivity_constant_calculator.init()
                 else:
                     raise RuntimeError("Invalid stage in init().")
         
@@ -155,7 +173,7 @@ def SCMDecoratedProblem(
                 glpk_container_size = 0
                 
                 # 3a. Add constraints: a constraint is added for the closest samples to mu in C_J
-                closest_C_J_indices = self.closest_parameters(M_e, self.C_J, mu)
+                closest_C_J_indices = self._closest_parameters(M_e, self.C_J, mu)
                 for j in range(M_e):
                     # Overwrite parameter values
                     omega = self.xi_train[ self.C_J[ closest_C_J_indices[j] ] ]
@@ -213,15 +231,18 @@ def SCMDecoratedProblem(
                 #    or taking the square root of a negative number, we allow an inefficient evaluation.
                 if safeguard == True:
                     from numpy import isclose
-                    alpha_UB = self.get_alpha_UB(mu)
-                    if alpha_LB/alpha_UB < 0 or isclose(alpha_LB/alpha_UB, 0.):
-                        print("SCM warning: alpha_LB is <= 0 at mu = " + str(mu) + ".", end=" ")
-                        print("Please consider a larger Nmax for SCM. Meanwhile, a truth", end=" ")
-                        print("eigensolve is performed.")
+                    alpha_UB = self.get_stability_factor_upper_bound(mu)
+                    if alpha_LB/alpha_UB < 0 and not isclose(alpha_LB/alpha_UB, 0.): # if alpha_LB/alpha_UB << 0
+                        print("SCM warning at mu = " + str(mu) + ": LB = " + str(alpha_LB) + " < 0.")
+                        print("Please consider a larger Nmax for SCM. Meanwhile, a truth eigensolve is performed.")
                         
                         (alpha_LB, _) = self.exact_coercivity_constant_calculator.solve()
                         
-                    assert alpha_LB < alpha_UB, "alpha_LB is > alpha_UB at mu = " + str(mu) + "."
+                    if alpha_LB/alpha_UB > 1 and not isclose(alpha_LB/alpha_UB, 1.): # if alpha_LB/alpha_UB >> 1
+                        print("SCM warning at mu = " + str(mu) + ": LB = " + str(alpha_LB) + " > UB = " + str(alpha_UB) + ".")
+                        print("Please consider a larger Nmax for SCM. Meanwhile, a truth eigensolve is performed.")
+                        
+                        (alpha_LB, _) = self.exact_coercivity_constant_calculator.solve()
                 
                 return alpha_LB
         
@@ -246,7 +267,7 @@ def SCMDecoratedProblem(
                     if obj < alpha_UB:
                         alpha_UB = obj
                 
-                return alpha_UB
+                return float(alpha_UB)
 
             ## Auxiliary function: M parameters in the set all_mu closest to mu
             def _closest_parameters(self, M, all_mu_indices, mu):
@@ -278,7 +299,7 @@ def SCMDecoratedProblem(
                 distance = 0.
                 for c in range(P):
                     distance += (mu1[c] - mu2[c])*(mu1[c] - mu2[c])
-                return np.sqrt(distance)
+                return sqrt(distance)
         
             #  @}
             ########################### end - ONLINE STAGE - end ########################### 
@@ -298,17 +319,11 @@ def SCMDecoratedProblem(
             KeepClassName(ParametrizedProblem_DerivedClass)
         ):
             ## Default initialization of members
-            def __init__(self, V, *args):
+            def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for SCM reduced problems
                 self.SCM_approximation = _SCMApproximation(self, self.name() + "/scm")
-                
-                # Store here input parameters provided by the user that are needed by the reduction method
-                self._input_storage_for_SCM_reduction.constrain_minimum_eigenvalue = constrain_minimum_eigenvalue
-                self._input_storage_for_SCM_reduction.constrain_maximum_eigenvalue = constrain_minimum_eigenvalue
-                self._input_storage_for_SCM_reduction.bounding_box_minimum_eigensolver_parameters = bounding_box_minimum_eigensolver_parameters
-                self._input_storage_for_SCM_reduction.bounding_box_maximum_eigensolver_parameters = bounding_box_maximum_eigensolver_parameters
                 
                 # Signal to the factory that this problem has been decorated
                 if not hasattr(self, "_problem_decorators"):
@@ -317,7 +332,7 @@ def SCMDecoratedProblem(
                 
             ## Return the alpha_lower bound.
             def get_stability_factor(self):
-                return self.SCM_approximation.solve()
+                return self.SCM_approximation.get_stability_factor_lower_bound(self.mu)
 
         # return value (a class) for the decorator
         return SCMDecoratedProblem_Class

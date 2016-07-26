@@ -26,11 +26,13 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
+from RBniCS.io_utils import ExportableList
+
 class CoercivityConstantsList(ExportableList):
     def __init__(self, size=None):
         ExportableList.__init__(self, "pickle")
         if size is not None:
-            self.extend([0. for x in range(size)])
+            self._list.extend([0. for x in range(size)])
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

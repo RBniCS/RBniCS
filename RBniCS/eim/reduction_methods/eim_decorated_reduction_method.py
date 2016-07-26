@@ -272,6 +272,8 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             if N is None:
                 N = self.EIM_approximation.N
                 
+            self._init_error_analysis()
+            
             print("==============================================================")
             print("=             EIM error analysis begins                      =")
             print("==============================================================")
@@ -378,19 +380,23 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         ## OFFLINE: set the elements in the training set \xi_train.
         def set_xi_train(self, ntrain, enable_import=True, sampling=None):
-            ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
+            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
             for term in self.EIM_reductions:
                 for q in range(len(self.EIM_reductions[term])):
                     if self.EIM_reductions[term][q] is not None:
-                        self.EIM_reductions[term][q].set_xi_train(ntrain, enable_import, sampling)
+                        import_successful_EIM = self.EIM_reductions[term][q].set_xi_train(ntrain, enable_import, sampling)
+                        import_successful = import_successful and import_successful_EIM
+            return import_successful
             
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
         def set_xi_test(self, ntest, enable_import=False, sampling=None):
-            ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling)
+            import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling)
             for term in self.EIM_reductions:
                 for q in range(len(self.EIM_reductions[term])):
                     if self.EIM_reductions[term][q] is not None:
-                        self.EIM_reductions[term][q].set_xi_test(ntest, enable_import, sampling)
+                        import_successful_EIM = self.EIM_reductions[term][q].set_xi_test(ntest, enable_import, sampling)
+                        import_successful = import_successful and import_successful_EIM
+            return import_successful
             
         #  @}
         ########################### end - SETTERS - end ########################### 
@@ -409,7 +415,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                         self.EIM_reductions[term][q].offline()
             # ..., and then call the parent method.
             self.truth_problem.set_mu(bak_first_mu)
-            ReductionMethod_DerivedClass.offline(self)
+            return ReductionMethod_DerivedClass.offline(self)
     
         #  @}
         ########################### end - OFFLINE STAGE - end ###########################

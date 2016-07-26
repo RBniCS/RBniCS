@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-#from RBniCS.scm.reduction_methods.scm_decorated_reduced_problem import SCMDecoratedReductionMethod # TODO enable
+from RBniCS.scm.reduction_methods.scm_decorated_reduction_method import SCMDecoratedReductionMethod
 from RBniCS.scm.reduction_methods.exact_coercivity_constant_decorated_reduction_method import ExactCoercivityConstantDecoratedReductionMethod
 
 __all__ = [
-    #'SCMDecoratedReductionMethod', # TODO enable
+    'SCMDecoratedReductionMethod',
     'ExactCoercivityConstantDecoratedReductionMethod'
 ]

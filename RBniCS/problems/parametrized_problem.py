@@ -66,6 +66,7 @@ class ParametrizedProblem(object):
         self.mu_range = list() # list of (min, max) pairs, such that len(self.mu) == len(self.mu_range)
         #
         self.folder_prefix = folder_prefix
+        self.folder = dict() # from string to string
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 

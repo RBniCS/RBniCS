@@ -22,15 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-#from RBniCS.scm.problems.scm_decorated_problem import SCM #, SCMDecoratedProblem # not needed # TODO enable
-#from RBniCS.scm.problems.scm_decorated_reduced_problem import SCMDecoratedReducedProblem # TODO enable
+from RBniCS.scm.problems.scm_decorated_problem import SCM #, SCMDecoratedProblem # not needed
+from RBniCS.scm.problems.scm_decorated_reduced_problem import SCMDecoratedReducedProblem
 from RBniCS.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstant #, ExactCoercivityConstantDecoratedProblem # not needed
 from RBniCS.scm.problems.exact_coercivity_constant_decorated_reduced_problem import ExactCoercivityConstantDecoratedReducedProblem
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 __all__ = [
-    #'SCM', # TODO enable
-    #'SCMDecoratedReducedProblem', # TODO enable
+    'SCM',
+    'SCMDecoratedReducedProblem',
     'ExactCoercivityConstant',
     'ExactCoercivityConstantDecoratedReducedProblem',
     'ParametrizedHermitianEigenProblem'

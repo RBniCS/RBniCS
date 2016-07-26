@@ -72,7 +72,6 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         # Basis functions matrix
         self.Z = BasisFunctionsMatrix()
         # I/O
-        self.folder = dict() # from string to string
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         

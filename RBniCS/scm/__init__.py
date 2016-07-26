@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.scm.problems import ExactCoercivityConstant # SCM,  # TODO enable
+from RBniCS.scm.problems import SCM, ExactCoercivityConstant
 
 __all__ = [
     # RBniCS.scm.problems
-    #'SCM', # TODO enable
+    'SCM',
     'ExactCoercivityConstant'
 ]

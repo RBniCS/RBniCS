@@ -24,10 +24,14 @@
 
 from RBniCS.scm.io_utils.bounding_box_side_list import BoundingBoxSideList
 from RBniCS.scm.io_utils.coercivity_constants_list import CoercivityConstantsList
+from RBniCS.scm.io_utils.eigen_vectors_list import EigenVectorsList
 from RBniCS.scm.io_utils.training_set_indices import TrainingSetIndices
+from RBniCS.scm.io_utils.upper_bounds_list import UpperBoundsList
 
 __all__ = [
     'BoundingBoxSideList',
     'CoercivityConstantsList',
-    'TrainingSetIndices'
+    'EigenVectorsList',
+    'TrainingSetIndices',
+    'UpperBoundsList'
 ]

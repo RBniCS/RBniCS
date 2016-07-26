@@ -25,7 +25,10 @@
 from __future__ import print_function
 import os
 import random # to randomize selection in case of equal error bound
+from dolfin import Function
+from RBniCS.linear_algebra import transpose, OnlineVector
 from RBniCS.reduction_methods import ReductionMethod
+from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
@@ -55,14 +58,27 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.offline.__func__.mu_index = 0
             
             # Get data that were temporarily store in the SCM_approximation
-            self.constrain_minimum_eigenvalue = self.SCM_approximation._input_storage_for_SCM_reduction.constrain_minimum_eigenvalue
-            self.constrain_maximum_eigenvalue = self.SCM_approximation._input_storage_for_SCM_reduction.constrain_minimum_eigenvalue
-            self.bounding_box_minimum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction.bounding_box_minimum_eigensolver_parameters
-            self.bounding_box_maximum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction.bounding_box_maximum_eigensolver_parameters
+            self.constrain_minimum_eigenvalue = self.SCM_approximation._input_storage_for_SCM_reduction["constrain_minimum_eigenvalue"]
+            self.constrain_maximum_eigenvalue = self.SCM_approximation._input_storage_for_SCM_reduction["constrain_maximum_eigenvalue"]
+            self.bounding_box_minimum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_minimum_eigensolver_parameters"]
+            self.bounding_box_maximum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"]
             del self.SCM_approximation._input_storage_for_SCM_reduction
             
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################
+        
+        ###########################     SETTERS     ########################### 
+        ## @defgroup Setters Set properties of the reduced order approximation
+        #  @{
+    
+        ## OFFLINE: set the elements in the training set \xi_train.
+        def set_xi_train(self, ntrain, enable_import=True, sampling=None):
+            import_successful = ReductionMethod.set_xi_train(self, ntrain, enable_import, sampling)
+            self.SCM_approximation.xi_train = self.xi_train
+            return import_successful
+            
+        #  @}
+        ########################### end - SETTERS - end ########################### 
         
         ###########################     OFFLINE STAGE     ########################### 
         ## @defgroup OfflineStage Methods related to the offline stage
@@ -103,7 +119,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.compute_bounding_box()
             
             # Arbitrarily start from the first parameter in the training set
-            self.set_mu(self.xi_train[0])
+            self.SCM_approximation.set_mu(self.xi_train[0])
             self.offline.__func__.mu_index = 0
             
             for run in range(self.Nmax):
@@ -113,7 +129,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.update_C_J()
                 
                 # Evaluate the coercivity constant
-                print("evaluate the stability factor for mu = ", self.mu)
+                print("evaluate the stability factor for mu = ", self.SCM_approximation.mu)
                 (alpha, eigenvector) = self.SCM_approximation.exact_coercivity_constant_calculator.solve()
                 
                 # Update internal data structures
@@ -123,7 +139,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.update_UB_vectors_J(UB_vector)
                                 
                 # Prepare for next iteration
-                if self.N < self.Nmax:
+                if self.SCM_approximation.N < self.Nmax:
                     print("find next mu")
                     
                 self.greedy()
@@ -142,22 +158,24 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         # Compute the bounding box \mathcal{B}
         def compute_bounding_box(self):
             # Resize the bounding box storage
-            Q = self.truth_problem.Q["a"]
+            Q = self.SCM_approximation.truth_problem.Q["a"]
             
             for q in range(Q):
                 # Compute the minimum eigenvalue
-                minimum_eigenvalue_calculator = ParametrizedHermitianEigenProblem(self.truth_problem, ("a", q), False, self.constrain_minimum_eigenvalue, "smallest", self.bounding_box_minimum_eigensolver_parameters)
-                (self.B_min[q], _) = minimum_eigenvalue_calculator.solve()
-                print("B_min[" + str(q) + "] = " + str(self.B_min[q]))
+                minimum_eigenvalue_calculator = ParametrizedHermitianEigenProblem(self.SCM_approximation.truth_problem, ("a", q), False, self.constrain_minimum_eigenvalue, "smallest", self.bounding_box_minimum_eigensolver_parameters)
+                minimum_eigenvalue_calculator.init()
+                (self.SCM_approximation.B_min[q], _) = minimum_eigenvalue_calculator.solve()
+                print("B_min[" + str(q) + "] = " + str(self.SCM_approximation.B_min[q]))
                 
                 # Compute the maximum eigenvalue
-                maximum_eigenvalue_calculator = ParametrizedHermitianEigenProblem(self.truth_problem, ("a", q), False, self.constrain_maximum_eigenvalue, "largest", self.bounding_box_maximum_eigensolver_parameters)
-                (self.B_max[q], _) = maximum_eigenvalue_calculator.solve()
-                print("B_max[" + str(q) + "] = " + str(self.B_max[q]))
+                maximum_eigenvalue_calculator = ParametrizedHermitianEigenProblem(self.SCM_approximation.truth_problem, ("a", q), False, self.constrain_maximum_eigenvalue, "largest", self.bounding_box_maximum_eigensolver_parameters)
+                maximum_eigenvalue_calculator.init()
+                (self.SCM_approximation.B_max[q], _) = maximum_eigenvalue_calculator.solve()
+                print("B_max[" + str(q) + "] = " + str(self.SCM_approximation.B_max[q]))
             
             # Save to file
-            self.B_min.save(self.folder["reduced_operators"], "B_min")
-            self.B_max.save(self.folder["reduced_operators"], "B_max")
+            self.SCM_approximation.B_min.save(self.SCM_approximation.folder["reduced_operators"], "B_min")
+            self.SCM_approximation.B_max.save(self.SCM_approximation.folder["reduced_operators"], "B_max")
             
         # Store the greedy parameter
         def update_C_J(self):
@@ -165,43 +183,43 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             mu_index = self.offline.__func__.mu_index
             assert mu == self.xi_train[mu_index]
             
-            self.C_J.append(mu_index)
-            self.N = len(self.C_J)
+            self.SCM_approximation.C_J.append(mu_index)
+            self.SCM_approximation.N = len(self.SCM_approximation.C_J)
             
-            if mu_index in self.complement_C_J: # if not SCM selects twice the same parameter
-                self.complement_C_J.remove(mu_index)
+            if mu_index in self.SCM_approximation.complement_C_J: # if not SCM selects twice the same parameter
+                self.SCM_approximation.complement_C_J.remove(mu_index)
             
             # Save to file
-            self.C_J.save(self.folder["reduced_operators"], "C_J")
-            self.complement_C_J.save(self.folder["reduced_operators"], "complement_C_J")
+            self.SCM_approximation.C_J.save(self.SCM_approximation.folder["reduced_operators"], "C_J")
+            self.SCM_approximation.complement_C_J.save(self.SCM_approximation.folder["reduced_operators"], "complement_C_J")
             
         def update_alpha_J(self, alpha):
-            self.alpha_J.append(alpha)
-            self.alpha_J.save(self.folder["reduced_operators"], "alpha_J")
+            self.SCM_approximation.alpha_J.append(alpha)
+            self.SCM_approximation.alpha_J.save(self.SCM_approximation.folder["reduced_operators"], "alpha_J")
             
         def update_eigenvector_J(self, eigenvector):
-            self.eigenvector_J.append(eigenvector)
-            self.export_solution(eigenvector, self.folder["snapshots"], "eigenvector_" + str(len(self.eigenvector_J) - 1))
+            self.SCM_approximation.eigenvector_J.append(eigenvector)
+            eigenvector_function = Function(self.SCM_approximation.truth_problem.V, eigenvector)
+            self.SCM_approximation.export_solution(eigenvector_function, self.folder["snapshots"], "eigenvector_" + str(len(self.SCM_approximation.eigenvector_J) - 1))
             
         ## Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
         def compute_UB_vector(self, u):
-            Q = self.truth_problem.Q["a"]
-            X = self.truth_problem.inner_product[0]
+            Q = self.SCM_approximation.truth_problem.Q["a"]
+            X = self.SCM_approximation.truth_problem.inner_product[0]
             UB_vector = OnlineVector(Q)
             norm_S_squared = transpose(u)*X*u
             for q in range(Q):
-                A_q = self.truth_problem.operator["a"][q]
+                A_q = self.SCM_approximation.truth_problem.operator["a"][q]
                 UB_vector[q] = (transpose(u)*A_q*u)/norm_S_squared
             return UB_vector
             
         def update_UB_vectors_J(self, UB_vector):
-            self.UB_vectors_J.append(UB_vector)
-            self.UB_vectors_J.save(self.folder["reduced_operators"], "UB_vectors_J")
+            self.SCM_approximation.UB_vectors_J.append(UB_vector)
+            self.SCM_approximation.UB_vectors_J.save(self.SCM_approximation.folder["reduced_operators"], "UB_vectors_J")
             
         ## Choose the next parameter in the offline stage in a greedy fashion
         def greedy(self):
             ntrain = len(self.xi_train)
-            alpha_LB_on_xi_train = CoercivityConstantsList(ntrain)
             #
             delta_max = -1.0
             munew = None
@@ -209,17 +227,18 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             for i in range(ntrain):
                 mu = self.xi_train[i]
                 self.offline.__func__.mu_index = i
-                self.set_mu(mu)
-                LB = self.get_alpha_LB(mu, False)
-                UB = self.get_alpha_UB(mu)
+                self.SCM_approximation.set_mu(mu)
+                LB = self.SCM_approximation.get_stability_factor_lower_bound(mu, False)
+                UB = self.SCM_approximation.get_stability_factor_upper_bound(mu)
                 delta = (UB - LB)/UB
-
-                if LB/UB < 0:
+                
+                from numpy import isclose
+                if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
                     print("SCM warning at mu = ", mu , ": LB = ", LB, " < 0")
-                if LB/UB > 1:
+                if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
                     print("SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB)
                     
-                alpha_LB_on_xi_train[i] = max(0, LB)
+                self.SCM_approximation.alpha_LB_on_xi_train[i] = max(0, LB)
                 if ((delta > delta_max) or (delta == delta_max and random.random() >= 0.5)):
                     delta_max = delta
                     munew = mu
@@ -230,10 +249,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             print("absolute SCM delta max = ", delta_max)
             self.SCM_approximation.set_mu(munew)
             self.offline.__func__.mu_index = munew_index
-            self.save_greedy_post_processing_file(self.SCM_approximation.N, err_max, munew, self.folder["post_processing"])
-            
-            # Overwrite alpha_LB_on_xi_train
-            self.SCM_approximation.alpha_LB_on_xi_train = alpha_LB_on_xi_train
+            self.save_greedy_post_processing_file(self.SCM_approximation.N, delta_max, munew, self.folder["post_processing"])
             self.SCM_approximation.alpha_LB_on_xi_train.save(self.SCM_approximation.folder["reduced_operators"], "alpha_LB_on_xi_train")
             
         #  @}
@@ -243,12 +259,22 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## @defgroup ErrorAnalysis Error analysis
         #  @{
         
+        ## Initialize data structures required for the error analysis phase
+        def _init_error_analysis(self):
+            # Initialize the exact coercivity constant object
+            self.SCM_approximation.exact_coercivity_constant_calculator.init()
+            
+            # Initialize reduced order data structures in the SCM online problem
+            self.SCM_approximation.init("online")
+        
         # Compute the error of the empirical interpolation approximation with respect to the
         # exact function over the test set
         def error_analysis(self, N=None):
             if N is None:
                 N = self.SCM_approximation.N
                 
+            self._init_error_analysis()
+            
             print("==============================================================")
             print("=             SCM error analysis begins                      =")
             print("==============================================================")
@@ -264,19 +290,19 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 
                 self.SCM_approximation.set_mu(self.xi_test[run])
                 
-                # Truth solve
-                (alpha, _) = self.SCM_approximation.exact_coercivity_constant_calculator.solve()
+                (exact, _) = self.SCM_approximation.exact_coercivity_constant_calculator.solve()
+                LB = self.SCM_approximation.get_stability_factor_lower_bound(self.SCM_approximation.mu, False)
+                UB = self.SCM_approximation.get_stability_factor_upper_bound(self.SCM_approximation.mu)
                 
-                alpha_LB = self.get_alpha_LB(self.mu, False)
-                alpha_UB = self.get_alpha_UB(self.mu)
-                if alpha_LB/alpha_UB < 0:
-                    print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " < 0")
-                if alpha_LB/alpha_UB > 1:
-                    print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > UB = ", alpha_UB)
-                if alpha_LB/alpha > 1:
-                    print("SCM warning at mu = ", self.mu , ": LB = ", alpha_LB, " > exact = ", alpha)
+                from numpy import isclose
+                if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
+                    print("SCM warning at mu = ", self.SCM_approximation.mu , ": LB = ", LB, " < 0")
+                if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
+                    print("SCM warning at mu = ", self.SCM_approximation.mu , ": LB = ", LB, " > UB = ", UB)
+                if LB/exact > 1 and not isclose(LB/exact, 1.): # if LB/exact >> 1
+                    print("SCM warning at mu = ", self.SCM_approximation.mu , ": LB = ", LB, " > exact = ", exact)
                 
-                error_analysis_table["normalized_error", N, run] = (alpha - alpha_LB)/alpha_UB
+                error_analysis_table["normalized_error", N, run] = (exact - LB)/UB
             
             # Print
             print("")
@@ -312,7 +338,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             ReductionMethod_DerivedClass.__init__(self, truth_problem)
             
             # Storage for SCM reduction method
-            self.SCM_reduction = _SCMReduction(self.truth_problem.SCM_approximation, self.truth_problem.name() + "/scm")
+            self.SCM_reduction = _SCMReductionMethod(self.truth_problem.SCM_approximation, self.truth_problem.name() + "/scm")
             
         ###########################     SETTERS     ########################### 
         ## @defgroup Setters Set properties of the reduced order approximation
@@ -331,14 +357,15 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         ## OFFLINE: set the elements in the training set \xi_train.
         def set_xi_train(self, ntrain, enable_import=True, sampling=None):
-            ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
-            import_successful = self.SCM_reduction.set_xi_train(ntrain, enable_import=True, sampling)
-            assert import_successful == True
+            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
+            import_successful_SCM = self.SCM_reduction.set_xi_train(ntrain, enable_import=True, sampling=sampling)
+            return import_successful and import_successful_SCM
             
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
         def set_xi_test(self, ntest, enable_import=False, sampling=None):
-            ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling)
-            self.SCM_reduction.set_xi_test(ntest, enable_import, sampling)
+            import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling)
+            import_successful_SCM = self.SCM_reduction.set_xi_test(ntest, enable_import, sampling)
+            return import_successful and import_successful_SCM
             
         #  @}
         ########################### end - SETTERS - end ########################### 
@@ -354,7 +381,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.SCM_reduction.offline()
             # ..., and then call the parent method.
             self.truth_problem.set_mu(bak_first_mu)
-            ReductionMethod_DerivedClass.offline(self)
+            return ReductionMethod_DerivedClass.offline(self)
     
         #  @}
         ########################### end - OFFLINE STAGE - end ###########################

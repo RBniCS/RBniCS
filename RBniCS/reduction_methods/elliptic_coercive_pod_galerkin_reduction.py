@@ -147,6 +147,8 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         if N is None:
             N = self.reduced_problem.N
             
+        self._init_error_analysis()
+        
         print("==============================================================")
         print("=             Error analysis begins                          =")
         print("==============================================================")

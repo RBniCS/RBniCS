@@ -68,7 +68,6 @@ def EIMDecoratedProblem():
                 # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
                 # basis function/reduced operator folder, but rather add a new one. For this reason we use
                 # the __eim suffix in the variable name.
-                self.folder = dict() # from string to string
                 self.folder["basis"] = self.folder_prefix + "/" + "basis"
                 self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
                 

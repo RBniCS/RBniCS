@@ -125,7 +125,7 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
             from numpy import isclose
             assert isclose(c, 0), "The required eigenvalue is not real"
             assert not isclose(r, self.constrain_eigenvalue), "The required eigenvalue is too close to the one used to constrain Dirichlet boundary conditions"
-            assert r >= 0 or isclose(r, 0), "The required eigenvalue is not positive"
+            #assert r >= 0 or isclose(r, 0), "The required eigenvalue is not positive"
             
             self.solve.__func__.previous_mu = self.mu
             self.solve.__func__.previous_eigenvalue = r

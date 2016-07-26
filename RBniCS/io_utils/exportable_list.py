@@ -59,6 +59,9 @@ class ExportableList(object):
     def __getitem__(self, key):
         return self._list[key]
         
+    def __setitem__(self, key, item):
+        self._list[key] = item
+        
     def __iter__(self):
         return iter(self._list)
         

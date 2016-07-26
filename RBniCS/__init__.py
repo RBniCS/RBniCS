@@ -40,7 +40,7 @@ from RBniCS.factories import ReducedBasis, PODGalerkin
 from RBniCS.io_utils import ParametrizedExpression
 from RBniCS.problems import EllipticCoerciveProblem
 from RBniCS.sampling import EquispacedDistribution, UniformDistribution
-from RBniCS.scm import ExactCoercivityConstant # SCM, # TODO enable
+from RBniCS.scm import SCM, ExactCoercivityConstant
 from RBniCS.shape_parametrization import ShapeParametrization
 
 __all__ = [
@@ -58,7 +58,7 @@ __all__ = [
     'EquispacedDistribution',
     'UniformDistribution',
     # RBniCS.scm
-    #'SCM', # TODO enable
+    'SCM',
     'ExactCoercivityConstant',
     # RBniCS.shape_parametrization
     'ShapeParametrization'
