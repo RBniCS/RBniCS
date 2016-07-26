@@ -126,7 +126,6 @@ def SCMDecoratedProblem(
             
             ## Initialize data structures required for the online phase
             def init(self, current_stage="online"):
-                self.current_stage = current_stage
                 # Read/Initialize reduced order data structures
                 if current_stage == "online":
                     self.B_min.load(self.folder["reduced_operators"], "B_min")

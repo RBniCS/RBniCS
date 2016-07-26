@@ -115,7 +115,6 @@ def EIMDecoratedProblem():
 
             ## Initialize data structures required for the online phase
             def init(self, current_stage="online"):
-                self.current_stage = current_stage
                 # Read/Initialize reduced order data structures
                 if current_stage == "online":
                     self.interpolation_points.load(self.folder["reduced_operators"], "interpolation_points")

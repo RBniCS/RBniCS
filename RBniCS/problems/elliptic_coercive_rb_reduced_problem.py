@@ -67,9 +67,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         EllipticCoerciveReducedProblem.init(self, current_stage)
         # Also initialize data structures related to error estimation
         if current_stage == "online":
-            self.riesz_product["aa"] = self.assemble_error_estimation_operators("riesz_product_aa")
-            self.riesz_product["af"] = self.assemble_error_estimation_operators("riesz_product_af")
-            self.riesz_product["ff"] = self.assemble_error_estimation_operators("riesz_product_ff")
+            self.riesz_product["aa"] = self.assemble_error_estimation_operators("riesz_product_aa", "online")
+            self.riesz_product["af"] = self.assemble_error_estimation_operators("riesz_product_af", "online")
+            self.riesz_product["ff"] = self.assemble_error_estimation_operators("riesz_product_ff", "online")
         elif current_stage == "offline":
             self.riesz["a"] = AffineExpansionOnlineStorage(self.Q["a"])
             for qa in range(self.Q["a"]):
@@ -120,21 +120,20 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     
     ## Build operators for error estimation
     def build_error_estimation_operators(self):
-        assert self.current_stage == "offline"
         if not self.build_error_estimation_operators.__func__.initialized: # this part does not depend on N, so we compute it only once
             # Compute the Riesz representation of f
             self.compute_riesz_f()
             # Compute the (f, f) Riesz representors product
-            self.assemble_error_estimation_operators("riesz_product_ff")
+            self.assemble_error_estimation_operators("riesz_product_ff", "offline")
             #
             self.build_error_estimation_operators.__func__.initialized = True
             
         # Update the Riesz representation of -A*Z with the new basis function(s)
         self.update_riesz_a()
         # Update the (a, f) Riesz representors product with the new basis function
-        self.assemble_error_estimation_operators("riesz_product_af")
+        self.assemble_error_estimation_operators("riesz_product_af", "offline")
         # Update the (a, a) Riesz representors product with the new basis function
-        self.assemble_error_estimation_operators("riesz_product_aa")
+        self.assemble_error_estimation_operators("riesz_product_aa", "offline")
             
     ## Compute the Riesz representation of a
     def update_riesz_a(self):
@@ -169,9 +168,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     #  @{
     
     ## Assemble operators for error estimation
-    def assemble_error_estimation_operators(self, term):
+    def assemble_error_estimation_operators(self, term, current_stage="online"):
         short_term = term.replace("riesz_product_", "")
-        if self.current_stage == "online": # load from file
+        if current_stage == "online": # load from file
             if not short_term in self.riesz_product:
                 self.riesz_product[short_term] = AffineExpansionOnlineStorage()
             if term == "riesz_product_aa":
@@ -183,7 +182,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             else:
                 raise RuntimeError("Invalid term for assemble_error_estimation_operators().")
             return self.riesz_product[short_term]
-        elif self.current_stage == "offline":
+        elif current_stage == "offline":
             assert len(self.truth_problem.inner_product) == 1
             if term == "riesz_product_aa":
                 for qa in range(0, self.Q["a"]):

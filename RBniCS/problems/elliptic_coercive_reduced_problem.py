@@ -73,9 +73,6 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         
-        # $$ OFFLINE/ONLINE DATA STRUCTURES $$ #
-        self.current_stage = None
-        
         # Change the set_mu method to propagate to reduced problem
         standard_set_mu = self.truth_problem.set_mu
         def overridden_set_mu(self_, mu): # self_ is self.truth_problem, self is the reduced problem
@@ -106,10 +103,9 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
-        self.current_stage = current_stage
         if current_stage == "online":
             for term in self.terms:
-                self.operator[term] = self.assemble_operator(term)
+                self.operator[term] = self.assemble_operator(term, "online")
                 self.Q[term] = len(self.operator[term])
             # Also load basis functions
             self.Z.load(self.folder["basis"], "basis", self.truth_problem.V)
@@ -127,7 +123,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 self.Q[term] = self.truth_problem.Q[term]
                 self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
             # Store the lifting functions in self.Z
-            self.assemble_operator("dirichlet_bc") # no return value from assemble_operator in this case
+            self.assemble_operator("dirichlet_bc", "offline") # no return value from assemble_operator in this case
         else:
             raise RuntimeError("Invalid stage in init().")
             
@@ -170,9 +166,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         
     ## Assemble the reduced order affine expansion.
     def build_reduced_operators(self):
-        assert self.current_stage == "offline"
         for term in self.terms:
-            self.operator[term] = self.assemble_operator(term)
+            self.operator[term] = self.assemble_operator(term, "offline")
         
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
     # non-homogeneous Dirichlet boundary conditions
@@ -229,8 +224,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         return self.truth_problem.compute_theta(term)
         
     ## Assemble the reduced order affine expansion
-    def assemble_operator(self, term):
-        if self.current_stage == "online": # load from file
+    def assemble_operator(self, term, current_stage="online"):
+        if current_stage == "online": # load from file
             if not term in self.operator:
                 self.operator[term] = AffineExpansionOnlineStorage()
             # Note that it would not be needed to return the loaded operator in 
@@ -248,7 +243,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 raise RuntimeError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
             else:
                 raise RuntimeError("Invalid term for assemble_operator().")
-        elif self.current_stage == "offline":
+        elif current_stage == "offline":
             # As in the previous case, there is no need to return anything because 
             # we are still training the reduced order model, so the previous remark 
             # (on the usage of a reduced problem as a truth one) cannot hold here.
