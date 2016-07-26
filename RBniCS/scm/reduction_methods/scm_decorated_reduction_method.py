@@ -123,13 +123,13 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.offline.__func__.mu_index = 0
             
             for run in range(self.Nmax):
-                print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 
                 # Store the greedy parameter
                 self.update_C_J()
                 
                 # Evaluate the coercivity constant
-                print("evaluate the stability factor for mu = ", self.SCM_approximation.mu)
+                print("evaluate the stability factor for mu =", self.SCM_approximation.mu)
                 (alpha, eigenvector) = self.SCM_approximation.exact_coercivity_constant_calculator.solve()
                 
                 # Update internal data structures
@@ -234,9 +234,9 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 
                 from numpy import isclose
                 if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
-                    print("SCM warning at mu = ", mu , ": LB = ", LB, " < 0")
+                    print("SCM warning at mu =", mu , ": LB =", LB, "< 0")
                 if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
-                    print("SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB)
+                    print("SCM warning at mu =", mu , ": LB =", LB, "> UB =", UB)
                     
                 self.SCM_approximation.alpha_LB_on_xi_train[i] = max(0, LB)
                 if ((error_estimator > error_estimator_max) or (error_estimator == error_estimator_max and random.random() >= 0.5)):
@@ -246,7 +246,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             assert error_estimator_max > 0.
             assert munew is not None
             assert munew_index is not None
-            print("maximum SCM error estimator = ", error_estimator_max)
+            print("maximum SCM error estimator =", error_estimator_max)
             self.SCM_approximation.set_mu(munew)
             self.offline.__func__.mu_index = munew_index
             self.save_greedy_post_processing_file(self.SCM_approximation.N, error_estimator_max, munew, self.folder["post_processing"])
@@ -286,7 +286,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             error_analysis_table.add_column("normalized_error", group_name="scm", operations=("min", "mean", "max"))
             
             for run in range(len(self.xi_test)):
-                print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run = ", run, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 
                 self.SCM_approximation.set_mu(self.xi_test[run])
                 
@@ -296,11 +296,11 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 
                 from numpy import isclose
                 if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
-                    print("SCM warning at mu = ", self.SCM_approximation.mu , ": LB = ", LB, " < 0")
+                    print("SCM warning at mu =", self.SCM_approximation.mu , ": LB =", LB, "< 0")
                 if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
-                    print("SCM warning at mu = ", self.SCM_approximation.mu , ": LB = ", LB, " > UB = ", UB)
+                    print("SCM warning at mu =", self.SCM_approximation.mu , ": LB =", LB, "> UB =", UB)
                 if LB/exact > 1 and not isclose(LB/exact, 1.): # if LB/exact >> 1
-                    print("SCM warning at mu = ", self.SCM_approximation.mu , ": LB = ", LB, " > exact = ", exact)
+                    print("SCM warning at mu =", self.SCM_approximation.mu , ": LB =", LB, "> exact =", exact)
                 
                 error_analysis_table["normalized_error", N, run] = (exact - LB)/UB
             

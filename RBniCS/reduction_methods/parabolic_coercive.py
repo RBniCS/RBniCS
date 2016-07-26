@@ -203,9 +203,9 @@ class ParabolicCoercive(EllipticCoercive):
         self.Qf = len(self.truth_F)
 
         while self.N < self.Nmax:
-            print("############################## N = ", self.N, " ######################################")
+            print("############################## N =", self.N, "######################################")
             
-            print("truth solve for mu = ", self.mu)
+            print("truth solve for mu =", self.mu)
             self.truth_solve()
             
             print("update basis matrix")

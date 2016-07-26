@@ -101,7 +101,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             print("")
             
             for run in range(len(self.xi_train)):
-                print(":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::")
+                print(":::::::::::::::::::::::::::::: EIM run =", run, "::::::::::::::::::::::::::::::")
                 
                 print("evaluate parametrized function")
                 self.EIM_approximation.set_mu(self.xi_train[run])
@@ -129,9 +129,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # Resize the interpolation matrix
             self.EIM_approximation.interpolation_matrix[0] = OnlineMatrix(self.Nmax, self.Nmax)            
             for run in range(self.Nmax):
-                print(":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::")
+                print(":::::::::::::::::::::::::::::: EIM run =", run, "::::::::::::::::::::::::::::::")
                 
-                print("solve eim for mu = ", self.EIM_approximation.mu)
+                print("solve eim for mu =", self.EIM_approximation.mu)
                 self.EIM_approximation.solve()
                 
                 print("compute maximum interpolation error")
@@ -254,7 +254,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             assert err_max > 0.
             assert munew is not None
             assert munew_index is not None
-            print("absolute error max = ", err_max)
+            print("absolute error max =", err_max)
             self.EIM_approximation.set_mu(munew)
             self.offline.__func__.mu_index = munew_index
             self.save_greedy_post_processing_file(self.EIM_approximation.N, err_max, munew, self.folder["post_processing"])
@@ -284,7 +284,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             error_analysis_table.add_column("error", group_name="eim", operations="mean")
             
             for run in range(len(self.xi_test)):
-                print(":::::::::::::::::::::::::::::: EIM run = ", run, " ::::::::::::::::::::::::::::::")
+                print(":::::::::::::::::::::::::::::: EIM run =", run, "::::::::::::::::::::::::::::::")
                 
                 self.EIM_approximation.set_mu(self.xi_test[run])
                 

@@ -327,7 +327,7 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
         effectivity_u = np.zeros((N, len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
-            print("############################## run = ", run, " ######################################")
+            print("############################## run =", run, "######################################")
             
             self.set_mu(self.xi_test[run])
             

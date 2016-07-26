@@ -244,7 +244,7 @@ class ParabolicCoerciveRB(ParabolicCoercive,EllipticCoerciveRB):
             if error_estimator > error_estimator_max:
                 error_estimator_max = error_estimator
                 munew = mu
-        print("maximum error estimator = ", error_estimator_max)
+        print("maximum error estimator =", error_estimator_max)
         if os.path.isfile(self.post_processing_folder + "error_estimator_max.npy") == True:
             d = np.load(self.post_processing_folder + "error_estimator_max.npy")
             

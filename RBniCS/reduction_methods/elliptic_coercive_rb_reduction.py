@@ -112,9 +112,9 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         print("")
         
         for run in range(self.Nmax):
-            print("############################## run = ", run, " ######################################")
+            print("############################## run =", run, "######################################")
             
-            print("truth solve for mu = ", self.truth_problem.mu)
+            print("truth solve for mu =", self.truth_problem.mu)
             snapshot = self.truth_problem.solve()
             self.truth_problem.export_solution(snapshot, self.folder["snapshots"], "truth_" + str(run))
             self.reduced_problem.postprocess_snapshot(snapshot)
@@ -168,7 +168,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
                 munew = mu
         assert error_estimator_max > 0.
         assert munew is not None
-        print("maximum error estimator = ", error_estimator_max)
+        print("maximum error estimator =", error_estimator_max)
         self.reduced_problem.set_mu(munew)
         self.save_greedy_post_processing_file(self.reduced_problem.N, error_estimator_max, munew, self.folder["post_processing"])
 
@@ -202,7 +202,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         error_analysis_table.add_column("effectivity_s", group_name="s", operations=("min", "mean", "max"))
         
         for run in range(len(self.xi_test)):
-            print("############################## run = ", run, " ######################################")
+            print("############################## run =", run, "######################################")
             
             self.reduced_problem.set_mu(self.xi_test[run])
             
