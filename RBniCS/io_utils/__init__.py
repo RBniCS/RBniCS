@@ -31,6 +31,7 @@ from RBniCS.io_utils.parametrized_expression import ParametrizedExpression
 from RBniCS.io_utils.pickle_io import PickleIO
 #from RBniCS.io_utils.print import print # TODO enable
 from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
+from RBniCS.io_utils.sync_setters import SyncSetters
 
 __all__ = [
     'ErrorAnalysisTable',
@@ -39,5 +40,6 @@ __all__ = [
     'NumpyIO',
     'ParametrizedExpression',
     'PickleIO',
-    'SpeedupAnalysisTable'
+    'SpeedupAnalysisTable',
+    'SyncSetters'
 ]

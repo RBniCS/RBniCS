@@ -30,7 +30,7 @@ import sys # for sys.float_info.max
 import random # to randomize selection in case of equal error bound
 import operator # to find closest parameters
 from RBniCS.problems import ParametrizedProblem
-from RBniCS.io_utils import KeepClassName
+from RBniCS.io_utils import KeepClassName, SyncSetters
 from RBniCS.scm.io_utils import BoundingBoxSideList
 
 def SCMDecoratedProblem(
@@ -48,6 +48,8 @@ def SCMDecoratedProblem(
         ## @class SCM
         #
         # Successive constraint method for the approximation of the coercivity constant
+        @SyncSetters("truth_problem", "set_mu", "mu")
+        @SyncSetters("truth_problem", "set_mu_range", "mu_range")
         class _SCMApproximation(ParametrizedProblem):
 
             ###########################     CONSTRUCTORS     ########################### 
@@ -82,45 +84,9 @@ def SCMDecoratedProblem(
                 # 
                 self.exact_coercivity_constant_calculator = ParametrizedHermitianEigenProblem(truth_problem, "a", True, constrain_minimum_eigenvalue, "smallest", coercivity_eigensolver_parameters)
                 
-                # Override truth_problem's set_mu to propogate the value of the parameters to EIM
-                standard_set_mu = truth_problem.set_mu
-                def overridden_set_mu(self_, mu): # self_ is truth_problem, self is the EIM approximation
-                    standard_set_mu(mu)
-                    if self.mu is not mu:
-                        self.set_mu(mu)
-                truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
-                
-                # In a similar way, also override truth_problem's set_mu_range, even though it should have been called before this constructor and never called again
-                standard_set_mu_range = truth_problem.set_mu_range
-                def overridden_set_mu_range(self_, mu_range): # self_ is truth_problem, self is the EIM approximation
-                    standard_set_mu_range(mu_range)
-                    self.set_mu_range(mu_range)
-                truth_problem.set_mu_range = types.MethodType(overridden_set_mu_range, truth_problem)
-                # Make sure that in any case that the current mu_range is up to date
-                self.set_mu_range(truth_problem.mu_range)
-                
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
             
-            ###########################     SETTERS     ########################### 
-            ## @defgroup Setters Set properties of the reduced order approximation
-            #  @{
-            
-            ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
-            def set_mu(self, mu):
-                self.mu = mu
-                if self.truth_problem.mu is not mu:
-                    self.truth_problem.set_mu(mu)
-                    
-            ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
-            def set_mu_range(self, mu_range):
-                self.mu_range = mu_range
-                if self.truth_problem.mu_range is not mu_range:
-                    self.truth_problem.set_mu(mu_range)
-            
-            #  @}
-            ########################### end - SETTERS - end ########################### 
-        
             ###########################     ONLINE STAGE     ########################### 
             ## @defgroup OnlineStage Methods related to the online stage
             #  @{
@@ -154,7 +120,7 @@ def SCMDecoratedProblem(
             def get_stability_factor_lower_bound(self, mu, safeguard=True):
                 lp = glpk.glp_create_prob()
                 glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
-                Q = self.parametrized_problem.Q["a"]
+                Q = self.truth_problem.Q["a"]
                 N = self.N
                 M_e = self.M_e
                 if M_e < 0:
@@ -193,8 +159,8 @@ def SCMDecoratedProblem(
                 for j in range(M_e):
                     # Overwrite parameter values
                     omega = self.xi_train[ self.C_J[ closest_C_J_indices[j] ] ]
-                    self.parametrized_problem.set_mu(omega)
-                    current_theta_a = self.parametrized_problem.compute_theta("a")
+                    self.truth_problem.set_mu(omega)
+                    current_theta_a = self.truth_problem.compute_theta("a")
                     
                     # Assemble the LHS of the constraint
                     for q in range(Q):
@@ -212,8 +178,8 @@ def SCMDecoratedProblem(
                 closest_complement_C_J_indices = self._closest_parameters(M_p, self.complement_C_J, mu)
                 for j in range(M_p):
                     nu = self.xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
-                    self.parametrized_problem.set_mu(nu)
-                    current_theta_a = self.parametrized_problem.compute_theta("a")
+                    self.truth_problem.set_mu(nu)
+                    current_theta_a = self.truth_problem.compute_theta("a")
                     # Assemble first the LHS
                     for q in range(Q):
                         matrix_row_index[glpk_container_size + 1] = int(M_e + j + 1)
@@ -228,8 +194,8 @@ def SCMDecoratedProblem(
                 glpk.glp_load_matrix(lp, array_size, matrix_row_index, matrix_column_index, matrix_content)
                 
                 # 4. Add cost function coefficients
-                self.parametrized_problem.set_mu(mu)
-                current_theta_a = self.parametrized_problem.compute_theta("a")
+                self.truth_problem.set_mu(mu)
+                current_theta_a = self.truth_problem.compute_theta("a")
                 for q in range(Q):
                     glpk.glp_set_obj_coef(lp, q + 1, current_theta_a[q])
                 
@@ -261,13 +227,13 @@ def SCMDecoratedProblem(
         
             ## Get an upper bound for alpha
             def get_stability_factor_upper_bound(self, mu):
-                Q = self.parametrized_problem.Q["a"]
+                Q = self.truth_problem.Q["a"]
                 N = self.N
                 UB_vectors_J = self.UB_vectors_J
                 
                 alpha_UB = sys.float_info.max
-                self.parametrized_problem.set_mu(mu)
-                current_theta_a = self.parametrized_problem.compute_theta("a")
+                self.truth_problem.set_mu(mu)
+                current_theta_a = self.truth_problem.compute_theta("a")
                 
                 for j in range(N):
                     UB_vector = UB_vectors_J[j]

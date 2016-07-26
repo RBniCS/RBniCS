@@ -68,13 +68,6 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem = self.ReducedProblemFactory(self.truth_problem, self)
         
-        # Since we set the initial parameter before the call to offline(),
-        # we also need to sync the reduced problem's mu with the
-        # truth problem's mu (user prescribed)
-        self.reduced_problem.set_mu(self.truth_problem.mu)
-        # Note that, instead, setting the reduced problem current value of mu
-        # gets automatically propagated to the truth problem.
-        
         # Prepare folders and init reduced problem
         all_folders_exist = True
         all_folders = list()

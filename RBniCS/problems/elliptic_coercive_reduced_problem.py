@@ -29,12 +29,15 @@ from math import sqrt
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, OnlineVector, product, transpose, solve, sum
+from RBniCS.io_utils import SyncSetters
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
+@SyncSetters("truth_problem", "set_mu", "mu")
+@SyncSetters("truth_problem", "set_mu_range", "mu_range")
 class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -73,29 +76,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         
-        # Change the set_mu method to propagate to reduced problem
-        standard_set_mu = self.truth_problem.set_mu
-        def overridden_set_mu(self_, mu): # self_ is self.truth_problem, self is the reduced problem
-            standard_set_mu(mu)
-            if self.mu is not mu:
-                self.set_mu(mu)
-        self.truth_problem.set_mu = types.MethodType(overridden_set_mu, self.truth_problem)
-        
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
-    
-    ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
-    def set_mu(self, mu):
-        self.mu = mu
-        if self.truth_problem.mu is not mu:
-            self.truth_problem.set_mu(mu)
-    
-    #  @}
-    ########################### end - SETTERS - end ########################### 
     
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage

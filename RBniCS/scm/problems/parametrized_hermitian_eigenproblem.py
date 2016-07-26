@@ -24,11 +24,13 @@
 
 from __future__ import print_function
 from math import sqrt
-import types
 from dolfin import adjoint, Function, DirichletBC
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, sum, product, TruthEigenSolver
+from RBniCS.io_utils import SyncSetters
 
+@SyncSetters("truth_problem", "set_mu", "mu")
+@SyncSetters("truth_problem", "set_mu_range", "mu_range")
 class ParametrizedHermitianEigenProblem(ParametrizedProblem):
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the EIM object
@@ -59,14 +61,6 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
         self.spectrum = spectrum
         self.eigensolver_parameters = eigensolver_parameters
         
-        # Override truth_problem's set_mu to propogate the value of the parameters to this problem
-        standard_set_mu = truth_problem.set_mu
-        def overridden_set_mu(self_, mu): # self_ is truth_problem, self is the EIM approximation
-            standard_set_mu(mu)
-            if self.mu is not mu:
-                self.set_mu(mu)
-        truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
-        
         # Avoid useless computations
         self.solve.__func__.previous_mu = None
         self.solve.__func__.previous_eigenvalue = None
@@ -74,20 +68,7 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
-    
-    ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
-    def set_mu(self, mu):
-        self.mu = mu
-        if self.truth_problem.mu is not mu:
-            self.truth_problem.set_mu(mu)
-            
-    #  @}
-    ########################### end - SETTERS - end ########################### 
-    
+        
     def init(self):
         # Condense the symmetric part of the required term
         if isinstance(self.term, tuple):

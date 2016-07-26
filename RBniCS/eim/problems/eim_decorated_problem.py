@@ -23,11 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-import types
 from dolfin import Function
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
-from RBniCS.io_utils import KeepClassName
+from RBniCS.io_utils import KeepClassName, SyncSetters
 from RBniCS.eim.io_utils import PointsList
 
 def EIMDecoratedProblem():
@@ -37,6 +36,8 @@ def EIMDecoratedProblem():
         ## @class EIM
         #
         # Empirical interpolation method for the interpolation of parametrized functions
+        @SyncSetters("truth_problem", "set_mu", "mu")
+        @SyncSetters("truth_problem", "set_mu_range", "mu_range")
         class _EIMApproximation(ParametrizedProblem):
 
             ###########################     CONSTRUCTORS     ########################### 
@@ -71,44 +72,8 @@ def EIMDecoratedProblem():
                 self.folder["basis"] = self.folder_prefix + "/" + "basis"
                 self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
                 
-                # Override truth_problem's set_mu to propogate the value of the parameters to EIM
-                standard_set_mu = truth_problem.set_mu
-                def overridden_set_mu(self_, mu): # self_ is truth_problem, self is the EIM approximation
-                    standard_set_mu(mu)
-                    if self.mu is not mu:
-                        self.set_mu(mu)
-                truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
-                
-                # In a similar way, also override truth_problem's set_mu_range, even though it should have been called before this constructor and never called again
-                standard_set_mu_range = truth_problem.set_mu_range
-                def overridden_set_mu_range(self_, mu_range): # self_ is truth_problem, self is the EIM approximation
-                    standard_set_mu_range(mu_range)
-                    self.set_mu_range(mu_range)
-                truth_problem.set_mu_range = types.MethodType(overridden_set_mu_range, truth_problem)
-                # Make sure that in any case that the current mu_range is up to date
-                self.set_mu_range(truth_problem.mu_range)
-                
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
-            
-            ###########################     SETTERS     ########################### 
-            ## @defgroup Setters Set properties of the reduced order approximation
-            #  @{
-            
-            ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
-            def set_mu(self, mu):
-                self.mu = mu
-                if self.truth_problem.mu is not mu:
-                    self.truth_problem.set_mu(mu)
-                    
-            ## OFFLINE/ONLINE: set the current value of the parameter. Overridden to propagate to truth problem.
-            def set_mu_range(self, mu_range):
-                self.mu_range = mu_range
-                if self.truth_problem.mu_range is not mu_range:
-                    self.truth_problem.set_mu(mu_range)
-            
-            #  @}
-            ########################### end - SETTERS - end ########################### 
 
             ###########################     ONLINE STAGE     ########################### 
             ## @defgroup OnlineStage Methods related to the online stage
