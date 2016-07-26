@@ -36,8 +36,8 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                     # Call the parent initialization
                     ReducedParametrizedProblem_DecoratedClass.__init__(self, truth_problem)
                     # Avoid useless assemblies
-                    self.get_eps2.__func__.previous_mu = None
-                    self.get_eps2.__func__.previous_self_N = None
+                    self.estimate_error.__func__.previous_mu = None
+                    self.estimate_error.__func__.previous_self_N = None
                     
                 ###########################     ONLINE STAGE     ########################### 
                 ## @defgroup OnlineStage Methods related to the online stage
@@ -75,7 +75,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                                 self.riesz_product[term1 + term2].load = types.MethodType(error_load, self.riesz_product[term1 + term2])
                         # Then, call parent method, which in turn will call assemble_error_estimation_operators()
                         # Note that some of the assembled error estimation operators will be overwritten at
-                        # each get_eps2() call.
+                        # each estimate_error() call.
                         self.build_error_estimation_operators("online") # as a workardound for asserts. It will be discarded
                         ReducedParametrizedProblem_DerivedClass.init(self, current_stage)
                     else:
@@ -83,17 +83,32 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                         ReducedParametrizedProblem_DerivedClass.init(self, current_stage)
                         
                 ## Return the numerator of the error bound for the current solution
-                def get_eps2(self):
+                def estimate_error(self):
                     # The offline/online separation does not hold anymore, so, similarly to what we did in
                     # the truth problem, also at the reduced-order level we need to re-assemble operators,
                     # because the assemble_operator() *may* return parameter dependent operators.
-                    assert(self._solve.__func__.previous_mu == self.mu) # get_eps2 is always called after _solve
-                    if self.get_eps2.__func__.previous_mu != self.mu or self.get_eps2.__func__.previous_self_N != self.N:
+                    assert(self._solve.__func__.previous_mu == self.mu) # estimate_error is always called after _solve
+                    if self.estimate_error.__func__.previous_mu != self.mu or self.estimate_error.__func__.previous_self_N != self.N:
                         self.build_error_estimation_operators("online")
                         # Avoid useless assemblies
-                        self.get_eps2.__func__.previous_mu = self.mu
-                        self.get_eps2.__func__.previous_self_N = self.N
-                    return ReducedParametrizedProblem_DerivedClass.get_eps2(self)
+                        self.estimate_error.__func__.previous_mu = self.mu
+                        self.estimate_error.__func__.previous_self_N = self.N
+                    return ReducedParametrizedProblem_DerivedClass.estimate_error(self)
+                    
+                ## Return the numerator of the error bound for the current output
+                def estimate_error_output(self):
+                    # The offline/online separation does not hold anymore, so, similarly to what we did in
+                    # the truth problem, also at the reduced-order level we need to re-assemble operators,
+                    # because the assemble_operator() *may* return parameter dependent operators.
+                    assert(self._solve.__func__.previous_mu == self.mu) # estimate_error is always called after _solve
+                    if self.estimate_error.__func__.previous_mu != self.mu or self.estimate_error.__func__.previous_self_N != self.N:
+                        self.build_error_estimation_operators("online")
+                        # Avoid useless assemblies
+                        self.estimate_error.__func__.previous_mu = self.mu
+                        self.estimate_error.__func__.previous_self_N = self.N
+                        # Note that we use the the same cache as estimate_error, since (at least part of)
+                        # error estimation operators is used by both methods
+                    return ReducedParametrizedProblem_DerivedClass.estimate_error_output(self)
                         
                 #  @}
                 ########################### end - ONLINE STAGE - end ########################### 

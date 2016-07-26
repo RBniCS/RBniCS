@@ -84,8 +84,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             raise RuntimeError("Invalid stage in init().")
     
     ## Return an error bound for the current solution
-    def get_delta(self):
-        eps2 = self.get_eps2()
+    def estimate_error(self):
+        eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
         from numpy import isclose
         assert eps2 >= 0. or isclose(eps2, 0.)
@@ -93,8 +93,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         return sqrt(abs(eps2)/alpha)
     
     ## Return an error bound for the current output
-    def get_delta_output(self):
-        eps2 = self.get_eps2()
+    def estimate_error_output(self):
+        eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
         from numpy import isclose
         assert eps2 >= 0. or isclose(eps2, 0.)
@@ -102,7 +102,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         return abs(eps2)/alpha
         
     ## Return the numerator of the error bound for the current solution
-    def get_eps2(self):
+    def get_residual_norm_squared(self):
         N = self._solution.size
         theta_a = self.compute_theta("a")
         theta_f = self.compute_theta("f")

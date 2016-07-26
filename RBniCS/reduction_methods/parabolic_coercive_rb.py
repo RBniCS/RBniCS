@@ -91,22 +91,21 @@ class ParabolicCoerciveRB(ParabolicCoercive,EllipticCoerciveRB):
     #  @{
     
     ## Return an error bound for the current solution
-    def get_delta(self): 
+    def estimate_error(self): 
         # CHECK il resto del metodo
         alpha = self.get_stability_factor()
-        all_eps2 = self.get_all_eps2()
-        delta = np.sqrt(np.abs(np.sum(all_eps2))*self.dt/alpha)
-        return delta
+        all_eps2 = self.get_all_residual_norm_squared()
+        return np.sqrt(np.abs(np.sum(all_eps2))*self.dt/alpha)
     
-    def get_all_eps2(self):
+    def get_all_residual_norm_squared(self):
         # CHECK
         all_eps2 = np.zeros(len(self.all_times))
         for i in range(len(self.all_times)):
-            all_eps2[i] += self.get_eps2(i)
+            all_eps2[i] += self.get_residual_norm_squared(i)
         return all_eps2
 
     ## Return the numerator of the error bound for the current solution
-    def get_eps2(self, tt):
+    def get_residual_norm_squared(self, tt):
         # CHECK il resto del metodo
         theta_m = self.theta_m
         theta_a = self.theta_a
@@ -236,25 +235,25 @@ class ParabolicCoerciveRB(ParabolicCoercive,EllipticCoerciveRB):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
     # CHECK il resto del metodo, ma non serve?
-        delta_max = -1.0
+        error_estimator_max = -1.0
         munew = None
         for mu in self.xi_train:
             self.set_mu(mu)
             ParabolicCoercive.online_solve(self,self.N,False)
-            delta = self.get_delta()
-            if delta > delta_max:
-                delta_max = delta
+            error_estimator = self.estimate_error()
+            if error_estimator > error_estimator_max:
+                error_estimator_max = error_estimator
                 munew = mu
-        print("absolute delta max = ", delta_max)
-        if os.path.isfile(self.post_processing_folder + "delta_max.npy") == True:
-            d = np.load(self.post_processing_folder + "delta_max.npy")
+        print("maximum error estimator = ", error_estimator_max)
+        if os.path.isfile(self.post_processing_folder + "error_estimator_max.npy") == True:
+            d = np.load(self.post_processing_folder + "error_estimator_max.npy")
             
-            np.save(self.post_processing_folder + "delta_max", np.append(d, delta_max))
+            np.save(self.post_processing_folder + "error_estimator_max", np.append(d, error_estimator_max))
     
             m = np.load(self.post_processing_folder + "mu_greedy.npy")
             np.save(self.post_processing_folder + "mu_greedy", np.append(m, munew))
         else:
-            np.save(self.post_processing_folder + "delta_max", delta_max)
+            np.save(self.post_processing_folder + "error_estimator_max", error_estimator_max)
             np.save(self.post_processing_folder + "mu_greedy", np.array(munew))
 
         self.set_mu(munew)

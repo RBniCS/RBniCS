@@ -59,9 +59,8 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
 
     ## Methods related to the online stage
     - online_output()
-    - get_delta()
-    - get_delta_output()
-    - get_eps2()
+    - estimate_error()
+    - estimate_error_output()
     - truth_output()
 
     ## Error analysis
@@ -136,7 +135,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
                 print("find next mu")
             
             # we do a greedy even if N == Nmax in order to have in
-            # output the delta_max
+            # output the maximum error estimator
             self.greedy()
 
             print("")
@@ -158,20 +157,20 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
-        delta_max = -1.0
+        error_estimator_max = -1.0
         munew = None
         for mu in self.xi_train:
             self.reduced_problem.set_mu(mu)
             self.reduced_problem._solve(self.reduced_problem.N)
-            delta = self.reduced_problem.get_delta()
-            if (delta > delta_max or (delta == delta_max and random.random() >= 0.5)):
-                delta_max = delta
+            error_estimator = self.reduced_problem.estimate_error()
+            if (error_estimator > error_estimator_max or (error_estimator == error_estimator_max and random.random() >= 0.5)):
+                error_estimator_max = error_estimator
                 munew = mu
-        assert delta_max > 0.
+        assert error_estimator_max > 0.
         assert munew is not None
-        print("absolute delta max = ", delta_max)
+        print("maximum error estimator = ", error_estimator_max)
         self.reduced_problem.set_mu(munew)
-        self.save_greedy_post_processing_file(self.reduced_problem.N, delta_max, munew, self.folder["post_processing"])
+        self.save_greedy_post_processing_file(self.reduced_problem.N, error_estimator_max, munew, self.folder["post_processing"])
 
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -196,10 +195,10 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         error_analysis_table = ErrorAnalysisTable(self.xi_test)
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("error_u", group_name="u", operations="mean")
-        error_analysis_table.add_column("delta_u", group_name="u", operations="mean")
+        error_analysis_table.add_column("error_estimator_u", group_name="u", operations="mean")
         error_analysis_table.add_column("effectivity_u", group_name="u", operations=("min", "mean", "max"))
         error_analysis_table.add_column("error_s", group_name="s", operations="mean")
-        error_analysis_table.add_column("delta_s", group_name="s", operations="mean")
+        error_analysis_table.add_column("error_estimator_s", group_name="s", operations="mean")
         error_analysis_table.add_column("effectivity_s", group_name="s", operations=("min", "mean", "max"))
         
         for run in range(len(self.xi_test)):
@@ -211,14 +210,14 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
                 (current_error_u, current_error_s) = self.reduced_problem.compute_error(n)
                 
                 error_analysis_table["error_u", n, run] = current_error_u
-                error_analysis_table["delta_u", n, run] = self.reduced_problem.get_delta()
+                error_analysis_table["error_estimator_u", n, run] = self.reduced_problem.estimate_error()
                 error_analysis_table["effectivity_u", n, run] = \
-                    error_analysis_table["delta_u", n, run]/error_analysis_table["error_u", n, run]
+                    error_analysis_table["error_estimator_u", n, run]/error_analysis_table["error_u", n, run]
                 
                 error_analysis_table["error_s", n, run] = current_error_s
-                error_analysis_table["delta_s", n, run] = self.reduced_problem.get_delta_output()
+                error_analysis_table["error_estimator_s", n, run] = self.reduced_problem.estimate_error_output()
                 error_analysis_table["effectivity_s", n, run] = \
-                    error_analysis_table["delta_s", n, run]/error_analysis_table["error_s", n, run]
+                    error_analysis_table["error_estimator_s", n, run]/error_analysis_table["error_s", n, run]
         
         # Print
         print("")
@@ -239,9 +238,9 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     
     ## Save greedy post processing to file
     @staticmethod
-    def save_greedy_post_processing_file(N, delta_max, mu_greedy, directory):
-        with open(directory + "/delta_max.txt", "a") as outfile:
-            outfile.write(str(N) + " " + str(delta_max) + "\n")
+    def save_greedy_post_processing_file(N, error_estimator_max, mu_greedy, directory):
+        with open(directory + "/error_estimator_max.txt", "a") as outfile:
+            outfile.write(str(N) + " " + str(error_estimator_max) + "\n")
         with open(directory + "/mu_greedy.txt", "a") as outfile:
             outfile.write(str(mu_greedy) + "\n")
         

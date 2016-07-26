@@ -221,7 +221,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         def greedy(self):
             ntrain = len(self.xi_train)
             #
-            delta_max = -1.0
+            error_estimator_max = -1.0
             munew = None
             munew_index = None
             for i in range(ntrain):
@@ -230,7 +230,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.SCM_approximation.set_mu(mu)
                 LB = self.SCM_approximation.get_stability_factor_lower_bound(mu, False)
                 UB = self.SCM_approximation.get_stability_factor_upper_bound(mu)
-                delta = (UB - LB)/UB
+                error_estimator = (UB - LB)/UB
                 
                 from numpy import isclose
                 if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
@@ -239,17 +239,17 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                     print("SCM warning at mu = ", mu , ": LB = ", LB, " > UB = ", UB)
                     
                 self.SCM_approximation.alpha_LB_on_xi_train[i] = max(0, LB)
-                if ((delta > delta_max) or (delta == delta_max and random.random() >= 0.5)):
-                    delta_max = delta
+                if ((error_estimator > error_estimator_max) or (error_estimator == error_estimator_max and random.random() >= 0.5)):
+                    error_estimator_max = error_estimator
                     munew = mu
                     munew_index = i
-            assert delta_max > 0.
+            assert error_estimator_max > 0.
             assert munew is not None
             assert munew_index is not None
-            print("absolute SCM delta max = ", delta_max)
+            print("maximum SCM error estimator = ", error_estimator_max)
             self.SCM_approximation.set_mu(munew)
             self.offline.__func__.mu_index = munew_index
-            self.save_greedy_post_processing_file(self.SCM_approximation.N, delta_max, munew, self.folder["post_processing"])
+            self.save_greedy_post_processing_file(self.SCM_approximation.N, error_estimator_max, munew, self.folder["post_processing"])
             self.SCM_approximation.alpha_LB_on_xi_train.save(self.SCM_approximation.folder["reduced_operators"], "alpha_LB_on_xi_train")
             
         #  @}

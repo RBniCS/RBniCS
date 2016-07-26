@@ -118,15 +118,15 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
     
     ## Return an error bound for the current solution. Overridden to be computed in the V-norm
     #  since the energy norm is not defined generally in the non compliant case
-    def get_delta(self):
-        eps2 = self.get_eps2()
+    def estimate_error(self):
+        eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
         return np.sqrt(np.abs(eps2))/alpha
     
     ## Return an error bound for the current output
-    def get_delta_output(self):
-        primal_eps2 = self.get_eps2()
-        dual_eps2 = self.dual_problem.get_eps2()
+    def estimate_error_output(self):
+        primal_eps2 = self.get_residual_norm_squared()
+        dual_eps2 = self.dual_problem.get_residual_norm_squared()
         alpha = self.get_stability_factor()
         return np.sqrt(np.abs(primal_eps2*dual_eps2))/alpha
         
@@ -274,8 +274,8 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
     
     ## Return an error bound for the current solution. Overridden to be computed in the V-norm
     #  since the energy norm is not defined generally in the non compliant case
-    def get_delta(self):
-        eps2 = self.get_eps2()
+    def estimate_error(self):
+        eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
         return np.sqrt(np.abs(eps2))/alpha
         
@@ -323,7 +323,7 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
         print("")
         
         error_u = np.zeros((N, len(self.xi_test)))
-        delta_u = np.zeros((N, len(self.xi_test)))
+        error_estimator_u = np.zeros((N, len(self.xi_test)))
         effectivity_u = np.zeros((N, len(self.xi_test)))
         
         for run in range(len(self.xi_test)):
@@ -339,19 +339,19 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
                 current_error_u = self.compute_error(n + 1, True)
                 
                 error_u[n, run] = current_error_u
-                delta_u[n, run] = self.get_delta()
-                effectivity_u[n, run] = delta_u[n, run]/error_u[n, run]
+                error_estimator_u[n, run] = self.estimate_error()
+                effectivity_u[n, run] = error_estimator_u[n, run]/error_u[n, run]
                 
         # Print some statistics
         print("")
-        print("N \t gmean(err_u) \t\t gmean(delta_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)")
+        print("N \t gmean(err_u) \t\t gmean(error_estimator_u) \t min(eff_u) \t gmean(eff_u) \t max(eff_u)")
         for n in range(N): # n = 0, 1, ... N - 1
             mean_error_u = np.exp(np.mean(np.log(error_u[n, :])))
-            mean_delta_u = np.exp(np.mean(np.log(delta_u[n, :])))
+            mean_error_estimator_u = np.exp(np.mean(np.log(error_estimator_u[n, :])))
             min_effectivity_u = np.min(effectivity_u[n, :])
             mean_effectivity_u = np.exp(np.mean(np.log(effectivity_u[n, :])))
             max_effectivity_u = np.max(effectivity_u[n, :])
-            print(str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_delta_u) \
+            print(str(n+1) + " \t " + str(mean_error_u) + " \t " + str(mean_error_estimator_u) \
                   + " \t " + str(min_effectivity_u) + " \t " + str(mean_effectivity_u) \
                   + " \t " + str(max_effectivity_u) \
                  )
