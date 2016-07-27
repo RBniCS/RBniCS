@@ -134,7 +134,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.EIM_approximation.solve()
                 
                 print("compute maximum interpolation error")
-                (error, maximum_error, maximum_point) = self.compute_maximum_interpolation_error(output_error=True, output_location=True)
+                (error, maximum_error, maximum_point) = self.compute_maximum_interpolation_error()
                 self.update_interpolation_points(maximum_point)
                 
                 print("update basis matrix")
@@ -191,13 +191,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             return self.snapshots_matrix[mu_index]
         
         # Compute the interpolation error and/or its maximum location
-        def compute_maximum_interpolation_error(self, N=None, **output_options):
+        def compute_maximum_interpolation_error(self, N=None):
             if N is None:
                 N = self.EIM_approximation.N
-            if not "output_error" in output_options:
-                output_options["output_error"] = False
-            if not "output_location" in output_options:
-                output_options["output_location"] = False
             
             # Compute the error (difference with the eim approximation)
             error = Function(self.EIM_approximation.V)
@@ -222,15 +218,8 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             assert maximum_point is not None
                 
             # Return
-            if output_options["output_error"] and output_options["output_location"]:
-                return (error, maximum_error, maximum_point)
-            elif output_options["output_error"]:
-                return (error, maximum_error)
-            elif output_options["output_location"]:
-                return (maximum_point,)
-            else:
-                raise RuntimeError("Invalid output options")
-                                
+            return (error, maximum_error, maximum_point)
+            
         ## Choose the next parameter in the offline stage in a greedy fashion
         def greedy(self):
             def solve_and_computer_error(mu, index):
@@ -238,7 +227,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.EIM_approximation.set_mu(mu)
                 
                 self.EIM_approximation.solve()
-                (_, err) = self.compute_maximum_interpolation_error(output_error=True)
+                (_, err, _) = self.compute_maximum_interpolation_error()
                 return err
                 
             (error_max, error_argmax) = self.xi_train.max(solve_and_computer_error, abs)
@@ -281,7 +270,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 
                 for n in range(1, N + 1): # n = 1, ... N
                     self.online_solve(n)
-                    (_, error_analysis_table["error", n, run]) = self.compute_maximum_interpolation_error(n, output_error=True)
+                    (_, error_analysis_table["error", n, run], _) = self.compute_maximum_interpolation_error(n)
                     error_analysis_table["error", n, run] = abs(error_analysis_table["error", n, run])
             
             # Print
