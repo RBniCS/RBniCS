@@ -27,7 +27,7 @@ import os
 from dolfin import Function
 from RBniCS.linear_algebra import transpose, OnlineVector
 from RBniCS.reduction_methods import ReductionMethod
-from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable
+from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, print
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
@@ -53,6 +53,8 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # I/O
             self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
             self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+            self.greedy_selected_parameters = GreedySelectedParametersList()
+            self.greedy_error_estimators = GreedyErrorEstimatorsList()
             #
             self.offline.__func__.mu_index = 0
             
@@ -86,17 +88,11 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## Initialize data structures required for the offline phase
         def _init_offline(self):
             # Prepare folders and init SCM approximation
-            all_folders_exist = True
-            all_folders = list()
-            all_folders.extend(self.folder.values())
-            all_folders.extend(self.SCM_approximation.folder.values())
-            for f in all_folders:
-                if os.path.exists(f) and len(os.listdir(f)) == 0: # already created, but empty
-                    all_folders_exist = False
-                if not os.path.exists(f):
-                    all_folders_exist = False
-                    os.makedirs(f)
-            if all_folders_exist:
+            all_folders = Folders()
+            all_folders.update(self.folder)
+            all_folders.update(self.SCM_approximation.folder)
+            at_least_one_folder_created = all_folders.create()
+            if not at_least_one_folder_created:
                 self.SCM_approximation.init("online")
                 return False # offline construction should be skipped, since data are already available
             else:
@@ -239,7 +235,10 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             print("maximum SCM error estimator =", error_estimator_max)
             self.SCM_approximation.set_mu(self.xi_train[error_estimator_argmax])
             self.offline.__func__.mu_index = error_estimator_argmax
-            self.save_greedy_post_processing_file(self.SCM_approximation.N, error_estimator_max, error_estimator_argmax, self.folder["post_processing"])
+            self.greedy_selected_parameters.append(self.xi_train[error_estimator_argmax])
+            self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
+            self.greedy_error_estimators.append(error_estimator_max)
+            self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
             self.SCM_approximation.alpha_LB_on_xi_train.save(self.SCM_approximation.folder["reduced_operators"], "alpha_LB_on_xi_train")
             
         #  @}
@@ -306,20 +305,6 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 
-        
-        ###########################     I/O     ########################### 
-        ## @defgroup IO Input/output methods
-        #  @{
-    
-        ## Save greedy post processing to file
-        def save_greedy_post_processing_file(self, N, error_estimator_max, error_estimator_argmax, directory):
-            with open(directory + "/error_estimator_max.txt", "a") as outfile:
-                outfile.write(str(N) + " " + str(error_estimator_max) + "\n")
-            with open(directory + "/mu_greedy.txt", "a") as outfile:
-                outfile.write(str(self.xi_train[error_estimator_argmax]) + "\n")
-            
-        #  @}
-        ########################### end - I/O - end ########################### 
 
     class SCMDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
         def __init__(self, truth_problem):

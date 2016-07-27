@@ -29,7 +29,7 @@
 # Parameter space subsets
 import itertools # for linspace sampling
 import numpy
-from RBniCS.io_utils import ExportableList
+from RBniCS.io_utils import ExportableList, mpi_comm
 from RBniCS.sampling.distributions import UniformDistribution
 
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
@@ -39,9 +39,11 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     
     # Method for generation of parameter space subsets
     def generate(self, n, sampling):
-        if sampling == None:
-            sampling = UniformDistribution()
-        self._list = sampling.sample(self.box, n)
+        if mpi_comm.rank == 0:
+            if sampling == None:
+                sampling = UniformDistribution()
+            self._list = sampling.sample(self.box, n)
+        self._list = mpi_comm.bcast(self._list, root=0)
         
     def load(self, directory, filename):
         result = ExportableList.load(self, directory, filename)

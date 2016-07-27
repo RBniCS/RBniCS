@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import File, plot
+from RBniCS.io_utils import File, Folders, plot
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARAMETRIZED PROBLEM BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParametrizedProblem
@@ -66,7 +66,7 @@ class ParametrizedProblem(object):
         self.mu_range = list() # list of (min, max) pairs, such that len(self.mu) == len(self.mu_range)
         #
         self.folder_prefix = folder_prefix
-        self.folder = dict() # from string to string
+        self.folder = Folders()
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -107,7 +107,7 @@ class ParametrizedProblem(object):
         if not "with_preprocessing" in output_options:
             output_options["with_preprocessing"] = False
         #
-        file = File(folder + "/" + filename + ".pvd", "compressed")
+        file = File(str(folder) + "/" + filename + ".pvd", "compressed")
         if output_options["with_mesh_motion"]:
             self.move_mesh() # deform the mesh
         if output_options["with_preprocessing"]:

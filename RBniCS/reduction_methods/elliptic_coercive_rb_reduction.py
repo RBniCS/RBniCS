@@ -26,7 +26,7 @@ from __future__ import print_function
 import os # for path and makedir
 import shutil # for rm
 from RBniCS.linear_algebra import GramSchmidt
-from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable
+from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print
 from RBniCS.reduction_methods.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -91,6 +91,8 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+        self.greedy_selected_parameters = GreedySelectedParametersList()
+        self.greedy_error_estimators = GreedyErrorEstimatorsList()
                 
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -164,7 +166,10 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         (error_estimator_max, error_estimator_argmax) = self.xi_train.max(solve_and_estimate_error)
         print("maximum error estimator =", error_estimator_max)
         self.reduced_problem.set_mu(self.xi_train[error_estimator_argmax])
-        self.save_greedy_post_processing_file(self.reduced_problem.N, error_estimator_max, error_estimator_argmax, self.folder["post_processing"])
+        self.greedy_selected_parameters.append(self.xi_train[error_estimator_argmax])
+        self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
+        self.greedy_error_estimators.append(error_estimator_max)
+        self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
 
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -225,18 +230,4 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
-    
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-    
-    ## Save greedy post processing to file
-    def save_greedy_post_processing_file(self, N, error_estimator_max, error_estimator_argmax, directory):
-        with open(directory + "/error_estimator_max.txt", "a") as outfile:
-            outfile.write(str(N) + " " + str(error_estimator_max) + "\n")
-        with open(directory + "/mu_greedy.txt", "a") as outfile:
-            outfile.write(str(self.xi_train[error_estimator_argmax]) + "\n")
-        
-    #  @}
-    ########################### end - I/O - end ########################### 
         

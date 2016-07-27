@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
+from RBniCS.io_utils import print
 import os
 import shutil
 

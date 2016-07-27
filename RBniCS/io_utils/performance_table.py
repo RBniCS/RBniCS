@@ -87,7 +87,6 @@ class PerformanceTable(object):
                         current_table_header = "gmean(" + column + ")"
                         current_table_index = "gmean_" + column
                     else:
-                        print(operation)
                         raise RuntimeError("Invalid operation in PerformanceTable")
                     table_index.append(current_table_index)
                     table_header[current_table_index] = current_table_header

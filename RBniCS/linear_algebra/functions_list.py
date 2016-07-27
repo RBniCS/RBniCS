@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.io_utils import ExportableList
+from RBniCS.io_utils import ExportableList, mpi_comm
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type, OnlineVector
@@ -66,27 +66,31 @@ class FunctionsList(ExportableList):
     def load(self, directory, filename, V):
         if self._list: # avoid loading multiple times
             return False
-        with open(directory + "/" + filename + ".length", "r") as length:
-            Nmax = int(length.readline())
+        Nmax = None
+        if mpi_comm.rank == 0:
+            with open(str(directory) + "/" + filename + ".length", "r") as length:
+                Nmax = int(length.readline())
+        Nmax = mpi_comm.bcast(Nmax, root=0)
         from dolfin import File, Function
         fun = Function(V)
         for f in range(Nmax):
-            full_filename = directory + "/" + filename + "_" + str(f) + ".xml"
+            full_filename = str(directory) + "/" + filename + "_" + str(f) + ".xml"
             file = File(full_filename)
             file >> fun
             self.enrich(fun)
         return True
         
     def save(self, directory, filename, V):
-        with open(directory + "/" + filename + ".length", "w") as length:
-            length.write(str(len(self._list)))
+        if mpi_comm.rank == 0:
+            with open(str(directory) + "/" + filename + ".length", "w") as length:
+                length.write(str(len(self._list)))
         from dolfin import File, Function
         for f in range(len(self._list)):
             list_f = Function(V, self._list[f])
-            full_filename = directory + "/" + filename + "_" + str(f) + ".pvd"
+            full_filename = str(directory) + "/" + filename + "_" + str(f) + ".pvd"
             file = File(full_filename, "compressed")
             file << list_f
-            full_filename = directory + "/" + filename + "_" + str(f) + ".xml"
+            full_filename = str(directory) + "/" + filename + "_" + str(f) + ".xml"
             file = File(full_filename)
             file << list_f
     

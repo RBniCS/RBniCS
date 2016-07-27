@@ -28,7 +28,7 @@ from dolfin import Function, LagrangeInterpolator, vertices, Point
 from RBniCS.reduction_methods import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
 from RBniCS.eim.io_utils import AffineExpansionEIMStorage
-from RBniCS.io_utils import NumpyIO
+from RBniCS.io_utils import Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, print
 
 def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
 
@@ -56,6 +56,8 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # I/O
             self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
             self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+            self.greedy_selected_parameters = GreedySelectedParametersList()
+            self.greedy_errors = GreedyErrorEstimatorsList()
             #
             self.offline.__func__.mu_index = 0
             self.interpolator = LagrangeInterpolator()
@@ -70,17 +72,11 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## Initialize data structures required for the offline phase
         def _init_offline(self):
             # Prepare folders and init EIM approximation
-            all_folders_exist = True
-            all_folders = list()
-            all_folders.extend(self.folder.values())
-            all_folders.extend(self.EIM_approximation.folder.values())
-            for f in all_folders:
-                if os.path.exists(f) and len(os.listdir(f)) == 0: # already created, but empty
-                    all_folders_exist = False
-                if not os.path.exists(f):
-                    all_folders_exist = False
-                    os.makedirs(f)
-            if all_folders_exist:
+            all_folders = Folders()
+            all_folders.update(self.folder)
+            all_folders.update(self.EIM_approximation.folder)
+            at_least_one_folder_created = all_folders.create()
+            if not at_least_one_folder_created:
                 self.EIM_approximation.init("online")
                 return False # offline construction should be skipped, since data are already available
             else:
@@ -234,7 +230,10 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             print("maximum EIM error =", abs(error_max))
             self.EIM_approximation.set_mu(self.xi_train[error_argmax])
             self.offline.__func__.mu_index = error_argmax
-            self.save_greedy_post_processing_file(self.EIM_approximation.N, error_max, error_argmax, self.folder["post_processing"])
+            self.greedy_selected_parameters.append(self.xi_train[error_argmax])
+            self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
+            self.greedy_errors.append(error_max)
+            self.greedy_errors.save(self.folder["post_processing"], "error_max")
             
         #  @}
         ########################### end - OFFLINE STAGE - end ########################### 
@@ -285,20 +284,6 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 
-        
-        ###########################     I/O     ########################### 
-        ## @defgroup IO Input/output methods
-        #  @{
-    
-        ## Save greedy post processing to file
-        def save_greedy_post_processing_file(self, N, error_max, error_argmax, directory):
-            with open(directory + "/error_max.txt", "a") as outfile:
-                outfile.write(str(N) + " " + str(error_max) + "\n")
-            with open(directory + "/mu_greedy.txt", "a") as outfile:
-                outfile.write(str(self.xi_train[error_argmax]) + "\n")
-            
-        #  @}
-        ########################### end - I/O - end ########################### 
 
     class EIMDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
         def __init__(self, truth_problem):

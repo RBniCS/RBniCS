@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import os # for path and makedir
 from RBniCS.sampling import ParameterSpaceSubset
+from RBniCS.io_utils import Folders
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ReductionMethod
@@ -39,7 +39,7 @@ class ReductionMethod(object):
     def __init__(self, folder_prefix, mu_range):
         # I/O
         self.folder_prefix = folder_prefix
-        self.folder = dict() # from string to string
+        self.folder = Folders()
         
         assert len(mu_range) > 0
         
@@ -71,8 +71,7 @@ class ReductionMethod(object):
     ## OFFLINE: set the elements in the training set \xi_train.
     def set_xi_train(self, ntrain, enable_import=True, sampling=None):
         # Create I/O folder
-        if not os.path.exists(self.folder["xi_train"]):
-            os.makedirs(self.folder["xi_train"])
+        self.folder["xi_train"].create()
         # Test if can import
         import_successful = False
         if enable_import:
@@ -87,8 +86,7 @@ class ReductionMethod(object):
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
     def set_xi_test(self, ntest, enable_import=False, sampling=None):
         # Create I/O folder
-        if not os.path.exists(self.folder["xi_test"]):
-            os.makedirs(self.folder["xi_test"])
+        self.folder["xi_test"].create()
         # Test if can import
         import_successful = False
         if enable_import:

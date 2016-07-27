@@ -22,7 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
 from math import sqrt
 from dolfin import adjoint, Function, DirichletBC
 from RBniCS.problems import ParametrizedProblem

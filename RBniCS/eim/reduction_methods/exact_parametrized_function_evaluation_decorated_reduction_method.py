@@ -22,7 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
 from numpy import log, exp, mean, sqrt # for error analysis
 import os # for path and makedir
 import shutil # for rm

@@ -22,24 +22,40 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
 from RBniCS.io_utils.error_analysis_table import ErrorAnalysisTable
 from RBniCS.io_utils.exportable_list import ExportableList
+from RBniCS.io_utils.folders import Folders
+from RBniCS.io_utils.greedy_error_estimators_list import GreedyErrorEstimatorsList
+from RBniCS.io_utils.greedy_selected_parameters_list import GreedySelectedParametersList
 from RBniCS.io_utils.keep_class_name import KeepClassName
+from RBniCS.io_utils.mpi import mpi_comm
 from RBniCS.io_utils.numpy_io import NumpyIO
 from RBniCS.io_utils.parametrized_expression import ParametrizedExpression
 #from RBniCS.io_utils.performance_table import PerformanceTable # not needed, only used internally inside this module
 from RBniCS.io_utils.pickle_io import PickleIO
-#from RBniCS.io_utils.print import print # TODO enable
+from RBniCS.io_utils.print import print
 from RBniCS.io_utils.speedup_analysis_table import SpeedupAnalysisTable
 from RBniCS.io_utils.sync_setters import SyncSetters
+from RBniCS.io_utils.text_io import TextIO
+
+# Alias FEniCS functions
+from dolfin import plot, File
 
 __all__ = [
     'ErrorAnalysisTable',
     'ExportableList',
+    'File',
+    'Folders',
+    'GreedyErrorEstimatorsList',
+    'GreedySelectedParametersList',
     'KeepClassName',
+    'mpi_comm',
     'NumpyIO',
     'ParametrizedExpression',
+    'plot',
     'PickleIO',
     'SpeedupAnalysisTable',
-    'SyncSetters'
+    'SyncSetters',
+    'TextIO'
 ]

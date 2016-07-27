@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file print.py
-#  @brief Override print method in parallel
+## @file mpi.py
+#  @brief Basic mpi configuration
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
@@ -26,14 +26,13 @@
 ## @defgroup IO Input/output methods
 #  @{
 
-from __future__ import print_function
-import __builtin__
-from RBniCS.io_utils.mpi import mpi_comm
-
-# Override the print() method to print only from process 0 in parallel
-def print(*args, **kwargs):
-    if mpi_comm.rank == 0:
-        return __builtin__.print(*args, **kwargs)
+try:
+    from mpi4py import MPI
+except ImportError:
+    raise # TODO
+else:
+    from dolfin import mpi_comm_world as dolfin_mpi_comm_world
+    mpi_comm = dolfin_mpi_comm_world().tompi4py()
 
 #  @}
 ########################### end - I/O - end ########################### 

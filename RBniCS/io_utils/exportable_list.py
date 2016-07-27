@@ -24,6 +24,7 @@
 
 from RBniCS.io_utils.numpy_io import NumpyIO
 from RBniCS.io_utils.pickle_io import PickleIO
+from RBniCS.io_utils.text_io import TextIO
 
 ###########################     OFFLINE STAGE     ########################### 
 ## @defgroup OfflineStage Methods related to the offline stage
@@ -36,6 +37,8 @@ class ExportableList(object):
             self._FileIO = NumpyIO
         elif import_export_backend == "pickle":
             self._FileIO = PickleIO
+        elif import_export_backend == "text":
+            self._FileIO = TextIO
         else:
             raise RuntimeError("Invalid import/export backend")
         if original_list is not None:

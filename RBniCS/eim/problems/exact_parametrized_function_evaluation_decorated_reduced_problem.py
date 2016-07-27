@@ -26,6 +26,7 @@ from __future__ import print_function
 import types
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, FunctionsList
+from RBniCS.io_utils import print
 
 def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     

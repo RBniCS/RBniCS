@@ -15,26 +15,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file print.py
-#  @brief Override print method in parallel
+## @file functions_list.py
+#  @brief Type for storing a list of FE functions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-###########################     I/O     ########################### 
-## @defgroup IO Input/output methods
+###########################     OFFLINE STAGE     ########################### 
+## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from __future__ import print_function
-import __builtin__
-from RBniCS.io_utils.mpi import mpi_comm
+from RBniCS.io_utils.exportable_list import ExportableList
 
-# Override the print() method to print only from process 0 in parallel
-def print(*args, **kwargs):
-    if mpi_comm.rank == 0:
-        return __builtin__.print(*args, **kwargs)
-
+class GreedySelectedParametersList(ExportableList):
+    def __init__(self):
+        ExportableList.__init__(self, "text")
+            
+     
 #  @}
-########################### end - I/O - end ########################### 
+########################### end - OFFLINE STAGE - end ########################### 
 

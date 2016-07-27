@@ -31,6 +31,8 @@ from __future__ import print_function
 # Declare reduced eigen solver type
 from numpy import real
 from numpy.linalg import eig as OnlineEigenSolver_Impl
+from RBniCS.io_utils.mpi import mpi_comm
+from RBniCS.io_utils.print import print
 
 class OnlineEigenSolver(object):
     def __init__(self, A = None, B = None):
@@ -80,19 +82,23 @@ class OnlineEigenSolver(object):
             print("lambda_" + str(i) + " = " + str(self.eigs[i]))
     
     def save_eigenvalues_file(self, directory, filename):
-        with open(directory + "/" + filename, "a") as outfile:
-            for i in range(len(self.eigs)):
-                outfile.write(str(i) + " " + str(self.eigs[i]) + "\n")
+        if mpi_comm.rank == 0:
+            with open(str(directory) + "/" + filename, "w") as outfile:
+                for i in range(len(self.eigs)):
+                    outfile.write(str(i) + " " + str(self.eigs[i]) + "\n")
+        mpi_comm.barrier()
     
     def save_retained_energy_file(self, directory, filename):
         from numpy import sum as np_sum
         from numpy import cumsum as np_cumsum
-        energy = np_sum(self.eigs)
-        eigs_cumsum = np_cumsum(self.eigs)
-        eigs_cumsum /= energy
-        with open(directory + "/" + filename, "a") as outfile:
-            for i in range(len(eigs_cumsum)):
-                outfile.write(str(i) + " " + str(eigs_cumsum[i]) + "\n") 
+        if mpi_comm.rank == 0:
+            energy = np_sum(self.eigs)
+            eigs_cumsum = np_cumsum(self.eigs)
+            eigs_cumsum /= energy
+            with open(str(directory) + "/" + filename, "w") as outfile:
+                for i in range(len(eigs_cumsum)):
+                    outfile.write(str(i) + " " + str(eigs_cumsum[i]) + "\n") 
+        mpi_comm.barrier()
     
 #  @}
 ########################### end - ONLINE STAGE - end ########################### 

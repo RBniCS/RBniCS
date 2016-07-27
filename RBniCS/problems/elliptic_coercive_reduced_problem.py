@@ -29,7 +29,7 @@ from math import sqrt
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, OnlineVector, product, transpose, solve, sum
-from RBniCS.io_utils import SyncSetters
+from RBniCS.io_utils import SyncSetters, print
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase

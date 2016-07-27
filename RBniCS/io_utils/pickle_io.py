@@ -28,25 +28,32 @@
 
 import pickle
 import os # for path
+from RBniCS.io_utils.mpi import mpi_comm
 
 class PickleIO(object):
     
     ## Load a variable from file
     @staticmethod
     def load_file(directory, filename):
-        with open(directory + "/" + filename + ".pkl", "rb") as infile:
+        with open(str(directory) + "/" + filename + ".pkl", "rb") as infile:
             return pickle.load(infile)
     
     ## Save a variable to file
     @staticmethod
-    def save_file(subset, directory, filename):
-        with open(directory + "/" + filename + ".pkl", "wb") as outfile:
-            pickle.dump(subset, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+    def save_file(content, directory, filename):
+        if mpi_comm.rank == 0:
+            with open(str(directory) + "/" + filename + ".pkl", "wb") as outfile:
+                pickle.dump(content, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+        mpi_comm.barrier()
             
     ## Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
-        return os.path.exists(directory + "/" + filename + ".pkl")
+        exists = None
+        if mpi_comm.rank == 0:
+            exists = os.path.exists(str(directory) + "/" + filename + ".pkl")
+        exists = mpi_comm.bcast(exists, root=0)
+        return exists
         
 #  @}
 ########################### end - I/O - end ########################### 

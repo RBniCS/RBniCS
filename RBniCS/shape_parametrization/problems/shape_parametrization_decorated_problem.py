@@ -22,8 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
 from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function, ALE
-from RBniCS.io_utils import KeepClassName, ParametrizedExpression
+from RBniCS.io_utils import KeepClassName, ParametrizedExpression, print
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
     def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):

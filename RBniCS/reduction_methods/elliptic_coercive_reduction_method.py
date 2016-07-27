@@ -24,6 +24,7 @@
 
 import os # for path and makedir
 from RBniCS.reduction_methods.reduction_method import ReductionMethod
+from RBniCS.io_utils import Folders
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase
@@ -69,17 +70,11 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
         self.reduced_problem = self.ReducedProblemFactory(self.truth_problem, self)
         
         # Prepare folders and init reduced problem
-        all_folders_exist = True
-        all_folders = list()
-        all_folders.extend(self.folder.values())
-        all_folders.extend(self.reduced_problem.folder.values())
-        for f in all_folders:
-            if os.path.exists(f) and len(os.listdir(f)) == 0: # already created, but empty
-                all_folders_exist = False
-            if not os.path.exists(f):
-                all_folders_exist = False
-                os.makedirs(f)
-        if all_folders_exist:
+        all_folders = Folders()
+        all_folders.update(self.folder)
+        all_folders.update(self.reduced_problem.folder)
+        at_least_one_folder_created = all_folders.create()
+        if not at_least_one_folder_created:
             self.reduced_problem.init("online")
             return False # offline construction should be skipped, since data are already available
         else:
