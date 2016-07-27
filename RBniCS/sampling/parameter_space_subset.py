@@ -66,14 +66,24 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         self._FileIO.save_file(self.box, directory, filename + "_box")
         
     def max(self, generator, postprocessor=lambda value: value):
-        from numpy import zeros, argmax
-        values = zeros(len(self._list))
-        values_with_postprocessing = zeros(len(self._list))
-        for i in range(len(self._list)):
-            values[i] = generator(self._list[i], i)
+        local_list_indices = range(mpi_comm.rank, len(self._list), mpi_comm.size) # start from index rank and take steps of length equal to size
+        from numpy import zeros as array
+        from numpy import argmax
+        from mpi4py.MPI import MAX
+        values = array(len(local_list_indices))
+        values_with_postprocessing = array(len(local_list_indices))
+        for i in range(len(local_list_indices)):
+            values[i] = generator(self._list[ local_list_indices[i] ], local_list_indices[i])
             values_with_postprocessing[i] = postprocessor(values[i])
-        i_max = argmax(values_with_postprocessing)
-        return (values[i_max], i_max)
+        local_i_max = argmax(values_with_postprocessing)
+        local_value_max = values[local_i_max]
+        global_value_max = mpi_comm.allreduce(local_value_max, op=MAX)
+        global_value_processor_argmax = -1
+        if global_value_max == local_value_max:
+            global_value_processor_argmax = mpi_comm.rank
+        global_value_processor_argmax = mpi_comm.allreduce(global_value_processor_argmax, op=MAX)
+        global_i_max = mpi_comm.bcast(local_list_indices[local_i_max], root=global_value_processor_argmax)
+        return (global_value_max, global_i_max)
         
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 
