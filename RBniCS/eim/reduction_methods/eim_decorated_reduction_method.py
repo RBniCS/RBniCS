@@ -24,7 +24,6 @@
 
 from __future__ import print_function
 import os
-import random # to randomize selection in case of equal error bound
 from dolfin import Function, LagrangeInterpolator, vertices, Point
 from RBniCS.reduction_methods import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
@@ -127,7 +126,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.EIM_approximation.set_mu(self.xi_train[0])
             self.offline.__func__.mu_index = 0
             # Resize the interpolation matrix
-            self.EIM_approximation.interpolation_matrix[0] = OnlineMatrix(self.Nmax, self.Nmax)            
+            self.EIM_approximation.interpolation_matrix[0] = OnlineMatrix(self.Nmax, self.Nmax)
             for run in range(self.Nmax):
                 print(":::::::::::::::::::::::::::::: EIM run =", run, "::::::::::::::::::::::::::::::")
                 
@@ -224,9 +223,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 
             # Return
             if output_options["output_error"] and output_options["output_location"]:
-                return (error, abs(maximum_error), maximum_point)
+                return (error, maximum_error, maximum_point)
             elif output_options["output_error"]:
-                return (error, abs(maximum_error))
+                return (error, maximum_error)
             elif output_options["output_location"]:
                 return (maximum_point,)
             else:
@@ -234,30 +233,19 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                                 
         ## Choose the next parameter in the offline stage in a greedy fashion
         def greedy(self):
-            err_max = -1.0
-            munew = None
-            munew_index = None
-            for i in range(len(self.xi_train)):
-                self.EIM_approximation.set_mu(self.xi_train[i])
-                self.offline.__func__.mu_index = i
+            def solve_and_computer_error(mu, index):
+                self.offline.__func__.mu_index = index
+                self.EIM_approximation.set_mu(mu)
                 
-                # Compute the EIM approximation ...
                 self.EIM_approximation.solve()
-                
-                # ... and compute the maximum error
                 (_, err) = self.compute_maximum_interpolation_error(output_error=True)
+                return err
                 
-                if (err > err_max):
-                    err_max = err
-                    munew = self.xi_train[i]
-                    munew_index = i
-            assert err_max > 0.
-            assert munew is not None
-            assert munew_index is not None
-            print("absolute error max =", err_max)
-            self.EIM_approximation.set_mu(munew)
-            self.offline.__func__.mu_index = munew_index
-            self.save_greedy_post_processing_file(self.EIM_approximation.N, err_max, munew, self.folder["post_processing"])
+            (error_max, error_argmax) = self.xi_train.max(solve_and_computer_error, abs)
+            print("maximum EIM error =", abs(error_max))
+            self.EIM_approximation.set_mu(self.xi_train[error_argmax])
+            self.offline.__func__.mu_index = error_argmax
+            self.save_greedy_post_processing_file(self.EIM_approximation.N, error_max, error_argmax, self.folder["post_processing"])
             
         #  @}
         ########################### end - OFFLINE STAGE - end ########################### 
@@ -293,7 +281,8 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 
                 for n in range(1, N + 1): # n = 1, ... N
                     self.online_solve(n)
-                    error_analysis_table["error", n, run] = self.compute_maximum_interpolation_error(n, output_error=True)
+                    (_, error_analysis_table["error", n, run]) = self.compute_maximum_interpolation_error(n, output_error=True)
+                    error_analysis_table["error", n, run] = abs(error_analysis_table["error", n, run])
             
             # Print
             print("")
@@ -313,12 +302,11 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         #  @{
     
         ## Save greedy post processing to file
-        @staticmethod
-        def save_greedy_post_processing_file(N, err_max, mu_greedy, directory):
+        def save_greedy_post_processing_file(self, N, error_max, error_argmax, directory):
             with open(directory + "/error_max.txt", "a") as outfile:
-                outfile.write(str(N) + " " + str(err_max) + "\n")
+                outfile.write(str(N) + " " + str(error_max) + "\n")
             with open(directory + "/mu_greedy.txt", "a") as outfile:
-                outfile.write(str(mu_greedy) + "\n")
+                outfile.write(str(self.xi_train[error_argmax]) + "\n")
             
         #  @}
         ########################### end - I/O - end ########################### 

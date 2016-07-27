@@ -63,6 +63,16 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         # Also save box
         self._FileIO.save_file(self.box, directory, filename + "_box")
         
+    def max(self, generator, postprocessor=lambda value: value):
+        from numpy import zeros, argmax
+        values = zeros(len(self._list))
+        values_with_postprocessing = zeros(len(self._list))
+        for i in range(len(self._list)):
+            values[i] = generator(self._list[i], i)
+            values_with_postprocessing[i] = postprocessor(values[i])
+        i_max = argmax(values_with_postprocessing)
+        return (values[i_max], i_max)
+        
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 
 

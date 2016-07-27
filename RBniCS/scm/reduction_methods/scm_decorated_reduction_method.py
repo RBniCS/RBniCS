@@ -24,7 +24,6 @@
 
 from __future__ import print_function
 import os
-import random # to randomize selection in case of equal error bound
 from dolfin import Function
 from RBniCS.linear_algebra import transpose, OnlineVector
 from RBniCS.reduction_methods import ReductionMethod
@@ -219,15 +218,10 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         ## Choose the next parameter in the offline stage in a greedy fashion
         def greedy(self):
-            ntrain = len(self.xi_train)
-            #
-            error_estimator_max = -1.0
-            munew = None
-            munew_index = None
-            for i in range(ntrain):
-                mu = self.xi_train[i]
-                self.offline.__func__.mu_index = i
+            def solve_and_estimate_error(mu, index):
+                self.offline.__func__.mu_index = index
                 self.SCM_approximation.set_mu(mu)
+                
                 LB = self.SCM_approximation.get_stability_factor_lower_bound(mu, False)
                 UB = self.SCM_approximation.get_stability_factor_upper_bound(mu)
                 error_estimator = (UB - LB)/UB
@@ -238,18 +232,14 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
                     print("SCM warning at mu =", mu , ": LB =", LB, "> UB =", UB)
                     
-                self.SCM_approximation.alpha_LB_on_xi_train[i] = max(0, LB)
-                if ((error_estimator > error_estimator_max) or (error_estimator == error_estimator_max and random.random() >= 0.5)):
-                    error_estimator_max = error_estimator
-                    munew = mu
-                    munew_index = i
-            assert error_estimator_max > 0.
-            assert munew is not None
-            assert munew_index is not None
+                self.SCM_approximation.alpha_LB_on_xi_train[index] = max(0, LB)
+                return error_estimator
+                
+            (error_estimator_max, error_estimator_argmax) = self.xi_train.max(solve_and_estimate_error)
             print("maximum SCM error estimator =", error_estimator_max)
-            self.SCM_approximation.set_mu(munew)
-            self.offline.__func__.mu_index = munew_index
-            self.save_greedy_post_processing_file(self.SCM_approximation.N, error_estimator_max, munew, self.folder["post_processing"])
+            self.SCM_approximation.set_mu(self.xi_train[error_estimator_argmax])
+            self.offline.__func__.mu_index = error_estimator_argmax
+            self.save_greedy_post_processing_file(self.SCM_approximation.N, error_estimator_max, error_estimator_argmax, self.folder["post_processing"])
             self.SCM_approximation.alpha_LB_on_xi_train.save(self.SCM_approximation.folder["reduced_operators"], "alpha_LB_on_xi_train")
             
         #  @}
@@ -322,12 +312,11 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         #  @{
     
         ## Save greedy post processing to file
-        @staticmethod
-        def save_greedy_post_processing_file(N, err_max, mu_greedy, directory):
-            with open(directory + "/error_max.txt", "a") as outfile:
-                outfile.write(str(N) + " " + str(err_max) + "\n")
+        def save_greedy_post_processing_file(self, N, error_estimator_max, error_estimator_argmax, directory):
+            with open(directory + "/error_estimator_max.txt", "a") as outfile:
+                outfile.write(str(N) + " " + str(error_estimator_max) + "\n")
             with open(directory + "/mu_greedy.txt", "a") as outfile:
-                outfile.write(str(mu_greedy) + "\n")
+                outfile.write(str(self.xi_train[error_estimator_argmax]) + "\n")
             
         #  @}
         ########################### end - I/O - end ########################### 
