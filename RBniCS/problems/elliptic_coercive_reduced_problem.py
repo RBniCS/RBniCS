@@ -84,11 +84,23 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
+        self._init_operators(current_stage)
+        self._init_basis_functions(current_stage)
+            
+    def _init_operators(self, current_stage="online"):
         if current_stage == "online":
             for term in self.terms:
                 self.operator[term] = self.assemble_operator(term, "online")
                 self.Q[term] = len(self.operator[term])
-            # Also load basis functions
+        elif current_stage == "offline":
+            for term in self.terms:
+                self.Q[term] = self.truth_problem.Q[term]
+                self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
+        else:
+            raise RuntimeError("Invalid stage in _init_operators().")
+        
+    def _init_basis_functions(self, current_stage="online"):
+        if current_stage == "online":
             self.Z.load(self.folder["basis"], "basis", self.truth_problem.V)
             # To properly initialize N and N_bc, detect how many theta terms
             # are related to boundary conditions
@@ -100,13 +112,10 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 self.N = len(self.Z) - len(theta_bc)
                 self.N_bc = len(theta_bc)
         elif current_stage == "offline":
-            for term in self.terms:
-                self.Q[term] = self.truth_problem.Q[term]
-                self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
             # Store the lifting functions in self.Z
             self.assemble_operator("dirichlet_bc", "offline") # no return value from assemble_operator in this case
         else:
-            raise RuntimeError("Invalid stage in init().")
+            raise RuntimeError("Invalid stage in _init_basis_functions().")
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def solve(self, N=None, with_plot=True):

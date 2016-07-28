@@ -46,43 +46,19 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
             
                 ## Initialize data structures required for the online phase
                 def init(self, current_stage="online"):
-                    if current_stage == "online":
-                        if len(self.truth_problem.Q) == 0:
-                            self.truth_problem.init()
-                        # The offline/online separation does not hold anymore, so in 
-                        # assemble_error_estimation_operators() we need to re-assemble operators. 
-                        # Their data structure is initialized (with suitable size) in this 
-                        # initialization method.
-                        for term in self.truth_problem.Q:
-                            self.riesz[term] = AffineExpansionOnlineStorage(self.truth_problem.Q[term])
-                            for q in range(self.truth_problem.Q[term]):
-                                self.riesz[term][q] = FunctionsList()
-                        for term1 in self.truth_problem.Q:
-                            for term2 in self.truth_problem.Q:
-                                if term1 > term2: # alphabetical order
-                                    continue
-                                
-                                self.riesz_product[term1 + term2] = AffineExpansionOnlineStorage(self.truth_problem.Q[term1], self.truth_problem.Q[term2])
-                                # Make sure to disable the save() method of the operator, which is 
-                                # called internally by assemble_operator() since it is not possible
-                                # to precompute operators, and thus they should not be saved
-                                def disabled_save(self, folder, filename):
-                                    pass
-                                self.riesz_product[term1 + term2].save = types.MethodType(disabled_save, self.riesz_product[term1 + term2])
-                                # Make sure to raise an error if the load() method of the operator,
-                                # since we have not saved anything and it should never be called
-                                def error_load(self, folder, filename):
-                                    raise AttributeError
-                                self.riesz_product[term1 + term2].load = types.MethodType(error_load, self.riesz_product[term1 + term2])
-                        # Then, call parent method, which in turn will call assemble_error_estimation_operators()
-                        # Note that some of the assembled error estimation operators will be overwritten at
-                        # each estimate_error() call.
-                        self.build_error_estimation_operators("online") # as a workardound for asserts. It will be discarded
-                        ReducedParametrizedProblem_DerivedClass.init(self, current_stage)
-                    else:
-                        # Call parent method
-                        ReducedParametrizedProblem_DerivedClass.init(self, current_stage)
-                        
+                    ReducedParametrizedProblem_DecoratedClass.init(self, current_stage)
+                    # The offline/online separation does not hold anymore, so in 
+                    # assemble_error_estimation_operators() we need to re-assemble operators. 
+                    # Thus, for any value of current_stage, we initialize error estimation
+                    # operators of the reduced problem as if we were offline
+                    ReducedParametrizedProblem_DecoratedClass._init_error_estimation_operators(self, "offline")
+                    for term1 in self.truth_problem.Q:
+                        for term2 in self.truth_problem.Q:
+                            if term1 > term2: # alphabetical order
+                                continue
+                            
+                            self._disable_load_and_save_for_online_storage(self.riesz_product[term1 + term2], self.folder["error_estimation"])
+                                                    
                 ## Return the numerator of the error bound for the current solution
                 def estimate_error(self):
                     # The offline/online separation does not hold anymore, so, similarly to what we did in
@@ -94,7 +70,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                         # Avoid useless assemblies
                         self.estimate_error.__func__.previous_mu = self.mu
                         self.estimate_error.__func__.previous_self_N = self.N
-                    return ReducedParametrizedProblem_DerivedClass.estimate_error(self)
+                    return ReducedParametrizedProblem_DecoratedClass.estimate_error(self)
                     
                 ## Return the numerator of the error bound for the current output
                 def estimate_error_output(self):
@@ -109,7 +85,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                         self.estimate_error.__func__.previous_self_N = self.N
                         # Note that we use the the same cache as estimate_error, since (at least part of)
                         # error estimation operators is used by both methods
-                    return ReducedParametrizedProblem_DerivedClass.estimate_error_output(self)
+                    return ReducedParametrizedProblem_DecoratedClass.estimate_error_output(self)
                         
                 #  @}
                 ########################### end - ONLINE STAGE - end ########################### 
@@ -149,12 +125,12 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                         # because the assemble_error_estimation_operators() of the truth problem *may* 
                         # return parameter dependent operators.
                         # Thus, call the parent method enforcing current_stage = "offline"
-                        output = ReducedParametrizedProblem_DerivedClass.assemble_error_estimation_operators(self, term, "offline")
+                        output = ReducedParametrizedProblem_DecoratedClass.assemble_error_estimation_operators(self, term, "offline")
                         # Return
                         return output
                     else:
                         # Call parent method
-                        return ReducedParametrizedProblem_DerivedClass.assemble_error_estimation_operators(self, term, current_stage)
+                        return ReducedParametrizedProblem_DecoratedClass.assemble_error_estimation_operators(self, term, current_stage)
                                 
                 #  @}
                 ########################### end - PROBLEM SPECIFIC - end ########################### 
@@ -179,33 +155,31 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
     
         ## Initialize data structures required for the online phase
         def init(self, current_stage="online"):
-            if current_stage == "online":
-                if len(self.truth_problem.Q) == 0:
-                    self.truth_problem.init()
-                # The offline/online separation does not hold anymore, so in assemble_operator()
-                # we need to re-assemble operators. Their data structure is initialized (with
-                # suitable size) in this initialization method.
-                for term in self.truth_problem.Q:
-                    self.operator[term] = AffineExpansionOnlineStorage(self.truth_problem.Q[term])
-                    # Make sure to disable the save() method of the operator, which is 
-                    # called internally by assemble_operator() since it is not possible
-                    # to precompute operators, and thus they should not be saved
-                    def disabled_save(self, folder, filename):
-                        pass
-                    self.operator[term].save = types.MethodType(disabled_save, self.operator[term])
-                    # Make sure to raise an error if the load() method of the operator,
-                    # since we have not saved anything and it should never be called
-                    def error_load(self, folder, filename):
-                        raise AttributeError("Cannot load from file due to inefficient evaluation")
-                    self.operator[term].load = types.MethodType(error_load, self.operator[term])
-                # Then, call parent method, which in turn will call assemble_operator()
-                # Note that some of the assembled operators will be overwritten at
-                # each solve() call
-                ReducedParametrizedProblem_DerivedClass.init(self, current_stage)
-            else:
-                # Call parent method
-                ReducedParametrizedProblem_DerivedClass.init(self, current_stage)
-                
+            self._init_basis_functions(current_stage)
+            # The offline/online separation does not hold anymore, so in assemble_operator()
+            # we need to re-assemble operators. Thus, for any value of current_stage,
+            # we initialize the operators of the reduced problem as if we were offline
+            self._init_operators("offline")
+            for term in self.terms:
+                self._disable_load_and_save_for_online_storage(self.operator[term], self.folder["reduced_operators"])
+
+        
+        def _disable_load_and_save_for_online_storage(self, online_storage, folder):
+            # Make sure to disable the save() method of the operator, which is 
+            # called internally by assemble_operator() since it is not possible
+            # to precompute operators, and thus they should not be saved
+            def disabled_save(self, folder, filename):
+                pass
+            online_storage.save = types.MethodType(disabled_save, online_storage)
+            # Make sure to raise an error if the load() method of the operator,
+            # since we have not saved anything and it should never be called
+            def error_load(self, folder, filename):
+                raise AttributeError("Cannot load from file due to inefficient evaluation")
+            online_storage.load = types.MethodType(error_load, online_storage)
+            # However, write a dummy file to make sure that restart is enabled
+            folder.touch_file("disabled_due_to_inefficient_evaluation")
+            
+        
         # Perform an online solve (internal)
         def _solve(self, N):
             # The offline/online separation does not hold anymore, so, similarly to what we did in

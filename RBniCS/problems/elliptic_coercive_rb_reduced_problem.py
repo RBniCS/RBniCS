@@ -65,6 +65,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
         EllipticCoerciveReducedProblem.init(self, current_stage)
+        self._init_error_estimation_operators(current_stage)
+        
+    def _init_error_estimation_operators(self, current_stage="online"):
         # Also initialize data structures related to error estimation
         if current_stage == "online":
             self.riesz_product["aa"] = self.assemble_error_estimation_operators("riesz_product_aa", "online")
@@ -81,7 +84,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             self.riesz_product["af"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["f"])
             self.riesz_product["ff"] = AffineExpansionOnlineStorage(self.Q["f"], self.Q["f"])
         else:
-            raise RuntimeError("Invalid stage in init().")
+            raise RuntimeError("Invalid stage in _init_error_estimation_operators().")
     
     ## Return an error bound for the current solution
     def estimate_error(self):

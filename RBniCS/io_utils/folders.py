@@ -49,6 +49,12 @@ class Folders(dict): # dict from string to string
             return_value = mpi_comm.bcast(return_value, root=0)
             return return_value
             
+        def touch_file(self, filename):
+            if mpi_comm.rank == 0:
+                with open(self.name + "/" + filename, "a"):
+                    os.utime(self.name + "/" + filename, None)
+            mpi_comm.barrier()
+
         def __str__(self):
             return self.name
             
