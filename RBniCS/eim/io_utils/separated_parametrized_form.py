@@ -31,6 +31,7 @@ from RBniCS.io_utils import ParametrizedExpression
 from RBniCS.io_utils import PickleIO
 from numpy import ones, zeros
 from dolfin import Constant, Expression, Function
+from dolfin import __version__ as dolfin_version
 from ufl import Argument, Measure, replace
 from ufl.algebra import Sum
 from ufl.algorithms import Transformer
@@ -38,6 +39,7 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.core.multiindex import MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
+import hashlib
 
 class SeparatedParametrizedForm(object):
     def __init__(self, form):
@@ -203,6 +205,20 @@ class SeparatedParametrizedForm(object):
         log("4. Assert list length consistency")
         assert len(self.coefficients) == len(self._placeholders)
         assert len(self.coefficients) == len(self._form_with_placeholders)
+        
+        log("5. Prepare coefficients hash codes")
+        for i in range(len(self.coefficients)):
+            for j in range(len(self.coefficients[i])):
+                str_repr = ""
+                for n in pre_traversal(self.coefficients[i][j]):
+                    if hasattr(n, "cppcode"):
+                        str_repr += repr(n.cppcode)
+                    else:
+                        str_repr += repr(n)
+                hash_code = hashlib.sha1(
+                                (str_repr + dolfin_version).encode("utf-8")
+                            ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
+                self.coefficients[i][j].hash_code = hash_code
         
         log("*** DONE - SEPARATE FORM COEFFICIENTS - DONE ***")
         log("")

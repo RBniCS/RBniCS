@@ -169,7 +169,7 @@ def EIMDecoratedProblem():
                         for i in range(len(self.separated_forms[term][q].coefficients)):
                             for coeff in self.separated_forms[term][q].coefficients[i]:
                                 if coeff not in self.EIM_approximations:
-                                    self.EIM_approximations[coeff] = _EIMApproximation(self.V, self, coeff, self.name() + "/eim/" + str(coeff.id()))
+                                    self.EIM_approximations[coeff] = _EIMApproximation(self.V, self, coeff, self.name() + "/eim/" + str(coeff.hash_code))
                                     
                 # Signal to the factory that this problem has been decorated
                 if not hasattr(self, "_problem_decorators"):
