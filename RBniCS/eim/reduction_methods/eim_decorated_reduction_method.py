@@ -24,10 +24,10 @@
 
 from __future__ import print_function
 import os
-from dolfin import Function, Point, project, vertices
+from dolfin import Function, project, vertices
 from RBniCS.reduction_methods import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
-from RBniCS.io_utils import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print
+from RBniCS.io_utils import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print, mpi_comm
 
 def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
 
@@ -62,6 +62,12 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################
+        
+        def set_xi_train(self, ntrain, enable_import=True, sampling=None):
+            import_successful = ReductionMethod.set_xi_train(self, ntrain, enable_import, sampling)
+            # Since exact evaluation is required, we cannot use a distributed xi_train
+            self.xi_train.distributed_max = False
+            return import_successful
         
         ###########################     OFFLINE STAGE     ########################### 
         ## @defgroup OfflineStage Methods related to the offline stage
@@ -174,9 +180,14 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         
         ## Assemble the interpolation matrix
         def update_interpolation_matrix(self):
+            (last_point, last_point_processor_id) = self.EIM_approximation.interpolation_points[self.EIM_approximation.N - 1]
             for j in range(self.EIM_approximation.N):
                 Z_j = Function(self.EIM_approximation.V, self.EIM_approximation.Z[j])
-                self.EIM_approximation.interpolation_matrix[0][self.EIM_approximation.N - 1, j] = Z_j(self.EIM_approximation.interpolation_points[self.EIM_approximation.N - 1])
+                value = None
+                if mpi_comm.rank == last_point_processor_id:
+                    value = Z_j(last_point)
+                value = mpi_comm.bcast(value, root=last_point_processor_id)
+                self.EIM_approximation.interpolation_matrix[0][self.EIM_approximation.N - 1, j] = value
             self.EIM_approximation.interpolation_matrix.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
                 
         ## Load the precomputed snapshot
@@ -201,21 +212,30 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
             # Locate the vertex of the mesh where the error is maximum
             mesh = self.EIM_approximation.V.mesh()
-            bounding_box_tree = mesh.bounding_box_tree()
-            maximum_error = 0.
+            maximum_error = None
             maximum_point = None
             for v in vertices(mesh):
                 point = mesh.coordinates()[v.index()]
-                assert bounding_box_tree.collides_entity(Point(point)) # TODO: this will fail in parallel
                 err = error(point)
-                if abs(err) > abs(maximum_error):
+                if maximum_error is None or abs(err) > abs(maximum_error):
                     maximum_point = point
                     maximum_error = err
-            assert maximum_error != 0.
+            assert maximum_error is not None
             assert maximum_point is not None
+            
+            # Communicate the result in parallel
+            from mpi4py.MPI import MAX
+            local_abs_maximum_error = abs(maximum_error)
+            global_abs_maximum_error = mpi_comm.allreduce(local_abs_maximum_error, op=MAX)
+            global_abs_maximum_error_processor_argmax = -1
+            if global_abs_maximum_error == local_abs_maximum_error:
+                global_abs_maximum_error_processor_argmax = mpi_comm.rank
+            global_abs_maximum_error_processor_argmax = mpi_comm.allreduce(global_abs_maximum_error_processor_argmax, op=MAX)
+            global_maximum_point = mpi_comm.bcast(maximum_point, root=global_abs_maximum_error_processor_argmax)
+            global_maximum_error = mpi_comm.bcast(maximum_error, root=global_abs_maximum_error_processor_argmax)
                 
             # Return
-            return (error, maximum_error, maximum_point)
+            return (error, global_maximum_error, global_maximum_point)
             
         ## Choose the next parameter in the offline stage in a greedy fashion
         def greedy(self):
@@ -326,6 +346,8 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## OFFLINE: set the elements in the training set \xi_train.
         def set_xi_train(self, ntrain, enable_import=True, sampling=None):
             import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
+            # Since exact evaluation is required, we cannot use a distributed xi_train
+            self.xi_train.distributed_max = False
             for coeff in self.EIM_reductions:
                 import_successful_EIM = self.EIM_reductions[coeff].set_xi_train(ntrain, enable_import, sampling)
                 import_successful = import_successful and import_successful_EIM

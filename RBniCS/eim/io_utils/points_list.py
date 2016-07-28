@@ -27,11 +27,42 @@
 #  @{
 
 from RBniCS.io_utils import ExportableList
+from dolfin import Point
 
 class PointsList(ExportableList):
-    def __init__(self):
+    def __init__(self, mesh):
         ExportableList.__init__(self, "pickle")
-     
+        # Auxiliary list to store processor_id
+        self.processors_id = list()
+        # To get local points
+        self.bounding_box_tree = mesh.bounding_box_tree()
+        
+    def load(self, directory, filename):
+        return_value = ExportableList.load(self, directory, filename)
+        # Make sure to update the processor ids
+        for i in range(len(self)):
+            self.processors_id.append(self._get_processor_id(ExportableList.__getitem__(self, i)))
+        
+    def append(self, point):
+        ExportableList.append(self, point)
+        # Make sure to update the processor ids
+        self.processors_id.append(self._get_processor_id(point))
+        
+    def __getitem__(self, key):
+        point = ExportableList.__getitem__(self, key)
+        processor_id = self.processors_id[key]
+        return (point, processor_id)
+        
+    def _get_processor_id(self, point):
+        from mpi4py.MPI import MAX
+        from RBniCS.io_utils import mpi_comm
+        is_local = self.bounding_box_tree.collides_entity(Point(point))
+        processor_id = -1
+        if is_local:
+            processor_id = mpi_comm.rank
+        global_processor_id = mpi_comm.allreduce(processor_id, op=MAX)
+        return global_processor_id
+    
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 
 

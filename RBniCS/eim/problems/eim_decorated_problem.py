@@ -26,7 +26,7 @@ from itertools import product as cartesian_product
 from dolfin import Function
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
-from RBniCS.io_utils import KeepClassName, SyncSetters
+from RBniCS.io_utils import KeepClassName, SyncSetters, mpi_comm
 from RBniCS.eim.io_utils import AffineExpansionSeparatedFormsStorage, PointsList, SeparatedParametrizedForm
 
 def EIMDecoratedProblem():
@@ -56,7 +56,7 @@ def EIMDecoratedProblem():
                 # Online reduced space dimension
                 self.N = 0
                 # Define additional storage for EIM
-                self.interpolation_points = PointsList() # list of interpolation points selected by the greedy
+                self.interpolation_points = PointsList(V.mesh()) # list of interpolation points selected by the greedy
                 self.interpolation_matrix = AffineExpansionOnlineStorage(1) # interpolation matrix
                 # Solution
                 self._interpolation_coefficients = OnlineVector()
@@ -100,7 +100,7 @@ def EIMDecoratedProblem():
                 # Evaluate the function at interpolation points
                 rhs = OnlineVector(N)
                 for p in range(N):
-                    rhs[p] = self.evaluate_parametrized_expression_at_x(self.interpolation_points[p])
+                    rhs[p] = self.evaluate_parametrized_expression_at_x(*self.interpolation_points[p])
                 
                 # Extract the interpolation matrix
                 lhs = self.interpolation_matrix[0][:N,:N]
@@ -125,10 +125,13 @@ def EIMDecoratedProblem():
                 return tuple(interpolated_theta_list)
                 
             ## Evaluate the parametrized function f(x; mu) for the current value of mu
-            def evaluate_parametrized_expression_at_x(self, x):
+            def evaluate_parametrized_expression_at_x(self, x, processor_id):
                 from numpy import zeros as EvalOutputType
+                from mpi4py.MPI import FLOAT
                 out = EvalOutputType(self.parametrized_expression.value_size())
-                self.parametrized_expression.eval(out, x)
+                if mpi_comm.rank == processor_id:
+                    self.parametrized_expression.eval(out, x)
+                mpi_comm.Bcast([out, FLOAT], root=processor_id)
                 return out
 
             #  @}
