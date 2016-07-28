@@ -211,28 +211,6 @@ class SeparatedParametrizedForm(object):
         assert len(new_coefficients) == len(self._placeholders[i])
         replacements = dict((self._placeholders[i][p], new_coefficients[p]) for p in range(len(new_coefficients)))
         return replace(self._form_with_placeholders[i], replacements)
-        
-    def load(self, directory, filename):
-        output = True
-        data = self._data_for_IO
-        for name in data:
-            if data[name]: # avoid loading multiple times
-                output = output and False
-                continue
-            if PickleIO.exists_file(directory, filename + "_" + name):
-                data_in = PickleIO.load_file(directory, filename + "_" + name)
-                if name == "form":
-                    assert data_in == self._form # consistency check
-                data[name] = data_in
-                output = output and True
-            else:
-                output = output and False
-        return output
-        
-    def save(self, directory, filename):
-        data = self._data_for_IO
-        for name in data:
-            PickleIO.save_file(data[name], directory, filename + "_" + name)
 
 #  @}
 ########################### end - I/O - end ########################### 

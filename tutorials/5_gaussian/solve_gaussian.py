@@ -110,7 +110,7 @@ gaussian_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(gaussian_problem)
-reduced_basis_method.set_Nmax(20, EIM=20)
+reduced_basis_method.set_Nmax(20, EIM=21)
 
 # 5. Perform the offline phase
 first_mu = (0.5,1.0)
@@ -121,7 +121,7 @@ reduced_gaussian_problem = reduced_basis_method.offline()
 # 6. Perform an online solve
 online_mu = (0.3,-1.0)
 reduced_gaussian_problem.set_mu(online_mu)
-reduced_gaussian_problem.online_solve()
+reduced_gaussian_problem.solve()
 
 # 7. Perform an error analysis
 reduced_basis_method.set_xi_test(50)

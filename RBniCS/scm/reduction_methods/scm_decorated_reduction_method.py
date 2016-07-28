@@ -91,6 +91,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             all_folders = Folders()
             all_folders.update(self.folder)
             all_folders.update(self.SCM_approximation.folder)
+            all_folders.pop("xi_test") # this is required only in the error analysis
             at_least_one_folder_created = all_folders.create()
             if not at_least_one_folder_created:
                 self.SCM_approximation.init("online")

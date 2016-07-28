@@ -26,11 +26,11 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from numpy import empty as AffineExpansionEIMStorageContent_Base
+from numpy import empty as AffineExpansionSeparatedFormsStorageContent_Base
 
-class AffineExpansionEIMStorage(object):
+class AffineExpansionSeparatedFormsStorage(object):
     def __init__(self, Q):
-        self._content = AffineExpansionEIMStorageContent_Base((Q,), dtype=object)
+        self._content = AffineExpansionSeparatedFormsStorageContent_Base((Q,), dtype=object)
         
     def __getitem__(self, key):
         return self._content[key]

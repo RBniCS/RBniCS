@@ -51,6 +51,12 @@ class Folders(dict): # dict from string to string
             
         def __str__(self):
             return self.name
+            
+        def __add__(self, suffix):
+            return Folders.Folder(str(self) + suffix)
+            
+        def __radd__(self, prefix):
+            return Folders.Folder(prefix + str(self))
     
     def __init__(self, *args):
         dict.__init__(self, args)

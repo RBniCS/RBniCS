@@ -44,7 +44,11 @@ class AffineExpansionOnlineStorage(object):
     
     def load(self, directory, filename):
         if self._content is not None: # avoid loading multiple times
-            return False
+            it = AffineExpansionOnlineStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+            while not it.finished:
+                if self._content[it.multi_index] is not None: # ... but only if there is at least one element different from None
+                    return False
+                it.iternext()
         if AffineExpansionOnlineStorageContent_IO.exists_file(directory, filename):
             self._content = AffineExpansionOnlineStorageContent_IO.load_file(directory, filename)
             # Create internal copy as matrix

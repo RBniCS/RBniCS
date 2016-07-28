@@ -24,11 +24,10 @@
 
 from __future__ import print_function
 import os
-from dolfin import Function, LagrangeInterpolator, vertices, Point
+from dolfin import Function, Point, project, vertices
 from RBniCS.reduction_methods import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
-from RBniCS.eim.io_utils import AffineExpansionEIMStorage
-from RBniCS.io_utils import Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, print
+from RBniCS.io_utils import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print
 
 def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
 
@@ -60,7 +59,6 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.greedy_errors = GreedyErrorEstimatorsList()
             #
             self.offline.__func__.mu_index = 0
-            self.interpolator = LagrangeInterpolator()
             
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################
@@ -75,6 +73,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             all_folders = Folders()
             all_folders.update(self.folder)
             all_folders.update(self.EIM_approximation.folder)
+            all_folders.pop("xi_test") # this is required only in the error analysis
             at_least_one_folder_created = all_folders.create()
             if not at_least_one_folder_created:
                 self.EIM_approximation.init("online")
@@ -89,7 +88,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             if not need_to_do_offline_stage:
                 return self.EIM_approximation
             
-            # Interpolate the parametrized function on the mesh grid for all parameters in xi_train
+            # Project the parametrized function on the mesh grid for all parameters in xi_train
             print("==============================================================")
             print("=             EIM preprocessing phase begins                 =")
             print("==============================================================")
@@ -100,7 +99,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 
                 print("evaluate parametrized function")
                 self.EIM_approximation.set_mu(self.xi_train[run])
-                self.interpolator.interpolate(self.snapshot, self.EIM_approximation.parametrized_expression)
+                project(self.EIM_approximation.parametrized_expression, V=self.EIM_approximation.V, function=self.snapshot)
                 self.EIM_approximation.export_solution(self.snapshot, self.folder["snapshots"], "truth_" + str(run))
                 
                 print("update snapshot matrix")
@@ -130,6 +129,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.EIM_approximation.solve()
                 
                 print("compute maximum interpolation error")
+                self.snapshot = self.load_snapshot()
                 (error, maximum_error, maximum_point) = self.compute_maximum_interpolation_error()
                 self.update_interpolation_points(maximum_point)
                 
@@ -183,8 +183,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         def load_snapshot(self):
             mu = self.EIM_approximation.mu
             mu_index = self.offline.__func__.mu_index
+            assert mu_index is not None
             assert mu == self.xi_train[mu_index]
-            return self.snapshots_matrix[mu_index]
+            return Function(self.EIM_approximation.V, self.snapshots_matrix[mu_index])
         
         # Compute the interpolation error and/or its maximum location
         def compute_maximum_interpolation_error(self, N=None):
@@ -193,9 +194,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
             # Compute the error (difference with the eim approximation)
             error = Function(self.EIM_approximation.V)
-            error.vector().add_local(self.load_snapshot().array())
+            error.vector().add_local(self.snapshot.vector().array())
             if N > 0:
-                error.vector().add_local(- (self.EIM_approximation.Z*self.EIM_approximation._interpolation_coefficients).array())
+                error.vector().add_local(- (self.EIM_approximation.Z[:N]*self.EIM_approximation._interpolation_coefficients).array())
             error.vector().apply("")
             
             # Locate the vertex of the mesh where the error is maximum
@@ -223,6 +224,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.EIM_approximation.set_mu(mu)
                 
                 self.EIM_approximation.solve()
+                self.snapshot = self.load_snapshot()
                 (_, err, _) = self.compute_maximum_interpolation_error()
                 return err
                 
@@ -265,10 +267,10 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.EIM_approximation.set_mu(self.xi_test[run])
                 
                 # Evaluate the exact function on the truth grid
-                self.interpolator.interpolate(self.snapshot, self.EIM_approximation.parametrized_expression)
+                project(self.EIM_approximation.parametrized_expression, V=self.EIM_approximation.V, function=self.snapshot)
                 
                 for n in range(1, N + 1): # n = 1, ... N
-                    self.online_solve(n)
+                    self.EIM_approximation.solve(n)
                     (_, error_analysis_table["error", n, run], _) = self.compute_maximum_interpolation_error(n)
                     error_analysis_table["error", n, run] = abs(error_analysis_table["error", n, run])
             
@@ -289,34 +291,12 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         def __init__(self, truth_problem):
             # Call the parent initialization
             ReductionMethod_DerivedClass.__init__(self, truth_problem)
+            # Storage for EIM reduction methods
+            self.EIM_reductions = dict() # from coefficients to _EIMReductionMethod
             
             # Preprocess each term in the affine expansions
-            EIMApproximation = truth_problem.EIMApproximation # class alias
-            EIMReduction = _EIMReductionMethod # class alias
-            EIM_reductions_unsorted = dict() # from coefficient to EIM reduction, temporary storage to avoid duplicates
-            self.EIM_reductions = dict() # from terms to AffineExpansionEIMStorage
-            for term in self.truth_problem.terms:
-                forms = self.truth_problem.assemble_operator(term, exact_evaluation=True)
-                Q = len(forms)
-                self.EIM_reductions[term] = AffineExpansionEIMStorage(Q)
-                self.truth_problem.EIM_approximations[term] = AffineExpansionEIMStorage(Q)
-                for q in range(Q):
-                    if len(forms[q].coefficients()) == 0:
-                        self.EIM_reductions[term][q] = None
-                        self.truth_problem.EIM_approximations[term][q] = None
-                    else:
-                        assert len(forms[q].coefficients()) == 1
-                        coeff = forms[q].coefficients()[0]
-                        if hasattr(coeff, "mu_0"): # is parametrized
-                            if coeff not in EIM_reductions_unsorted:
-                                current_EIM_approximation = EIMApproximation(self.truth_problem.V, self.truth_problem, coeff, self.truth_problem.name() + "/eim/" + str(len(EIM_reductions_unsorted)))
-                                current_EIM_reduction = EIMReduction(current_EIM_approximation, self.truth_problem.name() + "/eim/" + str(len(EIM_reductions_unsorted)))
-                                EIM_reductions_unsorted[coeff] = current_EIM_reduction
-                            self.EIM_reductions[term][q] = EIM_reductions_unsorted[coeff]
-                            self.truth_problem.EIM_approximations[term][q] = EIM_reductions_unsorted[coeff].EIM_approximation
-                        else:
-                            self.EIM_reductions[term][q] = None
-                            self.truth_problem.EIM_approximations[term][q] = None
+            for coeff in self.truth_problem.EIM_approximations:
+                self.EIM_reductions[coeff] = _EIMReductionMethod(self.truth_problem.EIM_approximations[coeff], self.truth_problem.name() + "/eim/" + str(coeff.id()))
             
         ###########################     SETTERS     ########################### 
         ## @defgroup Setters Set properties of the reduced order approximation
@@ -329,35 +309,34 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             ReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             assert "EIM" in kwargs
             Nmax_EIM = kwargs["EIM"]
-            for term in self.EIM_reductions:
-                for q in range(len(self.EIM_reductions[term])):
-                    if self.EIM_reductions[term][q] is not None:
-                        if isinstance(Nmax_EIM, dict):
-                            assert term in Nmax_EIM and q in Nmax_EIM[term]
-                            self.EIM_reductions[term][q].set_Nmax(Nmax_EIM[term][q]) # kwargs are not needed
-                        else:
-                            assert isinstance(Nmax_EIM, int)
-                            self.EIM_reductions[term][q].set_Nmax(Nmax_EIM) # kwargs are not needed
+            if isinstance(Nmax_EIM, dict):
+                for term in self.separated_forms:
+                    for q in range(len(self.separated_forms[term])):
+                        for i in range(len(self.separated_forms[term][q].coefficients)):
+                            for coeff in self.separated_forms[term][q].coefficients[i]:
+                                assert term in Nmax_EIM and q in Nmax_EIM[term]
+                                assert coeff in self.EIM_reductions
+                                self.EIM_reductions[coeff].set_Nmax(max(self.EIM_reductions[coeff].Nmax, Nmax_EIM[term][q])) # kwargs are not needed
+            else:
+                assert isinstance(Nmax_EIM, int)
+                for coeff in self.EIM_reductions:
+                    self.EIM_reductions[coeff].set_Nmax(Nmax_EIM) # kwargs are not needed
 
             
         ## OFFLINE: set the elements in the training set \xi_train.
         def set_xi_train(self, ntrain, enable_import=True, sampling=None):
             import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
-            for term in self.EIM_reductions:
-                for q in range(len(self.EIM_reductions[term])):
-                    if self.EIM_reductions[term][q] is not None:
-                        import_successful_EIM = self.EIM_reductions[term][q].set_xi_train(ntrain, enable_import, sampling)
-                        import_successful = import_successful and import_successful_EIM
+            for coeff in self.EIM_reductions:
+                import_successful_EIM = self.EIM_reductions[coeff].set_xi_train(ntrain, enable_import, sampling)
+                import_successful = import_successful and import_successful_EIM
             return import_successful
             
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
         def set_xi_test(self, ntest, enable_import=False, sampling=None):
             import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling)
-            for term in self.EIM_reductions:
-                for q in range(len(self.EIM_reductions[term])):
-                    if self.EIM_reductions[term][q] is not None:
-                        import_successful_EIM = self.EIM_reductions[term][q].set_xi_test(ntest, enable_import, sampling)
-                        import_successful = import_successful and import_successful_EIM
+            for coeff in self.EIM_reductions:
+                import_successful_EIM = self.EIM_reductions[coeff].set_xi_test(ntest, enable_import, sampling)
+                import_successful = import_successful and import_successful_EIM
             return import_successful
             
         #  @}
@@ -371,10 +350,8 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         def offline(self):
             # Perform first the EIM offline phase, ...
             bak_first_mu = tuple(list(self.truth_problem.mu))
-            for term in self.EIM_reductions:
-                for q in range(len(self.EIM_reductions[term])):
-                    if self.EIM_reductions[term][q] is not None:
-                        self.EIM_reductions[term][q].offline()
+            for coeff in self.EIM_reductions:
+                self.EIM_reductions[coeff].offline()
             # ..., and then call the parent method.
             self.truth_problem.set_mu(bak_first_mu)
             return ReductionMethod_DerivedClass.offline(self)
@@ -390,10 +367,8 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         # over the test set
         def error_analysis(self, N=None):
             # Perform first the EIM error analysis, ...
-            for term in self.EIM_reductions:
-                for q in range(len(self.EIM_reductions[term])):
-                    if self.EIM_reductions[term][q] is not None:
-                        self.EIM_reductions[term][q].error_analysis(N)
+            for coeff in self.EIM_reductions:
+                self.EIM_reductions[coeff].error_analysis(N)
             # ..., and then call the parent method.
             ReductionMethod_DerivedClass.error_analysis(self, N)
             

@@ -22,11 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from itertools import product as cartesian_product
 from dolfin import Function
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
 from RBniCS.io_utils import KeepClassName, SyncSetters
-from RBniCS.eim.io_utils import PointsList
+from RBniCS.eim.io_utils import AffineExpansionSeparatedFormsStorage, PointsList, SeparatedParametrizedForm
 
 def EIMDecoratedProblem():
     def EIMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
@@ -112,13 +113,16 @@ def EIMDecoratedProblem():
                 
             ## Call online_solve and then convert the result of online solve from OnlineVector to a tuple
             def compute_interpolated_theta(self, N=None):
-                interpolated_theta = list(self.solve(N))
+                interpolated_theta = self.solve(N)
+                interpolated_theta_list = list()
+                for n in range(len(interpolated_theta)):
+                    interpolated_theta_list.append(float(interpolated_theta[n]))
                 if N is not None:
                     # Make sure to append a 0 coefficient for each basis function
                     # which has not been requested
                     for n in range(N, self.N):
-                        interpolated_theta.append(0.0)
-                return tuple(interpolated_theta)
+                        interpolated_theta_list.append(0.0)
+                return tuple(interpolated_theta_list)
                 
             ## Evaluate the parametrized function f(x; mu) for the current value of mu
             def evaluate_parametrized_expression_at_x(self, x):
@@ -150,9 +154,23 @@ def EIMDecoratedProblem():
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for EIM reduced problems
-                self.EIMApproximation = _EIMApproximation
-                self.EIM_approximations = dict() # from terms to AffineExpansionEIMStorage
+                self.separated_forms = dict() # from terms to AffineExpansionSeparatedFormsStorage
+                self.EIM_approximations = dict() # from coefficients to _EIMApproximation
                 
+                # Preprocess each term in the affine expansions
+                for term in self.terms:
+                    forms = ParametrizedProblem_DerivedClass.assemble_operator(self, term)
+                    Q = len(forms)
+                    self.separated_forms[term] = AffineExpansionSeparatedFormsStorage(Q)
+                    for q in range(Q):
+                        self.separated_forms[term][q] = SeparatedParametrizedForm(forms[q])
+                        self.separated_forms[term][q].separate()
+                        # All parametrized coefficients should be approximated by EIM
+                        for i in range(len(self.separated_forms[term][q].coefficients)):
+                            for coeff in self.separated_forms[term][q].coefficients[i]:
+                                if coeff not in self.EIM_approximations:
+                                    self.EIM_approximations[coeff] = _EIMApproximation(self.V, self, coeff, self.name() + "/eim/" + str(coeff.id()))
+                                    
                 # Signal to the factory that this problem has been decorated
                 if not hasattr(self, "_problem_decorators"):
                     self._problem_decorators = dict() # string to bool
@@ -162,42 +180,51 @@ def EIMDecoratedProblem():
             ## @defgroup ProblemSpecific Problem specific methods
             #  @{
             
-            def assemble_operator(self, term, exact_evaluation=False):
-                original_forms = ParametrizedProblem_DerivedClass.assemble_operator(self, term) # may raise an error
-                if term in self.terms and not exact_evaluation:
-                    eim_forms = []
-                    for q in range(len(original_forms)):
-                        EIM_approximation_q = self.EIM_approximations[term][q]
-                        if EIM_approximation_q is not None:
-                            assert len(original_forms[q].coefficients()) == 1
-                            coef = original_forms[q].coefficients()[0]
-                            interpolated_functions_q = EIM_approximation_q.Z
-                            replacement_q = dict()
-                            for a in range(len(interpolated_functions_q)): # over EIM addends
-                                replacement_q[coef] = interpolated_functions_q[a]
-                                eim_forms.append(replace(original_forms[q], replacement_q))
-                        else:
-                            eim_forms.append(original_forms[q])
+            def assemble_operator(self, term):
+                if term in self.terms:
+                    eim_forms = list()
+                    for q in range(len(self.separated_forms[term])):
+                        # Append forms computed with EIM, if applicable
+                        for i in range(len(self.separated_forms[term][q].coefficients)):
+                            eim_forms_coefficients_q_i = self.separated_forms[term][q].coefficients[i]
+                            eim_forms_replacements_q_i__list = list()
+                            for coeff in eim_forms_coefficients_q_i:
+                                eim_forms_replacements_q_i__list.append(self.EIM_approximations[coeff].Z)
+                            eim_forms_replacements_q_i__cartesian_product = cartesian_product(*eim_forms_replacements_q_i__list)
+                            for t in eim_forms_replacements_q_i__cartesian_product:
+                                new_coeffs = [Function(self.EIM_approximations[coeff].V, new_coeff) for new_coeff in t]
+                                eim_forms.append(
+                                    self.separated_forms[term][q].replace_placeholders(i, new_coeffs)
+                                )
+                        # Append forms which did not require EIM, if applicable
+                        for unchanged_form in self.separated_forms[term][q]._form_unchanged:
+                            eim_forms.append(unchanged_form)
                     return tuple(eim_forms)
                 else:
-                    return original_forms
+                    return ParametrizedProblem_DerivedClass.assemble_operator(self, term) # may raise an exception
                     
-            def compute_theta(self, term, exact_evaluation=False):
-                original_theta = ParametrizedProblem_DerivedClass.compute_theta(self, term) # may raise an error
-                if term in self.terms and not exact_evaluation:
-                    eim_thetas = []
+            def compute_theta(self, term):
+                original_thetas = ParametrizedProblem_DerivedClass.compute_theta(self, term) # may raise an exception
+                if term in self.terms:
+                    eim_thetas = list()
                     for q in range(len(original_thetas)):
-                        EIM_approximation_q = self.EIM_approximations[term][q]
-                        if EIM_approximation_q is not None:
-                            interpolated_theta_q = EIM_approximation_q.compute_interpolated_theta()
-                            for a in range(len(interpolated_theta)): # over EIM addends
-                                eim_thetas.append(original_theta[q]*interpolated_theta_q[a])
-                        else:
+                        # Append coefficients computed with EIM, if applicable
+                        for i in range(len(self.separated_forms[term][q].coefficients)):
+                            eim_thetas_q_i__list = list()
+                            for coeff in self.separated_forms[term][q].coefficients[i]:
+                                eim_thetas_q_i__list.append(self.EIM_approximations[coeff].compute_interpolated_theta())
+                            eim_thetas_q_i__cartesian_product = cartesian_product(*eim_thetas_q_i__list)
+                            for t in eim_thetas_q_i__cartesian_product:
+                                eim_thetas_q_i_t = original_thetas[q]
+                                for r in t:
+                                    eim_thetas_q_i_t *= r
+                                eim_thetas.append(eim_thetas_q_i_t)
+                        # Append coefficients which did not require EIM, if applicable
+                        for i in range(len(self.separated_forms[term][q]._form_unchanged)):
                             eim_thetas.append(original_thetas[q])
                     return tuple(eim_thetas)
                 else:
                     return original_thetas
-                        
             #  @}
             ########################### end - PROBLEM SPECIFIC - end ########################### 
             
