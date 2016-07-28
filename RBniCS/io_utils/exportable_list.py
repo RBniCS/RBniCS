@@ -46,10 +46,13 @@ class ExportableList(object):
     
     def append(self, element):
         self._list.append(element)
-            
+    
+    # Returns True if it was possible to import the list,
+    # or if the list had been already imported so no further
+    # action was needed. Returns False otherwise.
     def load(self, directory, filename):
         if self._list: # avoid loading multiple times
-            return False
+            return True
         if self._FileIO.exists_file(directory, filename):
             self._list = self._FileIO.load_file(directory, filename)
             return True
