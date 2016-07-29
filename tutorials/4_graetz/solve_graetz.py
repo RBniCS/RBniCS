@@ -84,7 +84,7 @@ class Graetz(EllipticCoerciveProblem):
         elif term == "s":
             return (1.0,)
         else:
-            raise RuntimeError("Invalid term for compute_theta().")
+            raise ValueError("Invalid term for compute_theta().")
                     
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
@@ -121,7 +121,7 @@ class Graetz(EllipticCoerciveProblem):
             x0 = u*v*dx + inner(grad(u),grad(v))*dx
             return (x0,)
         else:
-            raise RuntimeError("Invalid term for assemble_operator().")
+            raise ValueError("Invalid term for assemble_operator().")
         
     def solve_lifting(self):
         # We will consider non-homogeneous Dirichlet BCs with a lifting.

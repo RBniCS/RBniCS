@@ -27,4 +27,4 @@
 class Distribution(object):        
     ## Sample n points from the distribution
     def sample(self, box, n):
-        raise RuntimeError("The method sample is distribution-specific and needs to be overridden.")
+        raise NotImplementedError("The method sample is distribution-specific and needs to be overridden.")

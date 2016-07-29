@@ -118,10 +118,8 @@ class AffineExpansionOnlineStorage(object):
         self._precomputed_slices = dict()
         
     def __len__(self):
-        if self.order() == 1: # for 1D arrays
-            return self._content.size
-        else:
-            raise RuntimeError("Should not call len for tensors of dimension 2 or higher")
+        assert self.order() == 1
+        return self._content.size
     
     def order(self):
         assert self._content is not None

@@ -69,9 +69,9 @@ def product(thetas, _operators, thetas2=None):
                 output.apply("insert")
                 return _DotProductOutput(output)
             else: # impossible to arrive here anyway thanks to the assert
-                raise RuntimeError("product(): invalid operands.")
+                raise TypeError("product(): invalid operands.")
         else:
-            raise RuntimeError("product(): invalid operands.")
+            raise TypeError("product(): invalid operands.")
     elif \
         (isinstance(_operators, AffineExpansionOfflineStorage) and isinstance(_operators._content, AffineExpansionOnlineStorage)) \
             or \
@@ -132,9 +132,9 @@ def product(thetas, _operators, thetas2=None):
             output = thetas_vector*operators.as_matrix()*thetas2_vector
             return _DotProductOutput(output.item(0, 0))
         else:
-            raise RuntimeError("product(): invalid operands.")
+            raise TypeError("product(): invalid operands.")
     else:
-        raise RuntimeError("product(): invalid operands.")
+        raise TypeError("product(): invalid operands.")
 
 # Auxiliary class to signal to the sum() function that the sum has already been performed by the dot product
 class _DotProductOutput(list):

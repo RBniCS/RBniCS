@@ -84,7 +84,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             self.riesz_product["af"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["f"])
             self.riesz_product["ff"] = AffineExpansionOnlineStorage(self.Q["f"], self.Q["f"])
         else:
-            raise RuntimeError("Invalid stage in _init_error_estimation_operators().")
+            raise ValueError("Invalid stage in _init_error_estimation_operators().")
     
     ## Return an error bound for the current solution
     def estimate_error(self):
@@ -183,7 +183,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             elif term == "riesz_product_ff":
                 self.riesz_product["ff"].load(self.folder["error_estimation"], "riesz_product_ff")
             else:
-                raise RuntimeError("Invalid term for assemble_error_estimation_operators().")
+                raise ValueError("Invalid term for assemble_error_estimation_operators().")
             return self.riesz_product[short_term]
         elif current_stage == "offline":
             assert len(self.truth_problem.inner_product) == 1
@@ -213,10 +213,10 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                             self.riesz_product["ff"][qfp, qf] = self.riesz_product["ff"][qf, qfp]
                 self.riesz_product["ff"].save(self.folder["error_estimation"], "riesz_product_ff")
             else:
-                raise RuntimeError("Invalid term for assemble_error_estimation_operators().")
+                raise ValueError("Invalid term for assemble_error_estimation_operators().")
             return self.riesz_product[short_term]
         else:
-            raise RuntimeError("Invalid stage in assemble_error_estimation_operators().")
+            raise ValueError("Invalid stage in assemble_error_estimation_operators().")
             
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

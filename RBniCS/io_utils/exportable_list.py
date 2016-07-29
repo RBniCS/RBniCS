@@ -40,7 +40,7 @@ class ExportableList(object):
         elif import_export_backend == "text":
             self._FileIO = TextIO
         else:
-            raise RuntimeError("Invalid import/export backend")
+            raise ValueError("Invalid import/export backend")
         if original_list is not None:
             self._list.extend(original_list)
     

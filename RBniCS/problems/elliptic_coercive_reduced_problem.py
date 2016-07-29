@@ -97,7 +97,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 self.Q[term] = self.truth_problem.Q[term]
                 self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
         else:
-            raise RuntimeError("Invalid stage in _init_operators().")
+            raise ValueError("Invalid stage in _init_operators().")
         
     def _init_basis_functions(self, current_stage="online"):
         if current_stage == "online":
@@ -106,7 +106,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             # are related to boundary conditions
             try:
                 theta_bc = self.compute_theta("dirichlet_bc")
-            except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
+            except ValueError: # there were no Dirichlet BCs to be imposed by lifting
                 self.N = len(self.Z)
             else: # there were Dirichlet BCs to be imposed by lifting
                 self.N = len(self.Z) - len(theta_bc)
@@ -115,7 +115,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             # Store the lifting functions in self.Z
             self.assemble_operator("dirichlet_bc", "offline") # no return value from assemble_operator in this case
         else:
-            raise RuntimeError("Invalid stage in _init_basis_functions().")
+            raise ValueError("Invalid stage in _init_basis_functions().")
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def solve(self, N=None, with_plot=True):
@@ -134,7 +134,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
-        except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
+        except ValueError: # there were no Dirichlet BCs to be imposed by lifting
             theta_bc = None
         self._solution = OnlineVector(N)
         solve(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
@@ -164,7 +164,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     def postprocess_snapshot(self, snapshot):
         try:
             theta_bc = self.compute_theta("dirichlet_bc")
-        except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
+        except ValueError: # there were no Dirichlet BCs to be imposed by lifting
             pass # nothing to be done
         else: # there were Dirichlet BCs
             assert self.N_bc == len(theta_bc)
@@ -230,9 +230,9 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 self.operator["f"].load(self.folder["reduced_operators"], "operator_f")
                 return self.operator["f"]
             elif term == "dirichlet_bc":
-                raise RuntimeError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
+                raise ValueError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
             else:
-                raise RuntimeError("Invalid term for assemble_operator().")
+                raise ValueError("Invalid term for assemble_operator().")
         elif current_stage == "offline":
             # As in the previous case, there is no need to return anything because 
             # we are still training the reduced order model, so the previous remark 
@@ -252,7 +252,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             elif term == "dirichlet_bc":
                 try:
                     theta_bc = self.compute_theta("dirichlet_bc")
-                except RuntimeError: # there were no Dirichlet BCs to be imposed by lifting
+                except ValueError: # there were no Dirichlet BCs to be imposed by lifting
                     return
                 Q_dirichlet_bcs = len(theta_bc)
                 # Temporarily override compute_theta method to return only one nonzero 
@@ -285,9 +285,9 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 # Note that, however, self.N is not increased, so it will actually contain the number
                 # of basis functions without the lifting ones
             else:
-                raise RuntimeError("Invalid term for assemble_operator().")
+                raise ValueError("Invalid term for assemble_operator().")
         else:
-            raise RuntimeError("Invalid stage in assemble_operator().")
+            raise ValueError("Invalid stage in assemble_operator().")
     
     ## Return a lower bound for the coercivity constant
     def get_stability_factor(self):

@@ -38,7 +38,7 @@ def ReducedProblemFactory(truth_problem, reduction_method):
         elif isinstance(reduction_method, EllipticCoerciveRBReduction):
             return EllipticCoerciveRBReducedProblem
         else:
-            raise RuntimeError("Invalid arguments in ReducedProblemFactory.")
+            raise TypeError("Invalid arguments in ReducedProblemFactory.")
             
     # Combine them
     @_DecoratedReducedProblem_TypeFactory(truth_problem)

@@ -67,7 +67,7 @@ class ThermalBlock(EllipticCoerciveProblem):
             theta_f0 = mu2
             return (theta_f0,)
         else:
-            raise RuntimeError("Invalid term for compute_theta().")
+            raise ValueError("Invalid term for compute_theta().")
     
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
@@ -90,7 +90,7 @@ class ThermalBlock(EllipticCoerciveProblem):
             x0 = inner(grad(u),grad(v))*dx
             return (x0,)
         else:
-            raise RuntimeError("Invalid term for assemble_operator().")
+            raise ValueError("Invalid term for assemble_operator().")
         
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

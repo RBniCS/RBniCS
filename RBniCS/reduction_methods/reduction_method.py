@@ -107,11 +107,11 @@ class ReductionMethod(object):
     
     ## Perform the offline phase of the reduced order model
     def offline(self):
-        raise RuntimeError("Please implement the offline phase of the reduced order model.")
+        raise NotImplementedError("Please implement the offline phase of the reduced order model.")
         
     ## Initialize data structures required for the offline phase
     def _init_offline(self):
-        pass
+        raise NotImplementedError("Please implement the initialization for offline phase of the reduced order model.")
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -123,11 +123,11 @@ class ReductionMethod(object):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     def error_analysis(self, N=None):
-        raise RuntimeError("Please implement the error analysis of the reduced order model.")
+        raise NotImplementedError("Please implement the error analysis of the reduced order model.")
         
     ## Initialize data structures required for the error analysis phase
     def _init_error_analysis(self):
-        pass
+        raise NotImplementedError("Please implement the initialization for error analysis of the reduced order model.")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

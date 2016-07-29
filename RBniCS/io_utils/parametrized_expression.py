@@ -60,7 +60,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         elif isinstance(parametrized_expression_code, str):
             parametrized_expression_code = parametrized_expression_code.replace("mu[" + str(p) + "]", "mu_" + str(p))
         else:
-            raise RuntimeError("Invalid expression type in ParametrizedExpression")
+            raise TypeError("Invalid expression type in ParametrizedExpression")
     
     mu_dict = {}
     for p in range(len(mu)):

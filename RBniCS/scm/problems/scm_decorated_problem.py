@@ -132,7 +132,7 @@ def SCMDecoratedProblem(
                     # Init exact coercivity constant computations
                     self.exact_coercivity_constant_calculator.init()
                 else:
-                    raise RuntimeError("Invalid stage in init().")
+                    raise ValueError("Invalid stage in init().")
         
             ## Get a lower bound for alpha
             def get_stability_factor_lower_bound(self, mu, safeguard=True):
@@ -271,6 +271,8 @@ def SCMDecoratedProblem(
 
             ## Auxiliary function: M parameters in the set all_mu closest to mu
             def _closest_parameters(self, M, all_mu_indices, mu):
+                assert M <= len(all_mu_indices)
+                
                 # Trivial case 1:
                 if M == 0:
                     return
@@ -278,10 +280,6 @@ def SCMDecoratedProblem(
                 # Trivial case 2:
                 if M == len(all_mu_indices):
                     return range(len(all_mu_indices))
-                
-                # Error case: there are not enough elements    
-                if M > len(all_mu_indices):
-                    raise RuntimeError("SCM error in closest parameters: this should never happen")
                 
                 indices_and_distances = list()
                 for p in range(len(all_mu_indices)):

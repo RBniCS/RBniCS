@@ -117,7 +117,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         self.inner_product.init(self.assemble_operator("inner_product"))
         try:
             self.dirichlet_bc.init(self.assemble_operator("dirichlet_bc"))
-        except RuntimeError: # there were no Dirichlet BCs
+        except ValueError: # there were no Dirichlet BCs
             pass
                     
     ## Perform a truth solve
@@ -128,7 +128,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         if len(self.dirichlet_bc) > 0:
             try:
                 theta_dirichlet_bc = self.compute_theta("dirichlet_bc")
-            except RuntimeError: # there were no theta functions
+            except ValueError: # there were no theta functions
                 # We provide in this case a shortcut for the case of homogeneous Dirichlet BCs,
                 # that do not require an additional lifting functions.
                 # The user needs to implement the dirichlet_bc case for assemble_operator, 
@@ -187,9 +187,9 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #       theta_bc0 = 1.
     #       return (theta_f0,)
     #   else:
-    #       raise RuntimeError("Invalid term for compute_theta().")
+    #       raise ValueError("Invalid term for compute_theta().")
     def compute_theta(self, term):
-        raise RuntimeError("The method compute_theta() is problem-specific and needs to be overridden.")
+        raise NotImplementedError("The method compute_theta() is problem-specific and needs to be overridden.")
         
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     # Example of implementation:
@@ -206,16 +206,16 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #       x0 = u*v*dx + inner(grad(u),grad(v))*dx
     #       return (x0,)
     #   else:
-    #       raise RuntimeError("Invalid term for assemble_operator().")
+    #       raise ValueError("Invalid term for assemble_operator().")
     def assemble_operator(self, term):
-        raise RuntimeError("The method assemble_operator() is problem-specific and needs to be overridden.")
+        raise NotImplementedError("The method assemble_operator() is problem-specific and needs to be overridden.")
         
     ## Return a lower bound for the coercivity constant
     # Example of implementation:
     #    return 1.0
     # Note that this method is not needed in POD-Galerkin reduced order models.
     def get_stability_factor(self):
-        raise RuntimeError("The method get_stability_factor() is problem-specific and needs to be overridden.")
+        raise NotImplementedError("The method get_stability_factor() is problem-specific and needs to be overridden.")
     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

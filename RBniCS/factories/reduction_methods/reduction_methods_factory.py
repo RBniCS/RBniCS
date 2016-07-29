@@ -37,7 +37,7 @@ def ReducedBasis(truth_problem):
         if isinstance(truth_problem, EllipticCoerciveProblem):
             return EllipticCoerciveRBReduction
         else:
-            raise RuntimeError("Invalid arguments in ReducedBasis factory.")
+            raise TypeError("Invalid arguments in ReducedBasis factory.")
     
     # Add EIM or SCM, as required
     @_DecoratedReductionMethod_TypeFactory(truth_problem)
@@ -61,7 +61,7 @@ def PODGalerkin(truth_problem):
         if isinstance(truth_problem, EllipticCoerciveProblem):
             return EllipticCoercivePODGalerkinReduction
         else:
-            raise RuntimeError("Invalid arguments in PODGalerkin factory.")
+            raise TypeError("Invalid arguments in PODGalerkin factory.")
             
     # Add EIM or SCM, as required
     @_DecoratedReductionMethod_TypeFactory(truth_problem)

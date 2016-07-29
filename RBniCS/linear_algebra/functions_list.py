@@ -116,7 +116,7 @@ class FunctionsList(ExportableList):
             output.apply("add")
             return output
         else: # impossible to arrive here anyway, thanks to the assert
-            raise RuntimeError("Invalid arguments in FunctionsList.__mul__.")
+            raise TypeError("Invalid arguments in FunctionsList.__mul__.")
             
     def __getitem__(self, key):
         if isinstance(key, slice): # e.g. key = :N, return the first N functions
@@ -154,7 +154,7 @@ class FunctionsList_Transpose(object):
                 onlineVector[i] = Vector_Transpose(self.functionsList[i])*truthMatrixOrVector
             return onlineVector
         else: # impossible to arrive here anyway, thanks to the assert
-            raise RuntimeError("Invalid arguments in FunctionsList_Transpose.__mul__.")
+            raise TypeError("Invalid arguments in FunctionsList_Transpose.__mul__.")
 
 # Auxiliary class: multiplication of the transpose of a functions list with a TruthMatrix
 class FunctionsList_Transpose__times__TruthMatrix(object):

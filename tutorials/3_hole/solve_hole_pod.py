@@ -97,7 +97,7 @@ class Hole(EllipticCoerciveProblem):
             # Return
             return (theta_f0, theta_f1, theta_f2, theta_f3)
         else:
-            raise RuntimeError("Invalid term for compute_theta().")
+            raise ValueError("Invalid term for compute_theta().")
                 
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
@@ -137,7 +137,7 @@ class Hole(EllipticCoerciveProblem):
             x0 = u*v*dx + inner(grad(u),grad(v))*dx
             return (x0,)
         else:
-            raise RuntimeError("Invalid term for assemble_operator().")
+            raise ValueError("Invalid term for assemble_operator().")
                     
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

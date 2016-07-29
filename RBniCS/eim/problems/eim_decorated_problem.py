@@ -90,7 +90,7 @@ def EIMDecoratedProblem():
                     # Nothing to be done
                     pass
                 else:
-                    raise RuntimeError("Invalid stage in init().")
+                    raise ValueError("Invalid stage in init().")
 
             # Perform an online solve.
             def solve(self, N=None):

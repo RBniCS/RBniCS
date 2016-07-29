@@ -54,7 +54,7 @@ class PerformanceTable(object):
         elif isinstance(operations, tuple):
             self._columns_operations[column_name] = operations
         else:
-            raise RuntimeError("Invalid operation in PerformanceTable")
+            raise ValueError("Invalid operation in PerformanceTable")
                 
     def __getitem__(self, args):
         assert len(args) == 3
@@ -87,7 +87,7 @@ class PerformanceTable(object):
                         current_table_header = "gmean(" + column + ")"
                         current_table_index = "gmean_" + column
                     else:
-                        raise RuntimeError("Invalid operation in PerformanceTable")
+                        raise ValueError("Invalid operation in PerformanceTable")
                     table_index.append(current_table_index)
                     table_header[current_table_index] = current_table_header
                     # Compute the required operation of each column over the second index (test set)
@@ -100,7 +100,7 @@ class PerformanceTable(object):
                         elif operation == "max":
                             current_table_content = max(self._columns[column][n - self._Nmin, :])
                         else:
-                            raise RuntimeError("Invalid operation in PerformanceTable")
+                            raise ValueError("Invalid operation in PerformanceTable")
                         table_content[current_table_index][n - self._Nmin] = current_table_content
                     # Get the width of the columns
                     column_size[current_table_index] = max([max([len(str(x)) for x in table_content[current_table_index]]), len(current_table_header)])
