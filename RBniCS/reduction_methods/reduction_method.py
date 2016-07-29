@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from abc import ABCMeta, abstractmethod
 from RBniCS.sampling import ParameterSpaceSubset
 from RBniCS.io_utils import Folders
 
@@ -30,6 +31,7 @@ from RBniCS.io_utils import Folders
 #
 # Implementation of a class containing an offline/online decomposition of ROM for parametrized problems
 class ReductionMethod(object):
+    __metaclass__ = ABCMeta
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -106,10 +108,12 @@ class ReductionMethod(object):
     #  @{
     
     ## Perform the offline phase of the reduced order model
+    @abstractmethod
     def offline(self):
         raise NotImplementedError("Please implement the offline phase of the reduced order model.")
         
     ## Initialize data structures required for the offline phase
+    @abstractmethod
     def _init_offline(self):
         raise NotImplementedError("Please implement the initialization for offline phase of the reduced order model.")
     
@@ -122,10 +126,12 @@ class ReductionMethod(object):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
+    @abstractmethod
     def error_analysis(self, N=None):
         raise NotImplementedError("Please implement the error analysis of the reduced order model.")
         
     ## Initialize data structures required for the error analysis phase
+    @abstractmethod
     def _init_error_analysis(self):
         raise NotImplementedError("Please implement the initialization for error analysis of the reduced order model.")
         

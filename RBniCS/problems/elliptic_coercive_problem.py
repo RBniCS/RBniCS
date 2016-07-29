@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from abc import ABCMeta, abstractmethod
 from dolfin import Function
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, product, transpose, solve, sum
@@ -79,6 +80,8 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     (e.g., CVT), you might want to derive from this class.
 
     """
+    
+    __metaclass__ = ABCMeta
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the elliptic problem
@@ -188,6 +191,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #       return (theta_f0,)
     #   else:
     #       raise ValueError("Invalid term for compute_theta().")
+    @abstractmethod
     def compute_theta(self, term):
         raise NotImplementedError("The method compute_theta() is problem-specific and needs to be overridden.")
         
@@ -207,13 +211,15 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #       return (x0,)
     #   else:
     #       raise ValueError("Invalid term for assemble_operator().")
+    @abstractmethod
     def assemble_operator(self, term):
         raise NotImplementedError("The method assemble_operator() is problem-specific and needs to be overridden.")
         
     ## Return a lower bound for the coercivity constant
     # Example of implementation:
     #    return 1.0
-    # Note that this method is not needed in POD-Galerkin reduced order models.
+    # Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason
+    # for which it is not marked as @abstractmethod
     def get_stability_factor(self):
         raise NotImplementedError("The method get_stability_factor() is problem-specific and needs to be overridden.")
     

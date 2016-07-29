@@ -264,6 +264,10 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## @defgroup ErrorAnalysis Error analysis
         #  @{
         
+        @override
+        def _init_error_analysis(self):
+            pass
+        
         # Compute the error of the empirical interpolation approximation with respect to the
         # exact function over the test set
         def error_analysis(self, N=None):
