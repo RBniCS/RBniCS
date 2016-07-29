@@ -24,13 +24,14 @@
 
 import os # for path and makedir
 from RBniCS.reduction_methods.reduction_method import ReductionMethod
-from RBniCS.io_utils import Folders
+from RBniCS.io_utils import Folders, extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
+@extends(ReductionMethod)
 class EllipticCoerciveReductionMethod(ReductionMethod):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -42,9 +43,10 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
     # In this way we allow the final user to possibly override ReducedProblemFactory
     
     ## Default initialization of members
+    @override
     def __init__(self, truth_problem):
         # Call to parent
-        ReductionMethod.__init__(self, truth_problem.name(), truth_problem.mu_range)
+        ReductionMethod.__init__(self, type(truth_problem).__name__, truth_problem.mu_range)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Reduced order problem
@@ -62,6 +64,7 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
     #  @{
     
     ## Initialize data structures required for the offline phase
+    @override
     def _init_offline(self):
         # Initialize the affine expansion in the truth problem
         self.truth_problem.init()
@@ -90,6 +93,7 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
     #  @{
     
     ## Initialize data structures required for the error analysis phase
+    @override
     def _init_error_analysis(self):
         # Initialize the affine expansion in the truth problem
         self.truth_problem.init()

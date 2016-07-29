@@ -29,13 +29,14 @@ from math import sqrt
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, OnlineVector, product, transpose, solve, sum
-from RBniCS.io_utils import SyncSetters, print
+from RBniCS.io_utils import SyncSetters, print, extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
+@extends(ParametrizedProblem) # needs to be first in order to override for last the methods
 @SyncSetters("truth_problem", "set_mu", "mu")
 @SyncSetters("truth_problem", "set_mu_range", "mu_range")
 class EllipticCoerciveReducedProblem(ParametrizedProblem):
@@ -45,9 +46,10 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     #  @{
     
     ## Default initialization of members.
+    @override
     def __init__(self, truth_problem):
         # Call to parent
-        ParametrizedProblem.__init__(self, truth_problem.name())
+        ParametrizedProblem.__init__(self, type(truth_problem).__name__)
         
         # Consistency check
         assert isinstance(truth_problem, EllipticCoerciveProblem)
@@ -301,12 +303,14 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     #  @{
     
     ## Interactive plot
+    @override
     def _plot(self, solution, *args, **kwargs):
         N = solution.size
         solution_on_high_fidelity = Function(self.truth_problem.V, self.Z[:N]*solution)
         self.truth_problem._plot(solution_on_high_fidelity, *args, **kwargs)
         
     ## Export in VTK format
+    @override
     def _export_vtk(self, solution, folder, filename, **output_options):
         N = solution.size
         solution_on_high_fidelity = Function(self.truth_problem.V, self.Z[:N]*solution)

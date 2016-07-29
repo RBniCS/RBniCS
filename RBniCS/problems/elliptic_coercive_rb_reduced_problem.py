@@ -26,12 +26,14 @@ from math import sqrt
 from dolfin import Function
 from RBniCS.problems.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, FunctionsList, product, transpose, solve, sum
+from RBniCS.io_utils import extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
+@extends(EllipticCoerciveReducedProblem)
 class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -39,6 +41,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     #  @{
     
     ## Default initialization of members.
+    @override
     def __init__(self, truth_problem):
         # Call to parent
         EllipticCoerciveReducedProblem.__init__(self, truth_problem)
@@ -63,6 +66,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     #  @{
     
     ## Initialize data structures required for the online phase
+    @override
     def init(self, current_stage="online"):
         EllipticCoerciveReducedProblem.init(self, current_stage)
         self._init_error_estimation_operators(current_stage)

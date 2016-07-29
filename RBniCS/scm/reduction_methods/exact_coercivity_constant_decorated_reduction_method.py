@@ -22,12 +22,18 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.io_utils import extends, override
+
 def ExactCoercivityConstantDecoratedReductionMethod(ReductionMethod_DerivedClass):
+    
+    @extends(ReductionMethod_DerivedClass, preserve_class_name=True)
     class ExactCoercivityConstantDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+        @override
         def __init__(self, truth_problem):
             # Call the parent initialization
             ReductionMethod_DerivedClass.__init__(self, truth_problem)
             
+        @override
         def set_xi_train(self, ntrain, enable_import=True, sampling=None):
             import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
             # Since exact evaluation is required, we cannot use a distributed xi_train

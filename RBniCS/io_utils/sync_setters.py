@@ -23,12 +23,16 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
+from RBniCS.io_utils.extends import extends
+from RBniCS.io_utils.override import override
 
 def SyncSetters(other_object__name, method__name, private_attribute__name):
     def SyncSetters_Decorator(Parent):
         
+        @extends(Parent)
         class SyncSetters_Class(Parent):
-        
+            
+            @override
             def __init__(self, *args, **kwargs):
                 # Call the parent initialization
                 Parent.__init__(self, *args, **kwargs)
@@ -42,12 +46,14 @@ def SyncSetters(other_object__name, method__name, private_attribute__name):
                     self__original_method(arg)
                     if getattr(other_object, private_attribute__name) is not arg:
                         other_object__original_method(arg)
+                self__overridden_method = override(self__overridden_method)
                 setattr(self, method__name, types.MethodType(self__overridden_method, self))
                 # Override setter of other_object to propagate from other_object to self
                 def other_object__overridden_method(_, arg): # _ is other_object, self is an instance of the Parent class
                     other_object__original_method(arg)
                     if getattr(self, private_attribute__name) is not arg:
                         self__original_method(arg)
+                other_object__overridden_method = override(other_object__overridden_method)
                 setattr(other_object, method__name, types.MethodType(other_object__overridden_method, other_object))
                 # Make sure that the value of my attribute is in sync with the value the is currently 
                 # stored in other_object, because it was set before overriding was carried out

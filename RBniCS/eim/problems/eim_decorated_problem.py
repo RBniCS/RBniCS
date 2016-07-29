@@ -26,7 +26,7 @@ from itertools import product as cartesian_product
 from dolfin import Function
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
-from RBniCS.io_utils import KeepClassName, SyncSetters, mpi_comm
+from RBniCS.io_utils import SyncSetters, mpi_comm, extends, override
 from RBniCS.eim.io_utils import AffineExpansionSeparatedFormsStorage, PointsList, SeparatedParametrizedForm
 
 def EIMDecoratedProblem():
@@ -36,6 +36,7 @@ def EIMDecoratedProblem():
         ## @class EIM
         #
         # Empirical interpolation method for the interpolation of parametrized functions
+        @extends(ParametrizedProblem) # needs to be first in order to override for last the methods
         @SyncSetters("truth_problem", "set_mu", "mu")
         @SyncSetters("truth_problem", "set_mu_range", "mu_range")
         class _EIMApproximation(ParametrizedProblem):
@@ -45,6 +46,7 @@ def EIMDecoratedProblem():
             #  @{
 
             ## Default initialization of members
+            @override
             def __init__(self, V, truth_problem, parametrized_expression, folder_prefix):
                 # Call the parent initialization
                 ParametrizedProblem.__init__(self, folder_prefix)
@@ -148,11 +150,11 @@ def EIMDecoratedProblem():
             #  @}
             ########################### end - I/O - end ########################### 
         
-        class EIMDecoratedProblem_Class(
-            KeepClassName(ParametrizedProblem_DerivedClass)
-        ):
+        @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
+        class EIMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
             
             ## Default initialization of members
+            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -172,7 +174,7 @@ def EIMDecoratedProblem():
                         for i in range(len(self.separated_forms[term][q].coefficients)):
                             for coeff in self.separated_forms[term][q].coefficients[i]:
                                 if coeff not in self.EIM_approximations:
-                                    self.EIM_approximations[coeff] = _EIMApproximation(self.V, self, coeff, self.name() + "/eim/" + str(coeff.hash_code))
+                                    self.EIM_approximations[coeff] = _EIMApproximation(self.V, self, coeff, type(self).__name__ + "/eim/" + str(coeff.hash_code))
                                     
                 # Signal to the factory that this problem has been decorated
                 if not hasattr(self, "_problem_decorators"):
@@ -183,6 +185,7 @@ def EIMDecoratedProblem():
             ## @defgroup ProblemSpecific Problem specific methods
             #  @{
             
+            @override
             def assemble_operator(self, term):
                 if term in self.terms:
                     eim_forms = list()
@@ -206,6 +209,7 @@ def EIMDecoratedProblem():
                 else:
                     return ParametrizedProblem_DerivedClass.assemble_operator(self, term) # may raise an exception
                     
+            @override
             def compute_theta(self, term):
                 original_thetas = ParametrizedProblem_DerivedClass.compute_theta(self, term) # may raise an exception
                 if term in self.terms:

@@ -26,7 +26,7 @@ from __future__ import print_function
 from numpy import log, exp, mean # for error analysis
 import os # for path and makedir
 from RBniCS.linear_algebra import ProperOrthogonalDecomposition
-from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable, print
+from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable, print, extends, override
 from RBniCS.reduction_methods.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -34,6 +34,7 @@ from RBniCS.reduction_methods.elliptic_coercive_reduction_method import Elliptic
 #
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
+@extends(EllipticCoerciveReductionMethod)
 class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     """This class implements a reduced order method based on a POD (Proper
     Orthogonal Decomposition) Galerkin approach. In particular, it
@@ -59,6 +60,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     #  @{
     
     ## Default initialization of members
+    @override
     def __init__(self, truth_problem):
         # Call the parent initialization
         EllipticCoerciveReductionMethod.__init__(self, truth_problem)
@@ -78,6 +80,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     #  @{
     
     ## Perform the offline phase of the reduced order model
+    @override
     def offline(self):
         need_to_do_offline_stage = self._init_offline()
         if not need_to_do_offline_stage:
@@ -143,6 +146,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
+    @override
     def error_analysis(self, N=None):
         if N is None:
             N = self.reduced_problem.N

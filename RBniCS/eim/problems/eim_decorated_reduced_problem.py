@@ -22,10 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.io_utils import extends, override
+
 def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     
+    @extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
     class EIMDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
         ## Default initialization of members
+        @override
         def __init__(self, truth_problem):
             # Call the parent initialization
             ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)

@@ -26,11 +26,13 @@ from abc import ABCMeta, abstractmethod
 from dolfin import Function
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, product, transpose, solve, sum
+from RBniCS.io_utils import extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem
 #
 # Base class containing the definition of elliptic coercive problems
+@extends(ParametrizedProblem)
 class EllipticCoerciveProblem(ParametrizedProblem):
     """This class defines and implement variables and methods needed for
     solving an elliptic and coercive problem. This class specializes
@@ -88,9 +90,10 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #  @{
     
     ## Default initialization of members
+    @override
     def __init__(self, V, **kwargs):
         # Call to parent
-        ParametrizedProblem.__init__(self, self.name())
+        ParametrizedProblem.__init__(self, type(self).__name__)
         
         # Input arguments
         self.V = V
@@ -160,11 +163,6 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## Export solution in VTK format
     def export_solution(self, solution, folder, filename):
         self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
-        
-    ## Get the name of the problem, to be used as a prefix for output folders
-    @classmethod
-    def name(cls):
-        return cls.__name__
         
     #  @}
     ########################### end - I/O - end ########################### 

@@ -26,10 +26,12 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from RBniCS.io_utils import ExportableList
+from RBniCS.io_utils import ExportableList, extends, override
 from dolfin import Point
 
+@extends(ExportableList)
 class PointsList(ExportableList):
+    @override
     def __init__(self, mesh):
         ExportableList.__init__(self, "pickle")
         # Auxiliary list to store processor_id
@@ -37,17 +39,20 @@ class PointsList(ExportableList):
         # To get local points
         self.bounding_box_tree = mesh.bounding_box_tree()
         
+    @override
     def load(self, directory, filename):
         return_value = ExportableList.load(self, directory, filename)
         # Make sure to update the processor ids
         for i in range(len(self)):
             self.processors_id.append(self._get_processor_id(ExportableList.__getitem__(self, i)))
         
+    @override
     def append(self, point):
         ExportableList.append(self, point)
         # Make sure to update the processor ids
         self.processors_id.append(self._get_processor_id(point))
         
+    @override
     def __getitem__(self, key):
         point = ExportableList.__getitem__(self, key)
         processor_id = self.processors_id[key]

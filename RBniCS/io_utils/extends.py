@@ -22,13 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def KeepClassName(Parent):
-    
-    class KeepClassName_Class(Parent):
-        @classmethod
-        def name(cls):
-            assert len(cls.__bases__) == 1
-            return cls.__bases__[0].name()
-    
-    return KeepClassName_Class
+def extends(Parent, preserve_class_name=False):
+    def extends_Decorator(Child):
+        
+        class extends_Class(Child):
+            pass # TODO save the class documentation from the parent class
+        
+        if preserve_class_name:
+            setattr(extends_Class, "__name__", Parent.__name__)
+        
+        return extends_Class
+    return extends_Decorator
 

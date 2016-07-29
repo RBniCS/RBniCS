@@ -27,8 +27,12 @@
 #  @{
 
 from RBniCS.io_utils.exportable_list import ExportableList
+from RBniCS.io_utils.extends import extends
+from RBniCS.io_utils.override import override
 
+@extends(ExportableList)
 class GreedyErrorEstimatorsList(ExportableList):
+    @override
     def __init__(self):
         ExportableList.__init__(self, "text")
             

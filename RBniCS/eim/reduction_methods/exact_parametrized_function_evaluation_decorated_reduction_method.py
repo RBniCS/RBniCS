@@ -26,13 +26,18 @@ from numpy import log, exp, mean, sqrt # for error analysis
 import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
+from RBniCS.io_utils import extends, override
 
 def ExactParametrizedFunctionEvaluationDecoratedReductionMethod(ReductionMethod_DerivedClass):
+    
+    @extends(ReductionMethod_DerivedClass, preserve_class_name=True)
     class ExactParametrizedFunctionEvaluationDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+        @override
         def __init__(self, truth_problem):
             # Call the parent initialization
             ReductionMethod_DerivedClass.__init__(self, truth_problem)
         
+        @override
         def set_xi_train(self, ntrain, enable_import=True, sampling=None):
             import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
             # Since exact evaluation is required, we cannot use a distributed xi_train

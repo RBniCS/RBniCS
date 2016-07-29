@@ -28,8 +28,11 @@ from math import ceil
 from numpy import linspace
 import itertools
 from RBniCS.sampling.distributions import Distribution
+from RBniCS.io_utils import extends, override
 
+@extends(Distribution)
 class EquispacedDistribution(Distribution):
+    @override
     def sample(self, box, n):
         n_P_root = int(ceil(n**(1./len(box))))
         grid = list() # of linspaces

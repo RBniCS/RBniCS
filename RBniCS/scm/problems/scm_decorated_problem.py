@@ -32,7 +32,7 @@ import operator # to find closest parameters
 from math import sqrt
 from RBniCS.linear_algebra import sum, product
 from RBniCS.problems import ParametrizedProblem
-from RBniCS.io_utils import KeepClassName, SyncSetters, print
+from RBniCS.io_utils import SyncSetters, print, extends, override
 from RBniCS.scm.io_utils import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
@@ -51,6 +51,7 @@ def SCMDecoratedProblem(
         ## @class SCM
         #
         # Successive constraint method for the approximation of the coercivity constant
+        @extends(ParametrizedProblem) # needs to be first in order to override for last the methods
         @SyncSetters("truth_problem", "set_mu", "mu")
         @SyncSetters("truth_problem", "set_mu_range", "mu_range")
         class _SCMApproximation(ParametrizedProblem):
@@ -60,6 +61,7 @@ def SCMDecoratedProblem(
             #  @{
         
             ## Default initialization of members
+            @override
             def __init__(self, truth_problem, folder_prefix):
                 # Call the parent initialization
                 ParametrizedProblem.__init__(self, folder_prefix)
@@ -313,15 +315,15 @@ def SCMDecoratedProblem(
             #  @}
             ########################### end - I/O - end ###########################
         
-        class SCMDecoratedProblem_Class(
-            KeepClassName(ParametrizedProblem_DerivedClass)
-        ):
+        @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
+        class SCMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
             ## Default initialization of members
+            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for SCM reduced problems
-                self.SCM_approximation = _SCMApproximation(self, self.name() + "/scm")
+                self.SCM_approximation = _SCMApproximation(self, type(self).__name__ + "/scm")
                 
                 # Signal to the factory that this problem has been decorated
                 if not hasattr(self, "_problem_decorators"):
@@ -329,6 +331,7 @@ def SCMDecoratedProblem(
                 self._problem_decorators["SCM"] = True
                 
             ## Return the alpha_lower bound.
+            @override
             def get_stability_factor(self):
                 return self.SCM_approximation.get_stability_factor_lower_bound(self.mu)
 

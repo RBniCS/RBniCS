@@ -26,8 +26,11 @@
 
 from numpy import random
 from RBniCS.sampling.distributions import Distribution
+from RBniCS.io_utils import extends, override
 
+@extends(Distribution)
 class UniformDistribution(Distribution):
+    @override
     def sample(self, box, n):
         xi = list() # of tuples
         for i in range(n):

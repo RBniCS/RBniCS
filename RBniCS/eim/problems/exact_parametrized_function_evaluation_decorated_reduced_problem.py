@@ -26,13 +26,16 @@ from __future__ import print_function
 import types
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, FunctionsList
-from RBniCS.io_utils import print
+from RBniCS.io_utils import print, extends, override
 
 def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     
     def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):
         if hasattr(ReducedParametrizedProblem_DecoratedClass, "assemble_error_estimation_operators"):
+        
+            @extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
             class _AlsoDecorateErrorEstimationOperators_Class(ReducedParametrizedProblem_DecoratedClass):
+                @override
                 def __init__(self, truth_problem):
                     # Call the parent initialization
                     ReducedParametrizedProblem_DecoratedClass.__init__(self, truth_problem)
@@ -45,6 +48,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                 #  @{
             
                 ## Initialize data structures required for the online phase
+                @override
                 def init(self, current_stage="online"):
                     ReducedParametrizedProblem_DecoratedClass.init(self, current_stage)
                     # The offline/online separation does not hold anymore, so in 
@@ -60,6 +64,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                             self._disable_load_and_save_for_online_storage(self.riesz_product[term1 + term2], self.folder["error_estimation"])
                                                     
                 ## Return the numerator of the error bound for the current solution
+                @override
                 def estimate_error(self):
                     # The offline/online separation does not hold anymore, so, similarly to what we did in
                     # the truth problem, also at the reduced-order level we need to re-assemble operators,
@@ -73,6 +78,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                     return ReducedParametrizedProblem_DecoratedClass.estimate_error(self)
                     
                 ## Return the numerator of the error bound for the current output
+                @override
                 def estimate_error_output(self):
                     # The offline/online separation does not hold anymore, so, similarly to what we did in
                     # the truth problem, also at the reduced-order level we need to re-assemble operators,
@@ -95,6 +101,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                 #  @{
                     
                 ## Build operators for error estimation
+                @override
                 def build_error_estimation_operators(self, current_stage="offline"):
                     def log(string):
                         from dolfin import log, PROGRESS
@@ -119,6 +126,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
                 #  @{
                     
                 ## Assemble operators for error estimation
+                @override
                 def assemble_error_estimation_operators(self, term, current_stage="online"):
                     if current_stage == "online": # *cannot* load from file
                         # The offline/online separation does not hold anymore, so we need to re-assemble operators,
@@ -139,9 +147,11 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
         else:
             return ReducedParametrizedProblem_DecoratedClass
            
+    @extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     @_AlsoDecorateErrorEstimationOperators
     class ExactParametrizedFunctionEvaluationDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
         ## Default initialization of members
+        @override
         def __init__(self, truth_problem):
             # Call the parent initialization
             ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
@@ -154,6 +164,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
         #  @{
     
         ## Initialize data structures required for the online phase
+        @override
         def init(self, current_stage="online"):
             self._init_basis_functions(current_stage)
             # The offline/online separation does not hold anymore, so in assemble_operator()
@@ -181,6 +192,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
             
         
         # Perform an online solve (internal)
+        @override
         def _solve(self, N):
             # The offline/online separation does not hold anymore, so, similarly to what we did in
             # the truth problem, also at the reduced-order level we need to re-assemble operators,
@@ -203,6 +215,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
         #  @{
             
         ## Assemble the reduced order affine expansion.
+        @override
         def build_reduced_operators(self, current_stage="offline"):
             def log(string):
                 from dolfin import log, PROGRESS
@@ -223,6 +236,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
         #  @{
             
         ## Assemble the reduced order affine expansion
+        @override
         def assemble_operator(self, term, current_stage="online"):
             if current_stage == "online": # *cannot* load from file
                 # The offline/online separation does not hold anymore, so we need to re-assemble operators,

@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems import ParametrizedProblem
-from RBniCS.io_utils import KeepClassName
+from RBniCS.io_utils import extends, override
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 def ExactCoercivityConstantDecoratedProblem(
@@ -32,10 +32,10 @@ def ExactCoercivityConstantDecoratedProblem(
 ):
     def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         
-        class ExactCoercivityConstantDecoratedProblem_Class(
-            KeepClassName(ParametrizedProblem_DerivedClass)
-        ):
+        @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
+        class ExactCoercivityConstantDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
             ## Default initialization of members
+            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -48,6 +48,7 @@ def ExactCoercivityConstantDecoratedProblem(
                 self._problem_decorators["ExactCoercivityConstant"] = True
                 
             ## Initialize data structures required for the online phase
+            @override
             def init(self):
                 # Call to Parent
                 ParametrizedProblem_DerivedClass.init(self)
@@ -55,6 +56,7 @@ def ExactCoercivityConstantDecoratedProblem(
                 self.exact_coercivity_constant_calculator.init()
             
             ## Return the alpha_lower bound.
+            @override
             def get_stability_factor(self):
                 (minimum_eigenvalue, _) = self.exact_coercivity_constant_calculator.solve()
                 return minimum_eigenvalue

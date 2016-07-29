@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function, ALE
-from RBniCS.io_utils import KeepClassName, ParametrizedExpression, print
+from RBniCS.io_utils import ParametrizedExpression, print, extends, override
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
     def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
@@ -32,9 +32,8 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
         ## @class ShapeParametrizationDecoratedProblem
         #
         # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-        class ShapeParametrizationDecoratedProblem_Class(
-            KeepClassName(ParametrizedProblem_DerivedClass)
-        ):
+        @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
+        class ShapeParametrizationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
         
             ###########################     CONSTRUCTORS     ########################### 
             ## @defgroup Constructors Methods related to the construction of the SCM object
@@ -44,6 +43,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
             # The shape parametrization expression is a list of tuples. The i-th list element
             # corresponds to shape parametrization of the i-th subdomain, the j-th tuple element
             # corresponds to the expression of the j-th component of the shape parametrization
+            @override
             def __init__(self, V, **kwargs):
                 # Call the standard initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -81,6 +81,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
             #  @{
             
             ## Initialize data structures required for the offline phase
+            @override
             def init(self):
                 ParametrizedProblem_DerivedClass.init(self)
                 # Preprocess the shape parametrization expression to convert it in the displacement expression
@@ -112,12 +113,14 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
             #  @{
                 
             ## Deform the mesh as a function of the geometrical parameters
+            @override
             def move_mesh(self):
                 print("moving mesh")
                 displacement = self.compute_displacement()
                 ALE.move(self.mesh, displacement)
             
             ## Restore the reference mesh
+            @override
             def reset_reference(self):
                 print("back to the reference mesh")
                 self.mesh.coordinates()[:] = self.reference_coordinates

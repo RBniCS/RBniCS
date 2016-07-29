@@ -28,16 +28,16 @@ import shutil # for rm
 import random # to randomize selection in case of equal error bound
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage
-from RBniCS.io_utils import KeepClassName
+from RBniCS.io_utils import extends, override
 
 def ExactParametrizedFunctionEvaluationDecoratedProblem():
     def ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         
-        class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(
-            KeepClassName(ParametrizedProblem_DerivedClass)
-        ):
+        @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
+        class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
             
             ## Default initialization of members
+            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -54,6 +54,7 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem():
             #  @{
             
             ## Perform a truth solve
+            @override
             def solve(self):
                 # The offline/online separation does not hold anymore, so we need to re-assemble operators,
                 # because the assemble_operator() *may* return parameter dependent operators.

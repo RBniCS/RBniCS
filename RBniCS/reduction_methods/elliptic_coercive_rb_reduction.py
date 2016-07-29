@@ -26,7 +26,7 @@ from __future__ import print_function
 import os # for path and makedir
 import shutil # for rm
 from RBniCS.linear_algebra import GramSchmidt
-from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print
+from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print, extends, override
 from RBniCS.reduction_methods.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -34,6 +34,7 @@ from RBniCS.reduction_methods.elliptic_coercive_reduction_method import Elliptic
 #
 # Base class containing the interface of the RB method
 # for (compliant) elliptic coercive problems
+@extends(EllipticCoerciveReductionMethod)
 class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     """This class implements the Certified Reduced Basis Method for
     elliptic and coercive problems. The output of interest are assumed to
@@ -81,6 +82,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     #  @{
     
     ## Default initialization of members
+    @override
     def __init__(self, truth_problem):
         # Call the parent initialization
         EllipticCoerciveReductionMethod.__init__(self, truth_problem)
@@ -102,6 +104,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     #  @{
         
     ## Perform the offline phase of the reduced order model
+    @override
     def offline(self):
         need_to_do_offline_stage = self._init_offline()
         if not need_to_do_offline_stage:
@@ -180,6 +183,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
+    @override
     def error_analysis(self, N=None):
         if N is None:
             N = self.reduced_problem.N

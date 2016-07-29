@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.io_utils import ExportableList, mpi_comm
+from RBniCS.io_utils import ExportableList, mpi_comm, extends, override
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type, OnlineVector
@@ -37,7 +37,9 @@ from RBniCS.linear_algebra.transpose import Vector_Transpose
 # the same as a matrix. Indeed, given a TruthMatrix A, a TruthVector F 
 # and a FunctionsList Z, overriding __mul__ and __rmul__ operators
 # allow to write expressions like transpose(Z)*A*Z and transpose(Z)*F
+@extends(ExportableList)
 class FunctionsList(ExportableList):
+    @override
     def __init__(self, original_list=None):
         ExportableList.__init__(self, "pickle", original_list)
         self._precomputed_slices = dict() # from tuple to AffineExpansionOnlineStorage
@@ -52,7 +54,8 @@ class FunctionsList(ExportableList):
             self._list.extend(functions) # assume that they where already copied
         # Reset precomputed slices
         self._precomputed_slices = dict()
-        
+    
+    @override
     def append(self, functions):
         import warnings
         warnings.warn("Please use the enrich() method that provides a more self explanatory name.")
@@ -63,6 +66,7 @@ class FunctionsList(ExportableList):
         # Reset precomputed slices
         self._precomputed_slices = dict()
         
+    @override
     def load(self, directory, filename, V):
         if self._list: # avoid loading multiple times
             return False
@@ -80,6 +84,7 @@ class FunctionsList(ExportableList):
             self.enrich(fun)
         return True
         
+    @override
     def save(self, directory, filename, V):
         if mpi_comm.rank == 0:
             with open(str(directory) + "/" + filename + ".length", "w") as length:
@@ -118,6 +123,7 @@ class FunctionsList(ExportableList):
         else: # impossible to arrive here anyway, thanks to the assert
             raise TypeError("Invalid arguments in FunctionsList.__mul__.")
             
+    @override
     def __getitem__(self, key):
         if isinstance(key, slice): # e.g. key = :N, return the first N functions
             assert key.start is None and key.step is None

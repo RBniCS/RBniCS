@@ -26,9 +26,11 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from RBniCS.io_utils import ExportableList
+from RBniCS.io_utils import ExportableList, extends, override
 
+@extends(ExportableList)
 class UpperBoundsList(ExportableList):
+    @override
     def __init__(self):
         ExportableList.__init__(self, "pickle")
      

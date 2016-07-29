@@ -23,6 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.io_utils.performance_table import PerformanceTable
+from RBniCS.io_utils.extends import extends
 
+@extends(PerformanceTable)
 class ErrorAnalysisTable(PerformanceTable):
     pass

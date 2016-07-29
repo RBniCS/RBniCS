@@ -27,7 +27,7 @@ import os
 from dolfin import Function, project, vertices
 from RBniCS.reduction_methods import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
-from RBniCS.io_utils import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print, mpi_comm
+from RBniCS.io_utils import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print, mpi_comm, extends, override
 
 def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
 
@@ -35,6 +35,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
     ## @class EIM
     #
     # Empirical interpolation method for the interpolation of parametrized functions
+    @extends(ReductionMethod)
     class _EIMReductionMethod(ReductionMethod):
         
         ###########################     CONSTRUCTORS     ########################### 
@@ -42,6 +43,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         #  @{
         
         ## Default initialization of members
+        @override
         def __init__(self, EIM_approximation, folder_prefix):
             # Call the parent initialization
             ReductionMethod.__init__(self, folder_prefix, EIM_approximation.mu_range)
@@ -63,6 +65,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################
         
+        @override
         def set_xi_train(self, ntrain, enable_import=True, sampling=None):
             import_successful = ReductionMethod.set_xi_train(self, ntrain, enable_import, sampling)
             # Since exact evaluation is required, we cannot use a distributed xi_train
@@ -74,6 +77,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         #  @{
         
         ## Initialize data structures required for the offline phase
+        @override
         def _init_offline(self):
             # Prepare folders and init EIM approximation
             all_folders = Folders()
@@ -89,6 +93,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 return True # offline construction should be carried out
         
         ## Perform the offline phase of EIM
+        @override
         def offline(self):
             need_to_do_offline_stage = self._init_offline()
             if not need_to_do_offline_stage:
@@ -270,6 +275,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         
         # Compute the error of the empirical interpolation approximation with respect to the
         # exact function over the test set
+        @override
         def error_analysis(self, N=None):
             if N is None:
                 N = self.EIM_approximation.N
@@ -310,8 +316,10 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 
-
+    
+    @extends(ReductionMethod_DerivedClass, preserve_class_name=True)
     class EIMDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+        @override
         def __init__(self, truth_problem):
             # Call the parent initialization
             ReductionMethod_DerivedClass.__init__(self, truth_problem)
@@ -320,7 +328,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
             # Preprocess each term in the affine expansions
             for coeff in self.truth_problem.EIM_approximations:
-                self.EIM_reductions[coeff] = _EIMReductionMethod(self.truth_problem.EIM_approximations[coeff], self.truth_problem.name() + "/eim/" + str(coeff.hash_code))
+                self.EIM_reductions[coeff] = _EIMReductionMethod(self.truth_problem.EIM_approximations[coeff], type(self.truth_problem).__name__ + "/eim/" + str(coeff.hash_code))
             
         ###########################     SETTERS     ########################### 
         ## @defgroup Setters Set properties of the reduced order approximation
@@ -329,6 +337,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         # Propagate the values of all setters also to the EIM object
         
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+        @override
         def set_Nmax(self, Nmax, **kwargs):
             ReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             assert "EIM" in kwargs
@@ -348,6 +357,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
 
             
         ## OFFLINE: set the elements in the training set \xi_train.
+        @override
         def set_xi_train(self, ntrain, enable_import=True, sampling=None):
             import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
             # Since exact evaluation is required, we cannot use a distributed xi_train
@@ -358,6 +368,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             return import_successful
             
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
+        @override
         def set_xi_test(self, ntest, enable_import=False, sampling=None):
             import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling)
             for coeff in self.EIM_reductions:
@@ -373,6 +384,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         #  @{
     
         ## Perform the offline phase of the reduced order model
+        @override
         def offline(self):
             # Perform first the EIM offline phase, ...
             bak_first_mu = tuple(list(self.truth_problem.mu))
@@ -391,6 +403,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
     
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the test set
+        @override
         def error_analysis(self, N=None):
             # Perform first the EIM error analysis, ...
             for coeff in self.EIM_reductions:

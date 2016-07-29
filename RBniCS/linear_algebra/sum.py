@@ -30,7 +30,6 @@ from dolfin import DirichletBC
 from RBniCS.linear_algebra.product import _DotProductOutput, _DirichletBCsProductOutput
 
 # sum function to assemble truth/reduced affine expansions. To be used in combination with the product method.
-__std_sum = sum
 def sum(product_output):
     if isinstance(product_output, _DotProductOutput):
         return product_output[0] # sum has been already performed by the dot product
@@ -71,7 +70,8 @@ def sum(product_output):
             )
         return output
     else: # preserve the standard python sum function
-        return __std_sum(product_output)
+        import __builtin__
+        return __builtin__.sum(product_output)
 
 #  @}
 ########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 

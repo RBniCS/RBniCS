@@ -31,8 +31,11 @@ import itertools # for linspace sampling
 import numpy
 from RBniCS.io_utils import ExportableList, mpi_comm
 from RBniCS.sampling.distributions import UniformDistribution
+from RBniCS.io_utils import extends, override
 
+@extends(ExportableList)
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
+    @override
     def __init__(self, box):
         ExportableList.__init__(self, "pickle")
         self.box = box
@@ -46,6 +49,7 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             self._list = sampling.sample(self.box, n)
         self._list = mpi_comm.bcast(self._list, root=0)
         
+    @override
     def load(self, directory, filename):
         result = ExportableList.load(self, directory, filename)
         if not result:
@@ -60,7 +64,7 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
                 return False
         return True
         
-        
+    @override
     def save(self, directory, filename):
         ExportableList.save(self, directory, filename)
         # Also save box

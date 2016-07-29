@@ -26,8 +26,9 @@ from math import sqrt
 from dolfin import adjoint, Function, DirichletBC
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, sum, product, TruthEigenSolver
-from RBniCS.io_utils import SyncSetters
+from RBniCS.io_utils import SyncSetters, extends, override
 
+@extends(ParametrizedProblem) # needs to be first in order to override for last the methods
 @SyncSetters("truth_problem", "set_mu", "mu")
 @SyncSetters("truth_problem", "set_mu_range", "mu_range")
 class ParametrizedHermitianEigenProblem(ParametrizedProblem):
@@ -36,6 +37,7 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
     #  @{
 
     ## Default initialization of members
+    @override
     def __init__(self, truth_problem, term, multiply_by_theta, constrain_eigenvalue, spectrum, eigensolver_parameters):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix="") # this class does not export anything
@@ -67,7 +69,7 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
-        
+    
     def init(self):
         # Condense the symmetric part of the required term
         if isinstance(self.term, tuple):

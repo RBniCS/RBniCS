@@ -22,17 +22,21 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.io_utils import extends, override
+
 def ShapeParametrizationDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
     ## @class ShapeParametrizationDecoratedReducedProblem
     #
     # A decorator class that allows to overload methods related to shape parametrization and mesh motion
+    @extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
     class ShapeParametrizationDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
     
         ###########################     CONSTRUCTORS     ########################### 
         ## @defgroup Constructors Methods related to the construction of the SCM object
         #  @{
         
+        @override
         def __init__(self, truth_problem):
             # Call the standard initialization
             ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
