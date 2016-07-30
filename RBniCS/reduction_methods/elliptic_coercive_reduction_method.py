@@ -24,7 +24,8 @@
 
 import os # for path and makedir
 from RBniCS.reduction_methods.reduction_method import ReductionMethod
-from RBniCS.io_utils import Folders, extends, override
+from RBniCS.utils.io import Folders
+from RBniCS.utils.decorators import extends, override 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase

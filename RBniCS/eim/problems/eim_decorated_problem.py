@@ -26,8 +26,10 @@ from itertools import product as cartesian_product
 from dolfin import Function
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
-from RBniCS.io_utils import SyncSetters, mpi_comm, extends, override
-from RBniCS.eim.io_utils import AffineExpansionSeparatedFormsStorage, PointsList, SeparatedParametrizedForm
+from RBniCS.utils.decorators import SyncSetters, extends, override
+from RBniCS.utils.mpi import mpi_comm
+from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage, PointsList
+from RBniCS.eim.utils.ufl import SeparatedParametrizedForm
 
 def EIMDecoratedProblem():
     def EIMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):

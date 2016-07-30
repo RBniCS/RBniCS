@@ -27,7 +27,7 @@
 #  @{
 
 import os # for path and makedir
-from RBniCS.io_utils.mpi import mpi_comm
+from RBniCS.utils.mpi import mpi_comm
 
 class Folders(dict): # dict from string to string
     

@@ -15,19 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary eim module
+## @file error_analysis_table.py
+#  @brief Type to store error analysis of the reduced order method.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.eim.io_utils.affine_expansion_separated_forms_storage import AffineExpansionSeparatedFormsStorage
-from RBniCS.eim.io_utils.points_list import PointsList
-from RBniCS.eim.io_utils.separated_parametrized_form import SeparatedParametrizedForm
+from RBniCS.utils.io.performance_table import PerformanceTable
+from RBniCS.utils.decorators import extends
 
-__all__ = [
-    'AffineExpansionSeparatedFormsStorage',
-    'PointsList',
-    'SeparatedParametrizedForm'
-]
+@extends(PerformanceTable)
+class ErrorAnalysisTable(PerformanceTable):
+    pass

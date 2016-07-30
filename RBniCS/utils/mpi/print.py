@@ -28,7 +28,7 @@
 
 from __future__ import print_function
 import __builtin__
-from RBniCS.io_utils.mpi import mpi_comm
+from RBniCS.utils.mpi.mpi import mpi_comm
 
 # Override the print() method to print only from process 0 in parallel
 def print(*args, **kwargs):

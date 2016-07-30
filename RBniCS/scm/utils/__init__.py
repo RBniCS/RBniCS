@@ -15,25 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file __init__.py
+#  @brief Init file for auxiliary scm module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-###########################     OFFLINE STAGE     ########################### 
-## @defgroup OfflineStage Methods related to the offline stage
-#  @{
-
-from RBniCS.io_utils import ExportableList, extends, override
-
-@extends(ExportableList)
-class UpperBoundsList(ExportableList):
-    @override
-    def __init__(self):
-        ExportableList.__init__(self, "pickle")
-     
-#  @}
-########################### end - OFFLINE STAGE - end ########################### 
-

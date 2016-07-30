@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems import ParametrizedProblem
-from RBniCS.io_utils import extends, override
+from RBniCS.utils.decorators import extends, override
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 def ExactCoercivityConstantDecoratedProblem(

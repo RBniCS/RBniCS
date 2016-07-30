@@ -15,23 +15,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary scm module
+## @file functions_list.py
+#  @brief Type for storing a list of FE functions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.scm.io_utils.bounding_box_side_list import BoundingBoxSideList
-from RBniCS.scm.io_utils.coercivity_constants_list import CoercivityConstantsList
-from RBniCS.scm.io_utils.eigen_vectors_list import EigenVectorsList
-from RBniCS.scm.io_utils.training_set_indices import TrainingSetIndices
-from RBniCS.scm.io_utils.upper_bounds_list import UpperBoundsList
+###########################     OFFLINE STAGE     ########################### 
+## @defgroup OfflineStage Methods related to the offline stage
+#  @{
 
-__all__ = [
-    'BoundingBoxSideList',
-    'CoercivityConstantsList',
-    'EigenVectorsList',
-    'TrainingSetIndices',
-    'UpperBoundsList'
-]
+from RBniCS.utils.io import ExportableList
+from RBniCS.utils.decorators import extends, override
+
+@extends(ExportableList)
+class CoercivityConstantsList(ExportableList):
+    @override
+    def __init__(self, size=None):
+        ExportableList.__init__(self, "pickle")
+        if size is not None:
+            self._list.extend([0. for x in range(size)])
+     
+#  @}
+########################### end - OFFLINE STAGE - end ########################### 
+

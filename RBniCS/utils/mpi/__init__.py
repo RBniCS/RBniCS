@@ -15,27 +15,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file __init__.py
+#  @brief Init file for auxiliary I/O module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-###########################     OFFLINE STAGE     ########################### 
-## @defgroup OfflineStage Methods related to the offline stage
-#  @{
+from __future__ import print_function
+from RBniCS.utils.mpi.mpi import mpi_comm
+from RBniCS.utils.mpi.print import print
 
-from RBniCS.io_utils import ExportableList, extends, override
-
-@extends(ExportableList)
-class CoercivityConstantsList(ExportableList):
-    @override
-    def __init__(self, size=None):
-        ExportableList.__init__(self, "pickle")
-        if size is not None:
-            self._list.extend([0. for x in range(size)])
-     
-#  @}
-########################### end - OFFLINE STAGE - end ########################### 
-
+__all__ = [
+    'mpi_comm',
+    'print'
+]

@@ -27,7 +27,9 @@ import os
 from dolfin import Function
 from RBniCS.linear_algebra import transpose, OnlineVector
 from RBniCS.reduction_methods import ReductionMethod
-from RBniCS.io_utils import ErrorAnalysisTable, SpeedupAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, print, extends, override
+from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList 
+from RBniCS.utils.mpi import print
+from RBniCS.utils.decorators import extends, override
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):

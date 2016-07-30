@@ -26,17 +26,17 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from RBniCS.io_utils.exportable_list import ExportableList
-from RBniCS.io_utils.extends import extends
-from RBniCS.io_utils.override import override
+from RBniCS.utils.io import ExportableList
+from RBniCS.utils.decorators import extends, override
 
 @extends(ExportableList)
-class GreedyErrorEstimatorsList(ExportableList):
+class BoundingBoxSideList(ExportableList):
     @override
-    def __init__(self):
-        ExportableList.__init__(self, "text")
+    def __init__(self, size=None):
+        ExportableList.__init__(self, "pickle")
+        if size is not None:
+            self._list.extend([0. for x in range(size)])
             
-     
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 
 

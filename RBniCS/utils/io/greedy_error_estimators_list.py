@@ -15,32 +15,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file distribution.py
-#  @brief Type for distribution
+## @file functions_list.py
+#  @brief Type for storing a list of FE functions.
 #
-#  @author Luca      Venturi  <luca.venturi@sissa.it>
-#  @author Davide    Torlo    <davide.torlo@sissa.it>
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from math import ceil
-from numpy import linspace
-import itertools
-from RBniCS.sampling.distributions import Distribution
+###########################     OFFLINE STAGE     ########################### 
+## @defgroup OfflineStage Methods related to the offline stage
+#  @{
+
+from RBniCS.utils.io.exportable_list import ExportableList
 from RBniCS.utils.decorators import extends, override
 
-@extends(Distribution)
-class EquispacedDistribution(Distribution):
+@extends(ExportableList)
+class GreedyErrorEstimatorsList(ExportableList):
     @override
-    def sample(self, box, n):
-        n_P_root = int(ceil(n**(1./len(box))))
-        grid = list() # of linspaces
-        for p in range(len(box)):
-            grid.append( linspace(box[p][0], box[p][1], num=n_P_root).tolist() )
-        xi_itertools = itertools.product(*grid)
-        xi = list() # of tuples
-        for mu in xi_itertools:
-            xi.append(mu)
-        return xi
-        
+    def __init__(self):
+        ExportableList.__init__(self, "text")
+            
+     
+#  @}
+########################### end - OFFLINE STAGE - end ########################### 
+

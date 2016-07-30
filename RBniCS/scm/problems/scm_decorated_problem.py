@@ -32,8 +32,9 @@ import operator # to find closest parameters
 from math import sqrt
 from RBniCS.linear_algebra import sum, product
 from RBniCS.problems import ParametrizedProblem
-from RBniCS.io_utils import SyncSetters, print, extends, override
-from RBniCS.scm.io_utils import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
+from RBniCS.utils.decorators import SyncSetters, extends, override
+from RBniCS.utils.mpi import print
+from RBniCS.scm.utils.io import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 
 def SCMDecoratedProblem(

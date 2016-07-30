@@ -15,16 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file speedup_analysis_table.py
-#  @brief Type to store speedup analysis of the reduced order method.
+## @file __init__.py
+#  @brief Init file for auxiliary I/O module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-from RBniCS.io_utils.performance_table import PerformanceTable
-from RBniCS.io_utils.extends import extends
-
-@extends(PerformanceTable)
-class SpeedupAnalysisTable(PerformanceTable):
-    pass

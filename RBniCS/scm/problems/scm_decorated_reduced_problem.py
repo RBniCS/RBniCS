@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.io_utils import extends, override
+from RBniCS.utils.decorators import extends, override
 
 def SCMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     

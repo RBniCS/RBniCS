@@ -26,7 +26,7 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from RBniCS.io_utils import extends, override
+from RBniCS.utils.decorators import extends, override
 
 # Declare truth eigen solver type (from FEniCS)
 from dolfin import SLEPcEigenSolver, as_backend_type

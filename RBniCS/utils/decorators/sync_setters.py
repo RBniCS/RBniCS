@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
-from RBniCS.io_utils.extends import extends
-from RBniCS.io_utils.override import override
+from RBniCS.utils.decorators.extends import extends
+from RBniCS.utils.decorators.override import override
 
 def SyncSetters(other_object__name, method__name, private_attribute__name):
     def SyncSetters_Decorator(Parent):

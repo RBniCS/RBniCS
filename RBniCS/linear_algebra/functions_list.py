@@ -22,7 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.io_utils import ExportableList, mpi_comm, extends, override
+from RBniCS.utils.io import ExportableList
+from RBniCS.utils.mpi import mpi_comm
+from RBniCS.utils.decorators import extends, override
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type, OnlineVector

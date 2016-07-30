@@ -28,7 +28,7 @@
 
 import pickle
 import os # for path
-from RBniCS.io_utils.mpi import mpi_comm
+from RBniCS.utils.mpi import mpi_comm
 
 class PickleIO(object):
     

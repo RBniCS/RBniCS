@@ -26,14 +26,15 @@
 ## @defgroup OnlineStage Methods related to the online stage
 #  @{
 
+from numpy import empty as AffineExpansionOnlineStorageContent_Base
+from numpy import nditer as AffineExpansionOnlineStorageContent_Iterator
+from numpy import asmatrix as AffineExpansionOnlineStorageContent_AsMatrix
+from RBniCS.utils.io import NumpyIO as AffineExpansionOnlineStorageContent_IO
+
 # Hide the implementation of the storage of online data structures, with respect to the affine expansion index q.
 # Both vectors over q (e.g. to store reduced order vectors/matrices) and matrices over q (e.g. to store the products
 # of operators representors, as required for the efficient evaluation of error estimators)
 # Requires: access with operator[]
-from numpy import empty as AffineExpansionOnlineStorageContent_Base
-from numpy import nditer as AffineExpansionOnlineStorageContent_Iterator
-from numpy import asmatrix as AffineExpansionOnlineStorageContent_AsMatrix
-from RBniCS.io_utils import NumpyIO as AffineExpansionOnlineStorageContent_IO
 class AffineExpansionOnlineStorage(object):
     def __init__(self, *args):
         self._content = None

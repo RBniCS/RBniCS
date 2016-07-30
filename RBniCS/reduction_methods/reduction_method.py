@@ -24,7 +24,7 @@
 
 from abc import ABCMeta, abstractmethod
 from RBniCS.sampling import ParameterSpaceSubset
-from RBniCS.io_utils import Folders
+from RBniCS.utils.io import Folders
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ReductionMethod

@@ -28,30 +28,28 @@
 
 import os # for path
 import numpy
-from RBniCS.io_utils.mpi import mpi_comm
+from RBniCS.utils.mpi import mpi_comm
 
-class NumpyIO(object):
+class TextIO(object):
     
     ## Load a variable from file
     @staticmethod
     def load_file(directory, filename):
-        return numpy.load(str(directory) + "/" + filename + ".npy")
+        raise NotImplementedError("File loading is not implemented yet for text files")
     
     ## Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
         if mpi_comm.rank == 0:
-            numpy.save(str(directory) + "/" + filename, content)
+            with open(str(directory) + "/" + filename + ".txt", "w") as outfile:
+                for i in range(len(content)):
+                    outfile.write(str(i) + " " + str(content[i]) + "\n")
         mpi_comm.barrier()
             
     ## Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
-        exists = None
-        if mpi_comm.rank == 0:
-            exists = os.path.exists(str(directory) + "/" + filename + ".npy")
-        exists = mpi_comm.bcast(exists, root=0)
-        return exists
+        raise NotImplementedError("There is no need to check if files exists, since file loading is not implemented yet for text files")
 
 #  @}
 ########################### end - I/O - end ########################### 

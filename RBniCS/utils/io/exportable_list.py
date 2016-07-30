@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.io_utils.numpy_io import NumpyIO
-from RBniCS.io_utils.pickle_io import PickleIO
-from RBniCS.io_utils.text_io import TextIO
+from RBniCS.utils.io.numpy_io import NumpyIO
+from RBniCS.utils.io.pickle_io import PickleIO
+from RBniCS.utils.io.text_io import TextIO
 
 ###########################     OFFLINE STAGE     ########################### 
 ## @defgroup OfflineStage Methods related to the offline stage

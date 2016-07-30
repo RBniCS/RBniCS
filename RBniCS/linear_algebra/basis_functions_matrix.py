@@ -27,7 +27,7 @@
 #  @{
 
 from RBniCS.linear_algebra.functions_list import FunctionsList
-from RBniCS.io_utils import extends
+from RBniCS.utils.decorators import extends
 
 @extends(FunctionsList)
 class BasisFunctionsMatrix(FunctionsList):

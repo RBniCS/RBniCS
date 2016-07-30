@@ -26,7 +26,7 @@ from numpy import log, exp, mean, sqrt # for error analysis
 import os # for path and makedir
 import shutil # for rm
 import random # to randomize selection in case of equal error bound
-from RBniCS.io_utils import extends, override
+from RBniCS.utils.decorators import extends, override
 
 def ExactParametrizedFunctionsDecoratedReductionMethod(ReductionMethod_DerivedClass):
     

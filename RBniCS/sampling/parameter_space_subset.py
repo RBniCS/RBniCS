@@ -29,9 +29,10 @@
 # Parameter space subsets
 import itertools # for linspace sampling
 import numpy
-from RBniCS.io_utils import ExportableList, mpi_comm
 from RBniCS.sampling.distributions import UniformDistribution
-from RBniCS.io_utils import extends, override
+from RBniCS.utils.io import ExportableList
+from RBniCS.utils.mpi import mpi_comm
+from RBniCS.utils.decorators import extends, override
 
 @extends(ExportableList)
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples

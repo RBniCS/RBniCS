@@ -28,7 +28,7 @@ import shutil # for rm
 import random # to randomize selection in case of equal error bound
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage
-from RBniCS.io_utils import extends, override
+from RBniCS.utils.decorators import extends, override
 
 def ExactParametrizedFunctionsDecoratedProblem():
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):

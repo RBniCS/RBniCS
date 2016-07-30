@@ -26,7 +26,8 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from RBniCS.io_utils import ExportableList, extends, override
+from RBniCS.utils.io import ExportableList
+from RBniCS.utils.decorators import extends, override
 from dolfin import Point
 
 @extends(ExportableList)
@@ -60,7 +61,7 @@ class PointsList(ExportableList):
         
     def _get_processor_id(self, point):
         from mpi4py.MPI import MAX
-        from RBniCS.io_utils import mpi_comm
+        from RBniCS.utils.mpi import mpi_comm
         is_local = self.bounding_box_tree.collides_entity(Point(point))
         processor_id = -1
         if is_local:

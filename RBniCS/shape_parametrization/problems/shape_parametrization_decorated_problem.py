@@ -24,7 +24,9 @@
 
 from __future__ import print_function
 from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function, ALE
-from RBniCS.io_utils import ParametrizedExpression, print, extends, override
+from RBniCS.utils.ufl import ParametrizedExpression
+from RBniCS.utils.mpi import print
+from RBniCS.utils.decorators import extends, override
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
     def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):

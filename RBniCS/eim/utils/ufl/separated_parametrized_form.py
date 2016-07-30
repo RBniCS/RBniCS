@@ -26,9 +26,8 @@
 ## @defgroup IO Input/output methods
 #  @{
 
-from RBniCS.io_utils import ExportableList
-from RBniCS.io_utils import ParametrizedExpression
-from RBniCS.io_utils import PickleIO
+from RBniCS.utils.io import ExportableList, PickleIO
+from RBniCS.utils.ufl import ParametrizedExpression
 from numpy import ones, zeros
 from dolfin import Constant, Expression, Function
 from dolfin import __version__ as dolfin_version

@@ -37,7 +37,7 @@ assert has_slepc()
 # Import the minimum subset of RBniCS required to run tutorials
 from RBniCS.eim import EIM, ExactParametrizedFunctions
 from RBniCS.factories import ReducedBasis, PODGalerkin
-from RBniCS.io_utils import ParametrizedExpression
+from RBniCS.utils.ufl import ParametrizedExpression
 from RBniCS.problems import EllipticCoerciveProblem
 from RBniCS.sampling import EquispacedDistribution, UniformDistribution
 from RBniCS.scm import SCM, ExactCoercivityConstant
@@ -50,7 +50,7 @@ __all__ = [
     # RBniCS.factories
     'ReducedBasis',
     'PODGalerkin',
-    # RBniCS.io_utils,
+    # RBniCS.utils.ufl,
     'ParametrizedExpression',
     # RBniCS.problems
     'EllipticCoerciveProblem',

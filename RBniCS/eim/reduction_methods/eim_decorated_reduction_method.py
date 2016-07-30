@@ -27,7 +27,9 @@ import os
 from dolfin import Function, project, vertices
 from RBniCS.reduction_methods import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
-from RBniCS.io_utils import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, print, mpi_comm, extends, override
+from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
+from RBniCS.utils.mpi import print, mpi_comm
+from RBniCS.utils.decorators import extends, override
 
 def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
 

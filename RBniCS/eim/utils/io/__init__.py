@@ -15,32 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file distribution.py
-#  @brief Type for distribution
+## @file __init__.py
+#  @brief Init file for auxiliary eim module
 #
-#  @author Luca      Venturi  <luca.venturi@sissa.it>
-#  @author Davide    Torlo    <davide.torlo@sissa.it>
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from math import ceil
-from numpy import linspace
-import itertools
-from RBniCS.sampling.distributions import Distribution
-from RBniCS.utils.decorators import extends, override
+from RBniCS.eim.utils.io.affine_expansion_separated_forms_storage import AffineExpansionSeparatedFormsStorage
+from RBniCS.eim.utils.io.points_list import PointsList
 
-@extends(Distribution)
-class EquispacedDistribution(Distribution):
-    @override
-    def sample(self, box, n):
-        n_P_root = int(ceil(n**(1./len(box))))
-        grid = list() # of linspaces
-        for p in range(len(box)):
-            grid.append( linspace(box[p][0], box[p][1], num=n_P_root).tolist() )
-        xi_itertools = itertools.product(*grid)
-        xi = list() # of tuples
-        for mu in xi_itertools:
-            xi.append(mu)
-        return xi
-        
+__all__ = [
+    'AffineExpansionSeparatedFormsStorage',
+    'PointsList'
+]

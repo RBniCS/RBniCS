@@ -31,8 +31,8 @@ from __future__ import print_function
 # Declare reduced eigen solver type
 from numpy import real
 from numpy.linalg import eig as OnlineEigenSolver_Impl
-from RBniCS.io_utils.mpi import mpi_comm
-from RBniCS.io_utils.print import print
+from RBniCS.utils.mpi.mpi import mpi_comm
+from RBniCS.utils.mpi.print import print
 
 class OnlineEigenSolver(object):
     def __init__(self, A = None, B = None):
