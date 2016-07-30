@@ -28,10 +28,10 @@ import shutil # for rm
 import random # to randomize selection in case of equal error bound
 from RBniCS.io_utils import extends, override
 
-def ExactParametrizedFunctionEvaluationDecoratedReductionMethod(ReductionMethod_DerivedClass):
+def ExactParametrizedFunctionsDecoratedReductionMethod(ReductionMethod_DerivedClass):
     
     @extends(ReductionMethod_DerivedClass, preserve_class_name=True)
-    class ExactParametrizedFunctionEvaluationDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+    class ExactParametrizedFunctionsDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem):
             # Call the parent initialization
@@ -45,5 +45,5 @@ def ExactParametrizedFunctionEvaluationDecoratedReductionMethod(ReductionMethod_
             return import_successful
         
     # return value (a class) for the decorator
-    return ExactParametrizedFunctionEvaluationDecoratedReductionMethod_Class
+    return ExactParametrizedFunctionsDecoratedReductionMethod_Class
     

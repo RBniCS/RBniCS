@@ -74,7 +74,7 @@ def PODGalerkin(truth_problem):
 # Decorator to add EIM or SCM, as required
 def _DecoratedReductionMethod_TypeFactory(truth_problem):
     from RBniCS.eim.reduction_methods import EIMDecoratedReductionMethod
-    from RBniCS.eim.reduction_methods import ExactParametrizedFunctionEvaluationDecoratedReductionMethod
+    from RBniCS.eim.reduction_methods import ExactParametrizedFunctionsDecoratedReductionMethod
     from RBniCS.scm.reduction_methods import SCMDecoratedReductionMethod
     from RBniCS.scm.reduction_methods import ExactCoercivityConstantDecoratedReductionMethod
     
@@ -84,8 +84,8 @@ def _DecoratedReductionMethod_TypeFactory(truth_problem):
             problem_decorators = truth_problem._problem_decorators
             if "EIM" in problem_decorators and problem_decorators["EIM"]:
                 DecoratedReductionMethod_Type = EIMDecoratedReductionMethod(DecoratedReductionMethod_Type)
-            if "ExactParametrizedFunctionEvaluation" in problem_decorators and problem_decorators["ExactParametrizedFunctionEvaluation"]:
-                DecoratedReductionMethod_Type = ExactParametrizedFunctionEvaluationDecoratedReductionMethod(DecoratedReductionMethod_Type)
+            if "ExactParametrizedFunctions" in problem_decorators and problem_decorators["ExactParametrizedFunctions"]:
+                DecoratedReductionMethod_Type = ExactParametrizedFunctionsDecoratedReductionMethod(DecoratedReductionMethod_Type)
             if "SCM" in problem_decorators and problem_decorators["SCM"]:
                 DecoratedReductionMethod_Type = SCMDecoratedReductionMethod(DecoratedReductionMethod_Type)
             if "ExactCoercivityConstant" in problem_decorators and problem_decorators["ExactCoercivityConstant"]:

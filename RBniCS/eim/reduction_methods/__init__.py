@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.eim.reduction_methods.eim_decorated_reduction_method import EIMDecoratedReductionMethod
-from RBniCS.eim.reduction_methods.exact_parametrized_function_evaluation_decorated_reduction_method import ExactParametrizedFunctionEvaluationDecoratedReductionMethod
+from RBniCS.eim.reduction_methods.exact_parametrized_functions_decorated_reduction_method import ExactParametrizedFunctionsDecoratedReductionMethod
 
 __all__ = [
     'EIMDecoratedReductionMethod',
-    'ExactParametrizedFunctionEvaluationDecoratedReductionMethod'
+    'ExactParametrizedFunctionsDecoratedReductionMethod'
 ]

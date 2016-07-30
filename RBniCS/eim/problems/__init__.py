@@ -24,12 +24,12 @@
 
 from RBniCS.eim.problems.eim_decorated_problem import EIM #, EIMDecoratedProblem # not needed
 from RBniCS.eim.problems.eim_decorated_reduced_problem import EIMDecoratedReducedProblem
-from RBniCS.eim.problems.exact_parametrized_function_evaluation_decorated_problem import ExactParametrizedFunctionEvaluation #, ExactParametrizedFunctionEvaluationDecoratedProblem # not needed
-from RBniCS.eim.problems.exact_parametrized_function_evaluation_decorated_reduced_problem import ExactParametrizedFunctionEvaluationDecoratedReducedProblem
+from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions #, ExactParametrizedFunctionsDecoratedProblem # not needed
+from RBniCS.eim.problems.exact_parametrized_functions_decorated_reduced_problem import ExactParametrizedFunctionsDecoratedReducedProblem
 
 __all__ = [
     'EIM',
     'EIMDecoratedReducedProblem',
-    'ExactParametrizedFunctionEvaluation',
-    'ExactParametrizedFunctionEvaluationDecoratedReducedProblem'
+    'ExactParametrizedFunctions',
+    'ExactParametrizedFunctionsDecoratedReducedProblem'
 ]

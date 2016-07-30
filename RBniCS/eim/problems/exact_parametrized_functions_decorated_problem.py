@@ -30,11 +30,11 @@ from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage
 from RBniCS.io_utils import extends, override
 
-def ExactParametrizedFunctionEvaluationDecoratedProblem():
-    def ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
+def ExactParametrizedFunctionsDecoratedProblem():
+    def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         
         @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
-        class ExactParametrizedFunctionEvaluationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
             
             ## Default initialization of members
             @override
@@ -47,7 +47,7 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem():
                 # Signal to the factory that this problem has been decorated
                 if not hasattr(self, "_problem_decorators"):
                     self._problem_decorators = dict() # string to bool
-                self._problem_decorators["ExactParametrizedFunctionEvaluation"] = True
+                self._problem_decorators["ExactParametrizedFunctions"] = True
             
             ###########################     OFFLINE STAGE     ########################### 
             ## @defgroup OfflineStage Methods related to the offline stage
@@ -68,10 +68,10 @@ def ExactParametrizedFunctionEvaluationDecoratedProblem():
             ########################### end - OFFLINE STAGE - end ########################### 
             
         # return value (a class) for the decorator
-        return ExactParametrizedFunctionEvaluationDecoratedProblem_Class
+        return ExactParametrizedFunctionsDecoratedProblem_Class
         
     # return the decorator itself
-    return ExactParametrizedFunctionEvaluationDecoratedProblem_Decorator
+    return ExactParametrizedFunctionsDecoratedProblem_Decorator
     
 # For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
-ExactParametrizedFunctionEvaluation = ExactParametrizedFunctionEvaluationDecoratedProblem
+ExactParametrizedFunctions = ExactParametrizedFunctionsDecoratedProblem

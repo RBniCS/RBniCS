@@ -28,7 +28,7 @@ from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, FunctionsList
 from RBniCS.io_utils import print, extends, override
 
-def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
+def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     
     def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):
         if hasattr(ReducedParametrizedProblem_DecoratedClass, "assemble_error_estimation_operators"):
@@ -149,7 +149,7 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
            
     @extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     @_AlsoDecorateErrorEstimationOperators
-    class ExactParametrizedFunctionEvaluationDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
+    class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
         ## Default initialization of members
         @override
         def __init__(self, truth_problem):
@@ -253,4 +253,4 @@ def ExactParametrizedFunctionEvaluationDecoratedReducedProblem(ReducedParametriz
         ########################### end - PROBLEM SPECIFIC - end ########################### 
         
     # return value (a class) for the decorator
-    return ExactParametrizedFunctionEvaluationDecoratedReducedProblem_Class
+    return ExactParametrizedFunctionsDecoratedReducedProblem_Class

@@ -53,7 +53,7 @@ def ReducedProblemFactory(truth_problem, reduction_method):
 # Decorator to add EIM or SCM, as required
 def _DecoratedReducedProblem_TypeFactory(truth_problem):
     from RBniCS.eim.problems import EIMDecoratedReducedProblem
-    from RBniCS.eim.problems import ExactParametrizedFunctionEvaluationDecoratedReducedProblem
+    from RBniCS.eim.problems import ExactParametrizedFunctionsDecoratedReducedProblem
     from RBniCS.scm.problems import SCMDecoratedReducedProblem
     from RBniCS.scm.problems import ExactCoercivityConstantDecoratedReducedProblem
     from RBniCS.shape_parametrization.problems import ShapeParametrizationDecoratedReducedProblem
@@ -64,8 +64,8 @@ def _DecoratedReducedProblem_TypeFactory(truth_problem):
             problem_decorators = truth_problem._problem_decorators
             if "EIM" in problem_decorators and problem_decorators["EIM"]:
                 DecoratedReducedProblem_Type = EIMDecoratedReducedProblem(DecoratedReducedProblem_Type)
-            if "ExactParametrizedFunctionEvaluation" in problem_decorators and problem_decorators["ExactParametrizedFunctionEvaluation"]:
-                DecoratedReducedProblem_Type = ExactParametrizedFunctionEvaluationDecoratedReducedProblem(DecoratedReducedProblem_Type)
+            if "ExactParametrizedFunctions" in problem_decorators and problem_decorators["ExactParametrizedFunctions"]:
+                DecoratedReducedProblem_Type = ExactParametrizedFunctionsDecoratedReducedProblem(DecoratedReducedProblem_Type)
             if "SCM" in problem_decorators and problem_decorators["SCM"]:
                 DecoratedReducedProblem_Type = SCMDecoratedReducedProblem(DecoratedReducedProblem_Type)
             if "ExactCoercivityConstant" in problem_decorators and problem_decorators["ExactCoercivityConstant"]:
