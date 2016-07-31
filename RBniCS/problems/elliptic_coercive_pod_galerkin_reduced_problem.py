@@ -23,14 +23,17 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from RBniCS.utils.decorators import extends
+from RBniCS.utils.decorators import Extends, ReducedProblemFor
+from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.reduction_methods import EllipticCoercivePODGalerkinReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@extends(EllipticCoerciveReducedProblem)
+@Extends(EllipticCoerciveReducedProblem) # needs to be first in order to override for last the methods
+@ReducedProblemFor(EllipticCoerciveProblem, EllipticCoercivePODGalerkinReduction)
 class EllipticCoercivePODGalerkinReducedProblem(EllipticCoerciveReducedProblem):
     pass
         

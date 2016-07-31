@@ -28,9 +28,9 @@ from math import ceil
 from numpy import linspace
 import itertools
 from RBniCS.sampling.distributions import Distribution
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override
 
-@extends(Distribution)
+@Extends(Distribution)
 class EquispacedDistribution(Distribution):
     @override
     def sample(self, box, n):

@@ -29,15 +29,18 @@ from math import sqrt
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, OnlineVector, product, transpose, solve, sum
-from RBniCS.utils.decorators import SyncSetters, extends, override
+from RBniCS.utils.decorators import SyncSetters, Extends, override, ReducedProblemFor
 from RBniCS.utils.mpi import print
+from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.reduction_methods import EllipticCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@extends(ParametrizedProblem) # needs to be first in order to override for last the methods
+@Extends(ParametrizedProblem) # needs to be first in order to override for last the methods
+@ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveReductionMethod)
 @SyncSetters("truth_problem", "set_mu", "mu")
 @SyncSetters("truth_problem", "set_mu_range", "mu_range")
 class EllipticCoerciveReducedProblem(ParametrizedProblem):

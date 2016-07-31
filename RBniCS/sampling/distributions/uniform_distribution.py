@@ -26,9 +26,9 @@
 
 from numpy import random
 from RBniCS.sampling.distributions import Distribution
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override
 
-@extends(Distribution)
+@Extends(Distribution)
 class UniformDistribution(Distribution):
     @override
     def sample(self, box, n):

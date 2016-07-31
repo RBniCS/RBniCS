@@ -29,3 +29,11 @@ __all__ = [
     # RBniCS.shape_parametrization.problems
     'ShapeParametrization',
 ]
+
+# Import also reduced problems and reduction methods to make sure that 
+# decorators that fill in algorithm factories are called, but do not 
+# add them to __all__ since they are not class that should be explicitely
+# used in the tutorials
+from RBniCS.shape_parametrization.problems import ShapeParametrizationDecoratedReducedProblem
+from RBniCS.shape_parametrization.reduction_methods import ShapeParametrizationDecoratedReductionMethod
+

@@ -26,9 +26,9 @@ from math import sqrt
 from dolfin import adjoint, Function, DirichletBC
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, sum, product, TruthEigenSolver
-from RBniCS.utils.decorators import SyncSetters, extends, override
+from RBniCS.utils.decorators import SyncSetters, Extends, override
 
-@extends(ParametrizedProblem) # needs to be first in order to override for last the methods
+@Extends(ParametrizedProblem) # needs to be first in order to override for last the methods
 @SyncSetters("truth_problem", "set_mu", "mu")
 @SyncSetters("truth_problem", "set_mu_range", "mu_range")
 class ParametrizedHermitianEigenProblem(ParametrizedProblem):

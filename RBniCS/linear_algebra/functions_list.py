@@ -24,7 +24,7 @@
 
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.mpi import mpi_comm
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type, OnlineVector
@@ -39,7 +39,7 @@ from RBniCS.linear_algebra.transpose import Vector_Transpose
 # the same as a matrix. Indeed, given a TruthMatrix A, a TruthVector F 
 # and a FunctionsList Z, overriding __mul__ and __rmul__ operators
 # allow to write expressions like transpose(Z)*A*Z and transpose(Z)*F
-@extends(ExportableList)
+@Extends(ExportableList)
 class FunctionsList(ExportableList):
     @override
     def __init__(self, original_list=None):

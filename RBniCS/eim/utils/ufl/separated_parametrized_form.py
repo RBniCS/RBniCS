@@ -29,7 +29,7 @@
 from RBniCS.utils.io import ExportableList, PickleIO
 from RBniCS.utils.ufl import ParametrizedExpression
 from numpy import ones, zeros
-from dolfin import Constant, Expression, Function
+from dolfin import Constant, Expression, Function, log, PROGRESS
 from dolfin import __version__ as dolfin_version
 from ufl import Argument, Measure, replace
 from ufl.algebra import Sum
@@ -58,10 +58,6 @@ class SeparatedParametrizedForm(object):
         }
         
     def separate(self):
-        def log(string):
-            from dolfin import log, PROGRESS
-            log(PROGRESS, string)
-            
         class _SeparatedParametrizedForm_Replacer(Transformer):
             def __init__(self, mapping):
                 Transformer.__init__(self)
@@ -76,16 +72,16 @@ class SeparatedParametrizedForm(object):
             def terminal(self, e):
                 return self.mapping.get(e, e)
         
-        log("***        SEPARATE FORM COEFFICIENTS        ***")
+        log(PROGRESS, "***        SEPARATE FORM COEFFICIENTS        ***")
         
-        log("1. Extract coefficients")
+        log(PROGRESS, "1. Extract coefficients")
         integral_to_coefficients = dict()
         for integral in self._form.integrals():
-            log("\t Currently on integrand " + str(integral.integrand()))
+            log(PROGRESS, "\t Currently on integrand " + str(integral.integrand()))
             assert not isinstance(integral.integrand(), Sum), "Please write your form as a*u*v*dx + b*u*v*dx rather than (a*u*v + b*u*v)*dx, otherwise skipping tree nodes may not work."
             self.coefficients.append( list() ) # of ParametrizedExpression
             for e in iter_expressions(integral):
-                log("\t\t Expression " + str(e))
+                log(PROGRESS, "\t\t Expression " + str(e))
                 pre_traversal_e = [n for n in pre_traversal(e)]
                 tree_nodes_skip = [False for _ in pre_traversal_e]
                 for n_i in range(len(pre_traversal_e)):
@@ -93,21 +89,21 @@ class SeparatedParametrizedForm(object):
                         n = pre_traversal_e[n_i]
                         # Skip expressions which are an Argument or (only a) multiindex
                         if isinstance(n, Argument):
-                            log("\t\t Node " + str(n) + " is skipped because it is an Argument")
+                            log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is an Argument")
                             continue
                         elif isinstance(n, MultiIndex):
-                            log("\t\t Node " + str(n) + " is skipped because it is a MultiIndex")
+                            log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is a MultiIndex")
                             continue
                         if isinstance(n, Constant):
-                            log("\t\t Node " + str(n) + " is skipped because it is a Constant")
+                            log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is a Constant")
                             continue
                         # Skip all expressions with at least one leaf which is an Argument
                         for t in traverse_terminals(n):
                             if isinstance(t, Argument):
-                                log("\t\t Node " + str(n) + " is skipped because it contains an Argument")
+                                log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it contains an Argument")
                                 break
                         else: # not broken
-                            log("\t\t Node " + str(n) + " and its descendants are being analyzed for non-parametrized check")
+                            log(PROGRESS, "\t\t Node " + str(n) + " and its descendants are being analyzed for non-parametrized check")
                             # Make sure to skip all descendants of this node in the outer loop
                             # Note that a map with key set to the expression is not enough to 
                             # mark the node as visited, since the same expression may appear
@@ -125,7 +121,7 @@ class SeparatedParametrizedForm(object):
                                     # Skip all expressions where at least one leaf is not parametrized
                                     for t in traverse_terminals(d):
                                         if (isinstance(t, Expression) and "mu_0" not in t.user_parameters) or isinstance(t, Constant):
-                                            log("\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it is a non-parametrized expression")
+                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it is a non-parametrized expression")
                                             break
                                     else:
                                         at_least_one_expression_or_function = False
@@ -134,44 +130,44 @@ class SeparatedParametrizedForm(object):
                                                 isinstance(t, Function): # Functions are always assumed to be parametrized
                                                 at_least_one_expression_or_function = True
                                         if at_least_one_expression_or_function:
-                                            log("\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check")
+                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check")
                                             all_candidates.append(d)
                                             pre_traversal_d = [q for q in pre_traversal(d)]
                                             for q_i in range(len(pre_traversal_d)):
                                                 assert pre_traversal_d[q_i] == pre_traversal_n[d_i + q_i] # make sure that we are marking the right node
                                                 internal_tree_nodes_skip[d_i + q_i] = True
                                         else:
-                                            log("\t\t\t Descendant node " + str(d) + " has not passed the non-parametrized because is not an expression")
+                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " has not passed the non-parametrized because is not an expression")
                             # Evaluate candidates
                             if len(all_candidates) == 0: # the whole expression was actually non-parametrized
-                                log("\t\t Node " + str(n) + " is skipped because is a non-parametrized coefficient")
+                                log(PROGRESS, "\t\t Node " + str(n) + " is skipped because is a non-parametrized coefficient")
                                 continue
                             elif len(all_candidates) == 1: # the whole expression was actually parametrized
                                 candidate = all_candidates[0]
                             else: # part of the expression was not parametrized, but separating the non parametrized part would result in more than one coefficient
                                 candidate = n
-                                log("\t\t\t Node " + str(n) + " was not splitted because it would have resulted in more than one coefficient, namely " + ", ".join([str(c) for c in all_candidates]))
+                                log(PROGRESS, "\t\t\t Node " + str(n) + " was not splitted because it would have resulted in more than one coefficient, namely " + ", ".join([str(c) for c in all_candidates]))
                             # Add the coefficient if it is a scalar, or the vector/matrix extracted from Indexed object if it is an Indexed
                             if not isinstance(candidate, Indexed):
                                 # Add the node to the coefficients
                                 self.coefficients[-1].append(candidate)
-                                log("\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
+                                log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
                             else:
                                 # Add the node to the coefficients
                                 self.coefficients[-1].append(candidate.ufl_operands[0])
                                 assert isinstance(candidate.ufl_operands[1], MultiIndex)
                                 assert len(candidate.ufl_operands) == 2
-                                log("\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
                     else:
-                        log("\t\t Node " + str(n) + " to be skipped because is a descendant of a coefficient which has already been detected")
+                        log(PROGRESS, "\t\t Node " + str(n) + " to be skipped because is a descendant of a coefficient which has already been detected")
             if len(self.coefficients[-1]) == 0: # then there were no coefficients to extract
-                log("\t There were no coefficients to extract")
+                log(PROGRESS, "\t There were no coefficients to extract")
                 self.coefficients.pop() # remove the (empty) element that was added to possibly store coefficients
             else:
-                log("\t Extracted coefficients are:\n\t\t" + "\n\t\t".join([str(c) for c in self.coefficients[-1]]))
+                log(PROGRESS, "\t Extracted coefficients are:\n\t\t" + "\n\t\t".join([str(c) for c in self.coefficients[-1]]))
                 integral_to_coefficients[integral] = self.coefficients[-1]
         
-        log("2. Prepare placeholders and forms with placeholders")
+        log(PROGRESS, "2. Prepare placeholders and forms with placeholders")
         for integral in self._form.integrals():
             # Prepare measure for the new form (from firedrake/mg/ufl_utils.py)
             measure = Measure(
@@ -182,10 +178,10 @@ class SeparatedParametrizedForm(object):
                 metadata=integral.metadata()
             )
             if integral not in integral_to_coefficients:
-                log("\t Adding form for integrand " + str(integral.integrand()) + " to unchanged forms")
+                log(PROGRESS, "\t Adding form for integrand " + str(integral.integrand()) + " to unchanged forms")
                 self._form_unchanged.append(integral.integrand()*measure)
             else:
-                log("\t Preparing form with placeholders for integrand " + str(integral.integrand()))
+                log(PROGRESS, "\t Preparing form with placeholders for integrand " + str(integral.integrand()))
                 self._placeholders.append( list() ) # of Constants
                 placeholders_dict = dict()
                 for c in integral_to_coefficients[integral]:
@@ -195,17 +191,17 @@ class SeparatedParametrizedForm(object):
                 new_integrand = replacer.visit(integral.integrand())
                 self._form_with_placeholders.append(new_integrand*measure)
             
-        log("3. Assert that there are no parametrized expressions left")
+        log(PROGRESS, "3. Assert that there are no parametrized expressions left")
         for i in range(len(self._form_with_placeholders)):
             for integral in self._form_with_placeholders[i].integrals():
                 for e in pre_traversal(integral.integrand()):
                     assert not (isinstance(e, Expression) and "mu_0" in e.user_parameters), "Form " + str(i) + " still contains a parametrized expression"
         
-        log("4. Assert list length consistency")
+        log(PROGRESS, "4. Assert list length consistency")
         assert len(self.coefficients) == len(self._placeholders)
         assert len(self.coefficients) == len(self._form_with_placeholders)
         
-        log("5. Prepare coefficients hash codes")
+        log(PROGRESS, "5. Prepare coefficients hash codes")
         for i in range(len(self.coefficients)):
             for j in range(len(self.coefficients[i])):
                 str_repr = ""
@@ -219,8 +215,8 @@ class SeparatedParametrizedForm(object):
                             ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
                 self.coefficients[i][j].hash_code = hash_code
         
-        log("*** DONE - SEPARATE FORM COEFFICIENTS - DONE ***")
-        log("")
+        log(PROGRESS, "*** DONE - SEPARATE FORM COEFFICIENTS - DONE ***")
+        log(PROGRESS, "")
         
     def replace_placeholders(self, i, new_coefficients):
         assert len(new_coefficients) == len(self._placeholders[i])

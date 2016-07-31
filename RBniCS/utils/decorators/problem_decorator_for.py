@@ -15,18 +15,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary factories module
+## @file numpy_io.py
+#  @brief I/O helper functions
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-# Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.factories.reduction_methods import ReducedBasis, PODGalerkin
+from RBniCS.utils.io import log, DEBUG
 
-__all__ = [
-    # RBniCS.factories.reduction_methods
-    'ReducedBasis',
-    'PODGalerkin',
-]
+def ProblemDecoratorFor(Algorithm, replaces=None, replaces_if=None):
+    def ProblemDecoratorFor_Decorator(ProblemDecorator):
+        def ProblemDecorator_WithStorage(Problem):
+            if not hasattr(Problem, "ProblemDecorators"):
+                Problem.ProblemDecorators = list()
+            Problem.ProblemDecorators.append(Algorithm) # replaces and replaces_if are not used, but will be passed also to reduction methods and reduced problem.
+            # Done with the storage, apply the decorator
+            return ProblemDecorator(Problem)
+        # Done with the storage, return the new problem decorator
+        return ProblemDecorator_WithStorage
+    return ProblemDecoratorFor_Decorator
+    

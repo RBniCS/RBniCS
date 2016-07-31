@@ -27,10 +27,10 @@
 #  @{
 
 from RBniCS.utils.io import ExportableList
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override
 from dolfin import Point
 
-@extends(ExportableList)
+@Extends(ExportableList)
 class PointsList(ExportableList):
     @override
     def __init__(self, mesh):

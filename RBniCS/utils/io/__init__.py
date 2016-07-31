@@ -34,7 +34,7 @@ from RBniCS.utils.io.speedup_analysis_table import SpeedupAnalysisTable
 from RBniCS.utils.io.text_io import TextIO
 
 # Alias FEniCS functions
-from dolfin import plot, File
+from dolfin import plot, File, log, DEBUG, PROGRESS
 
 __all__ = [
     'ErrorAnalysisTable',

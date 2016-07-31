@@ -16,15 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file __init__.py
-#  @brief Init file for auxiliary factories module
+#  @brief Init file for auxiliary shape parametrization module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.factories.reduction_methods.reduction_methods_factory import ReducedBasis, PODGalerkin
+from RBniCS.shape_parametrization.reduction_methods.shape_parametrization_decorated_reduction_method import ShapeParametrizationDecoratedReductionMethod
 
 __all__ = [
-    'ReducedBasis',
-    'PODGalerkin'
+    'ShapeParametrizationDecoratedReductionMethod'
 ]

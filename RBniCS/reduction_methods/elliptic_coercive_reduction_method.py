@@ -24,24 +24,23 @@
 
 import os # for path and makedir
 from RBniCS.reduction_methods.reduction_method import ReductionMethod
+from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.utils.io import Folders
-from RBniCS.utils.decorators import extends, override 
+from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
+from RBniCS.utils.factories import ReducedProblemFactory
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@extends(ReductionMethod)
+@Extends(ReductionMethod) # needs to be first in order to override for last the methods
+@ReductionMethodFor(EllipticCoerciveProblem, "Abstract")
 class EllipticCoerciveReductionMethod(ReductionMethod):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
     #  @{
-    
-    from RBniCS.factories.problems import ReducedProblemFactory as ReducedProblemFactory_Function
-    ReducedProblemFactory = staticmethod(ReducedProblemFactory_Function)
-    # In this way we allow the final user to possibly override ReducedProblemFactory
     
     ## Default initialization of members
     @override
@@ -71,7 +70,7 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
         self.truth_problem.init()
         
         # Initialize reduced order data structures in the reduced problem
-        self.reduced_problem = self.ReducedProblemFactory(self.truth_problem, self)
+        self.reduced_problem = ReducedProblemFactory(self.truth_problem, self)
         
         # Prepare folders and init reduced problem
         all_folders = Folders()

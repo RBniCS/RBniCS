@@ -23,12 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from numpy import log, exp, mean # for error analysis
-import os # for path and makedir
 from RBniCS.linear_algebra import ProperOrthogonalDecomposition
 from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
 from RBniCS.utils.mpi import print
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
+from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.reduction_methods.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -36,7 +35,8 @@ from RBniCS.reduction_methods.elliptic_coercive_reduction_method import Elliptic
 #
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
-@extends(EllipticCoerciveReductionMethod)
+@Extends(EllipticCoerciveReductionMethod) # needs to be first in order to override for last the methods
+@ReductionMethodFor(EllipticCoerciveProblem, "PODGalerkin")
 class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     """This class implements a reduced order method based on a POD (Proper
     Orthogonal Decomposition) Galerkin approach. In particular, it

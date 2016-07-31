@@ -27,9 +27,9 @@
 #  @{
 
 from RBniCS.utils.io.exportable_list import ExportableList
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override
 
-@extends(ExportableList)
+@Extends(ExportableList)
 class GreedySelectedParametersList(ExportableList):
     @override
     def __init__(self):

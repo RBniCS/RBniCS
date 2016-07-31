@@ -27,9 +27,9 @@
 #  @{
 
 from RBniCS.linear_algebra.functions_list import FunctionsList
-from RBniCS.utils.decorators import extends
+from RBniCS.utils.decorators import Extends
 
-@extends(FunctionsList)
+@Extends(FunctionsList)
 class SnapshotsMatrix(FunctionsList):
     pass
 

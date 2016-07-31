@@ -22,18 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from numpy import log, exp, mean, sqrt # for error analysis
-import os # for path and makedir
-import shutil # for rm
-import random # to randomize selection in case of equal error bound
-from RBniCS.problems import ParametrizedProblem
-from RBniCS.linear_algebra import AffineExpansionOfflineStorage
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
+from RBniCS.eim.problems.eim_decorated_problem import EIM
 
 def ExactParametrizedFunctionsDecoratedProblem():
+    @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         
-        @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
+        @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
             
             ## Default initialization of members
@@ -43,11 +39,6 @@ def ExactParametrizedFunctionsDecoratedProblem():
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Avoid useless assemblies
                 self.solve.__func__.previous_mu = None
-                
-                # Signal to the factory that this problem has been decorated
-                if not hasattr(self, "_problem_decorators"):
-                    self._problem_decorators = dict() # string to bool
-                self._problem_decorators["ExactParametrizedFunctions"] = True
             
             ###########################     OFFLINE STAGE     ########################### 
             ## @defgroup OfflineStage Methods related to the offline stage

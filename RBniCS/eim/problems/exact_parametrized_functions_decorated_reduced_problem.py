@@ -24,17 +24,19 @@
 
 from __future__ import print_function
 import types
-from RBniCS.problems import ParametrizedProblem
-from RBniCS.linear_algebra import AffineExpansionOnlineStorage, FunctionsList
+from RBniCS.utils.io import log, PROGRESS
 from RBniCS.utils.mpi import print
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from RBniCS.eim.problems.eim_decorated_problem import EIM
+from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions
 
+@ReducedProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
 def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     
     def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):
         if hasattr(ReducedParametrizedProblem_DecoratedClass, "assemble_error_estimation_operators"):
         
-            @extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
+            @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
             class _AlsoDecorateErrorEstimationOperators_Class(ReducedParametrizedProblem_DecoratedClass):
                 @override
                 def __init__(self, truth_problem):
@@ -104,11 +106,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
                 ## Build operators for error estimation
                 @override
                 def build_error_estimation_operators(self, current_stage="offline"):
-                    def log(string):
-                        from dolfin import log, PROGRESS
-                        log(PROGRESS, string)
                     if current_stage == "online":
-                        log("build operators for error estimation (due to inefficient evaluation)")
+                        log(PROGRESS, "build operators for error estimation (due to inefficient evaluation)")
                         for term in self.truth_problem.Q:
                             for q in range(self.truth_problem.Q[term]):
                                 self.riesz[term][q].clear()
@@ -148,7 +147,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
         else:
             return ReducedParametrizedProblem_DecoratedClass
            
-    @extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
+    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     @_AlsoDecorateErrorEstimationOperators
     class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
         ## Default initialization of members
@@ -218,11 +217,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
         ## Assemble the reduced order affine expansion.
         @override
         def build_reduced_operators(self, current_stage="offline"):
-            def log(string):
-                from dolfin import log, PROGRESS
-                log(PROGRESS, string)
             if current_stage == "online":
-                log("build reduced operators (due to inefficient evaluation)")
+                log(PROGRESS, "build reduced operators (due to inefficient evaluation)")
                 output = ReducedParametrizedProblem_DerivedClass.build_reduced_operators(self)
             else:
                 # The offline/online separation does not hold anymore, so we cannot precompute 

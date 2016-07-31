@@ -26,15 +26,16 @@ from __future__ import print_function
 from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function, ALE
 from RBniCS.utils.ufl import ParametrizedExpression
 from RBniCS.utils.mpi import print
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
+    @ProblemDecoratorFor(ShapeParametrization)
     def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
         ## @class ShapeParametrizationDecoratedProblem
         #
         # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-        @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
+        @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
         class ShapeParametrizationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
         
             ###########################     CONSTRUCTORS     ########################### 
@@ -69,11 +70,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
                 # Store the shape parametrization expression
                 self.shape_parametrization_expression = shape_parametrization_expression
                 assert len(self.shape_parametrization_expression) == len(self.subdomain_id_to_deformation_dofs.keys())
-                
-                # Signal to the factory that this problem has been decorated
-                if not hasattr(self, "_problem_decorators"):
-                    self._problem_decorators = dict() # string to bool
-                self._problem_decorators["ShapeParametrization"] = True
                  
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################

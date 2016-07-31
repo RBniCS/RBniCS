@@ -23,13 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
-from RBniCS.utils.decorators.extends import extends
+from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.override import override
 
 def SyncSetters(other_object__name, method__name, private_attribute__name):
     def SyncSetters_Decorator(Parent):
         
-        @extends(Parent)
+        @Extends(Parent, preserve_class_name=True)
         class SyncSetters_Class(Parent):
             
             @override

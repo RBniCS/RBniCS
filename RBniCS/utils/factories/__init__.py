@@ -22,8 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.factories.problems.reduced_problem_factory import ReducedProblemFactory
+from RBniCS.utils.factories.reduced_problem_factory import ReducedProblemFactory
+from RBniCS.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
 
 __all__ = [
-    'ReducedProblemFactory'
+    'PODGalerkin'
+    'ReducedBasis',
+    'ReducedProblemFactory',
 ]

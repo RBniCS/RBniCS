@@ -30,3 +30,11 @@ __all__ = [
     'EIM',
     'ExactParametrizedFunctions'
 ]
+
+# Import also reduced problems and reduction methods to make sure that 
+# decorators that fill in algorithm factories are called, but do not 
+# add them to __all__ since they are not class that should be explicitely
+# used in the tutorials
+from RBniCS.eim.problems import EIMDecoratedReducedProblem, ExactParametrizedFunctionsDecoratedReducedProblem
+from RBniCS.eim.reduction_methods import EIMDecoratedReductionMethod, ExactParametrizedFunctionsDecoratedReductionMethod
+

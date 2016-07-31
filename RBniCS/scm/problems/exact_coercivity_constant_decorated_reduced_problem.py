@@ -22,11 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from RBniCS.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstant
+from RBniCS.scm.problems.scm_decorated_problem import SCM
 
+@ReducedProblemDecoratorFor(ExactCoercivityConstant, replaces=SCM)
 def ExactCoercivityConstantDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     
-    @extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
+    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
     class ExactCoercivityConstantDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
         ## Default initialization of members
         @override

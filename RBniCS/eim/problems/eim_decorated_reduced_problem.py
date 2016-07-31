@@ -22,11 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from RBniCS.eim.problems.eim_decorated_problem import EIM
 
+@ReducedProblemDecoratorFor(EIM)
 def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     
-    @extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
+    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     class EIMDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
         ## Default initialization of members
         @override

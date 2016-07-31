@@ -26,14 +26,17 @@ from math import sqrt
 from dolfin import Function
 from RBniCS.problems.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, FunctionsList, product, transpose, solve, sum
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
+from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.reduction_methods import EllipticCoerciveRBReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@extends(EllipticCoerciveReducedProblem)
+@Extends(EllipticCoerciveReducedProblem) # needs to be first in order to override for last the methods
+@ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction)
 class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     
     ###########################     CONSTRUCTORS     ########################### 

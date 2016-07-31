@@ -22,15 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def extends(Parent, preserve_class_name=False):
-    def extends_Decorator(Child):
+def Extends(Parent, preserve_class_name=False):
+    def Extends_Decorator(Child):
         
-        class extends_Class(Child):
-            pass # TODO save the class documentation from the parent class
+        # TODO save the class documentation from the parent class
         
         if preserve_class_name:
-            setattr(extends_Class, "__name__", Parent.__name__)
+            setattr(Child, "__name__", Parent.__name__)
+            setattr(Child, "__module__", Parent.__module__)
         
-        return extends_Class
-    return extends_Decorator
+        return Child
+    return Extends_Decorator
 

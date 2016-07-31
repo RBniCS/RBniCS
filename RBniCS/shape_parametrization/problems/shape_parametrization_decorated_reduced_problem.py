@@ -22,14 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from RBniCS.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization
 
+@ReducedProblemDecoratorFor(ShapeParametrization)
 def ShapeParametrizationDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
     ## @class ShapeParametrizationDecoratedReducedProblem
     #
     # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-    @extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
+    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
     class ShapeParametrizationDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
     
         ###########################     CONSTRUCTORS     ########################### 

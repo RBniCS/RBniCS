@@ -15,27 +15,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file eim.py
+#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-###########################     OFFLINE STAGE     ########################### 
-## @defgroup OfflineStage Methods related to the offline stage
-#  @{
+from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from RBniCS.shape_parametrization.problems import ShapeParametrization
 
-from RBniCS.utils.io.exportable_list import ExportableList
-from RBniCS.utils.decorators import Extends, override
-
-@Extends(ExportableList)
-class GreedyErrorEstimatorsList(ExportableList):
-    @override
-    def __init__(self):
-        ExportableList.__init__(self, "text")
-            
-     
-#  @}
-########################### end - OFFLINE STAGE - end ########################### 
-
+@ReductionMethodDecoratorFor(ShapeParametrization)
+def ShapeParametrizationDecoratedReductionMethod(ReductionMethod_DerivedClass):
+    
+    @Extends(ReductionMethod_DerivedClass, preserve_class_name=True)
+    class ShapeParametrizationDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+        @override
+        def __init__(self, truth_problem):
+            # Call the parent initialization
+            ReductionMethod_DerivedClass.__init__(self, truth_problem)
+        
+    # return value (a class) for the decorator
+    return ShapeParametrizationDecoratedReductionMethod_Class
+    

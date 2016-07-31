@@ -22,15 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from numpy import log, exp, mean, sqrt # for error analysis
-import os # for path and makedir
-import shutil # for rm
-import random # to randomize selection in case of equal error bound
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from RBniCS.eim.problems import EIM, ExactParametrizedFunctions
 
+@ReductionMethodDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
 def ExactParametrizedFunctionsDecoratedReductionMethod(ReductionMethod_DerivedClass):
     
-    @extends(ReductionMethod_DerivedClass, preserve_class_name=True)
+    @Extends(ReductionMethod_DerivedClass, preserve_class_name=True)
     class ExactParametrizedFunctionsDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem):

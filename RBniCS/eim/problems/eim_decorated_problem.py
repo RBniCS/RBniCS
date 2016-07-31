@@ -24,135 +24,16 @@
 
 from itertools import product as cartesian_product
 from dolfin import Function
-from RBniCS.problems import ParametrizedProblem
-from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
-from RBniCS.utils.decorators import SyncSetters, extends, override
-from RBniCS.utils.mpi import mpi_comm
-from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage, PointsList
+from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
+from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from RBniCS.eim.utils.ufl import SeparatedParametrizedForm
+from RBniCS.eim.problems.eim_approximation import EIMApproximation
 
 def EIMDecoratedProblem():
+    @ProblemDecoratorFor(EIM)
     def EIMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
-
-        #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-        ## @class EIM
-        #
-        # Empirical interpolation method for the interpolation of parametrized functions
-        @extends(ParametrizedProblem) # needs to be first in order to override for last the methods
-        @SyncSetters("truth_problem", "set_mu", "mu")
-        @SyncSetters("truth_problem", "set_mu_range", "mu_range")
-        class _EIMApproximation(ParametrizedProblem):
-
-            ###########################     CONSTRUCTORS     ########################### 
-            ## @defgroup Constructors Methods related to the construction of the EIM object
-            #  @{
-
-            ## Default initialization of members
-            @override
-            def __init__(self, V, truth_problem, parametrized_expression, folder_prefix):
-                # Call the parent initialization
-                ParametrizedProblem.__init__(self, folder_prefix)
-                # Store the parametrized expression
-                self.parametrized_expression = parametrized_expression
-                self.truth_problem = truth_problem
                 
-                # $$ ONLINE DATA STRUCTURES $$ #
-                # Online reduced space dimension
-                self.N = 0
-                # Define additional storage for EIM
-                self.interpolation_points = PointsList(V.mesh()) # list of interpolation points selected by the greedy
-                self.interpolation_matrix = AffineExpansionOnlineStorage(1) # interpolation matrix
-                # Solution
-                self._interpolation_coefficients = OnlineVector()
-                
-                # $$ OFFLINE DATA STRUCTURES $$ #
-                self.V = V
-                # Basis functions matrix
-                self.Z = BasisFunctionsMatrix()
-                # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
-                # basis function/reduced operator folder, but rather add a new one. For this reason we use
-                # the __eim suffix in the variable name.
-                self.folder["basis"] = self.folder_prefix + "/" + "basis"
-                self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
-                
-            #  @}
-            ########################### end - CONSTRUCTORS - end ###########################
-
-            ###########################     ONLINE STAGE     ########################### 
-            ## @defgroup OnlineStage Methods related to the online stage
-            #  @{
-
-            ## Initialize data structures required for the online phase
-            def init(self, current_stage="online"):
-                # Read/Initialize reduced order data structures
-                if current_stage == "online":
-                    self.interpolation_points.load(self.folder["reduced_operators"], "interpolation_points")
-                    self.interpolation_matrix.load(self.folder["reduced_operators"], "interpolation_matrix")
-                    self.Z.load(self.folder["basis"], "basis", self.truth_problem.V)
-                    self.N = len(self.Z)
-                elif current_stage == "offline":
-                    # Nothing to be done
-                    pass
-                else:
-                    raise ValueError("Invalid stage in init().")
-
-            # Perform an online solve.
-            def solve(self, N=None):
-                if N is None:
-                    N = self.N
-                
-                # Evaluate the function at interpolation points
-                rhs = OnlineVector(N)
-                for p in range(N):
-                    rhs[p] = self.evaluate_parametrized_expression_at_x(*self.interpolation_points[p])
-                
-                # Extract the interpolation matrix
-                lhs = self.interpolation_matrix[0][:N,:N]
-                
-                # Solve the interpolation problem
-                self._interpolation_coefficients = OnlineVector(N)
-                solve(lhs, self._interpolation_coefficients, rhs)
-                
-                return self._interpolation_coefficients
-                
-            ## Call online_solve and then convert the result of online solve from OnlineVector to a tuple
-            def compute_interpolated_theta(self, N=None):
-                interpolated_theta = self.solve(N)
-                interpolated_theta_list = list()
-                for n in range(len(interpolated_theta)):
-                    interpolated_theta_list.append(float(interpolated_theta[n]))
-                if N is not None:
-                    # Make sure to append a 0 coefficient for each basis function
-                    # which has not been requested
-                    for n in range(N, self.N):
-                        interpolated_theta_list.append(0.0)
-                return tuple(interpolated_theta_list)
-                
-            ## Evaluate the parametrized function f(x; mu) for the current value of mu
-            def evaluate_parametrized_expression_at_x(self, x, processor_id):
-                from numpy import zeros as EvalOutputType
-                from mpi4py.MPI import FLOAT
-                out = EvalOutputType(self.parametrized_expression.value_size())
-                if mpi_comm.rank == processor_id:
-                    self.parametrized_expression.eval(out, x)
-                mpi_comm.Bcast([out, FLOAT], root=processor_id)
-                return out
-
-            #  @}
-            ########################### end - ONLINE STAGE - end ########################### 
-
-            ###########################     I/O     ########################### 
-            ## @defgroup IO Input/output methods
-            #  @{
-
-            ## Export solution in VTK format
-            def export_solution(self, solution, folder, filename):
-                self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
-                
-            #  @}
-            ########################### end - I/O - end ########################### 
-        
-        @extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
+        @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
         class EIMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
             
             ## Default initialization of members
@@ -162,7 +43,7 @@ def EIMDecoratedProblem():
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for EIM reduced problems
                 self.separated_forms = dict() # from terms to AffineExpansionSeparatedFormsStorage
-                self.EIM_approximations = dict() # from coefficients to _EIMApproximation
+                self.EIM_approximations = dict() # from coefficients to EIMApproximation
                 
                 # Preprocess each term in the affine expansions
                 for term in self.terms:
@@ -176,12 +57,7 @@ def EIMDecoratedProblem():
                         for i in range(len(self.separated_forms[term][q].coefficients)):
                             for coeff in self.separated_forms[term][q].coefficients[i]:
                                 if coeff not in self.EIM_approximations:
-                                    self.EIM_approximations[coeff] = _EIMApproximation(self.V, self, coeff, type(self).__name__ + "/eim/" + str(coeff.hash_code))
-                                    
-                # Signal to the factory that this problem has been decorated
-                if not hasattr(self, "_problem_decorators"):
-                    self._problem_decorators = dict() # string to bool
-                self._problem_decorators["EIM"] = True
+                                    self.EIM_approximations[coeff] = EIMApproximation(self.V, self, coeff, type(self).__name__ + "/eim/" + str(coeff.hash_code))
                 
             ###########################     PROBLEM SPECIFIC     ########################### 
             ## @defgroup ProblemSpecific Problem specific methods

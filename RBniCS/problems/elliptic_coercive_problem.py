@@ -26,13 +26,13 @@ from abc import ABCMeta, abstractmethod
 from dolfin import Function
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, product, transpose, solve, sum
-from RBniCS.utils.decorators import extends, override
+from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem
 #
 # Base class containing the definition of elliptic coercive problems
-@extends(ParametrizedProblem)
+@Extends(ParametrizedProblem)
 class EllipticCoerciveProblem(ParametrizedProblem):
     """This class defines and implement variables and methods needed for
     solving an elliptic and coercive problem. This class specializes
