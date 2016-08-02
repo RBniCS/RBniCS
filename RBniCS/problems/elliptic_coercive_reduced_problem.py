@@ -29,7 +29,7 @@ from math import sqrt
 from RBniCS.problems.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, OnlineVector, product, transpose, solve, sum
-from RBniCS.utils.decorators import SyncSetters, Extends, override, ReducedProblemFor
+from RBniCS.utils.decorators import sync_setters, Extends, override, ReducedProblemFor
 from RBniCS.utils.mpi import print
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.reduction_methods import EllipticCoerciveReductionMethod
@@ -41,8 +41,6 @@ from RBniCS.reduction_methods import EllipticCoerciveReductionMethod
 # for elliptic coercive problems.
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveReductionMethod)
-@SyncSetters("truth_problem", "set_mu", "mu")
-@SyncSetters("truth_problem", "set_mu_range", "mu_range")
 class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -51,6 +49,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     ## Default initialization of members.
     @override
+    @sync_setters("truth_problem", "set_mu", "mu")
+    @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem):
         # Call to parent
         ParametrizedProblem.__init__(self, type(truth_problem).__name__)

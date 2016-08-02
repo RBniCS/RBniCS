@@ -25,7 +25,7 @@
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.eim.problems.eim_decorated_problem import EIM
 
-def ExactParametrizedFunctionsDecoratedProblem():
+def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
     @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         

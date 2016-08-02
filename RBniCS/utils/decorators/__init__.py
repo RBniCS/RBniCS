@@ -23,21 +23,23 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators.extends import Extends
+from RBniCS.utils.decorators.exact_problem import ExactProblem
 from RBniCS.utils.decorators.override import override
 from RBniCS.utils.decorators.problem_decorator_for import ProblemDecoratorFor
 from RBniCS.utils.decorators.reduced_problem_decorator_for import ReducedProblemDecoratorFor
 from RBniCS.utils.decorators.reduced_problem_for import ReducedProblemFor
 from RBniCS.utils.decorators.reduction_method_decorator_for import ReductionMethodDecoratorFor
 from RBniCS.utils.decorators.reduction_method_for import ReductionMethodFor
-from RBniCS.utils.decorators.sync_setters import SyncSetters
+from RBniCS.utils.decorators.sync_setters import sync_setters
 
 __all__ = [
     'Extends',
+    'ExactProblem',
     'override',
     'ProblemDecoratorFor',
     'ReducedProblemDecoratorFor',
     'ReducedProblemFor',
     'ReductionMethodDecoratorFor',
     'ReductionMethodFor',
-    'SyncSetters'
+    'sync_setters'
 ]

@@ -29,8 +29,10 @@ from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from RBniCS.eim.utils.ufl import SeparatedParametrizedForm
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 
-def EIMDecoratedProblem():
-    @ProblemDecoratorFor(EIM)
+def EIMDecoratedProblem(**decorator_kwargs):
+    from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions
+    
+    @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactParametrizedFunctions)
     def EIMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
                 
         @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)

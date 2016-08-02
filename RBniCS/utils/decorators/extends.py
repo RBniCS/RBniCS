@@ -25,6 +25,9 @@
 def Extends(Parent, preserve_class_name=False):
     def Extends_Decorator(Child):
         
+        assert len(Child.__bases__) == 1
+        assert Child.__bases__[0] is Parent
+                
         # TODO save the class documentation from the parent class
         
         if preserve_class_name:

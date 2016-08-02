@@ -24,7 +24,7 @@
 
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
-from RBniCS.utils.decorators import SyncSetters, Extends, override
+from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import mpi_comm
 from RBniCS.eim.utils.io import PointsList
 
@@ -32,9 +32,7 @@ from RBniCS.eim.utils.io import PointsList
 ## @class EIM
 #
 # Empirical interpolation method for the interpolation of parametrized functions
-@Extends(ParametrizedProblem) # needs to be first in order to override for last the methods
-@SyncSetters("truth_problem", "set_mu", "mu")
-@SyncSetters("truth_problem", "set_mu_range", "mu_range")
+@Extends(ParametrizedProblem)
 class EIMApproximation(ParametrizedProblem):
 
     ###########################     CONSTRUCTORS     ########################### 
@@ -43,6 +41,8 @@ class EIMApproximation(ParametrizedProblem):
 
     ## Default initialization of members
     @override
+    @sync_setters("truth_problem", "set_mu", "mu")
+    @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, V, truth_problem, parametrized_expression, folder_prefix):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix)

@@ -84,7 +84,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     # Note that this override is different from the one that we use in decorated problems,
     # since (1) we do not want to define a new child class, (2) we have to execute some preprocessing
     # on the data, (3) it is a one-way propagation rather than a sync. 
-    # For these reasons, the decorator @SyncSetters is not used but we partially duplicate some code
+    # For these reasons, the decorator @sync_setters is not used but we partially duplicate some code
     
     return expression
 

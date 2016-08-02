@@ -26,11 +26,9 @@ from math import sqrt
 from dolfin import adjoint, Function, DirichletBC
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, sum, product, TruthEigenSolver
-from RBniCS.utils.decorators import SyncSetters, Extends, override
+from RBniCS.utils.decorators import sync_setters, Extends, override
 
-@Extends(ParametrizedProblem) # needs to be first in order to override for last the methods
-@SyncSetters("truth_problem", "set_mu", "mu")
-@SyncSetters("truth_problem", "set_mu_range", "mu_range")
+@Extends(ParametrizedProblem)
 class ParametrizedHermitianEigenProblem(ParametrizedProblem):
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the EIM object
@@ -38,6 +36,8 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
 
     ## Default initialization of members
     @override
+    @sync_setters("truth_problem", "set_mu", "mu")
+    @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, term, multiply_by_theta, constrain_eigenvalue, spectrum, eigensolver_parameters):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix="") # this class does not export anything

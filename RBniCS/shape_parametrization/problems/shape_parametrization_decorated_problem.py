@@ -28,8 +28,10 @@ from RBniCS.utils.ufl import ParametrizedExpression
 from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 
-def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
-    @ProblemDecoratorFor(ShapeParametrization)
+def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs):
+    @ProblemDecoratorFor(ShapeParametrization,
+        shape_parametrization_expression=shape_parametrization_expression
+    )
     def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
         ## @class ShapeParametrizationDecoratedProblem
@@ -68,7 +70,12 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression):
                 assert len(self.subdomain_id_to_deformation_dofs.keys()) == max(self.subdomain_id_to_deformation_dofs.keys()) + 1
                 
                 # Store the shape parametrization expression
-                self.shape_parametrization_expression = shape_parametrization_expression
+                if len(shape_parametrization_expression) > 0:
+                    assert "shape_parametrization_expression" not in decorator_kwargs
+                    self.shape_parametrization_expression = shape_parametrization_expression
+                else:
+                    assert "shape_parametrization_expression" in decorator_kwargs
+                    self.shape_parametrization_expression = decorator_kwargs["shape_parametrization_expression"]
                 assert len(self.shape_parametrization_expression) == len(self.subdomain_id_to_deformation_dofs.keys())
                  
             #  @}

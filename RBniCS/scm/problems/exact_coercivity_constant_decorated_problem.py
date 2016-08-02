@@ -29,9 +29,13 @@ from RBniCS.scm.problems.scm_decorated_problem import SCM
 
 def ExactCoercivityConstantDecoratedProblem(
     constrain_minimum_eigenvalue = 1.e5,
-    eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
+    eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5),
+    **decorator_kwargs
 ):
-    @ProblemDecoratorFor(ExactCoercivityConstant, replaces=SCM)
+    @ProblemDecoratorFor(ExactCoercivityConstant, replaces=SCM,
+        constrain_minimum_eigenvalue = constrain_minimum_eigenvalue,
+        eigensolver_parameters = eigensolver_parameters
+    )
     def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
         
         @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)

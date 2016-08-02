@@ -24,14 +24,49 @@
 
 from RBniCS.utils.io import log, DEBUG
 
-def ProblemDecoratorFor(Algorithm, replaces=None, replaces_if=None):
+def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
     def ProblemDecoratorFor_Decorator(ProblemDecorator):
         def ProblemDecorator_WithStorage(Problem):
-            if not hasattr(Problem, "ProblemDecorators"):
-                Problem.ProblemDecorators = list()
-            Problem.ProblemDecorators.append(Algorithm) # replaces and replaces_if are not used, but will be passed also to reduction methods and reduced problem.
-            # Done with the storage, apply the decorator
-            return ProblemDecorator(Problem)
+            if hasattr(Problem, "UndecoratedProblemClass"):
+                UndecoratedProblemClass = Problem.UndecoratedProblemClass
+            else:
+                UndecoratedProblemClass = Problem
+            if hasattr(Problem, "ProblemDecorators"):
+                ProblemDecorators = Problem.ProblemDecorators
+            else:
+                ProblemDecorators = list()
+            if hasattr(Problem, "ProblemDecoratorsKwargs"):
+                ProblemDecoratorsKwargs = Problem.ProblemDecoratorsKwargs
+            else:
+                ProblemDecoratorsKwargs = list()
+            if hasattr(Problem, "ProblemExactDecorators"):
+                ProblemExactDecorators = Problem.ProblemExactDecorators
+            else:
+                ProblemExactDecorators = list()
+                
+            # Apply decorator
+            DecoratedProblem = ProblemDecorator(Problem)
+            
+            # Move attributes from the base class to the decorated class
+            DecoratedProblem.UndecoratedProblemClass = UndecoratedProblemClass
+            if hasattr(Problem, "UndecoratedProblemClass"):
+                delattr(Problem, "UndecoratedProblemClass")
+            DecoratedProblem.ProblemDecorators = ProblemDecorators
+            if hasattr(Problem, "ProblemDecorators"):
+                delattr(Problem, "ProblemDecorators")
+            DecoratedProblem.ProblemDecoratorsKwargs = ProblemDecoratorsKwargs
+            if hasattr(Problem, "ProblemDecoratorsKwargs"):
+                delattr(Problem, "ProblemDecoratorsKwargs")
+            DecoratedProblem.ProblemExactDecorators = ProblemExactDecorators
+            if hasattr(Problem, "ProblemExactDecorators"):
+                delattr(Problem, "ProblemExactDecorators")
+            # ... and append the new problem decorator
+            DecoratedProblem.ProblemDecorators.append(Algorithm) # replaces and replaces_if are not used, but will be passed also to reduction methods and reduced problem.
+            DecoratedProblem.ProblemDecoratorsKwargs.append(kwargs)
+            DecoratedProblem.ProblemExactDecorators.append(ExactAlgorithm)
+            
+            # Return
+            return DecoratedProblem
         # Done with the storage, return the new problem decorator
         return ProblemDecorator_WithStorage
     return ProblemDecoratorFor_Decorator

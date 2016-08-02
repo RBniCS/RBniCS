@@ -28,7 +28,7 @@ from RBniCS.eim.problems.eim_decorated_problem import EIM
 @ReducedProblemDecoratorFor(EIM)
 def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
     
-    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
+    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
     class EIMDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
         ## Default initialization of members
         @override

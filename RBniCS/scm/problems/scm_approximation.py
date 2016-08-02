@@ -28,7 +28,7 @@ import sys # for sys.float_info.max
 import operator # to find closest parameters
 from math import sqrt
 from RBniCS.problems import ParametrizedProblem
-from RBniCS.utils.decorators import SyncSetters, Extends, override
+from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import print
 from RBniCS.scm.utils.io import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
@@ -37,9 +37,7 @@ from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import Parametrized
 ## @class SCM
 #
 # Successive constraint method for the approximation of the coercivity constant
-@Extends(ParametrizedProblem) # needs to be first in order to override for last the methods
-@SyncSetters("truth_problem", "set_mu", "mu")
-@SyncSetters("truth_problem", "set_mu_range", "mu_range")
+@Extends(ParametrizedProblem)
 class SCMApproximation(ParametrizedProblem):
 
     ###########################     CONSTRUCTORS     ########################### 
@@ -48,6 +46,8 @@ class SCMApproximation(ParametrizedProblem):
 
     ## Default initialization of members
     @override
+    @sync_setters("truth_problem", "set_mu", "mu")
+    @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, folder_prefix, **kwargs):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix)

@@ -32,9 +32,20 @@ def SCMDecoratedProblem(
     constrain_maximum_eigenvalue = 1.e-5,
     bounding_box_minimum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5),
     bounding_box_maximum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e5),
-    coercivity_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
+    coercivity_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5),
+    **decorator_kwargs
 ):
-    @ProblemDecoratorFor(SCM)
+    from RBniCS.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstant    
+    
+    @ProblemDecoratorFor(SCM, ExactAlgorithm=ExactCoercivityConstant,
+        M_e = M_e,
+        M_p = M_p,
+        constrain_minimum_eigenvalue = constrain_minimum_eigenvalue,
+        constrain_maximum_eigenvalue = constrain_maximum_eigenvalue,
+        bounding_box_minimum_eigensolver_parameters = bounding_box_minimum_eigensolver_parameters,
+        bounding_box_maximum_eigensolver_parameters = bounding_box_maximum_eigensolver_parameters,
+        coercivity_eigensolver_parameters = coercivity_eigensolver_parameters
+    )
     def SCMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
     
         @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
