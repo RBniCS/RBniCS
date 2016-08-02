@@ -97,11 +97,13 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the test set
         @override
-        def error_analysis(self, N=None):
+        def error_analysis(self, N=None, with_respect_to=None):
             # Perform first the SCM error analysis, ...
-            self.SCM_reduction.error_analysis(N)
+            if with_respect_to is None: # otherwise we assume the user was interested in computing the error w.r.t. an exact coercivity constant, 
+                                        # so he probably is not interested in the error analysis of SCM
+                self.SCM_reduction.error_analysis(N)
             # ..., and then call the parent method.
-            ReductionMethod_DerivedClass.error_analysis(self, N)
+            ReductionMethod_DerivedClass.error_analysis(self, N, with_respect_to=with_respect_to)
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 

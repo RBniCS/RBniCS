@@ -122,7 +122,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
-        self.reduced_problem.init("online")
+        self._finalize_offline()
         return self.reduced_problem
         
     ## Compute basis functions performing POD
@@ -149,11 +149,11 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     @override
-    def error_analysis(self, N=None):
+    def error_analysis(self, N=None, with_respect_to=None):
         if N is None:
             N = self.reduced_problem.N
             
-        self._init_error_analysis()
+        self._init_error_analysis(with_respect_to)
         
         print("==============================================================")
         print("=             Error analysis begins                          =")
@@ -171,7 +171,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
             self.reduced_problem.set_mu(self.xi_test[run])
                         
             for n in range(1, N + 1): # n = 1, ... N
-                (error_analysis_table["error_u", n, run], error_analysis_table["error_s", n, run]) = self.reduced_problem.compute_error(n)
+                (error_analysis_table["error_u", n, run], error_analysis_table["error_s", n, run]) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to)
         
         # Print
         print("")
@@ -182,6 +182,8 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         print("=             Error analysis ends                            =")
         print("==============================================================")
         print("")
+        
+        self._finalize_error_analysis(with_respect_to)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

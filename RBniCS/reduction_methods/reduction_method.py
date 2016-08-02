@@ -116,6 +116,11 @@ class ReductionMethod(object):
     @abstractmethod
     def _init_offline(self):
         raise NotImplementedError("Please implement the initialization for offline phase of the reduced order model.")
+        
+    ## Finalize data structures required after the offline phase
+    @abstractmethod
+    def _finalize_offline(self):
+        raise NotImplementedError("Please implement the finalization for offline phase of the reduced order model.")
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -127,13 +132,18 @@ class ReductionMethod(object):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     @abstractmethod
-    def error_analysis(self, N=None):
+    def error_analysis(self, N=None, with_respect_to=None):
         raise NotImplementedError("Please implement the error analysis of the reduced order model.")
         
     ## Initialize data structures required for the error analysis phase
     @abstractmethod
-    def _init_error_analysis(self):
+    def _init_error_analysis(self, with_respect_to=None):
         raise NotImplementedError("Please implement the initialization for error analysis of the reduced order model.")
+        
+    ## Finalize data structures required after the error analysis phase
+    @abstractmethod
+    def _finalize_error_analysis(self, with_respect_to=None):
+        raise NotImplementedError("Please implement the finalize for error analysis of the reduced order model.")
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

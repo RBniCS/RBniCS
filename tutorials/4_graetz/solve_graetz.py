@@ -195,3 +195,15 @@ reduced_graetz_problem.solve()
 # 7. Perform an error analysis
 reduced_basis_method.set_xi_test(100)
 reduced_basis_method.error_analysis()
+
+# 8. Define a new class corresponding to the exact version of Graetz,
+#    for which SCM is replaced by ExactCoercivityConstant
+ExactGraetz = ExactProblem(Graetz)
+
+# 9. Allocate an object of the ExactGraetz class
+exact_graetz_problem = ExactGraetz(V, subdomains=subdomains, boundaries=boundaries)
+exact_graetz_problem.set_mu_range(mu_range)
+
+# 10. Perform an error analysis with respect to the exact problem
+reduced_basis_method.error_analysis(with_respect_to=exact_graetz_problem)
+

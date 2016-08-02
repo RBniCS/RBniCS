@@ -153,7 +153,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
-        self.reduced_problem.init("online")
+        self._finalize_offline()
         return self.reduced_problem
         
     ## Update basis matrix
@@ -188,11 +188,11 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     @override
-    def error_analysis(self, N=None):
+    def error_analysis(self, N=None, with_respect_to=None):
         if N is None:
             N = self.reduced_problem.N
             
-        self._init_error_analysis()
+        self._init_error_analysis(with_respect_to)
         
         print("==============================================================")
         print("=             Error analysis begins                          =")
@@ -214,7 +214,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
             self.reduced_problem.set_mu(self.xi_test[run])
             
             for n in range(1, N + 1): # n = 1, ... N
-                (current_error_u, current_error_s) = self.reduced_problem.compute_error(n)
+                (current_error_u, current_error_s) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to)
                 
                 error_analysis_table["error_u", n, run] = current_error_u
                 error_analysis_table["error_estimator_u", n, run] = self.reduced_problem.estimate_error()
@@ -235,6 +235,8 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         print("=             Error analysis ends                            =")
         print("==============================================================")
         print("")
+        
+        self._finalize_error_analysis(with_respect_to)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

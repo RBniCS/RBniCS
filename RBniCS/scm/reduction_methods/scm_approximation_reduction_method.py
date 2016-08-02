@@ -102,6 +102,11 @@ class SCMApproximationReductionMethod(ReductionMethod):
         else:
             self.SCM_approximation.init("offline")
             return True # offline construction should be carried out
+            
+    ## Finalize data structures required after the offline phase
+    @override
+    def _finalize_offline(self):
+        self.SCM_approximation.init("online")
     
     ## Perform the offline phase of SCM
     @override
@@ -152,7 +157,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         # mu_index does not make any sense from now on
         self.offline.__func__.mu_index = None
         
-        self.SCM_approximation.init("online")
+        self._finalize_offline()
         return self.SCM_approximation
         
     # Compute the bounding box \mathcal{B}
@@ -255,21 +260,29 @@ class SCMApproximationReductionMethod(ReductionMethod):
     
     ## Initialize data structures required for the error analysis phase
     @override
-    def _init_error_analysis(self):
+    def _init_error_analysis(self, with_respect_to=None):
+        assert with_respect_to is None
+        
         # Initialize the exact coercivity constant object
         self.SCM_approximation.exact_coercivity_constant_calculator.init()
         
         # Initialize reduced order data structures in the SCM online problem
         self.SCM_approximation.init("online")
+        
+    ## Finalize data structures required after the error analysis phase
+    @override
+    def _finalize_error_analysis(self, with_respect_to=None):
+        assert with_respect_to is None
     
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the test set
     @override
-    def error_analysis(self, N=None):
+    def error_analysis(self, N=None, with_respect_to=None):
         if N is None:
             N = self.SCM_approximation.N
+        assert with_respect_to is None # it does not makes sense to compare to something else other than the exact coercivity constant
             
-        self._init_error_analysis()
+        self._init_error_analysis(with_respect_to)
         
         print("==============================================================")
         print("=             SCM error analysis begins                      =")
@@ -309,6 +322,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
         print("=             SCM error analysis ends                        =")
         print("==============================================================")
         print("")
+        
+        self._finalize_error_analysis(with_respect_to)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

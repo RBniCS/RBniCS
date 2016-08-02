@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import os # for path and makedir
+import types
 from RBniCS.reduction_methods.reduction_method import ReductionMethod
 from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.utils.io import Folders
@@ -84,6 +85,11 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
         else:
             self.reduced_problem.init("offline")
             return True # offline construction should be carried out
+            
+    ## Finalize data structures required after the offline phase
+    @override
+    def _finalize_offline(self):
+        self.reduced_problem.init("online")
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -94,12 +100,31 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
     
     ## Initialize data structures required for the error analysis phase
     @override
-    def _init_error_analysis(self):
+    def _init_error_analysis(self, with_respect_to=None): 
         # Initialize the affine expansion in the truth problem
-        self.truth_problem.init()
+        if with_respect_to is not None:
+            with_respect_to.init()
+        else:
+            self.truth_problem.init()
         
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem.init("online")
+        
+        # Make sure that stability factors computations at the reduced order level
+        # call the correct problem
+        if with_respect_to is not None:
+            self._finalize_error_analysis.__func__.get_stability_factor__original = self.reduced_problem.get_stability_factor
+            def get_stability_factor__with_respect_to(self):
+                return with_respect_to.get_stability_factor()
+            self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
+                
+    ## Finalize data structures required after the error analysis phase
+    @override
+    def _finalize_error_analysis(self, with_respect_to=None): 
+        # Make sure that stability factors computations at the reduced order level
+        # are reset to the standard method
+        if with_respect_to is not None:
+            self.reduced_problem.get_stability_factor = types.MethodType(self._finalize_error_analysis.__func__.get_stability_factor__original, self.reduced_problem)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

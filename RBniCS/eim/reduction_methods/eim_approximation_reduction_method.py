@@ -90,6 +90,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
         else:
             self.EIM_approximation.init("offline")
             return True # offline construction should be carried out
+            
+    ## Finalize data structures required after the offline phase
+    @override
+    def _finalize_offline(self):
+        self.EIM_approximation.init("online")
     
     ## Perform the offline phase of EIM
     @override
@@ -164,7 +169,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # mu_index does not make any sense from now on
         self.offline.__func__.mu_index = None
         
-        self.EIM_approximation.init("online")
+        self._finalize_offline()
         return self.EIM_approximation
         
     ## Update the snapshots matrix
@@ -269,17 +274,22 @@ class EIMApproximationReductionMethod(ReductionMethod):
     #  @{
     
     @override
-    def _init_error_analysis(self):
-        pass
+    def _init_error_analysis(self, with_respect_to=None):
+        assert with_respect_to is None
+        
+    @override
+    def _finalize_error_analysis(self, with_respect_to=None):
+        assert with_respect_to is None
     
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the test set
     @override
-    def error_analysis(self, N=None):
+    def error_analysis(self, N=None, with_respect_to=None):
         if N is None:
             N = self.EIM_approximation.N
+        assert with_respect_to is None # it does not makes sense to compare to something else other than the exact parametrized function
             
-        self._init_error_analysis()
+        self._init_error_analysis(with_respect_to)
         
         print("==============================================================")
         print("=             EIM error analysis begins                      =")
@@ -312,6 +322,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("=             EIM error analysis ends                        =")
         print("==============================================================")
         print("")
+        
+        self._finalize_error_analysis(with_respect_to)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ###########################

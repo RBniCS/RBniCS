@@ -71,6 +71,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self._solution = OnlineVector()
         self._output = 0
         self.compute_error.__func__.previous_mu = None
+        self.compute_error.__func__.previous_with_respect_to = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -185,27 +186,33 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
-    def compute_error(self, N=None):
+    def compute_error(self, N=None, with_respect_to=None):
         if N is None:
             N = self.N
-        if self.compute_error.__func__.previous_mu != self.mu:
-            self.truth_problem.solve()
-            self.truth_problem.output()
+        if with_respect_to is not None:
+            truth_problem = with_respect_to
+        else:
+            truth_problem = self.truth_problem
+        if self.compute_error.__func__.previous_mu != self.mu or self.compute_error.__func__.previous_with_respect_to != truth_problem:
+            truth_problem.set_mu(self.mu) # if with_respect_to != None they are not in sync
+            truth_problem.solve()
+            truth_problem.output()
             # Do not carry out truth solves anymore for the same parameter
             self.compute_error.__func__.previous_mu = self.mu
+            self.compute_error.__func__.previous_with_respect_to = truth_problem
         # Compute the error on the solution
         uN = self.solve(N, with_plot=False)
-        error = Function(self.truth_problem.V, self.Z[:N]*uN)
-        error.vector().add_local(- self.truth_problem._solution.vector().array())
+        error = Function(truth_problem.V, self.Z[:N]*uN)
+        error.vector().add_local(- truth_problem._solution.vector().array())
         error.vector().apply("") # store the error as a function in the reduced solution
-        error_norm_squared = transpose(error.vector())*self._error_inner_product_matrix()*error.vector() # norm of the error
+        error_norm_squared = transpose(error.vector())*self._error_inner_product_matrix(truth_problem)*error.vector() # norm of the error
         # Compute the error on the output
-        error_output = abs(self.truth_problem._output - self.output())
+        error_output = abs(truth_problem._output - self.output())
         return (sqrt(error_norm_squared), error_output)
         
     # Internal method for error computation: returns the inner product matrix to be used.
-    def _error_inner_product_matrix(self):
-        assembled_error_inner_product_operator = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
+    def _error_inner_product_matrix(self, truth_problem):
+        assembled_error_inner_product_operator = sum(product(truth_problem.compute_theta("a"), truth_problem.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
         return assembled_error_inner_product_operator
         
     #  @}

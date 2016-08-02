@@ -116,12 +116,14 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the test set
         @override
-        def error_analysis(self, N=None):
+        def error_analysis(self, N=None, with_respect_to=None):
             # Perform first the EIM error analysis, ...
-            for coeff in self.EIM_reductions:
-                self.EIM_reductions[coeff].error_analysis(N)
+            if with_respect_to is None: # otherwise we assume the user was interested in computing the error w.r.t. an exact parametrized functions, 
+                                        # so he probably is not interested in the error analysis of EIM
+                for coeff in self.EIM_reductions:
+                    self.EIM_reductions[coeff].error_analysis(N)
             # ..., and then call the parent method.
-            ReductionMethod_DerivedClass.error_analysis(self, N)
+            ReductionMethod_DerivedClass.error_analysis(self, N, with_respect_to=with_respect_to)
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 
