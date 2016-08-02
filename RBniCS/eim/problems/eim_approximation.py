@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from dolfin import Function, project, vertices
 from RBniCS.problems import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
 from RBniCS.utils.decorators import sync_setters, Extends, override
@@ -61,6 +62,7 @@ class EIMApproximation(ParametrizedProblem):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         self.V = V
+        self.snapshot = Function(V)
         # Basis functions matrix
         self.Z = BasisFunctionsMatrix()
         # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
@@ -143,6 +145,45 @@ class EIMApproximation(ParametrizedProblem):
 
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
+    
+    # Compute the interpolation error and/or its maximum location
+    def compute_maximum_interpolation_error(self, N=None):
+        if N is None:
+            N = self.N
+        
+        # Compute the error (difference with the eim approximation)
+        error = Function(self.V)
+        error.vector().add_local(self.snapshot.vector().array())
+        if N > 0:
+            error.vector().add_local(- (self.Z[:N]*self._interpolation_coefficients).array())
+        error.vector().apply("")
+        
+        # Locate the vertex of the mesh where the error is maximum
+        mesh = self.V.mesh()
+        maximum_error = None
+        maximum_point = None
+        for v in vertices(mesh):
+            point = mesh.coordinates()[v.index()]
+            err = error(point)
+            if maximum_error is None or abs(err) > abs(maximum_error):
+                maximum_point = point
+                maximum_error = err
+        assert maximum_error is not None
+        assert maximum_point is not None
+        
+        # Communicate the result in parallel
+        from mpi4py.MPI import MAX
+        local_abs_maximum_error = abs(maximum_error)
+        global_abs_maximum_error = mpi_comm.allreduce(local_abs_maximum_error, op=MAX)
+        global_abs_maximum_error_processor_argmax = -1
+        if global_abs_maximum_error == local_abs_maximum_error:
+            global_abs_maximum_error_processor_argmax = mpi_comm.rank
+        global_abs_maximum_error_processor_argmax = mpi_comm.allreduce(global_abs_maximum_error_processor_argmax, op=MAX)
+        global_maximum_point = mpi_comm.bcast(maximum_point, root=global_abs_maximum_error_processor_argmax)
+        global_maximum_error = mpi_comm.bcast(maximum_error, root=global_abs_maximum_error_processor_argmax)
+            
+        # Return
+        return (error, global_maximum_error, global_maximum_point)
 
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods

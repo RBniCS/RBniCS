@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from dolfin import Function, project, vertices
+from dolfin import Function, project
 from RBniCS.reduction_methods import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
 from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
@@ -51,7 +51,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # High fidelity problem
         self.EIM_approximation = EIM_approximation
         # Declare a new matrix to store the snapshots
-        self.snapshot = Function(EIM_approximation.V)
         self.snapshots_matrix = SnapshotsMatrix()
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
@@ -114,11 +113,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             print("evaluate parametrized function")
             self.EIM_approximation.set_mu(self.xi_train[run])
-            project(self.EIM_approximation.parametrized_expression, V=self.EIM_approximation.V, function=self.snapshot)
-            self.EIM_approximation.export_solution(self.snapshot, self.folder["snapshots"], "truth_" + str(run))
+            project(self.EIM_approximation.parametrized_expression, V=self.EIM_approximation.V, function=self.EIM_approximation.snapshot)
+            self.EIM_approximation.export_solution(self.EIM_approximation.snapshot, self.folder["snapshots"], "truth_" + str(run))
             
-            print("update snapshot matrix")
-            self.update_snapshots_matrix(self.snapshot)
+            print("update snapshots matrix")
+            self.update_snapshots_matrix(self.EIM_approximation.snapshot)
 
             print("")
         
@@ -144,8 +143,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.solve()
             
             print("compute maximum interpolation error")
-            self.snapshot = self.load_snapshot()
-            (error, maximum_error, maximum_point) = self.compute_maximum_interpolation_error()
+            self.EIM_approximation.snapshot = self.load_snapshot()
+            (error, maximum_error, maximum_point) = self.EIM_approximation.compute_maximum_interpolation_error()
             self.update_interpolation_points(maximum_point)
             
             print("update basis matrix")
@@ -206,45 +205,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         assert mu_index is not None
         assert mu == self.xi_train[mu_index]
         return Function(self.EIM_approximation.V, self.snapshots_matrix[mu_index])
-    
-    # Compute the interpolation error and/or its maximum location
-    def compute_maximum_interpolation_error(self, N=None):
-        if N is None:
-            N = self.EIM_approximation.N
-        
-        # Compute the error (difference with the eim approximation)
-        error = Function(self.EIM_approximation.V)
-        error.vector().add_local(self.snapshot.vector().array())
-        if N > 0:
-            error.vector().add_local(- (self.EIM_approximation.Z[:N]*self.EIM_approximation._interpolation_coefficients).array())
-        error.vector().apply("")
-        
-        # Locate the vertex of the mesh where the error is maximum
-        mesh = self.EIM_approximation.V.mesh()
-        maximum_error = None
-        maximum_point = None
-        for v in vertices(mesh):
-            point = mesh.coordinates()[v.index()]
-            err = error(point)
-            if maximum_error is None or abs(err) > abs(maximum_error):
-                maximum_point = point
-                maximum_error = err
-        assert maximum_error is not None
-        assert maximum_point is not None
-        
-        # Communicate the result in parallel
-        from mpi4py.MPI import MAX
-        local_abs_maximum_error = abs(maximum_error)
-        global_abs_maximum_error = mpi_comm.allreduce(local_abs_maximum_error, op=MAX)
-        global_abs_maximum_error_processor_argmax = -1
-        if global_abs_maximum_error == local_abs_maximum_error:
-            global_abs_maximum_error_processor_argmax = mpi_comm.rank
-        global_abs_maximum_error_processor_argmax = mpi_comm.allreduce(global_abs_maximum_error_processor_argmax, op=MAX)
-        global_maximum_point = mpi_comm.bcast(maximum_point, root=global_abs_maximum_error_processor_argmax)
-        global_maximum_error = mpi_comm.bcast(maximum_error, root=global_abs_maximum_error_processor_argmax)
-            
-        # Return
-        return (error, global_maximum_error, global_maximum_point)
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
@@ -253,8 +213,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.set_mu(mu)
             
             self.EIM_approximation.solve()
-            self.snapshot = self.load_snapshot()
-            (_, err, _) = self.compute_maximum_interpolation_error()
+            self.EIM_approximation.snapshot = self.load_snapshot()
+            (_, err, _) = self.EIM_approximation.compute_maximum_interpolation_error()
             return err
             
         (error_max, error_argmax) = self.xi_train.max(solve_and_computer_error, abs)
@@ -307,11 +267,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.set_mu(self.xi_test[run])
             
             # Evaluate the exact function on the truth grid
-            project(self.EIM_approximation.parametrized_expression, V=self.EIM_approximation.V, function=self.snapshot)
+            project(self.EIM_approximation.parametrized_expression, V=self.EIM_approximation.V, function=self.EIM_approximation.snapshot)
             
             for n in range(1, N + 1): # n = 1, ... N
                 self.EIM_approximation.solve(n)
-                (_, error_analysis_table["error", n, run], _) = self.compute_maximum_interpolation_error(n)
+                (_, error_analysis_table["error", n, run], _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
                 error_analysis_table["error", n, run] = abs(error_analysis_table["error", n, run])
         
         # Print
