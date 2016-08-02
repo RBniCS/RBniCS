@@ -122,6 +122,8 @@ reduced_gaussian_problem = reduced_basis_method.offline()
 online_mu = (0.3,-1.0)
 reduced_gaussian_problem.set_mu(online_mu)
 reduced_gaussian_problem.solve()
+reduced_gaussian_problem.solve(EIM=11)
+reduced_gaussian_problem.solve(EIM=1)
 
 # 7. Perform an error analysis
 reduced_basis_method.set_xi_test(50)
@@ -138,3 +140,6 @@ exact_gaussian_problem.set_mu_range(mu_range)
 # 10. Perform an error analysis with respect to the exact problem
 reduced_basis_method.error_analysis(with_respect_to=exact_gaussian_problem)
 
+# 11. Perform an error analysis with respect to the exact problem, but
+#     employing a smaller number of EIM basis functions
+reduced_basis_method.error_analysis(with_respect_to=exact_gaussian_problem, EIM=11)

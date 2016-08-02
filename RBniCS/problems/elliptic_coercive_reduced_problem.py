@@ -125,16 +125,16 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             raise ValueError("Invalid stage in _init_basis_functions().")
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-    def solve(self, N=None, with_plot=True):
+    def solve(self, N=None, with_plot=True, **kwargs):
         if N is None:
             N = self.N
-        uN = self._solve(N)
+        uN = self._solve(N, **kwargs)
         if with_plot:
             self._plot(uN, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
         return uN
     
     # Perform an online solve (internal)
-    def _solve(self, N):
+    def _solve(self, N, **kwargs):
         N += self.N_bc
         assembled_operator = dict()
         assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
@@ -186,7 +186,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
-    def compute_error(self, N=None, with_respect_to=None):
+    def compute_error(self, N=None, with_respect_to=None, **kwargs):
         if N is None:
             N = self.N
         if with_respect_to is not None:
@@ -201,7 +201,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             self.compute_error.__func__.previous_mu = self.mu
             self.compute_error.__func__.previous_with_respect_to = truth_problem
         # Compute the error on the solution
-        uN = self.solve(N, with_plot=False)
+        uN = self.solve(N, with_plot=False, **kwargs)
         error = Function(truth_problem.V, self.Z[:N]*uN)
         error.vector().add_local(- truth_problem._solution.vector().array())
         error.vector().apply("") # store the error as a function in the reduced solution

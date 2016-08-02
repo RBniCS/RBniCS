@@ -193,7 +193,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
         
         # Perform an online solve (internal)
         @override
-        def _solve(self, N):
+        def _solve(self, N, **kwargs):
             # The offline/online separation does not hold anymore, so, similarly to what we did in
             # the truth problem, also at the reduced-order level we need to re-assemble operators,
             # because the assemble_operator() *may* return parameter dependent operators.
@@ -205,7 +205,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
                 # Avoid useless assemblies
                 self._solve.__func__.previous_mu = self.mu
                 self._solve.__func__.previous_self_N = self.N
-            return ReducedParametrizedProblem_DerivedClass._solve(self, N)
+            return ReducedParametrizedProblem_DerivedClass._solve(self, N, **kwargs)
     
         #  @}
         ########################### end - ONLINE STAGE - end ########################### 

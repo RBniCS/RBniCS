@@ -35,6 +35,29 @@ def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
         def __init__(self, truth_problem):
             # Call the parent initialization
             ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+            # Avoid useless assignments
+            self._solve.__func__.previous_kwargs = None
+            
+        @override
+        def _solve(self, N, **kwargs):
+            if kwargs != self._solve.__func__.previous_kwargs:
+                if "EIM" in kwargs:
+                    self.truth_problem.compute_theta.__func__.N_EIM = dict()
+                    N_EIM = kwargs["EIM"]
+                    for term in self.truth_problem.separated_forms:
+                        self.truth_problem.compute_theta.__func__.N_EIM[term] = dict()
+                        for q in range(len(self.truth_problem.separated_forms[term])):
+                            if isinstance(N_EIM, dict):
+                                assert term in N_EIM and q in N_EIM[term]
+                                self.truth_problem.compute_theta.__func__.N_EIM[term][q] = N_EIM[term][q]
+                            else:
+                                assert isinstance(N_EIM, int)
+                                self.truth_problem.compute_theta.__func__.N_EIM[term][q] = N_EIM
+                else:
+                    if hasattr(self.truth_problem.compute_theta.__func__, "N_EIM"):
+                        delattr(self.truth_problem.compute_theta.__func__, "N_EIM")
+                self._solve.__func__.previous_kwargs = kwargs
+            return ReducedParametrizedProblem_DerivedClass._solve(self, N, **kwargs)
         
     # return value (a class) for the decorator
     return EIMDecoratedReducedProblem_Class

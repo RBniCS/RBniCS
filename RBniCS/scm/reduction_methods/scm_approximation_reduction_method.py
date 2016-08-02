@@ -277,10 +277,11 @@ class SCMApproximationReductionMethod(ReductionMethod):
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the test set
     @override
-    def error_analysis(self, N=None, with_respect_to=None):
+    def error_analysis(self, N=None, with_respect_to=None, **kwargs):
         if N is None:
             N = self.SCM_approximation.N
         assert with_respect_to is None # it does not makes sense to compare to something else other than the exact coercivity constant
+        assert len(kwargs) == 0 # not used in this method
             
         self._init_error_analysis(with_respect_to)
         

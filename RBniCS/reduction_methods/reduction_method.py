@@ -132,7 +132,7 @@ class ReductionMethod(object):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     @abstractmethod
-    def error_analysis(self, N=None, with_respect_to=None):
+    def error_analysis(self, N=None, with_respect_to=None, **kwargs):
         raise NotImplementedError("Please implement the error analysis of the reduced order model.")
         
     ## Initialize data structures required for the error analysis phase

@@ -99,7 +99,11 @@ def EIMDecoratedProblem(**decorator_kwargs):
                         for i in range(len(self.separated_forms[term][q].coefficients)):
                             eim_thetas_q_i__list = list()
                             for coeff in self.separated_forms[term][q].coefficients[i]:
-                                eim_thetas_q_i__list.append(self.EIM_approximations[coeff].compute_interpolated_theta())
+                                N_EIM = None
+                                if hasattr(self.compute_theta.__func__, "N_EIM"):
+                                    assert term in self.compute_theta.__func__.N_EIM and q in self.compute_theta.__func__.N_EIM[term]
+                                    N_EIM = self.compute_theta.__func__.N_EIM[term][q]
+                                eim_thetas_q_i__list.append(self.EIM_approximations[coeff].compute_interpolated_theta(N_EIM))
                             eim_thetas_q_i__cartesian_product = cartesian_product(*eim_thetas_q_i__list)
                             for t in eim_thetas_q_i__cartesian_product:
                                 eim_thetas_q_i_t = original_thetas[q]
