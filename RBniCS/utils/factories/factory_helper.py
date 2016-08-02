@@ -56,13 +56,13 @@ def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_val
                     for c in range(len(candidates)):
                         if candidates_replaces[c] is not None:
                             if condition_for_candidate_replacement(candidates_replaces_if[c]):
-                                log(DEBUG, "\t\t\tRemoving candidate " + candidates_replaces[c] + " because of user provided replacement")
-                                candidates_to_be_removed.append(c)
+                                log(DEBUG, "\t\t\tRemoving candidate " + str(candidates_replaces[c]) + " because of failed user provided replacement with " + str(candidates[c]))
+                                candidates_to_be_removed.append(candidates_replaces[c])
                             else:
-                                log(DEBUG, "\t\t\tRemoving candidate " + candidates[c] + " because of user provided replacement")
-                                candidates_to_be_removed.append(c)
+                                log(DEBUG, "\t\t\tKeeping candidate " + str(candidates_replaces[c]) + " because of successful user provided replacement with " + str(candidates[c]))
+                                candidates_to_be_removed.append(candidates[c])
                     for c in candidates_to_be_removed:
-                        del candidates[c]
+                        candidates.remove(c)
                     if inspect.isclass(candidates[0]): # they will all be classes
                         candidates_to_be_removed = list()
                         for c1 in range(len(candidates)):
