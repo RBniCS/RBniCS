@@ -69,6 +69,10 @@ class EIMApproximation(ParametrizedProblem):
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         
+        # Avoid useless linear system solves
+        self.solve.__func__.previous_mu = None
+        self.solve.__func__.previous_N = None
+        
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
 
@@ -95,17 +99,22 @@ class EIMApproximation(ParametrizedProblem):
         if N is None:
             N = self.N
         
-        # Evaluate the function at interpolation points
-        rhs = OnlineVector(N)
-        for p in range(N):
-            rhs[p] = self.evaluate_parametrized_expression_at_x(*self.interpolation_points[p])
-        
-        # Extract the interpolation matrix
-        lhs = self.interpolation_matrix[0][:N,:N]
-        
-        # Solve the interpolation problem
-        self._interpolation_coefficients = OnlineVector(N)
-        solve(lhs, self._interpolation_coefficients, rhs)
+        if self.solve.__func__.previous_mu != self.mu or self.solve.__func__.previous_N != N:
+            # Evaluate the function at interpolation points
+            rhs = OnlineVector(N)
+            for p in range(N):
+                rhs[p] = self.evaluate_parametrized_expression_at_x(*self.interpolation_points[p])
+            
+            # Extract the interpolation matrix
+            lhs = self.interpolation_matrix[0][:N,:N]
+            
+            # Solve the interpolation problem
+            self._interpolation_coefficients = OnlineVector(N)
+            solve(lhs, self._interpolation_coefficients, rhs)
+            
+            # Store to avoid repeated computations
+            self.solve.__func__.previous_mu = self.mu
+            self.solve.__func__.previous_N = N
         
         return self._interpolation_coefficients
         
