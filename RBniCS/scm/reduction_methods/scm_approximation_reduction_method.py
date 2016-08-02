@@ -25,7 +25,7 @@
 from __future__ import print_function
 from dolfin import Function
 from RBniCS.linear_algebra import transpose, OnlineVector
-from RBniCS.reduction_methods import ReductionMethod
+from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList
 from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override

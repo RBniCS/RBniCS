@@ -27,7 +27,7 @@ import glpk # for LB computation
 import sys # for sys.float_info.max
 import operator # to find closest parameters
 from math import sqrt
-from RBniCS.problems import ParametrizedProblem
+from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import print
 from RBniCS.scm.utils.io import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList

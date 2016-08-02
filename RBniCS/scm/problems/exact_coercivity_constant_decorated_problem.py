@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems import ParametrizedProblem
+from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
 from RBniCS.scm.problems.scm_decorated_problem import SCM

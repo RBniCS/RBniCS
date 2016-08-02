@@ -24,7 +24,7 @@
 
 from abc import ABCMeta, abstractmethod
 from dolfin import Function
-from RBniCS.problems.parametrized_problem import ParametrizedProblem
+from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, product, transpose, solve, sum
 from RBniCS.utils.decorators import Extends, override
 

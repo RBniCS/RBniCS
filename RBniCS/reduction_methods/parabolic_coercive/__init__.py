@@ -21,3 +21,11 @@
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
+
+#from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive import # TODO enable
+#from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_pod import # TODO enable
+#from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_rb import # TODO enable
+
+__all__ = [
+    # TODO enable
+]

@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import Function, project, vertices
-from RBniCS.problems import ParametrizedProblem
+from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import mpi_comm

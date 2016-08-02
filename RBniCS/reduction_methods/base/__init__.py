@@ -21,3 +21,9 @@
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
+
+from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
+
+__all__ = [
+    'ReductionMethod'
+]

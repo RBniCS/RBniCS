@@ -24,8 +24,8 @@
 
 import os # for path and makedir
 import types
-from RBniCS.reduction_methods.reduction_method import ReductionMethod
-from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.reduction_methods.base import ReductionMethod
+from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.utils.io import Folders
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
 from RBniCS.utils.factories import ReducedProblemFactory

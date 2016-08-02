@@ -24,7 +24,7 @@
 
 from math import sqrt
 from dolfin import adjoint, Function, DirichletBC
-from RBniCS.problems import ParametrizedProblem
+from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.linear_algebra import AffineExpansionOfflineStorage, sum, product, TruthEigenSolver
 from RBniCS.utils.decorators import sync_setters, Extends, override
 

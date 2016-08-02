@@ -36,7 +36,7 @@ assert has_slepc()
 
 # Import the minimum subset of RBniCS required to run tutorials
 from RBniCS.eim import EIM, ExactParametrizedFunctions
-from RBniCS.problems import EllipticCoerciveProblem
+from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.sampling import EquispacedDistribution, UniformDistribution
 from RBniCS.scm import SCM, ExactCoercivityConstant
 from RBniCS.shape_parametrization import ShapeParametrization

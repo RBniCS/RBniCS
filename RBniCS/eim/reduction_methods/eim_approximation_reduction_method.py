@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 from dolfin import Function, project
-from RBniCS.reduction_methods import ReductionMethod
+from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
 from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
 from RBniCS.utils.mpi import print, mpi_comm

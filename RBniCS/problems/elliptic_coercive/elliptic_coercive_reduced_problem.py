@@ -26,13 +26,12 @@ from __future__ import print_function
 import types
 from dolfin import Function
 from math import sqrt
-from RBniCS.problems.parametrized_problem import ParametrizedProblem
-from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.problems.base import ParametrizedProblem
+from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, OnlineVector, product, transpose, solve, sum
 from RBniCS.utils.decorators import sync_setters, Extends, override, ReducedProblemFor
 from RBniCS.utils.mpi import print
-from RBniCS.problems.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.reduction_methods import EllipticCoerciveReductionMethod
+from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
