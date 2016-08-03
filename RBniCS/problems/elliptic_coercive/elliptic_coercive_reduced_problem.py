@@ -222,7 +222,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 truth_problem = self._flattened_truth_problem
         if self.compute_error.__func__.previous_mu != self.mu or self.compute_error.__func__.previous_with_respect_to != truth_problem:
             truth_problem.set_mu(self.mu) # if with_respect_to != None they are not in sync
-            truth_problem.solve()
+            truth_problem.solve(**kwargs)
             truth_problem.output()
             # Do not carry out truth solves anymore for the same parameter
             self.compute_error.__func__.previous_mu = self.mu

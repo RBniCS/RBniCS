@@ -126,7 +126,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
             pass
                     
     ## Perform a truth solve
-    def solve(self):
+    def solve(self, **kwargs):
         assembled_operator = dict()
         for term in self.terms:
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))

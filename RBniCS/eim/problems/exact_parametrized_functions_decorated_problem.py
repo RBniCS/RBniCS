@@ -46,7 +46,7 @@ def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
             
             ## Perform a truth solve
             @override
-            def solve(self):
+            def solve(self, **kwargs):
                 # The offline/online separation does not hold anymore, so we need to re-assemble operators,
                 # because the assemble_operator() *may* return parameter dependent operators.
                 if self.solve.__func__.previous_mu != self.mu:

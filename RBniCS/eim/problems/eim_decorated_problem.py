@@ -59,6 +59,34 @@ def EIMDecoratedProblem(**decorator_kwargs):
                             for coeff in self.separated_forms[term][q].coefficients[i]:
                                 if coeff not in self.EIM_approximations:
                                     self.EIM_approximations[coeff] = EIMApproximation(self, coeff, type(self).__name__ + "/eim/" + str(coeff.hash_code))
+                                    
+                # Avoid useless assignments
+                self._update_N_EIM_in_compute_theta.__func__.previous_kwargs = None
+                
+            @override
+            def solve(self, **kwargs):
+                self._update_N_EIM_in_compute_theta(**kwargs)
+                return ParametrizedProblem_DerivedClass.solve(self, **kwargs)
+            
+            def _update_N_EIM_in_compute_theta(self, **kwargs):
+                if kwargs != self._update_N_EIM_in_compute_theta.__func__.previous_kwargs:
+                    if "EIM" in kwargs:
+                        self.compute_theta.__func__.N_EIM = dict()
+                        N_EIM = kwargs["EIM"]
+                        for term in self.separated_forms:
+                            self.compute_theta.__func__.N_EIM[term] = dict()
+                            for q in range(len(self.separated_forms[term])):
+                                if isinstance(N_EIM, dict):
+                                    assert term in N_EIM and q in N_EIM[term]
+                                    self.compute_theta.__func__.N_EIM[term][q] = N_EIM[term][q]
+                                else:
+                                    assert isinstance(N_EIM, int)
+                                    self.compute_theta.__func__.N_EIM[term][q] = N_EIM
+                    else:
+                        if hasattr(self.compute_theta.__func__, "N_EIM"):
+                            delattr(self.compute_theta.__func__, "N_EIM")
+                    self._update_N_EIM_in_compute_theta.__func__.previous_kwargs = kwargs
+                
                 
             ###########################     PROBLEM SPECIFIC     ########################### 
             ## @defgroup ProblemSpecific Problem specific methods
