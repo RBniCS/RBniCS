@@ -23,10 +23,24 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators.for_decorators_helper import ForDecoratorsStore, ForDecoratorsLogging
+from RBniCS.utils.decorators.reduction_method_for import ReductionMethodFor, ReductionMethodFor_Impl
 from RBniCS.utils.io import log, DEBUG
 
 def ReducedProblemFor(Problem, ReductionMethod, replaces=None, replaces_if=None):
+    impl = ReducedProblemFor_Impl(Problem, ReductionMethod, replaces, replaces_if)
     def ReducedProblemFor_Decorator(ReducedProblem):
+        output = impl(ReducedProblem)
+        # The current reduced problem can also be used as a truth problem for multilevel reduction
+        category = ReductionMethodFor._all_reduction_methods_categories[ReductionMethod]
+        multilevel_reduction_method_for_impl = ReductionMethodFor_Impl(ReducedProblem, category)      # there is no need for replacements, since
+        multilevel_reduced_problem_for_impl = ReducedProblemFor_Impl(ReducedProblem, ReductionMethod) # reduced problems can only generate again themselves
+        multilevel_reduction_method_for_impl(ReductionMethod)
+        multilevel_reduced_problem_for_impl(ReducedProblem)
+        return output
+    return ReducedProblemFor_Decorator
+    
+def ReducedProblemFor_Impl(Problem, ReductionMethod, replaces=None, replaces_if=None):
+    def ReducedProblemFor_ImplDecorator(ReducedProblem):
         # Add to local storage
         log(DEBUG,
             "In ReducedProblemFor with\n" +
@@ -46,6 +60,6 @@ def ReducedProblemFor(Problem, ReductionMethod, replaces=None, replaces_if=None)
         log(DEBUG, "\n")
         # Done with the storage, return the unchanged reduced problem class
         return ReducedProblem
-    return ReducedProblemFor_Decorator
+    return ReducedProblemFor_ImplDecorator
 
 ReducedProblemFor._all_reduced_problems = list() # (over inheritance level) of dicts from Problem to list of (ReducedProblem, ReductionMethod, replaces, replaces_if)

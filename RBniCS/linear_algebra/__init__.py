@@ -28,6 +28,7 @@ from RBniCS.linear_algebra.basis_functions_matrix import BasisFunctionsMatrix
 from RBniCS.linear_algebra.functions_list import FunctionsList
 from RBniCS.linear_algebra.gram_schmidt import GramSchmidt
 from RBniCS.linear_algebra.online_eigen_solver import OnlineEigenSolver
+from RBniCS.linear_algebra.online_function import OnlineFunction
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix
 from RBniCS.linear_algebra.online_vector import OnlineVector
 from RBniCS.linear_algebra.product import product
@@ -37,6 +38,7 @@ from RBniCS.linear_algebra.solve import solve
 from RBniCS.linear_algebra.sum import sum
 from RBniCS.linear_algebra.transpose import transpose
 from RBniCS.linear_algebra.truth_eigen_solver import TruthEigenSolver
+from RBniCS.linear_algebra.truth_function import TruthFunction
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
 from RBniCS.linear_algebra.truth_vector import TruthVector
 
@@ -47,6 +49,7 @@ __all__ = [
     'FunctionsList',
     'GramSchmidt',
     'OnlineEigenSolver',
+    'OnlineFunction',
     'OnlineMatrix',
     'OnlineVector',
     'product',
@@ -56,6 +59,7 @@ __all__ = [
     'sum',
     'transpose',
     'TruthEigenSolver',
+    'TruthFunction',
     'TruthMatrix',
     'TruthVector'
 ]

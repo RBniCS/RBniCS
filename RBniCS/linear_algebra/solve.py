@@ -26,25 +26,28 @@
 ## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
 #  @{
 
+from RBniCS.linear_algebra.truth_function import TruthFunction
 from RBniCS.linear_algebra.truth_vector import TruthVector
 from RBniCS.linear_algebra.truth_matrix import TruthMatrix
+from RBniCS.linear_algebra.online_function import OnlineFunction
 from RBniCS.linear_algebra.online_vector import OnlineVector_Type
 from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
 
 # Similarly to FEniCS' solve define a solve for online problems
 def solve(lhs, solution, rhs, bcs=None):
-    assert \
-        (isinstance(lhs, TruthMatrix) and isinstance(solution, TruthVector) and isinstance(rhs, TruthVector)) \
-            or \
-        (isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineVector_Type) and isinstance(rhs, OnlineVector_Type))
-    if isinstance(lhs, TruthMatrix) and isinstance(solution, TruthVector) and isinstance(rhs, TruthVector):
+    assert (
+        (isinstance(lhs, TruthMatrix) and isinstance(solution, TruthFunction) and isinstance(rhs, TruthVector))
+            or
+        (isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineFunction) and isinstance(rhs, OnlineVector_Type))
+    )
+    if isinstance(lhs, TruthMatrix) and isinstance(solution, TruthFunction) and isinstance(rhs, TruthVector):
         if bcs is not None:
             assert isinstance(bcs, list)
             for bc in bcs:
                 bc.apply(lhs, rhs)
         from dolfin import solve as dolfin_solve
-        dolfin_solve(lhs, solution, rhs)
-    elif isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineVector_Type) and isinstance(rhs, OnlineVector_Type):
+        dolfin_solve(lhs, solution.vector(), rhs)
+    elif isinstance(lhs, OnlineMatrix_Type) and isinstance(solution, OnlineFunction) and isinstance(rhs, OnlineVector_Type):
         if bcs is not None:
             assert isinstance(bcs, tuple)
             for i in range(len(bcs)):
@@ -53,7 +56,7 @@ def solve(lhs, solution, rhs, bcs=None):
                 lhs[i, i] = 1.
         from numpy.linalg import solve as numpy_solve
         solution_ = numpy_solve(lhs, rhs)
-        solution[:] = solution_
+        solution.vector()[:] = solution_
     else:
         raise TypeError("Invalid arguments in RBniCS solve()")
         

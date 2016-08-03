@@ -160,7 +160,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     def update_basis_matrix(self, snapshot):
         self.reduced_problem.Z.enrich(snapshot)
         self.GS.apply(self.reduced_problem.Z)
-        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis", self.truth_problem.V)
+        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
         self.reduced_problem.N += 1
         
     ## Choose the next parameter in the offline stage in a greedy fashion
@@ -188,7 +188,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     @override
-    def error_analysis(self, N=None, with_respect_to=None, **kwargs):
+    def error_analysis(self, N=None, with_respect_to=None, flatten_truth_problem=False, **kwargs):
         if N is None:
             N = self.reduced_problem.N
             
@@ -214,7 +214,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
             self.reduced_problem.set_mu(self.xi_test[run])
             
             for n in range(1, N + 1): # n = 1, ... N
-                (current_error_u, current_error_s) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to, **kwargs)
+                (current_error_u, current_error_s) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to, flatten_truth_problem=flatten_truth_problem, **kwargs)
                 
                 error_analysis_table["error_u", n, run] = current_error_u
                 error_analysis_table["error_estimator_u", n, run] = self.reduced_problem.estimate_error()

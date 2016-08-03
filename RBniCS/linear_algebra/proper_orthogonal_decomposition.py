@@ -38,17 +38,17 @@ class ProperOrthogonalDecomposition(object):
     #  @{
     
     ## Default initialization of members
-    def __init__(self, X):
+    def __init__(self, X, V):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a matrix to store the snapshots
-        self.snapshots_matrix = SnapshotsMatrix()
+        self.snapshots_matrix = SnapshotsMatrix(V)
         self.eigensolver = OnlineEigenSolver()
         # Inner product
         self.X = X
         
     ## Clean up
     def clear(self):
-        self.snapshots_matrix = SnapshotsMatrix()
+        self.snapshots_matrix.clear()
         self.eigensolver = OnlineEigenSolver()
         
     #  @}

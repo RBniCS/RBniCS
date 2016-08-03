@@ -33,7 +33,7 @@ from RBniCS.utils.io.pickle_io import PickleIO
 from RBniCS.utils.io.speedup_analysis_table import SpeedupAnalysisTable
 from RBniCS.utils.io.text_io import TextIO
 
-# Alias FEniCS functions
+# Alias FEniCS objects
 from dolfin import plot, File, log, DEBUG, PROGRESS
 
 __all__ = [

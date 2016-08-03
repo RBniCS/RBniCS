@@ -23,7 +23,6 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from itertools import product as cartesian_product
-from dolfin import Function
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from RBniCS.eim.utils.ufl import SeparatedParametrizedForm
@@ -59,7 +58,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                         for i in range(len(self.separated_forms[term][q].coefficients)):
                             for coeff in self.separated_forms[term][q].coefficients[i]:
                                 if coeff not in self.EIM_approximations:
-                                    self.EIM_approximations[coeff] = EIMApproximation(self.V, self, coeff, type(self).__name__ + "/eim/" + str(coeff.hash_code))
+                                    self.EIM_approximations[coeff] = EIMApproximation(self, coeff, type(self).__name__ + "/eim/" + str(coeff.hash_code))
                 
             ###########################     PROBLEM SPECIFIC     ########################### 
             ## @defgroup ProblemSpecific Problem specific methods
@@ -77,8 +76,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                             for coeff in eim_forms_coefficients_q_i:
                                 eim_forms_replacements_q_i__list.append(self.EIM_approximations[coeff].Z)
                             eim_forms_replacements_q_i__cartesian_product = cartesian_product(*eim_forms_replacements_q_i__list)
-                            for t in eim_forms_replacements_q_i__cartesian_product:
-                                new_coeffs = [Function(self.EIM_approximations[coeff].V, new_coeff) for new_coeff in t]
+                            for new_coeffs in eim_forms_replacements_q_i__cartesian_product:
                                 eim_forms.append(
                                     self.separated_forms[term][q].replace_placeholders(i, new_coeffs)
                                 )

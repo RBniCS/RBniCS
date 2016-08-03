@@ -28,6 +28,8 @@
 
 from math import sqrt
 from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.linear_algebra.truth_function import TruthFunction
+from RBniCS.linear_algebra.online_function import OnlineFunction
 
 # Class containing the implementation of Gram Schmidt
 class GramSchmidt(object):
@@ -56,9 +58,18 @@ class GramSchmidt(object):
         X = self.X[0]
         n_basis = len(Z) # basis are store as a list of FE vectors
         b = Z[n_basis - 1] # reference to the last basis
-        for i in range(n_basis - 1):
-            b -= (transpose(b)*X*Z[i]) * Z[i]
-        b /= sqrt(transpose(b)*X*b)
+        assert isinstance(b, TruthFunction) or isinstance(b, OnlineFunction)
+        if isinstance(b, TruthFunction):
+            for i in range(n_basis - 1):
+                b.vector().add_local( - (transpose(b)*X*Z[i]) * Z[i].vector().array() )
+                b.vector().apply("add")
+            b.vector()[:] /= sqrt(transpose(b)*X*b)
+        elif isinstance(b, OnlineFunction):
+            for i in range(n_basis - 1):
+                b.vector()[:] -= (transpose(b)*X*Z[i]) * Z[i].vector()
+            b.vector()[:] /= sqrt(transpose(b)*X*b)
+        else: # impossible to arrive here anyway, thanks to the assert
+            raise TypeError("Invalid arguments in GramSchmidt.apply().")
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

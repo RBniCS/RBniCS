@@ -26,7 +26,14 @@ from RBniCS.utils.decorators.for_decorators_helper import ForDecoratorsStore, Fo
 from RBniCS.utils.io import log, DEBUG
 
 def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
+    impl = ReductionMethodFor_Impl(Problem, category, replaces, replaces_if)
     def ReductionMethodFor_Decorator(ReductionMethod):
+        output = impl(ReductionMethod)
+        return output
+    return ReductionMethodFor_Decorator
+    
+def ReductionMethodFor_Impl(Problem, category, replaces=None, replaces_if=None):
+    def ReductionMethodFor_ImplDecorator(ReductionMethod):
         # Add to local storage
         log(DEBUG,
             "In ReductionMethodFor with\n" +
@@ -44,8 +51,11 @@ def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
         log(DEBUG, "ReductionMethodFor storage now contains:")
         ForDecoratorsLogging(ReductionMethodFor._all_reduction_methods, "Problem", "ReductionMethod", "category")
         log(DEBUG, "")
+        # Moreover also add to storage the category to generate recursively reduction methods in ReducedProblemFor
+        ReductionMethodFor._all_reduction_methods_categories[ReductionMethod] = category
         # Done with the storage, return the unchanged reduction method class
         return ReductionMethod
-    return ReductionMethodFor_Decorator
+    return ReductionMethodFor_ImplDecorator
 
 ReductionMethodFor._all_reduction_methods = list() # (over inheritance level) of dicts from Problem to list of (ReductionMethod, category, replaces, replaces_if)
+ReductionMethodFor._all_reduction_methods_categories = dict() # from reduction method to category

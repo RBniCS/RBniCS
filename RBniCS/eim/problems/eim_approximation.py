@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import Function, project, vertices
+from dolfin import project, vertices
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.linear_algebra import OnlineVector, BasisFunctionsMatrix, solve, AffineExpansionOnlineStorage
+from RBniCS.linear_algebra import OnlineVector, OnlineFunction, BasisFunctionsMatrix, FunctionsList, solve, AffineExpansionOnlineStorage, TruthFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import mpi_comm
 from RBniCS.eim.utils.io import PointsList
@@ -44,7 +44,7 @@ class EIMApproximation(ParametrizedProblem):
     @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
-    def __init__(self, V, truth_problem, parametrized_expression, folder_prefix):
+    def __init__(self, truth_problem, parametrized_expression, folder_prefix):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix)
         # Store the parametrized expression
@@ -55,16 +55,16 @@ class EIMApproximation(ParametrizedProblem):
         # Online reduced space dimension
         self.N = 0
         # Define additional storage for EIM
-        self.interpolation_points = PointsList(V.mesh()) # list of interpolation points selected by the greedy
+        self.interpolation_points = PointsList(self.truth_problem.V.mesh()) # list of interpolation points selected by the greedy
         self.interpolation_matrix = AffineExpansionOnlineStorage(1) # interpolation matrix
         # Solution
-        self._interpolation_coefficients = OnlineVector()
+        self._interpolation_coefficients = OnlineFunction()
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        self.V = V
-        self.snapshot = Function(V)
+        self.V = truth_problem.V # TODO if the function is scalar then create a scalar space, if vector a vector one, etc
+        self.snapshot = TruthFunction(self.V)
         # Basis functions matrix
-        self.Z = BasisFunctionsMatrix()
+        self.Z = BasisFunctionsMatrix(self.V)
         # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
         # basis function/reduced operator folder, but rather add a new one. For this reason we use
         # the __eim suffix in the variable name.
@@ -88,7 +88,7 @@ class EIMApproximation(ParametrizedProblem):
         if current_stage == "online":
             self.interpolation_points.load(self.folder["reduced_operators"], "interpolation_points")
             self.interpolation_matrix.load(self.folder["reduced_operators"], "interpolation_matrix")
-            self.Z.load(self.folder["basis"], "basis", self.truth_problem.V)
+            self.Z.load(self.folder["basis"], "basis")
             self.N = len(self.Z)
         elif current_stage == "offline":
             # Nothing to be done
@@ -111,7 +111,7 @@ class EIMApproximation(ParametrizedProblem):
             lhs = self.interpolation_matrix[0][:N,:N]
             
             # Solve the interpolation problem
-            self._interpolation_coefficients = OnlineVector(N)
+            self._interpolation_coefficients = OnlineFunction(N)
             solve(lhs, self._interpolation_coefficients, rhs)
             
             # Store to avoid repeated computations
@@ -124,8 +124,8 @@ class EIMApproximation(ParametrizedProblem):
     def compute_interpolated_theta(self, N=None):
         interpolated_theta = self.solve(N)
         interpolated_theta_list = list()
-        for n in range(len(interpolated_theta)):
-            interpolated_theta_list.append(float(interpolated_theta[n]))
+        for n in range(len(interpolated_theta.vector())):
+            interpolated_theta_list.append(float(interpolated_theta.vector()[n]))
         if N is not None:
             # Make sure to append a 0 coefficient for each basis function
             # which has not been requested
@@ -152,11 +152,16 @@ class EIMApproximation(ParametrizedProblem):
             N = self.N
         
         # Compute the error (difference with the eim approximation)
-        error = Function(self.V)
-        error.vector().add_local(self.snapshot.vector().array())
         if N > 0:
-            error.vector().add_local(- (self.Z[:N]*self._interpolation_coefficients).array())
-        error.vector().apply("")
+            error_addends = FunctionsList(self.V)
+            error_coefficients = OnlineVector(2)
+            error_addends.enrich(self.snapshot)
+            error_coefficients[0] = +1.
+            error_addends.enrich(self.Z[:N]*self._interpolation_coefficients)
+            error_coefficients[1] = -1.
+            error = error_addends*error_coefficients
+        else:
+            error = self.snapshot.copy(deepcopy=True)
         
         # Locate the vertex of the mesh where the error is maximum
         mesh = self.V.mesh()

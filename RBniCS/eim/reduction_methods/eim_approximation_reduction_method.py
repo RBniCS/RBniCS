@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from dolfin import Function, project
+from dolfin import project
 from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
 from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
@@ -51,7 +51,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # High fidelity problem
         self.EIM_approximation = EIM_approximation
         # Declare a new matrix to store the snapshots
-        self.snapshots_matrix = SnapshotsMatrix()
+        self.snapshots_matrix = SnapshotsMatrix(self.EIM_approximation.V)
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
@@ -179,7 +179,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def update_basis_matrix(self, error, maximum_error):
         error.vector()[:] /= maximum_error
         self.EIM_approximation.Z.enrich(error)
-        self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis", self.EIM_approximation.V)
+        self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
         self.EIM_approximation.N += 1
         
     def update_interpolation_points(self, maximum_point):
@@ -190,10 +190,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def update_interpolation_matrix(self):
         (last_point, last_point_processor_id) = self.EIM_approximation.interpolation_points[self.EIM_approximation.N - 1]
         for j in range(self.EIM_approximation.N):
-            Z_j = Function(self.EIM_approximation.V, self.EIM_approximation.Z[j])
             value = None
             if mpi_comm.rank == last_point_processor_id:
-                value = Z_j(last_point)
+                value = self.EIM_approximation.Z[j](last_point)
             value = mpi_comm.bcast(value, root=last_point_processor_id)
             self.EIM_approximation.interpolation_matrix[0][self.EIM_approximation.N - 1, j] = value
         self.EIM_approximation.interpolation_matrix.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
@@ -204,7 +203,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         mu_index = self.offline.__func__.mu_index
         assert mu_index is not None
         assert mu == self.xi_train[mu_index]
-        return Function(self.EIM_approximation.V, self.snapshots_matrix[mu_index])
+        return self.snapshots_matrix[mu_index]
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):

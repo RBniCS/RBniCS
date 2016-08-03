@@ -24,11 +24,10 @@
 
 from __future__ import print_function
 import types
-from dolfin import Function
 from math import sqrt
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, OnlineVector, product, transpose, solve, sum
+from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, FunctionsList, OnlineVector, OnlineFunction, product, transpose, solve, sum
 from RBniCS.utils.decorators import sync_setters, Extends, override, ReducedProblemFor
 from RBniCS.utils.mpi import print
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
@@ -51,11 +50,33 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem):
-        # Call to parent
-        ParametrizedProblem.__init__(self, type(truth_problem).__name__)
-        
+        # Get the truth_problem recursion level: indeed a truth problem itself
+        # can be a reduced problem! In the standard case (truth_problem is actually
+        # a FE approximation) then this is the first reduction, so reduction level is 1
+        self._reduction_level = 1
+        self._flattened_truth_problem = truth_problem
+        while hasattr(self._flattened_truth_problem, "truth_problem"):
+            self._flattened_truth_problem = self._flattened_truth_problem.truth_problem
+            self._reduction_level += 1
         # Consistency check
-        assert isinstance(truth_problem, EllipticCoerciveProblem)
+        assert isinstance(self._flattened_truth_problem, EllipticCoerciveProblem)
+        if self._reduction_level == 1:
+            assert hasattr(truth_problem, "V")
+            assert not hasattr(truth_problem, "Z")
+        else: # truth problem was actually already a reduced problem!
+            assert not hasattr(truth_problem, "V")
+            assert hasattr(truth_problem, "Z")
+        
+        # Call to parent
+        truth_problem_name = type(truth_problem).__name__
+        truth_problem_prefix = dict({
+            1: "",                  # remember that online data for level i-th is stored under the name of the (i-1)-th truth
+            2: "Reduced",           # e.g. for the standard case it is stored in the folder ProblemName
+            3: "DoubleReduced",
+            4: "TripleReduced",
+            5: "QuadrupleReduced"   # ... you can go on if needed ...
+        })
+        ParametrizedProblem.__init__(self, truth_problem_prefix[self._reduction_level] + truth_problem_name)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Online reduced space dimension
@@ -67,7 +88,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         # Reduced order operators
         self.operator = dict() # from string to AffineExpansionOnlineStorage
         # Solution
-        self._solution = OnlineVector()
+        self._solution = OnlineFunction() # rather than OnlineVector, because it needs to have a copy(deepcopy=False) method
         self._output = 0
         self.compute_error.__func__.previous_mu = None
         self.compute_error.__func__.previous_with_respect_to = None
@@ -76,7 +97,10 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         # High fidelity problem
         self.truth_problem = truth_problem
         # Basis functions matrix
-        self.Z = BasisFunctionsMatrix()
+        if self._reduction_level == 1:
+            self.Z = BasisFunctionsMatrix(truth_problem.V)
+        else:
+            self.Z = BasisFunctionsMatrix(truth_problem.Z)
         # I/O
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
@@ -107,7 +131,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         
     def _init_basis_functions(self, current_stage="online"):
         if current_stage == "online":
-            self.Z.load(self.folder["basis"], "basis", self.truth_problem.V)
+            self.Z.load(self.folder["basis"], "basis")
             # To properly initialize N and N_bc, detect how many theta terms
             # are related to boundary conditions
             try:
@@ -142,13 +166,13 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             theta_bc = self.compute_theta("dirichlet_bc")
         except ValueError: # there were no Dirichlet BCs to be imposed by lifting
             theta_bc = None
-        self._solution = OnlineVector(N)
+        self._solution = OnlineFunction(N)
         solve(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
         return self._solution
         
     # Perform an online evaluation of the (compliant) output
     def output(self):
-        N = self._solution.size
+        N = self._solution.vector().size
         assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
         self._output = transpose(assembled_output_operator)*self._solution
         return self._output
@@ -185,13 +209,17 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
-    def compute_error(self, N=None, with_respect_to=None, **kwargs):
+    def compute_error(self, N=None, with_respect_to=None, flatten_truth_problem=False, **kwargs):
         if N is None:
             N = self.N
         if with_respect_to is not None:
+            assert flatten_truth_problem is False # otherwise how should we know to which level in the hierarchy is this truth problem supposed to be?
             truth_problem = with_respect_to
         else:
-            truth_problem = self.truth_problem
+            if not flatten_truth_problem:
+                truth_problem = self.truth_problem
+            else:
+                truth_problem = self._flattened_truth_problem
         if self.compute_error.__func__.previous_mu != self.mu or self.compute_error.__func__.previous_with_respect_to != truth_problem:
             truth_problem.set_mu(self.mu) # if with_respect_to != None they are not in sync
             truth_problem.solve()
@@ -199,20 +227,36 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             # Do not carry out truth solves anymore for the same parameter
             self.compute_error.__func__.previous_mu = self.mu
             self.compute_error.__func__.previous_with_respect_to = truth_problem
-        # Compute the error on the solution
-        uN = self.solve(N, with_plot=False, **kwargs)
-        error = Function(truth_problem.V, self.Z[:N]*uN)
-        error.vector().add_local(- truth_problem._solution.vector().array())
-        error.vector().apply("") # store the error as a function in the reduced solution
-        error_norm_squared = transpose(error.vector())*self._error_inner_product_matrix(truth_problem)*error.vector() # norm of the error
-        # Compute the error on the output
-        error_output = abs(truth_problem._output - self.output())
-        return (sqrt(error_norm_squared), error_output)
+        # Compute the error on the solution and output
+        self.solve(N, with_plot=False, **kwargs)
+        self.output()
+        return self._compute_error(truth_problem, flatten_truth_problem)
         
-    # Internal method for error computation: returns the inner product matrix to be used.
-    def _error_inner_product_matrix(self, truth_problem):
+    # Internal method for error computation
+    def _compute_error(self, truth_problem, flatten_truth_problem):
+        N = self._solution.vector().size
+        # Compute the error on the solution
+        if self._reduction_level == 1 or flatten_truth_problem:
+            error_addends = FunctionsList(truth_problem.V)
+        else:
+            error_addends = FunctionsList(truth_problem.Z)
+        error_coefficients = OnlineVector(2)
+        reduced_solution = self.Z[:N]*self._solution
+        if flatten_truth_problem:
+            truth_problem_l = truth_problem
+            for l in range(1, self._reduction_level): # the maximum level was carried out before the if
+                 N_l = reduced_solution.vector().size
+                 reduced_solution = truth_problem.Z[:N_l]*reduced_solution
+        error_addends.enrich(reduced_solution)
+        error_coefficients[0] = +1.
+        error_addends.enrich(truth_problem._solution)
+        error_coefficients[1] = -1.
+        error = error_addends*error_coefficients
         assembled_error_inner_product_operator = sum(product(truth_problem.compute_theta("a"), truth_problem.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
-        return assembled_error_inner_product_operator
+        error_norm_squared = transpose(error.vector())*assembled_error_inner_product_operator*error.vector() # norm SQUARED of the error
+        # Compute the error on the output
+        error_output = abs(truth_problem._output - self._output)
+        return (sqrt(error_norm_squared), error_output)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
@@ -315,16 +359,14 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     ## Interactive plot
     @override
     def _plot(self, solution, *args, **kwargs):
-        N = solution.size
-        solution_on_high_fidelity = Function(self.truth_problem.V, self.Z[:N]*solution)
-        self.truth_problem._plot(solution_on_high_fidelity, *args, **kwargs)
+        N = solution.vector().size
+        self.truth_problem._plot(self.Z[:N]*solution, *args, **kwargs)
         
     ## Export in VTK format
     @override
     def _export_vtk(self, solution, folder, filename, **output_options):
-        N = solution.size
-        solution_on_high_fidelity = Function(self.truth_problem.V, self.Z[:N]*solution)
-        self.truth_problem._export_vtk(solution_on_high_fidelity, folder, filename, **output_options)
+        N = solution.vector().size
+        self.truth_problem._export_vtk(self.Z[:N]*solution, folder, filename, **output_options)
             
     #  @}
     ########################### end - I/O - end ########################### 

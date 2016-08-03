@@ -22,7 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import Function
 from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
 from RBniCS.scm.problems import SCM
 from RBniCS.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod

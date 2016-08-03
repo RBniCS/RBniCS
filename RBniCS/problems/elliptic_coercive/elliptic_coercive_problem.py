@@ -23,9 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from abc import ABCMeta, abstractmethod
-from dolfin import Function
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.linear_algebra import AffineExpansionOfflineStorage, product, transpose, solve, sum
+from RBniCS.linear_algebra import AffineExpansionOfflineStorage, product, transpose, solve, sum, TruthFunction
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -105,7 +104,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         self.inner_product = AffineExpansionOfflineStorage() # even though it will contain only one matrix
         self.dirichlet_bc = AffineExpansionOfflineStorage()
         # Solution
-        self._solution = Function(self.V)
+        self._solution = TruthFunction(self.V)
         self._output = 0
         
     #  @}
@@ -144,13 +143,13 @@ class EllipticCoerciveProblem(ParametrizedProblem):
             assembled_dirichlet_bc = sum(product(theta_dirichlet_bc, self.dirichlet_bc))
         else:
             assembled_dirichlet_bc = None
-        solve(assembled_operator["a"], self._solution.vector(), assembled_operator["f"], assembled_dirichlet_bc)
+        solve(assembled_operator["a"], self._solution, assembled_operator["f"], assembled_dirichlet_bc)
         return self._solution
         
     ## Perform a truth evaluation of the (compliant) output
     def output(self):
         assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
-        self._output = transpose(assembled_output_operator)*self._solution.vector()
+        self._output = transpose(assembled_output_operator)*self._solution
         return self._output
     
     #  @}

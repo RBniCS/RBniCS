@@ -204,8 +204,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
     def update_eigenvector_J(self, eigenvector):
         self.SCM_approximation.eigenvector_J.append(eigenvector)
-        eigenvector_function = Function(self.SCM_approximation.truth_problem.V, eigenvector)
-        self.SCM_approximation.export_solution(eigenvector_function, self.folder["snapshots"], "eigenvector_" + str(len(self.SCM_approximation.eigenvector_J) - 1))
+        self.SCM_approximation.export_solution(eigenvector, self.folder["snapshots"], "eigenvector_" + str(len(self.SCM_approximation.eigenvector_J) - 1))
         
     ## Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
     def compute_UB_vector(self, u):

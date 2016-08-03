@@ -69,7 +69,14 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
                 
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a POD object
-        self.POD = ProperOrthogonalDecomposition(truth_problem.inner_product)
+        if not hasattr(truth_problem, "_reduction_level"):
+            assert hasattr(truth_problem, "V")
+            assert not hasattr(truth_problem, "Z")
+            self.POD = ProperOrthogonalDecomposition(truth_problem.inner_product, truth_problem.V)
+        else: # truth problem was actually already a reduced problem!
+            assert not hasattr(truth_problem, "V")
+            assert hasattr(truth_problem, "Z")
+            self.POD = ProperOrthogonalDecomposition(truth_problem.inner_product, truth_problem.Z)
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
@@ -130,7 +137,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         (Z, N) = self.POD.apply(self.Nmax)
         self.reduced_problem.Z.enrich(Z)
         self.reduced_problem.N += N
-        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis", self.truth_problem.V)
+        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
         self.POD.print_eigenvalues(N)
         self.POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
         self.POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
@@ -149,7 +156,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     @override
-    def error_analysis(self, N=None, with_respect_to=None, **kwargs):
+    def error_analysis(self, N=None, with_respect_to=None, flatten_truth_problem=False, **kwargs):
         if N is None:
             N = self.reduced_problem.N
             
@@ -171,7 +178,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
             self.reduced_problem.set_mu(self.xi_test[run])
                         
             for n in range(1, N + 1): # n = 1, ... N
-                (error_analysis_table["error_u", n, run], error_analysis_table["error_s", n, run]) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to, **kwargs)
+                (error_analysis_table["error_u", n, run], error_analysis_table["error_s", n, run]) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to, flatten_truth_problem=flatten_truth_problem, **kwargs)
         
         # Print
         print("")
