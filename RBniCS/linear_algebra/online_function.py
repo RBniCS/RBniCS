@@ -38,7 +38,7 @@ class OnlineFunction(object):
         elif isinstance(arg, OnlineVector_Type):
             self._v = v
         else:
-            raise TypeError("Invalid arguments in OnlineFunction")
+            raise AssertionError("Invalid arguments in OnlineFunction")
     
     def vector(self):
         return self._v

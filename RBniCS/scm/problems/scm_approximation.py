@@ -97,6 +97,7 @@ class SCMApproximation(ParametrizedProblem):
     
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
+        assert current_stage == "online" or current_stage == "offline"
         # Read/Initialize reduced order data structures
         if current_stage == "online":
             self.B_min.load(self.folder["reduced_operators"], "B_min")
@@ -126,7 +127,7 @@ class SCMApproximation(ParametrizedProblem):
             # Init exact coercivity constant computations
             self.exact_coercivity_constant_calculator.init()
         else:
-            raise ValueError("Invalid stage in init().")
+            raise AssertionError("Invalid stage in init().")
 
     ## Get a lower bound for alpha
     def get_stability_factor_lower_bound(self, mu, safeguard=True):

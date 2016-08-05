@@ -75,6 +75,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         
     def _init_error_estimation_operators(self, current_stage="online"):
         # Also initialize data structures related to error estimation
+        assert current_stage == "online" or current_stage == "offline"
         if current_stage == "online":
             self.riesz_product["aa"] = self.assemble_error_estimation_operators("riesz_product_aa", "online")
             self.riesz_product["af"] = self.assemble_error_estimation_operators("riesz_product_af", "online")
@@ -104,7 +105,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             self.riesz_product["af"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["f"])
             self.riesz_product["ff"] = AffineExpansionOnlineStorage(self.Q["f"], self.Q["f"])
         else:
-            raise ValueError("Invalid stage in _init_error_estimation_operators().")
+            raise AssertionError("Invalid stage in _init_error_estimation_operators().")
     
     ## Return an error bound for the current solution
     def estimate_error(self):
@@ -192,6 +193,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     
     ## Assemble operators for error estimation
     def assemble_error_estimation_operators(self, term, current_stage="online"):
+        assert current_stage == "online" or current_stage == "offline"
         short_term = term.replace("riesz_product_", "")
         if current_stage == "online": # load from file
             if not short_term in self.riesz_product:
@@ -236,7 +238,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                 raise ValueError("Invalid term for assemble_error_estimation_operators().")
             return self.riesz_product[short_term]
         else:
-            raise ValueError("Invalid stage in assemble_error_estimation_operators().")
+            raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
             
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 

@@ -39,6 +39,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     assert isinstance(mu, tuple)
     assert len(mu) > 0
     for p in range(len(mu)):
+        assert isinstance(parametrized_expression_code, tuple) or isinstance(parametrized_expression_code, str)
         if isinstance(parametrized_expression_code, tuple):
             if isinstance(parametrized_expression_code[0], tuple):
                 new_parametrized_expression_code = list()
@@ -60,7 +61,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         elif isinstance(parametrized_expression_code, str):
             parametrized_expression_code = parametrized_expression_code.replace("mu[" + str(p) + "]", "mu_" + str(p))
         else:
-            raise TypeError("Invalid expression type in ParametrizedExpression")
+            raise AssertionError("Invalid expression type in ParametrizedExpression")
     
     mu_dict = {}
     for p in range(len(mu)):

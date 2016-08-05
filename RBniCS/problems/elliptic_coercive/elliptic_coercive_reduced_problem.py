@@ -118,6 +118,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self._init_basis_functions(current_stage)
             
     def _init_operators(self, current_stage="online"):
+        assert current_stage == "online" or current_stage == "offline"
         if current_stage == "online":
             for term in self.terms:
                 self.operator[term] = self.assemble_operator(term, "online")
@@ -127,9 +128,10 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 self.Q[term] = self.truth_problem.Q[term]
                 self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
         else:
-            raise ValueError("Invalid stage in _init_operators().")
+            raise AssertionError("Invalid stage in _init_operators().")
         
     def _init_basis_functions(self, current_stage="online"):
+        assert current_stage == "online" or current_stage == "offline"
         if current_stage == "online":
             self.Z.load(self.folder["basis"], "basis")
             # To properly initialize N and N_bc, detect how many theta terms
@@ -145,7 +147,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             # Store the lifting functions in self.Z
             self.assemble_operator("dirichlet_bc", "offline") # no return value from assemble_operator in this case
         else:
-            raise ValueError("Invalid stage in _init_basis_functions().")
+            raise AssertionError("Invalid stage in _init_basis_functions().")
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     def solve(self, N=None, with_plot=True, **kwargs):
@@ -271,6 +273,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         
     ## Assemble the reduced order affine expansion
     def assemble_operator(self, term, current_stage="online"):
+        assert current_stage == "online" or current_stage == "offline"
         if current_stage == "online": # load from file
             if not term in self.operator:
                 self.operator[term] = AffineExpansionOnlineStorage()
@@ -343,7 +346,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             else:
                 raise ValueError("Invalid term for assemble_operator().")
         else:
-            raise ValueError("Invalid stage in assemble_operator().")
+            raise AssertionError("Invalid stage in assemble_operator().")
     
     ## Return a lower bound for the coercivity constant
     def get_stability_factor(self):

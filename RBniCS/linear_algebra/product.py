@@ -40,6 +40,7 @@ def product(thetas, _operators, thetas2=None):
         assert thetas2 is None
         operators = _operators._content
         assert len(thetas) == len(operators)
+        assert isinstance(operators, _DirichletBCsAffineExpansionOfflineStorageContent) or isinstance(operators, _AssembledFormsAffineExpansionOfflineStorageContent)
         if isinstance(operators, _DirichletBCsAffineExpansionOfflineStorageContent): 
             output = _DirichletBCsProductOutput()
             for i in range(len(thetas)):
@@ -69,9 +70,9 @@ def product(thetas, _operators, thetas2=None):
                 output.apply("insert")
                 return _DotProductOutput(output)
             else: # impossible to arrive here anyway thanks to the assert
-                raise TypeError("product(): invalid operands.")
+                raise AssertionError("product(): invalid operands.")
         else:
-            raise TypeError("product(): invalid operands.")
+            raise AssertionError("product(): invalid operands.")
     elif \
         (isinstance(_operators, AffineExpansionOfflineStorage) and isinstance(_operators._content, AffineExpansionOnlineStorage)) \
             or \
@@ -84,6 +85,7 @@ def product(thetas, _operators, thetas2=None):
         else: # isinstance(_operators, AffineExpansionOnlineStorage)
             operators = _operators
         order = operators.order()
+        assert order == 1 or order == 2
         if order == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
             assert isinstance(operators[0], OnlineMatrix_Type) or isinstance(operators[0], OnlineVector_Type)
             assert thetas2 is None
@@ -132,9 +134,9 @@ def product(thetas, _operators, thetas2=None):
             output = thetas_vector*operators.as_matrix()*thetas2_vector
             return _DotProductOutput(output.item(0, 0))
         else:
-            raise TypeError("product(): invalid operands.")
+            raise AssertionError("product(): invalid operands.")
     else:
-        raise TypeError("product(): invalid operands.")
+        raise AssertionError("product(): invalid operands.")
 
 # Auxiliary class to signal to the sum() function that the sum has already been performed by the dot product
 class _DotProductOutput(list):

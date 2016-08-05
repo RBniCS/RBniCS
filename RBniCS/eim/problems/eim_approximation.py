@@ -84,6 +84,7 @@ class EIMApproximation(ParametrizedProblem):
 
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
+        assert current_stage == "online" or current_stage == "offline"
         # Read/Initialize reduced order data structures
         if current_stage == "online":
             self.interpolation_points.load(self.folder["reduced_operators"], "interpolation_points")
@@ -94,7 +95,7 @@ class EIMApproximation(ParametrizedProblem):
             # Nothing to be done
             pass
         else:
-            raise ValueError("Invalid stage in init().")
+            raise AssertionError("Invalid stage in init().")
 
     # Perform an online solve.
     def solve(self, N=None):

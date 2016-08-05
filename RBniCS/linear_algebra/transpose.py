@@ -52,7 +52,7 @@ def transpose(arg):
     ):
         return Vector_Transpose(arg)
     else: # impossible to arrive here anyway, thanks to the assert
-        raise TypeError("Invalid arguments in transpose.")
+        raise AssertionError("Invalid arguments in transpose.")
         
 # Auxiliary class: transpose of a vector
 class Vector_Transpose(object):
@@ -67,7 +67,7 @@ class Vector_Transpose(object):
         elif isinstance(vector, TruthFunction) or isinstance(vector, OnlineFunction):
             self.vector = vector.vector()
         else: # impossible to arrive here anyway, thanks to the assert
-            raise TypeError("Invalid arguments in Vector_Transpose.__init__.")
+            raise AssertionError("Invalid arguments in Vector_Transpose.__init__.")
     
     def __mul__(self, matrixOrVector): # self * matrixOrVector
         assert (
@@ -90,7 +90,7 @@ class Vector_Transpose(object):
             assert output.shape == (1, 1)
             return output.item(0, 0)
         else: # impossible to arrive here anyway, thanks to the assert
-            raise TypeError("Invalid arguments in Vector_Transpose.__mul__.")
+            raise AssertionError("Invalid arguments in Vector_Transpose.__mul__.")
               
 # Auxiliary class: multiplication of the transpose of a Vector with a Matrix
 class Vector_Transpose__times__Matrix(object):
@@ -118,7 +118,7 @@ class Vector_Transpose__times__Matrix(object):
             assert output.shape == (1, 1)
             return output.item(0, 0)
         else: # impossible to arrive here anyway, thanks to the assert
-            raise TypeError("Invalid arguments in Vector_Transpose__times__Matrix.__mul__.")
+            raise AssertionError("Invalid arguments in Vector_Transpose__times__Matrix.__mul__.")
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

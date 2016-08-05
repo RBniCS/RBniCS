@@ -58,7 +58,7 @@ def solve(lhs, solution, rhs, bcs=None):
         solution_ = numpy_solve(lhs, rhs)
         solution.vector()[:] = solution_
     else:
-        raise TypeError("Invalid arguments in RBniCS solve()")
+        raise AssertionError("Invalid arguments in RBniCS solve()")
         
 #  @}
 ########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 

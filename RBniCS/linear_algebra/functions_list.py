@@ -47,15 +47,23 @@ class FunctionsList(ExportableList):
     @override
     def __init__(self, V_or_Z, original_list=None):
         ExportableList.__init__(self, "pickle", original_list)
+        assert (
+            isinstance(V_or_Z, FunctionSpace) 
+                or
+            isinstance(V_or_Z, FunctionsList)
+                    or
+            V_or_Z is None
+        )
         if isinstance(V_or_Z, FunctionSpace):
             self.V = V_or_Z
-        else:
-            assert (
+        elif (
                 isinstance(V_or_Z, FunctionsList)
                     or
                 V_or_Z is None # used internally in __mul__ and __getitem__
-            )
+            ):
             self.V = None
+        else: # impossible to arrive here anyway, thanks to the assert
+            raise AssertionError("Invalid arguments in FunctionsList.__init__().")
         self._precomputed_slices = dict() # from tuple to AffineExpansionOnlineStorage
     
     def enrich(self, functions):
@@ -74,7 +82,7 @@ class FunctionsList(ExportableList):
                 assert self.V is None
                 self._list.append(function.copy(deepcopy=True))
             else: # impossible to arrive here anyway, thanks to the assert
-                raise TypeError("Invalid arguments in FunctionsList.enrich().")
+                raise AssertionError("Invalid arguments in FunctionsList.enrich().")
         if isinstance(functions, tuple) or isinstance(functions, list) or isinstance(functions, FunctionsList):
             for function in functions:
                 append(function)
@@ -178,7 +186,7 @@ class FunctionsList(ExportableList):
                     output.vector()[:] += fun_i.vector()*onlineMatrixOrVector.item(i)
             return output
         else: # impossible to arrive here anyway, thanks to the assert
-            raise TypeError("Invalid arguments in FunctionsList.__mul__.")
+            raise AssertionError("Invalid arguments in FunctionsList.__mul__.")
             
     @override
     def __getitem__(self, key):
@@ -225,7 +233,7 @@ class FunctionsList_Transpose(object):
                 onlineVector[i] = Vector_Transpose(self.functionsList[i].vector())*matrixOrVector
             return onlineVector
         else: # impossible to arrive here anyway, thanks to the assert
-            raise TypeError("Invalid arguments in FunctionsList_Transpose.__mul__.")
+            raise AssertionError("Invalid arguments in FunctionsList_Transpose.__mul__.")
 
 # Auxiliary class: multiplication of the transpose of a functions list with a matrix
 class FunctionsList_Transpose__times__Matrix(object):
@@ -267,7 +275,7 @@ class FunctionsList_Transpose__times__Matrix(object):
             elif isinstance(functionsList2OrVector, OnlineVector_Type) or isinstance(functionsList2OrVector, OnlineFunction):
                 assert isinstance(self.matrix, OnlineMatrix_Type)
             else: # impossible to arrive here anyway, thanks to the assert
-                raise TypeError("Invalid arguments in FunctionsList_Transpose__times__Matrix.__mul__.")
+                raise AssertionError("Invalid arguments in FunctionsList_Transpose__times__Matrix.__mul__.")
             if isinstance(functionsList2OrVector, TruthFunction) or isinstance(functionsList2OrVector, OnlineFunction):
                 functionsList2OrVector = functionsList2OrVector.vector()
             dim = len(self.functionsList)
@@ -277,7 +285,7 @@ class FunctionsList_Transpose__times__Matrix(object):
                 onlineVector[i] = Vector_Transpose(self.functionsList[i])*matrixTimesVector
             return onlineVector
         else: # impossible to arrive here anyway, thanks to the assert
-            raise TypeError("Invalid arguments in FunctionsList_Transpose__times__Matrix.__mul__.")
+            raise AssertionError("Invalid arguments in FunctionsList_Transpose__times__Matrix.__mul__.")
      
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 

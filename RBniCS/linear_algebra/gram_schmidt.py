@@ -69,7 +69,7 @@ class GramSchmidt(object):
                 b.vector()[:] -= (transpose(b)*X*Z[i]) * Z[i].vector()
             b.vector()[:] /= sqrt(transpose(b)*X*b)
         else: # impossible to arrive here anyway, thanks to the assert
-            raise TypeError("Invalid arguments in GramSchmidt.apply().")
+            raise AssertionError("Invalid arguments in GramSchmidt.apply().")
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
