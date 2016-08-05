@@ -106,11 +106,7 @@ class FunctionsList(ExportableList):
     def load(self, directory, filename):
         if self._list: # avoid loading multiple times
             return False
-        Nmax = None
-        if mpi_comm.rank == 0:
-            with open(str(directory) + "/" + filename + ".length", "r") as length:
-                Nmax = int(length.readline())
-        Nmax = mpi_comm.bcast(Nmax, root=0)
+        Nmax = self._load_Nmax(directory, filename)
         if self.V is not None:
             assert isinstance(self.V, FunctionSpace)
             fun = TruthFunction(self.V)
@@ -126,11 +122,17 @@ class FunctionsList(ExportableList):
                 self.enrich(fun)
         return True
         
+    def _load_Nmax(self, directory, filename):
+        Nmax = None
+        if mpi_comm.rank == 0:
+            with open(str(directory) + "/" + filename + ".length", "r") as length:
+                Nmax = int(length.readline())
+        Nmax = mpi_comm.bcast(Nmax, root=0)
+        return Nmax
+        
     @override
     def save(self, directory, filename):
-        if mpi_comm.rank == 0:
-            with open(str(directory) + "/" + filename + ".length", "w") as length:
-                length.write(str(len(self._list)))
+        self._save_Nmax(directory, filename)
         if self.V is not None:
             assert isinstance(self.V, FunctionSpace)
             for (index, fun) in enumerate(self._list):
@@ -143,6 +145,11 @@ class FunctionsList(ExportableList):
         else:
             for (index, fun) in enumerate(self._list):
                 NumpyIO.save_file(fun.vector(), directory, filename + "_" + str(f))
+                
+    def _save_Nmax(self, directory, filename):
+        if mpi_comm.rank == 0:
+            with open(str(directory) + "/" + filename + ".length", "w") as length:
+                length.write(str(len(self._list)))
     
     # self * onlineMatrixOrVector [used e.g. to compute Z*u_N or S*eigv]
     def __mul__(self, onlineMatrixOrVector):
