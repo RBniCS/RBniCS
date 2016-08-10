@@ -45,7 +45,7 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     # Method for generation of parameter space subsets
     def generate(self, n, sampling):
         if mpi_comm.rank == 0:
-            if sampling == None:
+            if sampling is None:
                 sampling = UniformDistribution()
             self._list = sampling.sample(self.box, n)
         self._list = mpi_comm.bcast(self._list, root=0)
