@@ -30,11 +30,18 @@ def SCMDecoratedProblem(
     M_p = -1,
     constrain_minimum_eigenvalue = 1.e5,
     constrain_maximum_eigenvalue = 1.e-5,
-    bounding_box_minimum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5),
-    bounding_box_maximum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e5),
-    coercivity_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5),
+    bounding_box_minimum_eigensolver_parameters = None,
+    bounding_box_maximum_eigensolver_parameters = None,
+    coercivity_eigensolver_parameters = None,
     **decorator_kwargs
 ):
+    if bounding_box_minimum_eigensolver_parameters is None:
+        bounding_box_minimum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
+    if bounding_box_maximum_eigensolver_parameters is None:
+        bounding_box_maximum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e5)
+    if coercivity_eigensolver_parameters is None:
+        coercivity_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
+    
     from RBniCS.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstant    
     
     @ProblemDecoratorFor(SCM, ExactAlgorithm=ExactCoercivityConstant,
