@@ -24,6 +24,7 @@
 
 from dolfin import FunctionSpace
 from RBniCS.backend.basic import FunctionsList as BasicFunctionsList
+import RBniCS.backend.fenics
 import RBniCS.backend.fenics.wrapping
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
@@ -32,5 +33,5 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 class FunctionsList(BasicFunctionsList):
     @override
     def __init__(self, V_or_Z):
-        BasicFunctionsList.__init__(self, V_or_Z, RBniCS.backend.fenics.wrapping)
+        BasicFunctionsList.__init__(self, V_or_Z, RBniCS.backend.fenics, RBniCS.backend.fenics.wrapping)
         

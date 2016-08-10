@@ -50,7 +50,7 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
         # Matrices/vectors resulting from the truth discretization: condensed version discard
         # Dirichlet DOFs
         self.term = term
-        assert isinstance(self.term, tuple) or isinstance(self.term, str)
+        assert isinstance(self.term, (tuple, str))
         if isinstance(self.term, tuple):
             assert len(self.term) == 2
             isinstance(self.term[0], str)

@@ -36,7 +36,7 @@ def product(thetas, operators, thetas2=None):
     order = operators.order()
     assert order == 1 or order == 2
     if order == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
-        assert isinstance(operators[0], Matrix_Type) or isinstance(operators[0], Vector_Type) or isinstance(operators[0], Function_Type)
+        assert isinstance(operators[0], (Matrix_Type, Vector_Type, Function_Type))
         assert thetas2 is None
         # Single for loop version:
         output = 0
@@ -53,11 +53,7 @@ def product(thetas, operators, thetas2=None):
         return ProductOutput(output)
         '''
     elif order == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
-        assert (
-            isinstance(operators[0, 0], OnlineMatrix_Type) or
-            isinstance(operators[0, 0], OnlineVector_Type) or
-            isinstance(operators[0, 0], float)
-        )
+        assert isinstance(operators[0, 0], (OnlineMatrix_Type, OnlineVector_Type, float))
         assert thetas2 is not None
         # no checks here on the first dimension of operators should be equal to len(thetas), and
         # similarly that the second dimension should be equal to len(thetas2), because the

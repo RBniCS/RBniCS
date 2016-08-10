@@ -27,7 +27,7 @@ from RBniCS.backends.numpy.vector import Vector_Type
 
 class Function_Type(object):
     def __init__(self, arg):
-        assert isinstance(arg, int) or isinstance(arg, Vector_Type)
+        assert isinstance(arg, (int, Vector_Type))
         if isinstance(arg, int):
             self._v = OnlineVector(arg)
         elif isinstance(arg, Vector_Type):

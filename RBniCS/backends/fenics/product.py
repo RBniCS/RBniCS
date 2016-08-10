@@ -52,7 +52,7 @@ def product(thetas, operators, thetas2=None):
             output.append(DirichletBC(key[0], value, key[1], key[2]))
         return ProductOutput(output)
     elif operators.type() is Form:
-        assert isinstance(operators[0], Matrix_Type) or isinstance(operators[0], Vector_Type)
+        assert isinstance(operators[0], (Matrix_Type, Vector_Type))
         # Carry out the dot product (with respect to the index q over the affine expansion)
         if isinstance(operators[0], Matrix_Type):
             output = operators[0].copy()

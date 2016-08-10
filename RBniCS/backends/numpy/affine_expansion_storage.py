@@ -47,7 +47,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 assert isinstance(i, int)
             self._recursive = False
         else:
-            assert isinstance(args[0], int) or isinstance(args[0], AffineExpansionStorage)
+            assert isinstance(args[0], (int, AffineExpansionStorage))
             if isinstance(args[0], int):
                 self._recursive = False
             elif isinstance(args[0], AffineExpansionStorage):
@@ -92,11 +92,11 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
     
     @override
     def __getitem__(self, key):
-        if \
-            isinstance(key, slice) \
-                or \
-            isinstance(key, tuple) and isinstance(key[0], slice) \
-        : # return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
+        if (
+            isinstance(key, slice)
+                or
+            ( isinstance(key, tuple) and isinstance(key[0], slice) )
+        ): # return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
             
             if isinstance(key, slice):
                 key = (key,)

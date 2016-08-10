@@ -40,7 +40,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     P = len(mu)
     assert len(mu) > 0
     for p in range(P):
-        assert isinstance(parametrized_expression_code, tuple) or isinstance(parametrized_expression_code, str)
+        assert isinstance(parametrized_expression_code, (tuple, str))
         if isinstance(parametrized_expression_code, tuple):
             if isinstance(parametrized_expression_code[0], tuple):
                 matrix_after_replacements = list()

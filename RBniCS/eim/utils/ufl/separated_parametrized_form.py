@@ -124,8 +124,7 @@ class SeparatedParametrizedForm(object):
                                     else:
                                         at_least_one_expression_or_function = False
                                         for t in traverse_terminals(d):
-                                            if isinstance(t, Expression) or \
-                                                isinstance(t, Function): # Functions are always assumed to be parametrized
+                                            if isinstance(t, (Expression, Function)): # Functions are always assumed to be parametrized
                                                 at_least_one_expression_or_function = True
                                         if at_least_one_expression_or_function:
                                             log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check")

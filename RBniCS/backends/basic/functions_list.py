@@ -38,8 +38,9 @@ from RBniCS.utils.mpi import mpi_comm
 @Extends(AbstractFunctionsList)
 class FunctionsList(AbstractFunctionsList):
     @override
-    def __init__(self, V_or_Z, wrapping, original_list=None):
+    def __init__(self, V_or_Z, backend, wrapping, original_list=None):
         self.V_or_Z = V_or_Z
+        self.backend = backend
         self.wrapping = wrapping
         self._list = list() # of functions
         self._precomputed_slices = dict() # from tuple to AffineExpansionOnlineStorage
@@ -47,11 +48,14 @@ class FunctionsList(AbstractFunctionsList):
     @override
     def enrich(self, functions):
         # Append to storage
-        if isinstance(functions, tuple) or isinstance(functions, list) or isinstance(functions, FunctionsList):
+        assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function)):
+        if isinstance(functions, (tuple, list, FunctionsList)):
             for function in functions:
                 self._list.append(self.wrapping.function_copy(function))
-        else:
+        elif isinstance(functions, self.backend.Function):
             self._list.append(self.wrapping.function_copy(function))
+        else: # impossible to arrive here anyway, thanks to the assert
+            raise AssertionError("Invalid arguments in FunctionsList.enrich.")
         # Reset precomputed slices
         self._precomputed_slices = dict()
         
@@ -91,13 +95,7 @@ class FunctionsList(AbstractFunctionsList):
     
     @override
     def __mul__(self, other):
-        assert (
-            isinstance(other, OnlineMatrix_Type)
-                or
-            isinstance(other, OnlineVector_Type)
-                or
-            isinstance(other, OnlineFunction_Type)
-        )
+        assert (isinstance(other, OnlineMatrix_Type, OnlineVector_Type, OnlineFunction_Type)
         if isinstance(other, OnlineMatrix_Type):
             return self.wrapping.function_list_mul_online_matrix(self, other)
         elif isinstance(other, OnlineVector_Type):

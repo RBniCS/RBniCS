@@ -24,6 +24,7 @@
 
 from RBniCS.backend.abstract import FunctionsList as AbstractFunctionsList
 from RBniCS.backend.basic import FunctionsList as BasicFunctionsList
+import RBniCS.backend.numpy
 import RBniCS.backend.numpy.wrapping
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
@@ -32,5 +33,5 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 class FunctionsList(BasicFunctionsList):
     @override
     def __init__(self, V_or_Z):
-        BasicFunctionsList.__init__(self, V_or_Z, RBniCS.backend.numpy.wrapping)
+        BasicFunctionsList.__init__(self, V_or_Z, RBniCS.backend.numpy, RBniCS.backend.numpy.wrapping)
         
