@@ -75,7 +75,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         
     def _init_error_estimation_operators(self, current_stage="online"):
         # Also initialize data structures related to error estimation
-        assert current_stage == "online" or current_stage == "offline"
+        assert current_stage in ("online", "offline")
         if current_stage == "online":
             self.riesz_product["aa"] = self.assemble_error_estimation_operators("riesz_product_aa", "online")
             self.riesz_product["af"] = self.assemble_error_estimation_operators("riesz_product_af", "online")
@@ -193,7 +193,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     
     ## Assemble operators for error estimation
     def assemble_error_estimation_operators(self, term, current_stage="online"):
-        assert current_stage == "online" or current_stage == "offline"
+        assert current_stage in ("online", "offline")
         short_term = term.replace("riesz_product_", "")
         if current_stage == "online": # load from file
             if not short_term in self.riesz_product:

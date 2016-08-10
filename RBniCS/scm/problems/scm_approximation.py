@@ -97,7 +97,7 @@ class SCMApproximation(ParametrizedProblem):
     
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
-        assert current_stage == "online" or current_stage == "offline"
+        assert current_stage in ("online", "offline")
         # Read/Initialize reduced order data structures
         if current_stage == "online":
             self.B_min.load(self.folder["reduced_operators"], "B_min")

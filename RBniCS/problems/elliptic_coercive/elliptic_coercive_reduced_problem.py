@@ -118,7 +118,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self._init_basis_functions(current_stage)
             
     def _init_operators(self, current_stage="online"):
-        assert current_stage == "online" or current_stage == "offline"
+        assert current_stage in ("online", "offline")
         if current_stage == "online":
             for term in self.terms:
                 self.operator[term] = self.assemble_operator(term, "online")
@@ -131,7 +131,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             raise AssertionError("Invalid stage in _init_operators().")
         
     def _init_basis_functions(self, current_stage="online"):
-        assert current_stage == "online" or current_stage == "offline"
+        assert current_stage in ("online", "offline")
         if current_stage == "online":
             self.Z.load(self.folder["basis"], "basis")
             # To properly initialize N and N_bc, detect how many theta terms
@@ -266,7 +266,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         
     ## Assemble the reduced order affine expansion
     def assemble_operator(self, term, current_stage="online"):
-        assert current_stage == "online" or current_stage == "offline"
+        assert current_stage in ("online", "offline")
         if current_stage == "online": # load from file
             if not term in self.operator:
                 self.operator[term] = AffineExpansionOnlineStorage()

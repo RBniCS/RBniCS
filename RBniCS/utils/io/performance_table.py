@@ -80,7 +80,7 @@ class PerformanceTable(object):
             for column in self._groups[group]:
                 for operation in self._columns_operations[column]:
                     # Set header
-                    if operation == "min" or operation == "max":
+                    if operation in ("min", "max"):
                         current_table_header = operation + "(" + column + ")"
                         current_table_index = operation + "_" + column
                     elif operation == "mean":

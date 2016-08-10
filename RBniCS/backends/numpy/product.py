@@ -34,7 +34,7 @@ from RBniCS.utils.decorators import any, backend_for
 def product(thetas, operators, thetas2=None):
     assert len(thetas) == len(operators)
     order = operators.order()
-    assert order == 1 or order == 2
+    assert order in (1, 2)
     if order == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
         assert isinstance(operators[0], (Matrix_Type, Vector_Type, Function_Type))
         assert thetas2 is None
