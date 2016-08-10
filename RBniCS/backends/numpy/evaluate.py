@@ -26,6 +26,6 @@ from RBniCS.utils.decorators import backend_for
 
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("NumPy", inputs=(TODO))
-def eval(expression, at=None):
+def evaluate(expression, at=None):
     # TODO serve?
     

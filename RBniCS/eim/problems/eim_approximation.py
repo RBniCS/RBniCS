@@ -105,7 +105,7 @@ class EIMApproximation(ParametrizedProblem):
             # Evaluate the function at interpolation points
             rhs = OnlineVector(N)
             for p in range(N):
-                rhs[p] = eval(self.parametrized_expression, self.interpolation_locations[p])
+                rhs[p] = evaluate(self.parametrized_expression, self.interpolation_locations[p])
             
             # Extract the interpolation matrix
             lhs = self.interpolation_matrix[0][:N,:N]

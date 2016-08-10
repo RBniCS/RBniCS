@@ -112,7 +112,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             print("evaluate parametrized function")
             self.EIM_approximation.set_mu(mu)
-            self.EIM_approximation.snapshot = eval(self.EIM_approximation.parametrized_expression)
+            self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
             self.EIM_approximation.export_solution(self.EIM_approximation.snapshot, self.folder["snapshots"], "truth_" + str(run))
             
             print("update snapshots matrix")
@@ -188,7 +188,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def update_interpolation_matrix(self):
         last_location = self.EIM_approximation.interpolation_locations[self.EIM_approximation.N - 1]
         for j in range(self.EIM_approximation.N):
-            value = eval(self.EIM_approximation.Z[j], last_location)
+            value = evaluate(self.EIM_approximation.Z[j], last_location)
             self.EIM_approximation.interpolation_matrix[0][self.EIM_approximation.N - 1, j] = value
         self.EIM_approximation.interpolation_matrix.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
             
@@ -261,7 +261,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.set_mu(mu)
             
             # Evaluate the exact function on the truth grid
-            self.EIM_approximation.snapshot = eval(self.EIM_approximation.parametrized_expression)
+            self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
             
             for n in range(1, N + 1): # n = 1, ... N
                 self.EIM_approximation.solve(n)

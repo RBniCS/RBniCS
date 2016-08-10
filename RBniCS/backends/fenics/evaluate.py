@@ -22,10 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import abstract_backend
+from dolfin import Point
+from RBniCS.backends.fenics.matrix import Matrix_Type
+from RBniCS.backends.fenics.vector import Vector_Type
+from RBniCS.backends.fenics.function import Function_Type
+from RBniCS.utils.decorators import backend_for
 
 # Evaluate a parametrized expression, possibly at a specific location
-@abstract_backend
-def eval(expression, at=None):
-    pass
+@backend_for("FEniCS", inputs=(any(Matrix_Type, Vector_Type, Function_Type), tuple))
+def evaluate(expression, at=None):
+    # TODO
     
