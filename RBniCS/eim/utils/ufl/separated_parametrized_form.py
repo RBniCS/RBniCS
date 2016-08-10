@@ -84,9 +84,8 @@ class SeparatedParametrizedForm(object):
                 log(PROGRESS, "\t\t Expression " + str(e))
                 pre_traversal_e = [n for n in pre_traversal(e)]
                 tree_nodes_skip = [False for _ in pre_traversal_e]
-                for n_i in range(len(pre_traversal_e)):
+                for (n_i, n) in enumerate(pre_traversal_e):
                     if not tree_nodes_skip[n_i]:
-                        n = pre_traversal_e[n_i]
                         # Skip expressions which are an Argument or (only a) multiindex
                         if isinstance(n, Argument):
                             log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is an Argument")
@@ -109,15 +108,14 @@ class SeparatedParametrizedForm(object):
                             # mark the node as visited, since the same expression may appear
                             # on different sides of the tree
                             pre_traversal_n = [d for d in pre_traversal(n)]
-                            for d_i in range(len(pre_traversal_n)):
-                                assert pre_traversal_n[d_i] == pre_traversal_e[n_i + d_i] # make sure that we are marking the right node
+                            for (d_i, d) in enumerate(pre_traversal_n):
+                                assert d == pre_traversal_e[n_i + d_i] # make sure that we are marking the right node
                                 tree_nodes_skip[n_i + d_i] = True
                             # We might be able to strip any (non-parametrized) expression out
                             all_candidates = list()
                             internal_tree_nodes_skip = [False for _ in pre_traversal_n]
-                            for d_i in range(len(pre_traversal_n)):
+                            for (d_i, d) in enumerate(pre_traversal_n):
                                 if not internal_tree_nodes_skip[d_i]:
-                                    d = pre_traversal_n[d_i]
                                     # Skip all expressions where at least one leaf is not parametrized
                                     for t in traverse_terminals(d):
                                         if (isinstance(t, Expression) and "mu_0" not in t.user_parameters) or isinstance(t, Constant):
@@ -133,8 +131,8 @@ class SeparatedParametrizedForm(object):
                                             log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check")
                                             all_candidates.append(d)
                                             pre_traversal_d = [q for q in pre_traversal(d)]
-                                            for q_i in range(len(pre_traversal_d)):
-                                                assert pre_traversal_d[q_i] == pre_traversal_n[d_i + q_i] # make sure that we are marking the right node
+                                            for (q_i, q) in enumerate(pre_traversal_d):
+                                                assert q == pre_traversal_n[d_i + q_i] # make sure that we are marking the right node
                                                 internal_tree_nodes_skip[d_i + q_i] = True
                                         else:
                                             log(PROGRESS, "\t\t\t Descendant node " + str(d) + " has not passed the non-parametrized because is not an expression")
@@ -192,8 +190,8 @@ class SeparatedParametrizedForm(object):
                 self._form_with_placeholders.append(new_integrand*measure)
             
         log(PROGRESS, "3. Assert that there are no parametrized expressions left")
-        for i in range(len(self._form_with_placeholders)):
-            for integral in self._form_with_placeholders[i].integrals():
+        for form in self._form_with_placeholders:
+            for integral in form.integrals():
                 for e in pre_traversal(integral.integrand()):
                     assert not (isinstance(e, Expression) and "mu_0" in e.user_parameters), "Form " + str(i) + " still contains a parametrized expression"
         
@@ -202,10 +200,10 @@ class SeparatedParametrizedForm(object):
         assert len(self.coefficients) == len(self._form_with_placeholders)
         
         log(PROGRESS, "5. Prepare coefficients hash codes")
-        for i in range(len(self.coefficients)):
-            for j in range(len(self.coefficients[i])):
+        for addend in self.coefficients:
+            for factor in addend:
                 str_repr = ""
-                for n in pre_traversal(self.coefficients[i][j]):
+                for n in pre_traversal(factor):
                     if hasattr(n, "cppcode"):
                         str_repr += repr(n.cppcode)
                     else:
@@ -213,14 +211,14 @@ class SeparatedParametrizedForm(object):
                 hash_code = hashlib.sha1(
                                 (str_repr + dolfin_version).encode("utf-8")
                             ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
-                self.coefficients[i][j].hash_code = hash_code
+                factor.hash_code = hash_code
         
         log(PROGRESS, "*** DONE - SEPARATE FORM COEFFICIENTS - DONE ***")
         log(PROGRESS, "")
         
     def replace_placeholders(self, i, new_coefficients):
         assert len(new_coefficients) == len(self._placeholders[i])
-        replacements = dict((self._placeholders[i][p], new_coefficients[p]) for p in range(len(new_coefficients)))
+        replacements = dict((placeholder, new_coefficient) for (placeholder, new_coefficient) in zip(self._placeholders[i], new_coefficients))
         return replace(self._form_with_placeholders[i], replacements)
 
 #  @}

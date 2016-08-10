@@ -124,8 +124,8 @@ class EIMApproximation(ParametrizedProblem):
     def compute_interpolated_theta(self, N=None):
         interpolated_theta = self.solve(N)
         interpolated_theta_list = list()
-        for n in range(len(interpolated_theta.vector())):
-            interpolated_theta_list.append(float(interpolated_theta.vector()[n]))
+        for theta in interpolated_theta.vector():
+            interpolated_theta_list.append(float(theta))
         if N is not None:
             # Make sure to append a 0 coefficient for each basis function
             # which has not been requested

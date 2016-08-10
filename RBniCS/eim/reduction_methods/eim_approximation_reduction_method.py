@@ -107,11 +107,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        for run in range(len(self.xi_train)):
+        for (run, mu) in enumerate(self.xi_train):
             print(":::::::::::::::::::::::::::::: EIM run =", run, "::::::::::::::::::::::::::::::")
             
             print("evaluate parametrized function")
-            self.EIM_approximation.set_mu(self.xi_train[run])
+            self.EIM_approximation.set_mu(mu)
             self.EIM_approximation.snapshot = eval(self.EIM_approximation.parametrized_expression)
             self.EIM_approximation.export_solution(self.EIM_approximation.snapshot, self.folder["snapshots"], "truth_" + str(run))
             
@@ -255,10 +255,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("error", group_name="eim", operations="mean")
         
-        for run in range(len(self.xi_test)):
+        for (run, mu) in enumerate(self.xi_test):
             print(":::::::::::::::::::::::::::::: EIM run =", run, "::::::::::::::::::::::::::::::")
             
-            self.EIM_approximation.set_mu(self.xi_test[run])
+            self.EIM_approximation.set_mu(mu)
             
             # Evaluate the exact function on the truth grid
             self.EIM_approximation.snapshot = eval(self.EIM_approximation.parametrized_expression)

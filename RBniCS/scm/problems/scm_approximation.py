@@ -289,8 +289,8 @@ class SCMApproximation(ParametrizedProblem):
             return range(len(all_mu_indices))
         
         indices_and_distances = list()
-        for p in range(len(all_mu_indices)):
-            distance = self._parameters_distance(mu, self.xi_train[ all_mu_indices[p] ])
+        for (local_index, xi_train_index) in enumerate(all_mu_indices):
+            distance = self._parameters_distance(mu, self.xi_train[xi_train_index])
             indices_and_distances.append((p, distance))
         indices_and_distances.sort(key=operator.itemgetter(1))
         neighbors = list()

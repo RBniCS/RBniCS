@@ -106,8 +106,8 @@ class PerformanceTable(object):
                     column_size[current_table_index] = max([max([len(str(x)) for x in table_content[current_table_index]]), len(current_table_header)])
             # Prepare formetter for string conversion
             formatter = ""
-            for i in range(len(table_index)):
-                formatter += "{" + str(i) + ":<{" + table_index[i] + "}}"
+            for (column_index, column_name) in enumerate(table_index):
+                formatter += "{" + str(column_index) + ":<{" + column_name + "}}"
                 if i < len(table_index) - 1:
                     formatter += "\t"
             # Print the header

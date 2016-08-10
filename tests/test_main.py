@@ -81,8 +81,9 @@ class TestBase(object):
         
     def average(self):
         self.index = 0
-        all_outputs = zeros((3*self.timer.number))
-        for i in range(len(all_outputs)):
+        total_times = 3*self.timer.number
+        all_outputs = zeros((total_times))
+        for i in range(total_times):
             all_outputs[i] = self.run()
         return mean(all_outputs)
     

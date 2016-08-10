@@ -104,9 +104,9 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             assert isinstance(key, tuple) and isinstance(key[0], slice)
             
             dict_key = list()
-            for i in range(len(key)):
-                assert key[i].start is None and key[i].step is None
-                dict_key.append(key[i].stop)
+            for slice_ in key:
+                assert slice_.start is None and slice_.step is None
+                dict_key.append(slice_.stop)
             dict_key = tuple(dict_key)
             
             if dict_key in self._precomputed_slices:
@@ -115,10 +115,10 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             it = AffineExpansionOnlineStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             
             is_slice_equal_to_full_tensor = True
-            for i in range(len(key)):
-                assert key[i].start is None and key[i].step is None
-                assert key[i].stop <= self._content[it.multi_index].shape[i]
-                if key[i].stop < self._content[it.multi_index].shape[i]:
+            for slice_ in key:
+                assert slice_.start is None and slice_.step is None
+                assert slice_.stop <= self._content[it.multi_index].shape[i]
+                if slice_.stop < self._content[it.multi_index].shape[i]:
                     is_slice_equal_to_full_tensor = False
             if is_slice_equal_to_full_tensor:
                 self._precomputed_slices[dict_key] = self

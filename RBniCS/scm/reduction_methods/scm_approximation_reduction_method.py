@@ -294,10 +294,10 @@ class SCMApproximationReductionMethod(ReductionMethod):
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("normalized_error", group_name="scm", operations=("min", "mean", "max"))
         
-        for run in range(len(self.xi_test)):
+        for (run, mu) in enumerate(self.xi_test):
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             
-            self.SCM_approximation.set_mu(self.xi_test[run])
+            self.SCM_approximation.set_mu(mu)
             
             (exact, _) = self.SCM_approximation.exact_coercivity_constant_calculator.solve()
             LB = self.SCM_approximation.get_stability_factor_lower_bound(self.SCM_approximation.mu, False)

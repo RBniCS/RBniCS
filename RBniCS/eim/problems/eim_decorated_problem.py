@@ -55,10 +55,10 @@ def EIMDecoratedProblem(**decorator_kwargs):
                         self.separated_forms[term][q] = SeparatedParametrizedForm(forms[q])
                         self.separated_forms[term][q].separate()
                         # All parametrized coefficients should be approximated by EIM
-                        for i in range(len(self.separated_forms[term][q].coefficients)):
-                            for coeff in self.separated_forms[term][q].coefficients[i]:
-                                if coeff not in self.EIM_approximations:
-                                    self.EIM_approximations[coeff] = EIMApproximation(self, InterpolationInput(coeff, self.V), type(self).__name__ + "/eim/" + str(coeff.hash_code))
+                        for addend in self.separated_forms[term][q].coefficients:
+                            for factor in addend:
+                                if factor not in self.EIM_approximations:
+                                    self.EIM_approximations[coeff] = EIMApproximation(self, InterpolationInput(factor, self.V), type(self).__name__ + "/eim/" + str(factor.hash_code))
                                     
                 # Avoid useless assignments
                 self._update_N_EIM_in_compute_theta.__func__.previous_kwargs = None
@@ -74,14 +74,16 @@ def EIMDecoratedProblem(**decorator_kwargs):
                         self.compute_theta.__func__.N_EIM = dict()
                         N_EIM = kwargs["EIM"]
                         for term in self.separated_forms:
-                            self.compute_theta.__func__.N_EIM[term] = dict()
-                            for q in range(len(self.separated_forms[term])):
-                                if isinstance(N_EIM, dict):
-                                    assert term in N_EIM and q in N_EIM[term]
-                                    self.compute_theta.__func__.N_EIM[term][q] = N_EIM[term][q]
-                                else:
-                                    assert isinstance(N_EIM, int)
-                                    self.compute_theta.__func__.N_EIM[term][q] = N_EIM
+                            self.compute_theta.__func__.N_EIM[term] = list()
+                            if isinstance(N_EIM, dict):
+                                assert term in N_EIM
+                                assert len(N_EIM[term]) == len(self.separated_forms[term])
+                                for N_eim_term_q in N_EIM[term]:
+                                    self.compute_theta.__func__.N_EIM[term].append(N_eim_term_q)
+                            else:
+                                assert isinstance(N_EIM, int)
+                                for _ in self.separated_forms[term]:
+                                    self.compute_theta.__func__.N_EIM[term].append(N_EIM)
                     else:
                         if hasattr(self.compute_theta.__func__, "N_EIM"):
                             delattr(self.compute_theta.__func__, "N_EIM")
@@ -96,20 +98,19 @@ def EIMDecoratedProblem(**decorator_kwargs):
             def assemble_operator(self, term):
                 if term in self.terms:
                     eim_forms = list()
-                    for q in range(len(self.separated_forms[term])):
+                    for form in self.separated_forms[term]:
                         # Append forms computed with EIM, if applicable
-                        for i in range(len(self.separated_forms[term][q].coefficients)):
-                            eim_forms_coefficients_q_i = self.separated_forms[term][q].coefficients[i]
-                            eim_forms_replacements_q_i__list = list()
-                            for coeff in eim_forms_coefficients_q_i:
-                                eim_forms_replacements_q_i__list.append(self.EIM_approximations[coeff].Z)
-                            eim_forms_replacements_q_i__cartesian_product = cartesian_product(*eim_forms_replacements_q_i__list)
-                            for new_coeffs in eim_forms_replacements_q_i__cartesian_product:
+                        for (index, addend) in form.coefficients:
+                            replacements__list = list()
+                            for factor in addend:
+                                replacements__list.append(self.EIM_approximations[factor].Z)
+                            replacements__cartesian_product = cartesian_product(*replacements__list)
+                            for new_coeffs in replacements__cartesian_product:
                                 eim_forms.append(
-                                    self.separated_forms[term][q].replace_placeholders(i, new_coeffs)
+                                    form.replace_placeholders(index, new_coeffs)
                                 )
                         # Append forms which did not require EIM, if applicable
-                        for unchanged_form in self.separated_forms[term][q]._form_unchanged:
+                        for unchanged_form in form._form_unchanged:
                             eim_forms.append(unchanged_form)
                     return tuple(eim_forms)
                 else:
@@ -120,25 +121,26 @@ def EIMDecoratedProblem(**decorator_kwargs):
                 original_thetas = ParametrizedProblem_DerivedClass.compute_theta(self, term) # may raise an exception
                 if term in self.terms:
                     eim_thetas = list()
-                    for q in range(len(original_thetas)):
+                    assert len(self.separated_forms[term]) == len(original_thetas)
+                    for (form, original_theta) in zip(self.separated_forms[term], original_thetas):
                         # Append coefficients computed with EIM, if applicable
-                        for i in range(len(self.separated_forms[term][q].coefficients)):
-                            eim_thetas_q_i__list = list()
-                            for coeff in self.separated_forms[term][q].coefficients[i]:
+                        for addend in form.coefficients:
+                            eim_thetas__list = list()
+                            for factor in addend:
                                 N_EIM = None
                                 if hasattr(self.compute_theta.__func__, "N_EIM"):
-                                    assert term in self.compute_theta.__func__.N_EIM and q in self.compute_theta.__func__.N_EIM[term]
+                                    assert term in self.compute_theta.__func__.N_EIM and q < len(self.compute_theta.__func__.N_EIM[term])
                                     N_EIM = self.compute_theta.__func__.N_EIM[term][q]
-                                eim_thetas_q_i__list.append(self.EIM_approximations[coeff].compute_interpolated_theta(N_EIM))
-                            eim_thetas_q_i__cartesian_product = cartesian_product(*eim_thetas_q_i__list)
-                            for t in eim_thetas_q_i__cartesian_product:
-                                eim_thetas_q_i_t = original_thetas[q]
-                                for r in t:
-                                    eim_thetas_q_i_t *= r
-                                eim_thetas.append(eim_thetas_q_i_t)
+                                eim_thetas__list.append(self.EIM_approximations[factor].compute_interpolated_theta(N_EIM))
+                            eim_thetas__cartesian_product = cartesian_product(*eim_thetas__list)
+                            for tuple_ in eim_thetas__cartesian_product:
+                                eim_thetas_tuple = original_thetas[q]
+                                for eim_thata_factor in tuple_:
+                                    eim_thetas_tuple *= eim_thata_factor
+                                eim_thetas.append(eim_thetas_tuple)
                         # Append coefficients which did not require EIM, if applicable
-                        for i in range(len(self.separated_forms[term][q]._form_unchanged)):
-                            eim_thetas.append(original_thetas[q])
+                        for _ in form._form_unchanged:
+                            eim_thetas.append(original_theta)
                     return tuple(eim_thetas)
                 else:
                     return original_thetas

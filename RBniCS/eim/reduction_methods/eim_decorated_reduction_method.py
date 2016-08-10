@@ -56,12 +56,14 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             Nmax_EIM = kwargs["EIM"]
             if isinstance(Nmax_EIM, dict):
                 for term in self.separated_forms:
-                    for q in range(len(self.separated_forms[term])):
-                        for i in range(len(self.separated_forms[term][q].coefficients)):
-                            for coeff in self.separated_forms[term][q].coefficients[i]:
+                    assert term in Nmax_EIM
+                    assert len(self.separated_forms[term]) == len(Nmax_EIM[term])
+                    for (form, Nmax_EIM_form) in zip(self.separated_forms[term], Nmax_EIM[term]):
+                        for addend in form.coefficients:
+                            for factor in addend:
                                 assert term in Nmax_EIM and q in Nmax_EIM[term]
                                 assert coeff in self.EIM_reductions
-                                self.EIM_reductions[coeff].set_Nmax(max(self.EIM_reductions[coeff].Nmax, Nmax_EIM[term][q])) # kwargs are not needed
+                                self.EIM_reductions[factor].set_Nmax(max(self.EIM_reductions[factor].Nmax, Nmax_EIM_form)) # kwargs are not needed
             else:
                 assert isinstance(Nmax_EIM, int)
                 for coeff in self.EIM_reductions:

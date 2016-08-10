@@ -36,8 +36,8 @@ class EquispacedDistribution(Distribution):
     def sample(self, box, n):
         n_P_root = int(ceil(n**(1./len(box))))
         grid = list() # of linspaces
-        for p in range(len(box)):
-            grid.append( linspace(box[p][0], box[p][1], num=n_P_root).tolist() )
+        for box_p in box:
+            grid.append( linspace(box_p[0], box_p[1], num=n_P_root).tolist() )
         xi_itertools = itertools.product(*grid)
         xi = list() # of tuples
         for mu in xi_itertools:

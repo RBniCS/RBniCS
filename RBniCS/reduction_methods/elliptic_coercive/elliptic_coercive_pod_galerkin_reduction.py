@@ -100,10 +100,10 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
-        for run in range(len(self.xi_train)):
+        for (run, mu) in enumerate(self.xi_train):
             print("############################## run =", run, "######################################")
             
-            self.truth_problem.set_mu(self.xi_train[run])
+            self.truth_problem.set_mu(mu)
             
             print("truth solve for mu =", self.truth_problem.mu)
             snapshot = self.truth_problem.solve()
@@ -172,10 +172,10 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         error_analysis_table.add_column("error_u", group_name="u", operations="mean")
         error_analysis_table.add_column("error_s", group_name="s", operations="mean")
         
-        for run in range(len(self.xi_test)):
+        for (run, mu) in enumerate(self.xi_test):
             print("############################## run =", run, "######################################")
             
-            self.reduced_problem.set_mu(self.xi_test[run])
+            self.reduced_problem.set_mu(mu)
                         
             for n in range(1, N + 1): # n = 1, ... N
                 (error_analysis_table["error_u", n, run], error_analysis_table["error_s", n, run]) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to, flatten_truth_problem=flatten_truth_problem, **kwargs)

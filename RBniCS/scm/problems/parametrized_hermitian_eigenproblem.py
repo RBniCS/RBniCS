@@ -89,14 +89,13 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
     def clear_constrained_dofs(self, operator, diag_value):
         dirichlet_bc = self.truth_problem.dirichlet_bc
         V = self.truth_problem.V
-        for q in range(len(operator)):
+        for op in operator:
             if len(dirichlet_bc) > 0:
                 dummy = Function(V)
-                for q in range(len(dirichlet_bc)):
-                    for i in range(len(dirichlet_bc[q])):
-                        dirichlet_bc_q_i = DirichletBC(*dirichlet_bc[q][i])
-                        dirichlet_bc_q_i.zero(operator[q])
-                        dirichlet_bc_q_i.zero_columns(operator[q], dummy.vector(), diag_value)
+                for bc_list in dirichlet_bc:
+                    for bc in bc_list:
+                        bc.zero(op)
+                        bc.zero_columns(op, dummy.vector(), diag_value)
     
     def solve(self):
         if self.solve.__func__.previous_mu == self.mu:

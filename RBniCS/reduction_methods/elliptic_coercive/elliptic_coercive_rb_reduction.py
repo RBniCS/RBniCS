@@ -208,10 +208,10 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         error_analysis_table.add_column("error_estimator_s", group_name="s", operations="mean")
         error_analysis_table.add_column("effectivity_s", group_name="s", operations=("min", "mean", "max"))
         
-        for run in range(len(self.xi_test)):
+        for (run, mu) in enumerate(self.xi_test):
             print("############################## run =", run, "######################################")
             
-            self.reduced_problem.set_mu(self.xi_test[run])
+            self.reduced_problem.set_mu(mu)
             
             for n in range(1, N + 1): # n = 1, ... N
                 (current_error_u, current_error_s) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to, flatten_truth_problem=flatten_truth_problem, **kwargs)

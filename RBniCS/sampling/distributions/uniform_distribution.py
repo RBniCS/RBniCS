@@ -35,8 +35,8 @@ class UniformDistribution(Distribution):
         xi = list() # of tuples
         for i in range(n):
             mu = list() # of numbers
-            for p in range(len(box)):
-                mu.append(random.uniform(box[p][0], box[p][1]))
+            for box_p in box:
+                mu.append(random.uniform(box_p[0], box_p[1]))
             xi.append(tuple(mu))
         return xi
         

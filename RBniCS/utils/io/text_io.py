@@ -42,8 +42,8 @@ class TextIO(object):
     def save_file(content, directory, filename):
         if mpi_comm.rank == 0:
             with open(str(directory) + "/" + filename + ".txt", "w") as outfile:
-                for i in range(len(content)):
-                    outfile.write(str(i) + " " + str(content[i]) + "\n")
+                for (i, content_i) in enumerate(content):
+                    outfile.write(str(i) + " " + str(content_i) + "\n")
         mpi_comm.barrier()
             
     ## Check if the file exists

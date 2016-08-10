@@ -96,7 +96,8 @@ class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
     def save_eigenvalues_file(self, output_directory, eigenvalues_file):
         if mpi_comm.rank == 0:
             with open(str(directory) + "/" + filename, "w") as outfile:
-                for i in range(len(self.snapshots_matrix)):
+                N = len(self.snapshots_matrix)
+                for i in range(N):
                     (eig_i_real, eig_i_complex) = self.eigensolver.get_eigenvalue[i]
                     assert isclose(eig_i_complex, 0)
                     outfile.write(str(i) + " " + str(eig_i_real) + "\n")
@@ -105,14 +106,15 @@ class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
     @override
     def save_retained_energy_file(self, output_directory, retained_energy_file):
         if mpi_comm.rank == 0:
-            eigs = zeros(len(self.snapshots_matrix))
-            for i in range(len(eigs)):
+            N = len(self.snapshots_matrix)
+            eigs = zeros(N)
+            for i in range(N):
                 (eigs[i], _) = self.eigensolver.get_eigenvalue[i]
             energy = total_energy(eigs)
             retained_energy = retained_energy(eigs)
             retained_energy /= energy
             with open(str(directory) + "/" + filename, "w") as outfile:
-                for i in range(len(retained_energy)):
+                for i in range(N):
                     outfile.write(str(i) + " " + str(retained_energy[i]) + "\n") 
         mpi_comm.barrier()
     

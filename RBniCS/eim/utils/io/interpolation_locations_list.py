@@ -44,8 +44,11 @@ class InterpolationLocationsList(ExportableList):
     def load(self, directory, filename):
         return_value = ExportableList.load(self, directory, filename)
         # Make sure to update the processor ids
-        for i in range(len(self)):
-            self.processors_id.append(self._get_processor_id(ExportableList.__getitem__(self, i)))
+        N = len(self)
+        for i in range(N):
+            point = ExportableList.__getitem__(self, i)
+            self.processors_id.append(self._get_processor_id(point))
+        return return_value
         
     @override
     def append(self, point):

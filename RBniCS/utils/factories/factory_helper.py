@@ -53,30 +53,32 @@ def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_val
                 if len(candidates) > 1:
                     log(DEBUG, "\t\tFound several candidates: " + str(candidates))
                     candidates_to_be_removed = list()
-                    for c in range(len(candidates)):
-                        if candidates_replaces[c] is not None:
-                            if condition_for_candidate_replacement(candidates_replaces_if[c]):
-                                log(DEBUG, "\t\t\tRemoving candidate " + str(candidates_replaces[c]) + " because of failed user provided replacement with " + str(candidates[c]))
-                                candidates_to_be_removed.append(candidates_replaces[c])
+                    assert len(candidates) == len(candidates_replaces_if)
+                    assert len(candidates) == len(candidates_replaces)
+                    for (candidate, candidate_replaces_if, candidate_replaces) in zip(candidates, candidates_replaces_if, candidates_replaces):
+                        if candidate_replaces is not None:
+                            if condition_for_candidate_replacement(candidate_replaces_if):
+                                log(DEBUG, "\t\t\tRemoving candidate " + str(candidate_replaces) + " because of failed user provided replacement with " + str(candidate))
+                                candidates_to_be_removed.append(candidate_replaces)
                             else:
-                                log(DEBUG, "\t\t\tKeeping candidate " + str(candidates_replaces[c]) + " because of successful user provided replacement with " + str(candidates[c]))
-                                candidates_to_be_removed.append(candidates[c])
+                                log(DEBUG, "\t\t\tKeeping candidate " + str(candidate_replaces) + " because of successful user provided replacement with " + str(candidate))
+                                candidates_to_be_removed.append(candidate)
                     for c in candidates_to_be_removed:
                         candidates.remove(c)
                     if inspect.isclass(candidates[0]): # they will all be classes
                         candidates_to_be_removed = list()
-                        for c1 in range(len(candidates)):
-                            assert inspect.isclass(candidates[c1])
-                            for c2 in range(c1 + 1, len(candidates)):
-                                assert inspect.isclass(candidates[c2])
-                                if issubclass(candidates[c1], candidates[c2]):
-                                    assert candidates[c1] is not candidates[c2]
-                                    log(DEBUG, "\t\t\tRemoving candidate " + str(candidates[c2]) + " in favor of its child " + str(candidates[c1]))
-                                    candidates_to_be_removed.append(c2)
-                                elif issubclass(candidates[c2], candidates[c1]):
-                                    assert candidates[c2] is not candidates[c1]
-                                    log(DEBUG, "\t\t\tRemoving candidate " + str(candidates[c1]) + " in favor of its child " + str(candidates[c2]))
-                                    candidates_to_be_removed.append(c1)
+                        for (index1, candidate1) in enumerate(candidates):
+                            assert inspect.isclass(candidate1)
+                            for (index2, candidate2) in enumerate(candidates, start=c1 + 1):
+                                assert inspect.isclass(candidate2)
+                                if issubclass(candidate1, candidate2):
+                                    assert candidate1 is not candidate2
+                                    log(DEBUG, "\t\t\tRemoving candidate " + str(candidate2) + " in favor of its child " + str(candidate1))
+                                    candidates_to_be_removed.append(index2)
+                                elif issubclass(candidate2, candidate1):
+                                    assert candidate2 is not candidate1
+                                    log(DEBUG, "\t\t\tRemoving candidate " + str(candidate1) + " in favor of its child " + str(candidate2))
+                                    candidates_to_be_removed.append(index1)
                                 else:
                                     log(DEBUG, "\t\t\tCandidates " + str(candidates[c1]) + " and " + str(candidates[c2]) + " do not inherit from the other, keeping both of them")
                         for c in candidates_to_be_removed:

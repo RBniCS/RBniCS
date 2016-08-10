@@ -93,18 +93,18 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                 # This cannot be done during __init__ because at construction time the number
                 # of parameters is still unknown
                 self.displacement_expression = list()
-                for i in range(len(self.shape_parametrization_expression)):
-                    displacement_expression_i = list()
-                    assert len(self.shape_parametrization_expression[i]) == self.mesh.geometry().dim()
-                    for j in range(len(self.shape_parametrization_expression[i])):
+                for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression:
+                    displacement_expression_on_subdomain = list()
+                    assert len(shape_parametrization_expression_on_subdomain) == self.mesh.geometry().dim()
+                    for (component, shape_parametrization_component_on_subdomain) in enumerate(shape_parametrization_expression_on_subdomain):
                         # convert from shape parametrization T to displacement d = T - I
-                        displacement_expression_i.append(
-                            self.shape_parametrization_expression[i][j] + " - x[" + str(j) + "]",
+                        displacement_expression_on_subdomain.append(
+                            shape_parametrization_component_on_subdomain + " - x[" + str(component) + "]",
                         )
                     self.displacement_expression.append(
                         ParametrizedExpression(
                             self,
-                            tuple(displacement_expression_i),
+                            tuple(shape_parametrization_expression_on_subdomain),
                             mu=self.mu,
                             element=self.deformation_V.ufl_element()
                         )
@@ -134,11 +134,11 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             def compute_displacement(self):
                 interpolator = LagrangeInterpolator()
                 displacement = Function(self.deformation_V)
-                for i in range(len(self.displacement_expression)):
-                    displacement_subdomain_i = Function(self.deformation_V)
-                    interpolator.interpolate(displacement_subdomain_i, self.displacement_expression[i])
-                    subdomain_dofs = self.subdomain_id_to_deformation_dofs[i]
-                    displacement.vector()[subdomain_dofs] = displacement_subdomain_i.vector()[subdomain_dofs]
+                for (subdomain, displacement_expression_on_subdomain) in enumerate(self.displacement_expression):
+                    displacement_function_on_subdomain = Function(self.deformation_V)
+                    interpolator.interpolate(displacement_function_on_subdomain, displacement_expression_on_subdomain)
+                    subdomain_dofs = self.subdomain_id_to_deformation_dofs[subdomain]
+                    displacement.vector()[subdomain_dofs] = displacement_function_on_subdomain.vector()[subdomain_dofs]
                 return displacement
                 
             #  @}

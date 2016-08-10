@@ -37,35 +37,36 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     mu = kwargs["mu"]
     assert mu is not None
     assert isinstance(mu, tuple)
+    P = len(mu)
     assert len(mu) > 0
-    for p in range(len(mu)):
+    for p in range(P):
         assert isinstance(parametrized_expression_code, tuple) or isinstance(parametrized_expression_code, str)
         if isinstance(parametrized_expression_code, tuple):
             if isinstance(parametrized_expression_code[0], tuple):
-                new_parametrized_expression_code = list()
-                for i in range(len(parametrized_expression_code)):
-                    assert isinstance(parametrized_expression_code[i], tuple)
-                    new_parametrized_expression_code_i = list()
-                    for j in range(len(parametrized_expression_code[i])):
-                        assert isinstance(parametrized_expression_code[i][j], str)
-                        new_parametrized_expression_code_i.append(parametrized_expression_code[i][j].replace("mu[" + str(p) + "]", "mu_" + str(p)))
-                    parametrized_expression_code_i = tuple(new_parametrized_expression_code_i)
-                    new_parametrized_expression_code.append(parametrized_expression_code_i)
-                parametrized_expression_code = tuple(new_parametrized_expression_code)
+                matrix_after_replacements = list()
+                for row in parametrized_expression_code:
+                    assert isinstance(row, tuple)
+                    new_row = list()
+                    for item in row:
+                        assert isinstance(item, str)
+                        new_row.append(item.replace("mu[" + str(p) + "]", "mu_" + str(p)))
+                    new_row = tuple(new_row)
+                    matrix_after_replacements.append(new_row)
+                parametrized_expression_code = tuple(matrix_after_replacements)
             else:
-                new_parametrized_expression_code = list()
-                for i in range(len(parametrized_expression_code)):
-                    assert isinstance(parametrized_expression_code[i], str)
-                    new_parametrized_expression_code.append(parametrized_expression_code[i].replace("mu[" + str(p) + "]", "mu_" + str(p)))
-                parametrized_expression_code = tuple(new_parametrized_expression_code)
+                vector_after_replacements = list()
+                for item in parametrized_expression_code:
+                    assert isinstance(item, str)
+                    vector_after_replacements.append(item.replace("mu[" + str(p) + "]", "mu_" + str(p)))
+                parametrized_expression_code = tuple(vector_after_replacements)
         elif isinstance(parametrized_expression_code, str):
             parametrized_expression_code = parametrized_expression_code.replace("mu[" + str(p) + "]", "mu_" + str(p))
         else:
             raise AssertionError("Invalid expression type in ParametrizedExpression")
     
     mu_dict = {}
-    for p in range(len(mu)):
-        mu_dict[ "mu_" + str(p) ] = mu[p]
+    for (p, mu_p) in enumerate(mu):
+        mu_dict[ "mu_" + str(p) ] = mu_p
     del kwargs["mu"]
     kwargs.update(mu_dict)
             
@@ -78,8 +79,8 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         if expression.mu is not mu:
             assert isinstance(mu, tuple)
             assert len(mu) == len(expression.mu)
-            for p in range(len(mu)):
-                setattr(expression, "mu_" + str(p), mu[p])
+            for (p, mu_p) in enumerate(mu):
+                setattr(expression, "mu_" + str(p), mu_p)
             expression.mu = mu
     truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
     # Note that this override is different from the one that we use in decorated problems,

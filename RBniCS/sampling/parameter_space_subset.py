@@ -60,8 +60,8 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         box = self._FileIO.load_file(directory, filename + "_box")
         if len(box) != len(self.box):
             return False
-        for p in range(len(box)):
-            if box[p][0] != self.box[p][0] or box[p][1] != self.box[p][1]:
+        for (box_range, loaded_box_range) in zip(self.box, box):
+            if box_range[0] != loaded_box_range[p][0] or box_range[1] != loaded_box_range[1]:
                 return False
         return True
         
