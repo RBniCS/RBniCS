@@ -15,21 +15,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary factories module
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.factories.backends_factory import backends_factory, set_online_backend
-from RBniCS.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from RBniCS.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
+from RBniCS.backend.numpy.function import Function_Type
+from RBniCS.utils.decorators import backend_for
 
-__all__ = [
-    'backends_factory',
-    'set_online_backend',
-    'PODGalerkin'
-    'ReducedBasis',
-    'ReducedProblemFactory',
-]
+# Compute the difference between two solutions
+@backend_for("NumPy", inputs=(Function_Type, Function_Type))
+def difference(solution1, solution2):
+    pass
+    

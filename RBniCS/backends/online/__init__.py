@@ -16,20 +16,16 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file __init__.py
-#  @brief Init file for auxiliary factories module
+#  @brief Init file for auxiliary linear algebra module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.factories.backends_factory import backends_factory, set_online_backend
-from RBniCS.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from RBniCS.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
+import sys
+current_module = sys.modules[__name__]
 
-__all__ = [
-    'backends_factory',
-    'set_online_backend',
-    'PODGalerkin'
-    'ReducedBasis',
-    'ReducedProblemFactory',
-]
+# Set the online backend
+from RBniCS.utils.factories import set_online_backend
+set_online_backend("NumPy", current_module)
+

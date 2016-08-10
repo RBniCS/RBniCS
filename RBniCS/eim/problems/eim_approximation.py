@@ -44,7 +44,7 @@ class EIMApproximation(ParametrizedProblem):
     @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
-    def __init__(self, truth_problem, parametrized_expression, folder_prefix):
+    def __init__(self, truth_problem, parametrized_expression, folder_prefix):        
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix)
         # Store the parametrized expression
@@ -55,16 +55,15 @@ class EIMApproximation(ParametrizedProblem):
         # Online reduced space dimension
         self.N = 0
         # Define additional storage for EIM
-        self.interpolation_points = PointsList(self.truth_problem.V.mesh()) # list of interpolation points selected by the greedy
+        self.interpolation_locations = InterpolationLocationsList(parametrized_expression.space) # list of interpolation locations selected by the greedy
         self.interpolation_matrix = AffineExpansionOnlineStorage(1) # interpolation matrix
         # Solution
         self._interpolation_coefficients = OnlineFunction()
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        self.V = truth_problem.V # TODO if the function is scalar then create a scalar space, if vector a vector one, etc
-        self.snapshot = TruthFunction(self.V)
+        self.snapshot = Function(parametrized_expression.space)
         # Basis functions matrix
-        self.Z = BasisFunctionsMatrix(self.V)
+        self.Z = BasisFunctionsMatrix(parametrized_expression.space) # 
         # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
         # basis function/reduced operator folder, but rather add a new one. For this reason we use
         # the __eim suffix in the variable name.
@@ -87,7 +86,7 @@ class EIMApproximation(ParametrizedProblem):
         assert current_stage == "online" or current_stage == "offline"
         # Read/Initialize reduced order data structures
         if current_stage == "online":
-            self.interpolation_points.load(self.folder["reduced_operators"], "interpolation_points")
+            self.interpolation_locations.load(self.folder["reduced_operators"], "interpolation_locations")
             self.interpolation_matrix.load(self.folder["reduced_operators"], "interpolation_matrix")
             self.Z.load(self.folder["basis"], "basis")
             self.N = len(self.Z)
@@ -106,7 +105,7 @@ class EIMApproximation(ParametrizedProblem):
             # Evaluate the function at interpolation points
             rhs = OnlineVector(N)
             for p in range(N):
-                rhs[p] = self.evaluate_parametrized_expression_at_x(*self.interpolation_points[p])
+                rhs[p] = eval(self.parametrized_expression, self.interpolation_locations[p])
             
             # Extract the interpolation matrix
             lhs = self.interpolation_matrix[0][:N,:N]
@@ -133,16 +132,6 @@ class EIMApproximation(ParametrizedProblem):
             for n in range(N, self.N):
                 interpolated_theta_list.append(0.0)
         return tuple(interpolated_theta_list)
-        
-    ## Evaluate the parametrized function f(x; mu) for the current value of mu
-    def evaluate_parametrized_expression_at_x(self, x, processor_id):
-        from numpy import zeros as EvalOutputType
-        from mpi4py.MPI import FLOAT
-        out = EvalOutputType(self.parametrized_expression.value_size())
-        if mpi_comm.rank == processor_id:
-            self.parametrized_expression.eval(out, x)
-        mpi_comm.Bcast([out, FLOAT], root=processor_id)
-        return out
 
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
@@ -154,42 +143,15 @@ class EIMApproximation(ParametrizedProblem):
         
         # Compute the error (difference with the eim approximation)
         if N > 0:
-            error_addends = FunctionsList(self.V)
-            error_coefficients = OnlineVector(2)
-            error_addends.enrich(self.snapshot)
-            error_coefficients[0] = +1.
-            error_addends.enrich(self.Z[:N]*self._interpolation_coefficients)
-            error_coefficients[1] = -1.
-            error = error_addends*error_coefficients
+            error = difference(self.snapshot, self.Z[:N]*self._interpolation_coefficients)
         else:
-            error = self.snapshot.copy(deepcopy=True)
+            error = self.snapshot
         
-        # Locate the vertex of the mesh where the error is maximum
-        mesh = self.V.mesh()
-        maximum_error = None
-        maximum_point = None
-        for v in vertices(mesh):
-            point = mesh.coordinates()[v.index()]
-            err = error(point)
-            if maximum_error is None or abs(err) > abs(maximum_error):
-                maximum_point = point
-                maximum_error = err
-        assert maximum_error is not None
-        assert maximum_point is not None
+        # Get the location of the maximum error
+        (maximum_error, maximum_location) = max(abs(error))
         
-        # Communicate the result in parallel
-        from mpi4py.MPI import MAX
-        local_abs_maximum_error = abs(maximum_error)
-        global_abs_maximum_error = mpi_comm.allreduce(local_abs_maximum_error, op=MAX)
-        global_abs_maximum_error_processor_argmax = -1
-        if global_abs_maximum_error == local_abs_maximum_error:
-            global_abs_maximum_error_processor_argmax = mpi_comm.rank
-        global_abs_maximum_error_processor_argmax = mpi_comm.allreduce(global_abs_maximum_error_processor_argmax, op=MAX)
-        global_maximum_point = mpi_comm.bcast(maximum_point, root=global_abs_maximum_error_processor_argmax)
-        global_maximum_error = mpi_comm.bcast(maximum_error, root=global_abs_maximum_error_processor_argmax)
-            
         # Return
-        return (error, global_maximum_error, global_maximum_point)
+        return (maximum_error, maximum_error, maximum_location)
 
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods

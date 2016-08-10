@@ -24,7 +24,7 @@
 
 from math import sqrt
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from RBniCS.linear_algebra import AffineExpansionOnlineStorage, FunctionsList, product, transpose, solve, sum
+from RBniCS.backends import AffineExpansionOnlineStorage, FunctionsList, product, transpose, solve, sum
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction

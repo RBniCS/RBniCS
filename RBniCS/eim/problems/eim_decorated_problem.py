@@ -58,7 +58,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                         for i in range(len(self.separated_forms[term][q].coefficients)):
                             for coeff in self.separated_forms[term][q].coefficients[i]:
                                 if coeff not in self.EIM_approximations:
-                                    self.EIM_approximations[coeff] = EIMApproximation(self, coeff, type(self).__name__ + "/eim/" + str(coeff.hash_code))
+                                    self.EIM_approximations[coeff] = EIMApproximation(self, InterpolationInput(coeff, self.V), type(self).__name__ + "/eim/" + str(coeff.hash_code))
                                     
                 # Avoid useless assignments
                 self._update_N_EIM_in_compute_theta.__func__.previous_kwargs = None

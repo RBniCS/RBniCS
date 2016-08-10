@@ -15,21 +15,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary factories module
+## @file online_function.py
+#  @brief Type of online function
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.factories.backends_factory import backends_factory, set_online_backend
-from RBniCS.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from RBniCS.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
+from RBniCS.utils.decorators import backend_for, any
+from RBniCS.backends.numpy.vector import Vector_Type
 
-__all__ = [
-    'backends_factory',
-    'set_online_backend',
-    'PODGalerkin'
-    'ReducedBasis',
-    'ReducedProblemFactory',
-]
+class Function_Type(object):
+    def __init__(self, arg):
+        assert isinstance(arg, int) or isinstance(arg, Vector_Type)
+        if isinstance(arg, int):
+            self._v = OnlineVector(arg)
+        elif isinstance(arg, Vector_Type):
+            self._v = v
+        else: # impossible to arrive here anyway, thanks to the assert
+            raise AssertionError("Invalid arguments in Function")
+    
+    def vector(self):
+        return self._v
+
+        
+@backend_for("NumPy", inputs=any(int, Vector_Type))
+def Function(arg):
+    return Function_Type(arg)

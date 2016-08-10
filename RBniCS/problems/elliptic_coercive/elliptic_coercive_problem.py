@@ -24,7 +24,7 @@
 
 from abc import ABCMeta, abstractmethod
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.linear_algebra import AffineExpansionOfflineStorage, product, transpose, solve, sum, TruthFunction
+from RBniCS.backends import AffineExpansionStorage, Function, product, transpose, LinearSolver, sum
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -100,11 +100,11 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         self.terms = ["a", "f"]
         self.Q = dict() # from string to integer
         # Matrices/vectors resulting from the truth discretization
-        self.operator = dict() # from string to AffineExpansionOfflineStorage
-        self.inner_product = AffineExpansionOfflineStorage() # even though it will contain only one matrix
-        self.dirichlet_bc = AffineExpansionOfflineStorage()
+        self.operator = dict() # from string to AffineExpansionStorage
+        self.inner_product = AffineExpansionStorage() # even though it will contain only one matrix
+        self.dirichlet_bc = AffineExpansionStorage()
         # Solution
-        self._solution = TruthFunction(self.V)
+        self._solution = Function(self.V)
         self._output = 0
         
     #  @}
@@ -117,7 +117,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## Initialize data structures required for the offline phase
     def init(self):
         for term in self.terms:
-            self.operator[term] = AffineExpansionOfflineStorage(self.assemble_operator(term))
+            self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
             self.Q[term] = len(self.operator[term])
         self.inner_product.init(self.assemble_operator("inner_product"))
         try:
@@ -143,7 +143,8 @@ class EllipticCoerciveProblem(ParametrizedProblem):
             assembled_dirichlet_bc = sum(product(theta_dirichlet_bc, self.dirichlet_bc))
         else:
             assembled_dirichlet_bc = None
-        solve(assembled_operator["a"], self._solution, assembled_operator["f"], assembled_dirichlet_bc)
+        solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"], assembled_dirichlet_bc)
+        solver.solve()
         return self._solution
         
     ## Perform a truth evaluation of the (compliant) output

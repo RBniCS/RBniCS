@@ -23,7 +23,6 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from dolfin import project
 from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.linear_algebra import SnapshotsMatrix, OnlineMatrix
 from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
@@ -51,7 +50,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # High fidelity problem
         self.EIM_approximation = EIM_approximation
         # Declare a new matrix to store the snapshots
-        self.snapshots_matrix = SnapshotsMatrix(self.EIM_approximation.V)
+        self.snapshots_matrix = SnapshotsMatrix(self.EIM_approximation.parametrized_expression.space)
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
@@ -102,7 +101,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         if not need_to_do_offline_stage:
             return self.EIM_approximation
         
-        # Project the parametrized function on the mesh grid for all parameters in xi_train
+        # Evaluate the parametrized expression for all parameters in xi_train
         print("==============================================================")
         print("=             EIM preprocessing phase begins                 =")
         print("==============================================================")
@@ -113,7 +112,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             print("evaluate parametrized function")
             self.EIM_approximation.set_mu(self.xi_train[run])
-            project(self.EIM_approximation.parametrized_expression, V=self.EIM_approximation.V, function=self.EIM_approximation.snapshot)
+            self.EIM_approximation.snapshot = eval(self.EIM_approximation.parametrized_expression)
             self.EIM_approximation.export_solution(self.EIM_approximation.snapshot, self.folder["snapshots"], "truth_" + str(run))
             
             print("update snapshots matrix")
@@ -144,8 +143,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             print("compute maximum interpolation error")
             self.EIM_approximation.snapshot = self.load_snapshot()
-            (error, maximum_error, maximum_point) = self.EIM_approximation.compute_maximum_interpolation_error()
-            self.update_interpolation_points(maximum_point)
+            (error, maximum_error, maximum_location) = self.EIM_approximation.compute_maximum_interpolation_error()
+            self.update_interpolation_locations(maximum_location)
             
             print("update basis matrix")
             self.update_basis_matrix(error, maximum_error)
@@ -177,23 +176,19 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
     ## Update basis matrix
     def update_basis_matrix(self, error, maximum_error):
-        error.vector()[:] /= maximum_error
-        self.EIM_approximation.Z.enrich(error)
+        self.EIM_approximation.Z.enrich(rescale(error, 1./maximum_error))
         self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
         self.EIM_approximation.N += 1
         
-    def update_interpolation_points(self, maximum_point):
-        self.EIM_approximation.interpolation_points.append(maximum_point)
-        self.EIM_approximation.interpolation_points.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_points")
+    def update_interpolation_locations(self, maximum_location):
+        self.EIM_approximation.interpolation_locations.append(maximum_location)
+        self.EIM_approximation.interpolation_locations.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_locations")
     
     ## Assemble the interpolation matrix
     def update_interpolation_matrix(self):
-        (last_point, last_point_processor_id) = self.EIM_approximation.interpolation_points[self.EIM_approximation.N - 1]
+        last_location = self.EIM_approximation.interpolation_locations[self.EIM_approximation.N - 1]
         for j in range(self.EIM_approximation.N):
-            value = None
-            if mpi_comm.rank == last_point_processor_id:
-                value = self.EIM_approximation.Z[j](last_point)
-            value = mpi_comm.bcast(value, root=last_point_processor_id)
+            value = eval(self.EIM_approximation.Z[j], last_location)
             self.EIM_approximation.interpolation_matrix[0][self.EIM_approximation.N - 1, j] = value
         self.EIM_approximation.interpolation_matrix.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
             
@@ -266,7 +261,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.set_mu(self.xi_test[run])
             
             # Evaluate the exact function on the truth grid
-            project(self.EIM_approximation.parametrized_expression, V=self.EIM_approximation.V, function=self.EIM_approximation.snapshot)
+            self.EIM_approximation.snapshot = eval(self.EIM_approximation.parametrized_expression)
             
             for n in range(1, N + 1): # n = 1, ... N
                 self.EIM_approximation.solve(n)

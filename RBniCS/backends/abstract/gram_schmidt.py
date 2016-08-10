@@ -15,21 +15,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary factories module
+## @file gram_schmidt.py
+#  @brief Implementation of the Gram Schmidt process
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.factories.backends_factory import backends_factory, set_online_backend
-from RBniCS.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from RBniCS.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
+from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
-__all__ = [
-    'backends_factory',
-    'set_online_backend',
-    'PODGalerkin'
-    'ReducedBasis',
-    'ReducedProblemFactory',
-]
+@AbstractBackend
+class GramSchmidt(object):
+    def __init__(self, X):
+        pass
+        
+    ## Apply Gram Schmidt on the basis functions matrix Z
+    @abstractmethod
+    def apply(self, Z):
+        pass
+    

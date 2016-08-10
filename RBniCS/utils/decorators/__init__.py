@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstractmethod, abstractonlinemethod
+from RBniCS.utils.decorators.backend_for import BackendFor, backend_for
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.exact_problem import ExactProblem
 from RBniCS.utils.decorators.override import override
@@ -33,7 +35,12 @@ from RBniCS.utils.decorators.reduction_method_for import ReductionMethodFor
 from RBniCS.utils.decorators.sync_setters import sync_setters
 
 __all__ = [
-    'Extends',
+    'AbstractBackend',
+    'abstract_backend',
+    'abstractmethod',
+    'abstractonlinemethod',
+    'BackendFor',
+    'backend_for',
     'ExactProblem',
     'override',
     'ProblemDecoratorFor',

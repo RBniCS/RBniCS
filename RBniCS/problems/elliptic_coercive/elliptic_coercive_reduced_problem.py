@@ -27,7 +27,7 @@ import types
 from math import sqrt
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.linear_algebra import AffineExpansionOnlineStorage, BasisFunctionsMatrix, FunctionsList, OnlineVector, OnlineFunction, product, transpose, solve, sum
+from RBniCS.backends import AffineExpansionOnlineStorage, BasisFunctionsMatrix, FunctionsList, OnlineVector, OnlineFunction, product, transpose, LinearSolver, sum
 from RBniCS.utils.decorators import sync_setters, Extends, override, ReducedProblemFor
 from RBniCS.utils.mpi import print
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
@@ -169,7 +169,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         except ValueError: # there were no Dirichlet BCs to be imposed by lifting
             theta_bc = None
         self._solution = OnlineFunction(N)
-        solve(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
+        solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
+        solver.solve()
         return self._solution
         
     # Perform an online evaluation of the (compliant) output
@@ -238,22 +239,14 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     def _compute_error(self, truth_problem, flatten_truth_problem):
         N = self._solution.vector().size
         # Compute the error on the solution
-        if self._reduction_level == 1 or flatten_truth_problem:
-            error_addends = FunctionsList(truth_problem.V)
-        else:
-            error_addends = FunctionsList(truth_problem.Z)
-        error_coefficients = OnlineVector(2)
         reduced_solution = self.Z[:N]*self._solution
         if flatten_truth_problem:
             truth_problem_l = truth_problem
             for l in range(1, self._reduction_level): # the maximum level was carried out before the if
                  N_l = reduced_solution.vector().size
                  reduced_solution = truth_problem.Z[:N_l]*reduced_solution
-        error_addends.enrich(reduced_solution)
-        error_coefficients[0] = +1.
-        error_addends.enrich(truth_problem._solution)
-        error_coefficients[1] = -1.
-        error = error_addends*error_coefficients
+        truth_solution = truth_problem._solution
+        error = difference(truth_solution, reduced_solution)
         assembled_error_inner_product_operator = sum(product(truth_problem.compute_theta("a"), truth_problem.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
         error_norm_squared = transpose(error.vector())*assembled_error_inner_product_operator*error.vector() # norm SQUARED of the error
         # Compute the error on the output
