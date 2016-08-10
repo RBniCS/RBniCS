@@ -40,7 +40,7 @@ class LinearSolver(AbstractLinearSolver):
         self.bcs = bcs
         
     @override
-    def solve():
+    def solve(self):
         if self.bcs is not None:
             assert isinstance(self.bcs, list)
             for bc in self.bcs:
