@@ -61,7 +61,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                     for (form, Nmax_EIM_form) in zip(self.separated_forms[term], Nmax_EIM[term]):
                         for addend in form.coefficients:
                             for factor in addend:
-                                assert term in Nmax_EIM and q in Nmax_EIM[term]
+                                assert term in Nmax_EIM 
                                 assert coeff in self.EIM_reductions
                                 self.EIM_reductions[factor].set_Nmax(max(self.EIM_reductions[factor].Nmax, Nmax_EIM_form)) # kwargs are not needed
             else:

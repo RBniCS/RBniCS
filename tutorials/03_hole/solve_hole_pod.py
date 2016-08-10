@@ -47,7 +47,8 @@ class Hole(EllipticCoerciveProblem):
         # Call the standard initialization
         EllipticCoerciveProblem.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
-        assert "subdomains" in kwargs and "boundaries" in kwargs
+        assert "subdomains" in kwargs
+        assert "boundaries" in kwargs
         self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
         self.u = TrialFunction(V)
         self.v = TestFunction(V)

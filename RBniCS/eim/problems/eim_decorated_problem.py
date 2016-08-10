@@ -129,7 +129,8 @@ def EIMDecoratedProblem(**decorator_kwargs):
                             for factor in addend:
                                 N_EIM = None
                                 if hasattr(self.compute_theta.__func__, "N_EIM"):
-                                    assert term in self.compute_theta.__func__.N_EIM and q < len(self.compute_theta.__func__.N_EIM[term])
+                                    assert term in self.compute_theta.__func__.N_EIM 
+                                    assert q < len(self.compute_theta.__func__.N_EIM[term])
                                     N_EIM = self.compute_theta.__func__.N_EIM[term][q]
                                 eim_thetas__list.append(self.EIM_approximations[factor].compute_interpolated_theta(N_EIM))
                             eim_thetas__cartesian_product = cartesian_product(*eim_thetas__list)

@@ -108,7 +108,8 @@ class FunctionsList(AbstractFunctionsList):
     @override
     def __getitem__(self, key):
         if isinstance(key, slice): # e.g. key = :N, return the first N functions
-            assert key.start is None and key.step is None
+            assert key.start is None 
+            assert key.step is None
             if key.stop in self._precomputed_slices:
                 return self._precomputed_slices[key.stop]
                             
