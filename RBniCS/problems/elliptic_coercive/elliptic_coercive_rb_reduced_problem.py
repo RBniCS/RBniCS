@@ -24,7 +24,8 @@
 
 from math import sqrt
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from RBniCS.backends import AffineExpansionOnlineStorage, FunctionsList, product, transpose, solve, sum
+from RBniCS.backends import FunctionsList, product, transpose, LinearSolver, sum
+from RBniCS.backends.online import OnlineAffineExpansionStorage
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
@@ -51,8 +52,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         # $$ ONLINE DATA STRUCTURES $$ #
         # Residual terms
         self._riesz_solve_storage = self.truth_problem._solution.copy(deepcopy=True)
-        self.riesz = dict() # from string to AffineExpansionOnlineStorage
-        self.riesz_product = dict() # from string to AffineExpansionOnlineStorage
+        self.riesz = dict() # from string to OnlineAffineExpansionStorage
+        self.riesz_product = dict() # from string to OnlineAffineExpansionStorage
         self.build_error_estimation_operators.__func__.initialized = False
         
         # $$ OFFLINE DATA STRUCTURES $$ #
@@ -81,7 +82,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             self.riesz_product["af"] = self.assemble_error_estimation_operators("riesz_product_af", "online")
             self.riesz_product["ff"] = self.assemble_error_estimation_operators("riesz_product_ff", "online")
         elif current_stage == "offline":
-            self.riesz["a"] = AffineExpansionOnlineStorage(self.Q["a"])
+            self.riesz["a"] = OnlineAffineExpansionStorage(self.Q["a"])
             for qa in range(self.Q["a"]):
                 if self._reduction_level == 1:
                     assert hasattr(self.truth_problem, "V")
@@ -91,7 +92,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                     assert not hasattr(self.truth_problem, "V")
                     assert hasattr(self.truth_problem, "Z")
                     self.riesz["a"][qa] = FunctionsList(self.truth_problem.Z)
-            self.riesz["f"] = AffineExpansionOnlineStorage(self.Q["f"])
+            self.riesz["f"] = OnlineAffineExpansionStorage(self.Q["f"])
             for qf in range(self.Q["f"]):
                 if self._reduction_level == 1:
                     assert hasattr(self.truth_problem, "V")
@@ -101,9 +102,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                     assert not hasattr(self.truth_problem, "V")
                     assert hasattr(self.truth_problem, "Z")
                     self.riesz["f"][qf] = FunctionsList(self.truth_problem.Z) # even though it will be composed of only one function
-            self.riesz_product["aa"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["a"])
-            self.riesz_product["af"] = AffineExpansionOnlineStorage(self.Q["a"], self.Q["f"])
-            self.riesz_product["ff"] = AffineExpansionOnlineStorage(self.Q["f"], self.Q["f"])
+            self.riesz_product["aa"] = OnlineAffineExpansionStorage(self.Q["a"], self.Q["a"])
+            self.riesz_product["af"] = OnlineAffineExpansionStorage(self.Q["a"], self.Q["f"])
+            self.riesz_product["ff"] = OnlineAffineExpansionStorage(self.Q["f"], self.Q["f"])
         else:
             raise AssertionError("Invalid stage in _init_error_estimation_operators().")
     
@@ -169,7 +170,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                     homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
                 else:
                     homogeneous_dirichlet_bc = None
-                solve(self.truth_problem.inner_product[0], self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n].vector(), homogeneous_dirichlet_bc)
+                solver = LinearSolver(self.truth_problem.inner_product[0], self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n].vector(), homogeneous_dirichlet_bc)
+                solver.solve()
                 self.riesz["a"][qa].enrich(self._riesz_solve_storage)
     
     ## Compute the Riesz representation of f
@@ -181,7 +183,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                 homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
             else:
                 homogeneous_dirichlet_bc = None
-            solve(self.truth_problem.inner_product[0], self._riesz_solve_storage, self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
+            solver = LinearSolver(self.truth_problem.inner_product[0], self._riesz_solve_storage, self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
+            solver.solve()
             self.riesz["f"][qf].enrich(self._riesz_solve_storage)
             
     #  @}
@@ -197,7 +200,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         short_term = term.replace("riesz_product_", "")
         if current_stage == "online": # load from file
             if not short_term in self.riesz_product:
-                self.riesz_product[short_term] = AffineExpansionOnlineStorage()
+                self.riesz_product[short_term] = OnlineAffineExpansionStorage()
             if term == "riesz_product_aa":
                 self.riesz_product["aa"].load(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":

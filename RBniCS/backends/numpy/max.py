@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file basis_functions_matrix.py
-#  @brief Type of basis functions matrix
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.functions_list import FunctionsList
-from RBniCS.utils.decorators import AbstractBackend, Extends
+from RBniCS.backends.numpy.abs import AbsOutput
+from RBniCS.utils.decorators import backend_for
 
-@AbstractBackend
-@Extends(FunctionsList)
-class BasisFunctionsMatrix(FunctionsList):
-    pass
-
-
+# max function to compute the maximum absolute value of entries in EIM. To be used in combination with abs,
+# even though abs actually carries out both the max and the abs!
+@backend_for("NumPy", inputs=(AbsOutput, ))
+def max(abs_output):
+    return abs_output.max_abs_return_value
+        

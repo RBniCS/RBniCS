@@ -24,10 +24,11 @@
 
 from dolfin import project, vertices
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.linear_algebra import OnlineVector, OnlineFunction, BasisFunctionsMatrix, FunctionsList, solve, AffineExpansionOnlineStorage, TruthFunction
+from RBniCS.backends import BasisFunctionsMatrix, FunctionsList
+from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import mpi_comm
-from RBniCS.eim.utils.io import PointsList
+from RBniCS.eim.utils.io import InterpolationLocationsList
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EIM
@@ -56,14 +57,14 @@ class EIMApproximation(ParametrizedProblem):
         self.N = 0
         # Define additional storage for EIM
         self.interpolation_locations = InterpolationLocationsList(parametrized_expression.space) # list of interpolation locations selected by the greedy
-        self.interpolation_matrix = AffineExpansionOnlineStorage(1) # interpolation matrix
+        self.interpolation_matrix = OnlineAffineExpansionStorage(1) # interpolation matrix
         # Solution
         self._interpolation_coefficients = OnlineFunction()
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         self.snapshot = Function(parametrized_expression.space)
         # Basis functions matrix
-        self.Z = BasisFunctionsMatrix(parametrized_expression.space) # 
+        self.Z = BasisFunctionsMatrix(parametrized_expression.space)
         # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
         # basis function/reduced operator folder, but rather add a new one. For this reason we use
         # the __eim suffix in the variable name.
@@ -112,7 +113,9 @@ class EIMApproximation(ParametrizedProblem):
             
             # Solve the interpolation problem
             self._interpolation_coefficients = OnlineFunction(N)
-            solve(lhs, self._interpolation_coefficients, rhs)
+            
+            solver = LinearSolver(lhs, self._interpolation_coefficients, rhs)
+            solver.solve()
             
             # Store to avoid repeated computations
             self.solve.__func__.previous_mu = self.mu

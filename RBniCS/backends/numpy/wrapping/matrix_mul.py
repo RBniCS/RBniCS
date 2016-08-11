@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.function import Function_Type
+from RBniCS.backends.numpy.function import Function
 
 def matrix_mul_vector(matrix, vector):
-    if isinstance(vector, Function_Type):
+    if isinstance(vector, Function.Type):
         vector = vector.vector()
     return matrix*vector
 

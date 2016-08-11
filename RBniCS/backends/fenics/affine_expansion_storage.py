@@ -23,17 +23,17 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import assemble, DirichletBC, Form
-from RBniCS.backend.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
-from RBniCS.utils.decorators import any, args, BackendFor, Extends, override
+from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
-@Extends(AbstractEigenSolver)
-@BackendFor("FEniCS", inputs=args(any(Form, list)))
+@Extends(AbstractAffineExpansionStorage)
+@BackendFor("FEniCS", inputs=(list, ))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
-    def __init__(self, *args):
+    def __init__(self, args):
         self._content = None
         self._type = None
-        self.init(*args)
+        self.init(args)
         
     @staticmethod
     def _is_Form(arg):
@@ -50,7 +50,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             return True
         
     @override
-    def init(self, *args):
+    def init(self, args):
         # Type checking
         is_Form = self._is_Form(args[0])
         is_DirichletBC = self._is_DirichletBC(args[0])

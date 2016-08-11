@@ -25,7 +25,7 @@
 from RBniCS.backends.fenics.product import ProductOutput
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("FEniCS", inputs=ProductOutput)
+@backend_for("FEniCS", inputs=(ProductOutput, ))
 def sum(product_output):
     return product_output.sum_product_return_value
         

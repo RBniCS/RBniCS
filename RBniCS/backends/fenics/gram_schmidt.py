@@ -22,6 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def gram_schimdt_projection_step(new_basis, X, old_basis):
-    pass
+from RBniCS.backends.basic import GramSchmidt as BasicGramSchmidt
+import RBniCS.backends.fenics
+from RBniCS.backends.fenics.matrix import Matrix
+import RBniCS.backends.fenics.wrapping
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
+@Extends(BasicGramSchmidt)
+@BackendFor("FEniCS", inputs=(Matrix.Type, ))
+class GramSchmidt(BasicGramSchmidt):
+    @override
+    def __init__(self, X):
+        BasicGramSchmidt.__init__(self, X, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
+        

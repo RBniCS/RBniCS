@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backend.abstract import FunctionsList as AbstractFunctionsList
+from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
 from RBniCS.backends.numpy.functions_list import FunctionsList
-from RBniCS.utils.decorators import backend_for, Extends
+from RBniCS.utils.decorators import BackendFor, Extends
 
 @Extends(FunctionsList)
-@BackendFor("NumPy", online_backend="NumPy", inputs=AbstractFunctionsList)
+@BackendFor("NumPy", online_backend="NumPy", inputs=(AbstractFunctionsList, ))
 class SnapshotsMatrix(FunctionsList):
     pass
 

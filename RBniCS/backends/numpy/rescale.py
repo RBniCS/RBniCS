@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backend.numpy.function import Function_Type
-from RBniCS.backend.numpy.wrapping import function_copy
+from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.wrapping import function_copy
 from RBniCS.utils.decorators import backend_for
 
 # Rescale a solution
-@backend_for("NumPy", inputs=(Function_Type, float))
+@backend_for("NumPy", inputs=(Function.Type, float))
 def rescale(solution, by):
     scaled_solution = function_copy(solution)
     scaled_solution.vector()[:] /= by

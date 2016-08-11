@@ -22,16 +22,22 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import sys
-current_module = sys.modules[__name__]
+from RBniCS.backends.fenics.wrapping.function_copy import function_copy
+from RBniCS.backends.fenics.wrapping.function_load import function_load
+from RBniCS.backends.fenics.wrapping.function_save import function_save
+from RBniCS.backends.fenics.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector, functions_list_mul_online_function
+from RBniCS.backends.fenics.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
+from RBniCS.backends.fenics.wrapping.matrix_mul import matrix_mul_vector
+from RBniCS.backends.fenics.wrapping.vector_mul import vector_mul_vector
 
-# Make sure to import all available backends, so that they are added to the factory storage
-import RBniCS.backends.abstract
-import RBniCS.backends.fenics
-import RBniCS.backends.numpy
-
-# Combine all enabled backends available in the factory and store them in this module
-from RBniCS.utils.factories import backends_factory, enable_backend
-enable_backend("FEniCS")
-enable_backend("NumPy")
-backends_factory(current_module)
+__all__ = [
+    'function_copy',
+    'function_load',
+    'function_save',
+    'functions_list_mul_online_matrix', 
+    'functions_list_mul_online_vector', 
+    'functions_list_mul_online_function',
+    'gram_schmidt_projection_step',
+    'matrix_mul_vector',
+    'vector_mul_vector'
+]

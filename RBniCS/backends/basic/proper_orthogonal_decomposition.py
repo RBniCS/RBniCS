@@ -25,8 +25,8 @@
 from __future__ import print_function
 from math import sqrt
 from numpy import isclose, zeros, sum as total_energy, cumsum as retained_energy
-from RBniCS.backend.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
-from RBniCS.backend.online import OnlineEigenSolver
+from RBniCS.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
+from RBniCS.backends.online import OnlineEigenSolver
 from RBniCS.utils.decorators import Extends, override
 from RBniCS.utils.mpi.mpi import mpi_comm
 from RBniCS.utils.mpi.print import print
@@ -75,7 +75,7 @@ class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
         
         Z = backend.BasisFunctionsMatrix(self.V_or_Z)
         for i in range(Nmax):
-            (eigvector, _) = eigensolver.get_eigenvector(Nmax))
+            (eigvector, _) = eigensolver.get_eigenvector(Nmax)
             b = self.snapshots_matrix*eigvector
             b /= sqrt(transpose(b)*X*b)
             Z.enrich(b)

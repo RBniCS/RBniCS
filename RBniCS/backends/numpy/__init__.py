@@ -22,25 +22,25 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.abs import abs
-from RBniCS.backends.abstract.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.abstract.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.abstract.difference import difference
-from RBniCS.backends.abstract.evaluate import evaluate
-from RBniCS.backends.abstract.eigen_solver import EigenSolver
-from RBniCS.backends.abstract.function import Function
-from RBniCS.backends.abstract.functions_list import FunctionsList
-from RBniCS.backends.abstract.gram_schmidt import GramSchmidt
-from RBniCS.backends.abstract.linear_solver import LinearSolver
-from RBniCS.backends.abstract.matrix import Matrix
-from RBniCS.backends.abstract.max import max
-from RBniCS.backends.abstract.product import product
-from RBniCS.backends.abstract.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
-from RBniCS.backends.abstract.rescale import rescale
-from RBniCS.backends.abstract.snapshots_matrix import SnapshotsMatrix
-from RBniCS.backends.abstract.sum import sum
-from RBniCS.backends.abstract.transpose import transpose
-from RBniCS.backends.abstract.vector import Vector
+from RBniCS.backends.numpy.abs import abs
+from RBniCS.backends.numpy.affine_expansion_storage import AffineExpansionStorage
+from RBniCS.backends.numpy.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.backends.numpy.difference import difference
+from RBniCS.backends.numpy.evaluate import evaluate
+from RBniCS.backends.numpy.eigen_solver import EigenSolver
+from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.functions_list import FunctionsList
+from RBniCS.backends.numpy.gram_schmidt import GramSchmidt
+from RBniCS.backends.numpy.linear_solver import LinearSolver
+from RBniCS.backends.numpy.matrix import Matrix
+from RBniCS.backends.numpy.max import max
+from RBniCS.backends.numpy.product import product
+from RBniCS.backends.numpy.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.backends.numpy.rescale import rescale
+from RBniCS.backends.numpy.snapshots_matrix import SnapshotsMatrix
+from RBniCS.backends.numpy.sum import sum
+from RBniCS.backends.numpy.transpose import transpose
+from RBniCS.backends.numpy.vector import Vector
 
 __all__ = [
     'abs',

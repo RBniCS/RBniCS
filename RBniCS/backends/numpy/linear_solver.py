@@ -22,14 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backend.abstract import LinearSolver as AbstractLinearSolver
-from RBniCS.backend.numpy.matrix import Matrix_Type
-from RBniCS.backend.numpy.vector import Vector_Type
-from RBniCS.backend.numpy.function import Function_Type
-from RBniCS.utils.decorators import any, BackendFor, Extends, override
+from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
+from RBniCS.backends.numpy.matrix import Matrix
+from RBniCS.backends.numpy.vector import Vector
+from RBniCS.backends.numpy.function import Function
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractLinearSolver)
-@BackendFor("NumPy", inputs=(Matrix_Type, Function_Type, Vector_Type, any(tuple, None)))
+@BackendFor("NumPy", inputs=(Matrix.Type, Function.Type, Vector.Type, (tuple, None)))
 class LinearSolver(AbstractLinearSolver):
     @override
     def __init__(lhs, solution, rhs, bcs=None):

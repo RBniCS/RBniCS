@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.fenics.function import Function_Type
-from RBniCS.backend.fenics.wrapping import function_copy
+from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.wrapping import function_copy
 from RBniCS.utils.decorators import backend_for
 
 # Rescale a solution
-@backend_for("FEniCS", inputs=(Function_Type, float))
+@backend_for("FEniCS", inputs=(Function.Type, float))
 def rescale(solution, by):
     output = function_copy(solution)
     output.vector()[:] /= by

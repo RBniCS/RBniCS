@@ -22,14 +22,17 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.factories.backends_factory import backends_factory, set_online_backend
+from RBniCS.utils.factories.backends_factory import backends_factory, disable_backend, enable_backend, set_online_backend, online_backend_factory
 from RBniCS.utils.factories.reduced_problem_factory import ReducedProblemFactory
 from RBniCS.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
 
 __all__ = [
     'backends_factory',
-    'set_online_backend',
+    'disable_backend', 
+    'enable_backend',
+    'online_backend_factory',
     'PODGalerkin'
     'ReducedBasis',
     'ReducedProblemFactory',
+    'set_online_backend',
 ]

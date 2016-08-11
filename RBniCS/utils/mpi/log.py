@@ -15,23 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file print.py
+#  @brief Override print method in parallel
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backend.basic import GramSchmidt as BasicGramSchmidt
-import RBniCS.backend.numpy
-from RBniCS.backend.numpy.matrix import Matrix_Type
-import RBniCS.backend.numpy.wrapping
-from RBniCS.utils.decorators import BackendFor, Extends, override
-
-@Extends(BasicGramSchmidt)
-@BackendFor("NumPy", inputs=Matrix_Type)
-class GramSchmidt(BasicGramSchmidt):
-    @override
-    def __init__(self, X):
-        BasicGramSchmidt.__init__(self, X, RBniCS.backend.numpy, RBniCS.backend.numpy.wrapping)
-        
+try:
+    from dolfin import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG # easier to read in parallel
+except ImportError:
+    from logging import log, CRITICAL, ERROR, WARNING, INFO, DEBUG
+    PROGRESS = 16
+    TRACE = 13

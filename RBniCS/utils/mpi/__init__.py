@@ -23,10 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
+from RBniCS.utils.mpi.log import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG
 from RBniCS.utils.mpi.mpi import mpi_comm
 from RBniCS.utils.mpi.print import print
 
 __all__ = [
+    'log', 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'PROGRESS', 'TRACE', 'DEBUG',
     'mpi_comm',
     'print'
 ]

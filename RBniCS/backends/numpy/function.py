@@ -22,15 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import backend_for, any
-from RBniCS.backends.numpy.vector import Vector_Type
+from RBniCS.utils.decorators import backend_for
+from RBniCS.backends.numpy.vector import Vector
 
-class Function_Type(object):
+class _Function_Type(object):
     def __init__(self, arg):
-        assert isinstance(arg, (int, Vector_Type))
+        assert isinstance(arg, (int, Vector.Type))
         if isinstance(arg, int):
             self._v = OnlineVector(arg)
-        elif isinstance(arg, Vector_Type):
+        elif isinstance(arg, Vector.Type):
             self._v = v
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in Function")
@@ -39,6 +39,7 @@ class Function_Type(object):
         return self._v
 
         
-@backend_for("NumPy", inputs=any(int, Vector_Type))
+@backend_for("NumPy", inputs=((int, Vector.Type), ))
 def Function(arg):
-    return Function_Type(arg)
+    return _Function_Type(arg)
+Function.Type = _Function_Type

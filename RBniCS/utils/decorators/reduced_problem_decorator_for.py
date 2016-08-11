@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators.for_decorators_helper import ForDecoratorsStore, ForDecoratorsLogging
-from RBniCS.utils.io import log, DEBUG
+from RBniCS.utils.mpi import log, DEBUG
 
 def ReducedProblemDecoratorFor(Algorithm, replaces=None, replaces_if=None):
     def ReducedProblemDecoratorFor_Decorator(ReducedProblemDecorator):

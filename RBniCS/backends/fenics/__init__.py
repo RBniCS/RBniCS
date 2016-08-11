@@ -22,25 +22,25 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.abs import abs
-from RBniCS.backends.abstract.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.abstract.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.abstract.difference import difference
-from RBniCS.backends.abstract.evaluate import evaluate
-from RBniCS.backends.abstract.eigen_solver import EigenSolver
-from RBniCS.backends.abstract.function import Function
-from RBniCS.backends.abstract.functions_list import FunctionsList
-from RBniCS.backends.abstract.gram_schmidt import GramSchmidt
-from RBniCS.backends.abstract.linear_solver import LinearSolver
-from RBniCS.backends.abstract.matrix import Matrix
-from RBniCS.backends.abstract.max import max
-from RBniCS.backends.abstract.product import product
-from RBniCS.backends.abstract.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
-from RBniCS.backends.abstract.rescale import rescale
-from RBniCS.backends.abstract.snapshots_matrix import SnapshotsMatrix
-from RBniCS.backends.abstract.sum import sum
-from RBniCS.backends.abstract.transpose import transpose
-from RBniCS.backends.abstract.vector import Vector
+from RBniCS.backends.fenics.abs import abs
+from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
+from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.backends.fenics.difference import difference
+from RBniCS.backends.fenics.evaluate import evaluate
+from RBniCS.backends.fenics.eigen_solver import EigenSolver
+from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.functions_list import FunctionsList
+from RBniCS.backends.fenics.gram_schmidt import GramSchmidt
+from RBniCS.backends.fenics.linear_solver import LinearSolver
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.max import max
+from RBniCS.backends.fenics.product import product
+from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.backends.fenics.rescale import rescale
+from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
+from RBniCS.backends.fenics.sum import sum
+from RBniCS.backends.fenics.transpose import transpose
+from RBniCS.backends.fenics.vector import Vector
 
 __all__ = [
     'abs',

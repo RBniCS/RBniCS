@@ -23,5 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import GenericVector
-Vector_Type = GenericVector
+
+class Vector(object):
+    pass # dummy (not required by the interface) just store the Type
+    
+Vector.Type = GenericVector
         

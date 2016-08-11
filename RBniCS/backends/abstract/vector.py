@@ -28,4 +28,4 @@ from RBniCS.utils.decorators import abstract_online_backend
 def Vector(N):
     pass
 
-# Moreover, it should also expose a Vector_Type type containing the type of the returned instance
+# Moreover, it should also expose a Type attribute containing the type of the returned instance

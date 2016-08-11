@@ -15,19 +15,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file basis_functions_matrix.py
-#  @brief Type of basis functions matrix
+## @file __init__.py
+#  @brief Init file for auxiliary linear algebra module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.functions_list import FunctionsList
-from RBniCS.utils.decorators import AbstractBackend, Extends
+from RBniCS.backends.basic.functions_list import FunctionsList
+from RBniCS.backends.basic.gram_schmidt import GramSchmidt
+from RBniCS.backends.basic.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.backends.basic.transpose import transpose
 
-@AbstractBackend
-@Extends(FunctionsList)
-class BasisFunctionsMatrix(FunctionsList):
-    pass
-
-
+__all__ = [
+    'FunctionsList',
+    'GramSchmidt',
+    'ProperOrthogonalDecomposition',
+    'transpose'
+]

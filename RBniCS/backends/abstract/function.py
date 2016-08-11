@@ -28,4 +28,4 @@ from RBniCS.utils.decorators import abstract_backend
 def Function(V_or_N):
     pass
     
-# Moreover, it should also expose a Function_Type type containing the type of the returned instance
+# Moreover, it should also expose a Type attribute containing the type of the returned instance

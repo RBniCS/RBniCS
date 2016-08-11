@@ -15,19 +15,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file basis_functions_matrix.py
-#  @brief Type of basis functions matrix
+## @file functions_list.py
+#  @brief Type for storing a list of FE functions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.functions_list import FunctionsList
-from RBniCS.utils.decorators import AbstractBackend, Extends
+from RBniCS.backends.basic import GramSchmidt as BasicGramSchmidt
+import RBniCS.backends.numpy
+from RBniCS.backends.numpy.matrix import Matrix
+import RBniCS.backends.numpy.wrapping
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
-@AbstractBackend
-@Extends(FunctionsList)
-class BasisFunctionsMatrix(FunctionsList):
-    pass
-
-
+@Extends(BasicGramSchmidt)
+@BackendFor("NumPy", inputs=(Matrix.Type, ))
+class GramSchmidt(BasicGramSchmidt):
+    @override
+    def __init__(self, X):
+        BasicGramSchmidt.__init__(self, X, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping)
+        

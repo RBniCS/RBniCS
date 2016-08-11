@@ -27,7 +27,7 @@ from RBniCS.utils.decorators import backend_for
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with product,
 # even though product actually carries out both the sum and the product!
-@backend_for("NumPy", inputs=ProductOutput)
+@backend_for("NumPy", inputs=(ProductOutput, ))
 def sum(product_output):
     return product_output.sum_product_return_value
         

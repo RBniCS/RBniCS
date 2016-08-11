@@ -15,19 +15,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file basis_functions_matrix.py
-#  @brief Type of basis functions matrix
+## @file transpose.py
+#  @brief transpose method to be used in RBniCS.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.functions_list import FunctionsList
-from RBniCS.utils.decorators import AbstractBackend, Extends
+from RBniCS.backends.basic import transpose as basic_transpose
+import RBniCS.backends.numpy
+from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.functions_list import FunctionsList
+from RBniCS.backends.numpy.vector import Vector
+import RBniCS.backends.numpy.wrapping
+from RBniCS.utils.decorators import backend_for
 
-@AbstractBackend
-@Extends(FunctionsList)
-class BasisFunctionsMatrix(FunctionsList):
-    pass
-
-
+@backend_for("NumPy", online_backend="NumPy", inputs=((Function.Type, FunctionsList, Vector.Type), ))
+def transpose(arg):
+    return basic_transpose(arg, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
+    

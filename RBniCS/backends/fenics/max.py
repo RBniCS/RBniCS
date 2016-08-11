@@ -15,13 +15,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def gram_schimdt_projection_step(new_basis, X, old_basis):
-    new_basis.vector()[:] -= (transpose(new_basis)*X*old_basis) * old_basis.vector()
+from RBniCS.backends.fenics.abs import AbsOutput
+from RBniCS.utils.decorators import backend_for
 
+# max function to compute the maximum absolute value of entries in EIM. To be used in combination with abs,
+# even though abs actually carries out both the max and the abs!
+@backend_for("FEniCS", inputs=(AbsOutput, ))
+def max(abs_output):
+    return abs_output.max_abs_return_value
+        

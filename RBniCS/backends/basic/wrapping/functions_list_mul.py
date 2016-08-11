@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_list_mul_online_matrix(functions_list, online_matrix):
+def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsListType):
     pass
 
-def function_list_mul_online_vector(functions_list, online_vector):
+def functions_list_mul_online_vector(functions_list, online_vector):
     pass
     
-def function_list_mul_online_function(functions_list, online_function):
+def functions_list_mul_online_function(functions_list, online_function):
     pass

@@ -24,13 +24,14 @@
 
 from numpy import matrix
 
-class Vector_Type(matrix): # inherit to make sure that matrices and vectors correspond to two different types
+class _Vector_Type(matrix): # inherit to make sure that matrices and vectors correspond to two different types
     pass
 
-from numpy import zeros as VectorContent_Base
+from numpy import zeros as _VectorContent_Base
 from RBniCS.utils.decorators import backend_for
 
 @backend_for("NumPy", inputs=(int, ))
 def Vector(N):
-    return Vector_Type(VectorContent_Base((N))).transpose() # as column vector
+    return _Vector_Type(_VectorContent_Base((N))).transpose() # as column vector
 
+Vector.Type = _Vector_Type

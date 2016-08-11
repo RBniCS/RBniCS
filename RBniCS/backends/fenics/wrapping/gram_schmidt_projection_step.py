@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def gram_schimdt_projection_step(new_basis, X, old_basis):
+def gram_schmidt_projection_step(new_basis, X, old_basis):
     new_basis.vector().add_local( - (transpose(new_basis)*X*old_basis) * old_basis.vector().array() )
     new_basis.vector().apply("add")
 

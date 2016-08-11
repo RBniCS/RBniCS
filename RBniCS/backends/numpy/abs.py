@@ -15,23 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backend.basic import GramSchmidt as BasicGramSchmidt
-import RBniCS.backend.fenics
-from RBniCS.backends.fenics.matrix import Matrix_Type
-import RBniCS.backend.fenics.wrapping
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.backends.numpy.matrix import Matrix
+from RBniCS.backends.numpy.vector import Vector
+from RBniCS.utils.decorators import backend_for
 
-@Extends(BasicGramSchmidt)
-@BackendFor("FEniCS", inputs=Matrix_Type)
-class GramSchmidt(BasicGramSchmidt):
-    @override
-    def __init__(self, X):
-        BasicGramSchmidt.__init__(self, X, RBniCS.backend.fenics, RBniCS.backend.fenics.wrapping)
+# abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max,
+# even though here we actually carry out both the max and the abs!
+@backend_for("NumPy", inputs=((Matrix.Type, Vector.Type), ))
+def abs(expression):
+    pass # TODO
+    
+# Auxiliary class to signal to the max() function that it is dealing with an output of the abs() method
+class AbsOutput(object):
+    def __init__(self, max_abs_return_value):
+        self.max_abs_return_value = max_abs_return_value
         

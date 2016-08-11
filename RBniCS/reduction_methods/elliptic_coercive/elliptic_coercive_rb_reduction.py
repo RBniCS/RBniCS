@@ -25,7 +25,7 @@
 from __future__ import print_function
 import os # for path and makedir
 import shutil # for rm
-from RBniCS.linear_algebra import GramSchmidt
+from RBniCS.backends import GramSchmidt
 from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
 from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor

@@ -162,20 +162,20 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
         EllipticCoerciveRB.build_reduced_operators(self)
         
         # Output correction terms
-        operator_a_dp = AffineExpansionOnlineStorage(self.Qa)
+        operator_a_dp = OnlineAffineExpansionStorage(self.Qa)
         for qa in range(self.Qa):
             operator_a_dp[qa] = transpose(self.dual_problem.Z)*self.truth_A[qa]*self.Z
         self.operator_a_dp = operator_a_dp
         np.save(self.reduced_operators_folder + "operator_a_dp", self.operator_a_dp)
         
-        operator_f_d = AffineExpansionOnlineStorage(self.Qf)
+        operator_f_d = OnlineAffineExpansionStorage(self.Qf)
         for qf in range(self.Qf):
             operator_f_d[qf] = transpose(self.dual_problem.Z)*self.truth_F[qf]
         self.operator_f_d = operator_f_d
         np.save(self.reduced_operators_folder + "operator_f_d", self.operator_f_d)
         
         # Output terms
-        operator_s = AffineExpansionOnlineStorage(self.Qs)
+        operator_s = OnlineAffineExpansionStorage(self.Qs)
         for qs in range(self.Qs):
             operator_s[qs] = transpose(self.Z)*self.truth_S[qs]
         self.operator_s = operator_s

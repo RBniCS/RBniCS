@@ -23,5 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import GenericMatrix
-Matrix_Type = GenericMatrix
+
+class Matrix(object):
+    pass # dummy (not required by the interface) just store the Type
+    
+Matrix.Type = GenericMatrix
         

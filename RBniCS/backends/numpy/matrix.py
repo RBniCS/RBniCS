@@ -24,12 +24,14 @@
 
 from numpy import matrix
 
-class Matrix_Type(matrix): # inherit to make sure that matrices and vectors correspond to two different types
+class _Matrix_Type(matrix): # inherit to make sure that matrices and vectors correspond to two different types
     pass
     
-from numpy import zeros as MatrixContent_Base
+from numpy import zeros as _MatrixContent_Base
 from RBniCS.utils.decorators import backend_for
 
 @backend_for("NumPy", inputs=(int, int))
 def Matrix(M, N):
-    return Matrix_Type(MatrixContent_Base((M, N)))
+    return _Matrix_Type(_MatrixContent_Base((M, N)))
+    
+Matrix.Type = _Matrix_Type

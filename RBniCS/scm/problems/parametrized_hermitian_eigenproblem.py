@@ -25,7 +25,7 @@
 from math import sqrt
 from dolfin import adjoint, Function, DirichletBC
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.linear_algebra import AffineExpansionOfflineStorage, sum, product, TruthEigenSolver
+from RBniCS.backends import AffineExpansionStorage, EigenSolver, sum, product
 from RBniCS.utils.decorators import sync_setters, Extends, override
 
 @Extends(ParametrizedProblem)
@@ -57,8 +57,8 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
             isinstance(self.term[1], int)
         self.multiply_by_theta = multiply_by_theta
         assert isinstance(self.multiply_by_theta, bool)
-        self.operator__condensed = AffineExpansionOfflineStorage()
-        self.inner_product__condensed = AffineExpansionOfflineStorage() # even though it will contain only one matrix
+        self.operator__condensed = AffineExpansionStorage()
+        self.inner_product__condensed = AffineExpansionStorage() # even though it will contain only one matrix
         self.spectrum = spectrum
         self.eigensolver_parameters = eigensolver_parameters
         
@@ -112,7 +112,7 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
             assert len(self.inner_product__condensed) == 1
             X = self.inner_product__condensed[0]
             
-            eigensolver = TruthEigenSolver(O, X)
+            eigensolver = EigenSolver(O, X)
             eigensolver.parameters["problem_type"] = "gen_hermitian"
             assert self.spectrum is "largest" or self.spectrum is "smallest"
             eigensolver.parameters["spectrum"] = self.spectrum + " real"

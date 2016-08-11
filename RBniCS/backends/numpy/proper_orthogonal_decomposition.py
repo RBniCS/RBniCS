@@ -22,16 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backend.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.backend.basic import ProperOrthogonalDecomposition as BasicProperOrthogonalDecomposition
-import RBniCS.backend.numpy
-from RBniCS.backend.numpy.matrix import Matrix_Type
+from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
+from RBniCS.backends.basic import ProperOrthogonalDecomposition as BasicProperOrthogonalDecomposition
+import RBniCS.backends.numpy
+from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
-@Extends(ProperOrthogonalDecomposition)
-@BackendFor("NumPy", inputs=(Matrix_Type, AbstractFunctionsList))
-class FunctionsList(BasicProperOrthogonalDecomposition):
+@Extends(BasicProperOrthogonalDecomposition)
+@BackendFor("NumPy", inputs=(Matrix.Type, AbstractFunctionsList))
+class ProperOrthogonalDecomposition(BasicProperOrthogonalDecomposition):
     @override
     def __init__(self, X, V_or_Z):
-        BasicProperOrthogonalDecomposition.__init__(self, X, V_or_Z, RBniCS.backend.numpy)
+        BasicProperOrthogonalDecomposition.__init__(self, X, V_or_Z, RBniCS.backends.numpy)
         

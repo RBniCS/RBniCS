@@ -24,8 +24,7 @@
 
 from __future__ import print_function
 import types
-from RBniCS.utils.io import log, PROGRESS
-from RBniCS.utils.mpi import print
+from RBniCS.utils.mpi import log, print, PROGRESS
 from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
 from RBniCS.eim.problems.eim_decorated_problem import EIM
 from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions

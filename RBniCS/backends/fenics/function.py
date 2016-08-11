@@ -22,11 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import dolfin
+from dolfin import Function, FunctionSpace
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("FEniCS", inputs=dolfin.FunctionSpace)
-def Function(V):
-    return dolfin.Function(V)
+_Function_Type = Function
 
-Function_Type = dolfin.Function
+@backend_for("FEniCS", inputs=(FunctionSpace, ))
+def Function(V):
+    return _Function_Type(V)
+
+Function.Type = _Function_Type

@@ -27,44 +27,43 @@ from abc import ABCMeta, abstractmethod
 import inspect
 from functools import wraps
 from RBniCS.utils.decorators.backend_for import BackendFor, backend_for
+from RBniCS.utils.decorators.extends import Extends
 
-@BackendFor("Abstract")
 def AbstractBackend(Class):
     assert inspect.isclass(Class)
+    
+    @BackendFor("Abstract")
+    @Extends(Class, preserve_class_name=True)
     class AbstractBackend_Class(Class):
         __metaclass__ = ABCMeta
-            
-    setattr(AbstractBackend_Class, "__name__", Class.__name__)
-    setattr(AbstractBackend_Class, "__module__", Class.__module__)
     
     return AbstractBackend_Class
     
-@backend_for("Abstract")
 def abstract_backend(function):
     assert inspect.isfunction(function)
     
+    @backend_for("Abstract")
     @wraps(function)
     def abstract_backend_function(*args, **kwargs):
         raise NotImplementedError("This function is just a placeholder, it should never get called. If you see this error you have probably forgotten to implement a function in your backend.")
     
     return abstract_backend_function
     
-def abstractonlinemethod(method):
-    assert inspect.ismethod(method)
-    
-    @wraps(function)
-    def abstractonlinemethod_function(*args, **kwargs):
-        raise NotImplementedError("This method is just a placeholder, it should never get called. If you see this error you have probably forgotten to implement a method in your backend, or you are trying to call this method with a backend which is not supposed to be used online.")
-    
-    return abstractonlinemethod_function
-   
-@backend_for("Abstract") 
 def abstract_online_backend(function):
     assert inspect.isfunction(function)
     
+    @backend_for("Abstract")
     @wraps(function)
     def abstract_online_backend_function(*args, **kwargs):
         raise NotImplementedError("This function is just a placeholder, it should never get called. If you see this error you have probably forgotten to implement a function in your backend, or you are trying to call this method with a backend which is not supposed to be used online.")
     
     return abstract_online_backend_function
     
+def abstractonlinemethod(method):
+    assert inspect.isfunction(method)
+    
+    @wraps(method)
+    def abstractonlinemethod_function(*args, **kwargs):
+        raise NotImplementedError("This method is just a placeholder, it should never get called. If you see this error you have probably forgotten to implement a method in your backend, or you are trying to call this method with a backend which is not supposed to be used online.")
+    
+    return abstractonlinemethod_function

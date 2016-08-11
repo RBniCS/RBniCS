@@ -15,19 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file basis_functions_matrix.py
-#  @brief Type of basis functions matrix
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.functions_list import FunctionsList
-from RBniCS.utils.decorators import AbstractBackend, Extends
+from dolfin import Expression
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
+from RBniCS.utils.decorators import backend_for
 
-@AbstractBackend
-@Extends(FunctionsList)
-class BasisFunctionsMatrix(FunctionsList):
-    pass
-
-
+# abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max
+# even though here we actually carry out both the max and the abs!
+@backend_for("FEniCS", inputs=((Matrix.Type, Vector.Type, Expression), ))
+def abs(expression):
+    pass # TODO
+    
+# Auxiliary class to signal to the max() function that it is dealing with an output of the abs() method
+class AbsOutput(object):
+    def __init__(self, max_abs_return_value):
+        self.max_abs_return_value = max_abs_return_value

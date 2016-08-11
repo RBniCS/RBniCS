@@ -25,8 +25,8 @@
 from RBniCS.backends.abstract.functions_list import FunctionsList
 from RBniCS.utils.decorators import AbstractBackend, Extends
 
-@Extends(FunctionsList)
 @AbstractBackend
+@Extends(FunctionsList)
 class SnapshotsMatrix(FunctionsList):
     pass
 

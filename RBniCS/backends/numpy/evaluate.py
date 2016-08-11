@@ -22,10 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends.numpy.matrix import Matrix
+from RBniCS.backends.numpy.vector import Vector
 from RBniCS.utils.decorators import backend_for
 
 # Evaluate a parametrized expression, possibly at a specific location
-@backend_for("NumPy", inputs=(TODO))
+@backend_for("NumPy", inputs=((Matrix.Type, Vector.Type), ))
 def evaluate(expression, at=None):
-    # TODO serve?
+    pass # TODO
     

@@ -31,7 +31,7 @@ class EigenSolver(object):
         pass
         
     @abstractmethod
-    def set_parameters(self, parameters)
+    def set_parameters(self, parameters):
         pass
         
     @abstractmethod

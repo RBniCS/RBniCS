@@ -27,7 +27,8 @@ import types
 from math import sqrt
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.backends import AffineExpansionOnlineStorage, BasisFunctionsMatrix, FunctionsList, OnlineVector, OnlineFunction, product, transpose, LinearSolver, sum
+from RBniCS.backends import BasisFunctionsMatrix, FunctionsList, LinearSolver, product, sum, transpose
+from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override, ReducedProblemFor
 from RBniCS.utils.mpi import print
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
@@ -86,9 +87,9 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         self.terms = truth_problem.terms
         self.Q = dict() # from string to integer
         # Reduced order operators
-        self.operator = dict() # from string to AffineExpansionOnlineStorage
+        self.operator = dict() # from string to OnlineAffineExpansionStorage
         # Solution
-        self._solution = OnlineFunction() # rather than OnlineVector, because it needs to have a copy(deepcopy=False) method
+        self._solution = OnlineFunction()
         self._output = 0
         self.compute_error.__func__.previous_mu = None
         self.compute_error.__func__.previous_with_respect_to = None
@@ -126,7 +127,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         elif current_stage == "offline":
             for term in self.terms:
                 self.Q[term] = self.truth_problem.Q[term]
-                self.operator[term] = AffineExpansionOnlineStorage(self.Q[term])
+                self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
         else:
             raise AssertionError("Invalid stage in _init_operators().")
         
@@ -269,7 +270,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         assert current_stage in ("online", "offline")
         if current_stage == "online": # load from file
             if not term in self.operator:
-                self.operator[term] = AffineExpansionOnlineStorage()
+                self.operator[term] = OnlineAffineExpansionStorage()
             # Note that it would not be needed to return the loaded operator in 
             # init(), since it has been already modified in-place. We do this, however,
             # because we want this interface to be compatible with the one in 

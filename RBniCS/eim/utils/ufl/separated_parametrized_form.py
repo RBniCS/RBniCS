@@ -26,8 +26,6 @@
 ## @defgroup IO Input/output methods
 #  @{
 
-from RBniCS.utils.io import ExportableList, PickleIO
-from RBniCS.utils.ufl import ParametrizedExpression
 from numpy import ones, zeros
 from dolfin import Constant, Expression, Function, log, PROGRESS
 from dolfin import __version__ as dolfin_version
@@ -39,6 +37,8 @@ from ufl.core.multiindex import MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
 import hashlib
+from RBniCS.utils.io import ExportableList, PickleIO
+from RBniCS.utils.ufl import ParametrizedExpression
 
 class SeparatedParametrizedForm(object):
     def __init__(self, form):

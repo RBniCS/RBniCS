@@ -24,7 +24,7 @@
 
 from RBniCS.utils.decorators.for_decorators_helper import ForDecoratorsStore, ForDecoratorsLogging
 from RBniCS.utils.decorators.reduction_method_for import ReductionMethodFor, ReductionMethodFor_Impl
-from RBniCS.utils.io import log, DEBUG
+from RBniCS.utils.mpi import log, DEBUG
 
 def ReducedProblemFor(Problem, ReductionMethod, replaces=None, replaces_if=None):
     impl = ReducedProblemFor_Impl(Problem, ReductionMethod, replaces, replaces_if)

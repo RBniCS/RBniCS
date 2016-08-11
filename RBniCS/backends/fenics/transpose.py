@@ -23,14 +23,15 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.basic import transpose as basic_transpose
-import RBniCS.backend.fenics
-from RBniCS.backends.fenics.function import Function_Type
-from RBniCS.backends.fenics.function_list import FunctionsList
-from RBniCS.backends.fenics.vector import Vector_Type
-import RBniCS.backend.fenics.wrapping
+import RBniCS.backends.fenics
+from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.functions_list import FunctionsList
+from RBniCS.backends.fenics.vector import Vector
+import RBniCS.backends.fenics.wrapping
+import RBniCS.backends.numpy
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("FEniCS", online_backend="NumPy", inputs=any(Function_Type, FunctionsList, Vector_Type))
+@backend_for("FEniCS", online_backend="NumPy", inputs=((Function.Type, FunctionsList, Vector.Type), ))
 def transpose(arg):
-    return basic_transpose(arg, RBniCS.backend.fenics, RBniCS.backend.fenics.wrapping)
+    return basic_transpose(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy)
     

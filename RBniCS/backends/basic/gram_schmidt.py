@@ -23,11 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
-from RBniCS.backend.abstract import GramSchmidt as AbstractGramSchmidt
+from RBniCS.backends.abstract import GramSchmidt as AbstractGramSchmidt
 from RBniCS.utils.decorators import Extends, override
 
-@Extends(AbstractFunctionsList)
-class GramSchmidt(AbstractFunctionsList):
+@Extends(AbstractGramSchmidt)
+class GramSchmidt(AbstractGramSchmidt):
     @override
     def __init__(self, X, backend, wrapping):
         # Inner product
@@ -46,6 +46,6 @@ class GramSchmidt(AbstractFunctionsList):
         n_basis = len(Z) # basis are store as a list of vectors
         b = Z[n_basis - 1] # reference to the last basis
         for i in range(n_basis - 1):
-            self.wrapping.gram_schimdt_projection_step(b, X, Z[i])
+            self.wrapping.gram_schmidt_projection_step(b, X, Z[i])
         b.vector()[:] /= sqrt(transpose(b)*X*b)
         

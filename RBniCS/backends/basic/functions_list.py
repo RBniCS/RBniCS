@@ -23,7 +23,6 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.backends.online import OnlineFunction_Type, OnlineMatrix_Type, OnlineVector_Type
 from RBniCS.utils.decorators import Extends, override
 from RBniCS.utils.mpi import mpi_comm
 
@@ -38,17 +37,18 @@ from RBniCS.utils.mpi import mpi_comm
 @Extends(AbstractFunctionsList)
 class FunctionsList(AbstractFunctionsList):
     @override
-    def __init__(self, V_or_Z, backend, wrapping, original_list=None):
+    def __init__(self, V_or_Z, backend, wrapping, online_backend):
         self.V_or_Z = V_or_Z
         self.backend = backend
         self.wrapping = wrapping
+        self.online_backend = online_backend
         self._list = list() # of functions
-        self._precomputed_slices = dict() # from tuple to AffineExpansionOnlineStorage
+        self._precomputed_slices = dict() # from tuple to FunctionsList
     
     @override
     def enrich(self, functions):
         # Append to storage
-        assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function)):
+        assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function))
         if isinstance(functions, (tuple, list, FunctionsList)):
             for function in functions:
                 self._list.append(self.wrapping.function_copy(function))
@@ -95,12 +95,12 @@ class FunctionsList(AbstractFunctionsList):
     
     @override
     def __mul__(self, other):
-        assert (isinstance(other, OnlineMatrix_Type, OnlineVector_Type, OnlineFunction_Type)
-        if isinstance(other, OnlineMatrix_Type):
-            return self.wrapping.function_list_mul_online_matrix(self, other)
-        elif isinstance(other, OnlineVector_Type):
+        assert isinstance(other, (self.online_backend.Matrix.Type, self.online_backend.Vector.Type, self.online_backend.Function.Type))
+        if isinstance(other, self.online_backend.Matrix.Type):
+            return self.wrapping.function_list_mul_online_matrix(self, other, self.backend.FunctionsList)
+        elif isinstance(other, self.online_backend.Vector.Type):
             return self.wrapping.function_list_mul_online_vector(self, other)
-        elif isinstance(other, OnlineFunction_Type):
+        elif isinstance(other, self.online_backend.Function.Type):
             return self.wrapping.function_list_mul_online_function(self, other)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.__mul__.")
@@ -118,7 +118,8 @@ class FunctionsList(AbstractFunctionsList):
                 self._precomputed_slices[key.stop] = self
                 return self
             
-            output = FunctionsList(self.V_or_Z, self.wrapping, self._list[key])
+            output = self.backend.FunctionsList(self.V_or_Z)
+            output._list = self._list[key]
             self._precomputed_slices[key.stop] = output
             return output
                 

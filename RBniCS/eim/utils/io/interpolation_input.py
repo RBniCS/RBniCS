@@ -25,7 +25,7 @@
 class InterpolationInput(object):
     def __init__(self, expression, original_space=None):
         self.expression = expression
-        # TODO definire un function space scalare se il coeff è scalare,
-        # vettoriale se è vettorial ecc.
+        # TODO definire un function space scalare se il coeff e' scalare,
+        # vettoriale se e' vettorial ecc.
         self.space = TODO
         

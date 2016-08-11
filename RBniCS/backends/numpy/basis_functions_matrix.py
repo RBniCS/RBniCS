@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backend.abstract import FunctionsList as AbstractFunctionsList
+from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
 from RBniCS.backends.numpy.functions_list import FunctionsList
 from RBniCS.utils.decorators import BackendFor, Extends
 
+@BackendFor("NumPy", online_backend="NumPy", inputs=(AbstractFunctionsList, ))
 @Extends(FunctionsList)
-@BackendFor("NumPy", online_backend="NumPy", inputs=AbstractFunctionsList)
 class BasisFunctionsMatrix(FunctionsList):
     pass
 

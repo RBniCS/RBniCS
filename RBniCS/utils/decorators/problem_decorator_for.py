@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.io import log, DEBUG
+from RBniCS.utils.mpi import log, DEBUG
 
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
     def ProblemDecoratorFor_Decorator(ProblemDecorator):

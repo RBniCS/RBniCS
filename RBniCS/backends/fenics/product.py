@@ -23,14 +23,14 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import DirichletBC, Form
-from RBniCS.backend.fenics.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.fenics.matrix import Matrix_Type
-from RBniCS.backends.fenics.vector import Vector_Type
-from RBniCS.utils.decorators import any, backend_for
+from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
+from RBniCS.utils.decorators import backend_for
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
-@backend_for("FEniCS", inputs=(tuple, AffineExpansionStorage, any(tuple, None)))
+@backend_for("FEniCS", inputs=(tuple, AffineExpansionStorage, (tuple, None)))
 def product(thetas, operators, thetas2=None):
     assert thetas2 is None
     assert len(thetas) == len(operators)
@@ -52,15 +52,15 @@ def product(thetas, operators, thetas2=None):
             output.append(DirichletBC(key[0], value, key[1], key[2]))
         return ProductOutput(output)
     elif operators.type() is Form:
-        assert isinstance(operators[0], (Matrix_Type, Vector_Type))
+        assert isinstance(operators[0], (Matrix.Type, Vector.Type))
         # Carry out the dot product (with respect to the index q over the affine expansion)
-        if isinstance(operators[0], Matrix_Type):
+        if isinstance(operators[0], Matrix.Type):
             output = operators[0].copy()
             output.zero()
             for (theta, operator) in zip(thetas, operators):
                 output += theta*operator
             return ProductOutput(output)
-        elif isinstance(operators[0], Vector_Type):
+        elif isinstance(operators[0], Vector.Type):
             output = operators[0].copy()
             output.zero()
             for (theta, operator) in zip(thetas, operators):

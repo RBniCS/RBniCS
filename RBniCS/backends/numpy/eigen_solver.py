@@ -24,13 +24,13 @@
 
 from numpy import real, imag
 from scipy.linalg import eig, eigh
-from RBniCS.backend.abstract import EigenSolver as AbstractEigenSolver
-from RBniCS.backend.numpy.matrix import Matrix_Type
-from RBniCS.backend.numpy.function import Function
-from RBniCS.utils.decorators import any, BackendFor, Extends, override
+from RBniCS.backends.abstract import EigenSolver as AbstractEigenSolver
+from RBniCS.backends.numpy.matrix import Matrix
+from RBniCS.backends.numpy.function import Function
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractEigenSolver)
-@BackendFor("NumPy", inputs=(Matrix_Type, any(Matrix_Type, None)))
+@BackendFor("NumPy", inputs=(Matrix.Type, (Matrix.Type, None)))
 class EigenSolver(AbstractEigenSolver):
     @override
     def __init__(self, V_or_Z, A, B=None):
@@ -43,8 +43,8 @@ class EigenSolver(AbstractEigenSolver):
         self.eigs = None
         self.eigv = None
         
-    @abstractmethod
-    def set_parameters(self, parameters)
+    @override
+    def set_parameters(self, parameters):
         self.parameters.update(parameters)
         
     @override

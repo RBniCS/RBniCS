@@ -23,14 +23,14 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import DirichletBC, solve
-from RBniCS.backend.abstract import LinearSolver as AbstractLinearSolver
-from RBniCS.backends.fenics.matrix import Matrix_Type
-from RBniCS.backends.fenics.vector import Vector_Type
-from RBniCS.backends.fenics.function import Function_Type
-from RBniCS.utils.decorators import any, BackendFor, Extends, override
+from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
+from RBniCS.backends.fenics.function import Function
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractLinearSolver)
-@BackendFor("FEniCS", inputs=(Matrix_Type, Function_Type, Vector_Type, any(DirichletBC, None)))
+@BackendFor("FEniCS", inputs=(Matrix.Type, Function.Type, Vector.Type, (DirichletBC, None)))
 class LinearSolver(AbstractLinearSolver):
     @override
     def __init__(lhs, solution, rhs, bcs=None):

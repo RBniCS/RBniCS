@@ -28,4 +28,4 @@ from RBniCS.utils.decorators import abstract_online_backend
 def Matrix(M, N):
     pass
 
-# Moreover, it should also expose a Matrix_Type type containing the type of the returned instance
+# Moreover, it should also expose a Type attribute containing the type of the returned instance

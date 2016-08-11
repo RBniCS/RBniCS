@@ -28,7 +28,7 @@
 
 from RBniCS.utils.decorators import ReductionMethodFor, ReductionMethodDecoratorFor
 from RBniCS.utils.factories.factory_helper import FactoryGenerateTypes
-from RBniCS.utils.io import log, DEBUG
+from RBniCS.utils.mpi import log, DEBUG
 
 # Factory to generate a reduction method corresponding to a category (e.g. RB or POD) and a given truth problem
 def ReductionMethodFactory(truth_problem, category):
