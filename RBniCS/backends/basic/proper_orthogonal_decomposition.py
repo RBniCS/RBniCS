@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 from math import sqrt
-from numpy import isclose, zeros, sum as total_energy, cumsum as retained_energy
+from numpy import isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
 from RBniCS.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from RBniCS.backends.online import OnlineEigenSolver
 from RBniCS.utils.decorators import Extends, override
@@ -59,25 +59,25 @@ class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
             
     @override
     def apply(self, Nmax):
-        assert len(self.X) == 1 # note that we cannot move this assert in __init__ because
-                                # self.X has not been assembled yet there
-        X = self.X[0]
+        X = self.X
         snapshots_matrix = self.snapshots_matrix
         transpose = self.backend.transpose
         
         correlation = transpose(snapshots_matrix)*X*snapshots_matrix
         
         eigensolver = OnlineEigenSolver(correlation)
-        parameters["problem_type"] = "hermitian"
-        parameters["spectrum"] = "largest real"
+        parameters = {
+            "problem_type": "hermitian",
+            "spectrum": "largest real"
+        }
         eigensolver.set_parameters(parameters)
         eigensolver.solve()
         
-        Z = backend.BasisFunctionsMatrix(self.V_or_Z)
+        Z = self.backend.BasisFunctionsMatrix(self.V_or_Z)
         for i in range(Nmax):
-            (eigvector, _) = eigensolver.get_eigenvector(Nmax)
+            (eigvector, _) = eigensolver.get_eigenvector(i)
             b = self.snapshots_matrix*eigvector
-            b /= sqrt(transpose(b)*X*b)
+            b = self.backend.rescale(b, sqrt(transpose(b)*X*b))
             Z.enrich(b)
             
         self.eigensolver = eigensolver
@@ -88,17 +88,17 @@ class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
         if N is None:
             N = len(self.snapshots_matrix)
         for i in range(N):
-            (eig_i_real, eig_i_complex) = self.eigensolver.get_eigenvalue[i]
+            (eig_i_real, eig_i_complex) = self.eigensolver.get_eigenvalue(i)
             assert isclose(eig_i_complex, 0)
             print("lambda_" + str(i) + " = " + str(eig_i_real))
         
     @override
     def save_eigenvalues_file(self, output_directory, eigenvalues_file):
         if mpi_comm.rank == 0:
-            with open(str(directory) + "/" + filename, "w") as outfile:
+            with open(str(output_directory) + "/" + eigenvalues_file, "w") as outfile:
                 N = len(self.snapshots_matrix)
                 for i in range(N):
-                    (eig_i_real, eig_i_complex) = self.eigensolver.get_eigenvalue[i]
+                    (eig_i_real, eig_i_complex) = self.eigensolver.get_eigenvalue(i)
                     assert isclose(eig_i_complex, 0)
                     outfile.write(str(i) + " " + str(eig_i_real) + "\n")
         mpi_comm.barrier()
@@ -109,11 +109,11 @@ class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
             N = len(self.snapshots_matrix)
             eigs = zeros(N)
             for i in range(N):
-                (eigs[i], _) = self.eigensolver.get_eigenvalue[i]
-            energy = total_energy(eigs)
-            retained_energy = retained_energy(eigs)
+                (eigs[i], _) = self.eigensolver.get_eigenvalue(i)
+            energy = compute_total_energy(eigs)
+            retained_energy = compute_retained_energy(eigs)
             retained_energy /= energy
-            with open(str(directory) + "/" + filename, "w") as outfile:
+            with open(str(output_directory) + "/" + retained_energy_file, "w") as outfile:
                 for i in range(N):
                     outfile.write(str(i) + " " + str(retained_energy[i]) + "\n") 
         mpi_comm.barrier()

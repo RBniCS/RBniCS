@@ -28,4 +28,8 @@ from RBniCS.utils.decorators import abstract_online_backend
 def Vector(N):
     pass
 
-# Moreover, it should also expose a Type attribute containing the type of the returned instance
+# Moreover, it should also expose a Type method containing the type of the returned instance
+# This can be specified using the @backend_for decorator setting its output attribute
+def _Vector_Type():
+    return None
+Vector.Type = _Vector_Type

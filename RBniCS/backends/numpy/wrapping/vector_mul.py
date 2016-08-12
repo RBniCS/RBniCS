@@ -25,9 +25,9 @@
 from RBniCS.backends.numpy.function import Function
 
 def vector_mul_vector(vector1, vector2):
-    if isinstance(vector1, Function.Type):
+    if isinstance(vector1, Function.Type()):
         vector1 = vector1.vector()
-    if isinstance(vector2, Function.Type):
+    if isinstance(vector2, Function.Type()):
         vector2 = vector2.vector()
     output = vector1.T*vector2
     assert output.shape == (1, 1)

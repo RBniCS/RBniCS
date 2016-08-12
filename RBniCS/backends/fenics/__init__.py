@@ -22,6 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+# Check that dolfin has been compiled with PETSc and SLEPc
+from dolfin import has_petsc, has_linear_algebra_backend, parameters, has_slepc
+assert has_petsc() 
+assert has_linear_algebra_backend("PETSc") 
+assert parameters.linear_algebra_backend == "PETSc"
+assert has_slepc()
+
+# Import modules
 from RBniCS.backends.fenics.abs import abs
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix

@@ -108,7 +108,7 @@ class PerformanceTable(object):
             formatter = ""
             for (column_index, column_name) in enumerate(table_index):
                 formatter += "{" + str(column_index) + ":<{" + column_name + "}}"
-                if i < len(table_index) - 1:
+                if column_index < len(table_index) - 1:
                     formatter += "\t"
             # Print the header
             current_line = list()

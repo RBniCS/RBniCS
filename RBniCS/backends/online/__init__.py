@@ -30,3 +30,5 @@ from RBniCS.utils.factories import set_online_backend, online_backend_factory
 set_online_backend("NumPy")
 online_backend_factory(current_module)
 
+# Clean up
+del current_module

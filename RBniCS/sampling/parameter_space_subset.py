@@ -61,7 +61,7 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         if len(box) != len(self.box):
             return False
         for (box_range, loaded_box_range) in zip(self.box, box):
-            if box_range[0] != loaded_box_range[p][0] or box_range[1] != loaded_box_range[1]:
+            if box_range[0] != loaded_box_range[0] or box_range[1] != loaded_box_range[1]:
                 return False
         return True
         

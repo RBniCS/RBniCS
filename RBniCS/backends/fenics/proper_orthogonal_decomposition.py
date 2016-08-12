@@ -29,7 +29,7 @@ import RBniCS.backends.fenics
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicProperOrthogonalDecomposition)
-@BackendFor("FEniCS", inputs=(Matrix.Type, FunctionSpace))
+@BackendFor("FEniCS", inputs=(Matrix.Type(), FunctionSpace))
 class ProperOrthogonalDecomposition(BasicProperOrthogonalDecomposition):
     @override
     def __init__(self, X, V_or_Z):

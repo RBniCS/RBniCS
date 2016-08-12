@@ -48,12 +48,12 @@ class FunctionsList(AbstractFunctionsList):
     @override
     def enrich(self, functions):
         # Append to storage
-        assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function))
+        assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function.Type()))
         if isinstance(functions, (tuple, list, FunctionsList)):
             for function in functions:
                 self._list.append(self.wrapping.function_copy(function))
-        elif isinstance(functions, self.backend.Function):
-            self._list.append(self.wrapping.function_copy(function))
+        elif isinstance(functions, self.backend.Function.Type()):
+            self._list.append(self.wrapping.function_copy(functions))
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.enrich.")
         # Reset precomputed slices
@@ -95,16 +95,20 @@ class FunctionsList(AbstractFunctionsList):
     
     @override
     def __mul__(self, other):
-        assert isinstance(other, (self.online_backend.Matrix.Type, self.online_backend.Vector.Type, self.online_backend.Function.Type))
-        if isinstance(other, self.online_backend.Matrix.Type):
-            return self.wrapping.function_list_mul_online_matrix(self, other, self.backend.FunctionsList)
-        elif isinstance(other, self.online_backend.Vector.Type):
-            return self.wrapping.function_list_mul_online_vector(self, other)
-        elif isinstance(other, self.online_backend.Function.Type):
-            return self.wrapping.function_list_mul_online_function(self, other)
+        assert isinstance(other, (self.online_backend.Matrix.Type(), self.online_backend.Vector.Type(), self.online_backend.Function.Type()))
+        if isinstance(other, self.online_backend.Matrix.Type()):
+            return self.wrapping.functions_list_mul_online_matrix(self, other, self.backend.FunctionsList)
+        elif isinstance(other, self.online_backend.Vector.Type()):
+            return self.wrapping.functions_list_mul_online_vector(self, other)
+        elif isinstance(other, self.online_backend.Function.Type()):
+            return self.wrapping.functions_list_mul_online_function(self, other)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.__mul__.")
     
+    @override
+    def __len__(self):
+        return len(self._list)
+
     @override
     def __getitem__(self, key):
         if isinstance(key, slice): # e.g. key = :N, return the first N functions

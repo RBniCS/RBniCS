@@ -26,18 +26,18 @@ from RBniCS.backends.numpy.affine_expansion_storage import AffineExpansionStorag
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.vector import Vector
 from RBniCS.backends.numpy.function import Function
-from RBniCS.utils.decorators import backend_for
+from RBniCS.utils.decorators import backend_for, ThetaType
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
-@backend_for("NumPy", inputs=(tuple, AffineExpansionStorage, (tuple, None)))
+@backend_for("NumPy", inputs=(ThetaType, AffineExpansionStorage, ThetaType + (None,)))
 def product(thetas, operators, thetas2=None):
-    assert len(thetas) == len(operators)
     order = operators.order()
     assert order in (1, 2)
     if order == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
-        assert isinstance(operators[0], (Matrix.Type, Vector.Type, Function.Type))
+        assert isinstance(operators[0], (Matrix.Type(), Vector.Type(), Function.Type()))
         assert thetas2 is None
+        assert len(thetas) == len(operators)
         # Single for loop version:
         output = 0
         for (theta, operator) in zip(thetas, operators):
@@ -49,11 +49,11 @@ def product(thetas, operators, thetas2=None):
         # introduces an overhead of 10%~20%
         from numpy import asmatrix
         output = asmatrix(thetas)*operators.as_matrix().transpose()
-        output = output.item(0, 0)
-        return ProductOutput(output)
+        assert output.shape == (1, 1)
+        return ProductOutput(output.item(0, 0))
         '''
     elif order == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
-        assert isinstance(operators[0, 0], (OnlineMatrix.Type, OnlineVector.Type, float))
+        assert isinstance(operators[0, 0], (Matrix.Type(), Vector.Type(), float))
         assert thetas2 is not None
         # no checks here on the first dimension of operators should be equal to len(thetas), and
         # similarly that the second dimension should be equal to len(thetas2), because the
@@ -70,6 +70,7 @@ def product(thetas, operators, thetas2=None):
         for i in range(len(thetas)):
             for j in range(len(thetas2)):
                 output += thetas[i]*operators[i, j]*thetas2[j]
+        return ProductOutput(output)
         # Thus we selected the following:
         '''
         # Vectorized version:
@@ -77,6 +78,7 @@ def product(thetas, operators, thetas2=None):
         thetas_vector = asmatrix(thetas)
         thetas2_vector = asmatrix(thetas2).transpose()
         output = thetas_vector*operators.as_matrix()*thetas2_vector
+        assert output.shape == (1, 1)
         return ProductOutput(output.item(0, 0))
     else:
         raise AssertionError("product(): invalid operands.")

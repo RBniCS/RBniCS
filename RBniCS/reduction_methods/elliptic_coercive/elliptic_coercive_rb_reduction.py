@@ -93,7 +93,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a GS object
-        self.GS = GramSchmidt(truth_problem.inner_product)
+        self.GS = GramSchmidt()
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
@@ -106,6 +106,19 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     ###########################     OFFLINE STAGE     ########################### 
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
+    
+    ## Initialize data structures required for the offline phase
+    @override
+    def _init_offline(self):
+        # Call parent to initialize inner product
+        output = EllipticCoerciveReductionMethod._init_offline(self)
+        
+        # Declare a new GS object
+        assert len(self.truth_problem.inner_product) == 1
+        self.GS = GramSchmidt(self.truth_problem.inner_product[0])
+        
+        # Return
+        return output
         
     ## Perform the offline phase of the reduced order model
     @override

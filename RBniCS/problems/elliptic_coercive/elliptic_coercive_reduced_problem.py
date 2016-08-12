@@ -27,7 +27,7 @@ import types
 from math import sqrt
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.backends import BasisFunctionsMatrix, FunctionsList, LinearSolver, product, sum, transpose
+from RBniCS.backends import BasisFunctionsMatrix, difference, FunctionsList, LinearSolver, product, sum, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override, ReducedProblemFor
 from RBniCS.utils.mpi import print

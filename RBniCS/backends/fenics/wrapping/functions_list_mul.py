@@ -31,7 +31,7 @@ from RBniCS.backends.numpy.function import Function  as OnlineFunction
 def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsListType):
     V = functions_list.V_or_Z
     assert isinstance(V, FunctionSpace)
-    assert isinstance(online_matrix, OnlineMatrix.Type)
+    assert isinstance(online_matrix, OnlineMatrix.Type())
     
     output = FunctionsListType(V)
     dim = online_matrix.shape[1]
@@ -46,17 +46,17 @@ def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsLis
     return output
 
 def functions_list_mul_online_vector(functions_list, online_vector):
-    assert isinstance(online_vector, OnlineVector.Type)
+    assert isinstance(online_vector, OnlineVector.Type())
     
     output = function_copy(functions_list._list[0])
     output.vector().zero()
-    for (i, fun_i) in enumerate(self._list):
+    for (i, fun_i) in enumerate(functions_list._list):
         output.vector().add_local(fun_i.vector().array()*online_vector.item(i))
     output.vector().apply("add")
     return output
     
 def functions_list_mul_online_function(functions_list, online_function):
-    assert isinstance(online_function, OnlineFunction.Type)
+    assert isinstance(online_function, OnlineFunction.Type())
     
-    return function_list_mul_online_vector(functions_list, online_function.vector())
+    return functions_list_mul_online_vector(functions_list, online_function.vector())
     

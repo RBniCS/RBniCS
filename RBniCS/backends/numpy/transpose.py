@@ -30,7 +30,7 @@ from RBniCS.backends.numpy.vector import Vector
 import RBniCS.backends.numpy.wrapping
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("NumPy", online_backend="NumPy", inputs=((Function.Type, FunctionsList, Vector.Type), ))
+@backend_for("NumPy", online_backend="NumPy", inputs=((Function.Type(), FunctionsList, Vector.Type()), ))
 def transpose(arg):
     return basic_transpose(arg, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
     

@@ -27,13 +27,13 @@ from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractLinearSolver)
-@BackendFor("FEniCS", inputs=(Matrix.Type, Function.Type, Vector.Type, (DirichletBC, None)))
+@BackendFor("FEniCS", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (list_of(DirichletBC), None)))
 class LinearSolver(AbstractLinearSolver):
     @override
-    def __init__(lhs, solution, rhs, bcs=None):
+    def __init__(self, lhs, solution, rhs, bcs=None):
         self.lhs = lhs
         self.solution = solution
         self.rhs = rhs
@@ -44,6 +44,7 @@ class LinearSolver(AbstractLinearSolver):
         if self.bcs is not None:
             assert isinstance(self.bcs, list)
             for bc in self.bcs:
+                assert isinstance(bc, DirichletBC)
                 bc.apply(self.lhs, self.rhs)
         solve(self.lhs, self.solution.vector(), self.rhs)
         

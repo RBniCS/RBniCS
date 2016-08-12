@@ -27,7 +27,7 @@ from RBniCS.backends.fenics.wrapping import function_copy
 from RBniCS.utils.decorators import backend_for
 
 # Compute the difference between two solutions
-@backend_for("FEniCS", inputs=(Function.Type, Function.Type))
+@backend_for("FEniCS", inputs=(Function.Type(), Function.Type()))
 def difference(solution1, solution2):
     output = function_copy(solution1)
     output.vector().add_local( - solution2.vector().array() )

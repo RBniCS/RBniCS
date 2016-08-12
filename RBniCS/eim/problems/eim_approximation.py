@@ -25,7 +25,7 @@
 from dolfin import project, vertices
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.backends import BasisFunctionsMatrix, FunctionsList
-from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineVector, OnlineFunction
+from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import mpi_comm
 from RBniCS.eim.utils.io import InterpolationLocationsList
@@ -114,7 +114,7 @@ class EIMApproximation(ParametrizedProblem):
             # Solve the interpolation problem
             self._interpolation_coefficients = OnlineFunction(N)
             
-            solver = LinearSolver(lhs, self._interpolation_coefficients, rhs)
+            solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
             solver.solve()
             
             # Store to avoid repeated computations

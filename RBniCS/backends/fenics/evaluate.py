@@ -26,10 +26,10 @@ from dolfin import Point
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
-from RBniCS.utils.decorators import backend_for
+from RBniCS.utils.decorators import backend_for, tuple_of
 
 # Evaluate a parametrized expression, possibly at a specific location
-@backend_for("FEniCS", inputs=((Matrix.Type, Vector.Type, Function.Type), tuple))
+@backend_for("FEniCS", inputs=((Matrix.Type(), Vector.Type(), Function.Type()), (tuple_of(int), tuple_of(float))))
 def evaluate(expression, at=None):
     pass # TODO
     

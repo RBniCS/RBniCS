@@ -30,8 +30,7 @@ class _Vector_Type(matrix): # inherit to make sure that matrices and vectors cor
 from numpy import zeros as _VectorContent_Base
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("NumPy", inputs=(int, ))
+@backend_for("NumPy", inputs=(int, ), output=_Vector_Type)
 def Vector(N):
     return _Vector_Type(_VectorContent_Base((N))).transpose() # as column vector
-
-Vector.Type = _Vector_Type
+    

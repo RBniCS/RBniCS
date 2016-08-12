@@ -69,14 +69,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
                 
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a POD object
-        if not hasattr(truth_problem, "_reduction_level"):
-            assert hasattr(truth_problem, "V")
-            assert not hasattr(truth_problem, "Z")
-            self.POD = ProperOrthogonalDecomposition(truth_problem.inner_product, truth_problem.V)
-        else: # truth problem was actually already a reduced problem!
-            assert not hasattr(truth_problem, "V")
-            assert hasattr(truth_problem, "Z")
-            self.POD = ProperOrthogonalDecomposition(truth_problem.inner_product, truth_problem.Z)
+        self.POD = ProperOrthogonalDecomposition()
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
@@ -88,6 +81,26 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
     
+    ## Initialize data structures required for the offline phase
+    @override
+    def _init_offline(self):
+        # Call parent to initialize inner product
+        output = EllipticCoerciveReductionMethod._init_offline(self)
+        
+        # Declare a new POD
+        assert len(self.truth_problem.inner_product) == 1
+        if not hasattr(self.truth_problem, "_reduction_level"):
+            assert hasattr(self.truth_problem, "V")
+            assert not hasattr(self.truth_problem, "Z")
+            self.POD = ProperOrthogonalDecomposition(self.truth_problem.inner_product[0], self.truth_problem.V)
+        else: # truth problem was actually already a reduced problem!
+            assert not hasattr(self.truth_problem, "V")
+            assert hasattr(self.truth_problem, "Z")
+            self.POD = ProperOrthogonalDecomposition(self.truth_problem.inner_product[0], self.truth_problem.Z)
+        
+        # Return
+        return output
+            
     ## Perform the offline phase of the reduced order model
     @override
     def offline(self):

@@ -24,8 +24,10 @@
 
 from dolfin import GenericMatrix
 
-class Matrix(object):
-    pass # dummy (not required by the interface) just store the Type
+def Matrix():
+    raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
     
-Matrix.Type = GenericMatrix
+def _Matrix_Type():
+    return GenericMatrix
+Matrix.Type = _Matrix_Type
         

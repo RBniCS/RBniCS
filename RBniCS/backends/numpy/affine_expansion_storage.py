@@ -27,35 +27,36 @@ from numpy import nditer as AffineExpansionStorageContent_Iterator
 from numpy import asmatrix as AffineExpansionStorageContent_AsMatrix
 from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
 from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("NumPy", inputs=((list, int, AbstractAffineExpansionStorage), ))
+@BackendFor("NumPy", inputs=((int, AbstractAffineExpansionStorage), (int, None)))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
-    def __init__(self, args):
+    def __init__(self, arg1, arg2=None):
         self._content = None
         self._content_as_matrix = None
         self._precomputed_slices = dict() # from tuple to AffineExpansionStorage
         self._recursive = False
-        self.init(args)
-        
-    @override
-    def init(self, args):
-        assert isinstance(args, (list, int, AbstractAffineExpansionStorage))
-        if isinstance(args, AbstractAffineExpansionStorage):
+        # Carry out initialization
+        assert (
+            (isinstance(arg1, int) and (isinstance(arg2, int) or arg2 is None))
+                or
+            (isinstance(arg1, AbstractAffineExpansionStorage) and arg2 is None)
+        )
+        if isinstance(arg1, AbstractAffineExpansionStorage):
             self._recursive = True
-            self._content = args[0]._content
-            self._content_as_matrix = args[0]._content_as_matrix
-            self._precomputed_slices = args[0]._precomputed_slices
-        elif isinstance(args, int):
-            self._recursive = False
-            self._content = AffineExpansionStorageContent_Base((args, ), dtype=object)
-        elif isinstance(args, list):
-            for i in args:
-                assert isinstance(i, int)
-            self._recursive = False
-            self._content = AffineExpansionStorageContent_Base(args, dtype=object)
+            self._content = arg1._content
+            self._content_as_matrix = arg1._content_as_matrix
+            self._precomputed_slices = arg1._precomputed_slices
+        elif isinstance(arg1, int):
+            if arg2 is None:
+                self._recursive = False
+                self._content = AffineExpansionStorageContent_Base((arg1, ), dtype=object)
+            else:
+                assert isinstance(arg2, int)
+                self._recursive = False
+                self._content = AffineExpansionStorageContent_Base((arg1, arg2), dtype=object)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to AffineExpansionStorage")
     
@@ -116,11 +117,11 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             
             is_slice_equal_to_full_tensor = True
-            for slice_ in key:
+            for (index, slice_) in enumerate(key):
                 assert slice_.start is None 
                 assert slice_.step is None
-                assert slice_.stop <= self._content[it.multi_index].shape[i]
-                if slice_.stop < self._content[it.multi_index].shape[i]:
+                assert slice_.stop <= self._content[it.multi_index].shape[index]
+                if slice_.stop < self._content[it.multi_index].shape[index]:
                     is_slice_equal_to_full_tensor = False
             if is_slice_equal_to_full_tensor:
                 self._precomputed_slices[dict_key] = self
@@ -146,7 +147,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         
     @override
     def __iter__(self):
-        return AffineExpansionStorageContent_Iterator(self._content, op_flags=["readonly"])
+        return AffineExpansionStorageContent_Iterator(self._content, flags=["refs_ok"], op_flags=["readonly"])
         
     @override
     def __len__(self):

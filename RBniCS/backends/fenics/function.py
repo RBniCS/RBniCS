@@ -27,8 +27,6 @@ from RBniCS.utils.decorators import backend_for
 
 _Function_Type = Function
 
-@backend_for("FEniCS", inputs=(FunctionSpace, ))
+@backend_for("FEniCS", inputs=(FunctionSpace, ), output=_Function_Type)
 def Function(V):
     return _Function_Type(V)
-
-Function.Type = _Function_Type

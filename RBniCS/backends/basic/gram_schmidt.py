@@ -37,15 +37,13 @@ class GramSchmidt(AbstractGramSchmidt):
         
     @override
     def apply(self, Z):
-        assert len(self.X) == 1 # note that we cannot move this assert in __init__ because
-                                # self.X has not been assembled yet there
-        X = self.X[0]
+        X = self.X
         
         transpose = self.backend.transpose
 
         n_basis = len(Z) # basis are store as a list of vectors
         b = Z[n_basis - 1] # reference to the last basis
         for i in range(n_basis - 1):
-            self.wrapping.gram_schmidt_projection_step(b, X, Z[i])
+            b = self.wrapping.gram_schmidt_projection_step(b, X, Z[i], self.backend.transpose)
         b.vector()[:] /= sqrt(transpose(b)*X*b)
         

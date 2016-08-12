@@ -119,9 +119,9 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         for term in self.terms:
             self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
             self.Q[term] = len(self.operator[term])
-        self.inner_product.init(self.assemble_operator("inner_product"))
+        self.inner_product = AffineExpansionStorage(self.assemble_operator("inner_product"))
         try:
-            self.dirichlet_bc.init(self.assemble_operator("dirichlet_bc"))
+            self.dirichlet_bc = AffineExpansionStorage(self.assemble_operator("dirichlet_bc"))
         except ValueError: # there were no Dirichlet BCs
             pass
                     

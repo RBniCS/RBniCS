@@ -26,7 +26,7 @@ from RBniCS.backends.numpy.function import Function
 from RBniCS.utils.decorators import backend_for
 
 # Compute the difference between two solutions
-@backend_for("NumPy", inputs=(Function.Type, Function.Type))
+@backend_for("NumPy", inputs=(Function.Type(), Function.Type()))
 def difference(solution1, solution2):
     pass # TODO
     

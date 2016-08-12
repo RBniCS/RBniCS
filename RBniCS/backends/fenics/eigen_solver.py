@@ -22,21 +22,21 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import as_backend_type, Function, SLEPcEigenSolver
+from dolfin import as_backend_type, Function, FunctionSpace, SLEPcEigenSolver
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.abstract import EigenSolver as AbstractEigenSolver
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractEigenSolver)
-@BackendFor("FEniCS", inputs=(Matrix.Type, (Matrix.Type, None)))
+@BackendFor("FEniCS", inputs=(FunctionSpace, Matrix.Type(), (Matrix.Type(), None)))
 class EigenSolver(AbstractEigenSolver):
     @override
-    def __init__(self, V_or_Z, A, B=None):
+    def __init__(self, A, B=None, V=None):
         A = as_backend_type(A)
         if B is not None:
             B = as_backend_type(B)
         self.eigen_solver = SLEPcEigenSolver(A, B)
-        self.V = V_or_Z
+        self.V = V
         
     @override
     def set_parameters(self, parameters):

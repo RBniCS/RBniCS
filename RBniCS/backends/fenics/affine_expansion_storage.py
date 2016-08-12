@@ -22,35 +22,18 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import assemble, DirichletBC, Form
+from ufl import Form
+from dolfin import assemble, DirichletBC
 from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("FEniCS", inputs=(list, ))
+@BackendFor("FEniCS", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form)), ))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def __init__(self, args):
         self._content = None
         self._type = None
-        self.init(args)
-        
-    @staticmethod
-    def _is_Form(arg):
-        return isinstance(arg, Form)
-        
-    @staticmethod
-    def _is_DirichletBC(arg):
-        if not isinstance(arg, list):
-            return False
-        else:
-            for bc in arg:
-                if not isinstance(bc, DirichletBC):
-                    return False
-            return True
-        
-    @override
-    def init(self, args):
         # Type checking
         is_Form = self._is_Form(args[0])
         is_DirichletBC = self._is_DirichletBC(args[0])
@@ -71,7 +54,21 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             self._type = DirichletBC
         else:
             return TypeError("Invalid input arguments to AffineExpansionStorage")
-    
+        
+    @staticmethod
+    def _is_Form(arg):
+        return isinstance(arg, Form)
+        
+    @staticmethod
+    def _is_DirichletBC(arg):
+        if not isinstance(arg, list):
+            return False
+        else:
+            for bc in arg:
+                if not isinstance(bc, DirichletBC):
+                    return False
+            return True
+        
     def type(self):
         return self._type
         

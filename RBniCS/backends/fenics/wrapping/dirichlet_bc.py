@@ -25,10 +25,10 @@
 import dolfin
 
 def DirichletBC(V, g, subdomains, subdomain_id):
-    output = dolfin.DirichletBC(*args, **kwargs)
+    output = dolfin.DirichletBC(V, g, subdomains, subdomain_id)
     output.subdomains = subdomains # this is currently not available in the public interface
     output.subdomain_id = subdomain_id # this is currently not available in the public interface
     output.value = g # this is available but it is cast to a base type, and it makes performing the sum not possible
-    output.function_space = function_space # this is already available as a method, replace it with an attribute for consistency
+    output.function_space = V # this is already available as a method, replace it with an attribute for consistency
     return output
 

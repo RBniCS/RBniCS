@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from numpy import real, imag
+from numpy import real, imag, matrix
 from scipy.linalg import eig, eigh
 from RBniCS.backends.abstract import EigenSolver as AbstractEigenSolver
 from RBniCS.backends.numpy.matrix import Matrix
@@ -30,15 +30,17 @@ from RBniCS.backends.numpy.function import Function
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractEigenSolver)
-@BackendFor("NumPy", inputs=(Matrix.Type, (Matrix.Type, None)))
+@BackendFor("NumPy", inputs=(Matrix.Type(), (Matrix.Type(), None)))
 class EigenSolver(AbstractEigenSolver):
     @override
-    def __init__(self, V_or_Z, A, B=None):
+    def __init__(self, A, B=None):
         assert A.shape[0] == A.shape[1]
         if B is not None:
             assert B.shape[0] == B.shape[1]
             assert A.shape[0] == B.shape[0]
         
+        self.A = A
+        self.B = B
         self.parameters = {}
         self.eigs = None
         self.eigv = None
@@ -50,9 +52,9 @@ class EigenSolver(AbstractEigenSolver):
     @override
     def solve(self):
         if self.parameters["problem_type"] == "hermitian":
-            eigs, eigv = eigh(A, B)
+            eigs, eigv = eigh(self.A, self.B)
         else:
-            eigs, eigv = eig(A, B)
+            eigs, eigv = eig(self.A, self.B)
             
         if self.parameters["spectrum"] == "largest real":
             idx = eigs.argsort() # sort by increasing value
@@ -71,8 +73,10 @@ class EigenSolver(AbstractEigenSolver):
     
     @override
     def get_eigenvector(self, i):
-        eigv_i = self.eigv[:, i]
+        eigv_i = matrix(self.eigv[:, i]).transpose() # as column vector
         eigv_i_real = real(eigv_i)
         eigv_i_imag = imag(eigv_i)
-        return (Function(eigv_i_real), Function(eigv_i_complex))
+        eigv_i_real_fun = Function(eigv_i_real)
+        eigv_i_imag_fun = Function(eigv_i_imag)
+        return (eigv_i_real_fun, eigv_i_imag_fun)
         

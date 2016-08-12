@@ -29,7 +29,7 @@ from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicProperOrthogonalDecomposition)
-@BackendFor("NumPy", inputs=(Matrix.Type, AbstractFunctionsList))
+@BackendFor("NumPy", inputs=(Matrix.Type(), AbstractFunctionsList))
 class ProperOrthogonalDecomposition(BasicProperOrthogonalDecomposition):
     @override
     def __init__(self, X, V_or_Z):

@@ -25,7 +25,7 @@
 from RBniCS.backends.fenics.function import Function
 
 def matrix_mul_vector(matrix, vector):
-    if isinstance(vector, Function.Type):
+    if isinstance(vector, Function.Type()):
         vector = vector.vector()
     return matrix*vector
 

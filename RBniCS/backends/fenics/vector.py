@@ -24,8 +24,10 @@
 
 from dolfin import GenericVector
 
-class Vector(object):
-    pass # dummy (not required by the interface) just store the Type
+def Vector():
+    raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
     
-Vector.Type = GenericVector
+def _Vector_Type():
+    return GenericVector
+Vector.Type = _Vector_Type
         

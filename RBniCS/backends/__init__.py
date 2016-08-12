@@ -35,3 +35,6 @@ from RBniCS.utils.factories import backends_factory, enable_backend
 enable_backend("FEniCS")
 enable_backend("NumPy")
 backends_factory(current_module)
+
+# Clean up
+del current_module

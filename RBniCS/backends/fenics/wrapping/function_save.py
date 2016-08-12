@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from dolfin import File
+
 def function_save(fun, directory, filename):
     full_filename = str(directory) + "/" + filename + ".pvd"
     file = File(full_filename, "compressed")

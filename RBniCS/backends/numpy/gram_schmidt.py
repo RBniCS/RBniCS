@@ -29,7 +29,7 @@ import RBniCS.backends.numpy.wrapping
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicGramSchmidt)
-@BackendFor("NumPy", inputs=(Matrix.Type, ))
+@BackendFor("NumPy", inputs=(Matrix.Type(), ))
 class GramSchmidt(BasicGramSchmidt):
     @override
     def __init__(self, X):

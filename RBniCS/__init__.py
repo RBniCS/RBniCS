@@ -28,15 +28,8 @@ __license__ = "LGPL"
 __version__ = "0.0.1"
 __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
 
-# Check that dolfin has been compiled with PETSc and SLEPc
-from dolfin import has_petsc, has_linear_algebra_backend, parameters, has_slepc
-assert has_petsc() 
-assert has_linear_algebra_backend("PETSc") 
-assert parameters.linear_algebra_backend == "PETSc"
-assert has_slepc()
-
-
 # Import the minimum subset of RBniCS required to run tutorials
+from RBniCS.backends.fenics.wrapping.dirichlet_bc import DirichletBC
 from RBniCS.eim import EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.sampling import EquispacedDistribution, UniformDistribution
@@ -47,6 +40,8 @@ from RBniCS.utils.factories import ReducedBasis, PODGalerkin
 from RBniCS.utils.ufl import ParametrizedExpression
 
 __all__ = [
+    # RBniCS.backends
+    'DirichletBC',
     # RBniCS.eim
     'EIM',
     'ExactParametrizedFunctions',

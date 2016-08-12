@@ -58,10 +58,10 @@ def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_val
                     for (candidate, candidate_replaces_if, candidate_replaces) in zip(candidates, candidates_replaces_if, candidates_replaces):
                         if candidate_replaces is not None:
                             if condition_for_candidate_replacement(candidate_replaces_if):
-                                log(DEBUG, "\t\t\tRemoving candidate " + str(candidate_replaces) + " because of failed user provided replacement with " + str(candidate))
+                                log(DEBUG, "\t\t\tKeeping candidate " + str(candidate) + " because of successful user provided replacement with " + str(candidate_replaces))
                                 candidates_to_be_removed.append(candidate_replaces)
                             else:
-                                log(DEBUG, "\t\t\tKeeping candidate " + str(candidate_replaces) + " because of successful user provided replacement with " + str(candidate))
+                                log(DEBUG, "\t\t\tRemoving candidate " + str(candidate) + " because of failed user provided replacement with " + str(candidate_replaces))
                                 candidates_to_be_removed.append(candidate)
                     for c in candidates_to_be_removed:
                         candidates.remove(c)
@@ -69,7 +69,7 @@ def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_val
                         candidates_to_be_removed = list()
                         for (index1, candidate1) in enumerate(candidates):
                             assert inspect.isclass(candidate1)
-                            for (index2, candidate2) in enumerate(candidates, start=c1 + 1):
+                            for (index2, candidate2) in enumerate(candidates[index1 + 1:], start=index1 + 1):
                                 assert inspect.isclass(candidate2)
                                 if issubclass(candidate1, candidate2):
                                     assert candidate1 is not candidate2
@@ -80,7 +80,7 @@ def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_val
                                     log(DEBUG, "\t\t\tRemoving candidate " + str(candidate1) + " in favor of its child " + str(candidate2))
                                     candidates_to_be_removed.append(index1)
                                 else:
-                                    log(DEBUG, "\t\t\tCandidates " + str(candidates[c1]) + " and " + str(candidates[c2]) + " do not inherit from the other, keeping both of them")
+                                    log(DEBUG, "\t\t\tCandidates " + str(candidates[c1]) + " and " + str(candidates[c2]) + " do not inherit from each other, keeping both of them")
                         for c in candidates_to_be_removed:
                             del candidates[c]
                     assert len(candidates) == 1

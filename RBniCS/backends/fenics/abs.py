@@ -29,7 +29,7 @@ from RBniCS.utils.decorators import backend_for
 
 # abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max
 # even though here we actually carry out both the max and the abs!
-@backend_for("FEniCS", inputs=((Matrix.Type, Vector.Type, Expression), ))
+@backend_for("FEniCS", inputs=((Matrix.Type(), Vector.Type(), Expression), ))
 def abs(expression):
     pass # TODO
     

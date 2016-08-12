@@ -22,16 +22,21 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from numpy import matrix
 from RBniCS.utils.decorators import backend_for
 from RBniCS.backends.numpy.vector import Vector
 
 class _Function_Type(object):
     def __init__(self, arg):
-        assert isinstance(arg, (int, Vector.Type))
+        assert isinstance(arg, (int, Vector.Type(), matrix))
         if isinstance(arg, int):
-            self._v = OnlineVector(arg)
-        elif isinstance(arg, Vector.Type):
-            self._v = v
+            self._v = Vector(arg)
+        elif isinstance(arg, Vector.Type()):
+            self._v = arg
+        elif isinstance(arg, matrix): # for internal usage in EigenSolver, not exposed to the backends
+            assert arg.shape[1] == 1 # column vector
+            self._v = Vector(arg.shape[0])
+            self._v[:] = arg
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in Function")
     
@@ -39,7 +44,7 @@ class _Function_Type(object):
         return self._v
 
         
-@backend_for("NumPy", inputs=((int, Vector.Type), ))
+@backend_for("NumPy", inputs=((int, Vector.Type()), ), output=_Function_Type)
 def Function(arg):
     return _Function_Type(arg)
-Function.Type = _Function_Type
+    

@@ -27,7 +27,7 @@ from RBniCS.backends.fenics.wrapping import function_copy
 from RBniCS.utils.decorators import backend_for
 
 # Rescale a solution
-@backend_for("FEniCS", inputs=(Function.Type, float))
+@backend_for("FEniCS", inputs=(Function.Type(), float))
 def rescale(solution, by):
     output = function_copy(solution)
     output.vector()[:] /= by

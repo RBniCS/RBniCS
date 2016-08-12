@@ -27,7 +27,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 @AbstractBackend
 class EigenSolver(object):
     @abstractmethod
-    def __init__(self, V_or_Z, A, B):
+    def __init__(self, A, B=None, V_or_Z=None):
         pass
         
     @abstractmethod

@@ -26,13 +26,13 @@ from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.vector import Vector
 from RBniCS.backends.numpy.function import Function
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.utils.decorators import BackendFor, Extends, override, ThetaType
 
 @Extends(AbstractLinearSolver)
-@BackendFor("NumPy", inputs=(Matrix.Type, Function.Type, Vector.Type, (tuple, None)))
+@BackendFor("NumPy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (ThetaType, None)))
 class LinearSolver(AbstractLinearSolver):
     @override
-    def __init__(lhs, solution, rhs, bcs=None):
+    def __init__(self, lhs, solution, rhs, bcs=None):
         self.lhs = lhs
         self.solution = solution
         self.rhs = rhs
@@ -43,10 +43,10 @@ class LinearSolver(AbstractLinearSolver):
         if self.bcs is not None:
             assert isinstance(self.bcs, tuple)
             for (i, bc_i) in enumerate(self.bcs):
-                rhs[i] = bc_i
-                lhs[i, :] = 0.
-                lhs[i, i] = 1.
+                self.rhs[i] = bc_i
+                self.lhs[i, :] = 0.
+                self.lhs[i, i] = 1.
         from numpy.linalg import solve
-        solution = solve(lhs, rhs)
+        solution = solve(self.lhs, self.rhs)
         self.solution.vector()[:] = solution
         

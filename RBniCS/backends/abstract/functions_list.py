@@ -57,7 +57,11 @@ class FunctionsList(object):
     @abstractmethod
     def __mul__(self, other):
         pass
-    
+
+    @abstractmethod
+    def __len__(self):
+        pass
+            
     # key may be an integer or a slice
     @abstractmethod
     def __getitem__(self, key):

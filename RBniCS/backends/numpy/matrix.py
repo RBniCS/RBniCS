@@ -30,8 +30,7 @@ class _Matrix_Type(matrix): # inherit to make sure that matrices and vectors cor
 from numpy import zeros as _MatrixContent_Base
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("NumPy", inputs=(int, int))
+@backend_for("NumPy", inputs=(int, int), output=_Matrix_Type)
 def Matrix(M, N):
     return _Matrix_Type(_MatrixContent_Base((M, N)))
     
-Matrix.Type = _Matrix_Type

@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractmethod, abstractonlinemethod
-from RBniCS.utils.decorators.backend_for import BackendFor, backend_for
+from RBniCS.utils.decorators.backend_for import BackendFor, backend_for, list_of, ThetaType, tuple_of
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.exact_problem import ExactProblem
 from RBniCS.utils.decorators.override import override
@@ -43,11 +43,14 @@ __all__ = [
     'BackendFor',
     'backend_for',
     'ExactProblem',
+    'list_of',
     'override',
     'ProblemDecoratorFor',
     'ReducedProblemDecoratorFor',
     'ReducedProblemFor',
     'ReductionMethodDecoratorFor',
     'ReductionMethodFor',
-    'sync_setters'
+    'sync_setters',
+    'ThetaType',
+    'tuple_of'
 ]

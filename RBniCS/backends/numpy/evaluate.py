@@ -27,7 +27,7 @@ from RBniCS.backends.numpy.vector import Vector
 from RBniCS.utils.decorators import backend_for
 
 # Evaluate a parametrized expression, possibly at a specific location
-@backend_for("NumPy", inputs=((Matrix.Type, Vector.Type), ))
+@backend_for("NumPy", inputs=((Matrix.Type(), Vector.Type()), ))
 def evaluate(expression, at=None):
     pass # TODO
     

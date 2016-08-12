@@ -26,7 +26,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class LinearSolver(object):
-    def __init__(lhs, solution, rhs, bcs=None):
+    def __init__(self, lhs, solution, rhs, bcs=None):
         pass
         
     @abstractmethod

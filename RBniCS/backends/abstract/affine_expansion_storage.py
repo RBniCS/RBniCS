@@ -29,10 +29,6 @@ class AffineExpansionStorage(object):
     def __init__(self, *args):
         pass
         
-    @abstractmethod
-    def init(self, *args):
-        pass
-    
     @abstractonlinemethod
     def load(self, directory, filename):
         pass

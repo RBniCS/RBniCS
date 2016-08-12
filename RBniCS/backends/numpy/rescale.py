@@ -27,7 +27,7 @@ from RBniCS.backends.numpy.wrapping import function_copy
 from RBniCS.utils.decorators import backend_for
 
 # Rescale a solution
-@backend_for("NumPy", inputs=(Function.Type, float))
+@backend_for("NumPy", inputs=(Function.Type(), float))
 def rescale(solution, by):
     scaled_solution = function_copy(solution)
     scaled_solution.vector()[:] /= by
