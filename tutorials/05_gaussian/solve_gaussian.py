@@ -80,9 +80,9 @@ class Gaussian(EllipticCoerciveProblem):
             f0 = f*v*dx
             return (f0,)
         elif term == "dirichlet_bc":
-            bc0 = [(self.V, Constant(0.0), self.boundaries, 1),
-                   (self.V, Constant(0.0), self.boundaries, 2),
-                   (self.V, Constant(0.0), self.boundaries, 3)]
+            bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1),
+                   DirichletBC(self.V, Constant(0.0), self.boundaries, 2),
+                   DirichletBC(self.V, Constant(0.0), self.boundaries, 3)]
             return (bc0,)
         elif term == "inner_product":
             u = self.u

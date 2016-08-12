@@ -84,7 +84,7 @@ class ThermalBlock(EllipticCoerciveProblem):
             f0 = v*ds(1) + 1e-15*v*dx
             return (f0,)
         elif term == "dirichlet_bc":
-            bc0 = [(self.V, Constant(0.0), self.boundaries, 3)]
+            bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 3)]
             return (bc0,)
         elif term == "inner_product":
             u = self.u

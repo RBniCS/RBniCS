@@ -116,7 +116,7 @@ class ElasticBlock(EllipticCoerciveProblem):
             f2 = inner(f,v)*ds(4) + inner(l,v)*dx
             return (f0,f1,f2)
         elif term == "dirichlet_bc":
-            bc0 = [(self.V, Constant((0.0, 0.0)), self.boundaries, 6)]
+            bc0 = [DirichletBC(self.V, Constant((0.0, 0.0)), self.boundaries, 6)]
             return (bc0,)
         elif term == "inner_product":
             u = self.u
