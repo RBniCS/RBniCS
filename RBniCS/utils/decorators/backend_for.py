@@ -216,5 +216,6 @@ class list_of(_tuple_or_list_of):
     def __str__(self):
         return "list_of(" + str(self.types) + ")"
     __repr__ = __str__
-    
-ThetaType = (tuple_of(float), tuple_of(int), tuple_of((float, int)))
+
+from numpy import float64
+ThetaType = (tuple_of(float), tuple_of(float64),  tuple_of(int), tuple_of((float, float64)), tuple_of((float, int)), tuple_of((float64, int)), tuple_of((float, float64, int)))
