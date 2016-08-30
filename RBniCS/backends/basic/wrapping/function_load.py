@@ -22,6 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_load(directory, filename):
+def function_load(directory, filename, V_or_Z):
     pass
 

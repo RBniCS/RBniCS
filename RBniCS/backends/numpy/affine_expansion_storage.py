@@ -64,11 +64,12 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def load(self, directory, filename):
         assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
         if self._content is not None: # avoid loading multiple times
-            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
-            while not it.finished:
-                if self._content[it.multi_index] is not None: # ... but only if there is at least one element different from None
-                    return False
-                it.iternext()
+            if self._content.size > 0:
+                it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+                while not it.finished:
+                    if self._content[it.multi_index] is not None: # ... but only if there is at least one element different from None
+                        return False
+                    it.iternext()
         if AffineExpansionStorageContent_IO.exists_file(directory, filename):
             self._content = AffineExpansionStorageContent_IO.load_file(directory, filename)
             # Create internal copy as matrix

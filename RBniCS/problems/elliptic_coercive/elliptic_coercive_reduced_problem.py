@@ -270,7 +270,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         assert current_stage in ("online", "offline")
         if current_stage == "online": # load from file
             if not term in self.operator:
-                self.operator[term] = OnlineAffineExpansionStorage()
+                self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by load
             # Note that it would not be needed to return the loaded operator in 
             # init(), since it has been already modified in-place. We do this, however,
             # because we want this interface to be compatible with the one in 

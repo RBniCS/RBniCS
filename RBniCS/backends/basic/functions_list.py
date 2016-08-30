@@ -72,7 +72,7 @@ class FunctionsList(AbstractFunctionsList):
             return False
         Nmax = self._load_Nmax(directory, filename)
         for index in range(Nmax):
-            self.enrich(self.wrapping.function_load(directory, filename + "_" + str(index)))
+            self.enrich(self.wrapping.function_load(directory, filename + "_" + str(index), self.V_or_Z))
         return True
         
     def _load_Nmax(self, directory, filename):

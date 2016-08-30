@@ -24,8 +24,8 @@
 
 from dolfin import Function, File
 
-def function_load(directory, filename):
-    fun = Function(self.V)
+def function_load(directory, filename, V):
+    fun = Function(V)
     full_filename = str(directory) + "/" + filename + ".xml"
     file = File(full_filename)
     file >> fun

@@ -201,7 +201,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         short_term = term.replace("riesz_product_", "")
         if current_stage == "online": # load from file
             if not short_term in self.riesz_product:
-                self.riesz_product[short_term] = OnlineAffineExpansionStorage()
+                self.riesz_product[short_term] = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
             if term == "riesz_product_aa":
                 self.riesz_product["aa"].load(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":
@@ -214,7 +214,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         elif current_stage == "offline":
             assert len(self.truth_problem.inner_product) == 1
             if term == "riesz_product_aa":
-                for qa in range(0, self.Q["a"]):
+                for qa in range(self.Q["a"]):
                     assert len(self.riesz["a"][qa]) == self.N
                     for qap in range(qa, self.Q["a"]):
                         assert len(self.riesz["a"][qap]) == self.N
@@ -223,14 +223,14 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                             self.riesz_product["aa"][qap, qa] = self.riesz_product["aa"][qa, qap]
                 self.riesz_product["aa"].save(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":
-                for qa in range(0, self.Q["a"]):
+                for qa in range(self.Q["a"]):
                     assert len(self.riesz["a"][qa]) == self.N
                     for qf in range(0, self.Q["f"]):
                         assert len(self.riesz["f"][qf]) == 1
                         self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*self.truth_problem.inner_product[0]*self.riesz["f"][qf][0]
                 self.riesz_product["af"].save(self.folder["error_estimation"], "riesz_product_af")
             elif term == "riesz_product_ff":
-                for qf in range(0, self.Q["f"]):
+                for qf in range(self.Q["f"]):
                     assert len(self.riesz["f"][qf]) == 1
                     for qfp in range(qf, self.Q["f"]):
                         assert len(self.riesz["f"][qfp]) == 1
