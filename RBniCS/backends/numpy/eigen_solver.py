@@ -50,7 +50,7 @@ class EigenSolver(AbstractEigenSolver):
         self.parameters.update(parameters)
         
     @override
-    def solve(self):
+    def solve(self, n_eigs=None):
         if self.parameters["problem_type"] == "hermitian":
             eigs, eigv = eigh(self.A, self.B)
         else:
@@ -63,6 +63,9 @@ class EigenSolver(AbstractEigenSolver):
             idx = eigs.argsort() # sort by increasing value
         else:
             return ValueError("Invalid spectrum parameter in EigenSolver")
+        
+        if n_eigs is not None:
+            idx = idx[:n_eigs]
         
         self.eigs = eigs[idx]
         self.eigv = eigv[:, idx]

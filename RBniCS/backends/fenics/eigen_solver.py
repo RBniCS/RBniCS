@@ -28,7 +28,7 @@ from RBniCS.backends.abstract import EigenSolver as AbstractEigenSolver
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractEigenSolver)
-@BackendFor("FEniCS", inputs=(FunctionSpace, Matrix.Type(), (Matrix.Type(), None)))
+@BackendFor("FEniCS", inputs=(Matrix.Type(), (Matrix.Type(), None), (FunctionSpace, None)))
 class EigenSolver(AbstractEigenSolver):
     @override
     def __init__(self, A, B=None, V=None):
@@ -36,6 +36,7 @@ class EigenSolver(AbstractEigenSolver):
         if B is not None:
             B = as_backend_type(B)
         self.eigen_solver = SLEPcEigenSolver(A, B)
+        assert V is not None
         self.V = V
         
     @override
@@ -43,8 +44,9 @@ class EigenSolver(AbstractEigenSolver):
         self.eigen_solver.parameters.update(parameters)
         
     @override
-    def solve(self):
-        self.eigen_solver.solve()
+    def solve(self, n_eigs=None):
+        assert n_eigs is not None
+        self.eigen_solver.solve(n_eigs)
     
     @override
     def get_eigenvalue(self, i):

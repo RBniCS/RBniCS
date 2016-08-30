@@ -123,14 +123,14 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         try:
             self.dirichlet_bc = AffineExpansionStorage(self.assemble_operator("dirichlet_bc"))
         except ValueError: # there were no Dirichlet BCs
-            pass
+            self.dirichlet_bc = None
                     
     ## Perform a truth solve
     def solve(self, **kwargs):
         assembled_operator = dict()
         for term in self.terms:
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
-        if len(self.dirichlet_bc) > 0:
+        if self.dirichlet_bc is not None and len(self.dirichlet_bc) > 0:
             try:
                 theta_dirichlet_bc = self.compute_theta("dirichlet_bc")
             except ValueError: # there were no theta functions

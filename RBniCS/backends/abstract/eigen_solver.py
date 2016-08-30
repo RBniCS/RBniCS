@@ -35,7 +35,7 @@ class EigenSolver(object):
         pass
         
     @abstractmethod
-    def solve(self):
+    def solve(self, n_eigs=None):
         pass
     
     @abstractmethod

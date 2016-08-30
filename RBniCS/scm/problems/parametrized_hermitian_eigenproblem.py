@@ -78,11 +78,12 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
             assert isinstance(self.term, str)
             forms = self.truth_problem.assemble_operator(self.term)
         symmetric_forms = [ 0.5*(form + adjoint(form)) for form in forms]
-        self.operator__condensed.init(symmetric_forms)
+        symmetric_forms = tuple(symmetric_forms)
+        self.operator__condensed = AffineExpansionStorage(symmetric_forms)
         self.clear_constrained_dofs(self.operator__condensed, self.constrain_eigenvalue)
         
         # Condense the inner product matrix
-        self.inner_product__condensed.init(self.truth_problem.assemble_operator("inner_product"))
+        self.inner_product__condensed = AffineExpansionStorage(self.truth_problem.assemble_operator("inner_product"))
         self.clear_constrained_dofs(self.inner_product__condensed, 1.)
         
     # Clear constrained dofs
@@ -112,15 +113,18 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
             assert len(self.inner_product__condensed) == 1
             X = self.inner_product__condensed[0]
             
-            eigensolver = EigenSolver(O, X)
-            eigensolver.parameters["problem_type"] = "gen_hermitian"
+            eigensolver = EigenSolver(O, X, self.truth_problem.V)
+            eigensolver_parameters = dict()
+            eigensolver_parameters["problem_type"] = "gen_hermitian"
             assert self.spectrum is "largest" or self.spectrum is "smallest"
-            eigensolver.parameters["spectrum"] = self.spectrum + " real"
+            eigensolver_parameters["spectrum"] = self.spectrum + " real"
             if self.eigensolver_parameters is not None:
-                eigensolver.parameters.update(self.eigensolver_parameters)
+                eigensolver_parameters.update(self.eigensolver_parameters)
+            eigensolver.set_parameters(eigensolver_parameters)
             eigensolver.solve(1)
             
-            r, c, r_vector, c_vector = eigensolver.get_eigenpair(0) # real and complex part of the (eigenvalue, eigenvectors)
+            r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
+            r_vector, c_vector = eigensolver.get_eigenvector(0) # real and complex part of the eigenvectors
             
             from numpy import isclose
             assert isclose(c, 0), "The required eigenvalue is not real"
