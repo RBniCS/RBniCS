@@ -104,7 +104,7 @@ class FunctionsList_Transpose__times__Matrix(object):
             dim = len(self.functions_list)
             online_matrix = self.online_backend.Matrix(dim, dim)
             for j in range(dim):
-                matrix_times_function_j = self.wrapping.matrix_mul_vector(self.matrix, self.functions_list[j])
+                matrix_times_function_j = self.wrapping.matrix_mul_vector(self.matrix, other_functions_list[j])
                 for i in range(dim):
                     online_matrix[i, j] = self.wrapping.vector_mul_vector(self.functions_list[i], matrix_times_function_j)
             return online_matrix
