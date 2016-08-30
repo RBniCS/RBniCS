@@ -27,12 +27,13 @@
 #  @{
 
 # Parameter space subsets
-import itertools # for linspace sampling
-import numpy
 from RBniCS.sampling.distributions import UniformDistribution
 from RBniCS.utils.io import ExportableList
-from RBniCS.utils.mpi import mpi_comm
+from RBniCS.utils.mpi import is_io_process
 from RBniCS.utils.decorators import Extends, override
+from numpy import zeros as array
+from numpy import argmax
+from mpi4py.MPI import MAX
 
 @Extends(ExportableList)
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
@@ -40,15 +41,16 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     def __init__(self, box):
         ExportableList.__init__(self, "pickle")
         self.box = box
+        self.mpi_comm = is_io_process.mpi_comm # default communicator
         self.distributed_max = True
     
     # Method for generation of parameter space subsets
     def generate(self, n, sampling):
-        if mpi_comm.rank == 0:
+        if is_io_process():
             if sampling is None:
                 sampling = UniformDistribution()
             self._list = sampling.sample(self.box, n)
-        self._list = mpi_comm.bcast(self._list, root=0)
+        self._list = is_io_process.mpi_comm.bcast(self._list, root=0)
         
     @override
     def load(self, directory, filename):
@@ -73,12 +75,9 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         
     def max(self, generator, postprocessor=lambda value: value):
         if self.distributed_max:
-            local_list_indices = range(mpi_comm.rank, len(self._list), mpi_comm.size) # start from index rank and take steps of length equal to size
+            local_list_indices = range(self.mpi_comm.rank, len(self._list), self.mpi_comm.size) # start from index rank and take steps of length equal to size
         else:
             local_list_indices = range(len(self._list))
-        from numpy import zeros as array
-        from numpy import argmax
-        from mpi4py.MPI import MAX
         values = array(len(local_list_indices))
         values_with_postprocessing = array(len(local_list_indices))
         for i in range(len(local_list_indices)):
@@ -87,12 +86,12 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         if self.distributed_max:
             local_i_max = argmax(values_with_postprocessing)
             local_value_max = values[local_i_max]
-            global_value_max = mpi_comm.allreduce(local_value_max, op=MAX)
+            global_value_max = self.mpi_comm.allreduce(local_value_max, op=MAX)
             global_value_processor_argmax = -1
             if global_value_max == local_value_max:
-                global_value_processor_argmax = mpi_comm.rank
-            global_value_processor_argmax = mpi_comm.allreduce(global_value_processor_argmax, op=MAX)
-            global_i_max = mpi_comm.bcast(local_list_indices[local_i_max], root=global_value_processor_argmax)
+                global_value_processor_argmax = self.mpi_comm.rank
+            global_value_processor_argmax = self.mpi_comm.allreduce(global_value_processor_argmax, op=MAX)
+            global_i_max = self.mpi_comm.bcast(local_list_indices[local_i_max], root=global_value_processor_argmax)
         else:
             global_i_max = argmax(values_with_postprocessing)
             global_value_max = values[global_i_max]

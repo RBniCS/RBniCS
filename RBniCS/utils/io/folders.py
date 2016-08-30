@@ -27,7 +27,7 @@
 #  @{
 
 import os # for path and makedir
-from RBniCS.utils.mpi import mpi_comm
+from RBniCS.utils.mpi import is_io_process
 
 class Folders(dict): # dict from string to string
     
@@ -41,19 +41,19 @@ class Folders(dict): # dict from string to string
         # empty. Returs False otherwise.
         def create(self):
             return_value = False
-            if mpi_comm.rank == 0 and os.path.exists(self.name) and len(os.listdir(self.name)) == 0: # already created, but empty
+            if is_io_process() and os.path.exists(self.name) and len(os.listdir(self.name)) == 0: # already created, but empty
                 return_value = True
-            if mpi_comm.rank == 0 and not os.path.exists(self.name): # to be created
+            if is_io_process() and not os.path.exists(self.name): # to be created
                 return_value = True
                 os.makedirs(self.name)
-            return_value = mpi_comm.bcast(return_value, root=0)
+            return_value = is_io_process.mpi_comm.bcast(return_value, root=is_io_process.root)
             return return_value
             
         def touch_file(self, filename):
-            if mpi_comm.rank == 0:
+            if is_io_process():
                 with open(self.name + "/" + filename, "a"):
                     os.utime(self.name + "/" + filename, None)
-            mpi_comm.barrier()
+            is_io_process.mpi_comm.barrier()
 
         def __str__(self):
             return self.name

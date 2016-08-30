@@ -28,13 +28,16 @@
 
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.decorators import Extends, override
+from RBniCS.utils.mpi import is_io_process
 from dolfin import Point
+from mpi4py.MPI import MAX
 
 @Extends(ExportableList)
 class InterpolationLocationsList(ExportableList):
     @override
     def __init__(self, mesh):
         ExportableList.__init__(self, "pickle")
+        self.mpi_comm = is_io_process.mpi_comm # default communicator
         # Auxiliary list to store processor_id
         self.processors_id = list()
         # To get local points
@@ -63,13 +66,11 @@ class InterpolationLocationsList(ExportableList):
         return (point, processor_id)
         
     def _get_processor_id(self, point):
-        from mpi4py.MPI import MAX
-        from RBniCS.utils.mpi import mpi_comm
         is_local = self.bounding_box_tree.collides_entity(Point(point))
         processor_id = -1
         if is_local:
-            processor_id = mpi_comm.rank
-        global_processor_id = mpi_comm.allreduce(processor_id, op=MAX)
+            processor_id = self.mpi_comm.rank
+        global_processor_id = self.mpi_comm.allreduce(processor_id, op=MAX)
         return global_processor_id
     
 #  @}

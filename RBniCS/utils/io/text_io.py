@@ -28,7 +28,7 @@
 
 import os # for path
 import numpy
-from RBniCS.utils.mpi import mpi_comm
+from RBniCS.utils.mpi import is_io_process
 
 class TextIO(object):
     
@@ -40,11 +40,11 @@ class TextIO(object):
     ## Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
-        if mpi_comm.rank == 0:
+        if is_io_process():
             with open(str(directory) + "/" + filename + ".txt", "w") as outfile:
                 for (i, content_i) in enumerate(content):
                     outfile.write(str(i) + " " + str(content_i) + "\n")
-        mpi_comm.barrier()
+        is_io_process.mpi_comm.barrier()
             
     ## Check if the file exists
     @staticmethod

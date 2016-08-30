@@ -28,18 +28,18 @@ from numpy import isclose, zeros, sum as compute_total_energy, cumsum as compute
 from RBniCS.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from RBniCS.backends.online import OnlineEigenSolver
 from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.mpi.mpi import mpi_comm
-from RBniCS.utils.mpi.print import print
+from RBniCS.utils.mpi import is_io_process, print
 
 # Class containing the implementation of the POD
 @Extends(AbstractProperOrthogonalDecomposition)
 class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
 
     @override
-    def __init__(self, X, V_or_Z, backend):
+    def __init__(self, X, V_or_Z, backend, wrapping):
         self.X = X
         self.backend = backend
         self.V_or_Z = V_or_Z
+        self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
         
         # Declare a matrix to store the snapshots
         self.snapshots_matrix = backend.SnapshotsMatrix(self.V_or_Z)
@@ -94,18 +94,18 @@ class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
         
     @override
     def save_eigenvalues_file(self, output_directory, eigenvalues_file):
-        if mpi_comm.rank == 0:
+        if is_io_process(self.mpi_comm):
             with open(str(output_directory) + "/" + eigenvalues_file, "w") as outfile:
                 N = len(self.snapshots_matrix)
                 for i in range(N):
                     (eig_i_real, eig_i_complex) = self.eigensolver.get_eigenvalue(i)
                     assert isclose(eig_i_complex, 0)
                     outfile.write(str(i) + " " + str(eig_i_real) + "\n")
-        mpi_comm.barrier()
+        self.mpi_comm.barrier()
         
     @override
     def save_retained_energy_file(self, output_directory, retained_energy_file):
-        if mpi_comm.rank == 0:
+        if is_io_process(self.mpi_comm):
             N = len(self.snapshots_matrix)
             eigs = zeros(N)
             for i in range(N):
@@ -116,5 +116,5 @@ class ProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition):
             with open(str(output_directory) + "/" + retained_energy_file, "w") as outfile:
                 for i in range(N):
                     outfile.write(str(i) + " " + str(retained_energy[i]) + "\n") 
-        mpi_comm.barrier()
+        self.mpi_comm.barrier()
     

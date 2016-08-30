@@ -25,6 +25,7 @@
 from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
 from RBniCS.backends.basic import ProperOrthogonalDecomposition as BasicProperOrthogonalDecomposition
 import RBniCS.backends.numpy
+import RBniCS.backends.numpy.wrapping
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
@@ -33,5 +34,5 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 class ProperOrthogonalDecomposition(BasicProperOrthogonalDecomposition):
     @override
     def __init__(self, X, V_or_Z):
-        BasicProperOrthogonalDecomposition.__init__(self, X, V_or_Z, RBniCS.backends.numpy)
+        BasicProperOrthogonalDecomposition.__init__(self, X, V_or_Z, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping)
         

@@ -32,8 +32,21 @@ except ImportError:
     raise # TODO
 else:
     from dolfin import mpi_comm_world as dolfin_mpi_comm_world
-    mpi_comm = dolfin_mpi_comm_world().tompi4py()
-
+    _default_io_mpi_comm = dolfin_mpi_comm_world().tompi4py()
+    del dolfin_mpi_comm_world
+    
+    # I/O operations should be carried out only on processor 0
+    def is_io_process(mpi_comm=None):
+        if mpi_comm is None:
+            is_io_process.mpi_comm = _default_io_mpi_comm
+            return _default_io_mpi_comm.rank == 0
+        else:
+            is_io_process.mpi_comm = None # the user already has the mpi_comm available
+            return mpi_comm.rank == 0
+            
+    is_io_process.root = 0
+    is_io_process.mpi_comm = _default_io_mpi_comm
+        
 #  @}
 ########################### end - I/O - end ########################### 
 

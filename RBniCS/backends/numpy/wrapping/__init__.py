@@ -26,6 +26,7 @@ from RBniCS.backends.numpy.wrapping.function_copy import function_copy
 from RBniCS.backends.numpy.wrapping.function_load import function_load
 from RBniCS.backends.numpy.wrapping.function_save import function_save
 from RBniCS.backends.numpy.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector, functions_list_mul_online_function
+from RBniCS.backends.numpy.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.backends.numpy.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from RBniCS.backends.numpy.wrapping.matrix_mul import matrix_mul_vector
 from RBniCS.backends.numpy.wrapping.vector_mul import vector_mul_vector
@@ -37,6 +38,7 @@ __all__ = [
     'functions_list_mul_online_matrix', 
     'functions_list_mul_online_vector', 
     'functions_list_mul_online_function',
+    'get_mpi_comm',
     'gram_schmidt_projection_step',
     'matrix_mul_vector',
     'vector_mul_vector'

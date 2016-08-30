@@ -28,13 +28,13 @@
 
 from __future__ import print_function
 import __builtin__
-from RBniCS.utils.mpi.mpi import mpi_comm
+from RBniCS.utils.mpi.mpi import is_io_process
 
-# Override the print() method to print only from process 0 in parallel
+# Override the print() method to print only from process 0 of MPI_COMM_WORLD in parallel
 def print(*args, **kwargs):
-    if mpi_comm.rank == 0:
+    if is_io_process():
         return __builtin__.print(*args, **kwargs)
-
+        
 #  @}
 ########################### end - I/O - end ########################### 
 

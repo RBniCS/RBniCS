@@ -28,7 +28,7 @@
 
 import os # for path
 import numpy
-from RBniCS.utils.mpi import mpi_comm
+from RBniCS.utils.mpi import is_io_process
 
 class NumpyIO(object):
     
@@ -40,17 +40,17 @@ class NumpyIO(object):
     ## Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
-        if mpi_comm.rank == 0:
+        if is_io_process():
             numpy.save(str(directory) + "/" + filename, content)
-        mpi_comm.barrier()
+        is_io_process.mpi_comm.barrier()
             
     ## Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
         exists = None
-        if mpi_comm.rank == 0:
+        if is_io_process():
             exists = os.path.exists(str(directory) + "/" + filename + ".npy")
-        exists = mpi_comm.bcast(exists, root=0)
+        exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists
 
 #  @}

@@ -22,17 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import FunctionSpace
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.basic import ProperOrthogonalDecomposition as BasicProperOrthogonalDecomposition
-import RBniCS.backends.fenics
-import RBniCS.backends.fenics.wrapping
-from RBniCS.utils.decorators import BackendFor, Extends, override
+def get_mpi_comm(Z):
+    return Z.mpi_comm
 
-@Extends(BasicProperOrthogonalDecomposition)
-@BackendFor("FEniCS", inputs=(Matrix.Type(), FunctionSpace))
-class ProperOrthogonalDecomposition(BasicProperOrthogonalDecomposition):
-    @override
-    def __init__(self, X, V_or_Z):
-        BasicProperOrthogonalDecomposition.__init__(self, X, V_or_Z, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
-        

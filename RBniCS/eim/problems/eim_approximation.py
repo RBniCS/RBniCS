@@ -27,7 +27,6 @@ from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.backends import BasisFunctionsMatrix, FunctionsList
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
-from RBniCS.utils.mpi import mpi_comm
 from RBniCS.eim.utils.io import InterpolationLocationsList
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 

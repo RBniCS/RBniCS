@@ -24,7 +24,7 @@
 
 from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
 from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.mpi import mpi_comm
+from RBniCS.utils.mpi import is_io_process
 
 ###########################     OFFLINE STAGE     ########################### 
 ## @defgroup OfflineStage Methods related to the offline stage
@@ -39,6 +39,7 @@ class FunctionsList(AbstractFunctionsList):
     @override
     def __init__(self, V_or_Z, backend, wrapping, online_backend):
         self.V_or_Z = V_or_Z
+        self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
         self.backend = backend
         self.wrapping = wrapping
         self.online_backend = online_backend
@@ -76,10 +77,10 @@ class FunctionsList(AbstractFunctionsList):
         
     def _load_Nmax(self, directory, filename):
         Nmax = None
-        if mpi_comm.rank == 0:
+        if is_io_process(self.mpi_comm):
             with open(str(directory) + "/" + filename + ".length", "r") as length:
                 Nmax = int(length.readline())
-        Nmax = mpi_comm.bcast(Nmax, root=0)
+        Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
         return Nmax
         
     @override
@@ -89,7 +90,7 @@ class FunctionsList(AbstractFunctionsList):
             self.wrapping.function_save(fun, directory, filename + "_" + str(index))
                 
     def _save_Nmax(self, directory, filename):
-        if mpi_comm.rank == 0:
+        if is_io_process(self.mpi_comm):
             with open(str(directory) + "/" + filename + ".length", "w") as length:
                 length.write(str(len(self._list)))
     

@@ -27,7 +27,7 @@ from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.backends import SnapshotsMatrix
 from RBniCS.backends.online import OnlineMatrix
 from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
-from RBniCS.utils.mpi import print, mpi_comm
+from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
