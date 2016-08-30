@@ -25,12 +25,12 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type
-from RBniCS.linear_algebra.sum import sum
-from RBniCS.linear_algebra.product import product
-from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
+from RBniCS.backends import product, sum
+from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineVector
 from numpy.linalg import norm
 from numpy.random import randint
+
+OnlineVector_Type = OnlineVector.Type()
 
 class Test(TestBase):
     def __init__(self, Nmax, Q):
@@ -46,7 +46,7 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                F = AffineExpansionOnlineStorage(self.Q)
+                F = OnlineAffineExpansionStorage(self.Q)
                 for i in range(self.Q):
                     # Generate random vector
                     F[i] = OnlineVector_Type(self.rand(Nmax)).transpose() # as column vector

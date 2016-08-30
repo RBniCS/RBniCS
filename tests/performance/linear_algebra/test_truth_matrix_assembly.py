@@ -25,10 +25,7 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix
-from RBniCS.linear_algebra.sum import sum
-from RBniCS.linear_algebra.product import product
-from RBniCS.linear_algebra.affine_expansion_offline_storage import AffineExpansionOfflineStorage
+from RBniCS.backends import AffineExpansionStorage, product, sum
 
 class Test(TestBase):
     def __init__(self, Nh, Q):
@@ -54,7 +51,7 @@ class Test(TestBase):
                     self.k.vector().set_local(self.rand(self.k.vector().array().size))
                     # Generate random form
                     a += (self.a,)
-                A = AffineExpansionOfflineStorage(a)
+                A = AffineExpansionStorage(a)
                 # Genereate random theta
                 theta = tuple(self.rand(Q))
                 # Store

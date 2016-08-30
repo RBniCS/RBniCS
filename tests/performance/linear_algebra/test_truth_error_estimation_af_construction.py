@@ -25,9 +25,8 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector
-from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.backends import BasisFunctionsMatrix, transpose
+from RBniCS.backends.online import OnlineVector
 from numpy.linalg import norm
 
 class Test(TestBase):
@@ -36,7 +35,7 @@ class Test(TestBase):
         mesh = UnitSquareMesh(Nh, Nh)
         V = FunctionSpace(mesh, "Lagrange", 1)
         self.b = Function(V)
-        self.Z = BasisFunctionsMatrix()
+        self.Z = BasisFunctionsMatrix(V)
         self.k = Function(V)
         u = TrialFunction(V)
         v = TestFunction(V)
@@ -51,7 +50,7 @@ class Test(TestBase):
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                self.Z = BasisFunctionsMatrix()
+                self.Z.clear()
                 for i in range(self.N + 1):
                     self.b.vector().set_local(self.rand(self.b.vector().array().size))
                     self.b.vector().apply("insert")
@@ -72,7 +71,7 @@ class Test(TestBase):
                 Z_T_dot_A_z_builtin = OnlineVector(self.N)
                 A_z = A*z
                 for i in range(self.N):
-                    Z_T_dot_A_z_builtin[i] = self.Z[i].inner(A_z)
+                    Z_T_dot_A_z_builtin[i] = self.Z[i].vector().inner(A_z)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
                 Z_T_dot_A_z_transpose = transpose(self.Z)*A*z

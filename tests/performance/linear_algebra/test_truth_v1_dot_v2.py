@@ -25,7 +25,7 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.backends import transpose
 
 class Test(TestBase):
     def __init__(self, Nh):

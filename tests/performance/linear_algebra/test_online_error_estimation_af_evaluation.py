@@ -25,14 +25,13 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type
-from RBniCS.linear_algebra.sum import sum
-from RBniCS.linear_algebra.product import product
-from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
-from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.backends import product, sum, transpose
+from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineMatrix, OnlineVector
 from numpy import zeros as legacy_tensor
 from numpy.linalg import norm
+
+OnlineMatrix_Type = OnlineMatrix.Type()
+OnlineVector_Type = OnlineVector.Type()
 
 class Test(TestBase):
     def __init__(self, N, Qa, Qf):
@@ -50,7 +49,7 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                af_product = AffineExpansionOnlineStorage(Qa, Qf)
+                af_product = OnlineAffineExpansionStorage(Qa, Qf)
                 af_product_legacy = legacy_tensor((Qa, Qf, N))
                 for i in range(Qa):
                     for j in range(Qf):

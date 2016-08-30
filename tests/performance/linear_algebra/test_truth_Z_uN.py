@@ -25,9 +25,10 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type
-from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.backends import BasisFunctionsMatrix, transpose
+from RBniCS.backends.online import OnlineVector
+
+OnlineVector_Type = OnlineVector.Type()
 
 class Test(TestBase):
     def __init__(self, Nh, N):
@@ -35,7 +36,7 @@ class Test(TestBase):
         mesh = UnitSquareMesh(Nh, Nh)
         V = FunctionSpace(mesh, "Lagrange", 1)
         self.b = Function(V)
-        self.Z = BasisFunctionsMatrix()
+        self.Z = BasisFunctionsMatrix(V)
         # Call parent init
         TestBase.__init__(self)
             
@@ -46,7 +47,7 @@ class Test(TestBase):
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                self.Z = BasisFunctionsMatrix()
+                self.Z.clear()
                 for _ in range(self.N):
                     self.b.vector().set_local(self.rand(self.b.vector().array().size))
                     self.b.vector().apply("insert")
@@ -60,13 +61,14 @@ class Test(TestBase):
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                Z_uN_builtin = uN.item(0)*self.Z[0]
+                Z_uN_builtin = uN.item(0)*self.Z[0].vector()
                 for i in range(1, self.N):
-                    Z_uN_builtin.add_local(uN.item(i)*self.Z[i].array())
+                    Z_uN_builtin.add_local(uN.item(i)*self.Z[i].vector().array())
                 Z_uN_builtin.apply("add")
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using mul method
                 Z_uN_mul = self.Z*uN
+                Z_uN_mul = Z_uN_mul.vector()
         if test_id >= 2:
             return (Z_uN_builtin - Z_uN_mul).norm("l2")/Z_uN_builtin.norm("l2")
 

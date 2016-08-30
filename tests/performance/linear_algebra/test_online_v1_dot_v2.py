@@ -24,8 +24,10 @@
 
 from __future__ import print_function
 from test_main import TestBase
-from RBniCS.linear_algebra.online_vector import OnlineVector_Type
-from RBniCS.linear_algebra.transpose import transpose
+from RBniCS.backends.online import OnlineVector
+from RBniCS.backends import transpose
+
+OnlineVector_Type = OnlineVector.Type()
 
 class Test(TestBase):
     def __init__(self, N):

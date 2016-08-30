@@ -25,12 +25,12 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.linear_algebra.online_matrix import OnlineMatrix_Type
-from RBniCS.linear_algebra.sum import sum
-from RBniCS.linear_algebra.product import product
-from RBniCS.linear_algebra.affine_expansion_online_storage import AffineExpansionOnlineStorage
+from RBniCS.backends import product, sum
+from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineMatrix
 from numpy.linalg import norm
 from numpy.random import randint
+
+OnlineMatrix_Type = OnlineMatrix.Type()
 
 class Test(TestBase):
     def __init__(self, Nmax, Q):
@@ -46,7 +46,7 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                A = AffineExpansionOnlineStorage(self.Q)
+                A = OnlineAffineExpansionStorage(self.Q)
                 for i in range(self.Q):
                     # Generate random matrix
                     A[i] = OnlineMatrix_Type(self.rand(Nmax, Nmax))
