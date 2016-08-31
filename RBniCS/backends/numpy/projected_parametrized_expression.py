@@ -22,10 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-class InterpolationInput(object):
-    def __init__(self, expression, original_space=None):
-        self.expression = expression
-        # TODO definire un function space scalare se il coeff e' scalare,
-        # vettoriale se e' vettorial ecc.
-        self.space = TODO
+# ProjectedParametrizedExpression is not provided for NumPy backend because
+# we are not interested in applying (standard) EIM on NumPy
         

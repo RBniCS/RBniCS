@@ -23,11 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.eim.utils.io.affine_expansion_separated_forms_storage import AffineExpansionSeparatedFormsStorage
-from RBniCS.eim.utils.io.interpolation_input import InterpolationInput
 from RBniCS.eim.utils.io.interpolation_locations_list import InterpolationLocationsList
 
 __all__ = [
     'AffineExpansionSeparatedFormsStorage',
-    'InterpolationInput',
     'InterpolationLocationsList'
 ]

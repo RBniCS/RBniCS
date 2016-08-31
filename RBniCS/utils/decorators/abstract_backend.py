@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 # Declare abstract vector type
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 import inspect
 from functools import wraps
 from RBniCS.utils.decorators.backend_for import BackendFor, backend_for

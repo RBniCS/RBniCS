@@ -28,20 +28,15 @@
 
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.mpi import is_io_process
-from dolfin import Point
-from mpi4py.MPI import MAX
 
 @Extends(ExportableList)
 class InterpolationLocationsList(ExportableList):
     @override
-    def __init__(self, mesh):
+    def __init__(self, expression):
         ExportableList.__init__(self, "pickle")
-        self.mpi_comm = is_io_process.mpi_comm # default communicator
+        self.expression = expression
         # Auxiliary list to store processor_id
         self.processors_id = list()
-        # To get local points
-        self.bounding_box_tree = mesh.bounding_box_tree()
         
     @override
     def load(self, directory, filename):
@@ -49,30 +44,22 @@ class InterpolationLocationsList(ExportableList):
         # Make sure to update the processor ids
         N = len(self)
         for i in range(N):
-            point = ExportableList.__getitem__(self, i)
-            self.processors_id.append(self._get_processor_id(point))
+            location = ExportableList.__getitem__(self, i)
+            self.processors_id.append(self.expression.get_processor_id(location))
         return return_value
         
     @override
-    def append(self, point):
-        ExportableList.append(self, point)
+    def append(self, location):
+        ExportableList.append(self, location)
         # Make sure to update the processor ids
-        self.processors_id.append(self._get_processor_id(point))
+        self.processors_id.append(self.expression.get_processor_id(location))
         
     @override
     def __getitem__(self, key):
-        point = ExportableList.__getitem__(self, key)
+        location = ExportableList.__getitem__(self, key)
         processor_id = self.processors_id[key]
-        return (point, processor_id)
+        return (location, processor_id)
         
-    def _get_processor_id(self, point):
-        is_local = self.bounding_box_tree.collides_entity(Point(point))
-        processor_id = -1
-        if is_local:
-            processor_id = self.mpi_comm.rank
-        global_processor_id = self.mpi_comm.allreduce(processor_id, op=MAX)
-        return global_processor_id
-    
 #  @}
 ########################### end - OFFLINE STAGE - end ########################### 
 

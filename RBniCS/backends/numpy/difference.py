@@ -23,10 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.wrapping import function_copy
 from RBniCS.utils.decorators import backend_for
 
 # Compute the difference between two solutions
 @backend_for("NumPy", inputs=(Function.Type(), Function.Type()))
 def difference(solution1, solution2):
-    pass # TODO
+    output_vector = solution1.vector() - solution2.vector()
+    output = Function(output_vector)
+    return output
     

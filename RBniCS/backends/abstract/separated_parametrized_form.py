@@ -15,20 +15,40 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary I/O module
+## @file numpy_io.py
+#  @brief I/O helper functions
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-from RBniCS.utils.mpi.log import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG
-from RBniCS.utils.mpi.mpi import is_io_process, parallel_max
-from RBniCS.utils.mpi.print import print
+###########################     I/O     ########################### 
+## @defgroup IO Input/output methods
+#  @{
 
-__all__ = [
-    'log', 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'PROGRESS', 'TRACE', 'DEBUG',
-    'is_io_process', 'parallel_max',
-    'print'
-]
+from RBniCS.utils.decorators import AbstractBackend, abstractmethod, abstractproperty
+
+@AbstractBackend
+class SeparatedParametrizedForm(object):
+    def __init__(self, form):
+        pass
+    
+    @abstractmethod
+    def separate(self):
+        pass
+
+    @abstractproperty        
+    def coefficients(self):
+        pass
+    
+    @abstractproperty
+    def unchanged_forms(self):
+        pass
+
+    @abstractmethod        
+    def replace_placeholders(self, i, new_coefficients):
+        pass
+
+#  @}
+########################### end - I/O - end ########################### 
+

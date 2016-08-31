@@ -197,7 +197,7 @@ class _tuple_or_list_of(object):
             if len(self.types) != len(other.types):
                 return False
             else:
-                for (item_self, item_other) in zip(self.types, other.types):
+                for (item_self, item_other) in zip(sorted(self.types), sorted(other.types)):
                     if not is_subclass(item_self, item_other):
                         return False
                 return True

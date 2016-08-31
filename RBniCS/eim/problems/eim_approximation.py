@@ -22,9 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import project, vertices
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import BasisFunctionsMatrix, FunctionsList
+from RBniCS.backends import abs, BasisFunctionsMatrix, difference, evaluate, Function, max
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.eim.utils.io import InterpolationLocationsList
@@ -55,7 +54,7 @@ class EIMApproximation(ParametrizedProblem):
         # Online reduced space dimension
         self.N = 0
         # Define additional storage for EIM
-        self.interpolation_locations = InterpolationLocationsList(parametrized_expression.space) # list of interpolation locations selected by the greedy
+        self.interpolation_locations = InterpolationLocationsList(parametrized_expression) # list of interpolation locations selected by the greedy
         self.interpolation_matrix = OnlineAffineExpansionStorage(1) # interpolation matrix
         # Solution
         self._interpolation_coefficients = OnlineFunction()
@@ -102,7 +101,7 @@ class EIMApproximation(ParametrizedProblem):
             N = self.N
         
         if self.solve.__func__.previous_mu != self.mu or self.solve.__func__.previous_N != N:
-            # Evaluate the function at interpolation points
+            # Evaluate the parametrized expression at interpolation locations
             rhs = OnlineVector(N)
             for p in range(N):
                 rhs[p] = evaluate(self.parametrized_expression, self.interpolation_locations[p])
@@ -153,7 +152,7 @@ class EIMApproximation(ParametrizedProblem):
         (maximum_error, maximum_location) = max(abs(error))
         
         # Return
-        return (maximum_error, maximum_error, maximum_location)
+        return (error, maximum_error, maximum_location)
 
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods

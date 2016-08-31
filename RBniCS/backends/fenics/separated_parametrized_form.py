@@ -29,7 +29,7 @@
 from numpy import ones, zeros
 from dolfin import Constant, Expression, Function, log, PROGRESS
 from dolfin import __version__ as dolfin_version
-from ufl import Argument, Measure, replace
+from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
 from ufl.algorithms import Transformer
 from ufl.algorithms.traversal import iter_expressions
@@ -38,25 +38,23 @@ from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
 import hashlib
 from RBniCS.utils.io import ExportableList, PickleIO
-from RBniCS.utils.ufl import ParametrizedExpression
+from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 
-class SeparatedParametrizedForm(object):
+@Extends(AbstractSeparatedParametrizedForm)
+@BackendFor("FEniCS", inputs=(Form, ))
+class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     def __init__(self, form):
+        AbstractSeparatedParametrizedForm.__init__(self, form)
         self._form = form
-        self.coefficients = list() # of list of ParametrizedExpression
+        self._coefficients = list() # of list of ParametrizedExpression
         self._placeholders = list() # of list of Constants
         self._form_with_placeholders = list() # of forms
         self._form_unchanged = list() # of forms
         # Internal usage
         self._NaN = float('NaN')
-        self._data_for_IO = {
-            "form": self._form, 
-            "coefficients": self.coefficients,
-            "placeholders": self._placeholders, 
-            "form_with_placeholders": self._form_with_placeholders,
-            "form_unchanged": self._form_unchanged
-        }
-        
+    
+    @override
     def separate(self):
         class _SeparatedParametrizedForm_Replacer(Transformer):
             def __init__(self, mapping):
@@ -79,7 +77,7 @@ class SeparatedParametrizedForm(object):
         for integral in self._form.integrals():
             log(PROGRESS, "\t Currently on integrand " + str(integral.integrand()))
             assert not isinstance(integral.integrand(), Sum), "Please write your form as a*u*v*dx + b*u*v*dx rather than (a*u*v + b*u*v)*dx, otherwise skipping tree nodes may not work."
-            self.coefficients.append( list() ) # of ParametrizedExpression
+            self._coefficients.append( list() ) # of ParametrizedExpression
             for e in iter_expressions(integral):
                 log(PROGRESS, "\t\t Expression " + str(e))
                 pre_traversal_e = [n for n in pre_traversal(e)]
@@ -147,22 +145,22 @@ class SeparatedParametrizedForm(object):
                             # Add the coefficient if it is a scalar, or the vector/matrix extracted from Indexed object if it is an Indexed
                             if not isinstance(candidate, Indexed):
                                 # Add the node to the coefficients
-                                self.coefficients[-1].append(candidate)
+                                self._coefficients[-1].append(candidate)
                                 log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
                             else:
                                 # Add the node to the coefficients
-                                self.coefficients[-1].append(candidate.ufl_operands[0])
+                                self._coefficients[-1].append(candidate.ufl_operands[0])
                                 assert isinstance(candidate.ufl_operands[1], MultiIndex)
                                 assert len(candidate.ufl_operands) == 2
                                 log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
                     else:
                         log(PROGRESS, "\t\t Node " + str(n) + " to be skipped because is a descendant of a coefficient which has already been detected")
-            if len(self.coefficients[-1]) == 0: # then there were no coefficients to extract
+            if len(self._coefficients[-1]) == 0: # then there were no coefficients to extract
                 log(PROGRESS, "\t There were no coefficients to extract")
-                self.coefficients.pop() # remove the (empty) element that was added to possibly store coefficients
+                self._coefficients.pop() # remove the (empty) element that was added to possibly store coefficients
             else:
-                log(PROGRESS, "\t Extracted coefficients are:\n\t\t" + "\n\t\t".join([str(c) for c in self.coefficients[-1]]))
-                integral_to_coefficients[integral] = self.coefficients[-1]
+                log(PROGRESS, "\t Extracted coefficients are:\n\t\t" + "\n\t\t".join([str(c) for c in self._coefficients[-1]]))
+                integral_to_coefficients[integral] = self._coefficients[-1]
         
         log(PROGRESS, "2. Prepare placeholders and forms with placeholders")
         for integral in self._form.integrals():
@@ -195,11 +193,11 @@ class SeparatedParametrizedForm(object):
                     assert not (isinstance(e, Expression) and "mu_0" in e.user_parameters), "Form " + str(i) + " still contains a parametrized expression"
         
         log(PROGRESS, "4. Assert list length consistency")
-        assert len(self.coefficients) == len(self._placeholders)
-        assert len(self.coefficients) == len(self._form_with_placeholders)
+        assert len(self._coefficients) == len(self._placeholders)
+        assert len(self._coefficients) == len(self._form_with_placeholders)
         
         log(PROGRESS, "5. Prepare coefficients hash codes")
-        for addend in self.coefficients:
+        for addend in self._coefficients:
             for factor in addend:
                 str_repr = ""
                 for n in pre_traversal(factor):
@@ -214,7 +212,18 @@ class SeparatedParametrizedForm(object):
         
         log(PROGRESS, "*** DONE - SEPARATE FORM COEFFICIENTS - DONE ***")
         log(PROGRESS, "")
-        
+
+    @override        
+    @property
+    def coefficients(self):
+        return self._coefficients
+    
+    @override
+    @property
+    def unchanged_forms(self):
+        return self._form_unchanged
+
+    @override        
     def replace_placeholders(self, i, new_coefficients):
         assert len(new_coefficients) == len(self._placeholders[i])
         replacements = dict((placeholder, new_coefficient) for (placeholder, new_coefficient) in zip(self._placeholders[i], new_coefficients))

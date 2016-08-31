@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from itertools import product as cartesian_product
+from RBniCS.backends import ProjectedParametrizedExpression, SeparatedParametrizedForm
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage
-from RBniCS.eim.utils.ufl import SeparatedParametrizedForm
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 
 def EIMDecoratedProblem(**decorator_kwargs):
@@ -58,7 +58,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                         for addend in self.separated_forms[term][q].coefficients:
                             for factor in addend:
                                 if factor not in self.EIM_approximations:
-                                    self.EIM_approximations[coeff] = EIMApproximation(self, InterpolationInput(factor, self.V), type(self).__name__ + "/eim/" + str(factor.hash_code))
+                                    self.EIM_approximations[factor] = EIMApproximation(self, ProjectedParametrizedExpression(factor, self.V), type(self).__name__ + "/eim/" + str(factor.hash_code))
                                     
                 # Avoid useless assignments
                 self._update_N_EIM_in_compute_theta.__func__.previous_kwargs = None
@@ -100,7 +100,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                     eim_forms = list()
                     for form in self.separated_forms[term]:
                         # Append forms computed with EIM, if applicable
-                        for (index, addend) in form.coefficients:
+                        for (index, addend) in enumerate(form.coefficients):
                             replacements__list = list()
                             for factor in addend:
                                 replacements__list.append(self.EIM_approximations[factor].Z)
@@ -110,7 +110,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                                     form.replace_placeholders(index, new_coeffs)
                                 )
                         # Append forms which did not require EIM, if applicable
-                        for unchanged_form in form._form_unchanged:
+                        for unchanged_form in form.unchanged_forms:
                             eim_forms.append(unchanged_form)
                     return tuple(eim_forms)
                 else:
@@ -122,7 +122,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                 if term in self.terms:
                     eim_thetas = list()
                     assert len(self.separated_forms[term]) == len(original_thetas)
-                    for (form, original_theta) in zip(self.separated_forms[term], original_thetas):
+                    for (q, (form, original_theta)) in enumerate(zip(self.separated_forms[term], original_thetas)):
                         # Append coefficients computed with EIM, if applicable
                         for addend in form.coefficients:
                             eim_thetas__list = list()
@@ -140,7 +140,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                                     eim_thetas_tuple *= eim_thata_factor
                                 eim_thetas.append(eim_thetas_tuple)
                         # Append coefficients which did not require EIM, if applicable
-                        for _ in form._form_unchanged:
+                        for _ in form.unchanged_forms:
                             eim_thetas.append(original_theta)
                     return tuple(eim_thetas)
                 else:

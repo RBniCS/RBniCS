@@ -29,7 +29,7 @@ __version__ = "0.0.1"
 __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
 
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.backends.fenics.wrapping.dirichlet_bc import DirichletBC
+from RBniCS.backends.fenics.wrapping import DirichletBC, ParametrizedExpression
 from RBniCS.eim import EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.sampling import EquispacedDistribution, UniformDistribution
@@ -37,11 +37,11 @@ from RBniCS.scm import SCM, ExactCoercivityConstant
 from RBniCS.shape_parametrization import ShapeParametrization
 from RBniCS.utils.decorators import ExactProblem
 from RBniCS.utils.factories import ReducedBasis, PODGalerkin
-from RBniCS.utils.ufl import ParametrizedExpression
 
 __all__ = [
     # RBniCS.backends
     'DirichletBC',
+    'ParametrizedExpression',
     # RBniCS.eim
     'EIM',
     'ExactParametrizedFunctions',
@@ -60,6 +60,4 @@ __all__ = [
     # RBniCS.utils.factories
     'ReducedBasis',
     'PODGalerkin',
-    # RBniCS.utils.ufl,
-    'ParametrizedExpression'
 ]

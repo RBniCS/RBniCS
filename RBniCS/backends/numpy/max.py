@@ -29,5 +29,5 @@ from RBniCS.utils.decorators import backend_for
 # even though abs actually carries out both the max and the abs!
 @backend_for("NumPy", inputs=(AbsOutput, ))
 def max(abs_output):
-    return abs_output.max_abs_return_value
+    return (abs_output.max_abs_return_value, abs_output.max_abs_return_location)
         

@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function, ALE
-from RBniCS.utils.ufl import ParametrizedExpression
+from RBniCS.backends.fenics.wrapping import ParametrizedExpression # TODO astrarre, insieme all'import dolfin precedente
 from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 

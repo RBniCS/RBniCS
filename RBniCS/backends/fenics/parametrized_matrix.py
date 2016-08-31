@@ -15,15 +15,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary I/O module
+## @file functions_list.py
+#  @brief Type for storing a list of FE functions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.ufl.parametrized_expression import ParametrizedExpression
+from RBniCS.backends.abstract import ParametrizedMatrix as AbstractParametrizedMatrix
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
-__all__ = [
-    'ParametrizedExpression'
-]
+@Extends(AbstractParametrizedMatrix)
+@BackendFor("FEniCS", inputs=(Matrix.Type(), ))
+class ParametrizedMatrix(AbstractParametrizedMatrix):
+    def __init__(self, matrix):
+        AbstractParametrizedMatrix.__init__(matrix)
+        #
+        self._matrix = matrix
+    
+    @override
+    @property
+    def matrix(self):
+        return self._matrix
+        
+    @override
+    def get_processor_id(self, indices):
+        return # TODO
+        

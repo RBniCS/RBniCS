@@ -29,11 +29,10 @@
 # Parameter space subsets
 from RBniCS.sampling.distributions import UniformDistribution
 from RBniCS.utils.io import ExportableList
-from RBniCS.utils.mpi import is_io_process
+from RBniCS.utils.mpi import is_io_process, parallel_max
 from RBniCS.utils.decorators import Extends, override
 from numpy import zeros as array
 from numpy import argmax
-from mpi4py.MPI import MAX
 
 @Extends(ExportableList)
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
@@ -73,7 +72,9 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         # Also save box
         self._FileIO.save_file(self.box, directory, filename + "_box")
         
-    def max(self, generator, postprocessor=lambda value: value):
+    def max(self, generator, postprocessor=None):
+        if postprocessor is None:
+            postprocessor = lambda value: value
         if self.distributed_max:
             local_list_indices = range(self.mpi_comm.rank, len(self._list), self.mpi_comm.size) # start from index rank and take steps of length equal to size
         else:
@@ -86,12 +87,10 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         if self.distributed_max:
             local_i_max = argmax(values_with_postprocessing)
             local_value_max = values[local_i_max]
-            global_value_max = self.mpi_comm.allreduce(local_value_max, op=MAX)
-            global_value_processor_argmax = -1
-            if global_value_max == local_value_max:
-                global_value_processor_argmax = self.mpi_comm.rank
-            global_value_processor_argmax = self.mpi_comm.allreduce(global_value_processor_argmax, op=MAX)
-            global_i_max = self.mpi_comm.bcast(local_list_indices[local_i_max], root=global_value_processor_argmax)
+            (global_value_max, global_i_max) = parallel_max(self.mpi_comm, local_value_max, local_list_indices[local_i_max], postprocessor)
+            assert isinstance(global_i_max, tuple)
+            assert len(global_i_max) == 1
+            global_i_max = global_i_max[0]
         else:
             global_i_max = argmax(values_with_postprocessing)
             global_value_max = values[global_i_max]

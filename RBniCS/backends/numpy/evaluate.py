@@ -23,11 +23,25 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.numpy.matrix import Matrix
+from RBniCS.backends.numpy.parametrized_matrix import ParametrizedMatrix
 from RBniCS.backends.numpy.vector import Vector
-from RBniCS.utils.decorators import backend_for
+from RBniCS.backends.numpy.parametrized_vector import ParametrizedVector
+from RBniCS.utils.decorators import backend_for, tuple_of
 
 # Evaluate a parametrized expression, possibly at a specific location
-@backend_for("NumPy", inputs=((Matrix.Type(), Vector.Type()), ))
+@backend_for("NumPy", inputs=((Matrix.Type(), ParametrizedMatrix, Vector.Type(), ParametrizedVector), (tuple_of((tuple_of(int), int)), None)))
 def evaluate(expression, at=None):
-    pass # TODO
+    assert isinstance(expression, (Matrix.Type(), Vector.Type()))
+    if isinstance(expression, (Matrix.Type(), Vector.Type())):
+        if at is None:
+            return expression
+        else:
+            return expression[at]
+    elif isinstance(expression, (ParametrizedMatrix, ParametrizedVector)):
+        if at is None:
+            return # TODO
+        else:
+            return # TODO
+    else: # impossible to arrive here anyway thanks to the assert
+        raise AssertionError("Invalid argument to evaluate")
     

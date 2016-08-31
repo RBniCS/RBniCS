@@ -15,20 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary I/O module
+## @file functions_list.py
+#  @brief Type for storing a list of FE functions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-from RBniCS.utils.mpi.log import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG
-from RBniCS.utils.mpi.mpi import is_io_process, parallel_max
-from RBniCS.utils.mpi.print import print
-
-__all__ = [
-    'log', 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'PROGRESS', 'TRACE', 'DEBUG',
-    'is_io_process', 'parallel_max',
-    'print'
-]
+# SeparatedParametrizedExpression is not provided for NumPy backend because
+# we are not interested in applying (standard) EIM on NumPy
+        

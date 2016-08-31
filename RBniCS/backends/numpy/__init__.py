@@ -34,9 +34,13 @@ from RBniCS.backends.numpy.gram_schmidt import GramSchmidt
 from RBniCS.backends.numpy.linear_solver import LinearSolver
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.max import max
+from RBniCS.backends.numpy.parametrized_matrix import ParametrizedMatrix
+from RBniCS.backends.numpy.parametrized_vector import ParametrizedVector
 from RBniCS.backends.numpy.product import product
+#from RBniCS.backends.numpy.projected_parametrized_expression import ProjectedParametrizedExpression
 from RBniCS.backends.numpy.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.backends.numpy.rescale import rescale
+#from RBniCS.backends.numpy.separated_parametrized_form import SeparatedParametrizedForm
 from RBniCS.backends.numpy.snapshots_matrix import SnapshotsMatrix
 from RBniCS.backends.numpy.sum import sum
 from RBniCS.backends.numpy.transpose import transpose
@@ -55,9 +59,13 @@ __all__ = [
     'LinearSolver',
     'Matrix',
     'max',
+    'ParametrizedMatrix',
+    'ParametrizedVector',
     'product',
+#    'ProjectedParametrizedExpression',
     'ProperOrthogonalDecomposition',
     'rescale',
+#    'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',
     'transpose',
