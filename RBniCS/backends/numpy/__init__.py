@@ -39,6 +39,7 @@ from RBniCS.backends.numpy.parametrized_vector import ParametrizedVector
 from RBniCS.backends.numpy.product import product
 #from RBniCS.backends.numpy.projected_parametrized_expression import ProjectedParametrizedExpression
 from RBniCS.backends.numpy.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.backends.numpy.reduced_mesh import ReducedMesh
 from RBniCS.backends.numpy.rescale import rescale
 #from RBniCS.backends.numpy.separated_parametrized_form import SeparatedParametrizedForm
 from RBniCS.backends.numpy.snapshots_matrix import SnapshotsMatrix
@@ -64,6 +65,7 @@ __all__ = [
     'product',
 #    'ProjectedParametrizedExpression',
     'ProperOrthogonalDecomposition',
+    'ReducedMesh',
     'rescale',
 #    'SeparatedParametrizedForm',
     'SnapshotsMatrix',
