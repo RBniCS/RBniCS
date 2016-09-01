@@ -49,6 +49,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form = form
         self._coefficients = list() # of list of ParametrizedExpression
         self._placeholders = list() # of list of Constants
+        self._placeholder_names = list() # of list of string
         self._form_with_placeholders = list() # of forms
         self._form_unchanged = list() # of forms
         # Internal usage
@@ -192,12 +193,9 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                 for e in pre_traversal(integral.integrand()):
                     assert not (isinstance(e, Expression) and "mu_0" in e.user_parameters), "Form " + str(i) + " still contains a parametrized expression"
         
-        log(PROGRESS, "4. Assert list length consistency")
-        assert len(self._coefficients) == len(self._placeholders)
-        assert len(self._coefficients) == len(self._form_with_placeholders)
-        
-        log(PROGRESS, "5. Prepare coefficients hash codes")
+        log(PROGRESS, "4. Prepare coefficients hash codes")
         for addend in self._coefficients:
+            self._placeholder_names.append( list() ) # of string
             for factor in addend:
                 str_repr = ""
                 for n in pre_traversal(factor):
@@ -208,7 +206,16 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                 hash_code = hashlib.sha1(
                                 (str_repr + dolfin_version).encode("utf-8")
                             ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
-                factor.hash_code = hash_code
+                print factor
+                self._placeholder_names[-1].append(hash_code)
+                
+        log(PROGRESS, "4. Assert list length consistency")
+        assert len(self._coefficients) == len(self._placeholders)
+        assert len(self._coefficients) == len(self._placeholder_names)
+        for (c, p, pn) in zip(self._coefficients, self._placeholders, self._placeholder_names):
+            assert len(c) == len(p)
+            assert len(c) == len(pn)
+        assert len(self._coefficients) == len(self._form_with_placeholders)
         
         log(PROGRESS, "*** DONE - SEPARATE FORM COEFFICIENTS - DONE ***")
         log(PROGRESS, "")
@@ -217,7 +224,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     @property
     def coefficients(self):
         return self._coefficients
-    
+        
     @override
     @property
     def unchanged_forms(self):
@@ -228,6 +235,10 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         assert len(new_coefficients) == len(self._placeholders[i])
         replacements = dict((placeholder, new_coefficient) for (placeholder, new_coefficient) in zip(self._placeholders[i], new_coefficients))
         return replace(self._form_with_placeholders[i], replacements)
+        
+    @override
+    def placeholders_names(self, i):
+        return self._placeholder_names[i]
 
 #  @}
 ########################### end - I/O - end ########################### 

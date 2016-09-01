@@ -40,7 +40,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
             # Preprocess each term in the affine expansions
             for coeff in self.truth_problem.EIM_approximations:
-                self.EIM_reductions[coeff] = EIMApproximationReductionMethod(self.truth_problem.EIM_approximations[coeff], type(self.truth_problem).__name__ + "/eim/" + str(coeff.hash_code))
+                self.EIM_reductions[coeff] = EIMApproximationReductionMethod(self.truth_problem.EIM_approximations[coeff], self.truth_problem.EIM_approximations[coeff].folder_prefix)
             
         ###########################     SETTERS     ########################### 
         ## @defgroup Setters Set properties of the reduced order approximation

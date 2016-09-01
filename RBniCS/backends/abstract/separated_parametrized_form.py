@@ -48,6 +48,10 @@ class SeparatedParametrizedForm(object):
     @abstractmethod        
     def replace_placeholders(self, i, new_coefficients):
         pass
+    
+    @abstractmethod
+    def placeholders_names(self, i):
+        pass
 
 #  @}
 ########################### end - I/O - end ########################### 

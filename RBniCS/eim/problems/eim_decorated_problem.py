@@ -55,10 +55,10 @@ def EIMDecoratedProblem(**decorator_kwargs):
                         self.separated_forms[term][q] = SeparatedParametrizedForm(forms[q])
                         self.separated_forms[term][q].separate()
                         # All parametrized coefficients should be approximated by EIM
-                        for addend in self.separated_forms[term][q].coefficients:
-                            for factor in addend:
+                        for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
+                            for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
                                 if factor not in self.EIM_approximations:
-                                    self.EIM_approximations[factor] = EIMApproximation(self, ProjectedParametrizedExpression(factor, self.V), type(self).__name__ + "/eim/" + str(factor.hash_code))
+                                    self.EIM_approximations[factor] = EIMApproximation(self, ProjectedParametrizedExpression(factor, self.V), type(self).__name__ + "/eim/" + factor_name)
                                     
                 # Avoid useless assignments
                 self._update_N_EIM_in_compute_theta.__func__.previous_kwargs = None
