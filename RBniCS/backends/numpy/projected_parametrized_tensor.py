@@ -22,24 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import ParametrizedVector as AbstractParametrizedVector
-from RBniCS.backends.fenics.vector import Vector
+from RBniCS.backends.abstract import ProjectedParametrizedTensor as AbstractProjectedParametrizedTensor
+from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
-@Extends(AbstractParametrizedVector)
-@BackendFor("FEniCS", inputs=(Vector.Type(), ))
-class ParametrizedVector(AbstractParametrizedVector):
-    def __init__(self, vector):
-        AbstractParametrizedVector.__init__(vector)
-        #
-        self._vector = vector
-    
-    @override
-    @property
-    def vector(self):
-        return self._vector
-        
-    @override
-    def get_processor_id(self, indices):
-        return # TODO
+# ProjectedParametrizedExpression is not provided for NumPy backend because
+# we are not interested in applying DEIM on NumPy
         

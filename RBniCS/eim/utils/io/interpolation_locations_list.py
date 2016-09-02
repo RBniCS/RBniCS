@@ -26,6 +26,8 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
+from RBniCS.backends.abstract.projected_parametrized_expression import ProjectedParametrizedExpression
+from RBniCS.backends.abstract.projected_parametrized_tensor import ProjectedParametrizedTensor
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.decorators import Extends, override
 
@@ -35,6 +37,13 @@ class InterpolationLocationsList(ExportableList):
     def __init__(self, expression):
         ExportableList.__init__(self, "pickle")
         self.expression = expression
+        assert isinstance(expression, (ProjectedParametrizedExpression, ProjectedParametrizedTensor))
+        if isinstance(expression, ProjectedParametrizedExpression):
+            self.method = "EIM"
+        elif isinstance(expression, ProjectedParametrizedTensor):
+            self.method = "DEIM"
+        else: # impossible to arrive here anyway thanks to the assert
+            raise AssertionError("Invalid argument to InterpolationLocationsList")            
         # Auxiliary list to store processor_id
         self.processors_id = list()
         
@@ -46,13 +55,27 @@ class InterpolationLocationsList(ExportableList):
         for i in range(N):
             location = ExportableList.__getitem__(self, i)
             self.processors_id.append(self.expression.get_processor_id(location))
+        # If DEIM, we also need to load the reduced mesh
+        if self.method == "DEIM":
+            return_value_2 = self.expression.reduced_mesh.load(directory, filename + "_reduced_mesh")
+            assert return_value == return_value_2
         return return_value
+        
+    @override
+    def save(self, directory, filename):
+        ExportableList.save(self, directory, filename)
+        # If DEIM, we also need to save the reduced mesh
+        if self.method == "DEIM":
+            self.expression.reduced_mesh.save(directory, filename + "_reduced_mesh")
         
     @override
     def append(self, location):
         ExportableList.append(self, location)
         # Make sure to update the processor ids
         self.processors_id.append(self.expression.get_processor_id(location))
+        # If DEIM, we also need to update the reduced mesh
+        if self.method == "DEIM":
+            self.expression.reduced_mesh.add_dofs(location)
         
     @override
     def __getitem__(self, key):

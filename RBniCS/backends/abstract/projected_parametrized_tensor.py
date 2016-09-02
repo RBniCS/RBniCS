@@ -22,24 +22,22 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import ParametrizedMatrix as AbstractParametrizedMatrix
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.utils.decorators import AbstractBackend, abstractmethod, abstractproperty
 
-@Extends(AbstractParametrizedMatrix)
-@BackendFor("FEniCS", inputs=(Matrix.Type(), ))
-class ParametrizedMatrix(AbstractParametrizedMatrix):
-    def __init__(self, matrix):
-        AbstractParametrizedMatrix.__init__(matrix)
-        #
-        self._matrix = matrix
+@AbstractBackend
+class ProjectedParametrizedTensor(object):
+    def __init__(self, tensor, reduced_mesh):
+        pass
     
-    @override
-    @property
-    def matrix(self):
-        return self._matrix
+    @abstractproperty
+    def tensor(self):
+        pass
         
-    @override
+    @abstractproperty
+    def reduced_mesh(self):
+        pass
+        
+    @abstractmethod
     def get_processor_id(self, indices):
-        return # TODO
+        pass
         

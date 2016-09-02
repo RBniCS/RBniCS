@@ -206,7 +206,6 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                 hash_code = hashlib.sha1(
                                 (str_repr + dolfin_version).encode("utf-8")
                             ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
-                print factor
                 self._placeholder_names[-1].append(hash_code)
                 
         log(PROGRESS, "4. Assert list length consistency")

@@ -22,25 +22,31 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import ParametrizedVector as AbstractParametrizedVector
-from RBniCS.backends.numpy.vector import Vector
+from ufl import Form
+from RBniCS.backends.abstract import ProjectedParametrizedTensor as AbstractProjectedParametrizedTensor
+from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
-@Extends(AbstractParametrizedVector)
-@BackendFor("NumPy", inputs=(Vector.Type(), ))
-class ParametrizedVector(AbstractParametrizedVector):
-    def __init__(self, vector):
-        AbstractParametrizedVector.__init__(vector)
+@Extends(AbstractProjectedParametrizedTensor)
+@BackendFor("FEniCS", inputs=(Form, ReducedMesh))
+class ProjectedParametrizedTensor(AbstractProjectedParametrizedTensor):
+    def __init__(self, tensor, reduced_mesh):
+        AbstractProjectedParametrizedTensor.__init__(tensor, reduced_mesh)
         #
-        self._vector = vector
-        self._mpi_comm = None #TODO
+        self._tensor = tensor
+        self._reduced_mesh = reduced_mesh
     
     @override
     @property
-    def vector(self):
-        return self._vector
+    def tensor(self):
+        return self._tensor
+        
+    @override
+    @property
+    def reduced_mesh(self):
+        return self._reduced_mesh
         
     @override
     def get_processor_id(self, indices):
-        return self._mpi_comm.rank # vector is repeated on all processors
+        return # TODO
         

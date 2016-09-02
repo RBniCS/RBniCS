@@ -27,7 +27,7 @@ try:
     from cbcpost.utils import create_submesh, restriction_map
 except ImportError:
     from dolfin import MPI, mpi_comm_world
-    assert MPI.size(mpi_comm_world) == 1, "cbcpost is required to create a ReducedMesh in parallel"
+    assert MPI.size(mpi_comm_world()) == 1, "cbcpost is required to create a ReducedMesh in parallel"
     from dolfin import SubMesh as create_submesh
     def restriction_map(V, reduced_V):
         raise NotImplementedError("restriction_map without cbcpost not implemented yet.")

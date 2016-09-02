@@ -24,27 +24,21 @@
 
 from dolfin import Point, project
 from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.parametrized_matrix import ParametrizedMatrix
 from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.parametrized_vector import ParametrizedVector
 from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.projected_parametrized_tensor import ProjectedParametrizedTensor
 from RBniCS.backends.fenics.projected_parametrized_expression import ProjectedParametrizedExpression
 from RBniCS.utils.decorators import backend_for, tuple_of
 from numpy import zeros as array, ndarray as PointType
 from mpi4py.MPI import FLOAT
 
 # Evaluate a parametrized expression, possibly at a specific location
-@backend_for("FEniCS", inputs=((Matrix.Type(), ParametrizedMatrix, Vector.Type(), ParametrizedVector, Function.Type(), ProjectedParametrizedExpression), (tuple_of((tuple_of(int), int)), tuple_of((PointType, int)), None)))
+@backend_for("FEniCS", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), ProjectedParametrizedTensor, ProjectedParametrizedExpression), (tuple_of((tuple_of(int), int)), tuple_of((PointType, int)), None)))
 def evaluate(expression_, at=None):
-    assert isinstance(expression_, (Matrix.Type(), ParametrizedMatrix, Vector.Type(), ParametrizedVector, Function.Type(), ProjectedParametrizedExpression))
+    assert isinstance(expression_, (Matrix.Type(), Vector.Type(), Function.Type(), ProjectedParametrizedTensor, ProjectedParametrizedExpression))
     assert at is None or isinstance(at, tuple)
     if isinstance(expression_, (Matrix.Type(), Vector.Type())):
         return # TODO
-    elif isinstance(expression_, (ParametrizedMatrix, ParametrizedVector)):
-        if at is None:
-            return # TODO
-        else:
-            return # TODO
     elif isinstance(expression_, Function.Type()):
         function = expression_
         assert at is not None
@@ -57,6 +51,11 @@ def evaluate(expression_, at=None):
             out = function(point)
         out = mpi_comm.bcast(out, root=process_id)
         return out
+    elif isinstance(expression_, ProjectedParametrizedTensor):
+        if at is None:
+            return # TODO
+        else:
+            return # TODO
     elif isinstance(expression_, ProjectedParametrizedExpression):
         expression = expression_.expression
         if at is None:
