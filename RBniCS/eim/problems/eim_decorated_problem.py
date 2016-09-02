@@ -59,35 +59,37 @@ def EIMDecoratedProblem(**decorator_kwargs):
                             for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
                                 if factor not in self.EIM_approximations:
                                     self.EIM_approximations[factor] = EIMApproximation(self, ProjectedParametrizedExpression(factor, self.V), type(self).__name__ + "/eim/" + factor_name)
-                                    
+                
+                # Store value of N_EIM passed to solve
+                self._N_EIM = None
+                            
                 # Avoid useless assignments
-                self._update_N_EIM_in_compute_theta__previous_kwargs = None
+                self._update_N_EIM__previous_kwargs = None
                 
             @override
             def solve(self, **kwargs):
-                self._update_N_EIM_in_compute_theta(**kwargs)
+                self._update_N_EIM(**kwargs)
                 return ParametrizedProblem_DerivedClass.solve(self, **kwargs)
             
-            def _update_N_EIM_in_compute_theta(self, **kwargs):
-                if kwargs != self._update_N_EIM_in_compute_theta__previous_kwargs:
+            def _update_N_EIM(self, **kwargs):
+                if kwargs != self._update_N_EIM__previous_kwargs:
                     if "EIM" in kwargs:
-                        self.compute_theta.__func__.N_EIM = dict()
+                        self._N_EIM = dict()
                         N_EIM = kwargs["EIM"]
                         for term in self.separated_forms:
-                            self.compute_theta.__func__.N_EIM[term] = list()
+                            self._N_EIM[term] = list()
                             if isinstance(N_EIM, dict):
                                 assert term in N_EIM
                                 assert len(N_EIM[term]) == len(self.separated_forms[term])
                                 for N_eim_term_q in N_EIM[term]:
-                                    self.compute_theta.__func__.N_EIM[term].append(N_eim_term_q)
+                                    self._N_EIM[term].append(N_eim_term_q)
                             else:
                                 assert isinstance(N_EIM, int)
                                 for _ in self.separated_forms[term]:
-                                    self.compute_theta.__func__.N_EIM[term].append(N_EIM)
+                                    self._N_EIM[term].append(N_EIM)
                     else:
-                        if hasattr(self.compute_theta.__func__, "N_EIM"):
-                            delattr(self.compute_theta.__func__, "N_EIM")
-                    self._update_N_EIM_in_compute_theta.__func__.previous_kwargs = kwargs
+                        self._N_EIM = None
+                    self._update_N_EIM__previous_kwargs = kwargs
                 
                 
             ###########################     PROBLEM SPECIFIC     ########################### 
@@ -122,16 +124,17 @@ def EIMDecoratedProblem(**decorator_kwargs):
                 if term in self.terms:
                     eim_thetas = list()
                     assert len(self.separated_forms[term]) == len(original_thetas)
+                    if self._N_EIM is not None:
+                        assert term in self._N_EIM 
+                        assert len(self.separated_forms[term]) == len(self._N_EIM[term])
                     for (q, (form, original_theta)) in enumerate(zip(self.separated_forms[term], original_thetas)):
                         # Append coefficients computed with EIM, if applicable
                         for addend in form.coefficients:
                             eim_thetas__list = list()
                             for factor in addend:
                                 N_EIM = None
-                                if hasattr(self.compute_theta.__func__, "N_EIM"):
-                                    assert term in self.compute_theta.__func__.N_EIM 
-                                    assert q < len(self.compute_theta.__func__.N_EIM[term])
-                                    N_EIM = self.compute_theta.__func__.N_EIM[term][q]
+                                if self._N_EIM is not None:
+                                    N_EIM = self._N_EIM[term][q]
                                 eim_thetas__list.append(self.EIM_approximations[factor].compute_interpolated_theta(N_EIM))
                             eim_thetas__cartesian_product = cartesian_product(*eim_thetas__list)
                             for tuple_ in eim_thetas__cartesian_product:

@@ -38,11 +38,11 @@ def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
             
         @override
         def _solve(self, N, **kwargs):
-            self._update_N_EIM_in_compute_theta(**kwargs)
+            self._update_N_EIM(**kwargs)
             return ReducedParametrizedProblem_DerivedClass._solve(self, N, **kwargs)
             
-        def _update_N_EIM_in_compute_theta(self, **kwargs):
-            self.truth_problem._update_N_EIM_in_compute_theta(**kwargs)
+        def _update_N_EIM(self, **kwargs):
+            self.truth_problem._update_N_EIM(**kwargs)
         
     # return value (a class) for the decorator
     return EIMDecoratedReducedProblem_Class
