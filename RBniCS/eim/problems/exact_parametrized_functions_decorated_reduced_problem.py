@@ -42,8 +42,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
                     # Call the parent initialization
                     ReducedParametrizedProblem_DecoratedClass.__init__(self, truth_problem)
                     # Avoid useless assemblies
-                    self.estimate_error.__func__.previous_mu = None
-                    self.estimate_error.__func__.previous_self_N = None
+                    self._estimate_error__previous_mu = None
+                    self._estimate_error__previous_self_N = None
                     
                 ###########################     ONLINE STAGE     ########################### 
                 ## @defgroup OnlineStage Methods related to the online stage
@@ -71,12 +71,12 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
                     # The offline/online separation does not hold anymore, so, similarly to what we did in
                     # the truth problem, also at the reduced-order level we need to re-assemble operators,
                     # because the assemble_operator() *may* return parameter dependent operators.
-                    assert(self._solve.__func__.previous_mu == self.mu) # estimate_error is always called after _solve
-                    if self.estimate_error.__func__.previous_mu != self.mu or self.estimate_error.__func__.previous_self_N != self.N:
+                    assert(self._solve__previous_mu == self.mu) # estimate_error is always called after _solve
+                    if self._estimate_error__previous_mu != self.mu or self._estimate_error__previous_self_N != self.N:
                         self.build_error_estimation_operators("online")
                         # Avoid useless assemblies
-                        self.estimate_error.__func__.previous_mu = self.mu
-                        self.estimate_error.__func__.previous_self_N = self.N
+                        self._estimate_error__previous_mu = self.mu
+                        self._estimate_error__previous_self_N = self.N
                     return ReducedParametrizedProblem_DecoratedClass.estimate_error(self)
                     
                 ## Return the numerator of the error bound for the current output
@@ -85,12 +85,12 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
                     # The offline/online separation does not hold anymore, so, similarly to what we did in
                     # the truth problem, also at the reduced-order level we need to re-assemble operators,
                     # because the assemble_operator() *may* return parameter dependent operators.
-                    assert(self._solve.__func__.previous_mu == self.mu) # estimate_error is always called after _solve
-                    if self.estimate_error.__func__.previous_mu != self.mu or self.estimate_error.__func__.previous_self_N != self.N:
+                    assert(self._solve__previous_mu == self.mu) # estimate_error is always called after _solve
+                    if self._estimate_error__previous_mu != self.mu or self._estimate_error__previous_self_N != self.N:
                         self.build_error_estimation_operators("online")
                         # Avoid useless assemblies
-                        self.estimate_error.__func__.previous_mu = self.mu
-                        self.estimate_error.__func__.previous_self_N = self.N
+                        self._estimate_error__previous_mu = self.mu
+                        self._estimate_error__previous_self_N = self.N
                         # Note that we use the the same cache as estimate_error, since (at least part of)
                         # error estimation operators is used by both methods
                     return ReducedParametrizedProblem_DecoratedClass.estimate_error_output(self)
@@ -110,7 +110,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
                         for term in self.truth_problem.Q:
                             for q in range(self.truth_problem.Q[term]):
                                 self.riesz[term][q].clear()
-                        self.build_error_estimation_operators.__func__.initialized = False
+                        self.build_error_estimation_operators__initialized = False
                         ReducedParametrizedProblem_DecoratedClass.build_error_estimation_operators(self)
                     else:
                         # The offline/online separation does not hold anymore, so we cannot precompute 
@@ -155,8 +155,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
             # Call the parent initialization
             ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
             # Avoid useless assemblies
-            self._solve.__func__.previous_mu = None
-            self._solve.__func__.previous_self_N = None
+            self._solve__previous_mu = None
+            self._solve__previous_self_N = None
         
         ###########################     ONLINE STAGE     ########################### 
         ## @defgroup OnlineStage Methods related to the online stage
@@ -196,14 +196,14 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
             # The offline/online separation does not hold anymore, so, similarly to what we did in
             # the truth problem, also at the reduced-order level we need to re-assemble operators,
             # because the assemble_operator() *may* return parameter dependent operators.
-            if self._solve.__func__.previous_mu != self.mu or self._solve.__func__.previous_self_N != self.N:
-                if self._solve.__func__.previous_mu != self.mu: # re-assemble truth operators
+            if self._solve__previous_mu != self.mu or self._solve__previous_self_N != self.N:
+                if self._solve__previous_mu != self.mu: # re-assemble truth operators
                     assert self.truth_problem.mu == self.mu
                     self.truth_problem.init()
                 self.build_reduced_operators("online")
                 # Avoid useless assemblies
-                self._solve.__func__.previous_mu = self.mu
-                self._solve.__func__.previous_self_N = self.N
+                self._solve__previous_mu = self.mu
+                self._solve__previous_self_N = self.N
             return ReducedParametrizedProblem_DerivedClass._solve(self, N, **kwargs)
     
         #  @}

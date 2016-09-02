@@ -83,10 +83,10 @@ class SCMApproximation(ParametrizedProblem):
         self._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"] = kwargs["bounding_box_maximum_eigensolver_parameters"]
         
         # Avoid useless linear programming solves
-        self.get_stability_factor_lower_bound.__func__.previous_mu = None
-        self.get_stability_factor_lower_bound.__func__.previous_alpha_LB = None
-        self.get_stability_factor_upper_bound.__func__.previous_mu = None
-        self.get_stability_factor_upper_bound.__func__.previous_alpha_UB = None
+        self._get_stability_factor_lower_bound__previous_mu = None
+        self._get_stability_factor_lower_bound__previous_alpha_LB = None
+        self._get_stability_factor_upper_bound__previous_mu = None
+        self._get_stability_factor_upper_bound__previous_alpha_UB = None
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -131,7 +131,7 @@ class SCMApproximation(ParametrizedProblem):
 
     ## Get a lower bound for alpha
     def get_stability_factor_lower_bound(self, mu, safeguard=True):
-        if self.get_stability_factor_lower_bound.__func__.previous_mu != self.mu:
+        if self._get_stability_factor_lower_bound__previous_mu != self.mu:
             lp = glpk.glp_create_prob()
             glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
             Q = self.truth_problem.Q["a"]
@@ -240,15 +240,15 @@ class SCMApproximation(ParametrizedProblem):
                     
                     (alpha_LB, _) = self.exact_coercivity_constant_calculator.solve()
             
-            self.get_stability_factor_lower_bound.__func__.previous_mu = self.mu
-            self.get_stability_factor_lower_bound.__func__.previous_alpha_LB = alpha_LB
+            self._get_stability_factor_lower_bound__previous_mu = self.mu
+            self._get_stability_factor_lower_bound__previous_alpha_LB = alpha_LB
             return alpha_LB
         else:
-            return self.get_stability_factor_lower_bound.__func__.previous_alpha_LB
+            return self._get_stability_factor_lower_bound__previous_alpha_LB
 
     ## Get an upper bound for alpha
     def get_stability_factor_upper_bound(self, mu):
-        if self.get_stability_factor_upper_bound.__func__.previous_mu != self.mu:
+        if self._get_stability_factor_upper_bound__previous_mu != self.mu:
             Q = self.truth_problem.Q["a"]
             N = self.N
             UB_vectors_J = self.UB_vectors_J
@@ -269,11 +269,11 @@ class SCMApproximation(ParametrizedProblem):
                     alpha_UB = obj
             
             alpha_UB = float(alpha_UB)
-            self.get_stability_factor_upper_bound.__func__.previous_mu = self.mu
-            self.get_stability_factor_upper_bound.__func__.previous_alpha_UB = alpha_UB
+            self._get_stability_factor_upper_bound__previous_mu = self.mu
+            self._get_stability_factor_upper_bound__previous_alpha_UB = alpha_UB
             return alpha_UB
         else:
-            return self.get_stability_factor_upper_bound.__func__.previous_alpha_UB
+            return self._get_stability_factor_upper_bound__previous_alpha_UB
             
 
     ## Auxiliary function: M parameters in the set all_mu closest to mu

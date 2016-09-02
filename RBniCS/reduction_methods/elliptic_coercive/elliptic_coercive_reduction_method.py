@@ -113,7 +113,7 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
         # Make sure that stability factors computations at the reduced order level
         # call the correct problem
         if with_respect_to is not None:
-            self._finalize_error_analysis.__func__.get_stability_factor__original = self.reduced_problem.get_stability_factor
+            self._finalize_error_analysis__get_stability_factor__original = self.reduced_problem.get_stability_factor
             def get_stability_factor__with_respect_to(self):
                 return with_respect_to.get_stability_factor()
             self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
@@ -124,7 +124,8 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
         # Make sure that stability factors computations at the reduced order level
         # are reset to the standard method
         if with_respect_to is not None:
-            self.reduced_problem.get_stability_factor = types.MethodType(self._finalize_error_analysis.__func__.get_stability_factor__original, self.reduced_problem)
+            self.reduced_problem.get_stability_factor = types.MethodType(self._finalize_error_analysis__get_stability_factor__original, self.reduced_problem)
+            del self._finalize_error_analysis__get_stability_factor__original
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

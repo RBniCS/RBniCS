@@ -61,7 +61,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                                     self.EIM_approximations[factor] = EIMApproximation(self, ProjectedParametrizedExpression(factor, self.V), type(self).__name__ + "/eim/" + factor_name)
                                     
                 # Avoid useless assignments
-                self._update_N_EIM_in_compute_theta.__func__.previous_kwargs = None
+                self._update_N_EIM_in_compute_theta__previous_kwargs = None
                 
             @override
             def solve(self, **kwargs):
@@ -69,7 +69,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                 return ParametrizedProblem_DerivedClass.solve(self, **kwargs)
             
             def _update_N_EIM_in_compute_theta(self, **kwargs):
-                if kwargs != self._update_N_EIM_in_compute_theta.__func__.previous_kwargs:
+                if kwargs != self._update_N_EIM_in_compute_theta__previous_kwargs:
                     if "EIM" in kwargs:
                         self.compute_theta.__func__.N_EIM = dict()
                         N_EIM = kwargs["EIM"]

@@ -63,9 +63,9 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
         self.eigensolver_parameters = eigensolver_parameters
         
         # Avoid useless computations
-        self.solve.__func__.previous_mu = None
-        self.solve.__func__.previous_eigenvalue = None
-        self.solve.__func__.previous_eigenvector = None
+        self._solve__previous_mu = None
+        self._solve__previous_eigenvalue = None
+        self._solve__previous_eigenvector = None
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -99,8 +99,8 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
                         bc.zero_columns(op, dummy.vector(), diag_value)
     
     def solve(self):
-        if self.solve.__func__.previous_mu == self.mu:
-            return (self.solve.__func__.previous_eigenvalue, self.solve.__func__.previous_eigenvector)
+        if self._solve__previous_mu == self.mu:
+            return (self._solve__previous_eigenvalue, self._solve__previous_eigenvector)
         else:
             if self.multiply_by_theta:
                 assert isinstance(self.term, str) # method untested otherwise
@@ -133,9 +133,9 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
             
             r_vector = Function(self.truth_problem.V, r_vector)
             
-            self.solve.__func__.previous_mu = self.mu
-            self.solve.__func__.previous_eigenvalue = r
-            self.solve.__func__.previous_eigenvector = r_vector
+            self._solve__previous_mu = self.mu
+            self._solve__previous_eigenvalue = r
+            self._solve__previous_eigenvector = r_vector
             
             return (r, r_vector)
         

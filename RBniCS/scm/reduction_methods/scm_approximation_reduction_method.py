@@ -58,7 +58,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.greedy_selected_parameters = GreedySelectedParametersList()
         self.greedy_error_estimators = GreedyErrorEstimatorsList()
         #
-        self.offline.__func__.mu_index = 0
+        self._offline__mu_index = 0
         
         # Get data that were temporarily store in the SCM_approximation
         self.constrain_minimum_eigenvalue = self.SCM_approximation._input_storage_for_SCM_reduction["constrain_minimum_eigenvalue"]
@@ -126,7 +126,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         # Arbitrarily start from the first parameter in the training set
         self.SCM_approximation.set_mu(self.xi_train[0])
-        self.offline.__func__.mu_index = 0
+        self._offline__mu_index = 0
         
         for run in range(self.Nmax):
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -156,7 +156,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         print("")
         
         # mu_index does not make any sense from now on
-        self.offline.__func__.mu_index = None
+        self._offline__mu_index = None
         
         self._finalize_offline()
         return self.SCM_approximation
@@ -186,7 +186,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
     # Store the greedy parameter
     def update_C_J(self):
         mu = self.SCM_approximation.mu
-        mu_index = self.offline.__func__.mu_index
+        mu_index = self._offline__mu_index
         assert mu == self.xi_train[mu_index]
         
         self.SCM_approximation.C_J.append(mu_index)
@@ -225,7 +225,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         def solve_and_estimate_error(mu, index):
-            self.offline.__func__.mu_index = index
+            self._offline__mu_index = index
             self.SCM_approximation.set_mu(mu)
             
             LB = self.SCM_approximation.get_stability_factor_lower_bound(mu, False)
@@ -244,7 +244,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         (error_estimator_max, error_estimator_argmax) = self.xi_train.max(solve_and_estimate_error)
         print("maximum SCM error estimator =", error_estimator_max)
         self.SCM_approximation.set_mu(self.xi_train[error_estimator_argmax])
-        self.offline.__func__.mu_index = error_estimator_argmax
+        self._offline__mu_index = error_estimator_argmax
         self.greedy_selected_parameters.append(self.xi_train[error_estimator_argmax])
         self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
         self.greedy_error_estimators.append(error_estimator_max)

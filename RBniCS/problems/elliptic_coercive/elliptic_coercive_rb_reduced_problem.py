@@ -54,7 +54,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         self._riesz_solve_storage = self.truth_problem._solution.copy(deepcopy=True)
         self.riesz = dict() # from string to OnlineAffineExpansionStorage
         self.riesz_product = dict() # from string to OnlineAffineExpansionStorage
-        self.build_error_estimation_operators.__func__.initialized = False
+        self.build_error_estimation_operators__initialized = False
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # I/O
@@ -146,13 +146,13 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     
     ## Build operators for error estimation
     def build_error_estimation_operators(self):
-        if not self.build_error_estimation_operators.__func__.initialized: # this part does not depend on N, so we compute it only once
+        if not self.build_error_estimation_operators__initialized: # this part does not depend on N, so we compute it only once
             # Compute the Riesz representation of f
             self.compute_riesz_f()
             # Compute the (f, f) Riesz representors product
             self.assemble_error_estimation_operators("riesz_product_ff", "offline")
             #
-            self.build_error_estimation_operators.__func__.initialized = True
+            self.build_error_estimation_operators__initialized = True
             
         # Update the Riesz representation of -A*Z with the new basis function(s)
         self.update_riesz_a()

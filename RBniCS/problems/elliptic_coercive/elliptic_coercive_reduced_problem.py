@@ -91,8 +91,8 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
         # Solution
         self._solution = OnlineFunction()
         self._output = 0
-        self.compute_error.__func__.previous_mu = None
-        self.compute_error.__func__.previous_with_respect_to = None
+        self._compute_error__previous_mu = None
+        self._compute_error__previous_with_respect_to = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -224,13 +224,13 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
                 truth_problem = self.truth_problem
             else:
                 truth_problem = self._flattened_truth_problem
-        if self.compute_error.__func__.previous_mu != self.mu or self.compute_error.__func__.previous_with_respect_to != truth_problem:
+        if self._compute_error__previous_mu != self.mu or self._compute_error__previous_with_respect_to != truth_problem:
             truth_problem.set_mu(self.mu) # if with_respect_to != None they are not in sync
             truth_problem.solve(**kwargs)
             truth_problem.output()
             # Do not carry out truth solves anymore for the same parameter
-            self.compute_error.__func__.previous_mu = self.mu
-            self.compute_error.__func__.previous_with_respect_to = truth_problem
+            self._compute_error__previous_mu = self.mu
+            self._compute_error__previous_with_respect_to = truth_problem
         # Compute the error on the solution and output
         self.solve(N, with_plot=False, **kwargs)
         self.output()

@@ -70,8 +70,8 @@ class EIMApproximation(ParametrizedProblem):
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         
         # Avoid useless linear system solves
-        self.solve.__func__.previous_mu = None
-        self.solve.__func__.previous_N = None
+        self._solve__previous_mu = None
+        self._solve__previous_N = None
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -100,7 +100,7 @@ class EIMApproximation(ParametrizedProblem):
         if N is None:
             N = self.N
         
-        if self.solve.__func__.previous_mu != self.mu or self.solve.__func__.previous_N != N:
+        if self._solve__previous_mu != self.mu or self._solve__previous_N != N:
             # Evaluate the parametrized expression at interpolation locations
             rhs = OnlineVector(N)
             for p in range(N):
@@ -116,8 +116,8 @@ class EIMApproximation(ParametrizedProblem):
             solver.solve()
             
             # Store to avoid repeated computations
-            self.solve.__func__.previous_mu = self.mu
-            self.solve.__func__.previous_N = N
+            self._solve__previous_mu = self.mu
+            self._solve__previous_N = N
         
         return self._interpolation_coefficients
         

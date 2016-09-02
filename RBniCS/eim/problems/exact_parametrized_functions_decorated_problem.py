@@ -38,7 +38,7 @@ def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
                 # Call the parent initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Avoid useless assemblies
-                self.solve.__func__.previous_mu = None
+                self._solve__previous_mu = None
             
             ###########################     OFFLINE STAGE     ########################### 
             ## @defgroup OfflineStage Methods related to the offline stage
@@ -49,10 +49,10 @@ def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
             def solve(self, **kwargs):
                 # The offline/online separation does not hold anymore, so we need to re-assemble operators,
                 # because the assemble_operator() *may* return parameter dependent operators.
-                if self.solve.__func__.previous_mu != self.mu:
+                if self._solve__previous_mu != self.mu:
                     self.init()
                     # Avoid useless assemblies
-                    self.solve.__func__.previous_mu = self.mu
+                    self._solve__previous_mu = self.mu
                 return ParametrizedProblem_DerivedClass.solve(self)
             
             #  @}

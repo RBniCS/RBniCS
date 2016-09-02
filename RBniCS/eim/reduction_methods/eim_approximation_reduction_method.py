@@ -58,7 +58,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.greedy_selected_parameters = GreedySelectedParametersList()
         self.greedy_errors = GreedyErrorEstimatorsList()
         #
-        self.offline.__func__.mu_index = 0
+        self._offline__mu_index = 0
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -133,7 +133,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
         # Arbitrarily start from the first parameter in the training set
         self.EIM_approximation.set_mu(self.xi_train[0])
-        self.offline.__func__.mu_index = 0
+        self._offline__mu_index = 0
         # Resize the interpolation matrix
         self.EIM_approximation.interpolation_matrix[0] = OnlineMatrix(self.Nmax, self.Nmax)
         for run in range(self.Nmax):
@@ -166,7 +166,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("")
         
         # mu_index does not make any sense from now on
-        self.offline.__func__.mu_index = None
+        self._offline__mu_index = None
         
         self._finalize_offline()
         return self.EIM_approximation
@@ -196,7 +196,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     ## Load the precomputed snapshot
     def load_snapshot(self):
         mu = self.EIM_approximation.mu
-        mu_index = self.offline.__func__.mu_index
+        mu_index = self._offline__mu_index
         assert mu_index is not None
         assert mu == self.xi_train[mu_index]
         return self.snapshots_matrix[mu_index]
@@ -204,7 +204,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         def solve_and_computer_error(mu, index):
-            self.offline.__func__.mu_index = index
+            self._offline__mu_index = index
             self.EIM_approximation.set_mu(mu)
             
             self.EIM_approximation.solve()
@@ -215,7 +215,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         (error_max, error_argmax) = self.xi_train.max(solve_and_computer_error, abs)
         print("maximum EIM error =", abs(error_max))
         self.EIM_approximation.set_mu(self.xi_train[error_argmax])
-        self.offline.__func__.mu_index = error_argmax
+        self._offline__mu_index = error_argmax
         self.greedy_selected_parameters.append(self.xi_train[error_argmax])
         self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
         self.greedy_errors.append(error_max)
