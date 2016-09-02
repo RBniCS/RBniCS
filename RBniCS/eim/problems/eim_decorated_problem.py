@@ -28,7 +28,10 @@ from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 
-def EIMDecoratedProblem(**decorator_kwargs):
+def EIMDecoratedProblem(
+    basis_generation="Greedy",
+    **decorator_kwargs
+):
     from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions
     
     @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactParametrizedFunctions)
@@ -58,7 +61,7 @@ def EIMDecoratedProblem(**decorator_kwargs):
                         for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
                             for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
                                 if factor not in self.EIM_approximations:
-                                    self.EIM_approximations[factor] = EIMApproximation(self, ProjectedParametrizedExpression(factor, self.V), type(self).__name__ + "/eim/" + factor_name)
+                                    self.EIM_approximations[factor] = EIMApproximation(self, ProjectedParametrizedExpression(factor, self.V), type(self).__name__ + "/eim/" + factor_name, basis_generation)
                 
                 # Store value of N_EIM passed to solve
                 self._N_EIM = None

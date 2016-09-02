@@ -26,7 +26,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod, abstractonl
 
 @AbstractBackend
 class AffineExpansionStorage(object):
-    def __init__(self, *args):
+    def __init__(self):
         pass
         
     @abstractonlinemethod

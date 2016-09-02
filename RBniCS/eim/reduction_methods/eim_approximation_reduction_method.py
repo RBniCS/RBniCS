@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 from RBniCS.reduction_methods.base import ReductionMethod
-from RBniCS.backends import evaluate, rescale, SnapshotsMatrix
+from RBniCS.backends import evaluate, rescale, SnapshotsMatrix, ProperOrthogonalDecomposition
 from RBniCS.backends.online import OnlineMatrix
 from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
 from RBniCS.utils.mpi import print
@@ -43,9 +43,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
     
     ## Default initialization of members
     @override
-    def __init__(self, EIM_approximation, folder_prefix):
+    def __init__(self, EIM_approximation):
         # Call the parent initialization
-        ReductionMethod.__init__(self, folder_prefix, EIM_approximation.mu_range)
+        ReductionMethod.__init__(self, EIM_approximation.folder_prefix, EIM_approximation.mu_range)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -120,6 +120,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.update_snapshots_matrix(self.EIM_approximation.snapshot)
 
             print("")
+            
+        # If basis generation is POD, compute the first Nmax POD modes of the snapshots
+        if self.EIM_approximation.basis_generation == "POD":
+            print("update basis matrix")
+            self.update_basis_matrix_POD()
+            print("")
         
         print("==============================================================")
         print("=             EIM preprocessing phase ends                   =")
@@ -147,8 +153,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
             (error, maximum_error, maximum_location) = self.EIM_approximation.compute_maximum_interpolation_error()
             self.update_interpolation_locations(maximum_location)
             
-            print("update basis matrix")
-            self.update_basis_matrix(error, maximum_error)
+            if self.EIM_approximation.basis_generation == "Greedy":
+                print("update basis matrix")
+                self.update_basis_matrix_greedy(error, maximum_error)
+            else:
+                self.update_basis_matrix_POD()
             
             print("update interpolation matrix")
             self.update_interpolation_matrix()
@@ -175,11 +184,26 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def update_snapshots_matrix(self, snapshot):
         self.snapshots_matrix.enrich(snapshot)
         
-    ## Update basis matrix
-    def update_basis_matrix(self, error, maximum_error):
+    ## Update basis matrix (greedy version)
+    def update_basis_matrix_greedy(self, error, maximum_error):
         self.EIM_approximation.Z.enrich(rescale(error, 1./maximum_error))
         self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
         self.EIM_approximation.N += 1
+
+    ## Update basis matrix (POD version)
+    def update_basis_matrix_POD(self):
+        if len(self.EIM_approximation.Z) == 0: # the first time it is called, after the preprocessing
+            POD = ProperOrthogonalDecomposition(self.EIM_approximation.parametrized_expression.inner_product, self.EIM_approximation.parametrized_expression.space)
+            POD.store_snapshot(self.snapshots_matrix)
+            (Z, N) = POD.apply(self.Nmax)
+            self.EIM_approximation.Z.enrich(Z)
+            self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
+            # do not increment self.EIM_approximation.N
+            POD.print_eigenvalues(N)
+            POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
+            POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
+        else: # when called during the offline greedy
+            self.EIM_approximation.N += 1
         
     def update_interpolation_locations(self, maximum_location):
         self.EIM_approximation.interpolation_locations.append(maximum_location)
@@ -191,6 +215,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
         for j in range(self.EIM_approximation.N):
             value = evaluate(self.EIM_approximation.Z[j], last_location)
             self.EIM_approximation.interpolation_matrix[0][self.EIM_approximation.N - 1, j] = value
+        if self.EIM_approximation.basis_generation == "POD": # the interpolation matrix is not lower triangular anymore
+            last_basis = self.EIM_approximation.Z[self.EIM_approximation.N - 1]
+            for i in range(self.EIM_approximation.N - 1): # N - 1 because the last entry was already compute in the for loop above
+                value = evaluate(last_basis, self.EIM_approximation.interpolation_locations[i])
+                self.EIM_approximation.interpolation_matrix[0][i, self.EIM_approximation.N - 1] = value
         self.EIM_approximation.interpolation_matrix.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
             
     ## Load the precomputed snapshot

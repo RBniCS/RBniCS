@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import Expression, FunctionSpace, Point, TensorFunctionSpace, VectorFunctionSpace
+from dolfin import assemble, dx, Expression, FunctionSpace, inner, Point, TensorElement, TestFunction, TrialFunction, VectorElement
 from RBniCS.backends.abstract import ProjectedParametrizedExpression as AbstractProjectedParametrizedExpression
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
@@ -59,6 +59,13 @@ class ProjectedParametrizedExpression(AbstractProjectedParametrizedExpression):
     @property
     def space(self):
         return self._space
+        
+    @override
+    @property
+    def inner_product(self):
+        f = TrialFunction(self._space)
+        g = TestFunction(self._space)
+        return assemble(inner(f, g)*dx)
         
     @override
     def get_processor_id(self, point):

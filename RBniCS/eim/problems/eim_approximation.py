@@ -43,12 +43,14 @@ class EIMApproximation(ParametrizedProblem):
     @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
-    def __init__(self, truth_problem, parametrized_expression, folder_prefix):        
+    def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):        
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix)
         # Store the parametrized expression
         self.parametrized_expression = parametrized_expression
         self.truth_problem = truth_problem
+        assert basis_generation in ("Greedy", "POD")
+        self.basis_generation = basis_generation
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Online reduced space dimension

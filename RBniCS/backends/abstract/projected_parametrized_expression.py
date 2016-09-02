@@ -37,6 +37,10 @@ class ProjectedParametrizedExpression(object):
     def space(self):
         pass
         
+    @abstractproperty
+    def inner_product(self):
+        pass    
+        
     @abstractmethod
     def get_processor_id(self, point):
         pass
