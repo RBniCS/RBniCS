@@ -118,19 +118,20 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the test set
         @override
-        def error_analysis(self, N=None, with_respect_to=None, **kwargs):
+        def error_analysis(self, N=None, **kwargs):
             # Perform first the EIM error analysis, ...
             if (
-                with_respect_to is None # otherwise we assume the user was interested in computing the error w.r.t. an exact parametrized functions, 
-                                        # so he probably is not interested in the error analysis of EIM
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t. 
+                                                # an exact parametrized functions, 
+                                                # so he probably is not interested in the error analysis of EIM
                     and
-                len(kwargs) == 0        # otherwise we assume the user was interested in computing the error for a fixed number of EIM basis
-                                        # functions, thus he has already carried out the error analysis of EIM
+                "N_EIM" not in kwargs           # otherwise we assume the user was interested in computing the error for a fixed number of EIM basis
+                                                # functions, thus he has already carried out the error analysis of EIM
             ):
                 for coeff in self.EIM_reductions:
                     self.EIM_reductions[coeff].error_analysis(N)
             # ..., and then call the parent method.
-            ReductionMethod_DerivedClass.error_analysis(self, N, with_respect_to=with_respect_to, **kwargs)
+            ReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 

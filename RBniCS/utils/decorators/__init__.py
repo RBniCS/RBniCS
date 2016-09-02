@@ -26,6 +26,8 @@ from RBniCS.utils.decorators.abstract_backend import AbstractBackend, abstract_b
 from RBniCS.utils.decorators.backend_for import BackendFor, backend_for, list_of, ThetaType, tuple_of
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.exact_problem import ExactProblem
+from RBniCS.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
+from RBniCS.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
 from RBniCS.utils.decorators.override import override
 from RBniCS.utils.decorators.problem_decorator_for import ProblemDecoratorFor
 from RBniCS.utils.decorators.reduced_problem_decorator_for import ReducedProblemDecoratorFor
@@ -45,6 +47,8 @@ __all__ = [
     'backend_for',
     'ExactProblem',
     'list_of',
+    'MultiLevelReducedProblem',
+    'MultiLevelReductionMethod',
     'override',
     'ProblemDecoratorFor',
     'ReducedProblemDecoratorFor',

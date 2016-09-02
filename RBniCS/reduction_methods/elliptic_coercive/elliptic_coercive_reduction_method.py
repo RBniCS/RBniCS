@@ -22,12 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import os # for path and makedir
-import types
 from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.utils.io import Folders
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
+from RBniCS.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
 from RBniCS.utils.factories import ReducedProblemFactory
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -35,8 +33,9 @@ from RBniCS.utils.factories import ReducedProblemFactory
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(ReductionMethod) # needs to be first in order to override for last the methods
+@Extends(ReductionMethod, assert_recursion_level=1) # needs to be first in order to override for last the methods. assert_recursion_level is set because MultiLevelReductionMethod introduces an additional level of inheritance
 @ReductionMethodFor(EllipticCoerciveProblem, "Abstract")
+@MultiLevelReductionMethod
 class EllipticCoerciveReductionMethod(ReductionMethod):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -100,32 +99,12 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
     
     ## Initialize data structures required for the error analysis phase
     @override
-    def _init_error_analysis(self, with_respect_to=None): 
+    def _init_error_analysis(self, **kwargs): 
         # Initialize the affine expansion in the truth problem
-        if with_respect_to is not None:
-            with_respect_to.init()
-        else:
-            self.truth_problem.init()
+        self.truth_problem.init()
         
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem.init("online")
-        
-        # Make sure that stability factors computations at the reduced order level
-        # call the correct problem
-        if with_respect_to is not None:
-            self._finalize_error_analysis__get_stability_factor__original = self.reduced_problem.get_stability_factor
-            def get_stability_factor__with_respect_to(self):
-                return with_respect_to.get_stability_factor()
-            self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
-                
-    ## Finalize data structures required after the error analysis phase
-    @override
-    def _finalize_error_analysis(self, with_respect_to=None): 
-        # Make sure that stability factors computations at the reduced order level
-        # are reset to the standard method
-        if with_respect_to is not None:
-            self.reduced_problem.get_stability_factor = types.MethodType(self._finalize_error_analysis__get_stability_factor__original, self.reduced_problem)
-            del self._finalize_error_analysis__get_stability_factor__original
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

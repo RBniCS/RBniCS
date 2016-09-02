@@ -260,30 +260,22 @@ class SCMApproximationReductionMethod(ReductionMethod):
     
     ## Initialize data structures required for the error analysis phase
     @override
-    def _init_error_analysis(self, with_respect_to=None):
-        assert with_respect_to is None
-        
+    def _init_error_analysis(self, **kwargs):
         # Initialize the exact coercivity constant object
         self.SCM_approximation.exact_coercivity_constant_calculator.init()
         
         # Initialize reduced order data structures in the SCM online problem
         self.SCM_approximation.init("online")
-        
-    ## Finalize data structures required after the error analysis phase
-    @override
-    def _finalize_error_analysis(self, with_respect_to=None):
-        assert with_respect_to is None
     
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the test set
     @override
-    def error_analysis(self, N=None, with_respect_to=None, **kwargs):
+    def error_analysis(self, N=None, **kwargs):
         if N is None:
             N = self.SCM_approximation.N
-        assert with_respect_to is None # it does not makes sense to compare to something else other than the exact coercivity constant
         assert len(kwargs) == 0 # not used in this method
             
-        self._init_error_analysis(with_respect_to)
+        self._init_error_analysis(**kwargs)
         
         print("==============================================================")
         print("=             SCM error analysis begins                      =")
@@ -324,7 +316,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        self._finalize_error_analysis(with_respect_to)
+        self._finalize_error_analysis(**kwargs)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

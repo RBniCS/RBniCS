@@ -35,6 +35,10 @@ def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
         def __init__(self, truth_problem):
             # Call the parent initialization
             ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+            # Store the truth problem which should be updated for EIM
+            self.truth_problem_for_EIM = self.truth_problem
+            # ... this makes sure that, in case self.truth_problem is replaced (because of multilevel reduction)
+            #     the correct problem is called for what concerns EIM computations
             
         @override
         def _solve(self, N, **kwargs):
@@ -42,7 +46,11 @@ def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
             return ReducedParametrizedProblem_DerivedClass._solve(self, N, **kwargs)
             
         def _update_N_EIM(self, **kwargs):
-            self.truth_problem._update_N_EIM(**kwargs)
+            self.truth_problem_for_EIM._update_N_EIM(**kwargs)
+            
+        @override
+        def compute_theta(self, term):
+            return self.truth_problem_for_EIM.compute_theta(term)
         
     # return value (a class) for the decorator
     return EIMDecoratedReducedProblem_Class

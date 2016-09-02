@@ -22,11 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def Extends(Parent, preserve_class_name=False):
+def Extends(Parent, preserve_class_name=False, assert_recursion_level=0):
     def Extends_Decorator(Child):
         
-        assert len(Child.__bases__) == 1
-        assert Child.__bases__[0] is Parent
+        bases = Child.__bases__
+        for _ in range(assert_recursion_level):
+            assert len(bases) == 1
+            bases = bases[0].__bases__
+        assert len(bases) == 1
+        assert bases[0] is Parent
                 
         # TODO save the class documentation from the parent class
         

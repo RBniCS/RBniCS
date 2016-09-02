@@ -84,24 +84,10 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         elif current_stage == "offline":
             self.riesz["a"] = OnlineAffineExpansionStorage(self.Q["a"])
             for qa in range(self.Q["a"]):
-                if self._reduction_level == 1:
-                    assert hasattr(self.truth_problem, "V")
-                    assert not hasattr(self.truth_problem, "Z")
-                    self.riesz["a"][qa] = FunctionsList(self.truth_problem.V)
-                else: # truth problem was actually already a reduced problem!
-                    assert not hasattr(self.truth_problem, "V")
-                    assert hasattr(self.truth_problem, "Z")
-                    self.riesz["a"][qa] = FunctionsList(self.truth_problem.Z)
+                self.riesz["a"][qa] = FunctionsList(self.truth_problem.V)
             self.riesz["f"] = OnlineAffineExpansionStorage(self.Q["f"])
             for qf in range(self.Q["f"]):
-                if self._reduction_level == 1:
-                    assert hasattr(self.truth_problem, "V")
-                    assert not hasattr(self.truth_problem, "Z")
-                    self.riesz["f"][qf] = FunctionsList(self.truth_problem.V) # even though it will be composed of only one function
-                else: # truth problem was actually already a reduced problem!
-                    assert not hasattr(self.truth_problem, "V")
-                    assert hasattr(self.truth_problem, "Z")
-                    self.riesz["f"][qf] = FunctionsList(self.truth_problem.Z) # even though it will be composed of only one function
+                self.riesz["f"][qf] = FunctionsList(self.truth_problem.V) # even though it will be composed of only one function
             self.riesz_product["aa"] = OnlineAffineExpansionStorage(self.Q["a"], self.Q["a"])
             self.riesz_product["af"] = OnlineAffineExpansionStorage(self.Q["a"], self.Q["f"])
             self.riesz_product["ff"] = OnlineAffineExpansionStorage(self.Q["f"], self.Q["f"])

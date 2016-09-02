@@ -228,24 +228,15 @@ class EIMApproximationReductionMethod(ReductionMethod):
     ## @defgroup ErrorAnalysis Error analysis
     #  @{
     
-    @override
-    def _init_error_analysis(self, with_respect_to=None):
-        assert with_respect_to is None
-        
-    @override
-    def _finalize_error_analysis(self, with_respect_to=None):
-        assert with_respect_to is None
-    
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the test set
     @override
-    def error_analysis(self, N=None, with_respect_to=None, **kwargs):
+    def error_analysis(self, N=None, **kwargs):
         if N is None:
             N = self.EIM_approximation.N
-        assert with_respect_to is None # it does not makes sense to compare to something else other than the exact parametrized function
         assert len(kwargs) == 0 # not used in this method
             
-        self._init_error_analysis(with_respect_to)
+        self._init_error_analysis(**kwargs)
         
         print("==============================================================")
         print("=             EIM error analysis begins                      =")
@@ -279,7 +270,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        self._finalize_error_analysis(with_respect_to)
+        self._finalize_error_analysis(**kwargs)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ###########################

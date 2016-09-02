@@ -34,7 +34,13 @@ class Folders(dict): # dict from string to string
     # Auxiliary class
     class Folder(object):
         def __init__(self, name):
-            self.name = name
+            assert isinstance(name, (str, Folders.Folder))
+            if isinstance(name, str):
+                self.name = name
+            elif isinstance(name, Folders.Folder):
+                self.name = name.name
+            else:
+                raise AssertionError("Invalid name in Folder construction")                
             
         # Returns True if it was necessary to create the folder
         # or if the folder was already created before, but it is

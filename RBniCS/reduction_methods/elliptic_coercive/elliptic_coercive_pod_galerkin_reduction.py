@@ -89,14 +89,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         
         # Declare a new POD
         assert len(self.truth_problem.inner_product) == 1
-        if not hasattr(self.truth_problem, "_reduction_level"):
-            assert hasattr(self.truth_problem, "V")
-            assert not hasattr(self.truth_problem, "Z")
-            self.POD = ProperOrthogonalDecomposition(self.truth_problem.inner_product[0], self.truth_problem.V)
-        else: # truth problem was actually already a reduced problem!
-            assert not hasattr(self.truth_problem, "V")
-            assert hasattr(self.truth_problem, "Z")
-            self.POD = ProperOrthogonalDecomposition(self.truth_problem.inner_product[0], self.truth_problem.Z)
+        self.POD = ProperOrthogonalDecomposition(self.truth_problem.inner_product[0], self.truth_problem.V)
         
         # Return
         return output
@@ -169,11 +162,11 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the test set
     @override
-    def error_analysis(self, N=None, with_respect_to=None, flatten_truth_problem=False, **kwargs):
+    def error_analysis(self, N=None, **kwargs):
         if N is None:
             N = self.reduced_problem.N
             
-        self._init_error_analysis(with_respect_to)
+        self._init_error_analysis(**kwargs)
         
         print("==============================================================")
         print("=             Error analysis begins                          =")
@@ -191,7 +184,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
             self.reduced_problem.set_mu(mu)
                         
             for n in range(1, N + 1): # n = 1, ... N
-                (error_analysis_table["error_u", n, run], error_analysis_table["error_s", n, run]) = self.reduced_problem.compute_error(n, with_respect_to=with_respect_to, flatten_truth_problem=flatten_truth_problem, **kwargs)
+                (error_analysis_table["error_u", n, run], error_analysis_table["error_s", n, run]) = self.reduced_problem.compute_error(n, **kwargs)
         
         # Print
         print("")
@@ -203,7 +196,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
-        self._finalize_error_analysis(with_respect_to)
+        self._finalize_error_analysis(**kwargs)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
