@@ -42,7 +42,7 @@ def abs(expression):
         i_max, j_max = None, None
         value_max = None
         for i in range(row_start, row_end):
-            cols, vals = block.getRow(i)
+            cols, vals = mat.getRow(i)
             for (c, v) in zip(cols, vals):
                 if value_max is None or fabs(v) > fabs(value_max):
                     i_max = i
@@ -58,11 +58,11 @@ def abs(expression):
     elif isinstance(expression, Vector.Type()):
         # Note: PETSc offers VecAbs and VecMax, but for symmetry with the matrix case we do the same by hand
         vec = as_backend_type(expression).vec()
-        row_start, row_end = block.getOwnershipRange()
+        row_start, row_end = vec.getOwnershipRange()
         i_max = None
         value_max = None
         for i in range(row_start, row_end):
-            val = vec.array[i - row_start]
+            val = vec.getValue(i)
             if value_max is None or fabs(val) > fabs(value_max):
                 i_max = i
                 value_max = val

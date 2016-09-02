@@ -37,8 +37,44 @@ from mpi4py.MPI import FLOAT
 def evaluate(expression_, at=None):
     assert isinstance(expression_, (Matrix.Type(), Vector.Type(), Function.Type(), ProjectedParametrizedTensor, ProjectedParametrizedExpression))
     assert at is None or isinstance(at, tuple)
-    if isinstance(expression_, (Matrix.Type(), Vector.Type())):
-        return # TODO
+    if isinstance(expression_, Matrix.Type()):
+        mat = as_backend_type(expression).mat()
+        row_start, row_end = mat.getOwnershipRange()
+        assert at is not None
+        assert len(at) == 2
+        indices = at[0]
+        process_id = at[1]
+        mpi_comm = mat.comm().tompi4py()
+        assert isinstance(indices, tuple)
+        assert len(indices) == 2
+        out = None
+        mpi_comm = mat.comm().tompi4py()
+        if mpi_comm.rank == process_id:
+            i = indices[0]
+            assert i >= row_start
+            assert i <  row_end
+            j = indices[1]
+            out = mat.getValue(i, j)
+        out = mpi_comm.bcast(out, root=process_id)
+        return out
+    elif isinstance(expression_, Vector.Type()):
+        vec = as_backend_type(expression).vec()
+        row_start, row_end = vec.getOwnershipRange()
+        assert at is not None
+        assert len(at) == 2
+        indices = at[0]
+        process_id = at[1]
+        assert isinstance(indices, tuple)
+        assert len(indices) == 1
+        out = None
+        mpi_comm = mat.comm().tompi4py()
+        if mpi_comm.rank == process_id:
+            i = indices[0]
+            assert i >= row_start
+            assert i <  row_end
+            out = vec.getValue(i)
+        out = mpi_comm.bcast(out, root=process_id)
+        return out
     elif isinstance(expression_, Function.Type()):
         function = expression_
         assert at is not None
