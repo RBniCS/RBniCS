@@ -98,30 +98,37 @@ class EIMApproximation(ParametrizedProblem):
             raise AssertionError("Invalid stage in init().")
 
     # Perform an online solve.
-    def solve(self, N=None):
+    def solve(self, N=None, for_rhs=None):
         if N is None:
             N = self.N
         
         if self._solve__previous_mu != self.mu or self._solve__previous_N != N:
-            # Evaluate the parametrized expression at interpolation locations
-            rhs = OnlineVector(N)
-            for p in range(N):
-                rhs[p] = evaluate(self.parametrized_expression, self.interpolation_locations[p])
-            
-            # Extract the interpolation matrix
-            lhs = self.interpolation_matrix[0][:N,:N]
-            
-            # Solve the interpolation problem
-            self._interpolation_coefficients = OnlineFunction(N)
-            
-            solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
-            solver.solve()
+            self._solve(self.parametrized_expression, N)
             
             # Store to avoid repeated computations
             self._solve__previous_mu = self.mu
             self._solve__previous_N = N
         
         return self._interpolation_coefficients
+        
+    def _solve(self, rhs_, N=None):
+        if N is None:
+            N = self.N
+            
+        # Evaluate the parametrized expression at interpolation locations
+        rhs = OnlineVector(N)
+        for p in range(N):
+            rhs[p] = evaluate(rhs_, self.interpolation_locations[p])
+        
+        # Extract the interpolation matrix
+        lhs = self.interpolation_matrix[0][:N,:N]
+        
+        # Solve the interpolation problem
+        self._interpolation_coefficients = OnlineFunction(N)
+        
+        solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
+        solver.solve()
+        
         
     ## Call online_solve and then convert the result of online solve from OnlineVector to a tuple
     def compute_interpolated_theta(self, N=None):
