@@ -22,22 +22,29 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import AbstractBackend, abstractmethod, abstractproperty
+from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ProjectedParametrizedTensor(object):
-    def __init__(self, tensor, reduced_mesh):
+    def __init__(self, tensor, space):
         pass
     
-    @abstractproperty
-    def tensor(self):
-        pass
-        
-    @abstractproperty
-    def reduced_mesh(self):
+    @abstractmethod
+    def create_interpolation_locations_container(self):
         pass
         
     @abstractmethod
-    def get_processor_id(self, indices):
+    def create_snapshots_container(self):
         pass
+        
+    @abstractmethod
+    def create_basis_container(self):
+        pass
+        
+    @abstractmethod
+    def create_POD_container(self):
+        pass
+        
+    def interpolation_method_name(self):
+        return "DEIM"
         

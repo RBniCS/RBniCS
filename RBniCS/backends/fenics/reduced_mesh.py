@@ -34,11 +34,12 @@ except ImportError:
 from RBniCS.backends.abstract import ReducedMesh as AbstractReducedMesh
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.io import ExportableList
+from RBniCS.utils.mpi import is_io_process
 
 @Extends(AbstractReducedMesh)
 @BackendFor("FEniCS", inputs=(FunctionSpace, ))
 class ReducedMesh(AbstractReducedMesh):
-    def __init__(self, V):
+    def __init__(self, V, original_reduced_mesh_dofs_list=None, original_reduced_mesh=None, original_reduced_mesh_reduced_dofs_list=None, original_reduced_function_space=None):
         AbstractReducedMesh.__init__(self, V)
         #
         self.mesh = V.mesh()
@@ -55,21 +56,30 @@ class ReducedMesh(AbstractReducedMesh):
         # Cell function to mark cells (on the full mesh)
         self.reduced_mesh_cells_marker = CellFunction("size_t", self.mesh, 0)
         # DOFs list (of the full mesh) that need to be added at each N
-        self.reduced_mesh_dofs_list = list() # list of dofs
+        self.reduced_mesh_dofs_list = ExportableList("pickle") # list of dofs
+        if original_reduced_mesh_dofs_list is not None:
+            self.reduced_mesh_dofs_list.extend(original_reduced_mesh_dofs_list)
         # Reduced meshes, for all N
-        self.reduced_mesh = list() # of Mesh
+        self.reduced_mesh = list() # list (over N) of Mesh
+        if original_reduced_mesh is not None:
+            self.reduced_mesh.append(original_reduced_mesh)
         # DOFs list (of the reduced mesh) that need to be added at each N
         self.reduced_mesh_reduced_dofs_list = ExportableList("pickle") # list (over N) of list of dofs
+        if original_reduced_mesh_reduced_dofs_list is not None:
+            self.reduced_mesh_reduced_dofs_list.append(original_reduced_mesh_reduced_dofs_list)
+        # Reduced function spaces, for all N
+        self.reduced_function_space = list() # list (over N) of FunctionSpace
+        if original_reduced_function_space is not None:
+            self.reduced_function_space.append(original_reduced_function_space)
     
     @override
-    def add_dofs(self, dofs):
+    def append(self, dofs):
         # Initialize it only the first time (it is not initialized in the constructor to avoid wasting time online)
         if self.reduced_mesh_cells_marker is None:
             self.reduced_mesh_cells_marker = CellFunction("size_t", self.mesh, 0)
         # 
         assert isinstance(dofs, tuple)
         assert len(dofs) in (1, 2)
-        assert dofs not in self.reduced_mesh_dofs_list, "EIM algorithm ensures that at least one new dof is added every time"
         self.reduced_mesh_dofs_list.append(dofs)
         # Mark all cells (with an increasing marker)
         for dof in dofs:
@@ -80,7 +90,7 @@ class ReducedMesh(AbstractReducedMesh):
     
     @override
     def load(self, directory, filename):
-        if len(self._list) > 0: # avoid loading multiple times
+        if len(self.reduced_mesh) > 0: # avoid loading multiple times
             return False
         else:
             Nmax = self._load_Nmax(directory, filename)
@@ -88,8 +98,9 @@ class ReducedMesh(AbstractReducedMesh):
                 mesh_filename = str(directory) + "/" + filename + "_" + str(index) + ".xml"
                 reduced_mesh = Mesh(mesh_filename)
                 self.reduced_mesh.append(reduced_mesh)
-                reduced_mesh_reduced_dofs_list.load(directory, filename + "_" + str(index) + "_dofs.xml")
-                self.reduced_mesh_reduced_dofs_list.append(reduced_mesh_reduced_dofs_list)
+                self.reduced_function_space.append(FunctionSpace(reduced_mesh, self.V.ufl_element()))
+            self.reduced_mesh_dofs_list.load(directory, filename + "_dofs")
+            self.reduced_mesh_reduced_dofs_list.load(directory, filename + "_reduced_dofs")
             return True
         
     def _load_Nmax(self, directory, filename):
@@ -104,14 +115,15 @@ class ReducedMesh(AbstractReducedMesh):
     def save(self, directory, filename):
         self._save_Nmax(directory, filename)
         assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
-        for (index, (reduced_mesh, reduced_mesh_reduced_dofs_list)) in enumerate(zip(self.reduced_mesh, self.reduced_mesh_reduced_dofs_list)):
+        for (index, reduced_mesh) in enumerate(self.reduced_mesh):
             mesh_filename = str(directory) + "/" + filename + "_" + str(index) + ".xml"
-            File(mesh_filename) << mesh
-            reduced_mesh_reduced_dofs_list.save(directory, filename + "_" + str(index) + "_dofs.xml")
+            File(mesh_filename) << reduced_mesh
+        self.reduced_mesh_dofs_list.save(directory, filename + "_dofs")
+        self.reduced_mesh_reduced_dofs_list.save(directory, filename + "_reduced_dofs")
             
     def _save_Nmax(self, directory, filename):
         assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
-        if is_io_process(self.mpi_comm):
+        if is_io_process(self.mesh.mpi_comm()):
             with open(str(directory) + "/" + filename + ".length", "w") as length:
                 length.write(str(len(self.reduced_mesh)))
         self.mesh.mpi_comm().barrier()
@@ -120,13 +132,15 @@ class ReducedMesh(AbstractReducedMesh):
         assert isinstance(key, slice)
         assert key.start is None 
         assert key.step is None
-        return self._create_reduced_function_space(self.reduced_mesh[key.stop]), self.reduced_mesh_reduced_dofs_list[key.stop]
+        assert key.stop > 0
+        key_to_index = key.stop - 1
+        return ReducedMesh(self.V, self.reduced_mesh_dofs_list[key], self.reduced_mesh[key_to_index], self.reduced_mesh_reduced_dofs_list[key_to_index], self.reduced_function_space[key_to_index])
                 
     def _store_reduced_mesh_and_reduced_dofs(self):
         # Create submesh thanks to cbcpost
         reduced_mesh = create_submesh(self.mesh, self.reduced_mesh_cells_marker, 1)
         # Return the FunctionSpace V on the reduced mesh
-        reduced_V = self._create_reduced_function_space(reduced_mesh)
+        reduced_V = FunctionSpace(reduced_mesh, self.V.ufl_element())
         # Get the map between DOFs on reduced_V and V
         reduced_dofs__to__dofs = restriction_map(self.V, reduced_V)
         # ... invert it ...
@@ -143,7 +157,23 @@ class ReducedMesh(AbstractReducedMesh):
         # Add to storage
         self.reduced_mesh.append(reduced_mesh)
         self.reduced_mesh_reduced_dofs_list.append(reduced_mesh_reduced_dofs_list)
+        self.reduced_function_space.append(reduced_V)
     
-    def _create_reduced_function_space(self, reduced_mesh):
-        return FunctionSpace(reduced_mesh, self.V.ufl_element())
+    def get_reduced_function_space(self, index=None):
+        if index is None:
+            index = -1
+        
+        return self.reduced_function_space[index]
+        
+    def get_dofs_list(self, index=None):
+        if index is None:
+            index = len(self.reduced_mesh_dofs_list)
+        
+        return self.reduced_mesh_dofs_list[:index]
+        
+    def get_reduced_dofs_list(self, index=None):
+        if index is None:
+            index = -1
+        
+        return self.reduced_mesh_reduced_dofs_list[index]
         

@@ -48,7 +48,7 @@ def functions_list_mul_online_vector(functions_list, online_vector):
     output = function_copy(functions_list._list[0])
     output.vector()[:] = 0.
     for (i, fun_i) in enumerate(functions_list._list):
-        output.vector()[:] += fun_i.vector()*onlineMatrixOrVector.item(i)
+        output.vector()[:] += fun_i.vector()*online_vector.item(i)
     return output
     
 def functions_list_mul_online_function(functions_list, online_function):

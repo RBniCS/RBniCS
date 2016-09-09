@@ -23,11 +23,15 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 def transpose(arg, backend, wrapping, online_backend):
-    assert isinstance(arg, (backend.Function.Type(), backend.FunctionsList, backend.Vector.Type()))
+    assert isinstance(arg, (backend.Function.Type(), backend.FunctionsList, backend.Vector.Type(), backend.Matrix.Type(), backend.TensorsList))
     if isinstance(arg, backend.FunctionsList):
         return FunctionsList_Transpose(arg, backend, wrapping, online_backend)
+    elif isinstance(arg, backend.TensorsList):
+        return TensorsList_Transpose(arg, backend, wrapping, online_backend)
     elif isinstance(arg, (backend.Function.Type(), backend.Vector.Type())):
         return Vector_Transpose(arg, backend, wrapping)
+    elif isinstance(arg, backend.Matrix.Type()):
+        return VectorizedMatrix_Transpose(arg, backend, wrapping)
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in transpose.")
         
@@ -118,4 +122,35 @@ class FunctionsList_Transpose__times__Matrix(object):
             return online_vector
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList_Transpose__times__Matrix.__mul__.")
+            
+# Auxiliary class: transpose of a vectorized matrix (i.e. vector obtained by stacking its columns)
+class VectorizedMatrix_Transpose(object):
+    def __init__(self, matrix, backend, wrapping):
+        assert isinstance(matrix, backend.Matrix.Type())
+        self.matrix = matrix
+        self.backend = backend
+        self.wrapping = wrapping
+            
+    def __mul__(self, other_matrix):
+        assert isinstance(other_matrix, self.backend.Matrix.Type())
+        return self.wrapping.vectorized_matrix_inner_vectorized_matrix(self.matrix, other_matrix)
+        
+# Auxiliary class: transpose of a TensorsList
+class TensorsList_Transpose(object):
+    def __init__(self, tensors_list, backend, wrapping, online_backend):
+        assert isinstance(tensors_list, backend.TensorsList)
+        self.tensors_list = tensors_list
+        self.backend = backend
+        self.wrapping = wrapping
+        self.online_backend = online_backend
+    
+    def __mul__(self, other_tensors_list):
+        assert isinstance(other_tensors_list, self.backend.TensorsList)
+        assert len(self.tensors_list) == len(other_tensors_list)
+        dim = len(self.tensors_list)
+        online_matrix = self.online_backend.Matrix(dim, dim)
+        for i in range(dim):
+            for j in range(dim):
+                online_matrix[i, j] = transpose(self.tensors_list[i], self.backend, self.wrapping, self.online_backend)*other_tensors_list[j]
+        return online_matrix
         

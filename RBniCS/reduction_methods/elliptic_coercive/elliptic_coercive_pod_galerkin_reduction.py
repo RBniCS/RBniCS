@@ -89,7 +89,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         
         # Declare a new POD
         assert len(self.truth_problem.inner_product) == 1
-        self.POD = ProperOrthogonalDecomposition(self.truth_problem.inner_product[0], self.truth_problem.V)
+        self.POD = ProperOrthogonalDecomposition(self.truth_problem.V, self.truth_problem.inner_product[0])
         
         # Return
         return output

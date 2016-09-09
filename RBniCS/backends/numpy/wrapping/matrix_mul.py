@@ -23,9 +23,15 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.matrix import Matrix
 
 def matrix_mul_vector(matrix, vector):
     if isinstance(vector, Function.Type()):
         vector = vector.vector()
     return matrix*vector
 
+def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
+    assert isinstance(matrix, Matrix.Type())
+    assert isinstance(other_matrix, Matrix.Type())
+    return (matrix*other_matrix).sum()
+    

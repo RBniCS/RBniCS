@@ -23,10 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.vector import Vector
 
 def function_copy(function):
     original_vector = function.vector()
-    v = NumPy_backend.Vector(original_vector.size)
+    v = Vector(original_vector.size)
     v[:] = original_vector
     return Function(v)
 

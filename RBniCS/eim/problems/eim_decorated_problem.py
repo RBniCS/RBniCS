@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from itertools import product as cartesian_product
-from RBniCS.backends import ProjectedParametrizedExpression, SeparatedParametrizedForm
+from RBniCS.backends import BasisFunctionsMatrix, ProjectedParametrizedExpression, SeparatedParametrizedForm
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from RBniCS.eim.problems.eim_approximation import EIMApproximation

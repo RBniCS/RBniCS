@@ -24,12 +24,13 @@
 
 from RBniCS.backends.basic.functions_list import FunctionsList
 from RBniCS.backends.basic.gram_schmidt import GramSchmidt
-from RBniCS.backends.basic.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
+from RBniCS.backends.basic.tensors_list import TensorsList
 from RBniCS.backends.basic.transpose import transpose
 
 __all__ = [
     'FunctionsList',
     'GramSchmidt',
-    'ProperOrthogonalDecomposition',
+    'ProperOrthogonalDecompositionBase',
     'transpose'
 ]

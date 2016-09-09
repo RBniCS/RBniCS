@@ -23,10 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import abs, BasisFunctionsMatrix, difference, evaluate, Function, max
+from RBniCS.backends import abs, difference, evaluate, max
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
-from RBniCS.eim.utils.io import InterpolationLocationsList
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EIM
@@ -56,15 +55,15 @@ class EIMApproximation(ParametrizedProblem):
         # Online reduced space dimension
         self.N = 0
         # Define additional storage for EIM
-        self.interpolation_locations = InterpolationLocationsList(parametrized_expression) # list of interpolation locations selected by the greedy
+        self.interpolation_locations = parametrized_expression.create_interpolation_locations_container() # interpolation locations selected by the greedy (either a ReducedVertices or ReducedMesh)
         self.interpolation_matrix = OnlineAffineExpansionStorage(1) # interpolation matrix
         # Solution
         self._interpolation_coefficients = OnlineFunction()
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        self.snapshot = Function(parametrized_expression.space)
-        # Basis functions matrix
-        self.Z = BasisFunctionsMatrix(parametrized_expression.space)
+        self.snapshot = None # will be filled in by Function, Vector or Matrix as appropriate in the EIM preprocessing
+        # Basis functions container
+        self.Z = parametrized_expression.create_basis_container()
         # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
         # basis function/reduced operator folder, but rather add a new one. For this reason we use
         # the __eim suffix in the variable name.
@@ -115,10 +114,12 @@ class EIMApproximation(ParametrizedProblem):
         if N is None:
             N = self.N
             
+        if N == 0:
+            self._interpolation_coefficients = OnlineFunction()
+            return
+            
         # Evaluate the parametrized expression at interpolation locations
-        rhs = OnlineVector(N)
-        for p in range(N):
-            rhs[p] = evaluate(rhs_, self.interpolation_locations[p])
+        rhs = evaluate(rhs_, self.interpolation_locations[:N])
         
         # Extract the interpolation matrix
         lhs = self.interpolation_matrix[0][:N,:N]

@@ -23,16 +23,19 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.backends.basic import ProperOrthogonalDecomposition as BasicProperOrthogonalDecomposition
+from RBniCS.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
+from RBniCS.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
 import RBniCS.backends.numpy
 import RBniCS.backends.numpy.wrapping
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
-@Extends(BasicProperOrthogonalDecomposition)
+ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
+
+@Extends(ProperOrthogonalDecompositionBase)
 @BackendFor("NumPy", inputs=(Matrix.Type(), AbstractFunctionsList))
-class ProperOrthogonalDecomposition(BasicProperOrthogonalDecomposition):
+class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
     @override
-    def __init__(self, X, V_or_Z):
-        BasicProperOrthogonalDecomposition.__init__(self, X, V_or_Z, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping)
+    def __init__(self, V_or_Z, X):
+        ProperOrthogonalDecompositionBase.__init__(self, V_or_Z, X, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.SnapshotsMatrix, RBniCS.backends.numpy.BasisFunctionsMatrix)
         

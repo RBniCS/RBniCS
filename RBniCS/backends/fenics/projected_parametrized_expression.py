@@ -24,6 +24,10 @@
 
 from dolfin import assemble, dx, Expression, FunctionSpace, inner, Point, TensorElement, TestFunction, TrialFunction, VectorElement
 from RBniCS.backends.abstract import ProjectedParametrizedExpression as AbstractProjectedParametrizedExpression
+from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
+from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 
@@ -46,32 +50,23 @@ class ProjectedParametrizedExpression(AbstractProjectedParametrizedExpression):
         else:
             raise AssertionError("Invalid function space in ProjectedParametrizedExpression")
         self._space = FunctionSpace(original_space.mesh(), element)
-        mesh = self._space.mesh()
-        self._bounding_box_tree = mesh.bounding_box_tree()
-        self._mpi_comm = mesh.mpi_comm().tompi4py()
-    
+            
     @override
-    @property
-    def expression(self):
-        return self._expression
+    def create_interpolation_locations_container(self):
+        return ReducedVertices(self._space.mesh())
         
     @override
-    @property
-    def space(self):
-        return self._space
+    def create_snapshots_container(self):
+        return SnapshotsMatrix(self._space)
         
     @override
-    @property
-    def inner_product(self):
+    def create_basis_container(self):
+        return BasisFunctionsMatrix(self._space)
+        
+    @override
+    def create_POD_container(self):
         f = TrialFunction(self._space)
         g = TestFunction(self._space)
-        return assemble(inner(f, g)*dx)
-        
-    @override
-    def get_processor_id(self, point):
-        is_local = self._bounding_box_tree.collides_entity(Point(point))
-        processor_id = -1
-        if is_local:
-            processor_id = self._mpi_comm.rank
-        return parallel_max(self._mpi_comm, processor_id)
+        inner_product = assemble(inner(f, g)*dx)
+        return ProperOrthogonalDecomposition(self._space, inner_product)
         

@@ -58,6 +58,7 @@ else:
         if global_value_max_with_postprocessing == local_value_max_with_postprocessing:
             global_value_processor_argmax = mpi_comm.rank
         global_value_processor_argmax = mpi_comm.allreduce(global_value_processor_argmax, op=MAX)
+        assert global_value_processor_argmax >= 0
         global_value_max = mpi_comm.bcast(local_value_max, root=global_value_processor_argmax)
         if local_args is not None:
             if not isinstance(local_args, tuple):

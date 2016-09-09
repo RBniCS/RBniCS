@@ -31,6 +31,7 @@ from RBniCS.backends.numpy.eigen_solver import EigenSolver
 from RBniCS.backends.numpy.function import Function
 from RBniCS.backends.numpy.functions_list import FunctionsList
 from RBniCS.backends.numpy.gram_schmidt import GramSchmidt
+from RBniCS.backends.numpy.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
 from RBniCS.backends.numpy.linear_solver import LinearSolver
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.max import max
@@ -38,11 +39,15 @@ from RBniCS.backends.numpy.product import product
 #from RBniCS.backends.numpy.projected_parametrized_expression import ProjectedParametrizedExpression
 #from RBniCS.backends.numpy.projected_parametrized_tensor import ProjectedParametrizedTensor
 from RBniCS.backends.numpy.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
-from RBniCS.backends.numpy.reduced_mesh import ReducedMesh
+#from RBniCS.backends.numpy.reduced_mesh import ReducedMesh
+#from RBniCS.backends.numpy.reduced_vertices import ReducedVertices
 from RBniCS.backends.numpy.rescale import rescale
 #from RBniCS.backends.numpy.separated_parametrized_form import SeparatedParametrizedForm
 from RBniCS.backends.numpy.snapshots_matrix import SnapshotsMatrix
 from RBniCS.backends.numpy.sum import sum
+from RBniCS.backends.numpy.tensor_basis_list import TensorBasisList
+from RBniCS.backends.numpy.tensor_snapshots_list import TensorSnapshotsList
+from RBniCS.backends.numpy.tensors_list import TensorsList
 from RBniCS.backends.numpy.transpose import transpose
 from RBniCS.backends.numpy.vector import Vector
 
@@ -56,6 +61,7 @@ __all__ = [
     'Function',
     'FunctionsList',
     'GramSchmidt',
+    'HighOrderProperOrthogonalDecomposition',
     'LinearSolver',
     'Matrix',
     'max',
@@ -63,11 +69,15 @@ __all__ = [
 #    'ProjectedParametrizedExpression',
 #    'ProjectedParametrizedTensor',
     'ProperOrthogonalDecomposition',
-    'ReducedMesh',
+#    'ReducedMesh',
+#    'ReducedVertices',
     'rescale',
 #    'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',
+    'TensorBasisList',
+    'TensorSnapshotsList',
+    'TensorsList',
     'transpose',
     'Vector'
 ]

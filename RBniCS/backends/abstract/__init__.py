@@ -31,6 +31,7 @@ from RBniCS.backends.abstract.eigen_solver import EigenSolver
 from RBniCS.backends.abstract.function import Function
 from RBniCS.backends.abstract.functions_list import FunctionsList
 from RBniCS.backends.abstract.gram_schmidt import GramSchmidt
+from RBniCS.backends.abstract.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
 from RBniCS.backends.abstract.linear_solver import LinearSolver
 from RBniCS.backends.abstract.matrix import Matrix
 from RBniCS.backends.abstract.max import max
@@ -39,10 +40,14 @@ from RBniCS.backends.abstract.projected_parametrized_expression import Projected
 from RBniCS.backends.abstract.projected_parametrized_tensor import ProjectedParametrizedTensor
 from RBniCS.backends.abstract.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.backends.abstract.reduced_mesh import ReducedMesh
+from RBniCS.backends.abstract.reduced_vertices import ReducedVertices
 from RBniCS.backends.abstract.rescale import rescale
 from RBniCS.backends.abstract.separated_parametrized_form import SeparatedParametrizedForm
 from RBniCS.backends.abstract.snapshots_matrix import SnapshotsMatrix
 from RBniCS.backends.abstract.sum import sum
+from RBniCS.backends.abstract.tensor_basis_list import TensorBasisList
+from RBniCS.backends.abstract.tensor_snapshots_list import TensorSnapshotsList
+from RBniCS.backends.abstract.tensors_list import TensorsList
 from RBniCS.backends.abstract.transpose import transpose
 from RBniCS.backends.abstract.vector import Vector
 
@@ -56,6 +61,7 @@ __all__ = [
     'Function',
     'FunctionsList',
     'GramSchmidt',
+    'HighOrderProperOrthogonalDecomposition',
     'LinearSolver',
     'Matrix',
     'max',
@@ -64,10 +70,14 @@ __all__ = [
     'ProjectedParametrizedTensor',
     'ProperOrthogonalDecomposition',
     'ReducedMesh',
+    'ReducedVertices',
     'rescale',
     'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',
+    'TensorBasisList',
+    'TensorSnapshotsList',
+    'TensorsList',
     'transpose',
     'Vector'
 ]

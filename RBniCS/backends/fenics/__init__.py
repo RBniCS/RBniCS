@@ -39,6 +39,7 @@ from RBniCS.backends.fenics.eigen_solver import EigenSolver
 from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.gram_schmidt import GramSchmidt
+from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
 from RBniCS.backends.fenics.linear_solver import LinearSolver
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.max import max
@@ -47,10 +48,14 @@ from RBniCS.backends.fenics.projected_parametrized_expression import ProjectedPa
 from RBniCS.backends.fenics.projected_parametrized_tensor import ProjectedParametrizedTensor
 from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
+from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.rescale import rescale
 from RBniCS.backends.fenics.separated_parametrized_form import SeparatedParametrizedForm
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
 from RBniCS.backends.fenics.sum import sum
+from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
+from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
+from RBniCS.backends.fenics.tensors_list import TensorsList
 from RBniCS.backends.fenics.transpose import transpose
 from RBniCS.backends.fenics.vector import Vector
 
@@ -64,6 +69,7 @@ __all__ = [
     'Function',
     'FunctionsList',
     'GramSchmidt',
+    'HighOrderProperOrthogonalDecomposition',
     'LinearSolver',
     'Matrix',
     'max',
@@ -72,10 +78,14 @@ __all__ = [
     'ProjectedParametrizedTensor',
     'ProperOrthogonalDecomposition',
     'ReducedMesh',
+    'ReducedVertices',
     'rescale',
     'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',
+    'TensorBasisList',
+    'TensorSnapshotsList',
+    'TensorsList',
     'transpose',
     'Vector'
 ]

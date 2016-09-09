@@ -52,7 +52,7 @@ def abs(expression):
         assert j_max is not None
         assert value_max is not None
         #
-        mpi_comm = mat.comm().tompi4py()
+        mpi_comm = mat.comm.tompi4py()
         (global_value_max, global_ij_max) = parallel_max(mpi_comm, value_max, (i_max, j_max), fabs)
         return AbsOutput(global_value_max, global_ij_max)
     elif isinstance(expression, Vector.Type()):
@@ -69,7 +69,7 @@ def abs(expression):
         assert i_max is not None
         assert value_max is not None
         #
-        mpi_comm = mat.comm().tompi4py()
+        mpi_comm = vec.comm.tompi4py()
         (global_value_max, global_i_max) = parallel_max(mpi_comm, value_max, (i_max, ), fabs)
         return AbsOutput(global_value_max, global_i_max)
     elif isinstance(expression, Function.Type()):

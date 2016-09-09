@@ -23,14 +23,33 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.wrapping import function_copy
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
+from RBniCS.backends.fenics.wrapping import function_copy, tensor_copy
 from RBniCS.utils.decorators import backend_for
 
 # Compute the difference between two solutions
-@backend_for("FEniCS", inputs=(Function.Type(), Function.Type()))
+@backend_for("FEniCS", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Function.Type(), Matrix.Type(), Vector.Type())))
 def difference(solution1, solution2):
-    output = function_copy(solution1)
-    output.vector().add_local( - solution2.vector().array() )
-    output.vector().apply("add")
-    return output
+    assert (
+        (isinstance(solution1, Function.Type()) and isinstance(solution2, Function.Type()))
+            or
+        (isinstance(solution1, (Matrix.Type(), Vector.Type())) and isinstance(solution2, (Matrix.Type(), Vector.Type())))
+    )
+    if isinstance(solution1, Function.Type()):
+        output = function_copy(solution1)
+        output.vector().add_local( - solution2.vector().array() )
+        output.vector().apply("add")
+        return output
+    elif isinstance(solution1, Matrix.Type()):
+        output = tensor_copy(solution1)
+        output -= solution2
+        return output
+    elif isinstance(solution1, Vector.Type()):
+        output = tensor_copy(solution1)
+        output.add_local( - solution2.array() )
+        output.apply("add")
+        return output
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in difference.")
     

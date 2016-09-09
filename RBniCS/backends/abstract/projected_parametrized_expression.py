@@ -22,26 +22,29 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import AbstractBackend, abstractmethod, abstractproperty
+from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ProjectedParametrizedExpression(object):
     def __init__(self, expression, space):
         pass
     
-    @abstractproperty
-    def expression(self):
+    @abstractmethod
+    def create_interpolation_locations_container(self):
         pass
-        
-    @abstractproperty
-    def space(self):
-        pass
-        
-    @abstractproperty
-    def inner_product(self):
-        pass    
         
     @abstractmethod
-    def get_processor_id(self, point):
+    def create_snapshots_container(self):
         pass
         
+    @abstractmethod
+    def create_basis_container(self):
+        pass
+        
+    @abstractmethod
+    def create_POD_container(self):
+        pass
+        
+    def interpolation_method_name(self):
+        return "EIM"
+            

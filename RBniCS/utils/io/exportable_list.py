@@ -46,6 +46,12 @@ class ExportableList(object):
     
     def append(self, element):
         self._list.append(element)
+        
+    def extend(self, other_list):
+        if isinstance(other_list, ExportableList):
+            self._list.extend(other_list._list)
+        else:
+            self._list.extend(other_list)
     
     # Returns True if it was possible to import the list,
     # or if the list had been already imported so no further

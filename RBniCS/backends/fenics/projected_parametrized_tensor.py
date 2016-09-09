@@ -23,30 +23,36 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl import Form
+from dolfin import FunctionSpace
 from RBniCS.backends.abstract import ProjectedParametrizedTensor as AbstractProjectedParametrizedTensor
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
+from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
+from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractProjectedParametrizedTensor)
-@BackendFor("FEniCS", inputs=(Form, ReducedMesh))
+@BackendFor("FEniCS", inputs=(Form, FunctionSpace))
 class ProjectedParametrizedTensor(AbstractProjectedParametrizedTensor):
-    def __init__(self, tensor, reduced_mesh):
-        AbstractProjectedParametrizedTensor.__init__(tensor, reduced_mesh)
+    def __init__(self, form, space):
+        AbstractProjectedParametrizedTensor.__init__(self, form, space)
         #
-        self._tensor = tensor
-        self._reduced_mesh = reduced_mesh
+        self._form = form
+        self._space = space
     
     @override
-    @property
-    def tensor(self):
-        return self._tensor
+    def create_interpolation_locations_container(self):
+        return ReducedMesh(self._space)
         
     @override
-    @property
-    def reduced_mesh(self):
-        return self._reduced_mesh
+    def create_snapshots_container(self):
+        return TensorSnapshotsList(self._space)
         
     @override
-    def get_processor_id(self, indices):
-        return # TODO
+    def create_basis_container(self):
+        return TensorBasisList(self._space)
+        
+    @override
+    def create_POD_container(self):
+        return HighOrderProperOrthogonalDecomposition(self._space)
         

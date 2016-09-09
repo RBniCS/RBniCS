@@ -24,16 +24,32 @@
 
 from dolfin import *
 from RBniCS import EquispacedDistribution, ParametrizedExpression
-from RBniCS.backends import ProjectedParametrizedExpression
+from RBniCS.backends import ProjectedParametrizedExpression, ProjectedParametrizedTensor
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
 class ParametrizedFunctionApproximation(EIMApproximation):
-    def __init__(self, V, basis_generation):
+    def __init__(self, V, expression_type, basis_generation):
         # Parametrized function to be interpolated
         f = ParametrizedExpression(self, "(1-x[0])*cos(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))", mu=(1., ), element=V.ufl_element())
-        # Call Parent constructor
-        EIMApproximation.__init__(self, None, ProjectedParametrizedExpression(f, V), "test_eim_approximation_1.output_dir", basis_generation)
+        #
+        assert expression_type in ("Function", "Vector", "Matrix")
+        if expression_type == "Function":
+            # Call Parent constructor
+            EIMApproximation.__init__(self, None, ProjectedParametrizedExpression(f, V), "test_eim_approximation_1_function.output_dir", basis_generation)
+        elif expression_type == "Vector":
+            v = TestFunction(V)
+            form = f*v*dx
+            # Call Parent constructor
+            EIMApproximation.__init__(self, None, ProjectedParametrizedTensor(form, V), "test_eim_approximation_1_vector.output_dir", basis_generation)
+        elif expression_type == "Matrix":
+            u = TrialFunction(V)
+            v = TestFunction(V)
+            form = f*u*v*dx
+            # Call Parent constructor
+            EIMApproximation.__init__(self, None, ProjectedParametrizedTensor(form, V), "test_eim_approximation_1_matrix.output_dir", basis_generation)
+        else: # impossible to arrive here anyway thanks to the assert
+            raise AssertionError("Invalid expression_type")
 
 # 1. Create the mesh for this test
 mesh = IntervalMesh(100, -1., 1.)
@@ -42,14 +58,15 @@ mesh = IntervalMesh(100, -1., 1.)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the ParametrizedFunctionApproximation class
+expression_type = "Function" # Function or Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
-parametrized_function_approximation = ParametrizedFunctionApproximation(V, basis_generation)
+parametrized_function_approximation = ParametrizedFunctionApproximation(V, expression_type, basis_generation)
 mu_range = [(1., pi), ]
 parametrized_function_approximation.set_mu_range(mu_range)
 
 # 4. Prepare reduction with EIM
 parametrized_function_reduction_method = EIMApproximationReductionMethod(parametrized_function_approximation)
-parametrized_function_reduction_method.set_Nmax(51)
+parametrized_function_reduction_method.set_Nmax(30)
 
 # 5. Perform the offline phase
 parametrized_function_reduction_method.set_xi_train(51, sampling=EquispacedDistribution())

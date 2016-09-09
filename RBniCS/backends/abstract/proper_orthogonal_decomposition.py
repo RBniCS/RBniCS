@@ -29,7 +29,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 class ProperOrthogonalDecomposition(object):
 
     ## Default initialization of members
-    def __init__(self, X, V_or_Z):
+    def __init__(self, V_or_Z, X):
         pass
         
     ## Clean up

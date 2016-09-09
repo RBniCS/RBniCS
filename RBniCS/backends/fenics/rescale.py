@@ -23,13 +23,23 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.wrapping import function_copy
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
+from RBniCS.backends.fenics.wrapping import function_copy, tensor_copy
 from RBniCS.utils.decorators import backend_for
 
 # Rescale a solution
-@backend_for("FEniCS", inputs=(Function.Type(), float))
+@backend_for("FEniCS", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), float))
 def rescale(solution, by):
-    output = function_copy(solution)
-    output.vector()[:] /= by
-    return output
+    assert isinstance(solution, (Function.Type(), Matrix.Type(), Vector.Type()))
+    if isinstance(solution, Function.Type()):
+        output = function_copy(solution)
+        output.vector()[:] *= by
+        return output
+    elif isinstance(solution, (Matrix.Type(), Vector.Type())):
+        output = tensor_copy(solution)
+        output *= by
+        return output
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in rescale.")
     

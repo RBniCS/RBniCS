@@ -22,10 +22,21 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from petsc4py import PETSc
+from dolfin import as_backend_type
 from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.matrix import Matrix
 
 def matrix_mul_vector(matrix, vector):
     if isinstance(vector, Function.Type()):
         vector = vector.vector()
     return matrix*vector
 
+def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
+    assert isinstance(matrix, Matrix.Type())
+    assert isinstance(other_matrix, Matrix.Type())
+    matrix = as_backend_type(matrix).mat()
+    other_matrix = as_backend_type(other_matrix).mat()
+    mat = matrix.transposeMatMult(other_matrix)
+    # petsc4py does not expose MatGetTrace, we do this by hand
+    return mat.getDiagonal().sum()
