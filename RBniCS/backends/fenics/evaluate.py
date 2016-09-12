@@ -43,16 +43,6 @@ def evaluate(expression_, at=None):
     assert isinstance(expression_, (Matrix.Type(), Vector.Type(), Function.Type(), TensorsList, FunctionsList, ProjectedParametrizedTensor, ProjectedParametrizedExpression))
     assert at is None or isinstance(at, (ReducedMesh, ReducedVertices))
     if isinstance(expression_, (Function.Type(), FunctionsList, ProjectedParametrizedExpression)):
-        def deduce_online_size_from_ufl(reduced_vertices, expression):
-            components = tuple_product(expression.ufl_shape)
-            assert (
-                isinstance(components, int) 
-                    or 
-                # numpy returs the float 1.0 for empty tuple [scalar functions]
-                (isinstance(components, float) and components == 1.0)
-            )
-            return len(reduced_vertices._vertex_list)*int(components)
-        
         assert at is None or isinstance(at, ReducedVertices)
         if isinstance(expression_, Function.Type()):
             function = expression_
@@ -120,43 +110,6 @@ def evaluate(expression_, at=None):
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to evaluate")
     elif isinstance(expression_, (Matrix.Type(), Vector.Type(), TensorsList, ProjectedParametrizedTensor)):
-        def evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_matrix, dofs_list):
-            mat = as_backend_type(sparse_matrix).mat()
-            row_start, row_end = mat.getOwnershipRange()
-            out_size = len(dofs_list)
-            out = OnlineVector(out_size)
-            mpi_comm = mat.comm.tompi4py()
-            for (index, dofs) in enumerate(dofs_list):
-                i = dofs[0]
-                out_index = None
-                out_index_processor = -1
-                if i >= row_start and i < row_end:
-                    j = dofs[1]
-                    out_index = mat.getValue(i, j)
-                    out_index_processor = mpi_comm.rank
-                out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)
-                assert out_index_processor >= 0
-                out[index] = mpi_comm.bcast(out_index, root=out_index_processor)
-            return out
-            
-        def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
-            vec = as_backend_type(sparse_vector).vec()
-            row_start, row_end = vec.getOwnershipRange()
-            out_size = len(dofs_list)
-            out = OnlineVector(out_size)
-            mpi_comm = vec.comm.tompi4py()
-            for (index, dofs) in enumerate(dofs_list):
-                i = dofs[0]
-                out_index = None
-                out_index_processor = -1
-                if i >= row_start and i < row_end:
-                    out_index = vec.getValue(i)
-                    out_index_processor = mpi_comm.rank
-                out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)
-                assert out_index_processor >= 0
-                out[index] = mpi_comm.bcast(out_index, root=out_index_processor)
-            return out
-            
         assert at is None or isinstance(at, ReducedMesh)
         if isinstance(expression_, Matrix.Type()):
             assert at is not None
@@ -196,4 +149,50 @@ def evaluate(expression_, at=None):
             raise AssertionError("Invalid argument to evaluate")
     else: # impossible to arrive here anyway thanks to the assert
         raise AssertionError("Invalid argument to evaluate")
-            
+
+# HELPER FUNCTIONS
+def deduce_online_size_from_ufl(reduced_vertices, expression):
+    components = tuple_product(expression.ufl_shape)
+    assert (
+        isinstance(components, int) 
+            or 
+        # numpy returs the float 1.0 for empty tuple [scalar functions]
+        (isinstance(components, float) and components == 1.0)
+    )
+    return len(reduced_vertices._vertex_list)*int(components)
+    
+def evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_matrix, dofs_list):
+    mat = as_backend_type(sparse_matrix).mat()
+    row_start, row_end = mat.getOwnershipRange()
+    out_size = len(dofs_list)
+    out = OnlineVector(out_size)
+    mpi_comm = mat.comm.tompi4py()
+    for (index, dofs) in enumerate(dofs_list):
+        i = dofs[0]
+        out_index = None
+        out_index_processor = -1
+        if i >= row_start and i < row_end:
+            j = dofs[1]
+            out_index = mat.getValue(i, j)
+            out_index_processor = mpi_comm.rank
+        out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)
+        assert out_index_processor >= 0
+        out[index] += mpi_comm.bcast(out_index, root=out_index_processor)
+    return out
+    
+def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
+    vec = as_backend_type(sparse_vector).vec()
+    row_start, row_end = vec.getOwnershipRange()
+    out_size = len(dofs_list)
+    out = OnlineVector(out_size)
+    mpi_comm = vec.comm.tompi4py()
+    for (index, dofs) in enumerate(dofs_list):
+        out_index = None
+        out_index_processor = -1
+        if i >= row_start and i < row_end:
+            out_index = vec.getValue(i)
+            out_index_processor = mpi_comm.rank
+        out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)
+        assert out_index_processor >= 0
+        out[index] += mpi_comm.bcast(out_index, root=out_index_processor)
+    return out

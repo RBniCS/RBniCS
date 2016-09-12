@@ -23,27 +23,43 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
+set_log_level(DEBUG)
 from fenicstools import DofMapPlotter
 from RBniCS.backends.fenics import ReducedMesh
+from RBniCS.backends.fenics.evaluate import evaluate_and_vectorize_sparse_matrix_at_dofs
 
 mesh = UnitSquareMesh(3, 3)
 
 V = FunctionSpace(mesh, "CG", 2)
 
+"""
 dmp = DofMapPlotter(V)
 dmp.plot()
 dmp.show()
+"""
 
 reduced_mesh = ReducedMesh(V)
-dofs = [(1, 2), (11, 12)]
+dofs = [(1, 2), (11, 12), (48, 12), (41, 41)]
 
-reduced_mesh.add_dofs(dofs[0])
-reduced_mesh.add_dofs(dofs[1])
+for pair in dofs:
+    log(PROGRESS, "Adding " + str(pair))
+    reduced_mesh.append(pair)
+    
+    """
+    plot(reduced_mesh.reduced_mesh_cells_marker)
+    interactive()
+    if reduced_mesh.get_reduced_mesh() is not None:
+        plot(reduced_mesh.get_reduced_mesh())
+        interactive()
+    """
+    if reduced_mesh.get_reduced_function_space() is not None:
+        dmp = DofMapPlotter(reduced_mesh.get_reduced_function_space())
+        dmp.plot()
+        dmp.show()
 
-(reduced_V, reduced_dofs) = reduced_mesh[:1]
-dmp = DofMapPlotter(reduced_V)
-dmp.plot()
-dmp.show()
+reduced_V = reduced_mesh.get_reduced_function_space()
+reduced_dofs = reduced_mesh.get_reduced_dofs_list()
+
 
 u = TrialFunction(V)
 v = TestFunction(V)
@@ -51,15 +67,13 @@ v = TestFunction(V)
 u_N = TrialFunction(reduced_V)
 v_N = TestFunction(reduced_V)
 
-A = assemble(u*v*dx)
-A_N = assemble(u_N*v_N*dx)
+A = assemble((u.dx(0)*v + u*v)*dx)
+A_N = assemble((u_N.dx(0)*v_N + u_N*v_N)*dx)
 
-print A.array().shape
-for dof in dofs:
-    print A.array()[dof],
-print 
+A_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A, dofs)
+A_N_reduced_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A_N, reduced_dofs)
 
-print A_N.array().shape
-for reduced_dof in reduced_dofs:
-    print A_N.array()[reduced_dof],
-print
+log(PROGRESS, "A at dofs:\n" + str(A_dofs))
+log(PROGRESS, "A_N at reduced dofs:\n" + str(A_N_reduced_dofs))
+log(PROGRESS, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
+
