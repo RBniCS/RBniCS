@@ -88,6 +88,31 @@ else:
             log(DEBUG, "Local indices of shared vertices " + str(submesh.topology().shared_entities(0).keys()))
             log(DEBUG, "Global indices of shared vertices " + str([Vertex(submesh, local_index).global_index() for local_index in submesh.topology().shared_entities(0).keys()]))
             return submesh
+            
+    # Moreover, override distribute_meshdata (used internally by create_submesh_cbcpost) to 
+    # make sure to remove useless vertices in case of redistribution
+    import cbcpost.utils.submesh
+    distribute_meshdata_cbcpost = cbcpost.utils.submesh.distribute_meshdata
+
+    def new_distribute_meshdata(cells, vertices):
+        (new_cells, new_vertices) = distribute_meshdata_cbcpost(cells, vertices)
+        # Remove useless vertices in case of redistribution
+        all_vertices = list()
+        for c in new_cells:
+            all_vertices.extend(c)
+        all_vertices = set(all_vertices)
+        for (set_index, vertex_index) in enumerate(all_vertices):
+            assert set_index <= vertex_index
+            if set_index < vertex_index:
+                for c in new_cells:
+                    for (i_v, v) in enumerate(c):
+                        if v == vertex_index:
+                            c[i_v] = set_index
+                new_vertices[set_index] = new_vertices[vertex_index]
+                del new_vertices[vertex_index]
+        return (new_cells, new_vertices)
+        
+    cbcpost.utils.submesh.distribute_meshdata = new_distribute_meshdata
         
 from RBniCS.backends.abstract import ReducedMesh as AbstractReducedMesh
 from RBniCS.utils.decorators import BackendFor, Extends, override
@@ -224,7 +249,6 @@ class ReducedMesh(AbstractReducedMesh):
             # Return the FunctionSpace V on the reduced mesh
             reduced_V = FunctionSpace(reduced_mesh, self.V.ufl_element())
             self.reduced_function_space.append(reduced_V)
-            return reduced_mesh
             # Get the map between DOFs on reduced_V and V
             reduced_dofs__to__dofs = restriction_map(self.V, reduced_V)
             # ... invert it ...

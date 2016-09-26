@@ -52,10 +52,12 @@ for pair in dofs:
         plot(reduced_mesh.get_reduced_mesh())
         interactive()
     """
+    """
     if reduced_mesh.get_reduced_function_space() is not None:
         dmp = DofMapPlotter(reduced_mesh.get_reduced_function_space())
         dmp.plot()
         dmp.show()
+    """
 
 reduced_V = reduced_mesh.get_reduced_function_space()
 reduced_dofs = reduced_mesh.get_reduced_dofs_list()
