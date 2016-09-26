@@ -22,7 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import CellFunction, cells, compile_extension_module, DEBUG, File, FunctionSpace, log, Vertex, vertices
+from dolfin import CellFunction, cells, compile_extension_module, DEBUG, File, FunctionSpace, has_hdf5, log, Vertex, vertices
+if has_hdf5():
+    from dolfin import HDF5File
 try:
     from cbcpost.utils import create_submesh as create_submesh_cbcpost, restriction_map
 except ImportError:
@@ -190,8 +192,16 @@ class ReducedMesh(AbstractReducedMesh):
         else:
             Nmax = self._load_Nmax(directory, filename)
             for index in range(Nmax):
-                mesh_filename = str(directory) + "/" + filename + "_" + str(index) + ".xml"
-                reduced_mesh = Mesh(mesh_filename)
+                mesh_filename = str(directory) + "/" + filename + "_" + str(index)
+                if not has_hdf5():
+                    assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
+                    mesh_filename = mesh_filename + ".xml"
+                    reduced_mesh = Mesh(mesh_filename)
+                else:
+                    mesh_filename = mesh_filename + ".h5"
+                    reduced_mesh = Mesh()
+                    input_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "r")
+                    input_file.read(reduced_mesh, "/mesh", False)
                 self.reduced_mesh.append(reduced_mesh)
                 self.reduced_function_space.append(FunctionSpace(reduced_mesh, self.V.ufl_element()))
             self.reduced_mesh_dofs_list.load(directory, filename + "_dofs")
@@ -211,8 +221,15 @@ class ReducedMesh(AbstractReducedMesh):
         self._save_Nmax(directory, filename)
         assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
         for (index, reduced_mesh) in enumerate(self.reduced_mesh):
-            mesh_filename = str(directory) + "/" + filename + "_" + str(index) + ".xml"
-            File(mesh_filename) << reduced_mesh
+            mesh_filename = str(directory) + "/" + filename + "_" + str(index)
+            if not has_hdf5():
+                assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
+                mesh_filename = mesh_filename + ".xml"
+                File(mesh_filename) << reduced_mesh
+            else:
+                mesh_filename = mesh_filename + ".h5"
+                output_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "w")
+                output_file.write(reduced_mesh, "/mesh")
         self.reduced_mesh_dofs_list.save(directory, filename + "_dofs")
         self.reduced_mesh_reduced_dofs_list.save(directory, filename + "_reduced_dofs")
             

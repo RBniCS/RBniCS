@@ -187,6 +187,7 @@ def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
     out = OnlineVector(out_size)
     mpi_comm = vec.comm.tompi4py()
     for (index, dofs) in enumerate(dofs_list):
+        i = dofs[0]
         out_index = None
         out_index_processor = -1
         if i >= row_start and i < row_end:
