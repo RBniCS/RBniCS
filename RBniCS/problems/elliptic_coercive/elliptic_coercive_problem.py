@@ -22,17 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from abc import ABCMeta, abstractmethod
-from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import AffineExpansionStorage, export, Function, product, transpose, LinearSolver, sum
+from RBniCS.problems.base import ParametrizedDifferentialProblem
+from RBniCS.backends import LinearSolver, product, sum, transpose
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem
 #
 # Base class containing the definition of elliptic coercive problems
-@Extends(ParametrizedProblem)
-class EllipticCoerciveProblem(ParametrizedProblem):
+@Extends(ParametrizedDifferentialProblem)
+class EllipticCoerciveProblem(ParametrizedDifferentialProblem):
     """This class defines and implement variables and methods needed for
     solving an elliptic and coercive problem. This class specializes
     in the two currently implemented reduced order methods, namely the
@@ -82,8 +81,6 @@ class EllipticCoerciveProblem(ParametrizedProblem):
 
     """
     
-    __metaclass__ = ABCMeta
-    
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the elliptic problem
     #  @{
@@ -92,20 +89,11 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     @override
     def __init__(self, V, **kwargs):
         # Call to parent
-        ParametrizedProblem.__init__(self, type(self).__name__)
+        ParametrizedDifferentialProblem.__init__(self, V, **kwargs)
         
-        # Input arguments
-        self.V = V
-        # Number of terms in the affine expansion
+        # Form names for elliptic problems
         self.terms = ["a", "f"]
-        self.Q = dict() # from string to integer
-        # Matrices/vectors resulting from the truth discretization
-        self.operator = dict() # from string to AffineExpansionStorage
-        self.inner_product = AffineExpansionStorage() # even though it will contain only one matrix
-        self.dirichlet_bc = AffineExpansionStorage()
-        # Solution
-        self._solution = Function(self.V)
-        self._output = 0
+        self.terms_order = {"a": 2, "f": 1}
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -114,33 +102,14 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
     
-    ## Initialize data structures required for the offline phase
-    def init(self):
-        for term in self.terms:
-            self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
-            self.Q[term] = len(self.operator[term])
-        self.inner_product = AffineExpansionStorage(self.assemble_operator("inner_product"))
-        try:
-            self.dirichlet_bc = AffineExpansionStorage(self.assemble_operator("dirichlet_bc"))
-        except ValueError: # there were no Dirichlet BCs
-            self.dirichlet_bc = None
-                    
     ## Perform a truth solve
+    @override
     def solve(self, **kwargs):
         assembled_operator = dict()
-        for term in self.terms:
-            assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
-        if self.dirichlet_bc is not None and len(self.dirichlet_bc) > 0:
-            try:
-                theta_dirichlet_bc = self.compute_theta("dirichlet_bc")
-            except ValueError: # there were no theta functions
-                # We provide in this case a shortcut for the case of homogeneous Dirichlet BCs,
-                # that do not require an additional lifting functions.
-                # The user needs to implement the dirichlet_bc case for assemble_operator, 
-                # but not the one in compute_theta (since theta would not matter, being multiplied by zero)
-                theta_dirichlet_bc = (0,)*len(self.dirichlet_bc)
-                
-            assembled_dirichlet_bc = sum(product(theta_dirichlet_bc, self.dirichlet_bc))
+        assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"]))
+        assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"]))
+        if self.dirichlet_bc is not None:
+            assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc"), self.dirichlet_bc))
         else:
             assembled_dirichlet_bc = None
         solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"], assembled_dirichlet_bc)
@@ -148,6 +117,7 @@ class EllipticCoerciveProblem(ParametrizedProblem):
         return self._solution
         
     ## Perform a truth evaluation of the (compliant) output
+    @override
     def output(self):
         assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
         self._output = transpose(assembled_output_operator)*self._solution
@@ -156,71 +126,3 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-    
-    ## Export solution to file
-    def export_solution(self, solution, folder, filename):
-        export(solution, folder, filename)
-        
-    #  @}
-    ########################### end - I/O - end ########################### 
-
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-
-    ## Return theta multiplicative terms of the affine expansion of the problem.
-    # Example of implementation:
-    #   m1 = self.mu[0]
-    #   m2 = self.mu[1]
-    #   m3 = self.mu[2]
-    #   if term == "a":
-    #       theta_a0 = m1
-    #       theta_a1 = m2
-    #       theta_a2 = m1*m2+m3/7.0
-    #       return (theta_a0, theta_a1, theta_a2)
-    #   elif term == "f":
-    #       theta_f0 = m1*m3
-    #       return (theta_f0,)
-    #   elif term == "dirichlet_bc":
-    #       theta_bc0 = 1.
-    #       return (theta_f0,)
-    #   else:
-    #       raise ValueError("Invalid term for compute_theta().")
-    @abstractmethod
-    def compute_theta(self, term):
-        raise NotImplementedError("The method compute_theta() is problem-specific and needs to be overridden.")
-        
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
-    # Example of implementation:
-    #   if term == "a":
-    #       a0 = inner(grad(u),grad(v))*dx
-    #       return (a0,)
-    #   elif term == "f":
-    #       f0 = v*ds(1)
-    #       return (f0,)
-    #   elif term == "dirichlet_bc":
-    #       bc0 = [(V, Constant(0.0), boundaries, 3)]
-    #       return (bc0,)
-    #   elif term == "inner_product":
-    #       x0 = u*v*dx + inner(grad(u),grad(v))*dx
-    #       return (x0,)
-    #   else:
-    #       raise ValueError("Invalid term for assemble_operator().")
-    @abstractmethod
-    def assemble_operator(self, term):
-        raise NotImplementedError("The method assemble_operator() is problem-specific and needs to be overridden.")
-        
-    ## Return a lower bound for the coercivity constant
-    # Example of implementation:
-    #    return 1.0
-    # Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason
-    # for which it is not marked as @abstractmethod
-    def get_stability_factor(self):
-        raise NotImplementedError("The method get_stability_factor() is problem-specific and needs to be overridden.")
-    
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-

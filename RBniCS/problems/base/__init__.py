@@ -22,9 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.problems.base.parametrized_differential_problem import ParametrizedDifferentialProblem
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
+from RBniCS.problems.base.parametrized_reduced_differential_problem import ParametrizedReducedDifferentialProblem
 
 
 __all__ = [
-    'ParametrizedProblem'
+    'ParametrizedDifferentialProblem',
+    'ParametrizedProblem',
+    'ParametrizedReducedDifferentialProblem'
 ]
