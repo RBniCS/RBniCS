@@ -22,8 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.reduction_methods.base.differential_problem_reduction_method import DifferentialProblemReductionMethod
 from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
 
 __all__ = [
+    'DifferentialProblemReductionMethod',
     'ReductionMethod'
 ]

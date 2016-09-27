@@ -22,21 +22,18 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.base import ReductionMethod
+from RBniCS.reduction_methods.base import DifferentialProblemReductionMethod
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.utils.io import Folders
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
-from RBniCS.utils.factories import ReducedProblemFactory
+from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(ReductionMethod, assert_recursion_level=1) # needs to be first in order to override for last the methods. assert_recursion_level is set because MultiLevelReductionMethod introduces an additional level of inheritance
+@Extends(DifferentialProblemReductionMethod) # needs to be first in order to override for last the methods.
 @ReductionMethodFor(EllipticCoerciveProblem, "Abstract")
-@MultiLevelReductionMethod
-class EllipticCoerciveReductionMethod(ReductionMethod):
+class EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -46,65 +43,8 @@ class EllipticCoerciveReductionMethod(ReductionMethod):
     @override
     def __init__(self, truth_problem):
         # Call to parent
-        ReductionMethod.__init__(self, type(truth_problem).__name__, truth_problem.mu_range)
-        
-        # $$ ONLINE DATA STRUCTURES $$ #
-        # Reduced order problem
-        self.reduced_problem = None
-        
-        # $$ OFFLINE DATA STRUCTURES $$ #
-        # High fidelity problem
-        self.truth_problem = truth_problem
+        DifferentialProblemReductionMethod.__init__(self, truth_problem)
             
     #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
+    ########################### end - CONSTRUCTORS - end ###########################
     
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
-    
-    ## Initialize data structures required for the offline phase
-    @override
-    def _init_offline(self):
-        # Initialize the affine expansion in the truth problem
-        self.truth_problem.init()
-        
-        # Initialize reduced order data structures in the reduced problem
-        self.reduced_problem = ReducedProblemFactory(self.truth_problem, self)
-        
-        # Prepare folders and init reduced problem
-        all_folders = Folders()
-        all_folders.update(self.folder)
-        all_folders.update(self.reduced_problem.folder)
-        all_folders.pop("xi_test") # this is required only in the error analysis
-        at_least_one_folder_created = all_folders.create()
-        if not at_least_one_folder_created:
-            self.reduced_problem.init("online")
-            return False # offline construction should be skipped, since data are already available
-        else:
-            self.reduced_problem.init("offline")
-            return True # offline construction should be carried out
-            
-    ## Finalize data structures required after the offline phase
-    @override
-    def _finalize_offline(self):
-        self.reduced_problem.init("online")
-        
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
-    
-    ## Initialize data structures required for the error analysis phase
-    @override
-    def _init_error_analysis(self, **kwargs): 
-        # Initialize the affine expansion in the truth problem
-        self.truth_problem.init()
-        
-        # Initialize reduced order data structures in the reduced problem
-        self.reduced_problem.init("online")
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
