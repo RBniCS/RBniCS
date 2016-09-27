@@ -22,10 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-from dolfin import VectorFunctionSpace, cells, LagrangeInterpolator, Function, ALE
-from RBniCS.backends.fenics.wrapping import ParametrizedExpression # TODO astrarre, insieme all'import dolfin precedente
-from RBniCS.utils.mpi import print
+from RBniCS.backends import MeshMotion
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs):
@@ -52,31 +49,13 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             def __init__(self, V, **kwargs):
                 # Call the standard initialization
                 ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
-                # Store FEniCS data structure related to the geometrical parametrization
-                assert "subdomains" in kwargs
-                self.subdomains = kwargs["subdomains"]
-                self.mesh = V.mesh()
-                self.reference_coordinates = self.mesh.coordinates().copy()
-                self.deformation_V = VectorFunctionSpace(self.mesh, "Lagrange", 1)
-                self.subdomain_id_to_deformation_dofs = dict() # from int to list
-                for cell in cells(self.mesh):
-                    subdomain_id = int(self.subdomains[cell]) - 1 # tuple start from 0, while subdomains from 1
-                    if subdomain_id not in self.subdomain_id_to_deformation_dofs:
-                        self.subdomain_id_to_deformation_dofs[subdomain_id] = list()
-                    dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
-                    for dof in dofs:
-                        self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
-                assert min(self.subdomain_id_to_deformation_dofs.keys()) == 0
-                assert len(self.subdomain_id_to_deformation_dofs.keys()) == max(self.subdomain_id_to_deformation_dofs.keys()) + 1
-                
-                # Store the shape parametrization expression
-                if len(shape_parametrization_expression) > 0:
-                    assert "shape_parametrization_expression" not in decorator_kwargs
-                    self.shape_parametrization_expression = shape_parametrization_expression
+                # Store mesh motion class
+                if len(shape_parametrization_expression) == 0:
+                    shape_parametrization_expression__from_decorator = decorator_kwargs["shape_parametrization_expression"]
                 else:
-                    assert "shape_parametrization_expression" in decorator_kwargs
-                    self.shape_parametrization_expression = decorator_kwargs["shape_parametrization_expression"]
-                assert len(self.shape_parametrization_expression) == len(self.subdomain_id_to_deformation_dofs.keys())
+                    shape_parametrization_expression__from_decorator = shape_parametrization_expression
+                assert "subdomains" in kwargs
+                self.mesh_motion = MeshMotion(V, kwargs["subdomains"], shape_parametrization_expression__from_decorator)
                  
             #  @}
             ########################### end - CONSTRUCTORS - end ###########################
@@ -89,26 +68,8 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             @override
             def init(self):
                 ParametrizedProblem_DerivedClass.init(self)
-                # Preprocess the shape parametrization expression to convert it in the displacement expression
-                # This cannot be done during __init__ because at construction time the number
-                # of parameters is still unknown
-                self.displacement_expression = list()
-                for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression:
-                    displacement_expression_on_subdomain = list()
-                    assert len(shape_parametrization_expression_on_subdomain) == self.mesh.geometry().dim()
-                    for (component, shape_parametrization_component_on_subdomain) in enumerate(shape_parametrization_expression_on_subdomain):
-                        # convert from shape parametrization T to displacement d = T - I
-                        displacement_expression_on_subdomain.append(
-                            shape_parametrization_component_on_subdomain + " - x[" + str(component) + "]",
-                        )
-                    self.displacement_expression.append(
-                        ParametrizedExpression(
-                            self,
-                            tuple(shape_parametrization_expression_on_subdomain),
-                            mu=self.mu,
-                            element=self.deformation_V.ufl_element()
-                        )
-                    )
+                # Also init mesh motion object
+                self.mesh_motion.init(self)
             
             #  @}
             ########################### end - OFFLINE STAGE - end ########################### 
@@ -117,29 +78,12 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             ## @defgroup IO Input/output methods
             #  @{
                 
-            ## Deform the mesh as a function of the geometrical parameters
+            ## Deform the mesh as a function of the geometrical parameters and then export solution to file
             @override
-            def move_mesh(self):
-                print("moving mesh")
-                displacement = self.compute_displacement()
-                ALE.move(self.mesh, displacement)
-            
-            ## Restore the reference mesh
-            @override
-            def reset_reference(self):
-                print("back to the reference mesh")
-                self.mesh.coordinates()[:] = self.reference_coordinates
-            
-            ## Auxiliary method to deform the domain
-            def compute_displacement(self):
-                interpolator = LagrangeInterpolator()
-                displacement = Function(self.deformation_V)
-                for (subdomain, displacement_expression_on_subdomain) in enumerate(self.displacement_expression):
-                    displacement_function_on_subdomain = Function(self.deformation_V)
-                    interpolator.interpolate(displacement_function_on_subdomain, displacement_expression_on_subdomain)
-                    subdomain_dofs = self.subdomain_id_to_deformation_dofs[subdomain]
-                    displacement.vector()[subdomain_dofs] = displacement_function_on_subdomain.vector()[subdomain_dofs]
-                return displacement
+            def export_solution(self, solution, folder, filename):
+                self.mesh_motion.move_mesh()
+                ParametrizedProblem_DerivedClass.export_solution(self, solution, folder, filename)
+                self.mesh_motion.reset_reference()
                 
             #  @}
             ########################### end - I/O - end ########################### 

@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.io import File, Folders, plot
+from RBniCS.utils.io import Folders
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARAMETRIZED PROBLEM BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParametrizedProblem
@@ -46,11 +46,6 @@ class ParametrizedProblem(object):
     - set_xi_test()
     - generate_train_or_test_set()
     - set_mu()
-    
-    ## Input/output methods
-    - preprocess_solution_for_plot() # nothing to be done by default
-    - move_mesh() # nothing to be done by default
-    - reset_reference() # nothing to be done by default
 
     """
     
@@ -89,47 +84,4 @@ class ParametrizedProblem(object):
     #  @}
     ########################### end - SETTERS - end ########################### 
     
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-    
-    ## Interactive plot
-    def _plot(self, solution, *args, **kwargs):
-        self.move_mesh() # possibly deform the mesh
-        preprocessed_solution = self.preprocess_solution_for_plot(solution)
-        plot(preprocessed_solution, *args, **kwargs) # call FEniCS plot
-        self.reset_reference() # undo mesh motion
-        
-    ## Export in VTK format
-    def _export_vtk(self, solution, folder, filename, **output_options):
-        if not "with_mesh_motion" in output_options:
-            output_options["with_mesh_motion"] = False
-        if not "with_preprocessing" in output_options:
-            output_options["with_preprocessing"] = False
-        #
-        file = File(str(folder) + "/" + filename + ".pvd", "compressed")
-        if output_options["with_mesh_motion"]:
-            self.move_mesh() # deform the mesh
-        if output_options["with_preprocessing"]:
-            preprocessed_solution = self.preprocess_solution_for_plot(solution)
-            file << preprocessed_solution
-        else:
-            file << solution
-        if output_options["with_mesh_motion"]:
-            self.reset_reference() # undo mesh motion
-            
-    ## Preprocess the solution before plotting (e.g. to add a lifting)
-    def preprocess_solution_for_plot(self, solution):
-        return solution # nothing to be done by default
-        
-    ## Deform the mesh as a function of the geometrical parameters
-    def move_mesh(self):
-        pass # nothing to be done by default
-    
-    ## Restore the reference mesh
-    def reset_reference(self):
-        pass # nothing to be done by default
-                
-    #  @}
-    ########################### end - I/O - end ########################### 
 

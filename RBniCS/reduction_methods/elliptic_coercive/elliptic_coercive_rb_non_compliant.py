@@ -101,9 +101,9 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
     
     # Perform an online solve. Overridden to solve also the dual problem for output correction
     # and error estimation
-    def online_solve(self, N=None, with_plot=True):
+    def online_solve(self, N=None):
         self.dual_problem.online_solve(N, False)
-        EllipticCoerciveRB.online_solve(self, N, with_plot)
+        EllipticCoerciveRB.online_solve(self, N)
     
     # Perform an online evaluation of the non-compliant output
     def online_output(self):
@@ -402,18 +402,3 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
     
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-    
-    ## Deform the mesh as a function of the geometrical parameters
-    def move_mesh(self):
-        self.primal_problem.set_mu(self.mu)
-        self.primal_problem.move_mesh()
-    
-    ## Restore the reference mesh
-    def reset_reference(self):
-        self.primal_problem.reset_reference()
-                
-    #  @}
-    ########################### end - I/O - end ###########################

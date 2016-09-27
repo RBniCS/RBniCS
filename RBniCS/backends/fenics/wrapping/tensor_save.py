@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from petsc4py import PETSc
+from dolfin import as_backend_type
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
@@ -43,4 +44,10 @@ def tensor_save(tensor, directory, filename):
             raise AssertionError("Invalid arguments in tensor_save.")
     full_filename_content = str(directory) + "/" + filename + ".dat"
     viewer = PETSc.Viewer().createBinary(full_filename_content, "w")
+    if isinstance(tensor, Matrix.Type()):
+        viewer(as_backend_type(tensor).mat())
+    elif isinstance(tensor, Vector.Type()):
+        viewer(as_backend_type(tensor).vec())
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in tensor_save.")    
     

@@ -123,12 +123,10 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             raise AssertionError("Invalid stage in _init_basis_functions().")
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-    def solve(self, N=None, with_plot=True, **kwargs):
+    def solve(self, N=None, **kwargs):
         if N is None:
             N = self.N
         uN = self._solve(N, **kwargs)
-        if with_plot:
-            self._plot(uN, title = "Reduced solution. mu = " + str(self.mu), interactive = True)
         return uN
     
     # Perform an online solve (internal)
@@ -194,7 +192,7 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
             # Do not carry out truth solves anymore for the same parameter
             self._compute_error__previous_mu = self.mu
         # Compute the error on the solution and output
-        self.solve(N, with_plot=False, **kwargs)
+        self.solve(N, **kwargs)
         self.output()
         return self._compute_error((self.truth_problem._solution, self.truth_problem._output), (self._solution, self._output))
         
@@ -309,18 +307,12 @@ class EllipticCoerciveReducedProblem(ParametrizedProblem):
     ###########################     I/O     ########################### 
     ## @defgroup IO Input/output methods
     #  @{
-    
-    ## Interactive plot
-    @override
-    def _plot(self, solution, *args, **kwargs):
-        N = solution.vector().size
-        self.truth_problem._plot(self.Z[:N]*solution, *args, **kwargs)
         
-    ## Export in VTK format
+    ## Export solution to file
     @override
-    def _export_vtk(self, solution, folder, filename, **output_options):
+    def export_solution(self, solution, folder, filename):
         N = solution.vector().size
-        self.truth_problem._export_vtk(self.Z[:N]*solution, folder, filename, **output_options)
+        self.truth_problem.export_solution(self.Z[:N]*solution, folder, filename)
             
     #  @}
     ########################### end - I/O - end ########################### 

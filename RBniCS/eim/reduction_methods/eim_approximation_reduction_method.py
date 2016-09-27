@@ -117,7 +117,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             print("evaluate parametrized expression")
             self.EIM_approximation.set_mu(mu)
             self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
-            #self.EIM_approximation.export_solution(self.EIM_approximation.snapshot, self.folder["snapshots"], "truth_" + str(run)) # TODO
+            self.EIM_approximation.export_solution(self.EIM_approximation.snapshot, self.folder["snapshots"], "truth_" + str(run))
             
             print("add to snapshots")
             self.add_to_snapshots(self.EIM_approximation.snapshot)

@@ -28,6 +28,7 @@
 
 import inspect
 from RBniCS.utils.decorators import BackendFor, backend_for, list_of, tuple_of
+from RBniCS.utils.decorators.backend_for import _list_of, _tuple_of
 from RBniCS.utils.mpi import log, DEBUG
 
 # Factory to combine all available backends
@@ -237,20 +238,20 @@ def are_subclass(input_types, backend_input_types):
         return False
     else:
         for (input_type, backend_input_type) in zip(input_types, backend_input_types):
-            if isinstance(input_type, tuple_of):
-                if isinstance(backend_input_type, tuple_of):
+            if isinstance(input_type, _tuple_of):
+                if isinstance(backend_input_type, _tuple_of):
                     if not input_type.are_subclass(backend_input_type):
                         return False
                 else:
                     return False
-            elif isinstance(input_type, list_of):
-                if isinstance(backend_input_type, list_of):
+            elif isinstance(input_type, _list_of):
+                if isinstance(backend_input_type, _list_of):
                     if not input_type.are_subclass(backend_input_type):
                         return False
                 else:
                     return False
             else:
-                if isinstance(backend_input_type, (tuple_of, list_of)):
+                if isinstance(backend_input_type, (_tuple_of, _list_of)):
                     return False
                 elif not issubclass(input_type, backend_input_type):
                     return False

@@ -26,8 +26,9 @@ from RBniCS.backends.abstract.abs import abs
 from RBniCS.backends.abstract.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.abstract.basis_functions_matrix import BasisFunctionsMatrix
 from RBniCS.backends.abstract.difference import difference
-from RBniCS.backends.abstract.evaluate import evaluate
 from RBniCS.backends.abstract.eigen_solver import EigenSolver
+from RBniCS.backends.abstract.evaluate import evaluate
+from RBniCS.backends.abstract.export import export
 from RBniCS.backends.abstract.function import Function
 from RBniCS.backends.abstract.functions_list import FunctionsList
 from RBniCS.backends.abstract.gram_schmidt import GramSchmidt
@@ -35,6 +36,7 @@ from RBniCS.backends.abstract.high_order_proper_orthogonal_decomposition import 
 from RBniCS.backends.abstract.linear_solver import LinearSolver
 from RBniCS.backends.abstract.matrix import Matrix
 from RBniCS.backends.abstract.max import max
+from RBniCS.backends.abstract.mesh_motion import MeshMotion
 from RBniCS.backends.abstract.product import product
 from RBniCS.backends.abstract.projected_parametrized_expression import ProjectedParametrizedExpression
 from RBniCS.backends.abstract.projected_parametrized_tensor import ProjectedParametrizedTensor
@@ -56,8 +58,9 @@ __all__ = [
     'AffineExpansionStorage',
     'BasisFunctionsMatrix',
     'difference',
-    'evaluate',
     'EigenSolver',
+    'evaluate',
+    'export',
     'Function',
     'FunctionsList',
     'GramSchmidt',
@@ -65,6 +68,7 @@ __all__ = [
     'LinearSolver',
     'Matrix',
     'max',
+    'MeshMotion',
     'product',
     'ProjectedParametrizedExpression',
     'ProjectedParametrizedTensor',

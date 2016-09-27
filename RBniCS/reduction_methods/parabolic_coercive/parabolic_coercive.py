@@ -120,7 +120,7 @@ class ParabolicCoercive(EllipticCoercive):
     #  @{
     
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-    def online_solve(self, N=None, with_plot=False):
+    def online_solve(self, N=None):
         self.load_reduced_data_structures()
         if N is None:
             N = self.N
@@ -137,12 +137,6 @@ class ParabolicCoercive(EllipticCoercive):
             self.t = t
             self._online_solve(N)
             self.all_reduced = np.hstack((self.all_reduced, self.get_fe_functions_at_time(t)))
-
-        # Now obtain the FE function corresponding to the reduced order solutions
-        if with_plot == True:
-            func = Function(self.V)
-            func.vector()[:] = self.get_fe_functions_at_time(t)
-            self._plot(func, title = "Reduced solution. mu = " + str(self.mu) + ", t = " + str(t*self.dt), interactive = True)
     
     def get_fe_functions_at_time(self,tt):
         sol = self.Z[:, 0]*self.all_uN[0,tt]
@@ -334,17 +328,9 @@ class ParabolicCoercive(EllipticCoercive):
             output_options["with_preprocessing"] = False
         #
         file = File(filename + ".pvd", "compressed")
-        if output_options["with_mesh_motion"]:
-            self.move_mesh() # deform the mesh
         for k in range(len(self.all_times)):
             self.t = self.all_times[k]
-            if output_options["with_preprocessing"]:
-                preprocessed_solution = self.preprocess_solution_for_plot(solution[:, k])
-                file << (preprocessed_solution, self.t)
-            else:
-                file << (solution[:, k], self.t)
-        if output_options["with_mesh_motion"]:
-            self.reset_reference() # undo mesh motion
+            file << (solution[:, k], self.t)
             
     #  @}
     ########################### end - I/O - end ########################### 

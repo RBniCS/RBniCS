@@ -27,6 +27,7 @@ import glpk # for LB computation
 import sys # for sys.float_info.max
 import operator # to find closest parameters
 from math import sqrt
+from RBniCS.backends import export
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import print
@@ -313,9 +314,9 @@ class SCMApproximation(ParametrizedProblem):
     ## @defgroup IO Input/output methods
     #  @{
 
-    ## Export solution in VTK format
+    ## Export solution to file
     def export_solution(self, solution, folder, filename):
-        self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
+        export(solution, folder, filename)
         
     #  @}
     ########################### end - I/O - end ###########################

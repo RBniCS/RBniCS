@@ -33,19 +33,14 @@ from RBniCS.utils.io.pickle_io import PickleIO
 from RBniCS.utils.io.speedup_analysis_table import SpeedupAnalysisTable
 from RBniCS.utils.io.text_io import TextIO
 
-# Alias FEniCS objects
-from dolfin import plot, File
-
 __all__ = [
     'ErrorAnalysisTable',
     'ExportableList',
-    'File',
     'Folders',
     'GreedyErrorEstimatorsList',
     'GreedySelectedParametersList',
     'NumpyIO',
     'ParametrizedExpression',
-    'plot',
     'PickleIO',
     'SpeedupAnalysisTable',
     'TextIO'

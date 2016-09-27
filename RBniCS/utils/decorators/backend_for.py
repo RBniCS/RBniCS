@@ -149,7 +149,7 @@ def validate_inputs(inputs):
         else:
             assert input_ is not list, "Please use list_of defined in this module to specify the type of each element"
             assert input_ is not tuple, "Please use tuple_of defined in this module to specify the type of each element"
-            assert inspect.isclass(input_) or isinstance(input_, (list_of, tuple_of)) or input_ is None
+            assert inspect.isclass(input_) or isinstance(input_, (_list_of, _tuple_of)) or input_ is None
     
 def logging_all_classes_functions(storage):
     output = "{" + "\n"
@@ -207,15 +207,28 @@ class _tuple_or_list_of(object):
             assert not isinstance(self.types, list), "Please use tuples instead"
             return is_subclass(self.types, other.types)
 
-class tuple_of(_tuple_or_list_of):        
+class _tuple_of(_tuple_or_list_of):        
     def __str__(self):
         return "tuple_of(" + str(self.types) + ")"
     __repr__ = __str__
-        
-class list_of(_tuple_or_list_of):
+    
+class _list_of(_tuple_or_list_of):
     def __str__(self):
         return "list_of(" + str(self.types) + ")"
     __repr__ = __str__
+    
+_all_tuple_of_instances = dict()
+_all_list_of_instances = dict()
+
+def tuple_of(types):
+    if types not in _all_tuple_of_instances:
+        _all_tuple_of_instances[types] = _tuple_of(types)
+    return _all_tuple_of_instances[types]
+    
+def list_of(types):
+    if types not in _all_list_of_instances:
+        _all_list_of_instances[types] = _list_of(types)
+    return _all_list_of_instances[types]
 
 from numpy import float64
 ThetaType = (tuple_of(float), tuple_of(float64),  tuple_of(int), tuple_of((float, float64)), tuple_of((float, int)), tuple_of((float64, int)), tuple_of((float, float64, int)))

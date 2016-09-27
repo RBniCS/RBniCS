@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import abs, difference, evaluate, max
+from RBniCS.backends import abs, difference, evaluate, export, max
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
 
@@ -168,9 +168,9 @@ class EIMApproximation(ParametrizedProblem):
     ## @defgroup IO Input/output methods
     #  @{
 
-    ## Export solution in VTK format
+    ## Export solution to file
     def export_solution(self, solution, folder, filename):
-        self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
+        export(solution, folder, filename)
         
     #  @}
     ########################### end - I/O - end ########################### 

@@ -24,7 +24,7 @@
 
 from abc import ABCMeta, abstractmethod
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import AffineExpansionStorage, Function, product, transpose, LinearSolver, sum
+from RBniCS.backends import AffineExpansionStorage, export, Function, product, transpose, LinearSolver, sum
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -160,9 +160,9 @@ class EllipticCoerciveProblem(ParametrizedProblem):
     ## @defgroup IO Input/output methods
     #  @{
     
-    ## Export solution in VTK format
+    ## Export solution to file
     def export_solution(self, solution, folder, filename):
-        self._export_vtk(solution, folder, filename, with_mesh_motion=True, with_preprocessing=True)
+        export(solution, folder, filename)
         
     #  @}
     ########################### end - I/O - end ########################### 

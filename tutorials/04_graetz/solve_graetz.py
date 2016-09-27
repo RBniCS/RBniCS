@@ -154,11 +154,11 @@ class Graetz(EllipticCoerciveProblem):
     ## @defgroup IO Input/output methods
     #  @{
     
-    ## Preprocess the solution before plotting to add a lifting
-    def preprocess_solution_for_plot(self, solution):
+    ## Preprocess the solution before export to add a lifting
+    def export_solution(self, solution, folder, filename):
         solution_with_lifting = Function(self.V)
         solution_with_lifting.vector()[:] = solution.vector()[:] + self.lifting.vector()[:]
-        return solution_with_lifting
+        EllipticCoerciveProblem.export_solution(self, solution_with_lifting, folder, filename)
         
     #  @}
     ########################### end - I/O - end ########################### 
