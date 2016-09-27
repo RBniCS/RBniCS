@@ -24,10 +24,12 @@
 
 from petsc4py import PETSc
 from dolfin import PETScMatrix, PETScVector
+from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
+from RBniCS.utils.mpi import is_io_process
 
-def tensor_load(directory, filename, V_unused):
+def tensor_load(directory, filename, V):
     full_filename_type = str(directory) + "/" + filename + ".type"
-    mpi_comm = tensor.mpi_comm()
+    mpi_comm = get_mpi_comm(V)
     type_string = None
     if is_io_process(mpi_comm):
         with open(full_filename_type, "r") as type_file:
@@ -38,10 +40,12 @@ def tensor_load(directory, filename, V_unused):
     assert type_string in ("matrix", "vector")
     if type_string == "matrix":
         data = PETSc.Mat().load(viewer)
-        return PETScMatrix(data)
+        mat = PETScMatrix(data)
+        return mat
     elif type_string == "vector":
         data = PETSc.Vec().load(viewer)
-        return PETScVector(data)
+        vec = PETScVector(data)
+        return vec
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in tensor_load.")
 

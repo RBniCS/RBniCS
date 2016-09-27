@@ -30,4 +30,4 @@ def Vector():
 def _Vector_Type():
     return GenericVector
 Vector.Type = _Vector_Type
-        
+

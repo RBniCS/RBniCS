@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
-from RBniCS.backends.numpy.function import Function  as OnlineFunction
+from RBniCS.backends.numpy.function import Function as OnlineFunction
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 

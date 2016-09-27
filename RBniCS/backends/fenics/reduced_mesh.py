@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import CellFunction, cells, compile_extension_module, DEBUG, File, FunctionSpace, has_hdf5, log, Vertex, vertices
+from dolfin import CellFunction, cells, compile_extension_module, DEBUG, File, FunctionSpace, has_hdf5, log, Mesh, Vertex, vertices
 if has_hdf5():
     from dolfin import HDF5File
 try:
