@@ -76,12 +76,12 @@ class ThermalBlock(EllipticCoerciveProblem):
         dx = self.dx
         if term == "a":
             u = self.u
-            a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*inner(u,v)*dx
-            a1 = inner(grad(u),grad(v))*dx(2) + 1e-15*inner(u,v)*dx
+            a0 = inner(grad(u),grad(v))*dx(1)
+            a1 = inner(grad(u),grad(v))*dx(2)
             return (a0, a1)
         elif term == "f":
             ds = self.ds
-            f0 = v*ds(1) + 1e-15*v*dx
+            f0 = v*ds(1)
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 3)]

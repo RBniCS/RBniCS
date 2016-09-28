@@ -97,23 +97,22 @@ class ElasticBlock(EllipticCoerciveProblem):
         dx = self.dx
         if term == "a":
             u = self.u
-            a0 = self.elasticity(u,v)*dx(1) +1e-15*inner(u,v)*dx
-            a1 = self.elasticity(u,v)*dx(2) +1e-15*inner(u,v)*dx
-            a2 = self.elasticity(u,v)*dx(3) +1e-15*inner(u,v)*dx
-            a3 = self.elasticity(u,v)*dx(4) +1e-15*inner(u,v)*dx
-            a4 = self.elasticity(u,v)*dx(5) +1e-15*inner(u,v)*dx
-            a5 = self.elasticity(u,v)*dx(6) +1e-15*inner(u,v)*dx
-            a6 = self.elasticity(u,v)*dx(7) +1e-15*inner(u,v)*dx
-            a7 = self.elasticity(u,v)*dx(8) +1e-15*inner(u,v)*dx
-            a8 = self.elasticity(u,v)*dx(9) +1e-15*inner(u,v)*dx
+            a0 = self.elasticity(u,v)*dx(1)
+            a1 = self.elasticity(u,v)*dx(2)
+            a2 = self.elasticity(u,v)*dx(3)
+            a3 = self.elasticity(u,v)*dx(4)
+            a4 = self.elasticity(u,v)*dx(5)
+            a5 = self.elasticity(u,v)*dx(6)
+            a6 = self.elasticity(u,v)*dx(7)
+            a7 = self.elasticity(u,v)*dx(8)
+            a8 = self.elasticity(u,v)*dx(9)
             return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
         elif term == "f":
             ds = self.ds
             f = self.f
-            l = Constant((1e-11, 1e-11))
-            f0 = inner(f,v)*ds(2) + inner(l,v)*dx
-            f1 = inner(f,v)*ds(3) + inner(l,v)*dx 
-            f2 = inner(f,v)*ds(4) + inner(l,v)*dx
+            f0 = inner(f,v)*ds(2)
+            f1 = inner(f,v)*ds(3)
+            f2 = inner(f,v)*ds(4)
             return (f0,f1,f2)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant((0.0, 0.0)), self.boundaries, 6)]

@@ -94,18 +94,18 @@ class Graetz(EllipticCoerciveProblem):
         if term == "a":
             u = self.u
             vel = self.vel
-            a0 = inner(grad(u),grad(v))*dx(1) + 1e-15*u*v*dx
-            a1 = u.dx(0)*v.dx(0)*dx(2) + 1e-15*u*v*dx
-            a2 = u.dx(1)*v.dx(1)*dx(2) + 1e-15*u*v*dx
-            a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2) + 1e-15*u*v*dx
+            a0 = inner(grad(u),grad(v))*dx(1)
+            a1 = u.dx(0)*v.dx(0)*dx(2)
+            a2 = u.dx(1)*v.dx(1)*dx(2)
+            a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2)
             return (a0, a1, a2, a3)
         elif term == "f":
             lifting = self.lifting
             vel = self.vel
-            f0 = inner(grad(lifting),grad(v))*dx(1) + 1e-15*lifting*v*dx
-            f1 = lifting.dx(0)*v.dx(0)*dx(2) + 1e-15*lifting*v*dx
-            f2 = lifting.dx(1)*v.dx(1)*dx(2) + 1e-15*lifting*v*dx
-            f3 = vel*lifting.dx(0)*v*dx(1) + vel*lifting.dx(0)*v*dx(2) + 1e-15*lifting*v*dx
+            f0 = inner(grad(lifting),grad(v))*dx(1)
+            f1 = lifting.dx(0)*v.dx(0)*dx(2)
+            f2 = lifting.dx(1)*v.dx(1)*dx(2)
+            f3 = vel*lifting.dx(0)*v*dx(1) + vel*lifting.dx(0)*v*dx(2)
             return (f0, f1, f2, f3)
         elif term == "s":
             s0 = v*dx(2)
@@ -139,7 +139,7 @@ class Graetz(EllipticCoerciveProblem):
         dx = self.dx
         lifting_a = inner(grad(u),grad(v))*dx
         lifting_A = assemble(lifting_a)
-        lifting_f = 1e-15*v*dx
+        lifting_f = Constant(0.)*v*dx
         lifting_F = assemble(lifting_f)
         [bc.apply(lifting_A) for bc in lifting_bc] # Apply BCs on LHS
         [bc.apply(lifting_F) for bc in lifting_bc] # Apply BCs on RHS
