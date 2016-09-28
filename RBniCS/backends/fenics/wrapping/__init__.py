@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.fenics.wrapping.dirichlet_bc import DirichletBC
+from RBniCS.backends.fenics.wrapping.function_component import function_component
 from RBniCS.backends.fenics.wrapping.function_copy import function_copy
 from RBniCS.backends.fenics.wrapping.function_load import function_load
 from RBniCS.backends.fenics.wrapping.function_save import function_save
@@ -39,6 +40,7 @@ from RBniCS.backends.fenics.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
     'DirichletBC',
+    'function_component',
     'function_copy',
     'function_load',
     'function_save',

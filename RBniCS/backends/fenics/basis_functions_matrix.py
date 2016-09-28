@@ -23,11 +23,16 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import FunctionSpace
-from RBniCS.backends.fenics.functions_list import FunctionsList
-from RBniCS.utils.decorators import BackendFor, Extends
+from RBniCS.backends.basic import BasisFunctionsMatrix as BasicBasisFunctionsMatrix
+import RBniCS.backends.fenics
+import RBniCS.backends.fenics.wrapping
+import RBniCS.backends.numpy
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
-@Extends(FunctionsList)
+@Extends(BasicBasisFunctionsMatrix)
 @BackendFor("FEniCS", online_backend="NumPy", inputs=(FunctionSpace, ))
-class BasisFunctionsMatrix(FunctionsList):
-    pass
+class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
+    @override
+    def __init__(self, V_or_Z):
+        BasicBasisFunctionsMatrix.__init__(self, V_or_Z, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy)
 

@@ -37,5 +37,5 @@ ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractP
 class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
     @override
     def __init__(self, V_or_Z, X):
-        ProperOrthogonalDecompositionBase.__init__(self, V_or_Z, X, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.SnapshotsMatrix, RBniCS.backends.numpy.BasisFunctionsMatrix)
+        ProperOrthogonalDecompositionBase.__init__(self, V_or_Z, X, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.SnapshotsMatrix, RBniCS.backends.numpy.FunctionsList)
         

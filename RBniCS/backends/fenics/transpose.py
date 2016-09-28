@@ -24,6 +24,7 @@
 
 from RBniCS.backends.basic import transpose as basic_transpose
 import RBniCS.backends.fenics
+from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
 from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.vector import Vector
@@ -31,7 +32,7 @@ import RBniCS.backends.fenics.wrapping
 import RBniCS.backends.numpy
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("FEniCS", online_backend="NumPy", inputs=((Function.Type(), FunctionsList, Vector.Type()), ))
+@backend_for("FEniCS", online_backend="NumPy", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Vector.Type()), ))
 def transpose(arg):
     return basic_transpose(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy)
     

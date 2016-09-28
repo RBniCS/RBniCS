@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends.basic.basis_functions_matrix import BasisFunctionsMatrix
 from RBniCS.backends.basic.functions_list import FunctionsList
 from RBniCS.backends.basic.gram_schmidt import GramSchmidt
 from RBniCS.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase

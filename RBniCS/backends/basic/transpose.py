@@ -23,8 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 def transpose(arg, backend, wrapping, online_backend):
-    assert isinstance(arg, (backend.Function.Type(), backend.FunctionsList, backend.Vector.Type(), backend.Matrix.Type(), backend.TensorsList))
-    if isinstance(arg, backend.FunctionsList):
+    assert isinstance(arg, (backend.Function.Type(), backend.FunctionsList, backend.BasisFunctionsMatrix, backend.Vector.Type(), backend.Matrix.Type(), backend.TensorsList))
+    if isinstance(arg, (backend.FunctionsList, backend.BasisFunctionsMatrix)):
+        if isinstance(arg, backend.BasisFunctionsMatrix):
+            arg = arg._linearize_components()
         return FunctionsList_Transpose(arg, backend, wrapping, online_backend)
     elif isinstance(arg, backend.TensorsList):
         return TensorsList_Transpose(arg, backend, wrapping, online_backend)
@@ -101,9 +103,11 @@ class FunctionsList_Transpose__times__Matrix(object):
         
     # self * other [used e.g. to compute Z^T*A*Z or S^T*X*S (return OnlineMatrix), or Riesz_A^T*X*Riesz_F (return OnlineVector)]
     def __mul__(self, other_functions_list__or__function):
-        assert isinstance(other_functions_list__or__function, (self.backend.FunctionsList, self.backend.Function.Type(), self.backend.Vector.Type()))
-        if isinstance(other_functions_list__or__function, self.backend.FunctionsList):
+        assert isinstance(other_functions_list__or__function, (self.backend.BasisFunctionsMatrix, self.backend.FunctionsList, self.backend.Function.Type(), self.backend.Vector.Type()))
+        if isinstance(other_functions_list__or__function, (self.backend.BasisFunctionsMatrix, self.backend.FunctionsList)):
             other_functions_list = other_functions_list__or__function
+            if isinstance(other_functions_list, self.backend.BasisFunctionsMatrix):
+                other_functions_list = other_functions_list._linearize_components()
             assert len(self.functions_list) == len(other_functions_list)
             dim = len(self.functions_list)
             online_matrix = self.online_backend.Matrix(dim, dim)

@@ -23,11 +23,15 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.backends.numpy.functions_list import FunctionsList
-from RBniCS.utils.decorators import BackendFor, Extends
+from RBniCS.backends.basic import BasisFunctionsMatrix as BasicBasisFunctionsMatrix
+import RBniCS.backends.numpy
+import RBniCS.backends.numpy.wrapping
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @BackendFor("NumPy", online_backend="NumPy", inputs=(AbstractFunctionsList, ))
-@Extends(FunctionsList)
-class BasisFunctionsMatrix(FunctionsList):
-    pass
+@Extends(BasicBasisFunctionsMatrix)
+class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
+    @override
+    def __init__(self, V_or_Z):
+        BasicBasisFunctionsMatrix.__init__(self, V_or_Z, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
 

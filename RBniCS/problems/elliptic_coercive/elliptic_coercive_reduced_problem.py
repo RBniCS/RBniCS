@@ -48,13 +48,21 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
     def __init__(self, truth_problem):
         # Call to parent
         ParametrizedReducedDifferentialProblem.__init__(self, truth_problem)
-                
+        
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
     
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
+    
+    ## Initialize data structures required for the online phase
+    def init(self, current_stage="online"):
+        # Elliptic problems have only one (scalar or vector) unknown
+        self.Z.init(1)
+        
+        # Call Parent initialization
+        ParametrizedReducedDifferentialProblem.init(self, current_stage)
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     @override

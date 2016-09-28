@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends.numpy.wrapping.function_component import function_component
 from RBniCS.backends.numpy.wrapping.function_copy import function_copy
 from RBniCS.backends.numpy.wrapping.function_load import function_load
 from RBniCS.backends.numpy.wrapping.function_save import function_save
@@ -36,6 +37,7 @@ from RBniCS.backends.basic.wrapping.tensors_list_mul import tensors_list_mul_onl
 from RBniCS.backends.numpy.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
+    'function_component',
     'function_copy',
     'function_load',
     'function_save',

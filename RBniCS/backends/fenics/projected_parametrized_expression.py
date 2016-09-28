@@ -24,7 +24,7 @@
 
 from dolfin import assemble, dx, Expression, FunctionSpace, inner, Point, TensorElement, TestFunction, TrialFunction, VectorElement
 from RBniCS.backends.abstract import ProjectedParametrizedExpression as AbstractProjectedParametrizedExpression
-from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
@@ -61,7 +61,8 @@ class ProjectedParametrizedExpression(AbstractProjectedParametrizedExpression):
         
     @override
     def create_basis_container(self):
-        return BasisFunctionsMatrix(self._space)
+        # We use FunctionsList instead of BasisFunctionsMatrix since we are not interested in storing multiple components
+        return FunctionsList(self._space)
         
     @override
     def create_POD_container(self):

@@ -47,14 +47,14 @@ class FunctionsList(AbstractFunctionsList):
         self._precomputed_slices = dict() # from tuple to FunctionsList
     
     @override
-    def enrich(self, functions):
+    def enrich(self, functions, component=None, copy=True):
         # Append to storage
         assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function.Type()))
         if isinstance(functions, (tuple, list, FunctionsList)):
             for function in functions:
-                self._list.append(self.wrapping.function_copy(function))
+                self._list.append(self.wrapping.function_component(function, component, copy))
         elif isinstance(functions, self.backend.Function.Type()):
-            self._list.append(self.wrapping.function_copy(functions))
+            self._list.append(self.wrapping.function_component(functions, component, copy))
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.enrich.")
         # Reset precomputed slices
