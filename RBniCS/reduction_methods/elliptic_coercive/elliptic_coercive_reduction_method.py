@@ -31,7 +31,7 @@ from RBniCS.utils.decorators import Extends, override, ReductionMethodFor, Multi
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(DifferentialProblemReductionMethod, assert_recursion_level=1) # needs to be first in order to override for last the methods. assert_recursion_level is set because MultiLevelReductionMethod introduces an additional level of inheritance
+@Extends(DifferentialProblemReductionMethod) # needs to be first in order to override for last the methods.
 @ReductionMethodFor(EllipticCoerciveProblem, "Abstract")
 @MultiLevelReductionMethod
 class EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod):

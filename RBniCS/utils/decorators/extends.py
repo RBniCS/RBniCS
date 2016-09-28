@@ -22,16 +22,20 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def Extends(Parent, preserve_class_name=False, assert_recursion_level=0):
+def Extends(Parent, preserve_class_name=False):
     def Extends_Decorator(Child):
         
         bases = Child.__bases__
-        for _ in range(assert_recursion_level):
-            assert len(bases) == 1
-            bases = bases[0].__bases__
-        assert len(bases) == 1
-        assert bases[0] is Parent
-                
+        assert len(bases) == 1, "Child class has more than one base class"
+        Parent_is_base = False
+        while len(bases) == 1:
+            if bases[0] is Parent:
+                Parent_is_base = True
+                break
+            else:
+                bases = bases[0].__bases__
+        assert Parent_is_base, "The class that you have indicated as Parent is not a base class"
+        
         # TODO save the class documentation from the parent class
         
         if preserve_class_name:
