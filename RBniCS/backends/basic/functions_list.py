@@ -96,10 +96,10 @@ class FunctionsList(AbstractFunctionsList):
     
     @override
     def __mul__(self, other):
-        assert isinstance(other, (self.online_backend.Matrix.Type(), self.online_backend.Vector.Type(), self.online_backend.Function.Type()))
+        assert isinstance(other, (self.online_backend.Matrix.Type(), self.online_backend.Vector.Type(), tuple, self.online_backend.Function.Type()))
         if isinstance(other, self.online_backend.Matrix.Type()):
             return self.wrapping.functions_list_mul_online_matrix(self, other, self.backend.FunctionsList)
-        elif isinstance(other, self.online_backend.Vector.Type()):
+        elif isinstance(other, (self.online_backend.Vector.Type(), tuple)): # tuple is used when multiplying by theta_bc
             return self.wrapping.functions_list_mul_online_vector(self, other)
         elif isinstance(other, self.online_backend.Function.Type()):
             return self.wrapping.functions_list_mul_online_function(self, other)

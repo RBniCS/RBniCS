@@ -2,16 +2,16 @@
 <dolfin xmlns:dolfin="http://fenicsproject.org">
   <mesh celltype="triangle" dim="2">
     <vertices size="4165">
-      <vertex index="0" x="2.000000000000000e+00" y="0.000000000000000e+00" />
-      <vertex index="1" x="2.000000000000000e+00" y="1.000000000000000e+00" />
-      <vertex index="2" x="1.000000000000000e+00" y="1.000000000000000e+00" />
-      <vertex index="3" x="1.000000000000000e+00" y="0.000000000000000e+00" />
-      <vertex index="4" x="0.000000000000000e+00" y="0.000000000000000e+00" />
-      <vertex index="5" x="0.000000000000000e+00" y="1.000000000000000e+00" />
-      <vertex index="6" x="5.000000000000000e-01" y="0.000000000000000e+00" />
-      <vertex index="7" x="1.000000000000000e+00" y="5.000000000000000e-01" />
-      <vertex index="8" x="5.000000000000000e-01" y="1.000000000000000e+00" />
-      <vertex index="9" x="0.000000000000000e+00" y="5.000000000000000e-01" />
+      <vertex index="0" x="1.000000000000000e+00" y="1.000000000000000e+00" />
+      <vertex index="1" x="1.000000000000000e+00" y="0.000000000000000e+00" />
+      <vertex index="2" x="2.000000000000000e+00" y="0.000000000000000e+00" />
+      <vertex index="3" x="2.000000000000000e+00" y="1.000000000000000e+00" />
+      <vertex index="4" x="0.000000000000000e+00" y="1.000000000000000e+00" />
+      <vertex index="5" x="0.000000000000000e+00" y="0.000000000000000e+00" />
+      <vertex index="6" x="0.000000000000000e+00" y="5.000000000000000e-01" />
+      <vertex index="7" x="5.000000000000000e-01" y="0.000000000000000e+00" />
+      <vertex index="8" x="1.000000000000000e+00" y="5.000000000000000e-01" />
+      <vertex index="9" x="5.000000000000000e-01" y="1.000000000000000e+00" />
       <vertex index="10" x="1.500000000000000e+00" y="0.000000000000000e+00" />
       <vertex index="11" x="2.000000000000000e+00" y="5.000000000000000e-01" />
       <vertex index="12" x="1.500000000000000e+00" y="1.000000000000000e+00" />
@@ -4759,7 +4759,7 @@
       <triangle index="587" v0="978" v1="2342" v2="3444" />
       <triangle index="588" v0="214" v1="1281" v2="2012" />
       <triangle index="589" v0="712" v1="1313" v2="2615" />
-      <triangle index="590" v0="8" v1="2565" v2="2719" />
+      <triangle index="590" v0="9" v1="2565" v2="2719" />
       <triangle index="591" v0="255" v1="1374" v2="1895" />
       <triangle index="592" v0="541" v1="1158" v2="3070" />
       <triangle index="593" v0="1300" v1="3490" v2="3925" />
@@ -5349,7 +5349,7 @@
       <triangle index="1177" v0="367" v1="1437" v2="2713" />
       <triangle index="1178" v0="1435" v1="3782" v2="3833" />
       <triangle index="1179" v0="184" v1="2600" v2="2799" />
-      <triangle index="1180" v0="9" v1="1340" v2="2573" />
+      <triangle index="1180" v0="6" v1="1340" v2="2573" />
       <triangle index="1181" v0="1194" v1="1420" v2="2498" />
       <triangle index="1182" v0="729" v1="1580" v2="2453" />
       <triangle index="1183" v0="78" v1="1685" v2="3188" />
@@ -6414,7 +6414,7 @@
       <triangle index="2242" v0="847" v1="2080" v2="3921" />
       <triangle index="2243" v0="393" v1="2080" v2="3921" />
       <triangle index="2244" v0="720" v1="2382" v2="2880" />
-      <triangle index="2245" v0="7" v1="1226" v2="2880" />
+      <triangle index="2245" v0="8" v1="1226" v2="2880" />
       <triangle index="2246" v0="946" v1="1851" v2="3395" />
       <triangle index="2247" v0="946" v1="3395" v2="3396" />
       <triangle index="2248" v0="600" v1="2143" v2="2288" />
@@ -6462,7 +6462,7 @@
       <triangle index="2290" v0="28" v1="1276" v2="2309" />
       <triangle index="2291" v0="28" v1="1250" v2="3743" />
       <triangle index="2292" v0="1251" v1="1918" v2="3486" />
-      <triangle index="2293" v0="6" v1="1251" v2="1918" />
+      <triangle index="2293" v0="7" v1="1251" v2="1918" />
       <triangle index="2294" v0="1252" v1="1549" v2="3278" />
       <triangle index="2295" v0="1253" v1="2935" v2="3454" />
       <triangle index="2296" v0="483" v1="1789" v2="1936" />
@@ -6578,7 +6578,7 @@
       <triangle index="2406" v0="635" v1="2443" v2="2444" />
       <triangle index="2407" v0="177" v1="1308" v2="2443" />
       <triangle index="2408" v0="1309" v1="2711" v2="2734" />
-      <triangle index="2409" v0="7" v1="1226" v2="2728" />
+      <triangle index="2409" v0="8" v1="1226" v2="2728" />
       <triangle index="2410" v0="710" v1="2593" v2="2707" />
       <triangle index="2411" v0="11" v1="1335" v2="2593" />
       <triangle index="2412" v0="161" v1="1311" v2="2075" />
@@ -6609,7 +6609,7 @@
       <triangle index="2437" v0="253" v1="1313" v2="2725" />
       <triangle index="2438" v0="253" v1="1324" v2="2725" />
       <triangle index="2439" v0="709" v1="1325" v2="2734" />
-      <triangle index="2440" v0="7" v1="1325" v2="2734" />
+      <triangle index="2440" v0="8" v1="1325" v2="2734" />
       <triangle index="2441" v0="706" v1="2717" v2="3812" />
       <triangle index="2442" v0="376" v1="3035" v2="3494" />
       <triangle index="2443" v0="1895" v1="2458" v2="2937" />
@@ -6634,7 +6634,7 @@
       <triangle index="2462" v0="676" v1="2587" v2="2723" />
       <triangle index="2463" v0="362" v1="1337" v2="2587" />
       <triangle index="2464" v0="216" v1="1675" v2="2314" />
-      <triangle index="2465" v0="9" v1="1339" v2="2706" />
+      <triangle index="2465" v0="6" v1="1339" v2="2706" />
       <triangle index="2466" v0="375" v1="1340" v2="2904" />
       <triangle index="2467" v0="375" v1="1368" v2="2798" />
       <triangle index="2468" v0="671" v1="1861" v2="2219" />
@@ -6682,15 +6682,15 @@
       <triangle index="2510" v0="1406" v1="2007" v2="4063" />
       <triangle index="2511" v0="626" v1="1495" v2="2684" />
       <triangle index="2512" v0="670" v1="2564" v2="2722" />
-      <triangle index="2513" v0="8" v1="1363" v2="2565" />
+      <triangle index="2513" v0="9" v1="1363" v2="2565" />
       <triangle index="2514" v0="1575" v1="2287" v2="2900" />
       <triangle index="2515" v0="695" v1="2816" v2="2900" />
       <triangle index="2516" v0="1140" v1="4018" v2="4137" />
       <triangle index="2517" v0="86" v1="1365" v2="2100" />
       <triangle index="2518" v0="1367" v1="2715" v2="2737" />
       <triangle index="2519" v0="248" v1="1366" v2="2716" />
-      <triangle index="2520" v0="1" v1="1366" v2="2737" />
-      <triangle index="2521" v0="1" v1="1367" v2="2737" />
+      <triangle index="2520" v0="3" v1="1366" v2="2737" />
+      <triangle index="2521" v0="3" v1="1367" v2="2737" />
       <triangle index="2522" v0="105" v1="1368" v2="2997" />
       <triangle index="2523" v0="732" v1="2797" v2="2997" />
       <triangle index="2524" v0="809" v1="1369" v2="2337" />
@@ -7373,8 +7373,8 @@
       <triangle index="3201" v0="484" v1="1709" v2="2429" />
       <triangle index="3202" v0="468" v1="1824" v2="1847" />
       <triangle index="3203" v0="270" v1="1848" v2="3751" />
-      <triangle index="3204" v0="7" v1="1325" v2="3623" />
-      <triangle index="3205" v0="7" v1="1711" v2="3623" />
+      <triangle index="3204" v0="8" v1="1325" v2="3623" />
+      <triangle index="3205" v0="8" v1="1711" v2="3623" />
       <triangle index="3206" v0="1445" v1="1712" v2="1799" />
       <triangle index="3207" v0="448" v1="1445" v2="1712" />
       <triangle index="3208" v0="984" v1="3734" v2="3735" />
@@ -7786,7 +7786,7 @@
       <triangle index="3614" v0="965" v1="1917" v2="3486" />
       <triangle index="3615" v0="146" v1="2032" v2="3769" />
       <triangle index="3616" v0="1040" v1="1919" v2="4044" />
-      <triangle index="3617" v0="6" v1="3184" v2="4043" />
+      <triangle index="3617" v0="7" v1="3184" v2="4043" />
       <triangle index="3618" v0="1040" v1="1919" v2="3202" />
       <triangle index="3619" v0="510" v1="1919" v2="4044" />
       <triangle index="3620" v0="1279" v1="1920" v2="3065" />
@@ -8568,8 +8568,8 @@
       <triangle index="4396" v0="477" v1="1855" v2="2308" />
       <triangle index="4397" v0="28" v1="1250" v2="2309" />
       <triangle index="4398" v0="1250" v1="2309" v2="3732" />
-      <triangle index="4399" v0="2" v1="1077" v2="2310" />
-      <triangle index="4400" v0="2" v1="916" v2="2310" />
+      <triangle index="4399" v0="0" v1="1077" v2="2310" />
+      <triangle index="4400" v0="0" v1="916" v2="2310" />
       <triangle index="4401" v0="53" v1="1533" v2="2311" />
       <triangle index="4402" v0="1533" v1="1555" v2="2311" />
       <triangle index="4403" v0="93" v1="1646" v2="2312" />
@@ -8847,8 +8847,8 @@
       <triangle index="4675" v0="191" v1="1616" v2="2448" />
       <triangle index="4676" v0="713" v1="2449" v2="2450" />
       <triangle index="4677" v0="1322" v1="2449" v2="2450" />
-      <triangle index="4678" v0="5" v1="1323" v2="2450" />
-      <triangle index="4679" v0="5" v1="1322" v2="2450" />
+      <triangle index="4678" v0="4" v1="1323" v2="2450" />
+      <triangle index="4679" v0="4" v1="1322" v2="2450" />
       <triangle index="4680" v0="1626" v1="2451" v2="3127" />
       <triangle index="4681" v0="1643" v1="2531" v2="3401" />
       <triangle index="4682" v0="2168" v1="2452" v2="3232" />
@@ -9360,7 +9360,7 @@
       <triangle index="5188" v0="673" v1="1312" v2="2849" />
       <triangle index="5189" v0="707" v1="1312" v2="2705" />
       <triangle index="5190" v0="1312" v1="2573" v2="2706" />
-      <triangle index="5191" v0="9" v1="2573" v2="2706" />
+      <triangle index="5191" v0="6" v1="2573" v2="2706" />
       <triangle index="5192" v0="359" v1="1308" v2="2707" />
       <triangle index="5193" v0="710" v1="1308" v2="2707" />
       <triangle index="5194" v0="710" v1="1308" v2="2708" />
@@ -9386,7 +9386,7 @@
       <triangle index="5214" v0="581" v1="1257" v2="2718" />
       <triangle index="5215" v0="581" v1="2057" v2="2718" />
       <triangle index="5216" v0="712" v1="1324" v2="2719" />
-      <triangle index="5217" v0="8" v1="1324" v2="2719" />
+      <triangle index="5217" v0="9" v1="1324" v2="2719" />
       <triangle index="5218" v0="139" v1="1864" v2="2720" />
       <triangle index="5219" v0="139" v1="1387" v2="2720" />
       <triangle index="5220" v0="961" v1="2721" v2="3384" />
@@ -9416,11 +9416,11 @@
       <triangle index="5244" v0="253" v1="1313" v2="2733" />
       <triangle index="5245" v0="742" v1="1313" v2="2733" />
       <triangle index="5246" v0="1309" v1="2728" v2="2734" />
-      <triangle index="5247" v0="7" v1="2728" v2="2734" />
-      <triangle index="5248" v0="3" v1="1065" v2="2735" />
-      <triangle index="5249" v0="3" v1="915" v2="2735" />
-      <triangle index="5250" v0="0" v1="1075" v2="2736" />
-      <triangle index="5251" v0="0" v1="914" v2="2736" />
+      <triangle index="5247" v0="8" v1="2728" v2="2734" />
+      <triangle index="5248" v0="1" v1="1065" v2="2735" />
+      <triangle index="5249" v0="1" v1="915" v2="2735" />
+      <triangle index="5250" v0="2" v1="1075" v2="2736" />
+      <triangle index="5251" v0="2" v1="914" v2="2736" />
       <triangle index="5252" v0="714" v1="2716" v2="2737" />
       <triangle index="5253" v0="1366" v1="2716" v2="2737" />
       <triangle index="5254" v0="945" v1="1668" v2="2738" />
@@ -9708,7 +9708,7 @@
       <triangle index="5536" v0="1186" v1="2741" v2="2879" />
       <triangle index="5537" v0="125" v1="1186" v2="2879" />
       <triangle index="5538" v0="720" v1="1711" v2="2880" />
-      <triangle index="5539" v0="7" v1="1711" v2="2880" />
+      <triangle index="5539" v0="8" v1="1711" v2="2880" />
       <triangle index="5540" v0="179" v1="1115" v2="2881" />
       <triangle index="5541" v0="577" v1="1115" v2="2881" />
       <triangle index="5542" v0="245" v1="1891" v2="2882" />
@@ -10551,7 +10551,7 @@
       <triangle index="6379" v0="947" v1="1860" v2="3301" />
       <triangle index="6380" v0="158" v1="1860" v2="3301" />
       <triangle index="6381" v0="1242" v1="2200" v2="3302" />
-      <triangle index="6382" v0="4" v1="1242" v2="3302" />
+      <triangle index="6382" v0="5" v1="1242" v2="3302" />
       <triangle index="6383" v0="118" v1="1878" v2="3303" />
       <triangle index="6384" v0="887" v1="1878" v2="3303" />
       <triangle index="6385" v0="265" v1="1737" v2="3998" />
@@ -10669,7 +10669,7 @@
       <triangle index="6497" v0="568" v1="1497" v2="3360" />
       <triangle index="6498" v0="693" v1="1497" v2="3360" />
       <triangle index="6499" v0="916" v1="2025" v2="3361" />
-      <triangle index="6500" v0="2" v1="916" v2="3361" />
+      <triangle index="6500" v0="0" v1="916" v2="3361" />
       <triangle index="6501" v0="424" v1="1950" v2="3362" />
       <triangle index="6502" v0="959" v1="1950" v2="3362" />
       <triangle index="6503" v0="1073" v1="2188" v2="3363" />
@@ -11233,7 +11233,7 @@
       <triangle index="7061" v0="982" v1="2577" v2="3642" />
       <triangle index="7062" v0="383" v1="2577" v2="3642" />
       <triangle index="7063" v0="915" v1="2275" v2="3643" />
-      <triangle index="7064" v0="3" v1="915" v2="3643" />
+      <triangle index="7064" v0="1" v1="915" v2="3643" />
       <triangle index="7065" v0="471" v1="1736" v2="3644" />
       <triangle index="7066" v0="471" v1="1656" v2="3644" />
       <triangle index="7067" v0="909" v1="3343" v2="3645" />
@@ -12031,7 +12031,7 @@
       <triangle index="7859" v0="845" v1="1643" v2="4041" />
       <triangle index="7860" v0="999" v1="3751" v2="4042" />
       <triangle index="7861" v0="1121" v1="3751" v2="4042" />
-      <triangle index="7862" v0="6" v1="1918" v2="4043" />
+      <triangle index="7862" v0="7" v1="1918" v2="4043" />
       <triangle index="7863" v0="1040" v1="1918" v2="4043" />
       <triangle index="7864" v0="1040" v1="1918" v2="4044" />
       <triangle index="7865" v0="510" v1="1918" v2="4044" />
@@ -12276,6 +12276,7 @@
       <triangle index="8104" v0="1067" v1="1741" v2="4164" />
       <triangle index="8105" v0="251" v1="1741" v2="4164" />
     </cells>
+    <data />
     <domains>
       <mesh_value_collection name="m" type="uint" dim="2" size="8106">
         <value cell_index="0" local_entity="0" value="2" />

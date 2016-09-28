@@ -114,7 +114,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
             print("truth solve for mu =", self.truth_problem.mu)
             snapshot = self.truth_problem.solve()
             self.truth_problem.export_solution(snapshot, self.folder["snapshots"], "truth_" + str(run))
-            self.reduced_problem.postprocess_snapshot(snapshot)
+            snapshot = self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update snapshots matrix")
             self.update_snapshots_matrix(snapshot)

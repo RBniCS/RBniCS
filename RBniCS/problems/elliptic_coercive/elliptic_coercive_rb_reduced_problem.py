@@ -151,7 +151,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     def update_riesz_a(self):
         assert len(self.truth_problem.inner_product) == 1
         for qa in range(self.Q["a"]):
-            for n in range(len(self.riesz["a"][qa]), self.N):
+            for n in range(len(self.riesz["a"][qa]), self.N + self.N_bc):
                 if len(self.truth_problem.dirichlet_bc) > 0:
                     theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
                     homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
@@ -201,16 +201,16 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             assert len(self.truth_problem.inner_product) == 1
             if term == "riesz_product_aa":
                 for qa in range(self.Q["a"]):
-                    assert len(self.riesz["a"][qa]) == self.N
+                    assert len(self.riesz["a"][qa]) == self.N + self.N_bc
                     for qap in range(qa, self.Q["a"]):
-                        assert len(self.riesz["a"][qap]) == self.N
+                        assert len(self.riesz["a"][qap]) == self.N + self.N_bc
                         self.riesz_product["aa"][qa, qap] = transpose(self.riesz["a"][qa])*self.truth_problem.inner_product[0]*self.riesz["a"][qap]
                         if qa != qap:
                             self.riesz_product["aa"][qap, qa] = self.riesz_product["aa"][qa, qap]
                 self.riesz_product["aa"].save(self.folder["error_estimation"], "riesz_product_aa")
             elif term == "riesz_product_af":
                 for qa in range(self.Q["a"]):
-                    assert len(self.riesz["a"][qa]) == self.N
+                    assert len(self.riesz["a"][qa]) == self.N + self.N_bc
                     for qf in range(0, self.Q["f"]):
                         assert len(self.riesz["f"][qf]) == 1
                         self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*self.truth_problem.inner_product[0]*self.riesz["f"][qf][0]

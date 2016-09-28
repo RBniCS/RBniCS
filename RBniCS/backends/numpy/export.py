@@ -30,7 +30,7 @@ from RBniCS.utils.decorators import backend_for
 from RBniCS.utils.io import Folders
 
 # Export a solution to file
-@backend_for("NumPy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), Folders.Folder, str))
+@backend_for("NumPy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str))
 def export(solution, directory, filename):
     assert isinstance(solution, (Function.Type(), Matrix.Type(), Vector.Type()))
     if isinstance(solution, Function.Type()):

@@ -26,7 +26,7 @@ from dolfin import FunctionSpace
 from RBniCS.backends.fenics.wrapping.function_copy import function_copy
 from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
 from RBniCS.backends.numpy.vector import Vector as OnlineVector
-from RBniCS.backends.numpy.function import Function  as OnlineFunction
+from RBniCS.backends.numpy.function import Function as OnlineFunction
 
 def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsListType):
     V = functions_list.V_or_Z
@@ -40,18 +40,25 @@ def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsLis
         output_j = function_copy(functions_list._list[0])
         output_j.vector().zero()
         for (i, fun_i) in enumerate(functions_list._list):
-            output_j.vector().add_local(fun_i.vector().array()*online_matrix[i, j])
+            output_j.vector().add_local(fun_i.vector().array()*online_matrix.item((i, j)))
         output_j.vector().apply("add")
         output.enrich(output_j)
     return output
 
 def functions_list_mul_online_vector(functions_list, online_vector):
-    assert isinstance(online_vector, OnlineVector.Type())
+    assert isinstance(online_vector, (OnlineVector.Type(), tuple))
     
     output = function_copy(functions_list._list[0])
     output.vector().zero()
-    for (i, fun_i) in enumerate(functions_list._list):
-        output.vector().add_local(fun_i.vector().array()*online_vector.item(i))
+    if isinstance(online_vector, OnlineVector.Type()):
+        for (i, fun_i) in enumerate(functions_list._list):
+            output.vector().add_local(fun_i.vector().array()*online_vector.item(i))
+    elif isinstance(online_vector, tuple):
+        for (i, fun_i) in enumerate(functions_list._list):
+            output.vector().add_local(fun_i.vector().array()*online_vector[i])
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in functions_list_mul_online_vector.")
+        
     output.vector().apply("add")
     return output
     

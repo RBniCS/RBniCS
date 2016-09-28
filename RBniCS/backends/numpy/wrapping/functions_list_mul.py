@@ -40,15 +40,24 @@ def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsLis
         output_j = function_copy(functions_list._list[0])
         output_j.vector()[:] = 0.
         for (i, fun_i) in enumerate(functions_list._list):
-            output_j.vector()[:] += fun_i.vector()*online_matrix[i, j]
+            output_j.vector()[:] += fun_i.vector()*online_matrix.item((i, j))
         output.enrich(output_j)
     return output
 
 def functions_list_mul_online_vector(functions_list, online_vector):
+    assert isinstance(online_vector, (OnlineVector.Type(), tuple))
+    
     output = function_copy(functions_list._list[0])
     output.vector()[:] = 0.
-    for (i, fun_i) in enumerate(functions_list._list):
-        output.vector()[:] += fun_i.vector()*online_vector.item(i)
+    if isinstance(online_vector, OnlineVector.Type()):
+        for (i, fun_i) in enumerate(functions_list._list):
+            output.vector()[:] += fun_i.vector()*online_vector.item(i)
+    elif isinstance(online_vector, tuple):
+        for (i, fun_i) in enumerate(functions_list._list):
+            output.vector()[:] += fun_i.vector()*online_vector[i]
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in functions_list_mul_online_vector.")
+        
     return output
     
 def functions_list_mul_online_function(functions_list, online_function):

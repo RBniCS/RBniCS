@@ -29,7 +29,7 @@ from RBniCS.backends.numpy.function import Function
 from RBniCS.utils.decorators import BackendFor, Extends, override, ThetaType
 
 @Extends(AbstractLinearSolver)
-@BackendFor("NumPy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (ThetaType, None)))
+@BackendFor("NumPy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), ThetaType + (None,)))
 class LinearSolver(AbstractLinearSolver):
     @override
     def __init__(self, lhs, solution, rhs, bcs=None):

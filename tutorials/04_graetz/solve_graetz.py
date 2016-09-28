@@ -25,7 +25,7 @@
 from dolfin import *
 from RBniCS import *
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
+#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~#
 @SCM(
     constrain_minimum_eigenvalue = 1.e4,
     constrain_maximum_eigenvalue = 1.e-4,
@@ -55,7 +55,6 @@ class Graetz(EllipticCoerciveProblem):
         self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subdomains)
         self.ds = Measure("ds")(subdomain_data=boundaries)
-        self.lifting = self.solve_lifting()
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
                 
@@ -70,6 +69,8 @@ class Graetz(EllipticCoerciveProblem):
     def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
+        mu3 = self.mu[2]
+        mu4 = self.mu[3]
         if term == "a":
             theta_a0 = mu2
             theta_a1 = mu2/mu1
@@ -77,13 +78,15 @@ class Graetz(EllipticCoerciveProblem):
             theta_a3 = 1.0
             return (theta_a0, theta_a1, theta_a2, theta_a3)
         elif term == "f":
-            theta_f0 = - mu2
-            theta_f1 = - mu2/mu1
-            theta_f2 = - mu1*mu2
-            theta_f3 = - 1.0
-            return (theta_f0, theta_f1, theta_f2, theta_f3)
+            theta_f0 = 1.0
+            return (theta_f0,)
+        elif term == "dirichlet_bc":
+            theta_bc0 = mu3
+            theta_bc1 = mu4
+            return (theta_bc0, theta_bc1)
         elif term == "s":
-            return (1.0,)
+            theta_s0 = 1.0
+            return (theta_s0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
                     
@@ -100,23 +103,27 @@ class Graetz(EllipticCoerciveProblem):
             a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2)
             return (a0, a1, a2, a3)
         elif term == "f":
-            lifting = self.lifting
-            vel = self.vel
-            f0 = inner(grad(lifting),grad(v))*dx(1)
-            f1 = lifting.dx(0)*v.dx(0)*dx(2)
-            f2 = lifting.dx(1)*v.dx(1)*dx(2)
-            f3 = vel*lifting.dx(0)*v*dx(1) + vel*lifting.dx(0)*v*dx(2)
-            return (f0, f1, f2, f3)
+            f0 = Constant(0.0)*v*dx
+            return (f0,)
         elif term == "s":
             s0 = v*dx(2)
             return (s0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1),
+                   DirichletBC(self.V, Constant(1.0), self.boundaries, 2),
+                   DirichletBC(self.V, Constant(0.0), self.boundaries, 3),
                    DirichletBC(self.V, Constant(0.0), self.boundaries, 5),
-                   DirichletBC(self.V, Constant(0.0), self.boundaries, 6),
+                   DirichletBC(self.V, Constant(1.0), self.boundaries, 6),
+                   DirichletBC(self.V, Constant(0.0), self.boundaries, 7),
+                   DirichletBC(self.V, Constant(0.0), self.boundaries, 8)]
+            bc1 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1),
                    DirichletBC(self.V, Constant(0.0), self.boundaries, 2),
-                   DirichletBC(self.V, Constant(0.0), self.boundaries, 4)]
-            return (bc0,)
+                   DirichletBC(self.V, Constant(1.0), self.boundaries, 3),
+                   DirichletBC(self.V, Constant(1.0), self.boundaries, 5),
+                   DirichletBC(self.V, Constant(0.0), self.boundaries, 6),
+                   DirichletBC(self.V, Constant(0.0), self.boundaries, 7),
+                   DirichletBC(self.V, Constant(0.0), self.boundaries, 8)]
+            return (bc0, bc1)
         elif term == "inner_product":
             u = self.u
             x0 = u*v*dx + inner(grad(u),grad(v))*dx
@@ -124,44 +131,8 @@ class Graetz(EllipticCoerciveProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
         
-    def solve_lifting(self):
-        # We will consider non-homogeneous Dirichlet BCs with a lifting.
-        # First of all, assemble a suitable lifting function
-        lifting_bc = [ 
-            DirichletBC(self.V, Constant(0.0), self.boundaries, 1), # homog. bcs
-            DirichletBC(self.V, Constant(0.0), self.boundaries, 5), # homog. bcs
-            DirichletBC(self.V, Constant(0.0), self.boundaries, 6), # homog. bcs
-            DirichletBC(self.V, Constant(1.0), self.boundaries, 2), # non-homog. bcs
-            DirichletBC(self.V, Constant(1.0), self.boundaries, 4)  # non-homog. bcs
-        ]
-        u = self.u
-        v = self.v
-        dx = self.dx
-        lifting_a = inner(grad(u),grad(v))*dx
-        lifting_A = assemble(lifting_a)
-        lifting_f = Constant(0.)*v*dx
-        lifting_F = assemble(lifting_f)
-        [bc.apply(lifting_A) for bc in lifting_bc] # Apply BCs on LHS
-        [bc.apply(lifting_F) for bc in lifting_bc] # Apply BCs on RHS
-        lifting = Function(V)
-        solve(lifting_A, lifting.vector(), lifting_F)
-        return lifting
-        
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
-    
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-    
-    ## Preprocess the solution before export to add a lifting
-    def export_solution(self, solution, folder, filename):
-        solution_with_lifting = Function(self.V)
-        solution_with_lifting.vector()[:] = solution.vector()[:] + self.lifting.vector()[:]
-        EllipticCoerciveProblem.export_solution(self, solution_with_lifting, folder, filename)
-        
-    #  @}
-    ########################### end - I/O - end ########################### 
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
@@ -175,21 +146,21 @@ V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Graetz class
 graetz_problem = Graetz(V, subdomains=subdomains, boundaries=boundaries)
-mu_range = [(0.01, 10.0), (0.01, 10.0)]
+mu_range = [(0.01, 10.0), (0.01, 10.0), (0.5, 1.5), (0.5, 1.5)]
 graetz_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis_method.set_Nmax(10, SCM=10)
+reduced_basis_method.set_Nmax(20, SCM=10)
 
 # 5. Perform the offline phase
-first_mu = (1.0, 1.0)
+first_mu = (1.0, 1.0, 1.0, 1.0)
 graetz_problem.set_mu(first_mu)
-reduced_basis_method.set_xi_train(100)
+reduced_basis_method.set_xi_train(200)
 reduced_graetz_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
-online_mu = (10.0, 0.01)
+online_mu = (10.0, 0.01, 1.5, 1.0)
 reduced_graetz_problem.set_mu(online_mu)
 reduced_graetz_problem.solve()
 

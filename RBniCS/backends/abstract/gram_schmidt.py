@@ -31,6 +31,6 @@ class GramSchmidt(object):
         
     ## Apply Gram Schmidt on the basis functions matrix Z
     @abstractmethod
-    def apply(self, Z):
+    def apply(self, Z, N_bc):
         pass
     

@@ -32,6 +32,8 @@ class Graetz(EllipticCoerciveProblem):
     
     # TODO try and find a simpler/different problem. If it is not possible, then add back again SCM and ShapeParametrization
     
+    # TODO this file is not in sync with tutorial 4, which has been update to use new dirichlet bc storage in basis
+    
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
     #  @{

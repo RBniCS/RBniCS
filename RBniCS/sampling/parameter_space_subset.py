@@ -44,7 +44,7 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         self.distributed_max = True
     
     # Method for generation of parameter space subsets
-    def generate(self, n, sampling):
+    def generate(self, n, sampling=None):
         if is_io_process():
             if sampling is None:
                 sampling = UniformDistribution()
