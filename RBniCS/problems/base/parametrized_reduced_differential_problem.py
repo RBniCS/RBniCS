@@ -184,9 +184,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     ## Export solution to file
     @override
-    def export_solution(self, solution, folder, filename):
+    def export_solution(self, folder, filename, solution=None):
+        if solution is None:
+            solution = self._solution
         N = solution.vector().size
-        self.truth_problem.export_solution(self.Z[:N]*solution, folder, filename)
+        self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution)
             
     #  @}
     ########################### end - I/O - end ########################### 

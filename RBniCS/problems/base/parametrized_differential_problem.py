@@ -116,7 +116,9 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     #  @{
     
     ## Export solution to file
-    def export_solution(self, solution, folder, filename):
+    def export_solution(self, folder, filename, solution=None):
+        if solution is None:
+            solution = self._solution
         export(solution, folder, filename)
         
     #  @}

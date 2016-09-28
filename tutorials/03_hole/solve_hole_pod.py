@@ -170,6 +170,7 @@ reduced_hole_problem = pod_galerkin_method.offline()
 online_mu = (0.5, 0.5, 0.01)
 reduced_hole_problem.set_mu(online_mu)
 reduced_hole_problem.solve()
+reduced_hole_problem.export_solution("Hole", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.set_xi_test(500)

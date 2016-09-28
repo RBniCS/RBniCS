@@ -137,7 +137,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
             
             print("truth solve for mu =", self.truth_problem.mu)
             snapshot = self.truth_problem.solve()
-            self.truth_problem.export_solution(snapshot, self.folder["snapshots"], "truth_" + str(run))
+            self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(run), snapshot)
             snapshot = self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("update basis matrix")

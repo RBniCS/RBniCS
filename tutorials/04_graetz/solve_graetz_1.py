@@ -157,10 +157,12 @@ class Graetz(EllipticCoerciveProblem):
     #  @{
     
     ## Preprocess the solution before export to add a lifting
-    def export_solution(self, solution, folder, filename):
+    def export_solution(self, folder, filename, solution=None):
+        if solution is None:
+            solution = self._solution
         solution_with_lifting = Function(self.V)
         solution_with_lifting.vector()[:] = solution.vector()[:] + self.lifting.vector()[:]
-        EllipticCoerciveProblem.export_solution(self, solution_with_lifting, folder, filename)
+        EllipticCoerciveProblem.export_solution(self, folder, filename, solution_with_lifting)
         
     #  @}
     ########################### end - I/O - end ########################### 
@@ -194,6 +196,7 @@ reduced_graetz_problem = reduced_basis_method.offline()
 online_mu = (10.0, 0.01)
 reduced_graetz_problem.set_mu(online_mu)
 reduced_graetz_problem.solve()
+reduced_graetz_problem.export_solution("Graetz", "online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.set_xi_test(100)

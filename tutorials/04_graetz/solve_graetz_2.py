@@ -156,13 +156,14 @@ reduced_basis_method.set_Nmax(20, SCM=10)
 # 5. Perform the offline phase
 first_mu = (1.0, 1.0, 1.0, 1.0)
 graetz_problem.set_mu(first_mu)
-reduced_basis_method.set_xi_train(200)
+reduced_basis_method.set_xi_train(500)
 reduced_graetz_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
 online_mu = (10.0, 0.01, 1.5, 1.0)
 reduced_graetz_problem.set_mu(online_mu)
 reduced_graetz_problem.solve()
+reduced_graetz_problem.export_solution("Graetz", "online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.set_xi_test(100)

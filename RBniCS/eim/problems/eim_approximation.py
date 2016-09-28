@@ -169,7 +169,8 @@ class EIMApproximation(ParametrizedProblem):
     #  @{
 
     ## Export solution to file
-    def export_solution(self, solution, folder, filename):
+    def export_solution(self, folder, filename, solution=None):
+        assert solution is not None
         export(solution, folder, filename)
         
     #  @}

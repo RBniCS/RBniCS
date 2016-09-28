@@ -123,8 +123,11 @@ reduced_gaussian_problem = reduced_basis_method.offline()
 online_mu = (0.3,-1.0)
 reduced_gaussian_problem.set_mu(online_mu)
 reduced_gaussian_problem.solve()
+reduced_gaussian_problem.export_solution("Gaussian", "online_solution")
 reduced_gaussian_problem.solve(EIM=11)
+reduced_gaussian_problem.export_solution("Gaussian", "online_solution__EIM_11")
 reduced_gaussian_problem.solve(EIM=1)
+reduced_gaussian_problem.export_solution("Gaussian", "online_solution__EIM_1")
 
 # 7. Perform an error analysis
 reduced_basis_method.set_xi_test(50)
