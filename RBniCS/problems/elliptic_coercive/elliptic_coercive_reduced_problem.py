@@ -27,7 +27,7 @@ from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.backends import difference, LinearSolver, product, sum, transpose
 from RBniCS.backends.online import OnlineFunction
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
+from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -35,8 +35,9 @@ from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveReduction
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(ParametrizedReducedDifferentialProblem) # needs to be first in order to override for last the methods.
+@Extends(ParametrizedReducedDifferentialProblem, assert_recursion_level=1) # needs to be first in order to override for last the methods. assert_recursion_level is set because MultiLevelReducedProblem introduces an additional level of inheritance
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveReductionMethod)
+@MultiLevelReducedProblem
 class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
     
     ###########################     CONSTRUCTORS     ########################### 

@@ -28,7 +28,7 @@ import types
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.backends import BasisFunctionsMatrix, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from RBniCS.utils.decorators import sync_setters, Extends, override, MultiLevelReducedProblem
+from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import print
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -36,8 +36,7 @@ from RBniCS.utils.mpi import print
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(ParametrizedProblem, assert_recursion_level=1) # needs to be first in order to override for last the methods. assert_recursion_level is set because MultiLevelReducedProblem introduces an additional level of inheritance
-@MultiLevelReducedProblem
+@Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     __metaclass__ = ABCMeta
     

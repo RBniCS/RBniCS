@@ -24,7 +24,7 @@
 
 from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
 from RBniCS.utils.io import Folders
-from RBniCS.utils.decorators import Extends, override, MultiLevelReductionMethod
+from RBniCS.utils.decorators import Extends, override
 from RBniCS.utils.factories import ReducedProblemFactory
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -32,8 +32,7 @@ from RBniCS.utils.factories import ReducedProblemFactory
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(ReductionMethod, assert_recursion_level=1) # needs to be first in order to override for last the methods. assert_recursion_level is set because MultiLevelReductionMethod introduces an additional level of inheritance
-@MultiLevelReductionMethod
+@Extends(ReductionMethod) # needs to be first in order to override for last the methods.
 class DifferentialProblemReductionMethod(ReductionMethod):
     
     ###########################     CONSTRUCTORS     ########################### 
