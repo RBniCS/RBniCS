@@ -22,7 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import as_backend_type, assemble, Point, project
+from dolfin import Argument, as_backend_type, assemble, Point, project
+from ufl import replace, replace_integral_domains
+from ufl.corealg.traversal import traverse_unique_terminals
+from ufl.algorithms.traversal import iter_expressions
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
@@ -132,17 +135,15 @@ def evaluate(expression_, at=None):
                 form = expression_._form
                 return assemble(form)
             else:
-                #form = replace_test_trial_functions(expression_._form, at.V, at.get_reduced_function_space()) # TODO decommentare
-                form = expression_._form # TODO rimuovere a favore del precedente (efficiente)
+                form = replace_test_trial_functions(expression_._form, at.get_reduced_function_space())
+                dofs = at.get_reduced_dofs_list()
                 sparse_out = assemble(form)
                 form_rank = len(form.arguments())
                 assert form_rank in (1, 2)
                 if form_rank is 2:
-                    #return evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_out, at.get_reduced_dofs_list()) # TODO decommentare
-                    return evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_out, at.get_dofs_list()) # TODO rimuovere a favore del precedente (efficiente)
+                    return evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_out, dofs)
                 elif form_rank is 1:
-                    #return evaluate_sparse_vector_at_dofs(sparse_out, at.get_reduced_dofs_list()) # TODO decommentare
-                    return evaluate_sparse_vector_at_dofs(sparse_out, at.get_dofs_list()) # TODO rimuovere a favore del precedente (efficiente)
+                    return evaluate_sparse_vector_at_dofs(sparse_out, dofs)
                 else: # impossible to arrive here anyway thanks to the assert
                     raise AssertionError("Invalid form rank")
         else: # impossible to arrive here anyway thanks to the assert
@@ -156,7 +157,7 @@ def deduce_online_size_from_ufl(reduced_vertices, expression):
     assert (
         isinstance(components, int) 
             or 
-        # numpy returs the float 1.0 for empty tuple [scalar functions]
+        # numpy returns the float 1.0 for empty tuple [scalar functions]
         (isinstance(components, float) and components == 1.0)
     )
     return len(reduced_vertices._vertex_list)*int(components)
@@ -197,3 +198,20 @@ def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
         assert out_index_processor >= 0
         out[index] += mpi_comm.bcast(out_index, root=out_index_processor)
     return out
+    
+def replace_test_trial_functions(form, reduced_V):
+    if (form, reduced_V) not in replace_test_trial_functions__cache:
+        trial_test_functions_replacements = dict()
+        
+        for integral in form.integrals():
+            for expression in iter_expressions(integral):
+                for node in traverse_unique_terminals(expression):
+                    if isinstance(node, Argument) and node not in trial_test_functions_replacements:
+                        trial_test_functions_replacements[node] = Argument(reduced_V, node.number(), node.part())
+        
+        replace_test_trial_functions__cache[(form, reduced_V)] = \
+            replace_integral_domains(replace(form, trial_test_functions_replacements), reduced_V.mesh().ufl_domain())
+            
+    return replace_test_trial_functions__cache[(form, reduced_V)]
+replace_test_trial_functions__cache = dict()
+    
