@@ -97,7 +97,7 @@ def backends_factory(backends_module):
     def get_input_types(inputs):
         input_types = list()
         for input_ in inputs:
-            if isinstance(input_, (list, tuple)):
+            if type(input_) in (list, tuple): # more strict that isinstance(input_, (list, tuple)): custom types inherited from list or tuple should be preserved
                 input_subtypes = get_input_types(input_)
                 input_subtypes = tuple(set(input_subtypes)) # remove repeated types
                 if len(input_subtypes) == 1:
