@@ -23,10 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.eim.problems import EIM, ExactParametrizedFunctions
+from RBniCS.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 
 __all__ = [
     # RBniCS.eim.problems
+    'DEIM',
     'EIM',
     'ExactParametrizedFunctions'
 ]
@@ -35,6 +36,6 @@ __all__ = [
 # decorators that fill in algorithm factories are called, but do not 
 # add them to __all__ since they are not class that should be explicitely
 # used in the tutorials
-from RBniCS.eim.problems import EIMDecoratedReducedProblem, ExactParametrizedFunctionsDecoratedReducedProblem
-from RBniCS.eim.reduction_methods import EIMDecoratedReductionMethod, ExactParametrizedFunctionsDecoratedReductionMethod
+from RBniCS.eim.problems import DEIMDecoratedReducedProblem, EIMDecoratedReducedProblem, ExactParametrizedFunctionsDecoratedReducedProblem
+from RBniCS.eim.reduction_methods import DEIMDecoratedReductionMethod, EIMDecoratedReductionMethod, ExactParametrizedFunctionsDecoratedReductionMethod
 

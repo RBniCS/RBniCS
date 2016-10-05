@@ -23,26 +23,45 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl import Form
-from dolfin import FunctionSpace
+from dolfin import assemble, FunctionSpace
 from RBniCS.backends.abstract import ProjectedParametrizedTensor as AbstractProjectedParametrizedTensor
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
 from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
 from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
+from RBniCS.backends.fenics.wrapping.get_form_name import get_form_name
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractProjectedParametrizedTensor)
 @BackendFor("FEniCS", inputs=(Form, FunctionSpace))
 class ProjectedParametrizedTensor(AbstractProjectedParametrizedTensor):
+    # This are needed for proper I/O in tensor_load/tensor_save
+    _all_forms = dict()
+    _all_forms_assembled_containers = dict()
+    
     def __init__(self, form, space):
         AbstractProjectedParametrizedTensor.__init__(self, form, space)
         #
         self._form = form
         self._space = space
+        # Store for I/O
+        form_name = get_form_name(form)
+        assembled_form = assemble(form)
+        assembled_form.generator = form
+        ProjectedParametrizedTensor._all_forms[form_name] = form
+        ProjectedParametrizedTensor._all_forms_assembled_containers[form_name] = assembled_form
     
     @override
     def create_interpolation_locations_container(self):
-        return ReducedMesh(self._space)
+        subdomain_data = list()
+        for integral in self._form.integrals():
+            if integral.subdomain_data() is not None and integral.subdomain_data() not in subdomain_data:
+                subdomain_data.append(integral.subdomain_data())
+        if len(subdomain_data) > 0:
+            reduced_mesh = ReducedMesh(self._space, subdomain_data)
+        else:
+            reduced_mesh = ReducedMesh(self._space)
+        return reduced_mesh
         
     @override
     def create_snapshots_container(self):

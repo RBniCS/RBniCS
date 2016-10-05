@@ -22,15 +22,19 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-###########################     I/O     ########################### 
-## @defgroup IO Input/output methods
-#  @{
-
 from RBniCS.utils.decorators import AbstractBackend, abstractmethod, abstractproperty
 
 @AbstractBackend
 class SeparatedParametrizedForm(object):
     def __init__(self, form):
+        pass
+    
+    @abstractmethod
+    def is_parametrized(self):
+        pass
+        
+    @abstractmethod
+    def name(self):
         pass
     
     @abstractmethod
@@ -52,7 +56,4 @@ class SeparatedParametrizedForm(object):
     @abstractmethod
     def placeholders_names(self, i):
         pass
-
-#  @}
-########################### end - I/O - end ########################### 
 

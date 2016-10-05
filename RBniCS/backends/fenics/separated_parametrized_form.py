@@ -22,10 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-###########################     I/O     ########################### 
-## @defgroup IO Input/output methods
-#  @{
-
 from numpy import ones, zeros
 from dolfin import Constant, Expression, Function, log, PROGRESS
 from dolfin import __version__ as dolfin_version
@@ -40,6 +36,7 @@ import hashlib
 from RBniCS.utils.io import ExportableList, PickleIO
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
+from RBniCS.backends.fenics.wrapping import get_form_name
 
 @Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("FEniCS", inputs=(Form, ))
@@ -54,6 +51,18 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form_unchanged = list() # of forms
         # Internal usage
         self._NaN = float('NaN')
+    
+    @override
+    def is_parametrized(self):
+        for integral in self._form.integrals():
+            for e in pre_traversal(integral.integrand()):
+                if isinstance(e, Expression) and "mu_0" in e.user_parameters:
+                    return True
+        return False
+        
+    @override
+    def name(self):
+        return get_form_name(self._form)
     
     @override
     def separate(self):
@@ -238,7 +247,4 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     @override
     def placeholders_names(self, i):
         return self._placeholder_names[i]
-
-#  @}
-########################### end - I/O - end ########################### 
 

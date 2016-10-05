@@ -30,7 +30,7 @@ __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sart
 
 # Import the minimum subset of RBniCS required to run tutorials
 from RBniCS.backends.fenics.wrapping import DirichletBC, ParametrizedExpression
-from RBniCS.eim import EIM, ExactParametrizedFunctions
+from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.sampling import EquispacedDistribution, UniformDistribution
 from RBniCS.scm import SCM, ExactCoercivityConstant
@@ -43,6 +43,7 @@ __all__ = [
     'DirichletBC',
     'ParametrizedExpression',
     # RBniCS.eim
+    'DEIM',
     'EIM',
     'ExactParametrizedFunctions',
     # RBniCS.problems

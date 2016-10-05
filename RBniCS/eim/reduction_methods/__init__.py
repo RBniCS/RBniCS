@@ -22,11 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.eim.reduction_methods.deim_decorated_reduction_method import DEIMDecoratedReductionMethod
 #from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod # not needed
 from RBniCS.eim.reduction_methods.eim_decorated_reduction_method import EIMDecoratedReductionMethod
 from RBniCS.eim.reduction_methods.exact_parametrized_functions_decorated_reduction_method import ExactParametrizedFunctionsDecoratedReductionMethod
 
 __all__ = [
+    'DEIMDecoratedReductionMethod',
     'EIMDecoratedReductionMethod',
     'ExactParametrizedFunctionsDecoratedReductionMethod'
 ]
