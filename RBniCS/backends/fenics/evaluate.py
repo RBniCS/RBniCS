@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import Argument, as_backend_type, assemble, Point, project
-from ufl import replace, replace_integral_domains
+from ufl import Measure, replace
 from ufl.corealg.traversal import traverse_unique_terminals
 from ufl.algorithms.traversal import iter_expressions
 from RBniCS.backends.fenics.matrix import Matrix
@@ -137,7 +137,7 @@ def evaluate(expression_, at=None):
                 tensor.generator = expression_ # for I/O
                 return tensor
             else:
-                form = replace_test_trial_functions(expression_._form, at.get_reduced_function_space())
+                form = replace_test_trial_functions(expression_._form, at.get_reduced_function_space(), at.get_reduced_subdomain_data())
                 dofs = at.get_reduced_dofs_list()
                 sparse_out = assemble(form)
                 form_rank = len(form.arguments())
@@ -201,18 +201,40 @@ def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
         out[index] += mpi_comm.bcast(out_index, root=out_index_processor)
     return out
     
-def replace_test_trial_functions(form, reduced_V):
+def replace_test_trial_functions(form, reduced_V, reduced_subdomain_data):
     if (form, reduced_V) not in replace_test_trial_functions__cache:
         trial_test_functions_replacements = dict()
         
+        # Look for all trial and test functions
         for integral in form.integrals():
             for expression in iter_expressions(integral):
                 for node in traverse_unique_terminals(expression):
                     if isinstance(node, Argument) and node not in trial_test_functions_replacements:
                         trial_test_functions_replacements[node] = Argument(reduced_V, node.number(), node.part())
+        # ... and replace them
+        form_replaced_test_trial_functions = replace(form, trial_test_functions_replacements)
         
-        replace_test_trial_functions__cache[(form, reduced_V)] = \
-            replace_integral_domains(replace(form, trial_test_functions_replacements), reduced_V.mesh().ufl_domain())
+        # Look for measures and replace them
+        form_replaced_test_trial_functions_and_measures = 0
+        for integral in form_replaced_test_trial_functions.integrals():
+            # Prepare measure for the new form (from firedrake/mg/ufl_utils.py)
+            measure_reduced_domain = reduced_V.mesh().ufl_domain()
+            measure_subdomain_data = integral.subdomain_data()
+            if measure_subdomain_data is not None:
+                measure_reduced_subdomain_data = reduced_subdomain_data[measure_subdomain_data]
+            else:
+                measure_reduced_subdomain_data = None
+            measure = Measure(
+                integral.integral_type(),
+                domain=measure_reduced_domain,
+                subdomain_id=integral.subdomain_id(),
+                subdomain_data=measure_reduced_subdomain_data,
+                metadata=integral.metadata()
+            )
+            form_replaced_test_trial_functions_and_measures += integral.integrand()*measure
+        
+        # Cache the resulting form
+        replace_test_trial_functions__cache[(form, reduced_V)] = form_replaced_test_trial_functions_and_measures
             
     return replace_test_trial_functions__cache[(form, reduced_V)]
 replace_test_trial_functions__cache = dict()

@@ -29,38 +29,41 @@ from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
 class ParametrizedFunctionApproximation(EIMApproximation):
-    def __init__(self, V, expression_type, basis_generation):
+    def __init__(self, V, subdomains, expression_type, basis_generation):
         # Parametrized function to be interpolated
         f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
+        # Subdomain measure
+        dx = Measure("dx")(subdomain_data=subdomains)(1)
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ProjectedParametrizedExpression(f, V), "test_eim_approximation_3_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ProjectedParametrizedExpression(f, V), "test_eim_approximation_4_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(V)
             form = f*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ProjectedParametrizedTensor(form, V), "test_eim_approximation_3_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ProjectedParametrizedTensor(form, V), "test_eim_approximation_4_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(V)
             v = TestFunction(V)
             form = f*u*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ProjectedParametrizedTensor(form, V), "test_eim_approximation_3_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ProjectedParametrizedTensor(form, V), "test_eim_approximation_4_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 
 # 1. Create the mesh for this test
-mesh = Mesh("../../../tutorials/05_gaussian/data/gaussian.xml")
+mesh = Mesh("../../../tutorials/01_tblock/data/tblock.xml")
+subdomains = MeshFunction("size_t", mesh, "../../../tutorials/01_tblock/data/tblock_physical_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the ParametrizedFunctionApproximation class
-expression_type = "Function" # Function or Vector or Matrix
+expression_type = "Vector" # Function or Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
-parametrized_function_approximation = ParametrizedFunctionApproximation(V, expression_type, basis_generation)
+parametrized_function_approximation = ParametrizedFunctionApproximation(V, subdomains, expression_type, basis_generation)
 mu_range = [(-1.0, 1.0), (-1.0, 1.0)]
 parametrized_function_approximation.set_mu_range(mu_range)
 

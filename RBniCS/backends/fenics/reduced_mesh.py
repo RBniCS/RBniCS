@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import CellFunction, cells, DEBUG, File, FunctionSpace, has_hdf5, log, Mesh
+from dolfin import CellFunction, cells, DEBUG, File, FunctionSpace, has_hdf5, log, Mesh, MeshFunction
 if has_hdf5():
     from dolfin import HDF5File        
 from RBniCS.backends.abstract import ReducedMesh as AbstractReducedMesh
@@ -114,16 +114,12 @@ class ReducedMesh(AbstractReducedMesh):
     
     @override
     def load(self, directory, filename):
-        def assert_list_lengths():
-            assert len(self.reduced_mesh) == len(self.reduced_function_space)
-            assert len(self.reduced_mesh) == len(self.reduced_subdomain_data)
-            assert len(self.reduced_mesh) == len(self.reduced_mesh_dofs_list)
-            assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
         if len(self.reduced_mesh) > 0: # avoid loading multiple times
-            assert_list_lengths()
+            self._assert_list_lengths()
             return False
         else:
-            assert_list_lengths()
+            self._assert_list_lengths()
+            # Nmax
             Nmax = self._load_Nmax(directory, filename)
             # reduced_mesh
             for index in range(Nmax):
@@ -137,6 +133,7 @@ class ReducedMesh(AbstractReducedMesh):
                     reduced_mesh = Mesh()
                     input_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "r")
                     input_file.read(reduced_mesh, "/mesh", False)
+                    input_file.close()
                 self.reduced_mesh.append(reduced_mesh)
                 self.reduced_function_space.append(FunctionSpace(reduced_mesh, self.V.ufl_element()))
             # reduced_subdomain_data
@@ -144,12 +141,21 @@ class ReducedMesh(AbstractReducedMesh):
                 if self.subdomain_data is not None:
                     reduced_subdomain_data = dict()
                     for (subdomain_index, subdomain) in enumerate(self.subdomain_data):
-                        subdomain_filename = str(directory) + "/" + filename + "_" + str(index) + "_subdomain_" + subdomain_index
-                        reduced_subdomain = MeshFunction("size_t", self.reduced_mesh[index], subdomain_filename)
+                        subdomain_filename = str(directory) + "/" + filename + "_" + str(index) + "_subdomain_" + str(subdomain_index)
+                        if not has_hdf5():
+                            assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
+                            subdomain_filename = subdomain_filename + ".xml"
+                            reduced_subdomain = MeshFunction("size_t", self.reduced_mesh[index], subdomain_filename)
+                        else:
+                            subdomain_filename = subdomain_filename + ".h5"
+                            input_file = HDF5File(self.mesh.mpi_comm(), subdomain_filename, "r")
+                            reduced_subdomain = MeshFunction("size_t", self.reduced_mesh[index], subdomain.dim())
+                            input_file.read(reduced_subdomain, "/subdomain")
+                            input_file.close()
                         reduced_subdomain_data[subdomain] = reduced_subdomain
                     self.reduced_subdomain_data.append(reduced_subdomain_data)
                 else:
-                    self.reduced_subdomain_data.append(None)
+                    self.reduced_subdomain_data.append(0) # cannot use None because otherwise it would not be appended by the copy constructor
             # reduced_mesh_dofs_list
             importable_reduced_mesh_dofs_list = ExportableList("pickle")
             importable_reduced_mesh_dofs_list.load(directory, filename + "_dofs")
@@ -187,7 +193,7 @@ class ReducedMesh(AbstractReducedMesh):
                             importable_reduced_mesh_reduced_dofs_list__iterator += 1
                         self.reduced_mesh_reduced_dofs_list[index].append(tuple(reduced_mesh_dof))
             #
-            assert_list_lengths()
+            self._assert_list_lengths()
             return True
         
     def _load_Nmax(self, directory, filename):
@@ -200,8 +206,9 @@ class ReducedMesh(AbstractReducedMesh):
         
     @override
     def save(self, directory, filename):
+        self._assert_list_lengths()
+        # Nmax
         self._save_Nmax(directory, filename)
-        assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
         # reduced_mesh
         for (index, reduced_mesh) in enumerate(self.reduced_mesh):
             mesh_filename = str(directory) + "/" + filename + "_" + str(index)
@@ -213,13 +220,22 @@ class ReducedMesh(AbstractReducedMesh):
                 mesh_filename = mesh_filename + ".h5"
                 output_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "w")
                 output_file.write(reduced_mesh, "/mesh")
+                output_file.close()
         # reduced_subdomain_data
         if self.subdomain_data is not None:
             for (index, reduced_subdomain_data) in enumerate(self.reduced_subdomain_data):
                 subdomain_index = 0
                 for (subdomain, reduced_subdomain) in reduced_subdomain_data.iteritems():
-                    subdomain_filename = str(directory) + "/" + filename + "_" + str(index) + "_subdomain_" + subdomain_index
-                    File(subdomain_filename) << reduced_subdomain
+                    subdomain_filename = str(directory) + "/" + filename + "_" + str(index) + "_subdomain_" + str(subdomain_index)
+                    if not has_hdf5():
+                        assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
+                        subdomain_filename = subdomain_filename + ".xml"
+                        File(subdomain_filename) << reduced_subdomain
+                    else:
+                        subdomain_filename = subdomain_filename + ".h5"
+                        output_file = HDF5File(self.mesh.mpi_comm(), subdomain_filename, "w")
+                        output_file.write(reduced_subdomain, "/subdomain")
+                        output_file.close()
                     subdomain_index += 1
         # reduced_mesh_dofs_list
         exportable_reduced_mesh_dofs_list = ExportableList("pickle")
@@ -240,11 +256,16 @@ class ReducedMesh(AbstractReducedMesh):
             exportable_reduced_mesh_reduced_dofs_list.save(directory, filename + "_reduced_dofs_" + str(index))
             
     def _save_Nmax(self, directory, filename):
-        assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
         if is_io_process(self.mpi_comm):
             with open(str(directory) + "/" + filename + ".length", "w") as length:
                 length.write(str(len(self.reduced_mesh)))
         self.mpi_comm.barrier()
+        
+    def _assert_list_lengths(self):
+        assert len(self.reduced_mesh) == len(self.reduced_function_space)
+        assert len(self.reduced_mesh) == len(self.reduced_subdomain_data)
+        assert len(self.reduced_mesh) == len(self.reduced_mesh_dofs_list)
+        assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
                 
     def __getitem__(self, key):
         assert isinstance(key, slice)
@@ -267,7 +288,7 @@ class ReducedMesh(AbstractReducedMesh):
                 reduced_subdomain_data[subdomain] = reduced_subdomain
             self.reduced_subdomain_data.append(reduced_subdomain_data)
         else:
-            self.reduced_subdomain_data.append(None)
+            self.reduced_subdomain_data.append(0) # cannot use None because otherwise it would not be appended by the copy constructor
         # Return the FunctionSpace V on the reduced mesh
         reduced_V = FunctionSpace(reduced_mesh, self.V.ufl_element())
         self.reduced_function_space.append(reduced_V)
@@ -304,6 +325,12 @@ class ReducedMesh(AbstractReducedMesh):
             index = -1
         
         return self.reduced_function_space[index]
+        
+    def get_reduced_subdomain_data(self, index=None):
+        if index is None:
+            index = -1
+        
+        return self.reduced_subdomain_data[index]
         
     def get_dofs_list(self, index=None):
         if index is None:
