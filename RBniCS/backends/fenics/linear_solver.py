@@ -34,10 +34,17 @@ from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 class LinearSolver(AbstractLinearSolver):
     @override
     def __init__(self, lhs, solution, rhs, bcs=None):
-        self.lhs = lhs
         self.solution = solution
-        self.rhs = rhs
-        self.bcs = bcs
+        if bcs is not None:
+            # Create a copy of lhs and rhs, in order not to 
+            # change the original references when applying bcs
+            self.lhs = lhs.copy()
+            self.rhs = rhs.copy()
+            self.bcs = bcs
+        else:
+            self.lhs = lhs
+            self.rhs = rhs
+            self.bcs = bcs
         
     @override
     def solve(self):
