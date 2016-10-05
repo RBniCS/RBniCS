@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import Function
+from dolfin import assign, Function
 from RBniCS.backends.fenics.wrapping.function_copy import function_copy
 
 def function_component(function, component, copy):
@@ -41,6 +41,6 @@ def function_component(function, component, copy):
             (num_components > 0 and (component == None or component < num_components))
         )
         function_component = Function(V) # zero by default
-        assign(function_component.sub(c), function.sub(c))
+        assign(function_component.sub(component), function.sub(component))
         return function_component
 
