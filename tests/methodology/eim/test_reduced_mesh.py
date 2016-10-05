@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-set_log_level(DEBUG)
+set_log_level(PROGRESS)
 from fenicstools import DofMapPlotter
 from RBniCS.backends.fenics import ReducedMesh
 from RBniCS.backends.fenics.evaluate import evaluate_and_vectorize_sparse_matrix_at_dofs

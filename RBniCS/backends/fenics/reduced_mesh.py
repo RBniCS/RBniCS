@@ -22,115 +22,26 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import CellFunction, cells, compile_extension_module, DEBUG, File, FunctionSpace, has_hdf5, log, Mesh, Vertex, vertices
+from dolfin import CellFunction, cells, DEBUG, File, FunctionSpace, has_hdf5, log, Mesh
 if has_hdf5():
-    from dolfin import HDF5File
-try:
-    from cbcpost.utils import create_submesh as create_submesh_cbcpost, restriction_map
-except ImportError:
-    from dolfin import MPI, mpi_comm_world
-    assert MPI.size(mpi_comm_world()) == 1, "cbcpost is required to create a ReducedMesh in parallel"
-    from dolfin import SubMesh as create_submesh
-    def restriction_map(V, reduced_V):
-        raise NotImplementedError("restriction_map without cbcpost not implemented yet.")
-else:
-    # Implement an extended version of cbcpost create_submesh that also assigns shared_entities(0).
-    # This is essential because otherwise mid-dofs on shared facets will be duplicated!
-    from numpy import array, uintp
-    def create_submesh(mesh, marker, marker_id):
-        submesh = create_submesh_cbcpost(mesh, marker, marker_id)
-        assert len(submesh.topology().shared_entities(0)) == 0
-        mpi_comm = mesh.mpi_comm().tompi4py()
-        if mpi_comm.size == 1:
-            return submesh # no sharing in serial
-        else:
-            # Get all local vertices
-            local_vertices__global_index = list()
-            local_vertices__global_index__to__local_index = dict()
-            for vertex in vertices(submesh):
-                local_vertices__global_index.append(vertex.global_index())
-                local_vertices__global_index__to__local_index[vertex.global_index()] = vertex.index()
-            # Gather all vertices from all processors
-            gathered__local_vertices__global_index = list() # over processor id
-            for r in range(mpi_comm.size):
-                gathered__local_vertices__global_index.append( mpi_comm.bcast(local_vertices__global_index, root=r) )
-            # Create dict from global vertex index to processors sharing it
-            global_vertex_index__to__processors = dict()
-            for r in range(mpi_comm.size):
-                for global_vertex_index in gathered__local_vertices__global_index[r]:
-                    if global_vertex_index not in global_vertex_index__to__processors:
-                        global_vertex_index__to__processors[global_vertex_index] = list()
-                    global_vertex_index__to__processors[global_vertex_index].append(r)
-            # Get shared vertices
-            shared_vertices = dict()
-            rank = mpi_comm.rank
-            for (global_vertex_index, processors) in global_vertex_index__to__processors.iteritems():
-                assert len(processors) > 0
-                if len(processors) > 1: # shared among more than one processor
-                    if rank in processors:
-                        other_processors_list = list(processors)
-                        other_processors_list.remove(rank)
-                        other_processors = array(other_processors_list, dtype=uintp)
-                        shared_vertices[ local_vertices__global_index__to__local_index[global_vertex_index] ] = other_processors
-            # Populate shared_entities(0): cannot do that in python becase each call to shared_entities
-            # returns a temporary (copied from a code commented out in cbcpost)
-            cpp_code = """
-                void set_shared_entities_0(Mesh & submesh, std::size_t idx, const Array<std::size_t>& other_processes)
-                {
-                    std::set<unsigned int> set_other_processes;
-                    for (std::size_t i(0); i < other_processes.size(); i++)
-                        set_other_processes.insert(other_processes[i]);
-                    submesh.topology().shared_entities(0)[idx] = set_other_processes;
-                }
-            """
-            set_shared_entities_0 = compile_extension_module(cpp_code).set_shared_entities_0
-
-            for (local_index, other_processors) in shared_vertices.iteritems():
-                set_shared_entities_0(submesh, local_index, other_processors)
-            log(DEBUG, "Local indices of shared vertices " + str(submesh.topology().shared_entities(0).keys()))
-            log(DEBUG, "Global indices of shared vertices " + str([Vertex(submesh, local_index).global_index() for local_index in submesh.topology().shared_entities(0).keys()]))
-            return submesh
-            
-    # Moreover, override distribute_meshdata (used internally by create_submesh_cbcpost) to 
-    # make sure to remove useless vertices in case of redistribution
-    import cbcpost.utils.submesh
-    distribute_meshdata_cbcpost = cbcpost.utils.submesh.distribute_meshdata
-
-    def new_distribute_meshdata(cells, vertices):
-        (new_cells, new_vertices) = distribute_meshdata_cbcpost(cells, vertices)
-        # Remove useless vertices in case of redistribution
-        all_vertices = list()
-        for c in new_cells:
-            all_vertices.extend(c)
-        all_vertices = set(all_vertices)
-        for (set_index, vertex_index) in enumerate(all_vertices):
-            assert set_index <= vertex_index
-            if set_index < vertex_index:
-                for c in new_cells:
-                    for (i_v, v) in enumerate(c):
-                        if v == vertex_index:
-                            c[i_v] = set_index
-                new_vertices[set_index] = new_vertices[vertex_index]
-                del new_vertices[vertex_index]
-        return (new_cells, new_vertices)
-        
-    cbcpost.utils.submesh.distribute_meshdata = new_distribute_meshdata
-        
+    from dolfin import HDF5File        
 from RBniCS.backends.abstract import ReducedMesh as AbstractReducedMesh
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
+from RBniCS.backends.fenics.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs
 
 @Extends(AbstractReducedMesh)
 @BackendFor("FEniCS", inputs=(FunctionSpace, ))
 class ReducedMesh(AbstractReducedMesh):
-    def __init__(self, V, original_reduced_mesh_dofs_list=None, original_reduced_mesh=None, original_reduced_mesh_reduced_dofs_list=None, original_reduced_function_space=None):
+    def __init__(self, V, subdomain_data=None, original_reduced_mesh_dofs_list=None, original_reduced_mesh=None, original_reduced_subdomain_data=None, original_reduced_mesh_reduced_dofs_list=None, original_reduced_function_space=None):
         AbstractReducedMesh.__init__(self, V)
         #
         self.mesh = V.mesh()
         self.mpi_comm = self.mesh.mpi_comm().tompi4py()
         self.V = V
+        self.subdomain_data = subdomain_data
         # Store an auxiliary dof to cell dict
         self.dof_to_cells = dict()
         for cell in cells(self.mesh):
@@ -148,22 +59,38 @@ class ReducedMesh(AbstractReducedMesh):
         # Cell function to mark cells (on the full mesh)
         self.reduced_mesh_cells_marker = CellFunction("size_t", self.mesh, 0)
         # DOFs list (of the full mesh) that need to be added at each N
-        self.reduced_mesh_dofs_list = ExportableList("pickle") # list of dofs
+        self.reduced_mesh_dofs_list = list() # list of dofs
         if original_reduced_mesh_dofs_list is not None:
             self.reduced_mesh_dofs_list.extend(original_reduced_mesh_dofs_list)
+            # Dot not waste time recreating mappings which are used only for I/O
+            self.reduced_mesh_dofs_list__dof_map_writer_mapping = None
+            self.reduced_mesh_dofs_list__dof_map_reader_mapping = None
+        else:
+            self.reduced_mesh_dofs_list__dof_map_writer_mapping = build_dof_map_writer_mapping(V)
+            self.reduced_mesh_dofs_list__dof_map_reader_mapping = build_dof_map_reader_mapping(V)
         # Reduced meshes, for all N
         self.reduced_mesh = list() # list (over N) of Mesh
         if original_reduced_mesh is not None:
             self.reduced_mesh.append(original_reduced_mesh)
-        # DOFs list (of the reduced mesh) that need to be added at each N
-        self.reduced_mesh_reduced_dofs_list = ExportableList("pickle") # list (over N) of list of dofs
-        if original_reduced_mesh_reduced_dofs_list is not None:
-            self.reduced_mesh_reduced_dofs_list.append(original_reduced_mesh_reduced_dofs_list)
+        # Reduced subdomain data, for all N
+        self.reduced_subdomain_data = list() # list (over N) of dict from mesh MeshFunction to reduced_mesh MeshFunction
+        if original_reduced_subdomain_data is not None:
+            self.reduced_subdomain_data.append(original_reduced_subdomain_data)
         # Reduced function spaces, for all N
         self.reduced_function_space = list() # list (over N) of FunctionSpace
         if original_reduced_function_space is not None:
             self.reduced_function_space.append(original_reduced_function_space)
-    
+        # DOFs list (of the reduced mesh) that need to be added at each N
+        self.reduced_mesh_reduced_dofs_list = list() # list (over N) of list of dofs
+        if original_reduced_mesh_reduced_dofs_list is not None:
+            self.reduced_mesh_reduced_dofs_list.append(original_reduced_mesh_reduced_dofs_list)
+            # Dot not waste time recreating mappings which are used only for I/O
+            self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping = None
+            self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping = None
+        else:
+            self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping = list() # over N
+            self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping = list() # over N
+        
     @override
     def append(self, global_dofs):
         # Initialize it only the first time (it is not initialized in the constructor to avoid wasting time online)
@@ -187,10 +114,18 @@ class ReducedMesh(AbstractReducedMesh):
     
     @override
     def load(self, directory, filename):
+        def assert_list_lengths():
+            assert len(self.reduced_mesh) == len(self.reduced_function_space)
+            assert len(self.reduced_mesh) == len(self.reduced_subdomain_data)
+            assert len(self.reduced_mesh) == len(self.reduced_mesh_dofs_list)
+            assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
         if len(self.reduced_mesh) > 0: # avoid loading multiple times
+            assert_list_lengths()
             return False
         else:
+            assert_list_lengths()
             Nmax = self._load_Nmax(directory, filename)
+            # reduced_mesh
             for index in range(Nmax):
                 mesh_filename = str(directory) + "/" + filename + "_" + str(index)
                 if not has_hdf5():
@@ -204,8 +139,55 @@ class ReducedMesh(AbstractReducedMesh):
                     input_file.read(reduced_mesh, "/mesh", False)
                 self.reduced_mesh.append(reduced_mesh)
                 self.reduced_function_space.append(FunctionSpace(reduced_mesh, self.V.ufl_element()))
-            self.reduced_mesh_dofs_list.load(directory, filename + "_dofs")
-            self.reduced_mesh_reduced_dofs_list.load(directory, filename + "_reduced_dofs")
+            # reduced_subdomain_data
+            for index in range(Nmax):
+                if self.subdomain_data is not None:
+                    reduced_subdomain_data = dict()
+                    for (subdomain_index, subdomain) in enumerate(self.subdomain_data):
+                        subdomain_filename = str(directory) + "/" + filename + "_" + str(index) + "_subdomain_" + subdomain_index
+                        reduced_subdomain = MeshFunction("size_t", self.reduced_mesh[index], subdomain_filename)
+                        reduced_subdomain_data[subdomain] = reduced_subdomain
+                    self.reduced_subdomain_data.append(reduced_subdomain_data)
+                else:
+                    self.reduced_subdomain_data.append(None)
+            # reduced_mesh_dofs_list
+            importable_reduced_mesh_dofs_list = ExportableList("pickle")
+            importable_reduced_mesh_dofs_list.load(directory, filename + "_dofs")
+            assert len(self.reduced_mesh_dofs_list) == 0
+            importable_reduced_mesh_dofs_list__iterator = 0
+            while importable_reduced_mesh_dofs_list__iterator < len(importable_reduced_mesh_dofs_list):
+                if importable_reduced_mesh_dofs_list__iterator == 0:
+                    importable_reduced_mesh_dofs_list_tuple_length = importable_reduced_mesh_dofs_list[importable_reduced_mesh_dofs_list__iterator]
+                    importable_reduced_mesh_dofs_list__iterator += 1
+                else:
+                    reduced_mesh_dof = list()
+                    for i in range(importable_reduced_mesh_dofs_list_tuple_length):
+                        (global_cell_index, cell_dof) = (importable_reduced_mesh_dofs_list[importable_reduced_mesh_dofs_list__iterator][0], importable_reduced_mesh_dofs_list[importable_reduced_mesh_dofs_list__iterator][1])
+                        reduced_mesh_dof.append( self.reduced_mesh_dofs_list__dof_map_reader_mapping[global_cell_index][cell_dof] )
+                        importable_reduced_mesh_dofs_list__iterator += 1
+                    self.reduced_mesh_dofs_list.append(tuple(reduced_mesh_dof))
+            # reduced_mesh_reduced_dofs_list
+            for index in range(Nmax):
+                assert len(self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping) == index
+                self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping.append( build_dof_map_reader_mapping(self.reduced_function_space[index]) )
+                importable_reduced_mesh_reduced_dofs_list = ExportableList("pickle")
+                importable_reduced_mesh_reduced_dofs_list.load(directory, filename + "_reduced_dofs_" + str(index))
+                assert len(self.reduced_mesh_reduced_dofs_list) == index
+                self.reduced_mesh_reduced_dofs_list.append( list() )
+                importable_reduced_mesh_reduced_dofs_list__iterator = 0
+                while importable_reduced_mesh_reduced_dofs_list__iterator < len(importable_reduced_mesh_reduced_dofs_list):
+                    if importable_reduced_mesh_reduced_dofs_list__iterator == 0:
+                        importable_reduced_mesh_reduced_dofs_list_tuple_length = importable_reduced_mesh_reduced_dofs_list[importable_reduced_mesh_reduced_dofs_list__iterator]
+                        importable_reduced_mesh_reduced_dofs_list__iterator += 1
+                    else:
+                        reduced_mesh_dof = list()
+                        for i in range(importable_reduced_mesh_reduced_dofs_list_tuple_length):
+                            (global_cell_index, cell_dof) = (importable_reduced_mesh_reduced_dofs_list[importable_reduced_mesh_reduced_dofs_list__iterator][0], importable_reduced_mesh_reduced_dofs_list[importable_reduced_mesh_reduced_dofs_list__iterator][1])
+                            reduced_mesh_dof.append( self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping[index][global_cell_index][cell_dof] )
+                            importable_reduced_mesh_reduced_dofs_list__iterator += 1
+                        self.reduced_mesh_reduced_dofs_list[index].append(tuple(reduced_mesh_dof))
+            #
+            assert_list_lengths()
             return True
         
     def _load_Nmax(self, directory, filename):
@@ -220,6 +202,7 @@ class ReducedMesh(AbstractReducedMesh):
     def save(self, directory, filename):
         self._save_Nmax(directory, filename)
         assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
+        # reduced_mesh
         for (index, reduced_mesh) in enumerate(self.reduced_mesh):
             mesh_filename = str(directory) + "/" + filename + "_" + str(index)
             if not has_hdf5():
@@ -230,8 +213,31 @@ class ReducedMesh(AbstractReducedMesh):
                 mesh_filename = mesh_filename + ".h5"
                 output_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "w")
                 output_file.write(reduced_mesh, "/mesh")
-        self.reduced_mesh_dofs_list.save(directory, filename + "_dofs")
-        self.reduced_mesh_reduced_dofs_list.save(directory, filename + "_reduced_dofs")
+        # reduced_subdomain_data
+        if self.subdomain_data is not None:
+            for (index, reduced_subdomain_data) in enumerate(self.reduced_subdomain_data):
+                subdomain_index = 0
+                for (subdomain, reduced_subdomain) in reduced_subdomain_data.iteritems():
+                    subdomain_filename = str(directory) + "/" + filename + "_" + str(index) + "_subdomain_" + subdomain_index
+                    File(subdomain_filename) << reduced_subdomain
+                    subdomain_index += 1
+        # reduced_mesh_dofs_list
+        exportable_reduced_mesh_dofs_list = ExportableList("pickle")
+        exportable_reduced_mesh_dofs_list.append(len(self.reduced_mesh_dofs_list[0])) # it is the same for all dofs
+        for reduced_mesh_dof in self.reduced_mesh_dofs_list:
+            for reduced_mesh_dof__component in reduced_mesh_dof:
+                exportable_reduced_mesh_dofs_list.append(self.reduced_mesh_dofs_list__dof_map_writer_mapping[reduced_mesh_dof__component])
+        exportable_reduced_mesh_dofs_list.save(directory, filename + "_dofs")
+        # reduced_mesh_reduced_dofs_list
+        assert len(self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping) == len(self.reduced_mesh) - 1
+        self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping.append( build_dof_map_writer_mapping( self.reduced_function_space[-1] ) )
+        for (index, reduced_mesh_reduced_dofs_list) in enumerate(self.reduced_mesh_reduced_dofs_list):
+            exportable_reduced_mesh_reduced_dofs_list = ExportableList("pickle")
+            exportable_reduced_mesh_reduced_dofs_list.append(len(reduced_mesh_reduced_dofs_list[0])) # it is the same for all dofs
+            for reduced_mesh_reduced_dof in reduced_mesh_reduced_dofs_list:
+                for reduced_mesh_reduced_dof__component in reduced_mesh_reduced_dof:
+                    exportable_reduced_mesh_reduced_dofs_list.append(self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping[index][reduced_mesh_reduced_dof__component])
+            exportable_reduced_mesh_reduced_dofs_list.save(directory, filename + "_reduced_dofs_" + str(index))
             
     def _save_Nmax(self, directory, filename):
         assert len(self.reduced_mesh) == len(self.reduced_mesh_reduced_dofs_list)
@@ -246,53 +252,46 @@ class ReducedMesh(AbstractReducedMesh):
         assert key.step is None
         assert key.stop > 0
         key_to_index = key.stop - 1
-        return ReducedMesh(self.V, self.reduced_mesh_dofs_list[key], self.reduced_mesh[key_to_index], self.reduced_mesh_reduced_dofs_list[key_to_index], self.reduced_function_space[key_to_index])
+        return ReducedMesh(self.V, self.subdomain_data, self.reduced_mesh_dofs_list[key], self.reduced_mesh[key_to_index], self.reduced_subdomain_data[key_to_index], self.reduced_mesh_reduced_dofs_list[key_to_index], self.reduced_function_space[key_to_index])
                 
     def _store_reduced_mesh_and_reduced_dofs(self):
-        # As described in cbcpost, FEniCS cannot partition a mesh with less
-        # cells than processors. If there are too few cells, just give up.
-        num_cells = (self.reduced_mesh_cells_marker.array() == 1).sum()
-        num_cells = self.mpi_comm.allreduce(num_cells, op=SUM)
-        log(DEBUG, "Number of cells: " + str(num_cells))
-        num_processors = self.mpi_comm.size
-        if (num_processors > num_cells):
-            self.reduced_mesh.append(None)
-            self.reduced_function_space.append(None)
-            self.reduced_mesh_reduced_dofs_list.append(None)
-        else: # usual case
-            # Create submesh thanks to cbcpost
-            reduced_mesh = create_submesh(self.mesh, self.reduced_mesh_cells_marker, 1)
-            self.reduced_mesh.append(reduced_mesh)
-            # Return the FunctionSpace V on the reduced mesh
-            reduced_V = FunctionSpace(reduced_mesh, self.V.ufl_element())
-            self.reduced_function_space.append(reduced_V)
-            # Get the map between DOFs on reduced_V and V
-            reduced_dofs__to__dofs = restriction_map(self.V, reduced_V)
-            # ... invert it ...
-            dofs__to__reduced_dofs = dict()
-            for (reduced_dof, dof) in reduced_dofs__to__dofs.iteritems():
-                assert dof not in dofs__to__reduced_dofs
-                dofs__to__reduced_dofs[dof] = reduced_dof
-            log(DEBUG, "DOFs to reduced DOFs is " + str(dofs__to__reduced_dofs))
-            # ... and fill in reduced_mesh_reduced_dofs_list ...
-            reduced_mesh_reduced_dofs_list = list()
-            for dofs in self.reduced_mesh_dofs_list:
-                reduced_dofs = list()
-                for dof in dofs:
-                    dof_processor = -1
-                    reduced_dof = None
-                    if dof in dofs__to__reduced_dofs:
-                        reduced_dof = dofs__to__reduced_dofs[dof]
-                        dof_processor = self.mpi_comm.rank
-                    dof_processor = self.mpi_comm.allreduce(dof_processor, op=MAX)
-                    assert dof_processor >= 0
-                    reduced_dofs.append(self.mpi_comm.bcast(reduced_dof, root=dof_processor))
-                assert len(reduced_dofs) in (1, 2)
-                reduced_mesh_reduced_dofs_list.append(tuple(reduced_dofs))
-            log(DEBUG, "Reduced DOFs list " + str(reduced_mesh_reduced_dofs_list))
-            log(DEBUG, "corresponding to DOFs list " + str(self.reduced_mesh_dofs_list._list))
-            self.reduced_mesh_reduced_dofs_list.append(reduced_mesh_reduced_dofs_list)
-        
+        # Create submesh
+        reduced_mesh = create_submesh(self.mesh, self.reduced_mesh_cells_marker, 1)
+        self.reduced_mesh.append(reduced_mesh)
+        # Create subdomain data on submesh
+        if self.subdomain_data is not None:
+            reduced_subdomain_data_list = create_submesh_subdomains(self.mesh, reduced_mesh, self.subdomain_data)
+            reduced_subdomain_data = dict()
+            assert len(self.subdomain_data) == len(reduced_subdomain_data_list)
+            for (subdomain, reduced_subdomain) in zip(self.subdomain_data, reduced_subdomain_data_list):
+                reduced_subdomain_data[subdomain] = reduced_subdomain
+            self.reduced_subdomain_data.append(reduced_subdomain_data)
+        else:
+            self.reduced_subdomain_data.append(None)
+        # Return the FunctionSpace V on the reduced mesh
+        reduced_V = FunctionSpace(reduced_mesh, self.V.ufl_element())
+        self.reduced_function_space.append(reduced_V)
+        # Get the map between DOFs on V and reduced_V
+        dofs__to__reduced_dofs = mesh_dofs_to_submesh_dofs(self.V, reduced_V)
+        log(DEBUG, "DOFs to reduced DOFs is " + str(dofs__to__reduced_dofs))
+        # ... and fill in reduced_mesh_reduced_dofs_list ...
+        reduced_mesh_reduced_dofs_list = list()
+        for dofs in self.reduced_mesh_dofs_list:
+            reduced_dofs = list()
+            for dof in dofs:
+                dof_processor = -1
+                reduced_dof = None
+                if dof in dofs__to__reduced_dofs:
+                    reduced_dof = dofs__to__reduced_dofs[dof]
+                    dof_processor = self.mpi_comm.rank
+                dof_processor = self.mpi_comm.allreduce(dof_processor, op=MAX)
+                assert dof_processor >= 0
+                reduced_dofs.append(self.mpi_comm.bcast(reduced_dof, root=dof_processor))
+            assert len(reduced_dofs) in (1, 2)
+            reduced_mesh_reduced_dofs_list.append(tuple(reduced_dofs))
+        log(DEBUG, "Reduced DOFs list " + str(reduced_mesh_reduced_dofs_list))
+        log(DEBUG, "corresponding to DOFs list " + str(self.reduced_mesh_dofs_list))
+        self.reduced_mesh_reduced_dofs_list.append(reduced_mesh_reduced_dofs_list)
 
     def get_reduced_mesh(self, index=None):
         if index is None:
