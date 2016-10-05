@@ -22,14 +22,23 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
+from dolfin import __version__ as dolfin_version
+from ufl.corealg.traversal import pre_traversal
+import hashlib
 
-def tensor_copy(tensor):
-    assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
-    output = tensor.copy()
-    # Preserve generator for I/O
-    output.generator = tensor.generator
-    #
-    return output
-
+def get_form_name(form):
+    str_repr = ""
+    coefficients_replacement = {}
+    for integral in form.integrals():
+        for n in pre_traversal(integral.integrand()):
+            if hasattr(n, "cppcode"):
+                coefficients_replacement[repr(n)] = n.cppcode
+                str_repr += repr(n.cppcode)
+            else:
+                str_repr += repr(n)
+    for key, value in coefficients_replacement.iteritems():
+        str_repr = str_repr.replace(key, value)
+    hash_code = hashlib.sha1(
+                    (str_repr + dolfin_version).encode("utf-8")
+                ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
+    return hash_code

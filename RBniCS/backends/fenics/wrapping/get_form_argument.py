@@ -22,14 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
-
-def tensor_copy(tensor):
-    assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
-    output = tensor.copy()
-    # Preserve generator for I/O
-    output.generator = tensor.generator
-    #
-    return output
-
+def get_form_argument(form, number):
+    all_arguments = form.arguments()
+    number_arguments = list()
+    for argument in all_arguments:
+        if argument.number() == number:
+            number_arguments.append(argument)
+    return number_arguments
+    

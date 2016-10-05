@@ -22,30 +22,97 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from dolfin import as_backend_type
 from petsc4py import PETSc
-from dolfin import PETScMatrix, PETScVector
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
+from RBniCS.backends.fenics.projected_parametrized_tensor import ProjectedParametrizedTensor
+from RBniCS.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_reader_mapping
+from RBniCS.backends.fenics.wrapping.get_form_argument import get_form_argument
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
+from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
 from RBniCS.utils.mpi import is_io_process
+from RBniCS.utils.io import ExportableList
 
 def tensor_load(directory, filename, V):
-    full_filename_type = str(directory) + "/" + filename + ".type"
     mpi_comm = get_mpi_comm(V)
-    type_string = None
+    # Read in generator
+    full_filename_generator = str(directory) + "/" + filename + ".generator"
+    generator_string = None
     if is_io_process(mpi_comm):
-        with open(full_filename_type, "r") as type_file:
-            type_string = type_file.readline()
-    type_string = mpi_comm.bcast(type_string, root=is_io_process.root)
-    full_filename_content = str(directory) + "/" + filename + ".dat"
-    viewer = PETSc.Viewer().createBinary(full_filename_content, "r")
-    assert type_string in ("matrix", "vector")
-    if type_string == "matrix":
-        data = PETSc.Mat().load(viewer)
-        mat = PETScMatrix(data)
-        return mat
-    elif type_string == "vector":
-        data = PETSc.Vec().load(viewer)
-        vec = PETScVector(data)
-        return vec
+        with open(full_filename_generator, "r") as generator_file:
+            generator_string = generator_file.readline()
+    generator_string = mpi_comm.bcast(generator_string, root=is_io_process.root)
+    # Generate container based on generator
+    form = ProjectedParametrizedTensor._all_forms[generator_string]
+    tensor = tensor_copy(ProjectedParametrizedTensor._all_forms_assembled_containers[generator_string])
+    tensor.zero()
+    # Read in content
+    assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
+    if isinstance(tensor, Matrix.Type()):
+        arguments_0 = get_form_argument(form, 0)
+        arguments_1 = get_form_argument(form, 1)
+        assert len(arguments_0) == 1
+        assert len(arguments_1) == 1
+        V_0 = arguments_0[0].function_space()
+        V_1 = arguments_1[0].function_space()
+        V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
+        V_1__dof_map_reader_mapping = build_dof_map_reader_mapping(V_1)
+        matrix_content = ExportableList("pickle")
+        matrix_content.load(directory, filename)
+        mat = as_backend_type(tensor).mat()
+        row_start, row_end = mat.getOwnershipRange()
+        matrix_content_iterator = 0
+        prev_row = -1
+        all_cols = list()
+        all_vals = list()
+        while matrix_content_iterator < len(matrix_content):
+            (global_cell_index, cell_dof) = (matrix_content[matrix_content_iterator][0], matrix_content[matrix_content_iterator][1])
+            row = V_0__dof_map_reader_mapping[global_cell_index][cell_dof]
+            matrix_content_iterator += 1
+            if row >= row_start and row < row_end:
+                (global_cell_index, cell_dof) = (matrix_content[matrix_content_iterator][0], matrix_content[matrix_content_iterator][1])
+                col = V_1__dof_map_reader_mapping[global_cell_index][cell_dof]
+                matrix_content_iterator += 1
+                val = matrix_content[matrix_content_iterator]
+                matrix_content_iterator += 1
+                if row != prev_row and prev_row != -1:
+                    assert len(all_cols) == len(all_vals)
+                    mat.setValues(prev_row, all_cols, all_vals, addv=PETSc.InsertMode.INSERT)
+                    all_cols = list()
+                    all_vals = list()
+                prev_row = row
+                all_cols.append(col)
+                all_vals.append(val)
+            else:
+                matrix_content_iterator += 2
+        # Do not forget the last read row!
+        assert len(all_cols) == len(all_vals)
+        mat.setValues(prev_row, all_cols, all_vals, addv=PETSc.InsertMode.INSERT)
+        mat.assemble()
+    elif isinstance(tensor, Vector.Type()):
+        arguments_0 = get_form_argument(form, 0)
+        assert len(arguments_0) == 1
+        V_0 = arguments_0[0].function_space()
+        V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
+        vector_content = ExportableList("pickle")
+        vector_content.load(directory, filename)
+        vec = as_backend_type(tensor).vec()
+        row_start, row_end = vec.getOwnershipRange()
+        vector_content_iterator = 0
+        while vector_content_iterator < len(vector_content):
+            (global_cell_index, cell_dof) = (vector_content[vector_content_iterator][0], vector_content[vector_content_iterator][1])
+            row = V_0__dof_map_reader_mapping[global_cell_index][cell_dof]
+            vector_content_iterator += 1
+            if row >= row_start and row < row_end:
+                val = vector_content[vector_content_iterator]
+                vector_content_iterator += 1
+                vec.setValuesLocal(row - row_start, val, addv=PETSc.InsertMode.INSERT)
+            else:
+                vector_content_iterator += 1
+        vec.assemble()
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in tensor_load.")
-
+    # Return
+    return tensor
+    

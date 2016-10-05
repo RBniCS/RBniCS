@@ -133,7 +133,9 @@ def evaluate(expression_, at=None):
         elif isinstance(expression_, ProjectedParametrizedTensor):
             if at is None:
                 form = expression_._form
-                return assemble(form)
+                tensor = assemble(form)
+                tensor.generator = expression_ # for I/O
+                return tensor
             else:
                 form = replace_test_trial_functions(expression_._form, at.get_reduced_function_space())
                 dofs = at.get_reduced_dofs_list()
