@@ -25,10 +25,12 @@
 from ufl import Form
 from dolfin import assemble, DirichletBC
 from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("FEniCS", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form)), ))
+@BackendFor("FEniCS", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Matrix.Type()), tuple_of(Vector.Type())), ))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def __init__(self, args):
@@ -37,21 +39,27 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         # Type checking
         is_Form = self._is_Form(args[0])
         is_DirichletBC = self._is_DirichletBC(args[0])
-        assert is_Form or is_DirichletBC
+        is_Tensor = self._is_Tensor(args[0])
+        assert is_Form or is_DirichletBC or is_Tensor
         for i in range(1, len(args)):
             if is_Form:
                 assert self._is_Form(args[i])
             elif is_DirichletBC:
                 assert self._is_DirichletBC(args[i])
+            elif is_Tensor:
+                assert self._is_Tensor(args[i])
             else:
                 return TypeError("Invalid input arguments to AffineExpansionStorage")
         # Actual init
         if is_Form:
             self._content = [assemble(arg) for arg in args]
-            self._type = Form
+            self._type = "Form"
         elif is_DirichletBC:
             self._content = args
-            self._type = DirichletBC
+            self._type = "DirichletBC"
+        elif is_Tensor:
+            self._content = args
+            self._type = "Form"
         else:
             return TypeError("Invalid input arguments to AffineExpansionStorage")
         
@@ -68,6 +76,10 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 if not isinstance(bc, DirichletBC):
                     return False
             return True
+
+    @staticmethod
+    def _is_Tensor(arg):
+        return isinstance(arg, (Matrix.Type(), Vector.Type()))
         
     def type(self):
         return self._type

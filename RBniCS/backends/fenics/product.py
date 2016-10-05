@@ -35,7 +35,7 @@ from RBniCS.utils.decorators import backend_for, ThetaType
 def product(thetas, operators, thetas2=None):
     assert thetas2 is None
     assert len(thetas) == len(operators)
-    if operators.type() is DirichletBC: 
+    if operators.type() == "DirichletBC": 
         # Detect BCs defined on the same boundary
         combined = dict() # from (function space, boundary) to value
         for (op_index, op) in enumerate(operators):
@@ -52,7 +52,7 @@ def product(thetas, operators, thetas2=None):
                 value += Constant(thetas[ addend[1] ]) * addend[0]
             output.append(DirichletBC(key[0], value, key[1], key[2]))
         return ProductOutput(output)
-    elif operators.type() is Form:
+    elif operators.type() == "Form":
         assert isinstance(operators[0], (Matrix.Type(), Vector.Type()))
         # Carry out the dot product (with respect to the index q over the affine expansion)
         if isinstance(operators[0], Matrix.Type()):
