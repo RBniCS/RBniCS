@@ -27,6 +27,10 @@ from RBniCS.utils.decorators import backend_for
 
 _Function_Type = Function
 
-@backend_for("FEniCS", inputs=(FunctionSpace, ), output=_Function_Type)
-def Function(V):
-    return _Function_Type(V)
+@backend_for("FEniCS", inputs=(FunctionSpace, (int, None)), output=_Function_Type)
+def Function(V, component=None):
+    if component is None:
+        return _Function_Type(V)
+    else:
+        sub_V = V.sub(component).collapse()
+        return _Function_Type(sub_V)

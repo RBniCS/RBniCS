@@ -26,7 +26,9 @@ from RBniCS.backends.fenics.wrapping.create_submesh import create_submesh, creat
 from RBniCS.backends.fenics.wrapping.dirichlet_bc import DirichletBC
 from RBniCS.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_writer_mapping, build_dof_map_reader_mapping
 from RBniCS.backends.fenics.wrapping.function_component import function_component
+from RBniCS.backends.fenics.wrapping.function_component_as_restriction import function_component_as_restriction
 from RBniCS.backends.fenics.wrapping.function_copy import function_copy
+from RBniCS.backends.fenics.wrapping.function_extend import function_extend
 from RBniCS.backends.fenics.wrapping.function_load import function_load
 from RBniCS.backends.fenics.wrapping.function_save import function_save
 from RBniCS.backends.fenics.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector, functions_list_mul_online_function
@@ -49,7 +51,9 @@ __all__ = [
     'create_submesh_subdomains',
     'DirichletBC',
     'function_component',
+    'function_component_as_restriction',
     'function_copy',
+    'function_extend',
     'function_load',
     'function_save',
     'functions_list_mul_online_matrix', 

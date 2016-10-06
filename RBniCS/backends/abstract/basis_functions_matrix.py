@@ -29,13 +29,13 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 class BasisFunctionsMatrix(object):
     def __init__(self, V_or_Z):
         pass
-
+    
     @abstractmethod
-    def init(self, n_components):
+    def init(self, component_name_to_basis_component_index, component_name_to_function_component):
         pass
         
     @abstractmethod
-    def enrich(self, functions, function_component=None, basis_component=0, copy=True):
+    def enrich(self, functions, component_name=None, copy=True):
         pass
         
     @abstractmethod

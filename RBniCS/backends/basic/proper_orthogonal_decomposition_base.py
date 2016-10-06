@@ -55,9 +55,9 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             self.snapshots_matrix.clear()
             self.eigensolver = OnlineEigenSolver()
             
-        @override
-        def store_snapshot(self, snapshot):
-            self.snapshots_matrix.enrich(snapshot)
+        # No implementation is provided for store_snapshot, because
+        # it has different interface for the standard POD and
+        # the tensor one.
                 
         @override
         def apply(self, Nmax):

@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl import Form
-from dolfin import Constant, DirichletBC
+from dolfin import Constant, DirichletBC, project
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
@@ -50,7 +50,13 @@ def product(thetas, operators, thetas2=None):
             value = 0
             for addend in item:
                 value += Constant(thetas[ addend[1] ]) * addend[0]
-            output.append(DirichletBC(key[0], value, key[1], key[2]))
+            try:
+                dirichlet_bc = DirichletBC(key[0], value, key[1], key[2])
+            except RuntimeError: # key[0] was a subspace, and DirichletBC does not handle collapsing
+                V_collapsed = key[0].collapse()
+                value_projected_collapsed = project(value, V_collapsed)
+                dirichlet_bc = DirichletBC(key[0], value_projected_collapsed, key[1], key[2])
+            output.append(dirichlet_bc)
         return ProductOutput(output)
     elif operators.type() == "Form":
         assert isinstance(operators[0], (Matrix.Type(), Vector.Type()))

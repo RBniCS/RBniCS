@@ -94,6 +94,7 @@ class EllipticCoerciveProblem(ParametrizedDifferentialProblem):
         # Form names for elliptic problems
         self.terms = ["a", "f"]
         self.terms_order = {"a": 2, "f": 1}
+        self.components_name = ["u"]
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 

@@ -34,7 +34,7 @@ def function_component(function, component, copy):
     else:
         assert copy is True, "It is not possible to clear components without copying the vector"
         V = function.function_space()
-        num_components = V.num_subspaces()
+        num_components = V.num_sub_spaces()
         assert (
             (num_components == 0 and component == None)
                 or

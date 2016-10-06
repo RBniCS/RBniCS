@@ -15,17 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file product.py
-#  @brief product function to assemble truth/reduced affine expansions.
+## @file functions_list.py
+#  @brief Type for storing a list of FE functions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import abstract_backend
-
-# Export a solution to file
-@abstract_backend
-def export(solution, directory, filename, component=None):
+def function_extend(function, component, V_or_Z):
     pass
-    
+

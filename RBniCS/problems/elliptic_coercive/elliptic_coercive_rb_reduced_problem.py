@@ -149,7 +149,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
             
     ## Compute the Riesz representation of a
     def update_riesz_a(self):
-        assert len(self.truth_problem.inner_product) == 1
+        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+        inner_product = self.truth_problem.inner_product[0]
         for qa in range(self.Q["a"]):
             for n in range(len(self.riesz["a"][qa]), self.N + self.N_bc):
                 if len(self.truth_problem.dirichlet_bc) > 0:
@@ -157,20 +158,21 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                     homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
                 else:
                     homogeneous_dirichlet_bc = None
-                solver = LinearSolver(self.truth_problem.inner_product[0], self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n].vector(), homogeneous_dirichlet_bc)
+                solver = LinearSolver(inner_product, self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n].vector(), homogeneous_dirichlet_bc)
                 solver.solve()
                 self.riesz["a"][qa].enrich(self._riesz_solve_storage)
     
     ## Compute the Riesz representation of f
     def compute_riesz_f(self):
-        assert len(self.truth_problem.inner_product) == 1
+        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+        inner_product = self.truth_problem.inner_product[0]
         for qf in range(self.Q["f"]):
             if len(self.truth_problem.dirichlet_bc) > 0:
                 theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
                 homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
             else:
                 homogeneous_dirichlet_bc = None
-            solver = LinearSolver(self.truth_problem.inner_product[0], self._riesz_solve_storage, self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
+            solver = LinearSolver(inner_product, self._riesz_solve_storage, self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
             solver.solve()
             self.riesz["f"][qf].enrich(self._riesz_solve_storage)
             
@@ -198,13 +200,14 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                 raise ValueError("Invalid term for assemble_error_estimation_operators().")
             return self.riesz_product[short_term]
         elif current_stage == "offline":
-            assert len(self.truth_problem.inner_product) == 1
+            assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            inner_product = self.truth_problem.inner_product[0]
             if term == "riesz_product_aa":
                 for qa in range(self.Q["a"]):
                     assert len(self.riesz["a"][qa]) == self.N + self.N_bc
                     for qap in range(qa, self.Q["a"]):
                         assert len(self.riesz["a"][qap]) == self.N + self.N_bc
-                        self.riesz_product["aa"][qa, qap] = transpose(self.riesz["a"][qa])*self.truth_problem.inner_product[0]*self.riesz["a"][qap]
+                        self.riesz_product["aa"][qa, qap] = transpose(self.riesz["a"][qa])*inner_product*self.riesz["a"][qap]
                         if qa != qap:
                             self.riesz_product["aa"][qap, qa] = self.riesz_product["aa"][qa, qap]
                 self.riesz_product["aa"].save(self.folder["error_estimation"], "riesz_product_aa")
@@ -213,14 +216,14 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                     assert len(self.riesz["a"][qa]) == self.N + self.N_bc
                     for qf in range(0, self.Q["f"]):
                         assert len(self.riesz["f"][qf]) == 1
-                        self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*self.truth_problem.inner_product[0]*self.riesz["f"][qf][0]
+                        self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*inner_product*self.riesz["f"][qf][0]
                 self.riesz_product["af"].save(self.folder["error_estimation"], "riesz_product_af")
             elif term == "riesz_product_ff":
                 for qf in range(self.Q["f"]):
                     assert len(self.riesz["f"][qf]) == 1
                     for qfp in range(qf, self.Q["f"]):
                         assert len(self.riesz["f"][qfp]) == 1
-                        self.riesz_product["ff"][qf, qfp] = transpose(self.riesz["f"][qf][0])*self.truth_problem.inner_product[0]*self.riesz["f"][qfp][0]
+                        self.riesz_product["ff"][qf, qfp] = transpose(self.riesz["f"][qf][0])*inner_product*self.riesz["f"][qfp][0]
                         if qf != qfp:
                             self.riesz_product["ff"][qfp, qf] = self.riesz_product["ff"][qf, qfp]
                 self.riesz_product["ff"].save(self.folder["error_estimation"], "riesz_product_ff")

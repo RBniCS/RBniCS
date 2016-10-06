@@ -55,10 +55,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Online reduced space dimension
-        self.N = 0
-        self.N_bc = 0
-        self.dirichlet_bc = False
-        self.dirichlet_bc_are_homogeneous = False
+        self.N = None # integer (for problems with one component) or dict of integers (for problem with several components)
+        self.N_bc = None # integer (for problems with one component) or dict of integers (for problem with several components)
+        self.dirichlet_bc = None # bool (for problems with one component) or dict of bools (for problem with several components)
+        self.dirichlet_bc_are_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
         # Number of terms in the affine expansion
         self.terms = truth_problem.terms
         self.terms_order = truth_problem.terms_order
@@ -106,27 +106,89 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def _init_basis_functions(self, current_stage="online"):
         assert current_stage in ("online", "offline")
-        # Detect how many theta terms are related to boundary conditions
-        try:
-            theta_bc = self.compute_theta("dirichlet_bc")
-        except ValueError: # there were no Dirichlet BCs to be imposed by lifting
-            self.dirichlet_bc = False
+        n_components = len(self.truth_problem.components_name)
+        # Get helper strings depending on the number of basis components
+        if n_components > 1:
+            dirichlet_bc_string = "dirichlet_bc_{c}"
+            def has_non_homogeneous_dirichlet_bc(component_name):
+                return self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]
+            def get_Z(component_name):
+                return self.Z[component_name]
         else:
-            self.dirichlet_bc = True
+            dirichlet_bc_string = "dirichlet_bc"
+            def has_non_homogeneous_dirichlet_bc(component_name):
+                return self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
+            def get_Z(component_name):
+                return self.Z
+        # Detect how many theta terms are related to boundary conditions
+        assert (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
+        if self.dirichlet_bc is None: # init was not called already
+            dirichlet_bc = dict()
+            for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                try:
+                    theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
+                except ValueError: # there were no Dirichlet BCs to be imposed by lifting
+                    dirichlet_bc[component_name] = False
+                else:
+                    dirichlet_bc[component_name] = True
+            if n_components == 1:
+                self.dirichlet_bc = dirichlet_bc.values()[0]
+            else:
+                self.dirichlet_bc = dirichlet_bc
             self.dirichlet_bc_are_homogeneous = self.truth_problem.dirichlet_bc_are_homogeneous
         # Load basis functions
         if current_stage == "online":
-            self.Z.load(self.folder["basis"], "basis")
+            Z_loaded = self.Z.load(self.folder["basis"], "basis")
             # To properly initialize N and N_bc, detect how many theta terms
             # are related to boundary conditions
-            if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
-                self.N = len(self.Z) - len(theta_bc)
-                self.N_bc = len(theta_bc)
-            else:
-                self.N = len(self.Z)
+            if Z_loaded:
+                N = dict()
+                N_bc = dict()
+                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                    if has_non_homogeneous_dirichlet_bc(component_name):
+                        theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
+                        N[component_name] = len(get_Z(component_name)) - len(theta_bc)
+                        N_bc[component_name] = len(theta_bc)
+                    else:
+                        N[component_name] = len(get_Z(component_name))
+                        N_bc[component_name] = 0
+                assert len(N) == len(N_bc)
+                assert len(N) > 0
+                if len(N) == 1:
+                    self.N = N.values()[0]
+                    self.N_bc = N_bc.values()[0]
+                else:
+                    self.N = N
+                    self.N_bc = N_bc
         elif current_stage == "offline":
             # Store the lifting functions in self.Z
-            self.assemble_operator("dirichlet_bc", "offline") # no return value from assemble_operator in this case
+            for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                self.assemble_operator(dirichlet_bc_string.format(c=component_name), "offline") # no return value from assemble_operator in this case
+            # Save basis functions matrix, that contains up to now only lifting functions
+            self.Z.save(self.folder["basis"], "basis")
+            # Properly fill in self.N_bc
+            total_N_bc = 0
+            if n_components == 1:
+                self.N = 0
+                self.N_bc = len(self.Z)
+                total_N_bc = self.N_bc
+            else:
+                N = dict()
+                N_bc = dict()
+                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                    N[component_name] = 0
+                    N_bc[component_name] = len(self.Z[component_name])
+                self.N = N
+                self.N_bc = N_bc
+                total_N_bc = sum(N_bc.values())
+            # Note that, however, self.N is not increased, so it will actually contain the number
+            # of basis functions without the lifting ones.
+            if total_N_bc > 0:
+                # Finally, since the solution for the current value of mu is already in the basis (at least for linear problems),
+                # we arbitrarily generate a new value of mu to the minimum of the range
+                new_mu = tuple([r[0] for r in self.mu_range])
+                assert self.mu != new_mu
+                self.set_mu(new_mu)
         else:
             raise AssertionError("Invalid stage in _init_basis_functions().")
             
@@ -155,12 +217,28 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
     # non-homogeneous Dirichlet boundary conditions
     def postprocess_snapshot(self, snapshot):
-        if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
-            theta_bc = self.compute_theta("dirichlet_bc")
-            assert self.N_bc == len(theta_bc)
-            return difference(snapshot, self.Z[:self.N_bc]*theta_bc)
+        n_components = len(self.truth_problem.components_name)
+        # Get helper strings and functions depending on the number of basis components
+        if n_components > 1:
+            dirichlet_bc_string = "dirichlet_bc_{c}"
+            def has_non_homogeneous_dirichlet_bc(component_name):
+                return self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]
+            def assert_lengths(component_name):
+                assert self.N_bc[component_name] == len(theta_bc)
         else:
-            return snapshot
+            dirichlet_bc_string = "dirichlet_bc"
+            def has_non_homogeneous_dirichlet_bc(component_name):
+                return self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
+            def assert_lengths(component_name):
+                assert self.N_bc == len(theta_bc)
+        # Carry out postprocessing
+        for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+            if has_non_homogeneous_dirichlet_bc(component_name):
+                theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
+                assert_lengths(component_name)
+                return difference(snapshot, self.Z[:self.N_bc]*theta_bc)
+            else:
+                return snapshot
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -184,11 +262,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     ## Export solution to file
     @override
-    def export_solution(self, folder, filename, solution=None):
+    def export_solution(self, folder, filename, solution=None, component=None):
         if solution is None:
             solution = self._solution
         N = solution.vector().size
-        self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution)
+        self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution, component)
             
     #  @}
     ########################### end - I/O - end ########################### 
@@ -205,7 +283,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def assemble_operator(self, term, current_stage="online"):
         assert current_stage in ("online", "offline")
         if current_stage == "online": # load from file
-            if not term in self.operator:
+            if term in self.terms and not term in self.operator:
                 self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by load
             # Note that it would not be needed to return the loaded operator in 
             # init(), since it has been already modified in-place. We do this, however,
@@ -215,7 +293,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             if term in self.terms:
                 self.operator[term].load(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
-            elif term == "dirichlet_bc":
+            elif term.startswith("dirichlet_bc"):
                 raise ValueError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
             else:
                 raise ValueError("Invalid term for assemble_operator().")
@@ -236,17 +314,24 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                         raise AssertionError("Invalid value for order of term " + term)
                 self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
-            elif term == "dirichlet_bc":
-                if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
+            elif term.startswith("dirichlet_bc"):
+                component_name = term.replace("dirichlet_bc", "").replace("_", "")
+                if component_name != "":
+                    assert component_name in self.truth_problem.components_name
+                    has_non_homogeneous_dirichlet_bc = self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]
+                else:
+                    component_name = None
+                    has_non_homogeneous_dirichlet_bc = self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
+                if has_non_homogeneous_dirichlet_bc:
                     # Compute lifting functions for the value of mu possibly provided by the user
-                    theta_bc = self.compute_theta("dirichlet_bc")
+                    theta_bc = self.compute_theta(term)
                     Q_dirichlet_bcs = len(theta_bc)
                     # Temporarily override compute_theta method to return only one nonzero 
                     # theta term related to boundary conditions
                     standard_compute_theta = self.truth_problem.compute_theta
                     for i in range(Q_dirichlet_bcs):
-                        def modified_compute_theta(self, term):
-                            if term == "dirichlet_bc":
+                        def modified_compute_theta(self, term_):
+                            if term_ == term:
                                 modified_theta_bc = list()
                                 for j in range(Q_dirichlet_bcs):
                                     if j != i:
@@ -255,26 +340,20 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                                         modified_theta_bc.append(theta_bc[i])
                                 return tuple(modified_theta_bc)
                             else:
-                                return standard_compute_theta(term)
+                                return standard_compute_theta(term_)
                         self.truth_problem.compute_theta = types.MethodType(modified_compute_theta, self.truth_problem)
                         # ... and store the solution of the truth problem corresponding to that boundary condition
                         # as lifting function
-                        print("Computing and storing lifting function n. " + str(i) + " (obtained for mu = " + str(self.mu) + ") in the basis matrix")
+                        solve_message = "Computing and storing lifting function n. " + str(i)
+                        if component_name is not None:
+                            solve_message += " for component " + component_name
+                        solve_message += " (obtained for mu = " + str(self.mu) + ") in the basis matrix"
+                        print(solve_message)
                         lifting = self.truth_problem.solve()
                         lifting.vector()[:] /= theta_bc[i]
-                        self.Z.enrich(lifting)
+                        self.Z.enrich(lifting, component_name=component_name)
                     # Restore the standard compute_theta method
                     self.truth_problem.compute_theta = standard_compute_theta
-                    # Save basis functions matrix, that contains up to now only lifting functions
-                    self.Z.save(self.folder["basis"], "basis")
-                    self.N_bc = Q_dirichlet_bcs
-                    # Note that, however, self.N is not increased, so it will actually contain the number
-                    # of basis functions without the lifting ones
-                    # Finally, since the solution for the current value of mu is already in the basis (at least for linear problems),
-                    # we arbitrarily generate a new value of mu to the minimum of the range
-                    new_mu = tuple([r[0] for r in self.mu_range])
-                    assert self.mu != new_mu
-                    self.set_mu(new_mu)
             else:
                 raise ValueError("Invalid term for assemble_operator().")
         else:

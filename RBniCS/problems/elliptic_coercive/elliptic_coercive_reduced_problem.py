@@ -59,8 +59,9 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
     
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
-        # Elliptic problems have only one (scalar or vector) unknown
-        self.Z.init(1)
+        # Elliptic problems have only one (scalar or vector) unknown, so the map
+        # between snapshot component and basis component is the identity
+        self.Z.init({"u": 0}, {"u": 0})
         
         # Call Parent initialization
         ParametrizedReducedDifferentialProblem.init(self, current_stage)

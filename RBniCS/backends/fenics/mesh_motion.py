@@ -22,12 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-from dolfin import ALE, cells, Expression, Function, FunctionSpace, LagrangeInterpolator, MeshFunctionSizet, VectorFunctionSpace
+from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, LagrangeInterpolator, log, MeshFunctionSizet, VectorFunctionSpace
 from RBniCS.backends.abstract import MeshMotion as AbstractMeshMotion
 from RBniCS.backends.fenics.wrapping import ParametrizedExpression
 from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
-from RBniCS.utils.mpi import print
 
 @Extends(AbstractMeshMotion)
 @BackendFor("FEniCS", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
@@ -79,13 +77,13 @@ class MeshMotion(AbstractMeshMotion):
         
     @override
     def move_mesh(self):
-        print("moving mesh")
+        log(PROGRESS, "moving mesh")
         displacement = self.compute_displacement()
         ALE.move(self.mesh, displacement)
         
     @override
     def reset_reference(self):
-        print("back to the reference mesh")
+        log(PROGRESS, "back to the reference mesh")
         self.mesh.coordinates()[:] = self.reference_coordinates
         
     ## Auxiliary method to deform the domain

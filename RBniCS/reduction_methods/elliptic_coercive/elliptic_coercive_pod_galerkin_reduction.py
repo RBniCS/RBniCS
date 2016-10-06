@@ -88,7 +88,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         output = EllipticCoerciveReductionMethod._init_offline(self)
         
         # Declare a new POD
-        assert len(self.truth_problem.inner_product) == 1
+        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
         self.POD = ProperOrthogonalDecomposition(self.truth_problem.V, self.truth_problem.inner_product[0])
         
         # Return

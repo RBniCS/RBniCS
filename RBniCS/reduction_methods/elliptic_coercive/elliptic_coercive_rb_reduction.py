@@ -114,7 +114,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         output = EllipticCoerciveReductionMethod._init_offline(self)
         
         # Declare a new GS object
-        assert len(self.truth_problem.inner_product) == 1
+        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
         self.GS = GramSchmidt(self.truth_problem.inner_product[0])
         
         # Return

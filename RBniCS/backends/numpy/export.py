@@ -25,17 +25,22 @@
 from RBniCS.backends.numpy.function import Function
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.vector import Vector
-from RBniCS.backends.numpy.wrapping import function_save, tensor_save
+from RBniCS.backends.numpy.wrapping import function_component, function_save, tensor_save
 from RBniCS.utils.decorators import backend_for
 from RBniCS.utils.io import Folders
 
 # Export a solution to file
-@backend_for("NumPy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str))
-def export(solution, directory, filename):
+@backend_for("NumPy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None)))
+def export(solution, directory, filename, component=None):
     assert isinstance(solution, (Function.Type(), Matrix.Type(), Vector.Type()))
     if isinstance(solution, Function.Type()):
-        function_save(solution, directory, filename)
+        if component is None:
+            function_save(solution, directory, filename)
+        else:
+            solution_component = function_component(solution, component, copy=True)
+            function_save(solution_component, directory, filename)
     elif isinstance(solution, (Matrix.Type(), Vector.Type())):
+        assert component is None
         tensor_save(solution, directory, filename)
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in export.")

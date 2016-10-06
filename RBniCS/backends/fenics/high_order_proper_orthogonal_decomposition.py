@@ -39,3 +39,7 @@ class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecomposit
     def __init__(self, V_or_Z):
         HighOrderProperOrthogonalDecompositionBase.__init__(self, V_or_Z, None, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.fenics.TensorSnapshotsList, RBniCS.backends.fenics.TensorBasisList)
         
+    @override
+    def store_snapshot(self, snapshot):
+        self.snapshots_matrix.enrich(snapshot)
+        

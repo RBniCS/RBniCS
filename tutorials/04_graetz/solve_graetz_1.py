@@ -157,12 +157,13 @@ class Graetz(EllipticCoerciveProblem):
     #  @{
     
     ## Preprocess the solution before export to add a lifting
-    def export_solution(self, folder, filename, solution=None):
+    def export_solution(self, folder, filename, solution=None, component=None):
+        assert component is None
         if solution is None:
             solution = self._solution
         solution_with_lifting = Function(self.V)
         solution_with_lifting.vector()[:] = solution.vector()[:] + self.lifting.vector()[:]
-        EllipticCoerciveProblem.export_solution(self, folder, filename, solution_with_lifting)
+        EllipticCoerciveProblem.export_solution(self, folder, filename, solution_with_lifting, component)
         
     #  @}
     ########################### end - I/O - end ########################### 
