@@ -76,10 +76,6 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         self._init_dirichlet_bc()
         
     def _init_operators(self):
-        # Assemble operators
-        for term in self.terms:
-            self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
-            self.Q[term] = len(self.operator[term])
         # Get helper strings depending on the number of basis components
         n_components = len(self.components_name)
         assert n_components > 0
@@ -96,6 +92,10 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
                 self.inner_product = inner_product.values()[0]
             else:
                 self.inner_product = inner_product
+        # Assemble operators
+        for term in self.terms:
+            self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
+            self.Q[term] = len(self.operator[term])
             
     def _init_dirichlet_bc(self):
         # Get helper strings depending on the number of basis components

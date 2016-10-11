@@ -65,6 +65,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         self.Q = dict() # from string to integer
         # Reduced order operators
         self.operator = dict() # from string to OnlineAffineExpansionStorage
+        self.inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
         # Solution
         self._solution = OnlineFunction()
         self._output = 0
@@ -94,10 +95,29 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def _init_operators(self, current_stage="online"):
         assert current_stage in ("online", "offline")
         if current_stage == "online":
+            # Inner products
+            n_components = len(self.truth_problem.components_name)
+            if n_components > 1:
+                inner_product_string = "inner_product_{c}"
+                self.inner_product = dict()
+                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                    self.inner_product[component_name] = self.assemble_operator(inner_product_string.format(c=component_name), "online")
+            else:
+                self.inner_product = self.assemble_operator("inner_product", "online")
+            # Terms
             for term in self.terms:
                 self.operator[term] = self.assemble_operator(term, "online")
                 self.Q[term] = len(self.operator[term])
         elif current_stage == "offline":
+            # Inner products
+            n_components = len(self.truth_problem.components_name)
+            if n_components > 1:
+                self.inner_product = dict()
+                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                    self.inner_product[component_name] = OnlineAffineExpansionStorage(1)
+            else:
+                self.inner_product = OnlineAffineExpansionStorage(1)
+            # Terms
             for term in self.terms:
                 self.Q[term] = self.truth_problem.Q[term]
                 self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
@@ -211,8 +231,17 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     ## Assemble the reduced order affine expansion.
     def build_reduced_operators(self):
+        # Terms
         for term in self.terms:
             self.operator[term] = self.assemble_operator(term, "offline")
+        # Inner products
+        n_components = len(self.truth_problem.components_name)
+        if n_components > 1:
+            inner_product_string = "inner_product_{c}"
+            for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                self.inner_product[component_name] = self.assemble_operator(inner_product_string.format(c=component_name), "offline")
+        else:
+            self.inner_product = self.assemble_operator("inner_product", "offline")
         
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
     # non-homogeneous Dirichlet boundary conditions
@@ -285,6 +314,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         if current_stage == "online": # load from file
             if term in self.terms and not term in self.operator:
                 self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by load
+            elif term.startswith("inner_product"):
+                component_name = term.replace("inner_product", "").replace("_", "")
+                if component_name != "":
+                    assert component_name in self.truth_problem.components_name
+                    self.inner_product[component_name] = OnlineAffineExpansionStorage(0) # it will be resized by load
+                else:
+                    assert len(self.truth_problem.components_name) == 1
+                    self.inner_product = OnlineAffineExpansionStorage(0) # it will be resized by load
             # Note that it would not be needed to return the loaded operator in 
             # init(), since it has been already modified in-place. We do this, however,
             # because we want this interface to be compatible with the one in 
@@ -293,6 +330,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             if term in self.terms:
                 self.operator[term].load(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
+            elif term.startswith("inner_product"):
+                if component_name != "":
+                    self.inner_product[component_name].load(self.folder["reduced_operators"], term)
+                    return self.inner_product[component_name]
+                else:
+                    self.inner_product.load(self.folder["reduced_operators"], term)
+                    return self.inner_product
             elif term.startswith("dirichlet_bc"):
                 raise ValueError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
             else:
@@ -314,12 +358,29 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                         raise AssertionError("Invalid value for order of term " + term)
                 self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
+            elif term.startswith("inner_product"):
+                component_name = term.replace("inner_product", "").replace("_", "")
+                if component_name != "":
+                    assert component_name in self.truth_problem.components_name
+                    assert len(self.inner_product[component_name]) == 1 # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product[component_name]) == 1 # the affine expansion storage contains only the inner product matrix
+                    self.inner_product[component_name][0] = transpose(self.Z)*self.truth_problem.inner_product[component_name][0]*self.Z
+                    self.inner_product[component_name].save(self.folder["reduced_operators"], term)
+                    return self.inner_product[component_name]
+                else:
+                    assert len(self.truth_problem.components_name) == 1 # single component case
+                    assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                    self.inner_product[0] = transpose(self.Z)*self.truth_problem.inner_product[0]*self.Z
+                    self.inner_product.save(self.folder["reduced_operators"], term)
+                    return self.inner_product
             elif term.startswith("dirichlet_bc"):
                 component_name = term.replace("dirichlet_bc", "").replace("_", "")
                 if component_name != "":
                     assert component_name in self.truth_problem.components_name
                     has_non_homogeneous_dirichlet_bc = self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]
                 else:
+                    assert len(self.truth_problem.components_name) == 1
                     component_name = None
                     has_non_homogeneous_dirichlet_bc = self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
                 if has_non_homogeneous_dirichlet_bc:
