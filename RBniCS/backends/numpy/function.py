@@ -23,13 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import matrix
-from RBniCS.utils.decorators import backend_for
+from RBniCS.utils.decorators import backend_for, OnlineSizeType
 from RBniCS.backends.numpy.vector import Vector
 
 class _Function_Type(object):
     def __init__(self, arg):
-        assert isinstance(arg, (int, Vector.Type(), matrix))
-        if isinstance(arg, int):
+        assert isinstance(arg, (int, dict, Vector.Type(), matrix))
+        if isinstance(arg, (int, dict)):
             self._v = Vector(arg)
         elif isinstance(arg, Vector.Type()):
             self._v = arg
@@ -44,7 +44,7 @@ class _Function_Type(object):
         return self._v
 
         
-@backend_for("NumPy", inputs=((int, Vector.Type()), ), output=_Function_Type)
+@backend_for("NumPy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)
 def Function(arg):
     return _Function_Type(arg)
     

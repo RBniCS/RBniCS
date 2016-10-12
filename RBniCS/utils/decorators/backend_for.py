@@ -147,9 +147,10 @@ def validate_inputs(inputs):
         if isinstance(input_, (list, tuple)):
             validate_inputs(input_)
         else:
+            assert input_ is not dict, "Please use dict_of defined in this module to specify the type of keys and values"
             assert input_ is not list, "Please use list_of defined in this module to specify the type of each element"
             assert input_ is not tuple, "Please use tuple_of defined in this module to specify the type of each element"
-            assert inspect.isclass(input_) or isinstance(input_, (_list_of, _tuple_of)) or input_ is None
+            assert inspect.isclass(input_) or isinstance(input_, (_dict_of, _list_of, _tuple_of)) or input_ is None
     
 def logging_all_classes_functions(storage):
     output = "{" + "\n"
@@ -217,8 +218,21 @@ class _list_of(_tuple_or_list_of):
         return "list_of(" + str(self.types) + ")"
     __repr__ = __str__
     
+class _dict_of(object):
+    def __init__(self, types_from, types_to):
+        self.types_from = _tuple_or_list_of(types_from)
+        self.types_to = _tuple_or_list_of(types_to)
+        
+    def are_subclass(self, other):
+        return self.types_from.are_subclass(other.types_from) and self.types_to.are_subclass(other.types_to)
+        
+    def __str__(self):
+        return "dict_of(" + str(self.types_from.types) + ": " + str(self.types_to.types) + ")"
+    __repr__ = __str__
+    
 _all_tuple_of_instances = dict()
 _all_list_of_instances = dict()
+_all_dict_of_instances = dict()
 
 def tuple_of(types):
     if types not in _all_tuple_of_instances:
@@ -229,6 +243,14 @@ def list_of(types):
     if types not in _all_list_of_instances:
         _all_list_of_instances[types] = _list_of(types)
     return _all_list_of_instances[types]
+    
+def dict_of(types_from, types_to):
+    types = (types_from, types_to)
+    if types not in _all_dict_of_instances:
+        _all_dict_of_instances[types] = _dict_of(types_from, types_to)
+    return _all_dict_of_instances[types]
 
 from numpy import float64
 ThetaType = (tuple_of(float), tuple_of(float64),  tuple_of(int), tuple_of((float, float64)), tuple_of((float, int)), tuple_of((float64, int)), tuple_of((float, float64, int)))
+OnlineSizeType = (int, dict_of(str, int))
+

@@ -103,11 +103,11 @@ class FunctionsList(AbstractFunctionsList):
     def __mul__(self, other):
         assert isinstance(other, (self.online_backend.Matrix.Type(), self.online_backend.Vector.Type(), tuple, self.online_backend.Function.Type()))
         if isinstance(other, self.online_backend.Matrix.Type()):
-            return self.wrapping.functions_list_mul_online_matrix(self, other, self.backend.FunctionsList)
+            return self.wrapping.functions_list_basis_functions_matrix_mul_online_matrix(self, other, self.backend.FunctionsList, self.backend)
         elif isinstance(other, (self.online_backend.Vector.Type(), tuple)): # tuple is used when multiplying by theta_bc
-            return self.wrapping.functions_list_mul_online_vector(self, other)
+            return self.wrapping.functions_list_basis_functions_matrix_mul_online_vector(self, other, self.backend)
         elif isinstance(other, self.online_backend.Function.Type()):
-            return self.wrapping.functions_list_mul_online_function(self, other)
+            return self.wrapping.functions_list_basis_functions_matrix_mul_online_function(self, other, self.backend)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.__mul__.")
     

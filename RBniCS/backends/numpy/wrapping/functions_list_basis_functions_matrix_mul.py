@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
+## @file functions_list_basis_functions_matrix.py
 #  @brief Type for storing a list of FE functions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -23,45 +23,48 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
+from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_adapter import functions_list_basis_functions_matrix_adapter
 from RBniCS.backends.numpy.wrapping.function_copy import function_copy
 from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
 from RBniCS.backends.numpy.vector import Vector as OnlineVector
 from RBniCS.backends.numpy.function import Function as OnlineFunction
 
-def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsListType):
-    Z = functions_list.V_or_Z
+def functions_list_basis_functions_matrix_mul_online_matrix(functions_list_basis_functions_matrix, online_matrix, FunctionsListType, backend):
+    Z = functions_list_basis_functions_matrix.V_or_Z
+    (functions, _) = functions_list_basis_functions_matrix_adapter(functions_list_basis_functions_matrix, backend)
     assert isinstance(Z, AbstractFunctionsList)
     assert isinstance(online_matrix, OnlineMatrix.Type())
     
     output = FunctionsListType(Z)
     dim = online_matrix.shape[1]
     for j in range(dim):
-        assert len(online_matrix[:, j]) == len(functions_list._list)
-        output_j = function_copy(functions_list._list[0])
+        assert len(online_matrix[:, j]) == len(functions)
+        output_j = function_copy(functions[0])
         output_j.vector()[:] = 0.
-        for (i, fun_i) in enumerate(functions_list._list):
+        for (i, fun_i) in enumerate(functions):
             output_j.vector()[:] += fun_i.vector()*online_matrix.item((i, j))
         output.enrich(output_j)
     return output
 
-def functions_list_mul_online_vector(functions_list, online_vector):
+def functions_list_basis_functions_matrix_mul_online_vector(functions_list_basis_functions_matrix, online_vector, backend):
+    (functions, _) = functions_list_basis_functions_matrix_adapter(functions_list_basis_functions_matrix, backend)
     assert isinstance(online_vector, (OnlineVector.Type(), tuple))
     
-    output = function_copy(functions_list._list[0])
+    output = function_copy(functions[0])
     output.vector()[:] = 0.
     if isinstance(online_vector, OnlineVector.Type()):
-        for (i, fun_i) in enumerate(functions_list._list):
+        for (i, fun_i) in enumerate(functions):
             output.vector()[:] += fun_i.vector()*online_vector.item(i)
     elif isinstance(online_vector, tuple):
-        for (i, fun_i) in enumerate(functions_list._list):
+        for (i, fun_i) in enumerate(functions):
             output.vector()[:] += fun_i.vector()*online_vector[i]
     else: # impossible to arrive here anyway, thanks to the assert
-        raise AssertionError("Invalid arguments in functions_list_mul_online_vector.")
+        raise AssertionError("Invalid arguments in functions_list_basis_functions_matrix_mul_online_vector.")
         
     return output
     
-def functions_list_mul_online_function(functions_list, online_function):
+def functions_list_basis_functions_matrix_mul_online_function(functions_list_basis_functions_matrix, online_function, backend):
     assert isinstance(online_function, OnlineFunction.Type())
     
-    return functions_list_mul_online_vector(functions_list, online_function.vector())
+    return functions_list_basis_functions_matrix_mul_online_vector(functions_list_basis_functions_matrix, online_function.vector(), backend)
     

@@ -15,29 +15,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file online_vector.py
-#  @brief Type of online vector
+## @file functions_list_basis_functions_matrix.py
+#  @brief Type for storing a list of FE functions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from numpy import matrix
-
-class _Vector_Type(matrix): # inherit to make sure that matrices and vectors correspond to two different types
+def functions_list_basis_functions_matrix_mul_online_matrix(functions_list_basis_functions_matrix, online_matrix, FunctionsListType, backend):
     pass
 
-from numpy import zeros as _VectorContent_Base
-from RBniCS.utils.decorators import backend_for, OnlineSizeType
-
-@backend_for("NumPy", inputs=(OnlineSizeType, ), output=_Vector_Type)
-def Vector(N):
-    assert isinstance(N, (int, dict))
-    if isinstance(N, dict):
-        N_sum = sum(N.values())
-    else:
-        N_sum = N
-    output = _Vector_Type(_VectorContent_Base((N_sum))).transpose() # as column vector
-    output.N = N
-    return output
+def functions_list_basis_functions_matrix_mul_online_vector(functions_list_basis_functions_matrix, online_vector, backend):
+    pass
     
+def functions_list_basis_functions_matrix_mul_online_function(functions_list_basis_functions_matrix, online_function, backend):
+    pass

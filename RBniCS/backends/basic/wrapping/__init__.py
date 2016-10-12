@@ -26,7 +26,7 @@ from RBniCS.backends.basic.wrapping.function_component import function_component
 from RBniCS.backends.basic.wrapping.function_copy import function_copy
 from RBniCS.backends.basic.wrapping.function_load import function_load
 from RBniCS.backends.basic.wrapping.function_save import function_save
-from RBniCS.backends.basic.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector, functions_list_mul_online_function
+from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
 from RBniCS.backends.basic.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.backends.basic.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from RBniCS.backends.basic.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
@@ -41,9 +41,9 @@ __all__ = [
     'function_copy',
     'function_load',
     'function_save',
-    'functions_list_mul_online_matrix',
-    'functions_list_mul_online_vector',
-    'functions_list_mul_online_function',
+    'functions_list_basis_functions_matrix_mul_online_matrix',
+    'functions_list_basis_functions_matrix_mul_online_vector',
+    'functions_list_basis_functions_matrix_mul_online_function',
     'get_mpi_comm',
     'gram_schmidt_projection_step',
     'matrix_mul_vector',

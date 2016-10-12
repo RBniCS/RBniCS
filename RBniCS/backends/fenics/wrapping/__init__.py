@@ -31,7 +31,7 @@ from RBniCS.backends.fenics.wrapping.function_copy import function_copy
 from RBniCS.backends.fenics.wrapping.function_extend import function_extend
 from RBniCS.backends.fenics.wrapping.function_load import function_load
 from RBniCS.backends.fenics.wrapping.function_save import function_save
-from RBniCS.backends.fenics.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector, functions_list_mul_online_function
+from RBniCS.backends.fenics.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
 from RBniCS.backends.fenics.wrapping.get_form_name import get_form_name
 from RBniCS.backends.fenics.wrapping.get_form_argument import get_form_argument
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
@@ -56,9 +56,9 @@ __all__ = [
     'function_extend',
     'function_load',
     'function_save',
-    'functions_list_mul_online_matrix', 
-    'functions_list_mul_online_vector', 
-    'functions_list_mul_online_function',
+    'functions_list_basis_functions_matrix_mul_online_matrix', 
+    'functions_list_basis_functions_matrix_mul_online_vector', 
+    'functions_list_basis_functions_matrix_mul_online_function',
     'get_form_name',
     'get_form_argument',
     'get_mpi_comm',

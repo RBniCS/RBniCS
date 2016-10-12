@@ -28,9 +28,21 @@ class _Matrix_Type(matrix): # inherit to make sure that matrices and vectors cor
     pass
     
 from numpy import zeros as _MatrixContent_Base
-from RBniCS.utils.decorators import backend_for
+from RBniCS.utils.decorators import backend_for, OnlineSizeType
 
-@backend_for("NumPy", inputs=(int, int), output=_Matrix_Type)
+@backend_for("NumPy", inputs=(OnlineSizeType, OnlineSizeType), output=_Matrix_Type)
 def Matrix(M, N):
-    return _Matrix_Type(_MatrixContent_Base((M, N)))
+    assert isinstance(M, (int, dict))
+    assert isinstance(N, (int, dict))
+    assert isinstance(M, dict) == isinstance(N, dict)
+    if isinstance(M, dict):
+        M_sum = sum(M.values())
+        N_sum = sum(N.values())
+    else:
+        M_sum = M
+        N_sum = N
+    output = _Matrix_Type(_MatrixContent_Base((M_sum, N_sum)))
+    output.M = M
+    output.N = N
+    return output
     

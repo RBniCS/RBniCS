@@ -107,7 +107,7 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
     
     # Perform an online evaluation of the non-compliant output
     def online_output(self):
-        N = self.uN.size
+        N = self.uN.N
         self.sN = 0.
         # Assemble output
         assembled_operator_s = sum(product(self.compute_theta("s"), self.operator_s[:N]))

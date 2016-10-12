@@ -27,8 +27,8 @@
 #
 
 import inspect
-from RBniCS.utils.decorators import BackendFor, backend_for, list_of, tuple_of
-from RBniCS.utils.decorators.backend_for import _list_of, _tuple_of
+from RBniCS.utils.decorators import BackendFor, backend_for, dict_of, list_of, tuple_of
+from RBniCS.utils.decorators.backend_for import _dict_of, _list_of, _tuple_of
 from RBniCS.utils.mpi import log, DEBUG
 
 # Factory to combine all available backends
@@ -97,7 +97,7 @@ def backends_factory(backends_module):
     def get_input_types(inputs):
         input_types = list()
         for input_ in inputs:
-            if type(input_) in (list, tuple): # more strict that isinstance(input_, (list, tuple)): custom types inherited from list or tuple should be preserved
+            if type(input_) in (list, tuple): # more strict than isinstance(input_, (list, tuple)): custom types inherited from list or tuple should be preserved
                 input_subtypes = get_input_types(input_)
                 input_subtypes = tuple(set(input_subtypes)) # remove repeated types
                 if len(input_subtypes) == 1:
@@ -108,6 +108,14 @@ def backends_factory(backends_module):
                     input_types.append(tuple_of(input_subtypes))
                 else:
                     raise TypeError("Invalid type in get_input_types()")
+            elif type(input_) in (dict, ): # more strict than isinstance(input_, (dict, ))
+                input_subtypes_from = get_input_types(input_.keys())
+                if len(input_subtypes_from) == 1:
+                    input_subtypes_from = input_subtypes_from[0]
+                input_subtypes_to = get_input_types(input_.values())
+                if len(input_subtypes_to) == 1:
+                    input_subtypes_to = input_subtypes_to[0]
+                input_types.append(dict_of(input_subtypes_from, input_subtypes_to))
             else:
                 if input_ is not None:
                     input_types.append(type(input_))
@@ -250,8 +258,14 @@ def are_subclass(input_types, backend_input_types):
                         return False
                 else:
                     return False
+            elif isinstance(input_type, _dict_of):
+                if isinstance(backend_input_type, _dict_of):
+                    if not input_type.are_subclass(backend_input_type):
+                        return False
+                else:
+                    return False
             else:
-                if isinstance(backend_input_type, (_tuple_of, _list_of)):
+                if isinstance(backend_input_type, (_tuple_of, _list_of, _dict_of)):
                     return False
                 elif not issubclass(input_type, backend_input_type):
                     return False

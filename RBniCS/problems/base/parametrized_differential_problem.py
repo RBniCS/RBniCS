@@ -106,8 +106,11 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         else:
             dirichlet_bc_string = "dirichlet_bc"
         # Assemble Dirichlet BCs
-        assert (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
-        if self.dirichlet_bc is None: # init was not called already
+        # we do not assert for
+        # (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
+        # because self.dirichlet_bc may still be None after initialization, if there
+        # were no Dirichlet BCs at all
+        if self.dirichlet_bc_are_homogeneous is None: # init was not called already
             dirichlet_bc = dict()
             dirichlet_bc_are_homogeneous = dict()
             for (component_index, component_name) in enumerate(self.components_name):

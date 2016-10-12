@@ -294,7 +294,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def export_solution(self, folder, filename, solution=None, component=None):
         if solution is None:
             solution = self._solution
-        N = solution.vector().size
+        N = solution.vector().N
         self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution, component)
             
     #  @}

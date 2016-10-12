@@ -22,11 +22,18 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsListType):
-    pass
-
-def functions_list_mul_online_vector(functions_list, online_vector):
-    pass
-    
-def functions_list_mul_online_function(functions_list, online_function):
-    pass
+# Auxiliary function: provide a common interface to __getitem__ for FunctionsList and BasisFunctionsMatrix
+def functions_list_basis_functions_matrix_adapter(functions, backend):
+    assert isinstance(functions, (backend.FunctionsList, backend.BasisFunctionsMatrix))
+    if isinstance(functions, backend.FunctionsList):
+        output = [function for function in functions]
+        return (output, len(output))
+    elif isinstance(functions, backend.BasisFunctionsMatrix):
+        output = list()
+        for (basis_component_index, component_name) in sorted(functions._basis_component_index_to_component_name.iteritems()):
+            for function in functions._components[component_name]:
+                output.append(function)
+        return (output, functions._len_components)
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in functions_list_basis_functions_matrix_adapter.")
+        
