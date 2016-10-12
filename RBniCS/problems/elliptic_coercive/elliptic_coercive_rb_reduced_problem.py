@@ -52,7 +52,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         # $$ ONLINE DATA STRUCTURES $$ #
         # Residual terms
         self._riesz_solve_storage = self.truth_problem._solution.copy(deepcopy=True)
-        self.riesz = dict() # from string to OnlineAffineExpansionStorage
+        self.riesz = dict() # from string to FunctionsList
         self.riesz_product = dict() # from string to OnlineAffineExpansionStorage
         self.build_error_estimation_operators__initialized = False
         

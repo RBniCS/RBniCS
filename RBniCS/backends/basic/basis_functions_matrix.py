@@ -41,9 +41,9 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         self.online_backend = online_backend
         self._components = dict() # of FunctionsList
         self._precomputed_slices = dict() # from tuple to FunctionsList
-        self._len_components = dict() # of int
         self._basis_component_index_to_component_name = dict() # filled in by init
         self._component_name_to_basis_component_index = dict() # filled in by init
+        self._component_name_to_basis_component_length = dict() # of int
         self._component_name_to_function_component = dict() # filled in by init
 
     @override
@@ -67,9 +67,9 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             for (component_name, basis_component_index) in component_name_to_basis_component_index.iteritems():
                 self._basis_component_index_to_component_name[basis_component_index] = component_name
             # Prepare len components
-            self._len_components = dict()
+            self._component_name_to_basis_component_length = dict()
             for component_name in component_name_to_basis_component_index:
-                self._len_components[component_name] = 0
+                self._component_name_to_basis_component_length[component_name] = 0
             
     @override
     def enrich(self, functions, component_name=None, copy=True):
@@ -79,38 +79,53 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             assert len(self._components) == 1
             component_0 = self._components.keys()[0]
             self._components[component_0].enrich(functions)
-            self._len_components[component_0] = len(self._components[component_0])
+            self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
         else:
             self._components[component_name].enrich(functions, self._component_name_to_function_component[component_name])
-            self._len_components[component_name] = len(self._components[component_name])
+            self._component_name_to_basis_component_length[component_name] = len(self._components[component_name])
+        # Reset and prepare precomputed slices
+        self._prepare_trivial_precomputed_slice()
+            
+    def _prepare_trivial_precomputed_slice(self):
         # Reset precomputed slices
         self._precomputed_slices = dict()
+        # Prepare trivial precomputed slice
+        if len(self._components) == 1:
+            component_0 = self._components.keys()[0]
+            precomputed_slice_key = self._component_name_to_basis_component_length[component_0]
+        else:
+            precomputed_slice_key = list()
+            for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.iteritems()):
+                precomputed_slice_key.append(self._component_name_to_basis_component_length[component_name])
+            precomputed_slice_key = tuple(precomputed_slice_key)
+        self._precomputed_slices[precomputed_slice_key] = self
         
     @override
     def clear(self):
         self._components = dict()
-        self._len_components = dict()
+        self._component_name_to_basis_component_length = dict()
         # Reset precomputed slices
         self._precomputed_slices = dict()
         
     @override
     def load(self, directory, filename):
+        return_value = True
         assert len(self._components) > 0
         if len(self._components) > 1:
-            return_value = True
             for (component_name, basis_functions) in self._components.iteritems():
                 return_value_component = basis_functions.load(directory, filename + "_component_" + component_name)
                 return_value = return_value and return_value_component
                 # Also populate component length
-                self._len_components[component_name] = len(basis_functions)
-            return return_value
+                self._component_name_to_basis_component_length[component_name] = len(basis_functions)
         else:
             component_0 = self._components.keys()[0]
             return_value = self._components[component_0].load(directory, filename)
             # Also populate component length
-            self._len_components[component_0] = len(self._components[component_0])
-            # Return
-            return return_value
+            self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
+        # Reset and prepare precomputed slices
+        self._prepare_trivial_precomputed_slice()
+        # Return
+        return return_value
         
     @override
     def save(self, directory, filename):
@@ -139,9 +154,9 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         
     @override
     def __len__(self):
-        assert len(self._len_components) == 1
-        component_0 = self._len_components.keys()[0]
-        return self._len_components[component_0]
+        assert len(self._component_name_to_basis_component_length) == 1
+        component_0 = self._component_name_to_basis_component_length.keys()[0]
+        return self._component_name_to_basis_component_length[component_0]
 
     @override
     def __getitem__(self, key):
@@ -160,7 +175,10 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
     def _precompute_slice(self, N=None):
         assert isinstance(N, (int, dict))
         if isinstance(N, dict):
-            N_key = tuple(N.iteritems()) # convert dict to a hashable type
+            N_key = list()
+            for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.iteritems()):
+                N_key.append(self._component_name_to_basis_component_length[component_name])
+            N_key = tuple(N_key)
         else:
             assert len(self._components) == 1
             N_key = N
@@ -173,7 +191,7 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
                 else:
                     N_component = N
                 self._precomputed_slices[N_key]._components[component_name].enrich(self._components[component_name][:N_component], copy=False)
-                self._precomputed_slices[N_key]._len_components[component_name] = len(self._precomputed_slices[N_key]._components[component_name])
+                self._precomputed_slices[N_key]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N_key]._components[component_name])
         return self._precomputed_slices[N_key]
         
     @override

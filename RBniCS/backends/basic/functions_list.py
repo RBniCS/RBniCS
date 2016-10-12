@@ -64,6 +64,8 @@ class FunctionsList(AbstractFunctionsList):
             raise AssertionError("Invalid arguments in FunctionsList.enrich.")
         # Reset precomputed slices
         self._precomputed_slices = dict()
+        # Prepare trivial precomputed slice
+        self._precomputed_slices[len(self._list)] = self
         
     @override
     def clear(self):
@@ -120,18 +122,15 @@ class FunctionsList(AbstractFunctionsList):
         if isinstance(key, slice): # e.g. key = :N, return the first N functions
             assert key.start is None 
             assert key.step is None
+            assert key.stop <= len(self._list)
+            
             if key.stop in self._precomputed_slices:
                 return self._precomputed_slices[key.stop]
-                            
-            assert key.stop <= len(self._list)            
-            if key.stop == len(self._list):
-                self._precomputed_slices[key.stop] = self
-                return self
-            
-            output = self.backend.FunctionsList(self.V_or_Z)
-            output._list = self._list[key]
-            self._precomputed_slices[key.stop] = output
-            return output
+            else:
+                output = self.backend.FunctionsList(self.V_or_Z)
+                output._list = self._list[key]
+                self._precomputed_slices[key.stop] = output
+                return output
                 
         else: # return the element at position "key" in the storage
             return self._list[key]

@@ -25,7 +25,10 @@
 from numpy import empty as AffineExpansionStorageContent_Base
 from numpy import nditer as AffineExpansionStorageContent_Iterator
 from numpy import asmatrix as AffineExpansionStorageContent_AsMatrix
-from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
+from numpy import ix_ as AffineExpansionStorageContent_Slicer
+from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, FunctionsList as AbstractFunctionsList
+from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
+from RBniCS.backends.numpy.vector import Vector as OnlineVector
 from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
@@ -59,6 +62,9 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 self._content = AffineExpansionStorageContent_Base((arg1, arg2), dtype=object)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to AffineExpansionStorage")
+        # Auxiliary storage for __getitem__ slicing
+        self._component_name_to_basis_component_index = None # will be filled in in __setitem__, if required
+        self._component_name_to_basis_component_length = None # will be filled in in __setitem__, if required
     
     @override
     def load(self, directory, filename):
@@ -76,11 +82,24 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             self._content_as_matrix = None
             self.as_matrix()
             # Reset precomputed slices
-            self._precomputed_slices = dict()
+            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+            self._prepare_trivial_precomputed_slice(self._content[it.multi_index])
             return True
         else:
             return False
-        
+            
+    def _prepare_trivial_precomputed_slice(self, item):
+        # Reset precomputed slices
+        self._precomputed_slices = dict()
+        # Prepare trivial precomputed slice
+        if isinstance(item, OnlineMatrix.Type()):
+            slice_0 = tuple(range(item.shape[0]))
+            slice_1 = tuple(range(item.shape[1]))
+            self._precomputed_slices[(slice_0, slice_1)] = self
+        elif isinstance(item, OnlineVector.Type()):
+            slice_0 = tuple(range(item.shape[0]))
+            self._precomputed_slices[(slice_0, )] = self
+                
     @override
     def save(self, directory, filename):
         assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
@@ -105,35 +124,53 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             assert isinstance(key, tuple)
             assert isinstance(key[0], slice)
             
-            dict_key = list()
+            slices_start = list()
+            slices_stop = list()
             for slice_ in key:
                 assert slice_.start is None 
                 assert slice_.step is None
-                dict_key.append(slice_.stop)
-            dict_key = tuple(dict_key)
+                assert isinstance(slice_.stop, (int, dict))
+                if isinstance(slice_.stop, int):
+                    slices_start.append(0)
+                    slices_stop.append(slice_.stop)
+                else:
+                    assert self._component_name_to_basis_component_index is not None
+                    assert self._component_name_to_basis_component_length is not None
+                    current_slice_start = [0]*len(self._component_name_to_basis_component_index)
+                    current_slice_stop  = [0]*len(self._component_name_to_basis_component_index)
+                    for (component_name, basis_component_index) in self._component_name_to_basis_component_index.iteritems():
+                        current_slice_start[basis_component_index] = self._component_name_to_basis_component_length[component_name]
+                        current_slice_stop[basis_component_index]  = current_slice_start[basis_component_index] + slice_.stop[component_name]
+                    slices_start.append(current_slice_start)
+                    slices_stop .append(current_slice_stop )
+                    
+            slices = list()
+            assert len(slices_start) == len(slices_stop)
+            for (current_slice_start, current_slice_stop) in zip(slices_start, slices_stop):
+                assert isinstance(current_slice_start, int) == isinstance(current_slice_stop, int)
+                if isinstance(current_slice_start, int):
+                    slices.append(tuple(range(current_slice_start, current_slice_stop)))
+                else:
+                    current_slice = list()
+                    for (current_slice_start_component, current_slice_stop_component) in zip(current_slice_start, current_slice_stop):
+                        current_slice.extend(range(current_slice_start_component, current_slice_stop_component))
+                    slices.append(tuple(current_slice))
+            slices = tuple(slices)
             
-            if dict_key in self._precomputed_slices:
-                return self._precomputed_slices[dict_key]
-                            
-            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
-            
-            is_slice_equal_to_full_tensor = True
-            for (index, slice_) in enumerate(key):
-                assert slice_.start is None 
-                assert slice_.step is None
-                assert slice_.stop <= self._content[it.multi_index].shape[index]
-                if slice_.stop < self._content[it.multi_index].shape[index]:
-                    is_slice_equal_to_full_tensor = False
-            if is_slice_equal_to_full_tensor:
-                self._precomputed_slices[dict_key] = self
-                return self
-            
-            output = AffineExpansionStorage(*self._content.shape)
-            while not it.finished:
-                output[it.multi_index] = self._content[it.multi_index][key]
-                it.iternext()
-            self._precomputed_slices[dict_key] = output
-            return output
+            if slices in self._precomputed_slices:
+                return self._precomputed_slices[slices]
+            else:
+                slices_type = AffineExpansionStorageContent_Slicer(*slices)
+                output = AffineExpansionStorage(*self._content.shape)
+                it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+                while not it.finished:
+                    item = self._content[it.multi_index]
+                    assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type()))
+                    output[it.multi_index] = item[slices_type]
+                    it.iternext()
+                self._precomputed_slices[slices] = output
+                return output
+                
         else: # return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
             return self._content[key]
         
@@ -142,9 +179,32 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
         assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
         self._content[key] = item
+        # Also store component_name_to_basis_component_* for __getitem__ slicing
+        assert isinstance(item, (
+            OnlineMatrix.Type(),  # output e.g. of Z^T*A*Z
+            OnlineVector.Type(),  # output e.g. of Z^T*F
+            float,                # output of Riesz_F^T*X*Riesz_F
+            AbstractFunctionsList # auxiliary storage of Riesz representors
+        ))
+        assert hasattr(item, "_component_name_to_basis_component_index") == hasattr(item, "_component_name_to_basis_component_length")
+        if hasattr(item, "_component_name_to_basis_component_index"): # temporarily added by transpose() method
+            assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type()))
+            assert (self._component_name_to_basis_component_index is None) == (self._component_name_to_basis_component_length is None)
+            if self._component_name_to_basis_component_index is None:
+                self._component_name_to_basis_component_index = item._component_name_to_basis_component_index
+                self._component_name_to_basis_component_length = item._component_name_to_basis_component_length
+            else:
+                assert self._component_name_to_basis_component_index == item._component_name_to_basis_component_index
+                assert self._component_name_to_basis_component_length == item._component_name_to_basis_component_length
+            del item._component_name_to_basis_component_index # cleanup temporary addition
+            del item._component_name_to_basis_component_length # cleanup temporary addition
+        else:
+            assert self._component_name_to_basis_component_index is None
+            assert self._component_name_to_basis_component_length is None
         # Reset internal copies
         self._content_as_matrix = None
-        self._precomputed_slices = dict()
+        # Reset and prepare precomputed slices
+        self._prepare_trivial_precomputed_slice(item)
         
     @override
     def __iter__(self):

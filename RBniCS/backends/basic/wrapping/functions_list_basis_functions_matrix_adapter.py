@@ -33,7 +33,7 @@ def functions_list_basis_functions_matrix_adapter(functions, backend):
         for (basis_component_index, component_name) in sorted(functions._basis_component_index_to_component_name.iteritems()):
             for function in functions._components[component_name]:
                 output.append(function)
-        return (output, functions._len_components)
+        return (output, functions._component_name_to_basis_component_length)
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in functions_list_basis_functions_matrix_adapter.")
         
