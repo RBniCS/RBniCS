@@ -32,6 +32,7 @@ __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sart
 from RBniCS.backends.fenics.wrapping_utils import DirichletBC, ParametrizedExpression
 from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
+from RBniCS.problems.saddle_point import SaddlePointProblem
 from RBniCS.sampling import EquispacedDistribution, UniformDistribution
 from RBniCS.scm import SCM, ExactCoercivityConstant
 from RBniCS.shape_parametrization import ShapeParametrization
@@ -48,6 +49,7 @@ __all__ = [
     'ExactParametrizedFunctions',
     # RBniCS.problems
     'EllipticCoerciveProblem',
+    'SaddlePointProblem',
     # RBniCS.sampling
     'EquispacedDistribution',
     'UniformDistribution',
