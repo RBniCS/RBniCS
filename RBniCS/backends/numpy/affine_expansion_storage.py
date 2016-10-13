@@ -25,11 +25,11 @@
 from numpy import empty as AffineExpansionStorageContent_Base
 from numpy import nditer as AffineExpansionStorageContent_Iterator
 from numpy import asmatrix as AffineExpansionStorageContent_AsMatrix
-from numpy import ix_ as AffineExpansionStorageContent_Slicer
 from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, FunctionsList as AbstractFunctionsList
 from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
 from RBniCS.backends.numpy.vector import Vector as OnlineVector
-from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO, PickleIO as DictIO
+from RBniCS.backends.numpy.wrapping_utils import slice_to_array, slice_to_size
+from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO, Folders, PickleIO as ContentSizeIO, PickleIO as ContentTypeIO, PickleIO as DictIO
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractAffineExpansionStorage)
@@ -63,6 +63,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to AffineExpansionStorage")
         # Auxiliary storage for __getitem__ slicing
+        self._basis_component_index_to_component_name = None # will be filled in in __setitem__, if required
         self._component_name_to_basis_component_index = None # will be filled in in __setitem__, if required
         self._component_name_to_basis_component_length = None # will be filled in in __setitem__, if required
     
@@ -76,14 +77,40 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                     if self._content[it.multi_index] is not None: # ... but only if there is at least one element different from None
                         return False
                     it.iternext()
+        # Get full directory name
+        full_directory = directory + "/" + filename
         # Load affine expansion
-        assert AffineExpansionStorageContent_IO.exists_file(directory, filename)
-        self._content = AffineExpansionStorageContent_IO.load_file(directory, filename)
+        assert AffineExpansionStorageContent_IO.exists_file(full_directory, "content")
+        self._content = AffineExpansionStorageContent_IO.load_file(full_directory, "content")
         # Load dicts
-        assert DictIO.exists_file(directory, filename + "_component_name_to_basis_component_index")
-        self._component_name_to_basis_component_index = DictIO.load_file(directory, filename + "_component_name_to_basis_component_index")
-        assert DictIO.exists_file(directory, filename + "_component_name_to_basis_component_length")
-        self._component_name_to_basis_component_length = DictIO.load_file(directory, filename + "_component_name_to_basis_component_length")
+        assert DictIO.exists_file(full_directory, "basis_component_index_to_component_name")
+        self._basis_component_index_to_component_name = DictIO.load_file(full_directory, "basis_component_index_to_component_name")
+        assert DictIO.exists_file(full_directory, "component_name_to_basis_component_index")
+        self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index")
+        assert DictIO.exists_file(full_directory, "component_name_to_basis_component_length")
+        self._component_name_to_basis_component_length = DictIO.load_file(full_directory, "component_name_to_basis_component_length")
+        # Load size
+        assert ContentTypeIO.exists_file(full_directory, "content_type")
+        content_type = ContentTypeIO.load_file(full_directory, "content_type")
+        assert ContentSizeIO.exists_file(full_directory, "content_size")
+        assert content_type in ("matrix", "vector", "scalar")
+        if content_type == "matrix":
+            (M, N) = ContentSizeIO.load_file(full_directory, "content_size")
+            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+            while not it.finished:
+                self._content[it.multi_index].M = M
+                self._content[it.multi_index].N = N
+                it.iternext()
+        elif content_type == "vector":
+            N = ContentSizeIO.load_file(full_directory, "content_size")
+            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+            while not it.finished:
+                self._content[it.multi_index].N = N
+                it.iternext()
+        elif content_type == "scalar":
+            pass # nothing to be done
+        else: # impossible to arrive here anyway thanks to the assert
+            raise AssertionError("Invalid content type.")
         # Create internal copy as matrix
         self._content_as_matrix = None
         self.as_matrix()
@@ -108,9 +135,30 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def save(self, directory, filename):
         assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
-        AffineExpansionStorageContent_IO.save_file(self._content, directory, filename)
-        DictIO.save_file(self._component_name_to_basis_component_index, directory, filename + "_component_name_to_basis_component_index")
-        DictIO.save_file(self._component_name_to_basis_component_length, directory, filename + "_component_name_to_basis_component_length")
+        # Get full directory name
+        full_directory = Folders.Folder(directory + "/" + filename)
+        full_directory.create()
+        # Save affine expansion
+        AffineExpansionStorageContent_IO.save_file(self._content, full_directory, "content")
+        # Save dicts
+        DictIO.save_file(self._basis_component_index_to_component_name, full_directory, "basis_component_index_to_component_name")
+        DictIO.save_file(self._component_name_to_basis_component_index, full_directory, "component_name_to_basis_component_index")
+        DictIO.save_file(self._component_name_to_basis_component_length, full_directory, "component_name_to_basis_component_length")
+        # Save size
+        it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+        item = self._content[it.multi_index]
+        assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), float)) # these are the only types which we are interested in saving
+        if isinstance(item, OnlineMatrix.Type()):
+            ContentTypeIO.save_file("matrix", full_directory, "content_type")
+            ContentSizeIO.save_file((item.M, item.N), full_directory, "content_size")
+        elif isinstance(item, OnlineVector.Type()):
+            ContentTypeIO.save_file("vector", full_directory, "content_type")
+            ContentSizeIO.save_file(item.N, full_directory, "content_size")
+        elif isinstance(item, float):
+            ContentTypeIO.save_file("scalar", full_directory, "content_type")
+            ContentSizeIO.save_file(None, full_directory, "content_size")
+        else: # impossible to arrive here anyway thanks to the assert
+            raise AssertionError("Invalid content type.")
         
     def as_matrix(self):
         if self._content_as_matrix is None:
@@ -125,55 +173,41 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             ( isinstance(key, tuple) and isinstance(key[0], slice) )
         ): # return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
             
-            if isinstance(key, slice):
-                key = (key,)
-                
-            assert isinstance(key, tuple)
-            assert isinstance(key[0], slice)
-            
-            slices_start = list()
-            slices_stop = list()
-            for slice_ in key:
-                assert slice_.start is None 
-                assert slice_.step is None
-                assert isinstance(slice_.stop, (int, dict))
-                if isinstance(slice_.stop, int):
-                    slices_start.append(0)
-                    slices_stop.append(slice_.stop)
-                else:
-                    assert self._component_name_to_basis_component_index is not None
-                    assert self._component_name_to_basis_component_length is not None
-                    current_slice_start = [0]*len(self._component_name_to_basis_component_index)
-                    current_slice_stop  = [0]*len(self._component_name_to_basis_component_index)
-                    for (component_name, basis_component_index) in self._component_name_to_basis_component_index.iteritems():
-                        current_slice_start[basis_component_index] = self._component_name_to_basis_component_length[component_name]
-                        current_slice_stop[basis_component_index]  = current_slice_start[basis_component_index] + slice_.stop[component_name]
-                    slices_start.append(current_slice_start)
-                    slices_stop .append(current_slice_stop )
-                    
-            slices = list()
-            assert len(slices_start) == len(slices_stop)
-            for (current_slice_start, current_slice_stop) in zip(slices_start, slices_stop):
-                assert isinstance(current_slice_start, int) == isinstance(current_slice_stop, int)
-                if isinstance(current_slice_start, int):
-                    slices.append(tuple(range(current_slice_start, current_slice_stop)))
-                else:
-                    current_slice = list()
-                    for (current_slice_start_component, current_slice_stop_component) in zip(current_slice_start, current_slice_stop):
-                        current_slice.extend(range(current_slice_start_component, current_slice_stop_component))
-                    slices.append(tuple(current_slice))
-            slices = tuple(slices)
+            slices = slice_to_array(key, self)
             
             if slices in self._precomputed_slices:
                 return self._precomputed_slices[slices]
             else:
-                slices_type = AffineExpansionStorageContent_Slicer(*slices)
                 output = AffineExpansionStorage(*self._content.shape)
+                output_content_size = slice_to_size(key)
                 it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
                 while not it.finished:
                     item = self._content[it.multi_index]
+                    
+                    # Slice content
                     assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type()))
-                    output[it.multi_index] = item[slices_type]
+                    sliced_item = item[slices]
+                        
+                    # Copy dicts
+                    sliced_item._basis_component_index_to_component_name = self._basis_component_index_to_component_name
+                    sliced_item._component_name_to_basis_component_index = self._component_name_to_basis_component_index
+                    sliced_item._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+                    
+                    # Copy size
+                    if isinstance(item, OnlineMatrix.Type()):
+                        assert len(output_content_size) == 2
+                        sliced_item.M = output_content_size[0]
+                        sliced_item.N = output_content_size[1]
+                    elif isinstance(item, OnlineVector.Type()):
+                        assert len(output_content_size) == 1
+                        sliced_item.N = output_content_size[0]
+                    else: # impossible to arrive here anyway thanks to the assert
+                        raise AssertionError("Invalid item in slicing.")
+                    
+                    # Assign
+                    output[it.multi_index] = sliced_item
+                    
+                    # Increment
                     it.iternext()
                 self._precomputed_slices[slices] = output
                 return output
@@ -193,19 +227,25 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             float,                # output of Riesz_F^T*X*Riesz_F
             AbstractFunctionsList # auxiliary storage of Riesz representors
         ))
+        assert hasattr(item, "_basis_component_index_to_component_name") == hasattr(item, "_component_name_to_basis_component_index")
         assert hasattr(item, "_component_name_to_basis_component_index") == hasattr(item, "_component_name_to_basis_component_length")
         if hasattr(item, "_component_name_to_basis_component_index"): # temporarily added by transpose() method
             assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type()))
+            assert (self._basis_component_index_to_component_name is None) == (self._component_name_to_basis_component_index is None)
             assert (self._component_name_to_basis_component_index is None) == (self._component_name_to_basis_component_length is None)
-            if self._component_name_to_basis_component_index is None:
+            if self._basis_component_index_to_component_name is None:
+                self._basis_component_index_to_component_name = item._basis_component_index_to_component_name
                 self._component_name_to_basis_component_index = item._component_name_to_basis_component_index
                 self._component_name_to_basis_component_length = item._component_name_to_basis_component_length
             else:
+                assert self._basis_component_index_to_component_name == item._basis_component_index_to_component_name
                 assert self._component_name_to_basis_component_index == item._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length == item._component_name_to_basis_component_length
+            del item._basis_component_index_to_component_name # cleanup temporary addition
             del item._component_name_to_basis_component_index # cleanup temporary addition
             del item._component_name_to_basis_component_length # cleanup temporary addition
         else:
+            assert self._basis_component_index_to_component_name is None
             assert self._component_name_to_basis_component_index is None
             assert self._component_name_to_basis_component_length is None
         # Reset internal copies

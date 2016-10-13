@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from numpy import cumsum
+
 def slice_to_array(key, obj):
     if isinstance(key, slice):
         key = (key,)
@@ -42,11 +44,17 @@ def slice_to_array(key, obj):
             assert obj._basis_component_index_to_component_name is not None
             assert obj._component_name_to_basis_component_index is not None
             assert obj._component_name_to_basis_component_length is not None
-            current_slice_start = [0]*len(obj._component_name_to_basis_component_index)
+            current_slice_length = [0]*len(obj._component_name_to_basis_component_index)
+            for (component_name, basis_component_index) in obj._component_name_to_basis_component_index.iteritems():
+                current_slice_length[basis_component_index] = obj._component_name_to_basis_component_length[component_name]
+            current_slice_length_cumsum = cumsum(current_slice_length).tolist()
+            del current_slice_length_cumsum[-1]
+            current_slice_start = [0]
+            current_slice_start.extend(current_slice_length_cumsum)
             current_slice_stop  = [0]*len(obj._component_name_to_basis_component_index)
             for (component_name, basis_component_index) in obj._component_name_to_basis_component_index.iteritems():
-                current_slice_start[basis_component_index] = obj._component_name_to_basis_component_length[component_name]
                 current_slice_stop[basis_component_index]  = current_slice_start[basis_component_index] + slice_.stop[component_name]
+            assert len(current_slice_start) == len(current_slice_stop)
             slices_start.append(current_slice_start)
             slices_stop .append(current_slice_stop )
             
@@ -62,5 +70,6 @@ def slice_to_array(key, obj):
                 current_slice.extend(range(current_slice_start_component, current_slice_stop_component))
             slices.append(tuple(current_slice))
     slices = tuple(slices)
+    
     return slices
     

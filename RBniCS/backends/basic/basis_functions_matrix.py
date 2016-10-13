@@ -172,12 +172,12 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             else: # return all basis functions for each component, then the user may use __getitem__ of FunctionsList to extract a single basis function
                 return self._components[key]
             
-    def _precompute_slice(self, N=None):
+    def _precompute_slice(self, N):
         assert isinstance(N, (int, dict))
         if isinstance(N, dict):
             N_key = list()
             for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.iteritems()):
-                N_key.append(self._component_name_to_basis_component_length[component_name])
+                N_key.append(N[component_name])
             N_key = tuple(N_key)
         else:
             assert len(self._components) == 1

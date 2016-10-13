@@ -22,10 +22,52 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from numpy import matrix
+from numpy import ix_ as Slicer, ndarray as SlicerInnerType, matrix as MatrixBaseType
+from RBniCS.backends.numpy.wrapping_utils import slice_to_array, slice_to_size
 
-class _Matrix_Type(matrix): # inherit to make sure that matrices and vectors correspond to two different types
-    pass
+class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vectors correspond to two different types
+    def __getitem__(self, key):
+        if (
+            (isinstance(key, tuple) and isinstance(key[0], slice)) # direct call of matrix[:5, :5]
+                or
+            (isinstance(key, tuple) and isinstance(key[0], tuple)) # indirect call through AffineExpansionStorage
+        ):
+            assert len(key) == 2
+            if isinstance(key[0], slice): # direct call of matrix[:5, :5]
+                output = MatrixBaseType.__getitem__(self, Slicer(*slice_to_array(key, self)))
+                output_size = slice_to_size(key)
+                # Preserve M and N
+                assert len(output_size) == 2
+                output.M = output_size[0]
+                output.N = output_size[1]
+                # Return
+                return output
+            elif isinstance(key[0], tuple): # indirect call through AffineExpansionStorage
+                return MatrixBaseType.__getitem__(self, Slicer(*key))
+                # Do not preserve M and N, it will be done in AffineExpansionStorage
+        else:
+            return MatrixBaseType.__getitem__(self, key)
+            
+    def __add__(self, other):
+        output = MatrixBaseType.__add__(self, other)
+        # Preserve M and N
+        assert self.M == other.M
+        assert self.N == other.N
+        output.M = self.M
+        output.N = self.N
+        # Return
+        return output
+        
+    def __sub__(self, other):
+        output = MatrixBaseType.__sub__(self, other)
+        # Preserve M and N
+        assert self.M == other.M
+        assert self.N == other.N
+        output.M = self.M
+        output.N = self.N
+        # Return
+        return output
+        
     
 from numpy import zeros as _MatrixContent_Base
 from RBniCS.utils.decorators import backend_for, OnlineSizeType

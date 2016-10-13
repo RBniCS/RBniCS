@@ -33,16 +33,17 @@ from RBniCS.utils.decorators import backend_for, ThetaType
 @backend_for("NumPy", inputs=(ThetaType, AffineExpansionStorage, ThetaType + (None,)))
 def product(thetas, operators, thetas2=None):
     order = operators.order()
+    first_operator = None
     assert order in (1, 2)
     if order == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
-        assert isinstance(operators[0], (Matrix.Type(), Vector.Type(), Function.Type()))
+        first_operator = operators[0]
+        assert isinstance(first_operator, (Matrix.Type(), Vector.Type(), Function.Type()))
         assert thetas2 is None
         assert len(thetas) == len(operators)
         # Single for loop version:
         output = 0
         for (theta, operator) in zip(thetas, operators):
             output += theta*operator
-        return ProductOutput(output)
         '''
         # Vectorized version:
         # Profiling has reveleaded that the following vectorized (over q) version
@@ -50,10 +51,11 @@ def product(thetas, operators, thetas2=None):
         from numpy import asmatrix
         output = asmatrix(thetas)*operators.as_matrix().transpose()
         assert output.shape == (1, 1)
-        return ProductOutput(output.item(0, 0))
+        output = output.item(0, 0)
         '''
     elif order == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
-        assert isinstance(operators[0, 0], (Matrix.Type(), Vector.Type(), float))
+        first_operator = operators[0, 0]
+        assert isinstance(first_operator, (Matrix.Type(), Vector.Type(), float))
         assert thetas2 is not None
         # no checks here on the first dimension of operators should be equal to len(thetas), and
         # similarly that the second dimension should be equal to len(thetas2), because the
@@ -70,7 +72,6 @@ def product(thetas, operators, thetas2=None):
         for i in range(len(thetas)):
             for j in range(len(thetas2)):
                 output += thetas[i]*operators[i, j]*thetas2[j]
-        return ProductOutput(output)
         # Thus we selected the following:
         '''
         # Vectorized version:
@@ -79,9 +80,31 @@ def product(thetas, operators, thetas2=None):
         thetas2_vector = asmatrix(thetas2).transpose()
         output = thetas_vector*operators.as_matrix()*thetas2_vector
         assert output.shape == (1, 1)
-        return ProductOutput(output.item(0, 0))
+        output = output.item(0, 0)
     else:
         raise AssertionError("product(): invalid operands.")
+    
+    # Store N (and M) in the output, since it is not preserved by sum operators
+    if isinstance(first_operator, Matrix.Type()):
+        output.M = first_operator.M
+        output.N = first_operator.N
+    elif isinstance(first_operator, Vector.Type()):
+        output.N = first_operator.N
+    elif isinstance(first_operator, float):
+        pass # nothing to be done
+    elif isinstance(first_operator, Function.Type()):
+        raise NotImplementedError("product(): the case of Function operand has not been implemented yet.")
+    else:
+        raise AssertionError("product(): invalid operands.")
+    # Store dicts also in the product output
+    assert (operators._basis_component_index_to_component_name is None) == (operators._component_name_to_basis_component_index is None)
+    assert (operators._component_name_to_basis_component_index is None) == (operators._component_name_to_basis_component_length is None)
+    if operators._basis_component_index_to_component_name is not None:
+        output._basis_component_index_to_component_name = operators._basis_component_index_to_component_name
+        output._component_name_to_basis_component_index = operators._component_name_to_basis_component_index
+        output._component_name_to_basis_component_length = operators._component_name_to_basis_component_length
+    # Return
+    return ProductOutput(output)
     
         
 # Auxiliary class to signal to the sum() function that it is dealing with an output of the product() method

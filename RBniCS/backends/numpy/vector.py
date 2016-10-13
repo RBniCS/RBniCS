@@ -22,10 +22,46 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from numpy import matrix
+from numpy import ix_ as Slicer, matrix as VectorBaseType
+from RBniCS.backends.numpy.wrapping_utils import slice_to_array, slice_to_size
 
-class _Vector_Type(matrix): # inherit to make sure that matrices and vectors correspond to two different types
-    pass
+class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vectors correspond to two different types
+    def __getitem__(self, key):
+        if (
+            isinstance(key, slice)  # direct call of vector[:5]
+                or
+            (isinstance(key, tuple) and isinstance(key[0], tuple)) # indirect call through AffineExpansionStorage
+        ):
+            if isinstance(key, slice): # direct call of vector[:5]
+                output = VectorBaseType.__getitem__(self, Slicer(*slice_to_array(key, self)))
+                output_size = slice_to_size(key)
+                # Preserve N
+                assert len(output_size) == 1
+                output.N = output_size[0]
+                # Return
+                return output
+            elif isinstance(key, tuple): # indirect call through AffineExpansionStorage
+                assert len(key) == 1
+                return VectorBaseType.__getitem__(self, Slicer(*key))
+                # Do not preserve N, it will be done in AffineExpansionStorage
+        else:
+            return VectorBaseType.__getitem__(self, key)
+            
+    def __add__(self, other):
+        output = VectorBaseType.__add__(self, other)
+        # Preserve N
+        assert self.N == other.N
+        output.N = self.N
+        # Return
+        return output
+        
+    def __sub__(self, other):
+        output = VectorBaseType.__sub__(self, other)
+        # Preserve N
+        assert self.N == other.N
+        output.N = self.N
+        # Return
+        return output
 
 from numpy import zeros as _VectorContent_Base
 from RBniCS.utils.decorators import backend_for, OnlineSizeType
