@@ -33,7 +33,7 @@ from ufl.core.multiindex import MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
 import hashlib
-from RBniCS.utils.io import ExportableList, PickleIO
+from RBniCS.utils.io import ExportableList
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 from RBniCS.backends.fenics.wrapping import get_form_name

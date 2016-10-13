@@ -49,7 +49,7 @@ class ReducedVertices(AbstractReducedVertices):
     
     @override
     def load(self, directory, filename):
-        self._vertex_list.load(directory, filename)
+        return self._vertex_list.load(directory, filename)
         
     @override
     def save(self, directory, filename):

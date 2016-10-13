@@ -29,7 +29,7 @@ from numpy import ix_ as AffineExpansionStorageContent_Slicer
 from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, FunctionsList as AbstractFunctionsList
 from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
 from RBniCS.backends.numpy.vector import Vector as OnlineVector
-from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO
+from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO, PickleIO as DictIO
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractAffineExpansionStorage)
@@ -76,17 +76,22 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                     if self._content[it.multi_index] is not None: # ... but only if there is at least one element different from None
                         return False
                     it.iternext()
-        if AffineExpansionStorageContent_IO.exists_file(directory, filename):
-            self._content = AffineExpansionStorageContent_IO.load_file(directory, filename)
-            # Create internal copy as matrix
-            self._content_as_matrix = None
-            self.as_matrix()
-            # Reset precomputed slices
-            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
-            self._prepare_trivial_precomputed_slice(self._content[it.multi_index])
-            return True
-        else:
-            return False
+        # Load affine expansion
+        assert AffineExpansionStorageContent_IO.exists_file(directory, filename)
+        self._content = AffineExpansionStorageContent_IO.load_file(directory, filename)
+        # Load dicts
+        assert DictIO.exists_file(directory, filename + "_component_name_to_basis_component_index")
+        self._component_name_to_basis_component_index = DictIO.load_file(directory, filename + "_component_name_to_basis_component_index")
+        assert DictIO.exists_file(directory, filename + "_component_name_to_basis_component_length")
+        self._component_name_to_basis_component_length = DictIO.load_file(directory, filename + "_component_name_to_basis_component_length")
+        # Create internal copy as matrix
+        self._content_as_matrix = None
+        self.as_matrix()
+        # Reset precomputed slices
+        it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+        self._prepare_trivial_precomputed_slice(self._content[it.multi_index])
+        # Return
+        return True
             
     def _prepare_trivial_precomputed_slice(self, item):
         # Reset precomputed slices
@@ -104,6 +109,8 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def save(self, directory, filename):
         assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
         AffineExpansionStorageContent_IO.save_file(self._content, directory, filename)
+        DictIO.save_file(self._component_name_to_basis_component_index, directory, filename + "_component_name_to_basis_component_index")
+        DictIO.save_file(self._component_name_to_basis_component_length, directory, filename + "_component_name_to_basis_component_length")
         
     def as_matrix(self):
         if self._content_as_matrix is None:
