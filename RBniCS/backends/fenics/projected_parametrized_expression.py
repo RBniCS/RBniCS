@@ -39,17 +39,38 @@ class ProjectedParametrizedExpression(AbstractProjectedParametrizedExpression):
         #
         self._expression = expression
         shape = expression.ufl_shape
-        element = original_space.ufl_element()
+        sub_elements_queue = original_space.ufl_element().sub_elements()
+        if len(sub_elements_queue) > 0:
+            sub_elements_queue_index = 0
+            scalar_sub_elements = list()
+            while sub_elements_queue_index < len(sub_elements_queue):
+                current_sub_elements = sub_elements_queue[sub_elements_queue_index].sub_elements()
+                if len(current_sub_elements) > 0:
+                    for current_sub_element in current_sub_elements:
+                        sub_elements_queue.append(current_sub_element)
+                else:
+                    scalar_sub_elements.append(sub_elements_queue[sub_elements_queue_index])
+                sub_elements_queue_index += 1
+            assert len(scalar_sub_elements) > 0
+            first_family = scalar_sub_elements[0].family()
+            max_degree = scalar_sub_elements[0].degree()
+            scalar_element = scalar_sub_elements[0]
+            for scalar_sub_element in scalar_sub_elements:
+                assert scalar_sub_element.family() == first_family
+                if scalar_sub_element.degree() > max_degree:
+                    scalar_element = scalar_sub_element
+        else:
+            scalar_element = original_space.ufl_element()
         assert len(shape) in (0, 1, 2)
         if len(shape) == 0:
-            pass
+            expression_element = scalar_element
         elif len(shape) == 1:
-            element = VectorElement(element)
+            expression_element = VectorElement(scalar_element)
         elif len(shape) == 2:
-            element = TensorElement(element)
+            expression_element = TensorElement(scalar_element)
         else:
             raise AssertionError("Invalid function space in ProjectedParametrizedExpression")
-        self._space = FunctionSpace(original_space.mesh(), element)
+        self._space = FunctionSpace(original_space.mesh(), expression_element)
             
     @override
     def create_interpolation_locations_container(self):
