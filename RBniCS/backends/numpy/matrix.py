@@ -50,23 +50,33 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
             
     def __add__(self, other):
         output = MatrixBaseType.__add__(self, other)
-        # Preserve M and N
-        assert self.M == other.M
-        assert self.N == other.N
-        output.M = self.M
-        output.N = self.N
-        # Return
+        self._arithmetic_operations_preserve_M_N(other, output)
         return output
         
     def __sub__(self, other):
         output = MatrixBaseType.__sub__(self, other)
+        self._arithmetic_operations_preserve_M_N(other, output)
+        return output
+        
+    def __mul__(self, other):
+        output = MatrixBaseType.__mul__(self, other)
+        if isinstance(other, float):
+            self._arithmetic_operations_preserve_M_N(other, output, other_is_matrix=False)
+        return output
+        
+    def __rmul__(self, other):
+        output = MatrixBaseType.__rmul__(self, other)
+        if isinstance(other, float):
+            self._arithmetic_operations_preserve_M_N(other, output, other_is_matrix=False)
+        return output
+        
+    def _arithmetic_operations_preserve_M_N(self, other, output, other_is_matrix=True):
         # Preserve M and N
-        assert self.M == other.M
-        assert self.N == other.N
+        if other_is_matrix:
+            assert self.M == other.M
+            assert self.N == other.N
         output.M = self.M
         output.N = self.N
-        # Return
-        return output
         
     
 from numpy import zeros as _MatrixContent_Base

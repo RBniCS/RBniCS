@@ -49,19 +49,31 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
             
     def __add__(self, other):
         output = VectorBaseType.__add__(self, other)
-        # Preserve N
-        assert self.N == other.N
-        output.N = self.N
-        # Return
+        self._arithmetic_operations_preserve_N(other, output)
         return output
         
     def __sub__(self, other):
         output = VectorBaseType.__sub__(self, other)
-        # Preserve N
-        assert self.N == other.N
-        output.N = self.N
-        # Return
+        self._arithmetic_operations_preserve_N(other, output)
         return output
+        
+    def __mul__(self, other):
+        output = VectorBaseType.__mul__(self, other)
+        if isinstance(other, float):
+            self._arithmetic_operations_preserve_N(other, output, other_is_vector=False)
+        return output
+        
+    def __rmul__(self, other):
+        output = VectorBaseType.__rmul__(self, other)
+        if isinstance(other, float):
+            self._arithmetic_operations_preserve_N(other, output, other_is_vector=False)
+        return output
+        
+    def _arithmetic_operations_preserve_N(self, other, output, other_is_vector=True):
+        # Preserve N
+        if other_is_vector:
+            assert self.N == other.N
+        output.N = self.N
 
 from numpy import zeros as _VectorContent_Base
 from RBniCS.utils.decorators import backend_for, OnlineSizeType
