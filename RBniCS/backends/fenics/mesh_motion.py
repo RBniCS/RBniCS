@@ -24,7 +24,7 @@
 
 from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, LagrangeInterpolator, log, MeshFunctionSizet, VectorFunctionSpace
 from RBniCS.backends.abstract import MeshMotion as AbstractMeshMotion
-from RBniCS.backends.fenics.wrapping import ParametrizedExpression
+from RBniCS.backends.fenics.wrapping_utils import ParametrizedExpression
 from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
 
 @Extends(AbstractMeshMotion)

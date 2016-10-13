@@ -15,13 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file __init__.py
+#  @brief Init file for auxiliary linear algebra module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_component_as_restriction(function, component, V_or_Z):
-    pass
+from RBniCS.backends.basic.wrapping_utils.functions_list_basis_functions_matrix_adapter import functions_list_basis_functions_matrix_adapter
 
+__all__ = [
+    'functions_list_basis_functions_matrix_adapter'
+]

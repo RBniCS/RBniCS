@@ -30,7 +30,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
-from RBniCS.backends.fenics.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs
+from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs
 
 @Extends(AbstractReducedMesh)
 @BackendFor("FEniCS", inputs=(FunctionSpace, ))

@@ -25,9 +25,7 @@
 from dolfin import as_backend_type
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_writer_mapping
-from RBniCS.backends.fenics.wrapping.get_form_name import get_form_name
-from RBniCS.backends.fenics.wrapping.get_form_argument import get_form_argument
+from RBniCS.backends.fenics.wrapping_utils import build_dof_map_writer_mapping, get_form_name, get_form_argument
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.utils.mpi import is_io_process
 from RBniCS.utils.io import ExportableList

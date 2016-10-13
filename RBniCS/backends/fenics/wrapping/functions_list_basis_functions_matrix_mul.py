@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import FunctionSpace
-from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_adapter import functions_list_basis_functions_matrix_adapter
+from RBniCS.backends.basic.wrapping_utils import functions_list_basis_functions_matrix_adapter
 from RBniCS.backends.fenics.wrapping.function_copy import function_copy
 from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
 from RBniCS.backends.numpy.vector import Vector as OnlineVector

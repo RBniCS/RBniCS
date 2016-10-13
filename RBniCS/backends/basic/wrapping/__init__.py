@@ -23,7 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.basic.wrapping.function_component import function_component
+from RBniCS.backends.basic.wrapping.function_component_as_restriction import function_component_as_restriction
 from RBniCS.backends.basic.wrapping.function_copy import function_copy
+from RBniCS.backends.basic.wrapping.function_extend import function_extend
 from RBniCS.backends.basic.wrapping.function_load import function_load
 from RBniCS.backends.basic.wrapping.function_save import function_save
 from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
@@ -38,7 +40,9 @@ from RBniCS.backends.basic.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
     'function_component',
+    'function_component_as_restriction',
     'function_copy',
+    'function_extend',
     'function_load',
     'function_save',
     'functions_list_basis_functions_matrix_mul_online_matrix',

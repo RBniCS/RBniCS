@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_adapter import functions_list_basis_functions_matrix_adapter
+from RBniCS.backends.basic.wrapping_utils import functions_list_basis_functions_matrix_adapter
 
 def transpose(arg, backend, wrapping, online_backend):
     assert isinstance(arg, (backend.Function.Type(), backend.FunctionsList, backend.BasisFunctionsMatrix, backend.Vector.Type(), backend.Matrix.Type(), backend.TensorsList))
@@ -98,6 +98,7 @@ class FunctionsList_Transpose(_FunctionsList_BasisFunctionsMatrix_Transpose):
 class BasisFunctionsMatrix_Transpose(_FunctionsList_BasisFunctionsMatrix_Transpose):
     def __init__(self, basis_functions_matrix, backend, wrapping, online_backend):
         _FunctionsList_BasisFunctionsMatrix_Transpose.__init__(self, basis_functions_matrix, backend, wrapping, online_backend, BasisFunctionsMatrix_Transpose__times__Matrix)
+        self._basis_component_index_to_component_name = basis_functions_matrix._basis_component_index_to_component_name
         self._component_name_to_basis_component_index = basis_functions_matrix._component_name_to_basis_component_index
         self._component_name_to_basis_component_length = basis_functions_matrix._component_name_to_basis_component_length
         
@@ -107,6 +108,7 @@ class BasisFunctionsMatrix_Transpose(_FunctionsList_BasisFunctionsMatrix_Transpo
         # This is needed by OnlineAffineExpansionStorage when slicing. In order to preserve
         # memory for large affine expansions, in OnlineAffineExpansionStorage we will copy it
         # for the first term and then delete this attached attribute
+        output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
         output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
         output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
         return output
@@ -152,8 +154,10 @@ class BasisFunctionsMatrix_Transpose__times__Matrix(_FunctionsList_BasisFunction
         output = _FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix.__mul__(self, other_basis_functions_matrix)
         # Attach a private attribute to output which stores the order of components and their basis length,
         # as discussed for BasisFunctionsMatrix_Transpose.__mul__
+        assert self._basis_component_index_to_component_name == other_basis_functions_matrix._basis_component_index_to_component_name
         assert self._component_name_to_basis_component_index == other_basis_functions_matrix._component_name_to_basis_component_index
         assert self._component_name_to_basis_component_length == other_basis_functions_matrix._component_name_to_basis_component_length
+        output._basis_component_index_to_component_name = other_basis_functions_matrix._basis_component_index_to_component_name
         output._component_name_to_basis_component_index = other_basis_functions_matrix._component_name_to_basis_component_index
         output._component_name_to_basis_component_length = other_basis_functions_matrix._component_name_to_basis_component_length
         return output

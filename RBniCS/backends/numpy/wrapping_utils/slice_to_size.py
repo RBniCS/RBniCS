@@ -22,6 +22,25 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_component_as_restriction(function, component, V_or_Z):
-    pass
+def slice_to_size(key):
+    if isinstance(key, slice):
+        key = (key,)
+        
+    assert isinstance(key, tuple)
+    assert isinstance(key[0], slice)
+    
+    size = list()
+    for slice_ in key:
+        assert slice_.start is None
+        assert slice_.step is None
+        assert isinstance(slice_.stop, (int, dict))
+        if isinstance(slice_.stop, int):
+            size.append(slice_.stop)
+        else:
+            current_size = dict()
+            for (component_name, component_size) in slice_.stop.iteritems():
+                current_size[component_name] = component_size
+            size.append(current_size)
+    return size
 
+    
