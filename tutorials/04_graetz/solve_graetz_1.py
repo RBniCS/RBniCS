@@ -185,12 +185,12 @@ graetz_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis_method.set_Nmax(10, SCM=10)
+reduced_basis_method.set_Nmax(10, SCM=11)
 
 # 5. Perform the offline phase
 first_mu = (1.0, 1.0)
 graetz_problem.set_mu(first_mu)
-reduced_basis_method.set_xi_train(100)
+reduced_basis_method.set_xi_train(100, SCM=110)
 reduced_graetz_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
@@ -200,7 +200,7 @@ reduced_graetz_problem.solve()
 reduced_graetz_problem.export_solution("Graetz", "online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.set_xi_test(100)
+reduced_basis_method.set_xi_test(100, SCM=110)
 reduced_basis_method.error_analysis()
 
 # 8. Define a new class corresponding to the exact version of Graetz,

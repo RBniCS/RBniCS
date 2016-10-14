@@ -116,7 +116,7 @@ reduced_basis_method.set_Nmax(20, EIM=21)
 # 5. Perform the offline phase
 first_mu = (0.5,1.0)
 gaussian_problem.set_mu(first_mu)
-reduced_basis_method.set_xi_train(50)
+reduced_basis_method.set_xi_train(50, EIM=60)
 reduced_gaussian_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
@@ -130,7 +130,7 @@ reduced_gaussian_problem.solve(EIM=1)
 reduced_gaussian_problem.export_solution("Gaussian", "online_solution__EIM_1")
 
 # 7. Perform an error analysis
-reduced_basis_method.set_xi_test(50)
+reduced_basis_method.set_xi_test(50, EIM=60)
 reduced_basis_method.error_analysis()
 
 # 8. Define a new class corresponding to the exact version of Gaussian,

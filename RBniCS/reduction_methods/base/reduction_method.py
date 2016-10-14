@@ -71,7 +71,7 @@ class ReductionMethod(object):
         self.Nmax = Nmax
 
     ## OFFLINE: set the elements in the training set \xi_train.
-    def set_xi_train(self, ntrain, enable_import=True, sampling=None):
+    def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
         # Create I/O folder
         self.folder["xi_train"].create()
         # Test if can import
@@ -86,7 +86,7 @@ class ReductionMethod(object):
         return import_successful
         
     ## ERROR ANALYSIS: set the elements in the test set \xi_test.
-    def set_xi_test(self, ntest, enable_import=False, sampling=None):
+    def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
         # Create I/O folder
         self.folder["xi_test"].create()
         # Test if can import

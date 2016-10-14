@@ -64,7 +64,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     ########################### end - CONSTRUCTORS - end ###########################
     
     @override
-    def set_xi_train(self, ntrain, enable_import=True, sampling=None):
+    def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
         import_successful = ReductionMethod.set_xi_train(self, ntrain, enable_import, sampling)
         # Since exact evaluation is required, we cannot use a distributed xi_train
         self.xi_train.distributed_max = False

@@ -36,8 +36,8 @@ def ExactParametrizedFunctionsDecoratedReductionMethod(ReductionMethod_DerivedCl
             ReductionMethod_DerivedClass.__init__(self, truth_problem)
         
         @override
-        def set_xi_train(self, ntrain, enable_import=True, sampling=None):
-            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
+        def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
             # Since exact evaluation is required, we cannot use a distributed xi_train
             self.xi_train.distributed_max = False
             return import_successful

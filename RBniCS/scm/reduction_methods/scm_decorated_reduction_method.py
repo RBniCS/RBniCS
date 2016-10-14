@@ -57,16 +57,24 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         ## OFFLINE: set the elements in the training set \xi_train.
         @override
-        def set_xi_train(self, ntrain, enable_import=True, sampling=None):
-            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
-            import_successful_SCM = self.SCM_reduction.set_xi_train(ntrain, enable_import=True, sampling=sampling)
+        def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
+            # Set xi_train of SCM reduction
+            assert "SCM" in kwargs
+            ntrain_SCM = kwargs["SCM"]
+            import_successful_SCM = self.SCM_reduction.set_xi_train(ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
+            # Return
             return import_successful and import_successful_SCM
             
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
         @override
-        def set_xi_test(self, ntest, enable_import=False, sampling=None):
-            import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling)
-            import_successful_SCM = self.SCM_reduction.set_xi_test(ntest, enable_import, sampling)
+        def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
+            import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
+            # Set xi_test of SCM reduction
+            assert "SCM" in kwargs
+            ntest_SCM = kwargs["SCM"]
+            import_successful_SCM = self.SCM_reduction.set_xi_test(ntest_SCM, enable_import, sampling) # kwargs are not needed
+            # Return
             return import_successful and import_successful_SCM
             
         #  @}

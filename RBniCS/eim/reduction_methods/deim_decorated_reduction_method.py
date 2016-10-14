@@ -71,24 +71,50 @@ def DEIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             
         ## OFFLINE: set the elements in the training set \xi_train.
         @override
-        def set_xi_train(self, ntrain, enable_import=True, sampling=None):
-            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling)
+        def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
             # Since exact evaluation is required, we cannot use a distributed xi_train
             self.xi_train.distributed_max = False
-            for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
-                    import_successful_DEIM = DEIM_reduction_term_q.set_xi_train(ntrain, enable_import, sampling)
-                    import_successful = import_successful and import_successful_DEIM
+            # Set xi_train of DEIM reductions
+            assert "DEIM" in kwargs
+            ntrain_DEIM = kwargs["DEIM"]
+            if isinstance(ntrain_DEIM, dict):
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                    assert term in ntrain_DEIM
+                    assert len(self.DEIM_reductions[term]) == len(ntrain_DEIM[term])
+                    for (q, ntrain_DEIM_term_q) in ntrain_DEIM[term].iteritems():
+                        import_successful_DEIM = DEIM_reduction_term_q.set_xi_train(ntrain_DEIM_term_q, enable_import, sampling) # kwargs are not needed
+                        import_successful = import_successful and import_successful_DEIM
+            else:
+                assert isinstance(ntrain_DEIM, int)
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                        import_successful_DEIM = DEIM_reduction_term_q.set_xi_train(ntrain_DEIM, enable_import, sampling) # kwargs are not needed
+                        import_successful = import_successful and import_successful_DEIM
+            # Return
             return import_successful
             
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
         @override
-        def set_xi_test(self, ntest, enable_import=False, sampling=None):
-            import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling)
-            for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
-                    import_successful_DEIM = DEIM_reduction_term_q.set_xi_test(ntest, enable_import, sampling)
-                    import_successful = import_successful and import_successful_DEIM
+        def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
+            import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
+            # Set xi_test of DEIM reductions
+            assert "DEIM" in kwargs
+            ntest_DEIM = kwargs["DEIM"]
+            if isinstance(ntest_DEIM, dict):
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                    assert term in ntest_DEIM
+                    assert len(self.DEIM_reductions[term]) == len(ntest_DEIM[term])
+                    for (q, ntest_DEIM_term_q) in ntest_DEIM[term].iteritems():
+                        import_successful_DEIM = DEIM_reduction_term_q.set_xi_test(ntest_DEIM_term_q, enable_import, sampling) # kwargs are not needed
+                        import_successful = import_successful and import_successful_DEIM
+            else:
+                assert isinstance(ntest_DEIM, int)
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                        import_successful_DEIM = DEIM_reduction_term_q.set_xi_test(ntest_DEIM, enable_import, sampling) # kwargs are not needed
+                        import_successful = import_successful and import_successful_DEIM
+            # Return
             return import_successful
             
         #  @}

@@ -76,7 +76,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
 
     ## OFFLINE: set the elements in the training set \xi_train.
     @override
-    def set_xi_train(self, ntrain, enable_import=True, sampling=None):
+    def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
+        assert enable_import
         import_successful = ReductionMethod.set_xi_train(self, ntrain, enable_import, sampling)
         self.SCM_approximation.xi_train = self.xi_train
         return import_successful
