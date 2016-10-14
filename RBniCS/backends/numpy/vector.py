@@ -44,6 +44,10 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
                 assert len(key) == 1
                 return VectorBaseType.__getitem__(self, Slicer(*key))
                 # Do not preserve N, it will be done in AffineExpansionStorage
+        elif isinstance(key, int):
+            output = VectorBaseType.__getitem__(self, key)
+            output.N = 1
+            return output
         else:
             return VectorBaseType.__getitem__(self, key)
             
