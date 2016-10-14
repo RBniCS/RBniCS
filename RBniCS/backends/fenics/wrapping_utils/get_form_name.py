@@ -32,7 +32,7 @@ def get_form_name(form):
     for integral in form.integrals():
         for n in pre_traversal(integral.integrand()):
             if hasattr(n, "cppcode"):
-                coefficients_replacement[repr(n)] = n.cppcode
+                coefficients_replacement[repr(n)] = str(n.cppcode)
                 str_repr += repr(n.cppcode)
             else:
                 str_repr += repr(n)

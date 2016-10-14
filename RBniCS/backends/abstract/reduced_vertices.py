@@ -30,7 +30,7 @@ class ReducedVertices(object):
         pass
         
     @abstractmethod
-    def append(self, vertex):
+    def append(self, vertex_and_component):
         pass
         
     @abstractmethod

@@ -37,7 +37,7 @@ from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.online import OnlineMatrix, OnlineVector
 from RBniCS.utils.decorators import backend_for, tuple_of
-from numpy import zeros as array, ndarray as PointType, prod as tuple_product
+from numpy import zeros as array, ndarray as PointType, ndarray as VectorMatrixType, prod as tuple_product
 from mpi4py.MPI import FLOAT, MAX
 
 # Evaluate a parametrized expression, possibly at a specific location
@@ -50,40 +50,50 @@ def evaluate(expression_, at=None):
         if isinstance(expression_, Function.Type()):
             function = expression_
             assert at is not None
-            reduced_vertices = at
-            reduced_vertices_list = reduced_vertices._vertex_list
-            len_reduced_vertices = len(reduced_vertices_list)
-            out_size = deduce_online_size_from_ufl(reduced_vertices, function)
+            reduced_vertices = at._vertex_list
+            reduced_components = at._component_list
+            assert len(reduced_vertices) == len(reduced_components)
+            out_size = len(reduced_vertices)
             out = OnlineVector(out_size)
             mpi_comm = function.ufl_function_space().mesh().mpi_comm().tompi4py()
-            for (index, vertex) in enumerate(reduced_vertices_list):
+            for (index, (vertex, component)) in enumerate(zip(reduced_vertices, reduced_components)):
                 out_index = None
+                out_index_type = None
                 out_index_processor = -1
-                if reduced_vertices.is_local(index):
+                if at.is_local(index):
                     out_index = function(vertex)
                     out_index_processor = mpi_comm.rank
+                    assert isinstance(out_index, (float, VectorMatrixType))
+                    if isinstance(out_index, float):
+                        out_index_type = "scalar"
+                    elif isinstance(out_index, VectorMatrixType):
+                        out_index_type = "vector_matrix"
+                    else: # impossible to arrive here anyway thanks to the assert
+                        raise AssertionError("Invalid argument to evaluate")
                 out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)
                 assert out_index_processor >= 0
-                try:
-                    len_out_index = len(out_index)
-                except TypeError: # no attribute len, so it was a scalar function
+                out_index_type = mpi_comm.bcast(out_index_type, root=out_index_processor)
+                assert out_index_type in ("scalar", "vector_matrix")
+                if out_index_type == "scalar":
                     out[index] = mpi_comm.bcast(out_index, root=out_index_processor)
-                else: # it was a vector or tensor function
-                    mpi_comm.Bcast([out_index, FLOAT], root=out_index_processor)
-                    for (component, value) in out_index:
-                        out[index + len_reduced_vertices*component] = value # block vector, each block corresponds to a component
+                elif out_index_type == "vector_matrix":
+                    if out_index is not None: # on out_index_processor
+                        out[index] = mpi_comm.bcast(out_index[component], root=out_index_processor)
+                    else: # on other processors
+                        out[index] = mpi_comm.bcast(None, root=out_index_processor)
+                else: # impossible to arrive here anyway thanks to the assert
+                    raise AssertionError("Invalid argument to evaluate")
             return out
         elif isinstance(expression_, FunctionsList):
             functions_list = expression_
             assert at is not None
-            reduced_vertices = at
-            len_reduced_vertices = len(reduced_vertices._vertex_list)
-            out_size = deduce_online_size_from_ufl(reduced_vertices, functions_list[0])
+            assert len(at._vertex_list) == len(at._component_list)
+            out_size = len(at._vertex_list)
             out = OnlineMatrix(out_size, out_size)
             for (j, fun_j) in enumerate(functions_list):
                 evaluate_fun_j = evaluate(fun_j, at)
                 for (i, out_ij) in enumerate(evaluate_fun_j):
-                    out[i, j + (i//len_reduced_vertices)*len_reduced_vertices] = out_ij # block diagonal matrix, each block corresponds to a component
+                    out[i, j] = out_ij
             return out
         elif isinstance(expression_, ProjectedParametrizedExpression):
             expression = expression_._expression
@@ -92,23 +102,21 @@ def evaluate(expression_, at=None):
                 return project(expression, space)
             else:
                 assert at is not None
-                reduced_vertices = at
-                reduced_vertices_list = reduced_vertices._vertex_list
-                len_reduced_vertices = len(reduced_vertices_list)
-                out_size = deduce_online_size_from_ufl(reduced_vertices, expression)
+                reduced_vertices = at._vertex_list
+                reduced_components = at._component_list
+                assert len(reduced_vertices) == len(reduced_components)
+                out_size = len(reduced_vertices)
                 out = OnlineVector(out_size)
                 mpi_comm = expression_._space.mesh().mpi_comm().tompi4py()
-                for (index, vertex) in enumerate(reduced_vertices_list):
+                for (index, (vertex, component)) in enumerate(zip(reduced_vertices, reduced_components)):
                     out_index = array(expression.value_size())
                     out_index_processor = -1
-                    if reduced_vertices.is_local(index):
+                    if at.is_local(index):
                         expression.eval(out_index, vertex)
                         out_index_processor = mpi_comm.rank
                     out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)
                     assert out_index_processor >= 0
-                    mpi_comm.Bcast([out_index, FLOAT], root=out_index_processor)
-                    for (component, value) in enumerate(out_index):
-                        out[index + len_reduced_vertices*component] = value # block vector, each block corresponds to a component
+                    out[index] = mpi_comm.bcast(out_index[component], root=out_index_processor)
                 return out
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to evaluate")
@@ -154,16 +162,6 @@ def evaluate(expression_, at=None):
         raise AssertionError("Invalid argument to evaluate")
 
 # HELPER FUNCTIONS
-def deduce_online_size_from_ufl(reduced_vertices, expression):
-    components = tuple_product(expression.ufl_shape)
-    assert (
-        isinstance(components, int) 
-            or 
-        # numpy returns the float 1.0 for empty tuple [scalar functions]
-        (isinstance(components, float) and components == 1.0)
-    )
-    return len(reduced_vertices._vertex_list)*int(components)
-    
 def evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_matrix, dofs_list):
     mat = as_backend_type(sparse_matrix).mat()
     row_start, row_end = mat.getOwnershipRange()

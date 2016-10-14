@@ -30,37 +30,47 @@ from RBniCS.utils.io import ExportableList
 @Extends(AbstractReducedVertices)
 @BackendFor("FEniCS", inputs=(Mesh, ))
 class ReducedVertices(AbstractReducedVertices):
-    def __init__(self, mesh, original_vertex_list=None):
+    def __init__(self, mesh, original_vertex_list=None, original_component_list=None):
         AbstractReducedVertices.__init__(self, mesh)
         self._mesh = mesh
         # Vertex storage
         if original_vertex_list is None:
             self._vertex_list = ExportableList("pickle") # list of vertices
+            self._component_list = ExportableList("pickle") # list of function components
         else:
             self._vertex_list = original_vertex_list
+            self._component_list = original_component_list
         # Additional storage to detect local vertices
         self._bounding_box_tree = mesh.bounding_box_tree()
         self._mpi_comm = mesh.mpi_comm().tompi4py()
         self._is_local = dict()
         
     @override
-    def append(self, vertex):
+    def append(self, vertex_and_component):
+        assert isinstance(vertex_and_component, tuple)
+        assert len(vertex_and_component) == 2
+        vertex = vertex_and_component[0]
+        component = vertex_and_component[1]
         self._vertex_list.append(vertex)
+        self._component_list.append(component)
     
     @override
     def load(self, directory, filename):
-        return self._vertex_list.load(directory, filename)
+        vertex_import_successful = self._vertex_list.load(directory, filename + "_vertices")
+        component_import_successful = self._component_list.load(directory, filename + "_components")
+        return vertex_import_successful and component_import_successful
         
     @override
     def save(self, directory, filename):
-        self._vertex_list.save(directory, filename)
+        self._vertex_list.save(directory, filename + "_vertices")
+        self._component_list.save(directory, filename + "_components")
         
     @override
     def __getitem__(self, key):
         assert isinstance(key, slice)
         assert key.start is None 
         assert key.step is None
-        return ReducedVertices(self._mesh, self._vertex_list[key])
+        return ReducedVertices(self._mesh, self._vertex_list[key], self._component_list[key])
                 
     def is_local(self, index):
         try:
