@@ -56,6 +56,8 @@ class Stokes(SaddlePointProblem):
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         #
         self.inlet = Expression(("- 1./0.25*(x[1] - 1)*(2 - x[1])", "0."), degree=2)
+        self.f = Constant((0.0, -10.0))
+        self.g = Constant(0.0)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -96,11 +98,17 @@ class Stokes(SaddlePointProblem):
             theta_b8 = mu2
             return (theta_b0, theta_b1, theta_b2, theta_b3, theta_b4, theta_b5, theta_b6, theta_b7, theta_b8)
         elif term == "f":
-            theta_f0 = 1.
-            return (theta_f0,)
+            theta_f0 = mu[0]*mu[4]
+            theta_f1 = mu[1]*mu[3]
+            theta_f2 = mu[0]*mu[1]
+            theta_f3 = mu[1]*mu[2]
+            return (theta_f0, theta_f1, theta_f2, theta_f3)
         elif term == "g":
-            theta_g0 = 1.
-            return (theta_g0,)
+            theta_g0 = mu[0]*mu[4]
+            theta_g1 = mu[1]*mu[3]
+            theta_g2 = mu[0]*mu[1]
+            theta_g3 = mu[1]*mu[2]
+            return (theta_g0, theta_g1, theta_g2, theta_g3)
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
@@ -151,12 +159,18 @@ class Stokes(SaddlePointProblem):
             return (bt0, bt1, bt2, bt3, bt4, bt5, bt6, bt7, bt8)
         elif term == "f":
             v = self.v
-            f0 = inner(Constant((0.0, -10.0)), v)*dx
-            return (f0,)
+            f0 = inner(self.f, v)*dx(0)
+            f1 = inner(self.f, v)*dx(1)
+            f2 = inner(self.f, v)*dx(2)
+            f3 = inner(self.f, v)*dx(3)
+            return (f0, f1, f2, f3)
         elif term == "g":
             q = self.q
-            g0 = Constant(0.0)*q*dx
-            return (g0,)
+            g0 = self.g*q*dx(0)
+            g1 = self.g*q*dx(1)
+            g2 = self.g*q*dx(2)
+            g3 = self.g*q*dx(3)
+            return (g0, g1, g2, g3)
         elif term == "dirichlet_bc_u" or term == "dirichlet_bc_s":
             if term == "dirichlet_bc_u":
                 V_s = self.V.sub(0)
@@ -211,7 +225,7 @@ stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(stokes_problem)
-pod_galerkin_method.set_Nmax(20)
+pod_galerkin_method.set_Nmax(50)
 
 # 5. Perform the offline phase
 lifting_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
