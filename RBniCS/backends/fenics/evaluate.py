@@ -38,7 +38,7 @@ from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.online import OnlineMatrix, OnlineVector
 from RBniCS.utils.decorators import backend_for, tuple_of
 from numpy import zeros as array, ndarray as PointType, ndarray as VectorMatrixType, prod as tuple_product
-from mpi4py.MPI import FLOAT, MAX
+from mpi4py.MPI import MAX
 
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("FEniCS", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), TensorsList, FunctionsList, ProjectedParametrizedTensor, ProjectedParametrizedExpression), (ReducedMesh, ReducedVertices, None)))

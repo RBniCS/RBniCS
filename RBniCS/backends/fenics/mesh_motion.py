@@ -26,6 +26,7 @@ from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, La
 from RBniCS.backends.abstract import MeshMotion as AbstractMeshMotion
 from RBniCS.backends.fenics.wrapping_utils import ParametrizedExpression
 from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
+from mpi4py.MPI import MAX, MIN
 
 @Extends(AbstractMeshMotion)
 @BackendFor("FEniCS", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
@@ -45,6 +46,15 @@ class MeshMotion(AbstractMeshMotion):
             dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
             for dof in dofs:
                 self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
+        # In parallel some subdomains may not be present on all processors. Fill in
+        # the dict with empty lists if that is the case
+        mpi_comm = self.mesh.mpi_comm().tompi4py()
+        min_subdomain_id = mpi_comm.allreduce(min(self.subdomain_id_to_deformation_dofs.keys()), op=MIN)
+        max_subdomain_id = mpi_comm.allreduce(max(self.subdomain_id_to_deformation_dofs.keys()), op=MAX)
+        for subdomain_id in range(min_subdomain_id, max_subdomain_id):
+            if subdomain_id not in self.subdomain_id_to_deformation_dofs:
+                self.subdomain_id_to_deformation_dofs[subdomain_id] = list()
+        # Subdomain numbering is contiguous
         assert min(self.subdomain_id_to_deformation_dofs.keys()) == 0
         assert len(self.subdomain_id_to_deformation_dofs.keys()) == max(self.subdomain_id_to_deformation_dofs.keys()) + 1
         
