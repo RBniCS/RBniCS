@@ -124,6 +124,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         # Compute the bounding box \mathcal{B}
         self.compute_bounding_box()
+        print("")
         
         # Arbitrarily start from the first parameter in the training set
         self.SCM_approximation.set_mu(self.xi_train[0])
@@ -150,6 +151,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
                 print("find next mu")
                 
             self.greedy()
+            
+            print("")
         
         print("==============================================================")
         print("=             SCM offline phase ends                         =")

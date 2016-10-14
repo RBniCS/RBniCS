@@ -47,7 +47,7 @@ class ReductionMethod(object):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Maximum reduced order space dimension to be used for the stopping criterion in the basis selection
-        self.Nmax = 10
+        self.Nmax = 0
         # Training set
         self.xi_train = ParameterSpaceSubset(mu_range)
         # I/O

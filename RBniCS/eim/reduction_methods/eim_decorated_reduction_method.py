@@ -53,22 +53,9 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         def set_Nmax(self, Nmax, **kwargs):
             ReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set Nmax of EIM reductions
-            assert "EIM" in kwargs
-            Nmax_EIM = kwargs["EIM"]
-            if isinstance(Nmax_EIM, dict):
-                for term in self.separated_forms:
-                    assert term in Nmax_EIM
-                    assert len(self.separated_forms[term]) == len(Nmax_EIM[term])
-                    for (form, Nmax_EIM_form) in zip(self.separated_forms[term], Nmax_EIM[term]):
-                        for addend in form.coefficients:
-                            for factor in addend:
-                                assert term in Nmax_EIM 
-                                assert coeff in self.EIM_reductions
-                                self.EIM_reductions[factor].set_Nmax(max(self.EIM_reductions[factor].Nmax, Nmax_EIM_form)) # kwargs are not needed
-            else:
-                assert isinstance(Nmax_EIM, int)
-                for coeff in self.EIM_reductions:
-                    self.EIM_reductions[coeff].set_Nmax(Nmax_EIM) # kwargs are not needed
+            def setter(EIM_reduction, Nmax_EIM):
+                EIM_reduction.set_Nmax(max(EIM_reduction.Nmax, Nmax_EIM)) # kwargs are not needed
+            self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
 
             
         ## OFFLINE: set the elements in the training set \xi_train.
@@ -78,52 +65,46 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             # Since exact evaluation is required, we cannot use a distributed xi_train
             self.xi_train.distributed_max = False
             # Set xi_train of EIM reductions
-            assert "EIM" in kwargs
-            ntrain_EIM = kwargs["EIM"]
-            if isinstance(ntrain_EIM, dict):
-                for term in self.separated_forms:
-                    assert term in ntrain_EIM
-                    assert len(self.separated_forms[term]) == len(ntrain_EIM[term])
-                    for (form, ntrain_EIM_form) in zip(self.separated_forms[term], ntrain_EIM[term]):
-                        for addend in form.coefficients:
-                            for factor in addend:
-                                assert term in ntrain_EIM 
-                                assert coeff in self.EIM_reductions
-                                import_successful_EIM = self.EIM_reductions[factor].set_xi_train(ntrain_EIM_form, enable_import, sampling) # kwargs are not needed
-                                import_successful = import_successful and import_successful_EIM
-            else:
-                assert isinstance(ntrain_EIM, int)
-                for coeff in self.EIM_reductions:
-                    import_successful_EIM = self.EIM_reductions[coeff].set_xi_train(ntrain_EIM, enable_import, sampling) # kwargs are not needed
-                    import_successful = import_successful and import_successful_EIM
-            # Return
-            return import_successful
+            def setter(EIM_reduction, ntrain_EIM):
+                return EIM_reduction.set_xi_train(ntrain_EIM, enable_import, sampling) # kwargs are not needed
+            import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
+            return import_successful and import_successful_EIM
             
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
         @override
         def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
             import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
             # Set xi_test of EIM reductions
+            def setter(EIM_reduction, ntest_EIM):
+                return EIM_reduction.set_xi_test(ntest_EIM, enable_import, sampling) # kwargs are not needed
+            import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
+            return import_successful and import_successful_EIM
+            
+        def _propagate_setter_from_kwargs_to_EIM_reductions(self, setter, **kwargs):
             assert "EIM" in kwargs
-            ntest_EIM = kwargs["EIM"]
-            if isinstance(ntest_EIM, dict):
-                for term in self.separated_forms:
-                    assert term in ntest_EIM
-                    assert len(self.separated_forms[term]) == len(ntest_EIM[term])
-                    for (form, ntest_EIM_form) in zip(self.separated_forms[term], ntest_EIM[term]):
-                        for addend in form.coefficients:
-                            for factor in addend:
-                                assert term in ntest_EIM 
-                                assert coeff in self.EIM_reductions
-                                import_successful_EIM = self.EIM_reductions[factor].set_xi_test(ntest_EIM_form, enable_import, sampling) # kwargs are not needed
-                                import_successful = import_successful and import_successful_EIM
+            kwarg_EIM = kwargs["EIM"]
+            return_value = True # will be either a bool or None
+            if isinstance(kwarg_EIM, dict):
+                for term in self.truth_problem.separated_forms:
+                    if sum([len(form.coefficients) for form in self.truth_problem.separated_forms[term]]) > 0:
+                        assert term in kwarg_EIM, "Please provide a value for term " + str(term)
+                        assert isinstance(kwarg_EIM[term], (int, tuple))
+                        if isinstance(kwarg_EIM[term], int):
+                            kwarg_EIM[term] = [kwarg_EIM[term]]*len(self.truth_problem.separated_forms[term])
+                        else:
+                            assert len(self.truth_problem.separated_forms[term]) == len(kwarg_EIM[term])
+                        for (form, kwarg_EIM_form) in zip(self.truth_problem.separated_forms[term], kwarg_EIM[term]):
+                            for addend in form.coefficients:
+                                for factor in addend:
+                                    assert factor in self.EIM_reductions
+                                    current_return_value = setter(self.EIM_reductions[factor], kwarg_EIM_form)
+                                    return_value = current_return_value and return_value
             else:
-                assert isinstance(ntest_EIM, int)
+                assert isinstance(kwarg_EIM, int)
                 for coeff in self.EIM_reductions:
-                    import_successful_EIM = self.EIM_reductions[coeff].set_xi_test(ntest_EIM, enable_import, sampling) # kwargs are not needed
-                    import_successful = import_successful and import_successful_EIM
-            # Return
-            return import_successful
+                    current_return_value = setter(self.EIM_reductions[coeff], kwarg_EIM)
+                    return_value = current_return_value and return_value
+            return return_value # an "and" with a None results in None, so this method returns only if necessary
             
         #  @}
         ########################### end - SETTERS - end ########################### 
