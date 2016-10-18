@@ -23,12 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import as_backend_type
+from mpi4py.MPI import Op
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.wrapping_utils import build_dof_map_writer_mapping, get_form_name, get_form_argument
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.utils.mpi import is_io_process
-from RBniCS.utils.io import ExportableList
+from RBniCS.utils.io import PickleIO
 
 def tensor_save(tensor, directory, filename):
     mpi_comm = tensor.mpi_comm().tompi4py()
@@ -50,41 +51,38 @@ def tensor_save(tensor, directory, filename):
         V_1 = arguments_1[0].function_space()
         V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
         V_1__dof_map_writer_mapping = build_dof_map_writer_mapping(V_1)
-        matrix_content = list()
+        matrix_content = dict()
         mat = as_backend_type(tensor).mat()
         row_start, row_end = mat.getOwnershipRange()
         for row in range(row_start, row_end):
             cols, vals = mat.getRow(row)
             for (col, val) in zip(cols, vals):
                 if val != 0.:
-                    matrix_content.append(V_0__dof_map_writer_mapping[row])
-                    matrix_content.append(V_1__dof_map_writer_mapping[col])
-                    matrix_content.append(val)
-        gathered_matrix_content = mpi_comm.gather(matrix_content, root=is_io_process.root)
-        gathered_matrix_content_flattened = ExportableList("pickle")
-        if is_io_process(mpi_comm):
-            for matrix_content in gathered_matrix_content:
-                gathered_matrix_content_flattened.extend(matrix_content)
-        gathered_matrix_content_flattened.save(directory, filename)
+                    if V_0__dof_map_writer_mapping[row] not in matrix_content:
+                        matrix_content[V_0__dof_map_writer_mapping[row]] = dict()
+                    matrix_content[V_0__dof_map_writer_mapping[row]][V_1__dof_map_writer_mapping[col]] = val
+        gathered_matrix_content = mpi_comm.reduce(matrix_content, root=is_io_process.root, op=dict_update_op)
+        PickleIO.save_file(gathered_matrix_content, directory, filename)
     elif isinstance(tensor, Vector.Type()):
         arguments_0 = get_form_argument(form, 0)
         assert len(arguments_0) == 1
         V_0 = arguments_0[0].function_space()
         V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
-        vector_content = list()
+        vector_content = dict()
         vec = as_backend_type(tensor).vec()
         row_start, row_end = vec.getOwnershipRange()
         for row in range(row_start, row_end):
             val = vec.array[row - row_start]
             if val != 0.:
-                vector_content.append(V_0__dof_map_writer_mapping[row])
-                vector_content.append(val)
-        gathered_vector_content = mpi_comm.gather(vector_content, root=is_io_process.root)
-        gathered_vector_content_flattened = ExportableList("pickle")
-        if is_io_process(mpi_comm):
-            for vector_content in gathered_vector_content:
-                gathered_vector_content_flattened.extend(vector_content)
-        gathered_vector_content_flattened.save(directory, filename)
+                vector_content[V_0__dof_map_writer_mapping[row]] = val
+        gathered_vector_content = mpi_comm.reduce(vector_content, root=is_io_process.root, op=dict_update_op)
+        PickleIO.save_file(gathered_vector_content, directory, filename)
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in tensor_save.")    
     
+def dict_update(dict1, dict2, datatype):
+    dict1.update(dict2)
+    return dict1
+
+dict_update_op = Op.Create(dict_update, commute=True)
+

@@ -31,7 +31,7 @@ from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping, 
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
 from RBniCS.utils.mpi import is_io_process
-from RBniCS.utils.io import ExportableList
+from RBniCS.utils.io import PickleIO
 
 def tensor_load(directory, filename, V):
     mpi_comm = get_mpi_comm(V)
@@ -57,58 +57,36 @@ def tensor_load(directory, filename, V):
         V_1 = arguments_1[0].function_space()
         V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
         V_1__dof_map_reader_mapping = build_dof_map_reader_mapping(V_1)
-        matrix_content = ExportableList("pickle")
-        matrix_content.load(directory, filename)
+        matrix_content = PickleIO.load_file(directory, filename)
         mat = as_backend_type(tensor).mat()
         row_start, row_end = mat.getOwnershipRange()
-        matrix_content_iterator = 0
-        prev_row = -1
-        all_cols = list()
-        all_vals = list()
-        while matrix_content_iterator < len(matrix_content):
-            (global_cell_index, cell_dof) = (matrix_content[matrix_content_iterator][0], matrix_content[matrix_content_iterator][1])
+        for row_tuple, col_tuples_to_vals in matrix_content.iteritems():
+            (global_cell_index, cell_dof) = row_tuple
             row = V_0__dof_map_reader_mapping[global_cell_index][cell_dof]
-            matrix_content_iterator += 1
             if row >= row_start and row < row_end:
-                (global_cell_index, cell_dof) = (matrix_content[matrix_content_iterator][0], matrix_content[matrix_content_iterator][1])
-                col = V_1__dof_map_reader_mapping[global_cell_index][cell_dof]
-                matrix_content_iterator += 1
-                val = matrix_content[matrix_content_iterator]
-                matrix_content_iterator += 1
-                if row != prev_row and prev_row != -1:
-                    assert len(all_cols) == len(all_vals)
-                    mat.setValues(prev_row, all_cols, all_vals, addv=PETSc.InsertMode.INSERT)
-                    all_cols = list()
-                    all_vals = list()
-                prev_row = row
-                all_cols.append(col)
-                all_vals.append(val)
-            else:
-                matrix_content_iterator += 2
-        # Do not forget the last read row!
-        assert len(all_cols) == len(all_vals)
-        mat.setValues(prev_row, all_cols, all_vals, addv=PETSc.InsertMode.INSERT)
+                cols = list()
+                vals = list()
+                for col_tuple, val in col_tuples_to_vals.iteritems():
+                    (global_cell_index, cell_dof) = col_tuple
+                    col = V_1__dof_map_reader_mapping[global_cell_index][cell_dof]
+                    cols.append(col)
+                    vals.append(val)
+                mat.setValues(row, cols, vals, addv=PETSc.InsertMode.INSERT)
         mat.assemble()
     elif isinstance(tensor, Vector.Type()):
         arguments_0 = get_form_argument(form, 0)
         assert len(arguments_0) == 1
         V_0 = arguments_0[0].function_space()
         V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
-        vector_content = ExportableList("pickle")
-        vector_content.load(directory, filename)
+        vector_content = PickleIO.load_file(directory, filename)
         vec = as_backend_type(tensor).vec()
         row_start, row_end = vec.getOwnershipRange()
         vector_content_iterator = 0
-        while vector_content_iterator < len(vector_content):
-            (global_cell_index, cell_dof) = (vector_content[vector_content_iterator][0], vector_content[vector_content_iterator][1])
+        for row_tuple, val in vector_content.iteritems():
+            (global_cell_index, cell_dof) = row_tuple
             row = V_0__dof_map_reader_mapping[global_cell_index][cell_dof]
-            vector_content_iterator += 1
             if row >= row_start and row < row_end:
-                val = vector_content[vector_content_iterator]
-                vector_content_iterator += 1
                 vec.setValuesLocal(row - row_start, val, addv=PETSc.InsertMode.INSERT)
-            else:
-                vector_content_iterator += 1
         vec.assemble()
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in tensor_load.")
