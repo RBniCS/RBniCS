@@ -26,7 +26,10 @@
 ## @defgroup IO Input/output methods
 #  @{
 
-import pickle
+try:
+   import cPickle as pickle
+except:
+   import pickle
 import os # for path
 from RBniCS.utils.mpi import is_io_process
 
