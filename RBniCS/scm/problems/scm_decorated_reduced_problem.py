@@ -26,15 +26,15 @@ from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFo
 from RBniCS.scm.problems.scm_decorated_problem import SCM
 
 @ReducedProblemDecoratorFor(SCM)
-def SCMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
+def SCMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
-    class SCMDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class SCMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
         
     # return value (a class) for the decorator
     return SCMDecoratedReducedProblem_Class

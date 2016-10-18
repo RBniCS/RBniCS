@@ -34,23 +34,23 @@ def DEIMDecoratedProblem(
     from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions
     
     @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactParametrizedFunctions)
-    def DEIMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
+    def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
                 
-        @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
-        class DEIMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        class DEIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
             ## Default initialization of members
             @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
-                ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
+                ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for DEIM reduced problems
                 self.DEIM_approximations = dict() # from term to dict of DEIMApproximation
                 self.non_DEIM_forms = dict() # from term to dict of forms
                 
                 # Preprocess each term in the affine expansions
                 for term in self.terms:
-                    forms = ParametrizedProblem_DerivedClass.assemble_operator(self, term)
+                    forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                     self.DEIM_approximations[term] = dict()
                     self.non_DEIM_forms[term] = dict()
                     for (q, form_q) in enumerate(forms):
@@ -69,7 +69,7 @@ def DEIMDecoratedProblem(
             @override
             def solve(self, **kwargs):
                 self._update_N_DEIM(**kwargs)
-                return ParametrizedProblem_DerivedClass.solve(self, **kwargs)
+                return ParametrizedDifferentialProblem_DerivedClass.solve(self, **kwargs)
             
             def _update_N_DEIM(self, **kwargs):
                 if kwargs != self._update_N_DEIM__previous_kwargs:
@@ -106,11 +106,11 @@ def DEIMDecoratedProblem(
                         deim_forms.append(non_deim_form)
                     return tuple(deim_forms)
                 else:
-                    return ParametrizedProblem_DerivedClass.assemble_operator(self, term) # may raise an exception
+                    return ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term) # may raise an exception
                     
             @override
             def compute_theta(self, term):
-                original_thetas = ParametrizedProblem_DerivedClass.compute_theta(self, term) # may raise an exception
+                original_thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term) # may raise an exception
                 if term in self.terms:
                     deim_thetas = list()
                     assert len(self.DEIM_approximations[term]) + len(self.non_DEIM_forms[term]) == len(original_thetas)

@@ -27,14 +27,14 @@ from RBniCS.eim.problems import EIM
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
 @ReductionMethodDecoratorFor(EIM)
-def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
+def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(ReductionMethod_DerivedClass, preserve_class_name=True)
-    class EIMDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class EIMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReductionMethod_DerivedClass.__init__(self, truth_problem)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
             # Storage for EIM reduction methods
             self.EIM_reductions = dict() # from coefficients to _EIMReductionMethod
             
@@ -51,7 +51,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
         @override
         def set_Nmax(self, Nmax, **kwargs):
-            ReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set Nmax of EIM reductions
             def setter(EIM_reduction, Nmax_EIM):
                 EIM_reduction.set_Nmax(max(EIM_reduction.Nmax, Nmax_EIM)) # kwargs are not needed
@@ -61,7 +61,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## OFFLINE: set the elements in the training set \xi_train.
         @override
         def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
             # Since exact evaluation is required, we cannot use a distributed xi_train
             self.xi_train.distributed_max = False
             # Set xi_train of EIM reductions
@@ -73,7 +73,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
         @override
         def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
-            import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
             # Set xi_test of EIM reductions
             def setter(EIM_reduction, ntest_EIM):
                 return EIM_reduction.set_xi_test(ntest_EIM, enable_import, sampling) # kwargs are not needed
@@ -122,7 +122,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 self.EIM_reductions[coeff].offline()
             # ..., and then call the parent method.
             self.truth_problem.set_mu(bak_first_mu)
-            return ReductionMethod_DerivedClass.offline(self)
+            return DifferentialProblemReductionMethod_DerivedClass.offline(self)
     
         #  @}
         ########################### end - OFFLINE STAGE - end ###########################
@@ -147,7 +147,7 @@ def EIMDecoratedReductionMethod(ReductionMethod_DerivedClass):
                 for coeff in self.EIM_reductions:
                     self.EIM_reductions[coeff].error_analysis(N)
             # ..., and then call the parent method.
-            ReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 

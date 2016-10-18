@@ -29,13 +29,13 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
     @ProblemDecoratorFor(ShapeParametrization,
         shape_parametrization_expression=shape_parametrization_expression
     )
-    def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
+    def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
         ## @class ShapeParametrizationDecoratedProblem
         #
         # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-        @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
-        class ShapeParametrizationDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        class ShapeParametrizationDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         
             ###########################     CONSTRUCTORS     ########################### 
             ## @defgroup Constructors Methods related to the construction of the SCM object
@@ -48,7 +48,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             @override
             def __init__(self, V, **kwargs):
                 # Call the standard initialization
-                ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
+                ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Store mesh motion class
                 if len(shape_parametrization_expression) == 0:
                     shape_parametrization_expression__from_decorator = decorator_kwargs["shape_parametrization_expression"]
@@ -67,7 +67,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             ## Initialize data structures required for the offline phase
             @override
             def init(self):
-                ParametrizedProblem_DerivedClass.init(self)
+                ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Also init mesh motion object
                 self.mesh_motion.init(self)
             
@@ -82,7 +82,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             @override
             def export_solution(self, folder, filename, solution=None, component=None):
                 self.mesh_motion.move_mesh()
-                ParametrizedProblem_DerivedClass.export_solution(self, folder, filename, solution, component)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component)
                 self.mesh_motion.reset_reference()
                 
             #  @}

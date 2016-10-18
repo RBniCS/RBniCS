@@ -26,14 +26,14 @@ from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorF
 from RBniCS.shape_parametrization.problems import ShapeParametrization
 
 @ReductionMethodDecoratorFor(ShapeParametrization)
-def ShapeParametrizationDecoratedReductionMethod(ReductionMethod_DerivedClass):
+def ShapeParametrizationDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(ReductionMethod_DerivedClass, preserve_class_name=True)
-    class ShapeParametrizationDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class ShapeParametrizationDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReductionMethod_DerivedClass.__init__(self, truth_problem)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
         
     # return value (a class) for the decorator
     return ShapeParametrizationDecoratedReductionMethod_Class

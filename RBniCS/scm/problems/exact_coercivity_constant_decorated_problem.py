@@ -39,15 +39,15 @@ def ExactCoercivityConstantDecoratedProblem(
         constrain_minimum_eigenvalue = constrain_minimum_eigenvalue,
         eigensolver_parameters = eigensolver_parameters
     )
-    def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
+    def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
-        @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
-        class ExactCoercivityConstantDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        class ExactCoercivityConstantDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             ## Default initialization of members
             @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
-                ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
+                ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 
                 self.exact_coercivity_constant_calculator = ParametrizedHermitianEigenProblem(self, "a", True, constrain_minimum_eigenvalue, "smallest", eigensolver_parameters)
                 
@@ -55,7 +55,7 @@ def ExactCoercivityConstantDecoratedProblem(
             @override
             def init(self):
                 # Call to Parent
-                ParametrizedProblem_DerivedClass.init(self)
+                ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Init exact coercivity constant computations
                 self.exact_coercivity_constant_calculator.init()
             

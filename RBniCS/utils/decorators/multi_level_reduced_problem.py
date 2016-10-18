@@ -25,10 +25,10 @@
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.override import override
 
-def MultiLevelReducedProblem(ReducedParametrizedProblem_DerivedClass):
+def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
-    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
-    class MultiLevelReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class MultiLevelReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         additional_folder_prefix = dict({
             1: "",                  # remember that online data for level i-th is stored under the name of the (i-1)-th truth
@@ -55,7 +55,7 @@ def MultiLevelReducedProblem(ReducedParametrizedProblem_DerivedClass):
                 truth_problem.V = truth_problem.Z
                 
             # Call the parent initialization
-            ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
             
             # Change the folder names in Parent
             self.folder_prefix = self.additional_folder_prefix[self._reduction_level] + self.folder_prefix
@@ -98,13 +98,13 @@ def MultiLevelReducedProblem(ReducedParametrizedProblem_DerivedClass):
                 # Make sure to update mu in the truth_problem (sync is only guaranteed with the original truth problem)
                 self.truth_problem.set_mu(self.mu)
                 # Call Parent
-                error = ReducedParametrizedProblem_DerivedClass.compute_error(self, N, **kwargs)
+                error = ParametrizedReducedDifferentialProblem_DerivedClass.compute_error(self, N, **kwargs)
                 # Restore backup
                 self.truth_problem = self._compute_error__current_bak_truth_problem
                 # Return
                 return error
             else:
-                return ReducedParametrizedProblem_DerivedClass.compute_error(self, N, **kwargs)
+                return ParametrizedReducedDifferentialProblem_DerivedClass.compute_error(self, N, **kwargs)
                 
         @override
         def _compute_error(self, truth_solution_and_output, reduced_solution_and_output):
@@ -120,7 +120,7 @@ def MultiLevelReducedProblem(ReducedParametrizedProblem_DerivedClass):
                         truth_problem_l = truth_problem_l.truth_problem
                     reduced_solution_and_output = (reduced_solution, reduced_output)
             # Call Parent
-            return ReducedParametrizedProblem_DerivedClass._compute_error(self, truth_solution_and_output, reduced_solution_and_output)
+            return ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self, truth_solution_and_output, reduced_solution_and_output)
             
     # return value (a class) for the decorator
     return MultiLevelReducedProblem_Class

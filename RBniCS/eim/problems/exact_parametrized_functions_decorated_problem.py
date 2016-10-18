@@ -27,16 +27,16 @@ from RBniCS.eim.problems.eim_decorated_problem import EIM
 
 def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
     @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
-    def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
+    def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
-        @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
-        class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
             ## Default initialization of members
             @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
-                ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
+                ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Avoid useless assemblies
                 self._solve__previous_mu = None
             
@@ -53,7 +53,7 @@ def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
                     self.init()
                     # Avoid useless assemblies
                     self._solve__previous_mu = self.mu
-                return ParametrizedProblem_DerivedClass.solve(self)
+                return ParametrizedDifferentialProblem_DerivedClass.solve(self)
             
             #  @}
             ########################### end - OFFLINE STAGE - end ########################### 

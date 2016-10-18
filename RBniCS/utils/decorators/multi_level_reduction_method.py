@@ -26,10 +26,10 @@ import types
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.override import override
 
-def MultiLevelReductionMethod(ReductionMethod_DerivedClass):
+def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             
-    @Extends(ReductionMethod_DerivedClass, preserve_class_name=True)
-    class MultiLevelReductionMethod_Class(ReductionMethod_DerivedClass):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class MultiLevelReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         additional_folder_prefix = dict({
             1: "",                  # remember that online data for level i-th is stored under the name of the (i-1)-th truth
@@ -51,7 +51,7 @@ def MultiLevelReductionMethod(ReductionMethod_DerivedClass):
                 self._reduction_level += 1
                 
             # Call the parent initialization
-            ReductionMethod_DerivedClass.__init__(self, truth_problem)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
             
             # Change the folder names in Parent
             self.folder_prefix = self.additional_folder_prefix[self._reduction_level] + self.folder_prefix
@@ -83,7 +83,7 @@ def MultiLevelReductionMethod(ReductionMethod_DerivedClass):
                 else:
                     raise ValueError("Invalid value for kwargs")
             # Call Parent
-            ReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
                 
         @override
         def _finalize_error_analysis(self, **kwargs):
@@ -104,7 +104,7 @@ def MultiLevelReductionMethod(ReductionMethod_DerivedClass):
                 else:
                     raise ValueError("Invalid value for kwargs")
             # Call Parent
-            ReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
             
     # return value (a class) for the decorator
     return MultiLevelReductionMethod_Class

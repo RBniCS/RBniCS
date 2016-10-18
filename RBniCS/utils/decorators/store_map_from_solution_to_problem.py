@@ -25,15 +25,15 @@
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.override import override
 
-def StoreMapFromSolutionToProblem(ParametrizedProblem_DerivedClass):
+def StoreMapFromSolutionToProblem(ParametrizedDifferentialProblem_DerivedClass):
             
-    @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
-    class StoreMapFromSolutionToProblem_Class(ParametrizedProblem_DerivedClass):
+    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class StoreMapFromSolutionToProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         
         @override
         def __init__(self, V, **kwargs):
             # Call the parent initialization
-            ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
+            ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
             
             # Populate solution to problem map
             add_to_map_from_solution_to_problem(self._solution, self)

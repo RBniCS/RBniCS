@@ -26,18 +26,18 @@ from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorF
 from RBniCS.scm.problems import ExactCoercivityConstant, SCM
 
 @ReductionMethodDecoratorFor(ExactCoercivityConstant, replaces=SCM)
-def ExactCoercivityConstantDecoratedReductionMethod(ReductionMethod_DerivedClass):
+def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(ReductionMethod_DerivedClass, preserve_class_name=True)
-    class ExactCoercivityConstantDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class ExactCoercivityConstantDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReductionMethod_DerivedClass.__init__(self, truth_problem)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
             
         @override
         def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
             # Since exact evaluation is required, we cannot use a distributed xi_train
             self.xi_train.distributed_max = False
             return import_successful

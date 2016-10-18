@@ -27,14 +27,14 @@ from RBniCS.scm.problems import SCM
 from RBniCS.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod
 
 @ReductionMethodDecoratorFor(SCM)
-def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
+def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(ReductionMethod_DerivedClass, preserve_class_name=True)
-    class SCMDecoratedReductionMethod_Class(ReductionMethod_DerivedClass):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class SCMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReductionMethod_DerivedClass.__init__(self, truth_problem)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
             
             # Storage for SCM reduction method
             self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, type(self.truth_problem).__name__ + "/scm")
@@ -48,7 +48,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
         @override
         def set_Nmax(self, Nmax, **kwargs):
-            ReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             assert "SCM" in kwargs
             Nmax_SCM = kwargs["SCM"]
             assert isinstance(Nmax_SCM, int)
@@ -58,7 +58,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## OFFLINE: set the elements in the training set \xi_train.
         @override
         def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = ReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
             # Set xi_train of SCM reduction
             assert "SCM" in kwargs
             ntrain_SCM = kwargs["SCM"]
@@ -69,7 +69,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
         ## ERROR ANALYSIS: set the elements in the test set \xi_test.
         @override
         def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
-            import_successful = ReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
             # Set xi_test of SCM reduction
             assert "SCM" in kwargs
             ntest_SCM = kwargs["SCM"]
@@ -92,7 +92,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             self.SCM_reduction.offline()
             # ..., and then call the parent method.
             self.truth_problem.set_mu(bak_first_mu)
-            return ReductionMethod_DerivedClass.offline(self)
+            return DifferentialProblemReductionMethod_DerivedClass.offline(self)
     
         #  @}
         ########################### end - OFFLINE STAGE - end ###########################
@@ -116,7 +116,7 @@ def SCMDecoratedReductionMethod(ReductionMethod_DerivedClass):
             ):
                 self.SCM_reduction.error_analysis(N)
             # ..., and then call the parent method.
-            ReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 

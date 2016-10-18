@@ -53,15 +53,15 @@ def SCMDecoratedProblem(
         bounding_box_maximum_eigensolver_parameters = bounding_box_maximum_eigensolver_parameters,
         coercivity_eigensolver_parameters = coercivity_eigensolver_parameters
     )
-    def SCMDecoratedProblem_Decorator(ParametrizedProblem_DerivedClass):
+    def SCMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
     
-        @Extends(ParametrizedProblem_DerivedClass, preserve_class_name=True)
-        class SCMDecoratedProblem_Class(ParametrizedProblem_DerivedClass):
+        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        class SCMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             ## Default initialization of members
             @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
-                ParametrizedProblem_DerivedClass.__init__(self, V, **kwargs)
+                ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Store input parameters from the decorator factory in a dict
                 decorator_inputs = dict()
                 decorator_inputs["M_e"] = M_e

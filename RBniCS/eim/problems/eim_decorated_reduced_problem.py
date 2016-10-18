@@ -26,15 +26,15 @@ from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFo
 from RBniCS.eim.problems.eim_decorated_problem import EIM
 
 @ReducedProblemDecoratorFor(EIM)
-def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
+def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
-    class EIMDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class EIMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
             # Store the truth problem which should be updated for EIM
             self.truth_problem_for_EIM = self.truth_problem
             # ... this makes sure that, in case self.truth_problem is replaced (because of multilevel reduction)
@@ -43,7 +43,7 @@ def EIMDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
         @override
         def _solve(self, N, **kwargs):
             self._update_N_EIM(**kwargs)
-            return ReducedParametrizedProblem_DerivedClass._solve(self, N, **kwargs)
+            return ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
             
         def _update_N_EIM(self, **kwargs):
             self.truth_problem_for_EIM._update_N_EIM(**kwargs)

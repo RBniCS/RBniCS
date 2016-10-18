@@ -26,13 +26,13 @@ from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFo
 from RBniCS.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization
 
 @ReducedProblemDecoratorFor(ShapeParametrization)
-def ShapeParametrizationDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
+def ShapeParametrizationDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
     ## @class ShapeParametrizationDecoratedReducedProblem
     #
     # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True)
-    class ShapeParametrizationDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class ShapeParametrizationDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
     
         ###########################     CONSTRUCTORS     ########################### 
         ## @defgroup Constructors Methods related to the construction of the SCM object
@@ -41,7 +41,7 @@ def ShapeParametrizationDecoratedReducedProblem(ReducedParametrizedProblem_Deriv
         @override
         def __init__(self, truth_problem):
             # Call the standard initialization
-            ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
                          
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################

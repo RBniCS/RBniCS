@@ -30,7 +30,7 @@ from RBniCS.eim.problems.eim_decorated_problem import EIM
 from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions
 
 @ReducedProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
-def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem_DerivedClass):
+def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):
         if hasattr(ReducedParametrizedProblem_DecoratedClass, "assemble_error_estimation_operators"):
@@ -146,14 +146,14 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
         else:
             return ReducedParametrizedProblem_DecoratedClass
            
-    @Extends(ReducedParametrizedProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     @_AlsoDecorateErrorEstimationOperators
-    class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ReducedParametrizedProblem_DerivedClass):
+    class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
         def __init__(self, truth_problem):
             # Call the parent initialization
-            ReducedParametrizedProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
             # Avoid useless assemblies
             self._solve__previous_mu = None
             self._solve__previous_self_N = None
@@ -204,7 +204,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
                 # Avoid useless assemblies
                 self._solve__previous_mu = self.mu
                 self._solve__previous_self_N = self.N
-            return ReducedParametrizedProblem_DerivedClass._solve(self, N, **kwargs)
+            return ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
     
         #  @}
         ########################### end - ONLINE STAGE - end ########################### 
@@ -218,7 +218,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
         def build_reduced_operators(self, current_stage="offline"):
             if current_stage == "online":
                 log(PROGRESS, "build reduced operators (due to inefficient evaluation)")
-                output = ReducedParametrizedProblem_DerivedClass.build_reduced_operators(self)
+                output = ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self)
             else:
                 # The offline/online separation does not hold anymore, so we cannot precompute 
                 # reduced operators.
@@ -238,12 +238,12 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ReducedParametrizedProblem
                 # The offline/online separation does not hold anymore, so we need to re-assemble operators,
                 # because the assemble_operator() of the truth problem *may* return parameter dependent operators.
                 # Thus, call the parent method enforcing current_stage = "offline"
-                output = ReducedParametrizedProblem_DerivedClass.assemble_operator(self, term, "offline")
+                output = ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, "offline")
                 # Return
                 return output
             else:
                 # Call parent method
-                return ReducedParametrizedProblem_DerivedClass.assemble_operator(self, term, current_stage)
+                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
                 
         #  @}
         ########################### end - PROBLEM SPECIFIC - end ########################### 
