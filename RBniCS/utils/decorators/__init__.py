@@ -34,6 +34,8 @@ from RBniCS.utils.decorators.reduced_problem_decorator_for import ReducedProblem
 from RBniCS.utils.decorators.reduced_problem_for import ReducedProblemFor
 from RBniCS.utils.decorators.reduction_method_decorator_for import ReductionMethodDecoratorFor
 from RBniCS.utils.decorators.reduction_method_for import ReductionMethodFor
+from RBniCS.utils.decorators.store_map_from_basis_functions_matrix_to_reduced_problem import add_to_map_from_basis_functions_matrix_to_reduced_problem, get_reduced_problem_from_basis_functions_matrix, StoreMapFromBasisFunctionsMatrixToReducedProblem
+from RBniCS.utils.decorators.store_map_from_solution_to_problem import add_to_map_from_solution_to_problem, get_problem_from_solution, StoreMapFromSolutionToProblem
 from RBniCS.utils.decorators.sync_setters import sync_setters
 
 __all__ = [
@@ -43,10 +45,14 @@ __all__ = [
     'abstractmethod',
     'abstractonlinemethod',
     'abstractproperty',
+    'add_to_map_from_solution_to_problem',
+    'add_to_map_from_basis_functions_matrix_to_reduced_problem',
     'BackendFor',
     'backend_for',
     'dict_of',
     'ExactProblem',
+    'get_problem_from_solution',
+    'get_reduced_problem_from_basis_functions_matrix',
     'list_of',
     'MultiLevelReducedProblem',
     'MultiLevelReductionMethod',
@@ -57,6 +63,8 @@ __all__ = [
     'ReducedProblemFor',
     'ReductionMethodDecoratorFor',
     'ReductionMethodFor',
+    'StoreMapFromBasisFunctionsMatrixToReducedProblem',
+    'StoreMapFromSolutionToProblem',
     'sync_setters',
     'ThetaType',
     'tuple_of'

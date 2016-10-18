@@ -29,7 +29,7 @@ from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.backends import BasisFunctionsMatrix, difference, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.sampling import ParameterSpaceSubset
-from RBniCS.utils.decorators import sync_setters, Extends, override
+from RBniCS.utils.decorators import Extends, override, StoreMapFromBasisFunctionsMatrixToReducedProblem, sync_setters
 from RBniCS.utils.mpi import print
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -38,6 +38,7 @@ from RBniCS.utils.mpi import print
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
+@StoreMapFromBasisFunctionsMatrixToReducedProblem
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     __metaclass__ = ABCMeta
     
