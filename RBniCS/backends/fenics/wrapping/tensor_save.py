@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from petsc4py import PETSc
 from dolfin import as_backend_type
 from mpi4py.MPI import Op
 from RBniCS.backends.fenics.matrix import Matrix
@@ -37,48 +38,71 @@ def tensor_save(tensor, directory, filename):
     # Write out generator
     assert hasattr(tensor, "generator")
     full_filename_generator = str(directory) + "/" + filename + ".generator"
+    form_name = get_form_name(form)
     if is_io_process(mpi_comm):
         with open(full_filename_generator, "w") as generator_file:
-            generator_file.write(get_form_name(form))
+            generator_file.write(form_name)
+    # Write out generator mapping from processor dependent indices to processor independent (global_cell_index, cell_dof) tuple
+    permutation_save(tensor, directory, form, form_name, mpi_comm)
     # Write out content
     assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
     if isinstance(tensor, Matrix.Type()):
-        arguments_0 = get_form_argument(form, 0)
-        arguments_1 = get_form_argument(form, 1)
-        assert len(arguments_0) == 1
-        assert len(arguments_1) == 1
-        V_0 = arguments_0[0].function_space()
-        V_1 = arguments_1[0].function_space()
-        V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
-        V_1__dof_map_writer_mapping = build_dof_map_writer_mapping(V_1)
-        matrix_content = dict()
-        mat = as_backend_type(tensor).mat()
-        row_start, row_end = mat.getOwnershipRange()
-        for row in range(row_start, row_end):
-            cols, vals = mat.getRow(row)
-            for (col, val) in zip(cols, vals):
-                if val != 0.:
-                    if V_0__dof_map_writer_mapping[row] not in matrix_content:
-                        matrix_content[V_0__dof_map_writer_mapping[row]] = dict()
-                    matrix_content[V_0__dof_map_writer_mapping[row]][V_1__dof_map_writer_mapping[col]] = val
-        gathered_matrix_content = mpi_comm.reduce(matrix_content, root=is_io_process.root, op=dict_update_op)
-        PickleIO.save_file(gathered_matrix_content, directory, filename)
+        matrix_save(tensor, directory, filename)
     elif isinstance(tensor, Vector.Type()):
-        arguments_0 = get_form_argument(form, 0)
-        assert len(arguments_0) == 1
-        V_0 = arguments_0[0].function_space()
-        V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
-        vector_content = dict()
-        vec = as_backend_type(tensor).vec()
-        row_start, row_end = vec.getOwnershipRange()
-        for row in range(row_start, row_end):
-            val = vec.array[row - row_start]
-            if val != 0.:
-                vector_content[V_0__dof_map_writer_mapping[row]] = val
-        gathered_vector_content = mpi_comm.reduce(vector_content, root=is_io_process.root, op=dict_update_op)
-        PickleIO.save_file(gathered_vector_content, directory, filename)
+        vector_save(tensor, directory, filename)
     else: # impossible to arrive here anyway, thanks to the assert
-        raise AssertionError("Invalid arguments in tensor_save.")    
+        raise AssertionError("Invalid arguments in tensor_save.")
+        
+def permutation_save(tensor, directory, form, form_name, mpi_comm):
+    if not PickleIO.exists_file(directory, "." + form_name):
+        assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
+        if isinstance(tensor, Matrix.Type()):
+            arguments_0 = get_form_argument(form, 0)
+            arguments_1 = get_form_argument(form, 1)
+            assert len(arguments_0) == 1
+            assert len(arguments_1) == 1
+            V_0 = arguments_0[0].function_space()
+            V_1 = arguments_1[0].function_space()
+            V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
+            V_1__dof_map_writer_mapping = build_dof_map_writer_mapping(V_1)
+            matrix_row_mapping = dict() # from processor dependent row indices to processor independent tuple
+            matrix_col_mapping = dict() # from processor dependent col indices to processor independent tuple
+            mat = as_backend_type(tensor).mat()
+            row_start, row_end = mat.getOwnershipRange()
+            for row in range(row_start, row_end):
+                matrix_row_mapping[row] = V_0__dof_map_writer_mapping[row]
+                cols, _ = mat.getRow(row)
+                for col in cols:
+                    if col not in matrix_col_mapping:
+                        matrix_col_mapping[col] = V_1__dof_map_writer_mapping[col]
+            gathered_matrix_row_mapping = mpi_comm.reduce(matrix_row_mapping, root=is_io_process.root, op=dict_update_op)
+            gathered_matrix_col_mapping = mpi_comm.reduce(matrix_col_mapping, root=is_io_process.root, op=dict_update_op)
+            gathered_matrix_mapping = (gathered_matrix_row_mapping, gathered_matrix_col_mapping)
+            PickleIO.save_file(gathered_matrix_mapping, directory, "." + form_name)
+        elif isinstance(tensor, Vector.Type()):
+            arguments_0 = get_form_argument(form, 0)
+            assert len(arguments_0) == 1
+            V_0 = arguments_0[0].function_space()
+            V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
+            vector_mapping = dict() # from processor dependent indices to processor independent tuple
+            vec = as_backend_type(tensor).vec()
+            row_start, row_end = vec.getOwnershipRange()
+            for row in range(row_start, row_end):
+                vector_mapping[row] = V_0__dof_map_writer_mapping[row]
+            gathered_vector_mapping = mpi_comm.reduce(vector_mapping, root=is_io_process.root, op=dict_update_op)
+            PickleIO.save_file(gathered_vector_mapping, directory, "." + form_name)
+        else: # impossible to arrive here anyway, thanks to the assert
+            raise AssertionError("Invalid arguments in permutation_save.")
+            
+def matrix_save(tensor, directory, filename):
+    mat = as_backend_type(tensor).mat()
+    viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "w")
+    viewer.view(mat)
+    
+def vector_save(tensor, directory, filename):
+    vec = as_backend_type(tensor).vec()
+    viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "w")
+    viewer.view(vec)
     
 def dict_update(dict1, dict2, datatype):
     dict1.update(dict2)
