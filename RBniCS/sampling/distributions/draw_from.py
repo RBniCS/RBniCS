@@ -29,9 +29,10 @@ from RBniCS.utils.decorators import Extends, override
 
 @Extends(Distribution)
 class DrawFrom(Distribution):
-    def __init__(self, generator, *args):
+    def __init__(self, generator, *args, **kwargs):
         self.generator = generator # of a distribution in [0, 1]
         self.args = args
+        self.kwargs = kwargs
         
     @override
     def sample(self, box, n):
@@ -39,7 +40,7 @@ class DrawFrom(Distribution):
         for i in range(n):
             mu = list() # of numbers
             for box_p in box:
-                mu.append(box_p[0] + self.generator(*self.args)*(box_p[1] - box_p[0]))
+                mu.append(box_p[0] + self.generator(*self.args, **self.kwargs)*(box_p[1] - box_p[0]))
             xi.append(tuple(mu))
         return xi
         

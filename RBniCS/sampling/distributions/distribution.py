@@ -36,7 +36,16 @@ class Distribution(object):
         
     ## Override the following methods to use a Distribution as a dict key
     def __hash__(self):
-        return hash((type(self).__name__, self.__dict__.iteritems()))
+        dict_values_for_hash = self.__dict__.values()
+        dict_for_hash = list()
+        for v in dict_values_for_hash:
+            if isinstance(v, dict):
+                dict_for_hash.append( tuple(v.values()) )
+            elif isinstance(v, list):
+                dict_for_hash.append( tuple(v) )
+            else:
+                dict_for_hash.append(v)
+        return hash((type(self).__name__, tuple(dict_for_hash)))
         
     def __eq__(self, other):
         return (type(self).__name__, self.__dict__) == (type(other).__name__, other.__dict__)

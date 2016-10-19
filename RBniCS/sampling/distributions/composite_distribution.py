@@ -39,8 +39,6 @@ class CompositeDistribution(Distribution):
             if distribution not in self.distribution_to_components:
                 self.distribution_to_components[distribution] = list()
             self.distribution_to_components[distribution].append(p)
-        # Create a reference equispaced distribution, because it is handled as a special case
-        self.equispaced_distribution = EquispacedDistribution()
         
     @override
     def sample(self, box, n):
@@ -51,18 +49,19 @@ class CompositeDistribution(Distribution):
         # Prepare a dict that will store the map from components to subset sub_xi
         components_to_sub_xi = dict()
         # Consider first equispaced distributions, because they may change the value of n
-        equispaced_distribution = self.equispaced_distribution
-        if equispaced_distribution in distribution_to_sub_box:
-            sub_box = distribution_to_sub_box[equispaced_distribution]
-            sub_xi = equispaced_distribution.sample(sub_box, n)
-            n = len(sub_xi) # may be greater or equal than the one originally provided
-            components = self.distribution_to_components[distribution]
-            components_to_sub_xi[equispaced_distribution] = sub_xi
+        for (distribution, sub_box) in distribution_to_sub_box.iteritems():
+            if isinstance(distribution, EquispacedDistribution):
+                sub_box = distribution_to_sub_box[distribution]
+                sub_xi = distribution.sample(sub_box, n)
+                n = len(sub_xi) # may be greater or equal than the one originally provided
+                components = self.distribution_to_components[distribution]
+                components_to_sub_xi[tuple(components)] = sub_xi
+        assert len(components_to_sub_xi) in (0, 1)
         # ... and the consider all the remaining distributions
         for (distribution, sub_box) in distribution_to_sub_box.iteritems():
-            if distribution is not equispaced_distribution:
+            if not isinstance(distribution, EquispacedDistribution):
                 components = self.distribution_to_components[distribution]
-                components_to_sub_xi[components] = distribution.sample(sub_box, n)
+                components_to_sub_xi[tuple(components)] = distribution.sample(sub_box, n)
         # Prepare a list that will store xi = [mu_1, ... mu_n] ...
         xi_as_list = [[None]*len(box) for _ in range(n)]
         for (components, sub_xi) in components_to_sub_xi.iteritems():
