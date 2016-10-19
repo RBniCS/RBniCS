@@ -24,10 +24,12 @@
 
 from RBniCS.sampling.distributions.distribution import Distribution
 from RBniCS.sampling.distributions.equispaced_distribution import EquispacedDistribution
+from RBniCS.sampling.distributions.log_uniform_distribution import LogUniformDistribution
 from RBniCS.sampling.distributions.uniform_distribution import UniformDistribution
 
 __all__ = [
     'Distribution',
     'EquispacedDistribution',
+    'LogUniformDistribution',
     'UniformDistribution'
 ]
