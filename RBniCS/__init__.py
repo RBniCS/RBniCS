@@ -33,7 +33,7 @@ from RBniCS.backends.fenics.wrapping_utils import DirichletBC, ParametrizedExpre
 from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.problems.saddle_point import SaddlePointProblem
-from RBniCS.sampling import EquispacedDistribution, LogUniformDistribution, UniformDistribution
+from RBniCS.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
 from RBniCS.scm import SCM, ExactCoercivityConstant
 from RBniCS.shape_parametrization import ShapeParametrization
 from RBniCS.utils.decorators import ExactProblem
@@ -51,6 +51,7 @@ __all__ = [
     'EllipticCoerciveProblem',
     'SaddlePointProblem',
     # RBniCS.sampling
+    'DrawFrom',
     'EquispacedDistribution',
     'LogUniformDistribution',
     'UniformDistribution',

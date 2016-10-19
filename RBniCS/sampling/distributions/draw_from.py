@@ -15,22 +15,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary sampling module
+## @file distribution.py
+#  @brief Type for distribution
 #
+#  @author Luca      Venturi  <luca.venturi@sissa.it>
+#  @author Davide    Torlo    <davide.torlo@sissa.it>
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.sampling.parameter_space_subset import ParameterSpaceSubset
-from RBniCS.sampling.distributions import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
+from RBniCS.sampling.distributions.distribution import Distribution
+from RBniCS.utils.decorators import Extends, override
 
-__all__ = [
-    # RBniCS.sampling
-    'ParameterSpaceSubset',
-    # RBniCS.sampling.distributions
-    'DrawFrom',
-    'EquispacedDistribution',
-    'LogUniformDistribution',
-    'UniformDistribution'
-]
+@Extends(Distribution)
+class DrawFrom(Distribution):
+    def __init__(self, generator, *args):
+        self.generator = generator # of a distribution in [0, 1]
+        self.args = args
+        
+    @override
+    def sample(self, box, n):
+        xi = list() # of tuples
+        for i in range(n):
+            mu = list() # of numbers
+            for box_p in box:
+                mu.append(box_p[0] + self.generator(*self.args)*(box_p[1] - box_p[0]))
+            xi.append(tuple(mu))
+        return xi
+        
