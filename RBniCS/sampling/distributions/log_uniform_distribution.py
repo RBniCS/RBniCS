@@ -27,7 +27,7 @@
 
 from math import exp, log
 from numpy import random
-from RBniCS.sampling.distributions import Distribution
+from RBniCS.sampling.distributions.distribution import Distribution
 from RBniCS.utils.decorators import Extends, override
 
 @Extends(Distribution)
@@ -38,7 +38,7 @@ class LogUniformDistribution(Distribution):
         for i in range(n):
             mu = list() # of numbers
             for box_p in box:
-				mu.append(exp(random.uniform(log(box_p[0]), log(box_p[1]))))
+                mu.append(exp(random.uniform(log(box_p[0]), log(box_p[1]))))
             xi.append(tuple(mu))
         return xi
         

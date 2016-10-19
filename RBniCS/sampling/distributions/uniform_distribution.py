@@ -25,7 +25,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import random
-from RBniCS.sampling.distributions import Distribution
+from RBniCS.sampling.distributions.distribution import Distribution
 from RBniCS.utils.decorators import Extends, override
 
 @Extends(Distribution)

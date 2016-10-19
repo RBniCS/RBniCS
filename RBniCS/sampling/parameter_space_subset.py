@@ -27,7 +27,7 @@
 #  @{
 
 # Parameter space subsets
-from RBniCS.sampling.distributions import UniformDistribution
+from RBniCS.sampling.distributions import CompositeDistribution, UniformDistribution
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.mpi import is_io_process, parallel_max
 from RBniCS.utils.decorators import Extends, override
@@ -48,6 +48,9 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         if is_io_process():
             if sampling is None:
                 sampling = UniformDistribution()
+            elif isinstance(sampling, tuple):
+                assert len(sampling) == len(self.box)
+                sampling = CompositeDistribution(sampling)
             self._list = sampling.sample(self.box, n)
         self._list = is_io_process.mpi_comm.bcast(self._list, root=0)
         

@@ -22,12 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.sampling.distributions.composite_distribution import CompositeDistribution
 from RBniCS.sampling.distributions.distribution import Distribution
 from RBniCS.sampling.distributions.equispaced_distribution import EquispacedDistribution
 from RBniCS.sampling.distributions.log_uniform_distribution import LogUniformDistribution
 from RBniCS.sampling.distributions.uniform_distribution import UniformDistribution
 
 __all__ = [
+    'CompositeDistribution',
     'Distribution',
     'EquispacedDistribution',
     'LogUniformDistribution',
