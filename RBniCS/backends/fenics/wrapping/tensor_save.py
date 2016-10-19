@@ -42,8 +42,13 @@ def tensor_save(tensor, directory, filename):
     if is_io_process(mpi_comm):
         with open(full_filename_generator, "w") as generator_file:
             generator_file.write(form_name)
+    # Write out generator mpi size
+    full_filename_generator_mpi_size = str(directory) + "/" + filename + ".generator_mpi_size"
+    if is_io_process(mpi_comm):
+        with open(full_filename_generator_mpi_size, "w") as generator_mpi_size_file:
+            generator_mpi_size_file.write(str(mpi_comm.size))
     # Write out generator mapping from processor dependent indices to processor independent (global_cell_index, cell_dof) tuple
-    permutation_save(tensor, directory, form, form_name, mpi_comm)
+    permutation_save(tensor, directory, form, form_name + "_" + str(mpi_comm.size), mpi_comm)
     # Write out content
     assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
     if isinstance(tensor, Matrix.Type()):

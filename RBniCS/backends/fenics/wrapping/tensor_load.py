@@ -46,8 +46,15 @@ def tensor_load(directory, filename, V):
     form = ProjectedParametrizedTensor._all_forms[generator_string]
     tensor = tensor_copy(ProjectedParametrizedTensor._all_forms_assembled_containers[generator_string])
     tensor.zero()
+    # Read in generator mpi size
+    full_filename_generator_mpi_size = str(directory) + "/" + filename + ".generator_mpi_size"
+    generator_mpi_size_string = None
+    if is_io_process(mpi_comm):
+        with open(full_filename_generator_mpi_size, "r") as generator_mpi_size_file:
+            generator_mpi_size_string = generator_mpi_size_file.readline()
+    generator_mpi_size_string = mpi_comm.bcast(generator_mpi_size_string, root=is_io_process.root)
     # Read in generator mapping from processor dependent indices (at the time of saving) to processor independent (global_cell_index, cell_dof) tuple
-    permutation = permutation_load(tensor, directory, filename, form, generator_string, mpi_comm)
+    permutation = permutation_load(tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
     # Read in content
     assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
     if isinstance(tensor, Matrix.Type()):
