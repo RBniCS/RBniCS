@@ -48,6 +48,11 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
         else:
             return MatrixBaseType.__getitem__(self, key)
             
+    def __abs__(self, other):
+        output = MatrixBaseType.__abs__(self)
+        self._arithmetic_operations_preserve_M_N(None, output, other_is_matrix=False)
+        return output
+        
     def __add__(self, other):
         output = MatrixBaseType.__add__(self, other)
         self._arithmetic_operations_preserve_M_N(other, output)

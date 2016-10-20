@@ -51,6 +51,11 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
         else:
             return VectorBaseType.__getitem__(self, key)
             
+    def __abs__(self):
+        output = VectorBaseType.__abs__(self)
+        self._arithmetic_operations_preserve_N(None, output, other_is_vector=False)
+        return output
+        
     def __add__(self, other):
         output = VectorBaseType.__add__(self, other)
         self._arithmetic_operations_preserve_N(other, output)
