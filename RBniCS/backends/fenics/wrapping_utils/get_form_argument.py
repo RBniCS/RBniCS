@@ -28,5 +28,6 @@ def get_form_argument(form, number):
     for argument in all_arguments:
         if argument.number() == number:
             number_arguments.append(argument)
-    return number_arguments
+    assert len(number_arguments) == 1
+    return number_arguments[0]
     

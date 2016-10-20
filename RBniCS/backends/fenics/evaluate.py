@@ -145,7 +145,7 @@ def evaluate(expression_, at=None):
                 tensor.generator = expression_ # for I/O
                 return tensor
             else:
-                form = replace_test_trial_functions(expression_._form, at.get_reduced_function_space(), at.get_reduced_subdomain_data())
+                form = replace_test_trial_functions(expression_._form, at.get_reduced_function_spaces(), at.get_reduced_subdomain_data())
                 dofs = at.get_reduced_dofs_list()
                 sparse_out = assemble(form)
                 form_rank = len(form.arguments())
@@ -216,7 +216,9 @@ def replace_test_trial_functions(form, reduced_V, reduced_subdomain_data):
         form_replaced_test_trial_functions_and_measures = 0
         for integral in form_replaced_test_trial_functions.integrals():
             # Prepare measure for the new form (from firedrake/mg/ufl_utils.py)
-            measure_reduced_domain = reduced_V.mesh().ufl_domain()
+            if len(reduced_V) == 2:
+                assert reduced_V[0].mesh().ufl_domain() == reduced_V[1].mesh().ufl_domain()
+            measure_reduced_domain = reduced_V[0].mesh().ufl_domain()
             measure_subdomain_data = integral.subdomain_data()
             if measure_subdomain_data is not None:
                 measure_reduced_subdomain_data = reduced_subdomain_data[measure_subdomain_data]

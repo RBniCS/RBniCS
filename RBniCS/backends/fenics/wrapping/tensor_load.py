@@ -26,8 +26,8 @@ from dolfin import as_backend_type
 from petsc4py import PETSc
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.projected_parametrized_tensor import ProjectedParametrizedTensor
-from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping, get_form_argument
+from RBniCS.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
+from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
 from RBniCS.utils.mpi import is_io_process
@@ -43,8 +43,8 @@ def tensor_load(directory, filename, V):
             generator_string = generator_file.readline()
     generator_string = mpi_comm.bcast(generator_string, root=is_io_process.root)
     # Generate container based on generator
-    form = ProjectedParametrizedTensor._all_forms[generator_string]
-    tensor = tensor_copy(ProjectedParametrizedTensor._all_forms_assembled_containers[generator_string])
+    form = ParametrizedTensorFactory._all_forms[generator_string]
+    tensor = tensor_copy(ParametrizedTensorFactory._all_forms_assembled_containers[generator_string])
     tensor.zero()
     # Read in generator mpi size
     full_filename_generator_mpi_size = str(directory) + "/" + filename + ".generator_mpi_size"
@@ -54,7 +54,7 @@ def tensor_load(directory, filename, V):
             generator_mpi_size_string = generator_mpi_size_file.readline()
     generator_mpi_size_string = mpi_comm.bcast(generator_mpi_size_string, root=is_io_process.root)
     # Read in generator mapping from processor dependent indices (at the time of saving) to processor independent (global_cell_index, cell_dof) tuple
-    permutation = permutation_load(tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
+    permutation = permutation_load(V, tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
     # Read in content
     assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
     if isinstance(tensor, Matrix.Type()):
@@ -83,18 +83,13 @@ def tensor_load(directory, filename, V):
     # Return
     return tensor
     
-def permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
+def permutation_load(V, tensor, directory, filename, form, form_name, mpi_comm):
     if not form_name in _permutation_storage:
         assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
         if isinstance(tensor, Matrix.Type()):
-            arguments_0 = get_form_argument(form, 0)
-            arguments_1 = get_form_argument(form, 1)
-            assert len(arguments_0) == 1
-            assert len(arguments_1) == 1
-            V_0 = arguments_0[0].function_space()
-            V_1 = arguments_1[0].function_space()
-            V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
-            V_1__dof_map_reader_mapping = build_dof_map_reader_mapping(V_1)
+            assert len(V) == 2
+            V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V[0])
+            V_1__dof_map_reader_mapping = build_dof_map_reader_mapping(V[1])
             (V_0__dof_map_writer_mapping, V_1__dof_map_writer_mapping) = PickleIO.load_file(directory, "." + form_name)
             matrix_row_permutation = dict() # from row index at time of saving to current row index
             matrix_col_permutation = dict() # from col index at time of saving to current col index
@@ -110,10 +105,8 @@ def permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
                         matrix_col_permutation[writer_col] = V_1__dof_map_reader_mapping[global_cell_index][cell_dof]
             _permutation_storage[form_name] = (matrix_row_permutation, matrix_col_permutation)
         elif isinstance(tensor, Vector.Type()):
-            arguments_0 = get_form_argument(form, 0)
-            assert len(arguments_0) == 1
-            V_0 = arguments_0[0].function_space()
-            V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
+            assert len(V) == 1
+            V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V[0])
             V_0__dof_map_writer_mapping = PickleIO.load_file(directory, "." + form_name)
             vector_permutation = dict() # from index at time of saving to current index
             writer_vec = vector_load(directory, filename)

@@ -30,6 +30,7 @@ from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
+        self.V = V
         # Parametrized function to be interpolated
         vector_element = VectorElement(V.ufl_element())
         f_expression = (

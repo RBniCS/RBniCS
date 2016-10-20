@@ -25,16 +25,13 @@
 import os
 from numpy import isclose
 from dolfin import *
-from RBniCS.backends.fenics import evaluate, ProjectedParametrizedTensor
+from RBniCS.backends.fenics import evaluate, ParametrizedTensorFactory
 from RBniCS.backends.fenics.wrapping import tensor_load, tensor_save
 
-# Keep an override of tensor save handy that disables saving.
-# This override can be used to check import with different
-# number of processors
-"""
-def tensor_save(tensor, directory, filename):
-    pass
-"""
+# Possibly disable saving to file. This bool can be used to 
+# check loading with a number of processors different from
+# the one originally used when saving.
+skip_tensor_save = False
 
 # Make output directory, if necessary
 try: 
@@ -51,20 +48,22 @@ u = TrialFunction(V)
 v = TestFunction(V)
 
 form_1 = v*dx
-projected_tensor_1 = ProjectedParametrizedTensor(form_1, V)
-evaluate_1 = evaluate(projected_tensor_1)
+tensor_1 = ParametrizedTensorFactory(form_1)
+evaluate_1 = evaluate(tensor_1)
 
-tensor_save(evaluate_1, "test_tensor_io.output_dir", "test_tensor_io_1_elliptic")
-evaluate_1_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_1_elliptic", V)
+if not skip_tensor_save:
+    tensor_save(evaluate_1, "test_tensor_io.output_dir", "test_tensor_io_1_elliptic")
+evaluate_1_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_1_elliptic", (V, ))
 
 assert isclose(evaluate_1.array(), evaluate_1_read.array()).all()
 
 form_2 = u*v*dx
-projected_tensor_2 = ProjectedParametrizedTensor(form_2, V)
-evaluate_2 = evaluate(projected_tensor_2)
+tensor_2 = ParametrizedTensorFactory(form_2)
+evaluate_2 = evaluate(tensor_2)
 
-tensor_save(evaluate_2, "test_tensor_io.output_dir", "test_tensor_io_2_elliptic")
-evaluate_2_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_2_elliptic", V)
+if not skip_tensor_save:
+    tensor_save(evaluate_2, "test_tensor_io.output_dir", "test_tensor_io_2_elliptic")
+evaluate_2_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_2_elliptic", (V, V))
 
 assert isclose(evaluate_2.array(), evaluate_2_read.array()).all()
 
@@ -79,19 +78,49 @@ v = TestFunction(V)
 (v_0, v_1) = split(v)
 
 form_1 = v_0[0]*dx + v_0[1]*dx + v_1*dx
-projected_tensor_1 = ProjectedParametrizedTensor(form_1, V)
-evaluate_1 = evaluate(projected_tensor_1)
+tensor_1 = ParametrizedTensorFactory(form_1)
+evaluate_1 = evaluate(tensor_1)
 
-tensor_save(evaluate_1, "test_tensor_io.output_dir", "test_tensor_io_1_mixed")
-evaluate_1_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_1_mixed", V)
+if not skip_tensor_save:
+    tensor_save(evaluate_1, "test_tensor_io.output_dir", "test_tensor_io_1_mixed")
+evaluate_1_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_1_mixed", (V, ))
 
 assert isclose(evaluate_1.array(), evaluate_1_read.array()).all()
 
 form_2 = inner(u_0, v_0)*dx + u_1*v_1*dx + u_0[0]*v_1*dx + u_1*v_0[1]*dx
-projected_tensor_2 = ProjectedParametrizedTensor(form_2, V)
-evaluate_2 = evaluate(projected_tensor_2)
+tensor_2 = ParametrizedTensorFactory(form_2)
+evaluate_2 = evaluate(tensor_2)
 
-tensor_save(evaluate_2, "test_tensor_io.output_dir", "test_tensor_io_2_mixed")
-evaluate_2_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_2_mixed", V)
+if not skip_tensor_save:
+    tensor_save(evaluate_2, "test_tensor_io.output_dir", "test_tensor_io_2_mixed")
+evaluate_2_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_2_mixed", (V, V))
 
 assert isclose(evaluate_2.array(), evaluate_2_read.array()).all()
+
+# ~~~ Collapsed case ~~~ #
+U = FunctionSpace(mesh, element)
+V = U.sub(0).collapse()
+u = TrialFunction(U)
+(u_0, u_1) = split(u)
+v = TestFunction(V)
+
+form_1 = v[0]*dx + v[1]*dx
+tensor_1 = ParametrizedTensorFactory(form_1)
+evaluate_1 = evaluate(tensor_1)
+
+if not skip_tensor_save:
+    tensor_save(evaluate_1, "test_tensor_io.output_dir", "test_tensor_io_1_collapsed")
+evaluate_1_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_1_collapsed", (V, ))
+
+assert isclose(evaluate_1.array(), evaluate_1_read.array()).all()
+
+form_2 = inner(u_0, v)*dx + u_1*v[0]*dx
+tensor_2 = ParametrizedTensorFactory(form_2)
+evaluate_2 = evaluate(tensor_2)
+
+if not skip_tensor_save:
+    tensor_save(evaluate_2, "test_tensor_io.output_dir", "test_tensor_io_2_collapsed")
+evaluate_2_read = tensor_load("test_tensor_io.output_dir", "test_tensor_io_2_collapsed", (V, U))
+
+assert isclose(evaluate_2.array(), evaluate_2_read.array()).all()
+

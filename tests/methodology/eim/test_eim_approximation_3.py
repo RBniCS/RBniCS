@@ -30,6 +30,7 @@ from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
+        self.V = V
         # Parametrized function to be interpolated
         f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
         #

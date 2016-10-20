@@ -30,6 +30,7 @@ from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, subdomains, expression_type, basis_generation):
+        self.V = V
         # Parametrized function to be interpolated
         f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
         # Subdomain measure
@@ -61,7 +62,7 @@ subdomains = MeshFunction("size_t", mesh, "../../../tutorials/01_tblock/data/tbl
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the ParametrizedFunctionApproximation class
-expression_type = "Vector" # Function or Vector or Matrix
+expression_type = "Function" # Function or Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
 parametrized_function_approximation = ParametrizedFunctionApproximation(V, subdomains, expression_type, basis_generation)
 mu_range = [(-1.0, 1.0), (-1.0, 1.0)]

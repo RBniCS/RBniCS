@@ -28,7 +28,6 @@ from mpi4py.MPI import Op
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.wrapping_utils import build_dof_map_writer_mapping, get_form_name, get_form_argument
-from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.utils.mpi import is_io_process
 from RBniCS.utils.io import PickleIO
 
@@ -62,12 +61,8 @@ def permutation_save(tensor, directory, form, form_name, mpi_comm):
     if not PickleIO.exists_file(directory, "." + form_name):
         assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
         if isinstance(tensor, Matrix.Type()):
-            arguments_0 = get_form_argument(form, 0)
-            arguments_1 = get_form_argument(form, 1)
-            assert len(arguments_0) == 1
-            assert len(arguments_1) == 1
-            V_0 = arguments_0[0].function_space()
-            V_1 = arguments_1[0].function_space()
+            V_0 = get_form_argument(form, 0).function_space()
+            V_1 = get_form_argument(form, 1).function_space()
             V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
             V_1__dof_map_writer_mapping = build_dof_map_writer_mapping(V_1)
             matrix_row_mapping = dict() # from processor dependent row indices to processor independent tuple
@@ -85,9 +80,7 @@ def permutation_save(tensor, directory, form, form_name, mpi_comm):
             gathered_matrix_mapping = (gathered_matrix_row_mapping, gathered_matrix_col_mapping)
             PickleIO.save_file(gathered_matrix_mapping, directory, "." + form_name)
         elif isinstance(tensor, Vector.Type()):
-            arguments_0 = get_form_argument(form, 0)
-            assert len(arguments_0) == 1
-            V_0 = arguments_0[0].function_space()
+            V_0 = get_form_argument(form, 0).function_space()
             V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
             vector_mapping = dict() # from processor dependent indices to processor independent tuple
             vec = as_backend_type(tensor).vec()

@@ -23,5 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 def get_mpi_comm(V):
+    if isinstance(V, tuple):
+        assert len(V) in (1, 2)
+        V = V[0]
     return V.mesh().mpi_comm().tompi4py()
 
