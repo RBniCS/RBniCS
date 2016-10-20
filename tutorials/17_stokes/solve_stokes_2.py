@@ -56,7 +56,6 @@ class Stokes(SaddlePointProblem):
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         #
-        self.inlet = Expression(("- 1./0.25*(x[1] - 1)*(2 - x[1])", "0."), degree=2)
         self.f = Constant((0.0, -10.0))
         self.g = Constant(0.0)
         # Store parametrized tensors related to shape parametrization
@@ -221,8 +220,6 @@ pod_galerkin_method = PODGalerkin(stokes_problem)
 pod_galerkin_method.set_Nmax(50, EIM={"a": 3, "b": 3, "bt": 3, "bt_restricted": 3, "f": 1, "g": 1})
 
 # 5. Perform the offline phase
-lifting_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
-stokes_problem.set_mu(lifting_mu)
 pod_galerkin_method.set_xi_train(100, EIM={"a": 4, "b": 4, "bt": 4, "bt_restricted": 4, "f": 2, "g": 2})
 reduced_stokes_problem = pod_galerkin_method.offline()
 

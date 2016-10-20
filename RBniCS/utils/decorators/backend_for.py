@@ -252,5 +252,6 @@ def dict_of(types_from, types_to):
 
 from numpy import float64
 ThetaType = (tuple_of(float), tuple_of(float64),  tuple_of(int), tuple_of((float, float64)), tuple_of((float, int)), tuple_of((float64, int)), tuple_of((float, float64, int)))
+DictOfThetaType = tuple(dict_of(str, theta_subtype) for theta_subtype in ThetaType)
 OnlineSizeType = (int, dict_of(str, int))
 

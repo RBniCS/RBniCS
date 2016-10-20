@@ -50,38 +50,52 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
             
     def __abs__(self, other):
         output = MatrixBaseType.__abs__(self)
-        self._arithmetic_operations_preserve_M_N(None, output, other_is_matrix=False)
+        self._arithmetic_operations_preserve_attributes(None, output, other_is_matrix=False)
         return output
         
     def __add__(self, other):
         output = MatrixBaseType.__add__(self, other)
-        self._arithmetic_operations_preserve_M_N(other, output)
+        self._arithmetic_operations_preserve_attributes(other, output)
         return output
         
     def __sub__(self, other):
         output = MatrixBaseType.__sub__(self, other)
-        self._arithmetic_operations_preserve_M_N(other, output)
+        self._arithmetic_operations_preserve_attributes(other, output)
         return output
         
     def __mul__(self, other):
         output = MatrixBaseType.__mul__(self, other)
         if isinstance(other, float):
-            self._arithmetic_operations_preserve_M_N(other, output, other_is_matrix=False)
+            self._arithmetic_operations_preserve_attributes(other, output, other_is_matrix=False)
         return output
         
     def __rmul__(self, other):
         output = MatrixBaseType.__rmul__(self, other)
         if isinstance(other, float):
-            self._arithmetic_operations_preserve_M_N(other, output, other_is_matrix=False)
+            self._arithmetic_operations_preserve_attributes(other, output, other_is_matrix=False)
         return output
         
-    def _arithmetic_operations_preserve_M_N(self, other, output, other_is_matrix=True):
+    def _arithmetic_operations_preserve_attributes(self, other, output, other_is_matrix=True):
         # Preserve M and N
         if other_is_matrix:
             assert self.M == other.M
             assert self.N == other.N
         output.M = self.M
         output.N = self.N
+        # Preserve auxiliary attributes related to basis functions matrix
+        assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
+        assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")
+        if hasattr(self, "_basis_component_index_to_component_name"):
+            if other_is_matrix:
+                assert hasattr(other, "_basis_component_index_to_component_name")
+                assert hasattr(other, "_component_name_to_basis_component_index")
+                assert hasattr(other, "_component_name_to_basis_component_length")
+                assert self._basis_component_index_to_component_name == other._basis_component_index_to_component_name
+                assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
+                assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
+            output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
+            output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
+            output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
         
     
 from numpy import zeros as _MatrixContent_Base

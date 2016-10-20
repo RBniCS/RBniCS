@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractmethod, abstractonlinemethod, abstractproperty
-from RBniCS.utils.decorators.backend_for import BackendFor, backend_for, dict_of, list_of, OnlineSizeType, ThetaType, tuple_of
+from RBniCS.utils.decorators.backend_for import BackendFor, backend_for, dict_of, DictOfThetaType, list_of, OnlineSizeType, ThetaType, tuple_of
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.exact_problem import ExactProblem
 from RBniCS.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
@@ -52,6 +52,7 @@ __all__ = [
     'BackendFor',
     'backend_for',
     'dict_of',
+    'DictOfThetaType',
     'ExactProblem',
     'get_problem_from_solution',
     'get_reduced_problem_from_basis_functions_matrix',
