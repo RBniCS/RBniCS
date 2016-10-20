@@ -52,6 +52,9 @@ class ExportableList(object):
             self._list.extend(other_list._list)
         else:
             self._list.extend(other_list)
+            
+    def save(self, directory, filename):
+        self._FileIO.save_file(self._list, directory, filename)
     
     # Returns True if it was possible to import the list,
     # or if the list had been already imported so no further
@@ -64,9 +67,6 @@ class ExportableList(object):
             return True
         else:
             return False
-        
-    def save(self, directory, filename):
-        self._FileIO.save_file(self._list, directory, filename)
                          
     def __getitem__(self, key):
         return self._list[key]

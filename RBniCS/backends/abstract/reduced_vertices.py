@@ -34,11 +34,11 @@ class ReducedVertices(object):
         pass
         
     @abstractmethod
-    def load(self, directory, filename):
+    def save(self, directory, filename):
         pass
         
     @abstractmethod
-    def save(self, directory, filename):
+    def load(self, directory, filename):
         pass
         
     @abstractmethod

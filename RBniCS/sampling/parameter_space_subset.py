@@ -55,6 +55,12 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         self._list = is_io_process.mpi_comm.bcast(self._list, root=0)
         
     @override
+    def save(self, directory, filename):
+        ExportableList.save(self, directory, filename)
+        # Also save box
+        self._FileIO.save_file(self.box, directory, filename + "_box")
+        
+    @override
     def load(self, directory, filename):
         result = ExportableList.load(self, directory, filename)
         if not result:
@@ -68,12 +74,6 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             if box_range[0] != loaded_box_range[0] or box_range[1] != loaded_box_range[1]:
                 return False
         return True
-        
-    @override
-    def save(self, directory, filename):
-        ExportableList.save(self, directory, filename)
-        # Also save box
-        self._FileIO.save_file(self.box, directory, filename + "_box")
         
     def max(self, generator, postprocessor=None):
         if postprocessor is None:

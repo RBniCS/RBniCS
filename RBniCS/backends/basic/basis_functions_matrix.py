@@ -108,6 +108,15 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         self._precomputed_slices = dict()
         
     @override
+    def save(self, directory, filename):
+        if len(self._components) > 1:
+            for (component_name, basis_functions) in self._components.iteritems():
+                basis_functions.save(directory, filename + "_component_" + component_name)
+        else:
+            component_0 = self._components.keys()[0]
+            self._components[component_0].save(directory, filename)
+        
+    @override
     def load(self, directory, filename):
         return_value = True
         assert len(self._components) > 0
@@ -126,15 +135,6 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         self._prepare_trivial_precomputed_slice()
         # Return
         return return_value
-        
-    @override
-    def save(self, directory, filename):
-        if len(self._components) > 1:
-            for (component_name, basis_functions) in self._components.iteritems():
-                basis_functions.save(directory, filename + "_component_" + component_name)
-        else:
-            component_0 = self._components.keys()[0]
-            self._components[component_0].save(directory, filename)
         
     @override
     def __mul__(self, other):

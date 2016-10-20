@@ -65,6 +65,17 @@ class TensorsList(AbstractTensorsList):
         self._precomputed_slices = dict()
         
     @override
+    def save(self, directory, filename):
+        self._save_Nmax(directory, filename)
+        for (index, fun) in enumerate(self._list):
+            self.wrapping.tensor_save(fun, directory, filename + "_" + str(index))
+                
+    def _save_Nmax(self, directory, filename):
+        if is_io_process(self.mpi_comm):
+            with open(str(directory) + "/" + filename + ".length", "w") as length:
+                length.write(str(len(self._list)))
+        
+    @override
     def load(self, directory, filename):
         if len(self._list) > 0: # avoid loading multiple times
             return False
@@ -80,17 +91,6 @@ class TensorsList(AbstractTensorsList):
                 Nmax = int(length.readline())
         Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
         return Nmax
-        
-    @override
-    def save(self, directory, filename):
-        self._save_Nmax(directory, filename)
-        for (index, fun) in enumerate(self._list):
-            self.wrapping.tensor_save(fun, directory, filename + "_" + str(index))
-                
-    def _save_Nmax(self, directory, filename):
-        if is_io_process(self.mpi_comm):
-            with open(str(directory) + "/" + filename + ".length", "w") as length:
-                length.write(str(len(self._list)))
     
     @override
     def __mul__(self, other):

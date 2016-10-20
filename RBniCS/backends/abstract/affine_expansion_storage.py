@@ -30,11 +30,11 @@ class AffineExpansionStorage(object):
         pass
         
     @abstractonlinemethod
-    def load(self, directory, filename):
+    def save(self, directory, filename):
         pass
         
     @abstractonlinemethod
-    def save(self, directory, filename):
+    def load(self, directory, filename):
         pass
     
     @abstractmethod

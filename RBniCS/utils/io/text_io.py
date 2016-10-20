@@ -31,12 +31,6 @@ import numpy
 from RBniCS.utils.mpi import is_io_process
 
 class TextIO(object):
-    
-    ## Load a variable from file
-    @staticmethod
-    def load_file(directory, filename):
-        raise NotImplementedError("File loading is not implemented yet for text files")
-    
     ## Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
@@ -45,6 +39,11 @@ class TextIO(object):
                 for (i, content_i) in enumerate(content):
                     outfile.write(str(i) + " " + str(content_i) + "\n")
         is_io_process.mpi_comm.barrier()
+        
+    ## Load a variable from file
+    @staticmethod
+    def load_file(directory, filename):
+        raise NotImplementedError("File loading is not implemented yet for text files")
             
     ## Check if the file exists
     @staticmethod

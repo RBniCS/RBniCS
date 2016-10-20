@@ -53,17 +53,17 @@ class ReducedVertices(AbstractReducedVertices):
         component = vertex_and_component[1]
         self._vertex_list.append(vertex)
         self._component_list.append(component)
-    
-    @override
-    def load(self, directory, filename):
-        vertex_import_successful = self._vertex_list.load(directory, filename + "_vertices")
-        component_import_successful = self._component_list.load(directory, filename + "_components")
-        return vertex_import_successful and component_import_successful
         
     @override
     def save(self, directory, filename):
         self._vertex_list.save(directory, filename + "_vertices")
         self._component_list.save(directory, filename + "_components")
+        
+    @override
+    def load(self, directory, filename):
+        vertex_import_successful = self._vertex_list.load(directory, filename + "_vertices")
+        component_import_successful = self._component_list.load(directory, filename + "_components")
+        return vertex_import_successful and component_import_successful
         
     @override
     def __getitem__(self, key):

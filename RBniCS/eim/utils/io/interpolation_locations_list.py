@@ -48,6 +48,13 @@ class InterpolationLocationsList(ExportableList):
         self.processors_id = list()
         
     @override
+    def save(self, directory, filename):
+        ExportableList.save(self, directory, filename)
+        # If DEIM, we also need to save the reduced mesh
+        if self.method == "DEIM":
+            self.expression.reduced_mesh.save(directory, filename + "_reduced_mesh")
+        
+    @override
     def load(self, directory, filename):
         return_value = ExportableList.load(self, directory, filename)
         # Make sure to update the processor ids
@@ -60,13 +67,6 @@ class InterpolationLocationsList(ExportableList):
             return_value_2 = self.expression.reduced_mesh.load(directory, filename + "_reduced_mesh")
             assert return_value == return_value_2
         return return_value
-        
-    @override
-    def save(self, directory, filename):
-        ExportableList.save(self, directory, filename)
-        # If DEIM, we also need to save the reduced mesh
-        if self.method == "DEIM":
-            self.expression.reduced_mesh.save(directory, filename + "_reduced_mesh")
         
     @override
     def append(self, location):

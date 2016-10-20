@@ -46,11 +46,11 @@ class FunctionsList(object):
         pass
         
     @abstractmethod
-    def load(self, directory, filename):
+    def save(self, directory, filename):
         pass
         
     @abstractmethod
-    def save(self, directory, filename):
+    def load(self, directory, filename):
         pass
         
     # self * other [used e.g. to compute Z*u_N or S*eigv]

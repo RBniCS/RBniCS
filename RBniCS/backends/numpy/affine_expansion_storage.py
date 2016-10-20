@@ -66,6 +66,34 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._basis_component_index_to_component_name = None # will be filled in in __setitem__, if required
         self._component_name_to_basis_component_index = None # will be filled in in __setitem__, if required
         self._component_name_to_basis_component_length = None # will be filled in in __setitem__, if required
+        
+    @override
+    def save(self, directory, filename):
+        assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
+        # Get full directory name
+        full_directory = Folders.Folder(directory + "/" + filename)
+        full_directory.create()
+        # Save affine expansion
+        AffineExpansionStorageContent_IO.save_file(self._content, full_directory, "content")
+        # Save dicts
+        DictIO.save_file(self._basis_component_index_to_component_name, full_directory, "basis_component_index_to_component_name")
+        DictIO.save_file(self._component_name_to_basis_component_index, full_directory, "component_name_to_basis_component_index")
+        DictIO.save_file(self._component_name_to_basis_component_length, full_directory, "component_name_to_basis_component_length")
+        # Save size
+        it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+        item = self._content[it.multi_index]
+        assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), float)) # these are the only types which we are interested in saving
+        if isinstance(item, OnlineMatrix.Type()):
+            ContentTypeIO.save_file("matrix", full_directory, "content_type")
+            ContentSizeIO.save_file((item.M, item.N), full_directory, "content_size")
+        elif isinstance(item, OnlineVector.Type()):
+            ContentTypeIO.save_file("vector", full_directory, "content_type")
+            ContentSizeIO.save_file(item.N, full_directory, "content_size")
+        elif isinstance(item, float):
+            ContentTypeIO.save_file("scalar", full_directory, "content_type")
+            ContentSizeIO.save_file(None, full_directory, "content_size")
+        else: # impossible to arrive here anyway thanks to the assert
+            raise AssertionError("Invalid content type.")
     
     @override
     def load(self, directory, filename):
@@ -131,34 +159,6 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         elif isinstance(item, OnlineVector.Type()):
             slice_0 = tuple(range(item.shape[0]))
             self._precomputed_slices[(slice_0, )] = self
-                
-    @override
-    def save(self, directory, filename):
-        assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
-        # Get full directory name
-        full_directory = Folders.Folder(directory + "/" + filename)
-        full_directory.create()
-        # Save affine expansion
-        AffineExpansionStorageContent_IO.save_file(self._content, full_directory, "content")
-        # Save dicts
-        DictIO.save_file(self._basis_component_index_to_component_name, full_directory, "basis_component_index_to_component_name")
-        DictIO.save_file(self._component_name_to_basis_component_index, full_directory, "component_name_to_basis_component_index")
-        DictIO.save_file(self._component_name_to_basis_component_length, full_directory, "component_name_to_basis_component_length")
-        # Save size
-        it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
-        item = self._content[it.multi_index]
-        assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), float)) # these are the only types which we are interested in saving
-        if isinstance(item, OnlineMatrix.Type()):
-            ContentTypeIO.save_file("matrix", full_directory, "content_type")
-            ContentSizeIO.save_file((item.M, item.N), full_directory, "content_size")
-        elif isinstance(item, OnlineVector.Type()):
-            ContentTypeIO.save_file("vector", full_directory, "content_type")
-            ContentSizeIO.save_file(item.N, full_directory, "content_size")
-        elif isinstance(item, float):
-            ContentTypeIO.save_file("scalar", full_directory, "content_type")
-            ContentSizeIO.save_file(None, full_directory, "content_size")
-        else: # impossible to arrive here anyway thanks to the assert
-            raise AssertionError("Invalid content type.")
         
     def as_matrix(self):
         if self._content_as_matrix is None:

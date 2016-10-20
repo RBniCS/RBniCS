@@ -34,13 +34,6 @@ import os # for path
 from RBniCS.utils.mpi import is_io_process
 
 class PickleIO(object):
-    
-    ## Load a variable from file
-    @staticmethod
-    def load_file(directory, filename):
-        with open(str(directory) + "/" + filename + ".pkl", "rb") as infile:
-            return pickle.load(infile)
-    
     ## Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
@@ -48,6 +41,12 @@ class PickleIO(object):
             with open(str(directory) + "/" + filename + ".pkl", "wb") as outfile:
                 pickle.dump(content, outfile, protocol=pickle.HIGHEST_PROTOCOL)
         is_io_process.mpi_comm.barrier()
+        
+    ## Load a variable from file
+    @staticmethod
+    def load_file(directory, filename):
+        with open(str(directory) + "/" + filename + ".pkl", "rb") as infile:
+            return pickle.load(infile)
             
     ## Check if the file exists
     @staticmethod
