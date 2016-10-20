@@ -22,6 +22,29 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-# ProjectedParametrizedExpression is not provided for NumPy backend because
-# we are not interested in applying (standard) EIM on NumPy
+from RBniCS.utils.decorators import AbstractBackend, abstractmethod
+
+@AbstractBackend
+class ParametrizedExpressionFactory(object):
+    def __init__(self, expression):
+        pass
+    
+    @abstractmethod
+    def create_interpolation_locations_container(self):
+        pass
         
+    @abstractmethod
+    def create_snapshots_container(self):
+        pass
+        
+    @abstractmethod
+    def create_basis_container(self):
+        pass
+        
+    @abstractmethod
+    def create_POD_container(self):
+        pass
+        
+    def interpolation_method_name(self):
+        return "EIM"
+            

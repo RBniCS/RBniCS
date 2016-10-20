@@ -72,6 +72,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
             
     expression = Expression(parametrized_expression_code, *args, **kwargs)
     expression.mu = mu # to avoid repeated assignments
+    expression.mesh = truth_problem.V.mesh()
         
     standard_set_mu = truth_problem.set_mu
     def overridden_set_mu(self, mu):

@@ -26,8 +26,8 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from RBniCS.backends.abstract.projected_parametrized_expression import ProjectedParametrizedExpression
-from RBniCS.backends.abstract.projected_parametrized_tensor import ProjectedParametrizedTensor
+from RBniCS.backends.abstract.parametrized_expression_factory import ParametrizedExpressionFactory
+from RBniCS.backends.abstract.parametrized_tensor_factory import ParametrizedTensorFactory
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.decorators import Extends, override
 
@@ -37,10 +37,10 @@ class InterpolationLocationsList(ExportableList):
     def __init__(self, expression):
         ExportableList.__init__(self, "pickle")
         self.expression = expression
-        assert isinstance(expression, (ProjectedParametrizedExpression, ProjectedParametrizedTensor))
-        if isinstance(expression, ProjectedParametrizedExpression):
+        assert isinstance(expression, (ParametrizedExpressionFactory, ParametrizedTensorFactory))
+        if isinstance(expression, ParametrizedExpressionFactory):
             self.method = "EIM"
-        elif isinstance(expression, ProjectedParametrizedTensor):
+        elif isinstance(expression, ParametrizedTensorFactory):
             self.method = "DEIM"
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to InterpolationLocationsList")            

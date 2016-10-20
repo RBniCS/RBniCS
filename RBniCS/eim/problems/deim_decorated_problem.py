@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from itertools import product as cartesian_product
-from RBniCS.backends import ProjectedParametrizedTensor, SeparatedParametrizedForm
+from RBniCS.backends import ParametrizedTensorFactory, SeparatedParametrizedForm
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 
@@ -56,7 +56,7 @@ def DEIMDecoratedProblem(
                     for (q, form_q) in enumerate(forms):
                         separated_form_q = SeparatedParametrizedForm(form_q)
                         if separated_form_q.is_parametrized():
-                            self.DEIM_approximations[term][q] = DEIMApproximation(self, ProjectedParametrizedTensor(form_q, self.V), type(self).__name__ + "/deim/" + separated_form_q.name(), basis_generation)
+                            self.DEIM_approximations[term][q] = DEIMApproximation(self, ParametrizedTensorFactory(form_q), type(self).__name__ + "/deim/" + separated_form_q.name(), basis_generation)
                         else:
                             self.non_DEIM_forms[term][q] = form_q
                 

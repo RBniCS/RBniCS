@@ -37,9 +37,9 @@ from RBniCS.backends.numpy.linear_solver import LinearSolver
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.max import max
 #from RBniCS.backends.numpy.mesh_motion import MeshMotion
+#from RBniCS.backends.numpy.parametrized_expression_factory import ParametrizedExpressionFactory
+#from RBniCS.backends.numpy.parametrized_tensor_factory import ParametrizedTensorFactory
 from RBniCS.backends.numpy.product import product
-#from RBniCS.backends.numpy.projected_parametrized_expression import ProjectedParametrizedExpression
-#from RBniCS.backends.numpy.projected_parametrized_tensor import ProjectedParametrizedTensor
 from RBniCS.backends.numpy.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 #from RBniCS.backends.numpy.reduced_mesh import ReducedMesh
 #from RBniCS.backends.numpy.reduced_vertices import ReducedVertices
@@ -69,9 +69,9 @@ __all__ = [
     'Matrix',
     'max',
 #    'MeshMotion',
+#    'ParametrizedExpressionFactory',
+#    'ParametrizedTensorFactory',
     'product',
-#    'ProjectedParametrizedExpression',
-#    'ProjectedParametrizedTensor',
     'ProperOrthogonalDecomposition',
 #    'ReducedMesh',
 #    'ReducedVertices',

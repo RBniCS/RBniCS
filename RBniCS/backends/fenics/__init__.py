@@ -45,9 +45,9 @@ from RBniCS.backends.fenics.linear_solver import LinearSolver
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.max import max
 from RBniCS.backends.fenics.mesh_motion import MeshMotion
+from RBniCS.backends.fenics.parametrized_expression_factory import ParametrizedExpressionFactory
+from RBniCS.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
 from RBniCS.backends.fenics.product import product
-from RBniCS.backends.fenics.projected_parametrized_expression import ProjectedParametrizedExpression
-from RBniCS.backends.fenics.projected_parametrized_tensor import ProjectedParametrizedTensor
 from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
@@ -77,9 +77,9 @@ __all__ = [
     'Matrix',
     'max',
     'MeshMotion',
+    'ParametrizedExpressionFactory',
+    'ParametrizedTensorFactory',
     'product',
-    'ProjectedParametrizedExpression',
-    'ProjectedParametrizedTensor',
     'ProperOrthogonalDecomposition',
     'ReducedMesh',
     'ReducedVertices',

@@ -22,10 +22,29 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import ProjectedParametrizedTensor as AbstractProjectedParametrizedTensor
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
-# ProjectedParametrizedExpression is not provided for NumPy backend because
-# we are not interested in applying DEIM on NumPy
+@AbstractBackend
+class ParametrizedTensorFactory(object):
+    def __init__(self, tensor):
+        pass
+    
+    @abstractmethod
+    def create_interpolation_locations_container(self):
+        pass
+        
+    @abstractmethod
+    def create_snapshots_container(self):
+        pass
+        
+    @abstractmethod
+    def create_basis_container(self):
+        pass
+        
+    @abstractmethod
+    def create_POD_container(self):
+        pass
+        
+    def interpolation_method_name(self):
+        return "DEIM"
         

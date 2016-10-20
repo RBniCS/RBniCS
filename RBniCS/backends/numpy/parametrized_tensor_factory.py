@@ -22,29 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import AbstractBackend, abstractmethod
-
-@AbstractBackend
-class ProjectedParametrizedExpression(object):
-    def __init__(self, expression, space):
-        pass
-    
-    @abstractmethod
-    def create_interpolation_locations_container(self):
-        pass
+# ParametrizedTensorFactory is not provided for NumPy backend because
+# we are not interested in applying DEIM on NumPy
         
-    @abstractmethod
-    def create_snapshots_container(self):
-        pass
-        
-    @abstractmethod
-    def create_basis_container(self):
-        pass
-        
-    @abstractmethod
-    def create_POD_container(self):
-        pass
-        
-    def interpolation_method_name(self):
-        return "EIM"
-            

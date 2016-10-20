@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import assemble, dx, Expression, FunctionSpace, inner, Point, TensorElement, TestFunction, TrialFunction, VectorElement
-from RBniCS.backends.abstract import ProjectedParametrizedExpression as AbstractProjectedParametrizedExpression
+from RBniCS.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
 from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
@@ -31,13 +31,13 @@ from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 
-@Extends(AbstractProjectedParametrizedExpression)
-@BackendFor("FEniCS", inputs=(Expression, FunctionSpace))
-class ProjectedParametrizedExpression(AbstractProjectedParametrizedExpression):
-    def __init__(self, expression, original_space):
-        AbstractProjectedParametrizedExpression.__init__(self, expression, original_space)
+@Extends(AbstractParametrizedExpressionFactory)
+@BackendFor("FEniCS", inputs=(Expression, ))
+class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
+    def __init__(self, expression):
+        AbstractParametrizedExpressionFactory.__init__(self, expression)
         self._expression = expression
-        self._space = FunctionSpace(original_space.mesh(), expression.ufl_element())
+        self._space = FunctionSpace(expression.mesh, expression.ufl_element())
             
     @override
     def create_interpolation_locations_container(self):
