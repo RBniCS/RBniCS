@@ -120,7 +120,8 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
     # Perform an online evaluation of the output
     @override
     def output(self):
-        return 0. # TODO
+        self._output = 1. # TODO
+        return self._output
         
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
@@ -151,12 +152,16 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
         truth_solution = truth_solution_and_output[0]
         error = difference(truth_solution, reduced_solution)
         velocity_inner_product = self.truth_problem.inner_product["u"][0]
+        velocity_exact_norm_squared = transpose(truth_solution.vector())*velocity_inner_product*truth_solution.vector()
         velocity_error_norm_squared = transpose(error.vector())*velocity_inner_product*error.vector()
         pressure_inner_product = self.truth_problem.inner_product["p"][0]
+        pressure_exact_norm_squared = transpose(truth_solution.vector())*pressure_inner_product*truth_solution.vector()
         pressure_error_norm_squared = transpose(error.vector())*pressure_inner_product*error.vector()
         # Compute the error on the output
-        error_output = abs(truth_solution_and_output[1] - reduced_solution_and_output[1])
-        return (sqrt(velocity_error_norm_squared), sqrt(pressure_error_norm_squared), error_output)
+        reduced_output = reduced_solution_and_output[1]
+        truth_output = truth_solution_and_output[1]
+        error_output = abs(truth_output - reduced_output)
+        return (sqrt(velocity_error_norm_squared), sqrt(velocity_error_norm_squared/velocity_exact_norm_squared), sqrt(pressure_error_norm_squared), sqrt(pressure_error_norm_squared/pressure_exact_norm_squared), error_output, error_output/truth_output)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ###########################

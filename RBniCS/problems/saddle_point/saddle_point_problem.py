@@ -124,7 +124,8 @@ class SaddlePointProblem(ParametrizedDifferentialProblem):
     ## Perform a truth evaluation of the output
     @override
     def output(self):
-        return 0. # TODO
+        self._output = 1. # TODO
+        return self._output
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

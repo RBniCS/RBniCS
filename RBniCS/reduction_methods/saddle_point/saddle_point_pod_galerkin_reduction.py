@@ -174,8 +174,11 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
         error_analysis_table = ErrorAnalysisTable(self.xi_test)
         error_analysis_table.set_Nmax(Nmax)
         error_analysis_table.add_column("error_u", group_name="u", operations="mean")
+        error_analysis_table.add_column("relative_error_u", group_name="u", operations="mean")
         error_analysis_table.add_column("error_p", group_name="p", operations="mean")
+        error_analysis_table.add_column("relative_error_p", group_name="p", operations="mean")
         error_analysis_table.add_column("error_j", group_name="j", operations="mean")
+        error_analysis_table.add_column("relative_error_j", group_name="j", operations="mean")
         
         for (run, mu) in enumerate(self.xi_test):
             print("############################## run =", run, "######################################")
@@ -183,7 +186,11 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
             self.reduced_problem.set_mu(mu)
                         
             for n in range(1, Nmax + 1): # n = 1, ... Nmax
-                (error_analysis_table["error_u", n, run], error_analysis_table["error_p", n, run], error_analysis_table["error_j", n, run]) = self.reduced_problem.compute_error(n, **kwargs)
+                (
+                    error_analysis_table["error_u", n, run], error_analysis_table["relative_error_u", n, run], 
+                    error_analysis_table["error_p", n, run], error_analysis_table["relative_error_p", n, run], 
+                    error_analysis_table["error_j", n, run], error_analysis_table["relative_error_j", n, run]
+                ) = self.reduced_problem.compute_error(n, **kwargs)
         
         # Print
         print("")
