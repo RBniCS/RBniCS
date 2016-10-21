@@ -24,6 +24,7 @@
 
 from dolfin import *
 from RBniCS import *
+from sampling import LinearlyDependentUniformDistribution
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 17: STOKES CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @EIM()
@@ -211,25 +212,25 @@ mu_range = [ \
     (0.5, 1.5), \
     (0.5, 1.5), \
     (0.5, 1.5), \
-    (0., pi/3.) \
+    (0., pi/6.) \
 ]
 stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(stokes_problem)
-pod_galerkin_method.set_Nmax(50, EIM={"a": 3, "b": 3, "bt": 3, "bt_restricted": 3, "f": 1, "g": 1})
+pod_galerkin_method.set_Nmax(25, EIM={"a": 3, "b": 3, "bt": 3, "bt_restricted": 3, "f": 1, "g": 1})
 
 # 5. Perform the offline phase
-pod_galerkin_method.set_xi_train(100, EIM={"a": 4, "b": 4, "bt": 4, "bt_restricted": 4, "f": 2, "g": 2})
+pod_galerkin_method.set_xi_train(100, sampling=LinearlyDependentUniformDistribution(), EIM={"a": 4, "b": 4, "bt": 4, "bt_restricted": 4, "f": 2, "g": 2})
 reduced_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/3.)
+online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
 reduced_stokes_problem.export_solution("Stokes", "online_solution_u", component=0)
 reduced_stokes_problem.export_solution("Stokes", "online_solution_p", component=1)
 
 # 7. Perform an error analysis
-pod_galerkin_method.set_xi_test(100, EIM=10)
+pod_galerkin_method.set_xi_test(100, sampling=LinearlyDependentUniformDistribution(), EIM=10)
 pod_galerkin_method.error_analysis()
