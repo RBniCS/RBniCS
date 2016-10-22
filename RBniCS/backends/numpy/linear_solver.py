@@ -41,39 +41,43 @@ class LinearSolver(AbstractLinearSolver):
         # We should be solving a square system
         assert self.lhs.M == self.lhs.N
         assert self.lhs.N == self.rhs.N
-        # Prepare indices for bcs
-        self.bcs_base_index = None
-        if self.bcs is not None and isinstance(self.rhs.N, dict):
-            # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
-            assert self.lhs._basis_component_index_to_component_name == self.rhs._basis_component_index_to_component_name
-            assert self.lhs._component_name_to_basis_component_index == self.rhs._component_name_to_basis_component_index
-            assert self.lhs._component_name_to_basis_component_length == self.rhs._component_name_to_basis_component_length
-            # Fill in storage
-            self.bcs_base_index = dict() # from component name to first index
-            current_bcs_base_index = 0
-            for (basis_component_index, component_name) in sorted(self.lhs._basis_component_index_to_component_name.iteritems()):
-                self.bcs_base_index[component_name] = current_bcs_base_index
-                current_bcs_base_index += self.rhs.N[component_name]
-                
-    @override
-    def solve(self):
-        if self.bcs is not None:
+        # Apply BCs, if necessary
+        if self.bcs is not None :
             assert isinstance(self.bcs, (tuple, dict))
             if isinstance(self.bcs, tuple):
+                # Apply BCs
                 for (i, bc_i) in enumerate(self.bcs):
                     self.rhs[i] = bc_i
                     self.lhs[i, :] = 0.
                     self.lhs[i, i] = 1.
             elif isinstance(self.bcs, dict):
-                assert self.bcs_base_index is not None
+                # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
+                assert self.lhs._basis_component_index_to_component_name == self.rhs._basis_component_index_to_component_name
+                assert self.lhs._component_name_to_basis_component_index == self.rhs._component_name_to_basis_component_index
+                assert self.lhs._component_name_to_basis_component_length == self.rhs._component_name_to_basis_component_length
+                # Fill in storage
+                bcs_base_index = dict() # from component name to first index
+                current_bcs_base_index = 0
+                for (basis_component_index, component_name) in sorted(self.lhs._basis_component_index_to_component_name.iteritems()):
+                    bcs_base_index[component_name] = current_bcs_base_index
+                    current_bcs_base_index += self.rhs.N[component_name]
+                # Apply BCs
                 for (component_name, component_bc) in self.bcs.iteritems():
                     for (i, bc_i) in enumerate(component_bc):
-                        block_i = self.bcs_base_index[component_name] + i
+                        block_i = bcs_base_index[component_name] + i
                         self.rhs[block_i] = bc_i
                         self.lhs[block_i, :] = 0.
                         self.lhs[block_i, block_i] = 1.
             else:
                 raise AssertionError("Invalid bc in LinearSolver.solve().")
+                
+    @override
+    def set_parameters(self, parameters):
+        assert len(parameters) == 0, "NumPy linear solver does not accept parameters yet"
+                
+    @override
+    def solve(self):
         solution = solve(self.lhs, self.rhs)
         self.solution.vector()[:] = solution
+        return self.solution
         

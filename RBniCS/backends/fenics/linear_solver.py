@@ -41,17 +41,23 @@ class LinearSolver(AbstractLinearSolver):
             self.lhs = lhs.copy()
             self.rhs = rhs.copy()
             self.bcs = bcs
+            # Apply BCs
+            if self.bcs is not None:
+                assert isinstance(self.bcs, list)
+                for bc in self.bcs:
+                    assert isinstance(bc, DirichletBC)
+                    bc.apply(self.lhs, self.rhs)
         else:
             self.lhs = lhs
             self.rhs = rhs
             self.bcs = bcs
+            
+    @override
+    def set_parameters(self, parameters):
+        assert len(parameters) == 0, "FEniCS linear solver does not accept parameters yet"
         
     @override
     def solve(self):
-        if self.bcs is not None:
-            assert isinstance(self.bcs, list)
-            for bc in self.bcs:
-                assert isinstance(bc, DirichletBC)
-                bc.apply(self.lhs, self.rhs)
         solve(self.lhs, self.solution.vector(), self.rhs)
+        return self.solution
         

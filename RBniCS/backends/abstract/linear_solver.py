@@ -30,5 +30,9 @@ class LinearSolver(object):
         pass
         
     @abstractmethod
+    def set_parameters(self, parameters):
+        pass
+        
+    @abstractmethod
     def solve(self):
         pass
