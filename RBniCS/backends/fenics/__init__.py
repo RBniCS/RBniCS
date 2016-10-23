@@ -45,6 +45,7 @@ from RBniCS.backends.fenics.linear_solver import LinearSolver
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.max import max
 from RBniCS.backends.fenics.mesh_motion import MeshMotion
+from RBniCS.backends.fenics.nonlinear_solver import NonlinearSolver
 from RBniCS.backends.fenics.parametrized_expression_factory import ParametrizedExpressionFactory
 from RBniCS.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
 from RBniCS.backends.fenics.product import product
@@ -77,6 +78,7 @@ __all__ = [
     'Matrix',
     'max',
     'MeshMotion',
+    'NonlinearSolver',
     'ParametrizedExpressionFactory',
     'ParametrizedTensorFactory',
     'product',
