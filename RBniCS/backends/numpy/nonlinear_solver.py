@@ -45,17 +45,42 @@ class NonlinearSolver(AbstractNonlinearSolver):
                     return vector
         """
         self.problem = _NonlinearProblem(residual_eval, solution, bcs, jacobian_eval)
+        # Additional storage which will be setup by set_parameters
+        self._absolute_tolerance = None
+        self._line_search = True
+        self._maximum_iterations = None
+        self._relative_tolerance = None
+        self._report = False
+        self._solution_tolerance = None
                         
     @override
     def set_parameters(self, parameters):
-        assert len(parameters) == 0, "NumPy nonlinear solver does not accept parameters yet"
+        for (key, value) in parameters.iteritems():
+            if key == "absolute_tolerance":
+                self._absolute_tolerance = value
+            elif key == "line_search":
+                self._line_search = value
+            elif key == "maximum_iterations":
+                self._maximum_iterations = value
+            elif key == "relative_tolerance":
+                self._relative_tolerance = value
+            elif key == "report":
+                self._report = value
+            elif key == "solution_tolerance":
+                self._solution_tolerance = value
+            else:
+                raise ValueError("Invalid paramater passed to PETSc SNES object.")
                 
     @override
     def solve(self):
         residual = self.problem.residual
         initial_guess_vector = asarray(self.problem.solution.vector()).reshape(-1)
         jacobian = _Jacobian(self.problem.jacobian)
-        solution_vector = nonlin_solve(residual, initial_guess_vector, jacobian=jacobian, verbose=True)
+        solution_vector = nonlin_solve(
+            residual, initial_guess_vector, jacobian=jacobian, verbose=self._report,
+            f_tol=self._absolute_tolerance, f_rtol=self._relative_tolerance, x_rtol=self._solution_tolerance, maxiter=self._maximum_iterations,
+            line_search=self._line_search
+        )
         self.problem.solution.vector()[:] = solution_vector.reshape((-1, 1))
         return self.problem.solution
         

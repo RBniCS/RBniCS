@@ -150,6 +150,10 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
     dense_solution_array = dense_solution.vector()
     dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
     dense_solver = DenseNonlinearSolver(dense_jacobian_eval, dense_solution, dense_residual_eval, dense_bc)
+    dense_solver.set_parameters({
+        "maximum_iterations": 20,
+        "report": True
+    })
     dense_solver.solve()
     dense_solution_array = dense_solution.vector()
     dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
