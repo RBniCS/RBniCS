@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends.numpy.wrapping_utils.DirichletBC import DirichletBC
 from RBniCS.backends.numpy.wrapping_utils.slice_to_array import slice_to_array
 from RBniCS.backends.numpy.wrapping_utils.slice_to_size import slice_to_size
 

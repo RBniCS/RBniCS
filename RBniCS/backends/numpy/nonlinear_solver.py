@@ -28,6 +28,7 @@ from numpy.linalg import solve
 from scipy.optimize.nonlin import Jacobian, nonlin_solve
 from RBniCS.backends.abstract import NonlinearSolver as AbstractNonlinearSolver
 from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.wrapping_utils import DirichletBC
 from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractNonlinearSolver)
@@ -62,60 +63,25 @@ class _NonlinearProblem(object):
     def __init__(self, residual_eval, solution, bcs, jacobian_eval):
         self.residual_eval = residual_eval
         self.solution = solution
-        self.bcs = bcs
         self.jacobian_eval = jacobian_eval
         # We should be solving a square system
         sample_residual = residual_eval(solution.vector())
         sample_jacobian = jacobian_eval(solution.vector())
         assert sample_jacobian.M == sample_jacobian.N
         assert sample_jacobian.N == sample_residual.N
-        # Make sure to apply BCs to the initial guess, and prepare
-        # additional storage for bcs if necessary
-        if self.bcs is not None:
-            assert isinstance(self.bcs, (tuple, dict))
-            if isinstance(self.bcs, tuple):
-                # No additional storage needed
-                self.bcs_base_index = None
-                # Apply BCs to the initial guess
-                for (i, bc_i) in enumerate(self.bcs):
-                    self.solution.vector()[i] = bc_i
-            elif isinstance(self.bcs, dict):
-                # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
-                assert self.sample_residual._basis_component_index_to_component_name == self.sample_jacobian._basis_component_index_to_component_name
-                assert self.sample_residual._component_name_to_basis_component_index == self.sample_jacobian._component_name_to_basis_component_index
-                assert self.sample_residual._component_name_to_basis_component_length == self.sample_jacobian._component_name_to_basis_component_length
-                # Fill in storage
-                bcs_base_index = dict() # from component name to first index
-                current_bcs_base_index = 0
-                for (basis_component_index, component_name) in sorted(self.lhs._basis_component_index_to_component_name.iteritems()):
-                    bcs_base_index[component_name] = current_bcs_base_index
-                    current_bcs_base_index += self.rhs.N[component_name]
-                self.bcs_base_index = bcs_base_index
-                # Apply BCs to the initial guess
-                for (component_name, component_bc) in self.bcs.iteritems():
-                    for (i, bc_i) in enumerate(component_bc):
-                        block_i = bcs_base_index[component_name] + i
-                        self.solution.vector()[block_i] = bc_i
-            else:
-                raise AssertionError("Invalid bc in _NonlinearProblem.__init__().")
+        # Prepare storage for BCs, if necessary
+        if bcs is not None:
+            self.bcs = DirichletBC(sample_jacobian, sample_residual, bcs)
+            # Apply BCs to initial guess
+            self.bcs.apply_to_vector(self.solution.vector())
+        else:
+            self.bcs = None
         
     def residual(self, solution):
         residual_vector = self.residual_eval(solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
-            assert isinstance(self.bcs, (tuple, dict))
-            if isinstance(self.bcs, tuple):
-                # Apply BCs to the increment
-                for (i, _) in enumerate(self.bcs):
-                    residual_vector[i] = 0.
-            elif isinstance(self.bcs, dict):
-                # Apply BCs to the increment
-                for (component_name, component_bc) in self.bcs.iteritems():
-                    for (i, _) in enumerate(component_bc):
-                        block_i = bcs_base_index[component_name] + i
-                        residual_vector[block_i] = 0.
-            else:
-                raise AssertionError("Invalid bc in _NonlinearProblem.residual().")
+            self.bcs.homogeneous_apply_to_vector(residual_vector)
         # Convert to an array, rather than a matrix with one column, and return
         return asarray(residual_vector).reshape(-1)
         
@@ -123,21 +89,7 @@ class _NonlinearProblem(object):
         jacobian_matrix = self.jacobian_eval(solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
-            assert isinstance(self.bcs, (tuple, dict))
-            if isinstance(self.bcs, tuple):
-                # Apply BCs
-                for (i, _) in enumerate(self.bcs):
-                    jacobian_matrix[i, :] = 0.
-                    jacobian_matrix[i, i] = 1.
-            elif isinstance(self.bcs, dict):
-                # Apply BCs
-                for (component_name, component_bc) in self.bcs.iteritems():
-                    for (i, _) in enumerate(component_bc):
-                        block_i = bcs_base_index[component_name] + i
-                        jacobian_matrix[block_i, :] = 0.
-                        jacobian_matrix[block_i, block_i] = 1.
-            else:
-                raise AssertionError("Invalid bc in _NonlinearProblem.jacobian().")
+            self.bcs.apply_to_matrix(jacobian_matrix)
         # Return
         return jacobian_matrix
         
