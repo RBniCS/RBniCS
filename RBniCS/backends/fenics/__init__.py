@@ -59,6 +59,7 @@ from RBniCS.backends.fenics.sum import sum
 from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
 from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
 from RBniCS.backends.fenics.tensors_list import TensorsList
+from RBniCS.backends.fenics.time_stepping import TimeStepping
 from RBniCS.backends.fenics.transpose import transpose
 from RBniCS.backends.fenics.vector import Vector
 
@@ -92,6 +93,7 @@ __all__ = [
     'TensorBasisList',
     'TensorSnapshotsList',
     'TensorsList',
+    'TimeStepping',
     'transpose',
     'Vector'
 ]
