@@ -78,6 +78,11 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
             self._arithmetic_operations_preserve_attributes(other, output, other_is_vector=False)
         return output
         
+    def __neg__(self):
+        output = VectorBaseType.__neg__(self)
+        self._arithmetic_operations_preserve_attributes(None, output, other_is_vector=False)
+        return output
+        
     def _arithmetic_operations_preserve_attributes(self, other, output, other_is_vector=True):
         # Preserve N
         if other_is_vector:

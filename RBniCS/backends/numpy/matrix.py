@@ -75,6 +75,11 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
             self._arithmetic_operations_preserve_attributes(other, output, other_is_matrix=False)
         return output
         
+    def __neg__(self):
+        output = MatrixBaseType.__neg__(self)
+        self._arithmetic_operations_preserve_attributes(None, output, other_is_matrix=False)
+        return output
+        
     def _arithmetic_operations_preserve_attributes(self, other, output, other_is_matrix=True):
         # Preserve M and N
         if other_is_matrix:
