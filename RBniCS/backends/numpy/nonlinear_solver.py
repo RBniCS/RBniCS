@@ -103,6 +103,9 @@ class _NonlinearProblem(object):
             self.bcs = None
         
     def residual(self, solution):
+        # Convert to a matrix with one column, rather than an array
+        solution = solution.reshape((-1, 1))
+        # Compute residual
         residual_vector = self.residual_eval(solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
@@ -111,6 +114,9 @@ class _NonlinearProblem(object):
         return asarray(residual_vector).reshape(-1)
         
     def jacobian(self, solution):
+        # Convert to a matrix with one column, rather than an array
+        solution = solution.reshape((-1, 1))
+        # Compute jacobian
         jacobian_matrix = self.jacobian_eval(solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
