@@ -142,14 +142,14 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
         # Compute the error on the solution and output
         self.solve(N, **kwargs)
         self.output()
-        return self._compute_error((self.truth_problem._solution, self.truth_problem._output), (self._solution, self._output))
+        return self._compute_error()
         
     # Internal method for error computation
-    def _compute_error(self, truth_solution_and_output, reduced_solution_and_output):
+    def _compute_error(self):
         N = self._solution.vector().N
         # Compute the error on the solution
-        reduced_solution = self.Z[:N]*reduced_solution_and_output[0]
-        truth_solution = truth_solution_and_output[0]
+        reduced_solution = self.Z[:N]*self._solution
+        truth_solution = self.truth_problem._solution
         error = difference(truth_solution, reduced_solution)
         velocity_inner_product = self.truth_problem.inner_product["u"][0]
         velocity_exact_norm_squared = transpose(truth_solution.vector())*velocity_inner_product*truth_solution.vector()
@@ -158,8 +158,8 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
         pressure_exact_norm_squared = transpose(truth_solution.vector())*pressure_inner_product*truth_solution.vector()
         pressure_error_norm_squared = transpose(error.vector())*pressure_inner_product*error.vector()
         # Compute the error on the output
-        reduced_output = reduced_solution_and_output[1]
-        truth_output = truth_solution_and_output[1]
+        reduced_output = self._output
+        truth_output = self.truth_problem._output
         error_output = abs(truth_output - reduced_output)
         return (sqrt(velocity_error_norm_squared), sqrt(velocity_error_norm_squared/velocity_exact_norm_squared), sqrt(pressure_error_norm_squared), sqrt(pressure_error_norm_squared/pressure_exact_norm_squared), error_output, error_output/truth_output)
         

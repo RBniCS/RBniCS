@@ -116,19 +116,19 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
         # Compute the error on the solution and output
         self.solve(N, **kwargs)
         self.output()
-        return self._compute_error((self.truth_problem._solution, self.truth_problem._output), (self._solution, self._output))
+        return self._compute_error()
         
     # Internal method for error computation
-    def _compute_error(self, truth_solution_and_output, reduced_solution_and_output):
+    def _compute_error(self):
         N = self._solution.vector().N
         # Compute the error on the solution
-        reduced_solution = self.Z[:N]*reduced_solution_and_output[0]
-        truth_solution = truth_solution_and_output[0]
+        reduced_solution = self.Z[:N]*self._solution
+        truth_solution = self.truth_problem._solution
         error = difference(truth_solution, reduced_solution)
         assembled_error_inner_product_operator = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
         error_norm_squared = transpose(error.vector())*assembled_error_inner_product_operator*error.vector() # norm SQUARED of the error
         # Compute the error on the output
-        error_output = abs(truth_solution_and_output[1] - reduced_solution_and_output[1])
+        error_output = abs(self.truth_problem._output - self._output)
         return (sqrt(error_norm_squared), error_output)
         
     #  @}

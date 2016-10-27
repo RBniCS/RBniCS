@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override
 
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -34,6 +35,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
             # Store quantities related to the time discretization
+            assert truth_problem.t == 0.
+            self.t = 0.
             assert truth_problem.dt is not None
             self.dt = truth_problem.dt
             assert truth_problem.T is not None
@@ -42,6 +45,37 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["time_step_size"] = self.dt
             self._time_stepping_parameters["final_time"] = self.T
+            # Time derivative of the solution, at the current time
+            self._solution_dot = OnlineFunction()
+            # Solution and output over time
+            self._solution_over_time = list() # of Functions
+            self._output_over_time = list() # of floats
+            
+        ###########################     ERROR ANALYSIS     ########################### 
+        ## @defgroup ErrorAnalysis Error analysis
+        #  @{
+            
+        # Internal method for error computation
+        def _compute_error(self):
+            errors_over_time = list() # (over compute_error tuple output index) of list (over time) of real numbers
+            for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
+                self.t = k*self.dt
+                self._solution = reduced_solution
+                self.truth_problem.t = k*self.dt
+                self.truth_problem._solution = truth_solution
+                errors = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self)
+                if len(errors_over_time) == 0:
+                    errors_over_time = [list() for _ in range(len(errors_over_time))]
+                for (tuple_index, error) in enumerate(errors):
+                    errors[tuple_index].append(error)
+            time_quadrature = TimeQuadrature((0., self.T), self.dt)
+            integrated_errors_over_time = list() # of real numbers
+            for (tuple_index, error_over_time) in enumerate(errors_over_time):
+                integrated_errors_over_time.append( time_quadrature.integrate(error_over_time) )
+            return integrated_errors_over_time
+            
+        #  @}
+        ########################### end - ERROR ANALYSIS - end ###########################
         
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class

@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends import Function
 from RBniCS.utils.decorators import Extends, override
 
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
@@ -35,10 +36,16 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             # Call the parent initialization
             ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
             # Store quantities related to the time discretization
+            self.t = 0.
             self.dt = None
             self.T  = None
             # Additional options for time stepping may be stored in the following dict
             self._time_stepping_parameters = dict()
+            # Time derivative of the solution, at the current time
+            self._solution_dot = Function(self.V)
+            # Solution and output over time
+            self._solution_over_time = list() # of Functions
+            self._output_over_time = list() # of floats
             
         ## Set time step size
         def set_time_step_size(self, dt):

@@ -107,8 +107,9 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                 return ParametrizedReducedDifferentialProblem_DerivedClass.compute_error(self, N, **kwargs)
                 
         @override
-        def _compute_error(self, truth_solution_and_output, reduced_solution_and_output):
+        def _compute_error(self):
             if self._compute_error__current_with_respect_to_level is not None:
+                raise NotImplementedError # TODO
                 with_respect_to_level = self._compute_error__current_with_respect_to_level
                 if with_respect_to_level > 0:
                     reduced_solution = reduced_solution_and_output[0]
@@ -120,7 +121,7 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                         truth_problem_l = truth_problem_l.truth_problem
                     reduced_solution_and_output = (reduced_solution, reduced_output)
             # Call Parent
-            return ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self, truth_solution_and_output, reduced_solution_and_output)
+            return ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self)
             
     # return value (a class) for the decorator
     return MultiLevelReducedProblem_Class
