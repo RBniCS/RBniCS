@@ -82,12 +82,12 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
     def set_mu_range(self, mu_range):
         EllipticCoerciveRB.set_mu_range(self, mu_range)
         self.dual_problem.set_mu_range(mu_range)
-    def set_xi_train(self, ntrain, enable_import=True, sampling=None):
-        EllipticCoerciveRB.set_xi_train(self, ntrain, enable_import, sampling)
-        self.dual_problem.set_xi_train(ntrain, enable_import, sampling)
-    def set_xi_test(self, ntest, enable_import=False, sampling=None):
-        EllipticCoerciveRB.set_xi_test(self, ntest, enable_import, sampling)
-        self.dual_problem.set_xi_test(ntest, enable_import, sampling)
+    def initialize_training_set(self, ntrain, enable_import=True, sampling=None):
+        EllipticCoerciveRB.initialize_training_set(self, ntrain, enable_import, sampling)
+        self.dual_problem.initialize_training_set(ntrain, enable_import, sampling)
+    def initialize_testing_set(self, ntest, enable_import=False, sampling=None):
+        EllipticCoerciveRB.initialize_testing_set(self, ntest, enable_import, sampling)
+        self.dual_problem.initialize_testing_set(ntest, enable_import, sampling)
     def set_mu(self, mu):
         EllipticCoerciveRB.set_mu(self, mu)
         self.dual_problem.set_mu(mu)
@@ -204,7 +204,7 @@ class EllipticCoerciveRBNonCompliant(EllipticCoerciveRB):
         return (error_u_norm, error_s)
         
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
+    # over the testing set
     def error_analysis(self, N=None):
         self.truth_S = [assemble(s_form) for s_form in self.assemble_truth_s()]
         self.apply_bc_to_vector_expansion(self.truth_S)
@@ -299,7 +299,7 @@ class _EllipticCoerciveRBNonCompliant_Dual(EllipticCoerciveRB):
         return np.sqrt(error_norm_squared)
         
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
+    # over the testing set
     def error_analysis(self, N=None):
         # Possibly need to initialize Qa of primal, since error_analysis of dual
         # may be performed before any primal data structures is initialized,

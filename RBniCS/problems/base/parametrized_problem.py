@@ -42,9 +42,6 @@ class ParametrizedProblem(object):
     - set_Nmax()
     - settol()
     - set_mu_range()
-    - set_xi_train()
-    - set_xi_test()
-    - generate_train_or_test_set()
     - set_mu()
 
     """

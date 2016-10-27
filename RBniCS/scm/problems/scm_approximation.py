@@ -62,12 +62,12 @@ class SCMApproximation(ParametrizedProblem):
         self.C_J = TrainingSetIndices() # list storing the indices of greedily selected parameters during the training phase
         self.complement_C_J = TrainingSetIndices() # list storing the indices of the complement of greedily selected parameters during the training phase
         self.alpha_J = CoercivityConstantsList() # list storing the truth coercivity constants at the greedy parameters in C_J
-        self.alpha_LB_on_xi_train = CoercivityConstantsList() # list storing the approximation of the coercivity constant on the complement of C_J (at the previous iteration, during the offline phase)
+        self.alpha_LB_on_training_set = CoercivityConstantsList() # list storing the approximation of the coercivity constant on the complement of C_J (at the previous iteration, during the offline phase)
         self.eigenvector_J = EigenVectorsList() # list of eigenvectors corresponding to the truth coercivity constants at the greedy parameters in C_J
         self.UB_vectors_J = UpperBoundsList() # list of Q-dimensional vectors storing the infimizing elements at the greedy parameters in C_J
         self.M_e = kwargs["M_e"] # integer denoting the number of constraints based on the exact eigenvalues. If < 0, then it is assumed to be len(C_J)
         self.M_p = kwargs["M_p"] # integer denoting the number of constraints based on the previous lower bounds. If < 0, then it is assumed to be len(C_J)
-        self.xi_train = None # SCM algorithms needs the xi_train also in the online stage, e.g. to query alpha_LB_on_xi_train
+        self.training_set = None # SCM algorithms needs the training set also in the online stage, e.g. to query alpha_LB_on_training_set
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Matrices/vectors resulting from the truth discretization
@@ -106,9 +106,9 @@ class SCMApproximation(ParametrizedProblem):
             self.C_J.load(self.folder["reduced_operators"], "C_J")
             self.complement_C_J.load(self.folder["reduced_operators"], "complement_C_J")
             self.alpha_J.load(self.folder["reduced_operators"], "alpha_J")
-            self.alpha_LB_on_xi_train.load(self.folder["reduced_operators"], "alpha_LB_on_xi_train")
+            self.alpha_LB_on_training_set.load(self.folder["reduced_operators"], "alpha_LB_on_training_set")
             self.UB_vectors_J.load(self.folder["reduced_operators"], "UB_vectors_J")
-            self.xi_train.load(self.folder["reduced_operators"], "xi_train")
+            self.training_set.load(self.folder["reduced_operators"], "training_set")
             # Set the value of N
             self.N = len(self.C_J)
         elif current_stage == "offline":
@@ -118,13 +118,13 @@ class SCMApproximation(ParametrizedProblem):
             Q = self.truth_problem.Q["a"]
             self.B_min = BoundingBoxSideList(Q)
             self.B_max = BoundingBoxSideList(Q)
-            # Properly resize structures related to xi_train
-            ntrain = len(self.xi_train)
-            self.alpha_LB_on_xi_train = CoercivityConstantsList(ntrain)
+            # Properly resize structures related to training set
+            ntrain = len(self.training_set)
+            self.alpha_LB_on_training_set = CoercivityConstantsList(ntrain)
             self.complement_C_J = TrainingSetIndices(ntrain)
-            # Save the xi_train, which was passed by the reduction method,
+            # Save the training set, which was passed by the reduction method,
             # in order to use it online
-            self.xi_train.save(self.folder["reduced_operators"], "xi_train")
+            self.training_set.save(self.folder["reduced_operators"], "training_set")
             # Init exact coercivity constant computations
             self.exact_coercivity_constant_calculator.init()
         else:
@@ -173,7 +173,7 @@ class SCMApproximation(ParametrizedProblem):
             closest_C_J_indices = self._closest_parameters(M_e, self.C_J, mu)
             for j in range(M_e):
                 # Overwrite parameter values
-                omega = self.xi_train[ self.C_J[ closest_C_J_indices[j] ] ]
+                omega = self.training_set[ self.C_J[ closest_C_J_indices[j] ] ]
                 self.truth_problem.set_mu(omega)
                 current_theta_a = self.truth_problem.compute_theta("a")
                 
@@ -192,7 +192,7 @@ class SCMApproximation(ParametrizedProblem):
             #                      with RHS depending on previously computed lower bounds
             closest_complement_C_J_indices = self._closest_parameters(M_p, self.complement_C_J, mu)
             for j in range(M_p):
-                nu = self.xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
+                nu = self.training_set[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
                 self.truth_problem.set_mu(nu)
                 current_theta_a = self.truth_problem.compute_theta("a")
                 # Assemble first the LHS
@@ -202,7 +202,7 @@ class SCMApproximation(ParametrizedProblem):
                     matrix_content[glpk_container_size + 1] = current_theta_a[q]
                     glpk_container_size += 1
                 # ... and then the RHS
-                glpk.glp_set_row_bnds(lp, M_e + j + 1, glpk.GLP_LO, self.alpha_LB_on_xi_train[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ], 0.)
+                glpk.glp_set_row_bnds(lp, M_e + j + 1, glpk.GLP_LO, self.alpha_LB_on_training_set[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ], 0.)
             closest_complement_C_J_indices = None
             
             # Load the assembled LHS
@@ -290,8 +290,8 @@ class SCMApproximation(ParametrizedProblem):
             return range(len(all_mu_indices))
         
         indices_and_distances = list()
-        for (local_index, xi_train_index) in enumerate(all_mu_indices):
-            distance = self._parameters_distance(mu, self.xi_train[xi_train_index])
+        for (local_index, training_set_index) in enumerate(all_mu_indices):
+            distance = self._parameters_distance(mu, self.training_set[training_set_index])
             indices_and_distances.append((local_index, distance))
         indices_and_distances.sort(key=operator.itemgetter(1))
         neighbors = list()

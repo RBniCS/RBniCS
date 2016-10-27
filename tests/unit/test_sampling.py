@@ -28,15 +28,15 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 from RBniCS.sampling import *
 
-def plot(p, box, xi, bins, generator=None, *args, **kwargs):
+def plot(p, box, set_, bins, generator=None, *args, **kwargs):
     sub_box_p = box[p]
-    sub_xi_p = [mu[p] for mu in xi]
+    sub_set_p = [mu[p] for mu in set_]
     fig, ax = plt.subplots(1, 1)
     if generator is not None:
         distribution = generator(*args, **kwargs)
         x = linspace(sub_box_p[0], sub_box_p[1], bins**2)
         ax.plot(x, distribution.pdf(x), 'r-', lw=2)
-    ax.hist(sub_xi_p, bins=bins, normed=True, histtype='stepfilled', alpha=0.2)
+    ax.hist(sub_set_p, bins=bins, normed=True, histtype='stepfilled', alpha=0.2)
     plt.show()
     
 class stats_equispaced(object):
@@ -60,7 +60,7 @@ class stats_loguniform(object):
 
 # 0. Common data
 box = [(2., 5.), (10., 1000.)]
-xi = ParameterSpaceSubset(box)
+parameter_space_subset = ParameterSpaceSubset(box)
 n = int(1.1e4)
 bins = 50
 min = 0
@@ -70,98 +70,98 @@ max = 1
 
 # 1. Default generator
 """
-xi.generate(n)
-plot(0, box, xi, bins, stats.uniform, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats.uniform, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n)
+plot(0, box, parameter_space_subset, bins, stats.uniform, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats.uniform, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 2. Explicit uniform generator
 """
-xi.generate(n, sampling=UniformDistribution())
-plot(0, box, xi, bins, stats.uniform, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats.uniform, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=UniformDistribution())
+plot(0, box, parameter_space_subset, bins, stats.uniform, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats.uniform, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 3. Explicit composite uniform generator
 """
-xi.generate(n, sampling=(UniformDistribution(), UniformDistribution()))
-plot(0, box, xi, bins, stats.uniform, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats.uniform, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(UniformDistribution(), UniformDistribution()))
+plot(0, box, parameter_space_subset, bins, stats.uniform, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats.uniform, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 4. Equispaced generator
 """
-xi.generate(n, sampling=EquispacedDistribution())
-plot(0, box, xi, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats_equispaced, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=EquispacedDistribution())
+plot(0, box, parameter_space_subset, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats_equispaced, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 5. Composite equispaced generator
 """
-xi.generate(n, sampling=(EquispacedDistribution(), EquispacedDistribution()))
-plot(0, box, xi, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats_equispaced, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(EquispacedDistribution(), EquispacedDistribution()))
+plot(0, box, parameter_space_subset, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats_equispaced, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 6. Log uniform generator
 """
-xi.generate(n, sampling=LogUniformDistribution())
-plot(0, box, xi, bins, stats_loguniform, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats_loguniform, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=LogUniformDistribution())
+plot(0, box, parameter_space_subset, bins, stats_loguniform, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats_loguniform, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 7. Composite log uniform generator
 """
-xi.generate(n, sampling=(LogUniformDistribution(), LogUniformDistribution()))
-plot(0, box, xi, bins, stats_loguniform, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats_loguniform, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(LogUniformDistribution(), LogUniformDistribution()))
+plot(0, box, parameter_space_subset, bins, stats_loguniform, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats_loguniform, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 8. Beta generator
 """
-xi.generate(n, sampling=DrawFrom(random.beta, a=2, b=5))
-plot(0, box, xi, bins, stats.beta, a=2, b=5, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats.beta, a=2, b=5, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=DrawFrom(random.beta, a=2, b=5))
+plot(0, box, parameter_space_subset, bins, stats.beta, a=2, b=5, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats.beta, a=2, b=5, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 9. Composite beta generator
 """
-xi.generate(n, sampling=(DrawFrom(random.beta, a=2, b=5), DrawFrom(random.beta, a=5, b=1)))
-plot(0, box, xi, bins, stats.beta, a=2, b=5, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats.beta, a=5, b=1, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(DrawFrom(random.beta, a=2, b=5), DrawFrom(random.beta, a=5, b=1)))
+plot(0, box, parameter_space_subset, bins, stats.beta, a=2, b=5, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats.beta, a=5, b=1, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 10. Composite equispaced and uniform generator
 """
-xi.generate(n, sampling=(EquispacedDistribution(), UniformDistribution()))
-plot(0, box, xi, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats.uniform, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(EquispacedDistribution(), UniformDistribution()))
+plot(0, box, parameter_space_subset, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats.uniform, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 11. Composite uniform and equispaced generator
 """
-xi.generate(n, sampling=(UniformDistribution(), EquispacedDistribution()))
-plot(0, box, xi, bins, stats.uniform, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats_equispaced, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(UniformDistribution(), EquispacedDistribution()))
+plot(0, box, parameter_space_subset, bins, stats.uniform, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats_equispaced, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 12. Composite equispaced and loguniform generator
 """
-xi.generate(n, sampling=(EquispacedDistribution(), LogUniformDistribution()))
-plot(0, box, xi, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats_loguniform, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(EquispacedDistribution(), LogUniformDistribution()))
+plot(0, box, parameter_space_subset, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats_loguniform, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 13. Composite equispaced and beta generator
 """
-xi.generate(n, sampling=(EquispacedDistribution(), DrawFrom(random.beta, a=2, b=5)))
-plot(0, box, xi, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats.beta, a=2, b=5, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(EquispacedDistribution(), DrawFrom(random.beta, a=2, b=5)))
+plot(0, box, parameter_space_subset, bins, stats_equispaced, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats.beta, a=2, b=5, loc=box[1][min], scale=box[1][max]-box[1][min])
 """
 
 # 14. Composite loguniform and beta generator
 #"""
-xi.generate(n, sampling=(LogUniformDistribution(), DrawFrom(random.beta, a=2, b=5)))
-plot(0, box, xi, bins, stats_loguniform, loc=box[0][min], scale=box[0][max]-box[0][min])
-plot(1, box, xi, bins, stats.beta, a=2, b=5, loc=box[1][min], scale=box[1][max]-box[1][min])
+parameter_space_subset.generate(n, sampling=(LogUniformDistribution(), DrawFrom(random.beta, a=2, b=5)))
+plot(0, box, parameter_space_subset, bins, stats_loguniform, loc=box[0][min], scale=box[0][max]-box[0][min])
+plot(1, box, parameter_space_subset, bins, stats.beta, a=2, b=5, loc=box[1][min], scale=box[1][max]-box[1][min])
 #"""

@@ -118,7 +118,7 @@ reduced_basis_method.set_Nmax(4)
 # 5. Perform the offline phase
 first_mu = (0.5,1.0)
 thermal_block_problem.set_mu(first_mu)
-reduced_basis_method.set_xi_train(100)
+reduced_basis_method.initialize_training_set(100)
 reduced_thermal_block_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
@@ -128,5 +128,5 @@ reduced_thermal_block_problem.solve()
 reduced_thermal_block_problem.export_solution("ThermalBlock", "online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.set_xi_test(500)
+reduced_basis_method.initialize_testing_set(500)
 reduced_basis_method.error_analysis()

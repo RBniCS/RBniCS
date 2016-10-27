@@ -237,7 +237,7 @@ pod_galerkin_method.set_Nmax(25)
 # 5. Perform the offline phase
 lifting_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
 stokes_problem.set_mu(lifting_mu)
-pod_galerkin_method.set_xi_train(100, sampling=LinearlyDependentUniformDistribution())
+pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
 reduced_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
@@ -248,5 +248,5 @@ reduced_stokes_problem.export_solution("Stokes", "online_solution_u", component=
 reduced_stokes_problem.export_solution("Stokes", "online_solution_p", component=1)
 
 # 7. Perform an error analysis
-pod_galerkin_method.set_xi_test(100, sampling=LinearlyDependentUniformDistribution())
+pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
 pod_galerkin_method.error_analysis()

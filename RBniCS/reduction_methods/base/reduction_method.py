@@ -49,15 +49,15 @@ class ReductionMethod(object):
         # Maximum reduced order space dimension to be used for the stopping criterion in the basis selection
         self.Nmax = 0
         # Training set
-        self.xi_train = ParameterSpaceSubset(mu_range)
+        self.training_set = ParameterSpaceSubset(mu_range)
         # I/O
-        self.folder["xi_train"] = self.folder_prefix + "/" + "xi_train"
+        self.folder["training_set"] = self.folder_prefix + "/" + "training_set"
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
-        # Test set
-        self.xi_test = ParameterSpaceSubset(mu_range)
+        # Testing set
+        self.testing_set = ParameterSpaceSubset(mu_range)
         # I/O
-        self.folder["xi_test" ] = self.folder_prefix + "/" + "xi_test"
+        self.folder["testing_set" ] = self.folder_prefix + "/" + "testing_set"
     
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -70,34 +70,34 @@ class ReductionMethod(object):
     def set_Nmax(self, Nmax, **kwargs):
         self.Nmax = Nmax
 
-    ## OFFLINE: set the elements in the training set \xi_train.
-    def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
+    ## OFFLINE: set the elements in the training set.
+    def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         # Create I/O folder
-        self.folder["xi_train"].create()
+        self.folder["training_set"].create()
         # Test if can import
         import_successful = False
         if enable_import:
-            import_successful = self.xi_train.load(self.folder["xi_train"], "xi_train") \
-                and (len(self.xi_train) == ntrain)
+            import_successful = self.training_set.load(self.folder["training_set"], "training_set") \
+                and (len(self.training_set) == ntrain)
         if not import_successful:
-            self.xi_train.generate(ntrain, sampling)
+            self.training_set.generate(ntrain, sampling)
             # Export 
-            self.xi_train.save(self.folder["xi_train"], "xi_train")
+            self.training_set.save(self.folder["training_set"], "training_set")
         return import_successful
         
-    ## ERROR ANALYSIS: set the elements in the test set \xi_test.
-    def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
+    ## ERROR ANALYSIS: set the elements in the testing set.
+    def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
         # Create I/O folder
-        self.folder["xi_test"].create()
+        self.folder["testing_set"].create()
         # Test if can import
         import_successful = False
         if enable_import:
-            import_successful = self.xi_test.load(self.folder["xi_test"], "xi_test") \
-                and  (len(self.xi_test) == ntest)
+            import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set") \
+                and  (len(self.testing_set) == ntest)
         if not import_successful:
-            self.xi_test.generate(ntest, sampling)
+            self.testing_set.generate(ntest, sampling)
             # Export 
-            self.xi_test.save(self.folder["xi_test"], "xi_test")
+            self.testing_set.save(self.folder["testing_set"], "testing_set")
         return import_successful
             
     #  @}
@@ -128,7 +128,7 @@ class ReductionMethod(object):
     #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
+    # over the testing set
     @abstractmethod
     def error_analysis(self, N=None, **kwargs):
         raise NotImplementedError("Please implement the error analysis of the reduced order model.")

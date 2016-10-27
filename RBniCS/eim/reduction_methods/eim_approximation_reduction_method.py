@@ -64,10 +64,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
     ########################### end - CONSTRUCTORS - end ###########################
     
     @override
-    def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
-        import_successful = ReductionMethod.set_xi_train(self, ntrain, enable_import, sampling)
-        # Since exact evaluation is required, we cannot use a distributed xi_train
-        self.xi_train.distributed_max = False
+    def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+        import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
+        # Since exact evaluation is required, we cannot use a distributed training set
+        self.training_set.distributed_max = False
         return import_successful
     
     ###########################     OFFLINE STAGE     ########################### 
@@ -81,7 +81,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         all_folders = Folders()
         all_folders.update(self.folder)
         all_folders.update(self.EIM_approximation.folder)
-        all_folders.pop("xi_test") # this is required only in the error analysis
+        all_folders.pop("testing_set") # this is required only in the error analysis
         at_least_one_folder_created = all_folders.create()
         if not at_least_one_folder_created:
             self.EIM_approximation.init("online")
@@ -105,13 +105,13 @@ class EIMApproximationReductionMethod(ReductionMethod):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         interpolation_method_name_headings = interpolation_method_name.rjust(4)
         
-        # Evaluate the parametrized expression for all parameters in xi_train
+        # Evaluate the parametrized expression for all parameters in the training set
         print("==============================================================")
         print("=            " + interpolation_method_name_headings + " preprocessing phase begins                 =")
         print("==============================================================")
         print("")
         
-        for (run, mu) in enumerate(self.xi_train):
+        for (run, mu) in enumerate(self.training_set):
             print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
             
             print("evaluate parametrized expression")
@@ -142,7 +142,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
         # Arbitrarily start from the first parameter in the training set (Greedy only)
         if self.EIM_approximation.basis_generation == "Greedy":
-            self.EIM_approximation.set_mu(self.xi_train[0])
+            self.EIM_approximation.set_mu(self.training_set[0])
             self._offline__mu_index = 0
         # Resize the interpolation matrix
         self.EIM_approximation.interpolation_matrix[0] = OnlineMatrix(self.Nmax, self.Nmax)
@@ -238,7 +238,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         mu = self.EIM_approximation.mu
         mu_index = self._offline__mu_index
         assert mu_index is not None
-        assert mu == self.xi_train[mu_index]
+        assert mu == self.training_set[mu_index]
         return self.snapshots_container[mu_index]
         
     ## Choose the next parameter in the offline stage in a greedy fashion
@@ -253,11 +253,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
             (_, err, _) = self.EIM_approximation.compute_maximum_interpolation_error()
             return err
             
-        (error_max, error_argmax) = self.xi_train.max(solve_and_computer_error, abs)
+        (error_max, error_argmax) = self.training_set.max(solve_and_computer_error, abs)
         print("maximum interpolation error =", abs(error_max))
-        self.EIM_approximation.set_mu(self.xi_train[error_argmax])
+        self.EIM_approximation.set_mu(self.training_set[error_argmax])
         self._offline__mu_index = error_argmax
-        self.greedy_selected_parameters.append(self.xi_train[error_argmax])
+        self.greedy_selected_parameters.append(self.training_set[error_argmax])
         self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
         self.greedy_errors.append(error_max)
         self.greedy_errors.save(self.folder["post_processing"], "error_max")
@@ -270,7 +270,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     #  @{
     
     # Compute the error of the empirical interpolation approximation with respect to the
-    # exact function over the test set
+    # exact function over the testing set
     @override
     def error_analysis(self, N=None, **kwargs):
         if N is None:
@@ -287,11 +287,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        error_analysis_table = ErrorAnalysisTable(self.xi_test)
+        error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("error", group_name="eim", operations="mean")
         
-        for (run, mu) in enumerate(self.xi_test):
+        for (run, mu) in enumerate(self.testing_set):
             print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
             
             self.EIM_approximation.set_mu(mu)

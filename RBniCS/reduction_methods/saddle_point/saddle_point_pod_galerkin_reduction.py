@@ -88,7 +88,7 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
         print("==============================================================")
         print("")
         
-        for (run, mu) in enumerate(self.xi_train):
+        for (run, mu) in enumerate(self.training_set):
             print("############################## run =", run, "######################################")
             
             self.truth_problem.set_mu(mu)
@@ -158,7 +158,7 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
     #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
+    # over the testing set
     @override
     def error_analysis(self, N=None, **kwargs):
         N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
@@ -171,7 +171,7 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
         print("==============================================================")
         print("")
         
-        error_analysis_table = ErrorAnalysisTable(self.xi_test)
+        error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(Nmax)
         error_analysis_table.add_column("error_u", group_name="u", operations="mean")
         error_analysis_table.add_column("relative_error_u", group_name="u", operations="mean")
@@ -180,7 +180,7 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
         error_analysis_table.add_column("error_j", group_name="j", operations="mean")
         error_analysis_table.add_column("relative_error_j", group_name="j", operations="mean")
         
-        for (run, mu) in enumerate(self.xi_test):
+        for (run, mu) in enumerate(self.testing_set):
             print("############################## run =", run, "######################################")
             
             self.reduced_problem.set_mu(mu)

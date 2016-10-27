@@ -183,10 +183,10 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
             self.reduced_problem._solve(self.reduced_problem.N)
             return self.reduced_problem.estimate_error()
             
-        (error_estimator_max, error_estimator_argmax) = self.xi_train.max(solve_and_estimate_error)
+        (error_estimator_max, error_estimator_argmax) = self.training_set.max(solve_and_estimate_error)
         print("maximum error estimator =", error_estimator_max)
-        self.reduced_problem.set_mu(self.xi_train[error_estimator_argmax])
-        self.greedy_selected_parameters.append(self.xi_train[error_estimator_argmax])
+        self.reduced_problem.set_mu(self.training_set[error_estimator_argmax])
+        self.greedy_selected_parameters.append(self.training_set[error_estimator_argmax])
         self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
         self.greedy_error_estimators.append(error_estimator_max)
         self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
@@ -199,7 +199,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
+    # over the testing set
     @override
     def error_analysis(self, N=None, **kwargs):
         if N is None:
@@ -212,7 +212,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
-        error_analysis_table = ErrorAnalysisTable(self.xi_test)
+        error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("error_u", group_name="u", operations="mean")
         error_analysis_table.add_column("error_estimator_u", group_name="u", operations="mean")
@@ -221,7 +221,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         error_analysis_table.add_column("error_estimator_s", group_name="s", operations="mean")
         error_analysis_table.add_column("effectivity_s", group_name="s", operations=("min", "mean", "max"))
         
-        for (run, mu) in enumerate(self.xi_test):
+        for (run, mu) in enumerate(self.testing_set):
             print("############################## run =", run, "######################################")
             
             self.reduced_problem.set_mu(mu)

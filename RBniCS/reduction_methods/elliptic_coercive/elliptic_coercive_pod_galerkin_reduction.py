@@ -106,7 +106,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
-        for (run, mu) in enumerate(self.xi_train):
+        for (run, mu) in enumerate(self.training_set):
             print("############################## run =", run, "######################################")
             
             self.truth_problem.set_mu(mu)
@@ -160,7 +160,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
     #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
-    # over the test set
+    # over the testing set
     @override
     def error_analysis(self, N=None, **kwargs):
         if N is None:
@@ -173,12 +173,12 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
-        error_analysis_table = ErrorAnalysisTable(self.xi_test)
+        error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("error_u", group_name="u", operations="mean")
         error_analysis_table.add_column("error_s", group_name="s", operations="mean")
         
-        for (run, mu) in enumerate(self.xi_test):
+        for (run, mu) in enumerate(self.testing_set):
             print("############################## run =", run, "######################################")
             
             self.reduced_problem.set_mu(mu)

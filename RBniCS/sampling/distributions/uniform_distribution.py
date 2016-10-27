@@ -32,11 +32,11 @@ from RBniCS.utils.decorators import Extends, override
 class UniformDistribution(Distribution):
     @override
     def sample(self, box, n):
-        xi = list() # of tuples
+        set_ = list() # of tuples
         for i in range(n):
             mu = list() # of numbers
             for box_p in box:
                 mu.append(random.uniform(box_p[0], box_p[1]))
-            xi.append(tuple(mu))
-        return xi
+            set_.append(tuple(mu))
+        return set_
         

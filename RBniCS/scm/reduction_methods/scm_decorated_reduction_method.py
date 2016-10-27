@@ -55,25 +55,25 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self.SCM_reduction.set_Nmax(Nmax_SCM) # kwargs are not needed
 
             
-        ## OFFLINE: set the elements in the training set \xi_train.
+        ## OFFLINE: set the elements in the training set.
         @override
-        def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
-            # Set xi_train of SCM reduction
+        def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
+            # Initialize training set of SCM reduction
             assert "SCM" in kwargs
             ntrain_SCM = kwargs["SCM"]
-            import_successful_SCM = self.SCM_reduction.set_xi_train(ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
+            import_successful_SCM = self.SCM_reduction.initialize_training_set(ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
             # Return
             return import_successful and import_successful_SCM
             
-        ## ERROR ANALYSIS: set the elements in the test set \xi_test.
+        ## ERROR ANALYSIS: set the elements in the testing set.
         @override
-        def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
-            # Set xi_test of SCM reduction
+        def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
+            # Initialize testing set of SCM reduction
             assert "SCM" in kwargs
             ntest_SCM = kwargs["SCM"]
-            import_successful_SCM = self.SCM_reduction.set_xi_test(ntest_SCM, enable_import, sampling) # kwargs are not needed
+            import_successful_SCM = self.SCM_reduction.initialize_testing_set(ntest_SCM, enable_import, sampling) # kwargs are not needed
             # Return
             return import_successful and import_successful_SCM
             
@@ -102,7 +102,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         #  @{
     
         # Compute the error of the reduced order approximation with respect to the full order one
-        # over the test set
+        # over the testing set
         @override
         def error_analysis(self, N=None, **kwargs):
             # Perform first the SCM error analysis, ...

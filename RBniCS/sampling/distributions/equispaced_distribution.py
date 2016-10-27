@@ -38,9 +38,9 @@ class EquispacedDistribution(Distribution):
         grid = list() # of linspaces
         for box_p in box:
             grid.append( linspace(box_p[0], box_p[1], num=n_P_root).tolist() )
-        xi_itertools = itertools.product(*grid)
-        xi = list() # of tuples
-        for mu in xi_itertools:
-            xi.append(mu)
-        return xi
+        set_itertools = itertools.product(*grid)
+        set_ = list() # of tuples
+        for mu in set_itertools:
+            set_.append(mu)
+        return set_
         

@@ -36,10 +36,10 @@ def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReduction
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
             
         @override
-        def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
-            # Since exact evaluation is required, we cannot use a distributed xi_train
-            self.xi_train.distributed_max = False
+        def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
+            # Since exact evaluation is required, we cannot use a distributed training set
+            self.training_set.distributed_max = False
             return import_successful
         
     # return value (a class) for the decorator

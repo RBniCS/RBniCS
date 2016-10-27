@@ -26,12 +26,12 @@ from numpy import zeros as Content
 from numpy import min, exp, mean, log, max
 
 class PerformanceTable(object):
-    def __init__(self, xi_test):
+    def __init__(self, testing_set):
         self._columns = dict() # string to Content matrix
         self._columns_operations = dict() # string to tuple
         self._groups = dict() # string to list
         self._group_names_sorted = list()
-        self._len_xi_test = len(xi_test)
+        self._len_testing_set = len(testing_set)
         self._Nmin = 1
         self._Nmax = 0
         
@@ -44,7 +44,7 @@ class PerformanceTable(object):
     def add_column(self, column_name, group_name, operations):
         assert self._Nmax > 0
         assert self._Nmax >= self._Nmin
-        self._columns[column_name] = Content((self._Nmax - self._Nmin + 1, self._len_xi_test))
+        self._columns[column_name] = Content((self._Nmax - self._Nmin + 1, self._len_testing_set))
         if group_name not in self._groups:
             self._groups[group_name] = list()
             self._group_names_sorted.append(group_name) # preserve the ordering provided by the user
@@ -90,7 +90,7 @@ class PerformanceTable(object):
                         raise ValueError("Invalid operation in PerformanceTable")
                     table_index.append(current_table_index)
                     table_header[current_table_index] = current_table_header
-                    # Compute the required operation of each column over the second index (test set)
+                    # Compute the required operation of each column over the second index (testing set)
                     table_content[current_table_index] = Content((self._Nmax - self._Nmin + 1,))
                     for n in range(self._Nmin, self._Nmax + 1):
                         if operation == "min":

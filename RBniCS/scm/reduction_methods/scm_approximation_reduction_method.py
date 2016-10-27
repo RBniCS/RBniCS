@@ -74,12 +74,12 @@ class SCMApproximationReductionMethod(ReductionMethod):
     ## @defgroup Setters Set properties of the reduced order approximation
     #  @{
 
-    ## OFFLINE: set the elements in the training set \xi_train.
+    ## OFFLINE: set the elements in the training set.
     @override
-    def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
+    def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         assert enable_import
-        import_successful = ReductionMethod.set_xi_train(self, ntrain, enable_import, sampling)
-        self.SCM_approximation.xi_train = self.xi_train
+        import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
+        self.SCM_approximation.training_set = self.training_set
         return import_successful
         
     #  @}
@@ -96,7 +96,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         all_folders = Folders()
         all_folders.update(self.folder)
         all_folders.update(self.SCM_approximation.folder)
-        all_folders.pop("xi_test") # this is required only in the error analysis
+        all_folders.pop("testing_set") # this is required only in the error analysis
         at_least_one_folder_created = all_folders.create()
         if not at_least_one_folder_created:
             self.SCM_approximation.init("online")
@@ -127,7 +127,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         print("")
         
         # Arbitrarily start from the first parameter in the training set
-        self.SCM_approximation.set_mu(self.xi_train[0])
+        self.SCM_approximation.set_mu(self.training_set[0])
         self._offline__mu_index = 0
         
         for run in range(self.Nmax):
@@ -191,7 +191,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
     def update_C_J(self):
         mu = self.SCM_approximation.mu
         mu_index = self._offline__mu_index
-        assert mu == self.xi_train[mu_index]
+        assert mu == self.training_set[mu_index]
         
         self.SCM_approximation.C_J.append(mu_index)
         self.SCM_approximation.N = len(self.SCM_approximation.C_J)
@@ -242,18 +242,18 @@ class SCMApproximationReductionMethod(ReductionMethod):
             if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
                 print("SCM warning at mu =", mu , ": LB =", LB, "> UB =", UB)
                 
-            self.SCM_approximation.alpha_LB_on_xi_train[index] = max(0, LB)
+            self.SCM_approximation.alpha_LB_on_training_set[index] = max(0, LB)
             return error_estimator
             
-        (error_estimator_max, error_estimator_argmax) = self.xi_train.max(solve_and_estimate_error)
+        (error_estimator_max, error_estimator_argmax) = self.training_set.max(solve_and_estimate_error)
         print("maximum SCM error estimator =", error_estimator_max)
-        self.SCM_approximation.set_mu(self.xi_train[error_estimator_argmax])
+        self.SCM_approximation.set_mu(self.training_set[error_estimator_argmax])
         self._offline__mu_index = error_estimator_argmax
-        self.greedy_selected_parameters.append(self.xi_train[error_estimator_argmax])
+        self.greedy_selected_parameters.append(self.training_set[error_estimator_argmax])
         self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
         self.greedy_error_estimators.append(error_estimator_max)
         self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
-        self.SCM_approximation.alpha_LB_on_xi_train.save(self.SCM_approximation.folder["reduced_operators"], "alpha_LB_on_xi_train")
+        self.SCM_approximation.alpha_LB_on_training_set.save(self.SCM_approximation.folder["reduced_operators"], "alpha_LB_on_training_set")
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -272,7 +272,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.SCM_approximation.init("online")
     
     # Compute the error of the empirical interpolation approximation with respect to the
-    # exact function over the test set
+    # exact function over the testing set
     @override
     def error_analysis(self, N=None, **kwargs):
         if N is None:
@@ -286,12 +286,12 @@ class SCMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        error_analysis_table = ErrorAnalysisTable(self.xi_test)
+        error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmin(N)
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("normalized_error", group_name="scm", operations=("min", "mean", "max"))
         
-        for (run, mu) in enumerate(self.xi_test):
+        for (run, mu) in enumerate(self.testing_set):
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             
             self.SCM_approximation.set_mu(mu)

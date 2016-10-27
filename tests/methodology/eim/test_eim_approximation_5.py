@@ -75,7 +75,7 @@ parametrized_function_reduction_method = EIMApproximationReductionMethod(paramet
 parametrized_function_reduction_method.set_Nmax(20)
 
 # 5. Perform the offline phase
-parametrized_function_reduction_method.set_xi_train(100, sampling=EquispacedDistribution())
+parametrized_function_reduction_method.initialize_training_set(100, sampling=EquispacedDistribution())
 reduced_parametrized_function_approximation = parametrized_function_reduction_method.offline()
 
 # 6. Perform an online solve
@@ -84,5 +84,5 @@ reduced_parametrized_function_approximation.set_mu(online_mu)
 reduced_parametrized_function_approximation.solve()
 
 # 7. Perform an error analysis
-parametrized_function_reduction_method.set_xi_test(100)
+parametrized_function_reduction_method.initialize_testing_set(100)
 parametrized_function_reduction_method.error_analysis()

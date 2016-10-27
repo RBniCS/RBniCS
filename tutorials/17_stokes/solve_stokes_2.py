@@ -221,7 +221,7 @@ pod_galerkin_method = PODGalerkin(stokes_problem)
 pod_galerkin_method.set_Nmax(25, EIM={"a": 3, "b": 3, "bt": 3, "bt_restricted": 3, "f": 1, "g": 1})
 
 # 5. Perform the offline phase
-pod_galerkin_method.set_xi_train(100, sampling=LinearlyDependentUniformDistribution(), EIM={"a": 4, "b": 4, "bt": 4, "bt_restricted": 4, "f": 2, "g": 2})
+pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution(), EIM={"a": 4, "b": 4, "bt": 4, "bt_restricted": 4, "f": 2, "g": 2})
 reduced_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
@@ -232,5 +232,5 @@ reduced_stokes_problem.export_solution("Stokes", "online_solution_u", component=
 reduced_stokes_problem.export_solution("Stokes", "online_solution_p", component=1)
 
 # 7. Perform an error analysis
-pod_galerkin_method.set_xi_test(100, sampling=LinearlyDependentUniformDistribution(), EIM=10)
+pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), EIM=10)
 pod_galerkin_method.error_analysis()

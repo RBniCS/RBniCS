@@ -58,25 +58,25 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
 
             
-        ## OFFLINE: set the elements in the training set \xi_train.
+        ## OFFLINE: set the elements in the training set.
         @override
-        def set_xi_train(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_train(self, ntrain, enable_import, sampling, **kwargs)
-            # Since exact evaluation is required, we cannot use a distributed xi_train
-            self.xi_train.distributed_max = False
-            # Set xi_train of EIM reductions
+        def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
+            # Since exact evaluation is required, we cannot use a distributed training set
+            self.training_set.distributed_max = False
+            # Initialize training set of EIM reductions
             def setter(EIM_reduction, ntrain_EIM):
-                return EIM_reduction.set_xi_train(ntrain_EIM, enable_import, sampling) # kwargs are not needed
+                return EIM_reduction.initialize_training_set(ntrain_EIM, enable_import, sampling) # kwargs are not needed
             import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
             return import_successful and import_successful_EIM
             
-        ## ERROR ANALYSIS: set the elements in the test set \xi_test.
+        ## ERROR ANALYSIS: set the elements in the testing set.
         @override
-        def set_xi_test(self, ntest, enable_import=False, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.set_xi_test(self, ntest, enable_import, sampling, **kwargs)
-            # Set xi_test of EIM reductions
+        def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
+            # Initialize testing set of EIM reductions
             def setter(EIM_reduction, ntest_EIM):
-                return EIM_reduction.set_xi_test(ntest_EIM, enable_import, sampling) # kwargs are not needed
+                return EIM_reduction.initialize_testing_set(ntest_EIM, enable_import, sampling) # kwargs are not needed
             import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
             return import_successful and import_successful_EIM
             
@@ -132,7 +132,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         #  @{
     
         # Compute the error of the reduced order approximation with respect to the full order one
-        # over the test set
+        # over the testing set
         @override
         def error_analysis(self, N=None, **kwargs):
             # Perform first the EIM error analysis, ...

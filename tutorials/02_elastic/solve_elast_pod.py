@@ -165,7 +165,7 @@ pod_galerkin_method = PODGalerkin(elastic_block_problem)
 pod_galerkin_method.set_Nmax(20)
 
 # 5. Perform the offline phase
-pod_galerkin_method.set_xi_train(500)
+pod_galerkin_method.initialize_training_set(500)
 reduced_elastic_block_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
@@ -175,5 +175,5 @@ reduced_elastic_block_problem.solve()
 reduced_elastic_block_problem.export_solution("ElasticBlock", "online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.set_xi_test(500)
+pod_galerkin_method.initialize_testing_set(500)
 pod_galerkin_method.error_analysis()

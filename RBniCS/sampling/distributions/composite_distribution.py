@@ -46,31 +46,31 @@ class CompositeDistribution(Distribution):
         distribution_to_sub_box = dict()
         for (distribution, components) in self.distribution_to_components.iteritems():
             distribution_to_sub_box[distribution] = [box[p] for p in components]
-        # Prepare a dict that will store the map from components to subset sub_xi
-        components_to_sub_xi = dict()
+        # Prepare a dict that will store the map from components to subset sub_set
+        components_to_sub_set = dict()
         # Consider first equispaced distributions, because they may change the value of n
         for (distribution, sub_box) in distribution_to_sub_box.iteritems():
             if isinstance(distribution, EquispacedDistribution):
                 sub_box = distribution_to_sub_box[distribution]
-                sub_xi = distribution.sample(sub_box, n)
-                n = len(sub_xi) # may be greater or equal than the one originally provided
+                sub_set = distribution.sample(sub_box, n)
+                n = len(sub_set) # may be greater or equal than the one originally provided
                 components = self.distribution_to_components[distribution]
-                components_to_sub_xi[tuple(components)] = sub_xi
-        assert len(components_to_sub_xi) in (0, 1)
+                components_to_sub_set[tuple(components)] = sub_set
+        assert len(components_to_sub_set) in (0, 1)
         # ... and the consider all the remaining distributions
         for (distribution, sub_box) in distribution_to_sub_box.iteritems():
             if not isinstance(distribution, EquispacedDistribution):
                 components = self.distribution_to_components[distribution]
-                components_to_sub_xi[tuple(components)] = distribution.sample(sub_box, n)
-        # Prepare a list that will store xi = [mu_1, ... mu_n] ...
-        xi_as_list = [[None]*len(box) for _ in range(n)]
-        for (components, sub_xi) in components_to_sub_xi.iteritems():
-            assert len(sub_xi) == n
-            for (index, sub_mu) in enumerate(sub_xi):
+                components_to_sub_set[tuple(components)] = distribution.sample(sub_box, n)
+        # Prepare a list that will store the set [mu_1, ... mu_n] ...
+        set_as_list = [[None]*len(box) for _ in range(n)]
+        for (components, sub_set) in components_to_sub_set.iteritems():
+            assert len(sub_set) == n
+            for (index, sub_mu) in enumerate(sub_set):
                 assert len(components) == len(sub_mu)
                 for (p, sub_mu_p) in zip(components, sub_mu):
-                    xi_as_list[index][p] = sub_mu_p
+                    set_as_list[index][p] = sub_mu_p
         # ... and convert each mu to a tuple
-        xi = [tuple(mu) for mu in xi_as_list]
-        return xi
+        set_ = [tuple(mu) for mu in set_as_list]
+        return set_
         
