@@ -31,12 +31,15 @@ class _Function_Type(object):
         assert isinstance(arg, (int, dict, Vector.Type(), matrix))
         if isinstance(arg, (int, dict)):
             self._v = Vector(arg)
+            self.N = arg
         elif isinstance(arg, Vector.Type()):
             self._v = arg
+            self.N = arg.N
         elif isinstance(arg, matrix): # for internal usage in EigenSolver, not exposed to the backends
             assert arg.shape[1] == 1 # column vector
             self._v = Vector(arg.shape[0])
             self._v[:] = arg
+            self.N = arg.shape[0]
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in Function")
     
