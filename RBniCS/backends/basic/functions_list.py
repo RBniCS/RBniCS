@@ -48,24 +48,25 @@ class FunctionsList(AbstractFunctionsList):
     
     @override
     def enrich(self, functions, component=None, copy=True):
-        def append(function):
-            if self.wrapping.function_component_as_restriction(function, component, self.V_or_Z):
-                self._list.append(self.wrapping.function_component(function, component, copy))
-            else: # must be extended from subspace to function space
-                self._list.append(self.wrapping.function_extend(function, component, self.V_or_Z))
         # Append to storage
         assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function.Type()))
         if isinstance(functions, (tuple, list, FunctionsList)):
             for function in functions:
-                append(function)
+                self._enrich(function)
         elif isinstance(functions, self.backend.Function.Type()):
-            append(functions)
+            self._enrich(functions)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.enrich.")
         # Reset precomputed slices
         self._precomputed_slices = dict()
         # Prepare trivial precomputed slice
         self._precomputed_slices[len(self._list)] = self
+        
+    def _enrich(self, function, component=None, copy=True):
+        if self.wrapping.function_component_as_restriction(function, component, self.V_or_Z):
+            self._list.append(self.wrapping.function_component(function, component, copy))
+        else: # must be extended from subspace to function space
+            self._list.append(self.wrapping.function_extend(function, component, self.V_or_Z))
         
     @override
     def clear(self):
@@ -138,7 +139,7 @@ class FunctionsList(AbstractFunctionsList):
     @override
     def __setitem__(self, key, item):
         assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
-        self._list[key] = key
+        self._list[key] = item
             
     @override
     def __iter__(self):

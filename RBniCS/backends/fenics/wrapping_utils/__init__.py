@@ -25,6 +25,7 @@
 from RBniCS.backends.fenics.wrapping_utils.create_submesh import create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs
 from RBniCS.backends.fenics.wrapping_utils.dirichlet_bc import DirichletBC
 from RBniCS.backends.fenics.wrapping_utils.dofs_parallel_io_helpers import build_dof_map_writer_mapping, build_dof_map_reader_mapping
+from RBniCS.backends.fenics.wrapping_utils.function_from_ufl_operators import function_from_ufl_operators
 from RBniCS.backends.fenics.wrapping_utils.get_form_name import get_form_name
 from RBniCS.backends.fenics.wrapping_utils.get_form_argument import get_form_argument
 from RBniCS.backends.fenics.wrapping_utils.parametrized_expression import ParametrizedExpression
@@ -36,6 +37,7 @@ __all__ = [
     'create_submesh',
     'create_submesh_subdomains',
     'DirichletBC',
+    'function_from_ufl_operators',
     'get_form_name',
     'get_form_argument',
     'mesh_dofs_to_submesh_dofs',
