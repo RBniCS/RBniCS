@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from ufl.core.operator import Operator
 from RBniCS.backends.basic import transpose as basic_transpose
 import RBniCS.backends.fenics
 from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
@@ -32,7 +33,7 @@ import RBniCS.backends.fenics.wrapping
 import RBniCS.backends.numpy
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("FEniCS", online_backend="NumPy", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Vector.Type()), ))
+@backend_for("FEniCS", online_backend="NumPy", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Operator, Vector.Type()), ))
 def transpose(arg):
-    return basic_transpose(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy)
+    return basic_transpose(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ))
     
