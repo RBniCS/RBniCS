@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import GenericMatrix
+from RBniCS.backends.fenics.function import Function
 
 def Matrix():
     raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
@@ -30,4 +31,13 @@ def Matrix():
 def _Matrix_Type():
     return GenericMatrix
 Matrix.Type = _Matrix_Type
-        
+
+# Enable matrix*function product (i.e. matrix*function.vector())
+original__mul__ = GenericMatrix.__mul__
+def custom__mul__(self, other):
+    if isinstance(other, Function.Type()):
+        return original__mul__(self, other.vector())
+    else:
+        return original__mul__(self, other)
+GenericMatrix.__mul__ = custom__mul__
+
