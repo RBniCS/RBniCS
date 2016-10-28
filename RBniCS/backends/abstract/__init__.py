@@ -24,6 +24,7 @@
 
 from RBniCS.backends.abstract.abs import abs
 from RBniCS.backends.abstract.affine_expansion_storage import AffineExpansionStorage
+from RBniCS.backends.abstract.assign import assign
 from RBniCS.backends.abstract.basis_functions_matrix import BasisFunctionsMatrix
 from RBniCS.backends.abstract.difference import difference
 from RBniCS.backends.abstract.eigen_solver import EigenSolver
@@ -51,6 +52,7 @@ from RBniCS.backends.abstract.sum import sum
 from RBniCS.backends.abstract.tensor_basis_list import TensorBasisList
 from RBniCS.backends.abstract.tensor_snapshots_list import TensorSnapshotsList
 from RBniCS.backends.abstract.tensors_list import TensorsList
+from RBniCS.backends.abstract.time_quadrature import TimeQuadrature
 from RBniCS.backends.abstract.time_stepping import TimeStepping
 from RBniCS.backends.abstract.transpose import transpose
 from RBniCS.backends.abstract.vector import Vector
@@ -58,6 +60,7 @@ from RBniCS.backends.abstract.vector import Vector
 __all__ = [
     'abs',
     'AffineExpansionStorage',
+    'assign',
     'BasisFunctionsMatrix',
     'difference',
     'EigenSolver',
@@ -85,6 +88,7 @@ __all__ = [
     'TensorBasisList',
     'TensorSnapshotsList',
     'TensorsList',
+    'TimeQuadrature',
     'TimeStepping',
     'transpose',
     'Vector'

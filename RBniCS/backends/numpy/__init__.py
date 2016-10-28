@@ -24,6 +24,7 @@
 
 from RBniCS.backends.numpy.abs import abs
 from RBniCS.backends.numpy.affine_expansion_storage import AffineExpansionStorage
+from RBniCS.backends.numpy.assign import assign
 from RBniCS.backends.numpy.basis_functions_matrix import BasisFunctionsMatrix
 from RBniCS.backends.numpy.difference import difference
 from RBniCS.backends.numpy.eigen_solver import EigenSolver
@@ -58,6 +59,7 @@ from RBniCS.backends.numpy.vector import Vector
 __all__ = [
     'abs',
     'AffineExpansionStorage',
+    'assign',
     'BasisFunctionsMatrix',
     'difference',
     'EigenSolver',

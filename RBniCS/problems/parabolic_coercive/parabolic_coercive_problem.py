@@ -24,7 +24,7 @@
 
 from RBniCS.problems.base import TimeDependentProblem
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
-from RBniCS.backends import product, sum, TimeStepping
+from RBniCS.backends import assign, product, sum, TimeStepping
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -92,13 +92,13 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
         def store_time(t):
             self.t = t
         def store_solution(solution, solution_dot):
-            self._solution = solution
-            self._solution_dot = solution_dot
+            assign(self._solution, solution)
+            assign(self._solution_dot, solution_dot)
         # Solve by TimeStepping object
         solver = TimeStepping(jacobian_eval, self._solution, residual_eval, bc_eval)
         solver.set_parameters(self._time_stepping_parameters)
         self._solution_over_time = solver.solve()
-        self._solution = self._solution_over_time[-1]
+        assign(self._solution, self._solution_over_time[-1])
         return self._solution_over_time
         
     ## Perform a truth evaluation of the (compliant) output

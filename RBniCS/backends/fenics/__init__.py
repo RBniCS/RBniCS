@@ -32,6 +32,7 @@ assert has_slepc()
 # Import modules
 from RBniCS.backends.fenics.abs import abs
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
+from RBniCS.backends.fenics.assign import assign
 from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
 from RBniCS.backends.fenics.difference import difference
 from RBniCS.backends.fenics.eigen_solver import EigenSolver
@@ -66,6 +67,7 @@ from RBniCS.backends.fenics.vector import Vector
 __all__ = [
     'abs',
     'AffineExpansionStorage',
+    'assign',
     'BasisFunctionsMatrix',
     'difference',
     'EigenSolver',

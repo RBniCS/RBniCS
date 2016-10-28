@@ -102,14 +102,15 @@ class ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem):
         def store_time(t):
             self.t = t
         def store_solution(solution, solution_dot):
-            self._solution = solution
-            self._solution_dot = solution_dot
+            assign(self._solution, solution)
+            assign(self._solution_dot, solution_dot)
         # Solve by TimeStepping object
         self._solution = OnlineFunction(N)
+        self._solution_dot = OnlineFunction(N)
         solver = TimeStepping(jacobian_eval, self._solution, residual_eval, bc_eval)
         solver.set_parameters(self._time_stepping_parameters)
         self._solution_over_time = solver.solve()
-        self._solution = self._solution_over_time[-1]
+        assign(self._solution, self._solution_over_time[-1])
         return self._solution_over_time
         
     # Perform an online evaluation of the (compliant) output

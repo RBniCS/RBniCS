@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends import assign
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override
 
@@ -60,9 +61,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             errors_over_time = list() # (over compute_error tuple output index) of list (over time) of real numbers
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
                 self.t = k*self.dt
-                self._solution = reduced_solution
+                assign(self._solution, reduced_solution)
                 self.truth_problem.t = k*self.dt
-                self.truth_problem._solution = truth_solution
+                assign(self.truth_problem._solution, truth_solution)
                 errors = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self)
                 if len(errors_over_time) == 0:
                     errors_over_time = [list() for _ in range(len(errors_over_time))]

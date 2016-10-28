@@ -24,7 +24,7 @@
 
 from math import sqrt
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from RBniCS.backends import FunctionsList, product, transpose, LinearSolver, sum
+from RBniCS.backends import Function, FunctionsList, product, transpose, LinearSolver, sum
 from RBniCS.backends.online import OnlineAffineExpansionStorage
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
@@ -51,7 +51,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Residual terms
-        self._riesz_solve_storage = self.truth_problem._solution.copy(deepcopy=True)
+        self._riesz_solve_storage = Function(self.truth_problem.V)
         self.riesz = dict() # from string to FunctionsList
         self.riesz_product = dict() # from string to OnlineAffineExpansionStorage
         self.build_error_estimation_operators__initialized = False
