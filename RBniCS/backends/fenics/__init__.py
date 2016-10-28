@@ -34,6 +34,7 @@ from RBniCS.backends.fenics.abs import abs
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.fenics.assign import assign
 from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.backends.fenics.copy import copy
 from RBniCS.backends.fenics.eigen_solver import EigenSolver
 from RBniCS.backends.fenics.evaluate import evaluate
 from RBniCS.backends.fenics.export import export
@@ -67,6 +68,7 @@ __all__ = [
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',
+    'copy',
     'EigenSolver',
     'evaluate',
     'export',

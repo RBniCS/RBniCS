@@ -15,27 +15,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary linear algebra module
+## @file 
+#  @brief 
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.basic.copy import copy
-from RBniCS.backends.basic.functions_list import FunctionsList
-from RBniCS.backends.basic.gram_schmidt import GramSchmidt
-from RBniCS.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
-from RBniCS.backends.basic.tensors_list import TensorsList
-from RBniCS.backends.basic.transpose import transpose
+from RBniCS.backends.basic import copy as basic_copy
+import RBniCS.backends.numpy
+from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.matrix import Matrix
+from RBniCS.backends.numpy.vector import Vector
+import RBniCS.backends.numpy.wrapping
+from RBniCS.utils.decorators import backend_for
 
-__all__ = [
-    'BasisFunctionsMatrix',
-    'copy',
-    'FunctionsList',
-    'GramSchmidt',
-    'ProperOrthogonalDecompositionBase',
-    'TensorsList',
-    'transpose'
-]
+@backend_for("NumPy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), ))
+def copy(arg):
+    return basic_copy(arg, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping)
+    

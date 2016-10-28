@@ -15,27 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary linear algebra module
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.basic.copy import copy
-from RBniCS.backends.basic.functions_list import FunctionsList
-from RBniCS.backends.basic.gram_schmidt import GramSchmidt
-from RBniCS.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
-from RBniCS.backends.basic.tensors_list import TensorsList
-from RBniCS.backends.basic.transpose import transpose
+from RBniCS.utils.decorators import abstract_backend
 
-__all__ = [
-    'BasisFunctionsMatrix',
-    'copy',
-    'FunctionsList',
-    'GramSchmidt',
-    'ProperOrthogonalDecompositionBase',
-    'TensorsList',
-    'transpose'
-]
+@abstract_backend
+def copy(arg):
+    pass
+    

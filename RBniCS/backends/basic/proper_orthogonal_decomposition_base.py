@@ -83,9 +83,9 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
                 (eigvector, _) = eigensolver.get_eigenvector(i)
                 b = self.snapshots_matrix*eigvector
                 if X is not None:
-                    b = self.backend.rescale(b, 1./sqrt(transpose(b)*X*b))
+                    b /= sqrt(transpose(b)*X*b)
                 else:
-                    b = self.backend.rescale(b, 1./sqrt(transpose(b)*b))
+                    b /= sqrt(transpose(b)*b)
                 Z.enrich(b)
                 
             self.eigensolver = eigensolver

@@ -26,6 +26,7 @@ from RBniCS.backends.abstract.abs import abs
 from RBniCS.backends.abstract.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.abstract.assign import assign
 from RBniCS.backends.abstract.basis_functions_matrix import BasisFunctionsMatrix
+from RBniCS.backends.abstract.copy import copy
 from RBniCS.backends.abstract.eigen_solver import EigenSolver
 from RBniCS.backends.abstract.evaluate import evaluate
 from RBniCS.backends.abstract.export import export
@@ -60,6 +61,7 @@ __all__ = [
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',
+    'copy',
     'EigenSolver',
     'evaluate',
     'export',

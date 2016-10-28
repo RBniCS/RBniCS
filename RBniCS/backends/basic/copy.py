@@ -15,27 +15,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary linear algebra module
+## @file
+#  @brief
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.basic.copy import copy
-from RBniCS.backends.basic.functions_list import FunctionsList
-from RBniCS.backends.basic.gram_schmidt import GramSchmidt
-from RBniCS.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
-from RBniCS.backends.basic.tensors_list import TensorsList
-from RBniCS.backends.basic.transpose import transpose
-
-__all__ = [
-    'BasisFunctionsMatrix',
-    'copy',
-    'FunctionsList',
-    'GramSchmidt',
-    'ProperOrthogonalDecompositionBase',
-    'TensorsList',
-    'transpose'
-]
+def copy(arg, backend, wrapping):
+    assert isinstance(arg, (backend.Function.Type(), backend.Vector.Type(), backend.Matrix.Type()))
+    if isinstance(arg, backend.Function.Type()):
+        return wrapping.function_copy(arg)
+    elif isinstance(arg, (backend.Matrix.Type(), backend.Vector.Type())):
+        return wrapping.tensor_copy(arg)
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in copy.")
+        

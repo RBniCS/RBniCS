@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 from RBniCS.reduction_methods.base import ReductionMethod
-from RBniCS.backends import evaluate, rescale
+from RBniCS.backends import evaluate
 from RBniCS.backends.online import OnlineMatrix
 from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
 from RBniCS.utils.mpi import print
@@ -207,7 +207,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
     ## Update basis (greedy version)
     def update_basis_greedy(self, error, maximum_error):
-        self.EIM_approximation.Z.enrich(rescale(error, 1./maximum_error))
+        self.EIM_approximation.Z.enrich(error/maximum_error)
         self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
         self.EIM_approximation.N += 1
 
