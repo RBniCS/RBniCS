@@ -68,6 +68,10 @@ class FunctionsList(object):
         pass
         
     @abstractmethod
+    def __setitem__(self, key, item):
+        pass
+        
+    @abstractmethod
     def __iter__(self):
         pass
         

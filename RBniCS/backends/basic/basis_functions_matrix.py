@@ -171,6 +171,13 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
                 return self._components[component_0][key]
             else: # return all basis functions for each component, then the user may use __getitem__ of FunctionsList to extract a single basis function
                 return self._components[key]
+                
+    @override
+    def __setitem__(self, key, item):
+        assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
+        assert len(self._components) == 1, "Cannot set components, only single functions. Did you mean to call __getitem__ to extract a component and __setitem__ of a single function on that component?"
+        component_0 = self._components.keys()[0]
+        self._components[component_0][key] = item
             
     def _precompute_slice(self, N):
         assert isinstance(N, (int, dict))

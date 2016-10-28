@@ -136,6 +136,11 @@ class FunctionsList(AbstractFunctionsList):
             return self._list[key]
             
     @override
+    def __setitem__(self, key, item):
+        assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
+        self._list[key] = key
+            
+    @override
     def __iter__(self):
         return self._list.__iter__()
         
