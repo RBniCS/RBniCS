@@ -79,8 +79,8 @@ class ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem):
             assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
             assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
             return (
-                  assembled_operator["m"]*solution_dot.vector()
-                + assembled_operator["a"]*solution.vector()
+                  assembled_operator["m"]*solution_dot
+                + assembled_operator["a"]*solution
                 - assembled_operator["f"]
             )
         def jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):

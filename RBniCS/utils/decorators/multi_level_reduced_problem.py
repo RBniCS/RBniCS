@@ -116,7 +116,7 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                     reduced_output = reduced_solution_and_output[1]
                     truth_problem_l = self._compute_error__current_bak_truth_problem
                     for level in range(self._reduction_level - 1, with_respect_to_level, -1):
-                        N_l = reduced_solution.vector().N
+                        N_l = reduced_solution.N
                         reduced_solution = truth_problem_l.Z[:N_l]*reduced_solution
                         truth_problem_l = truth_problem_l.truth_problem
                     reduced_solution_and_output = (reduced_solution, reduced_output)

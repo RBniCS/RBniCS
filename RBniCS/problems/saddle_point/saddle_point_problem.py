@@ -107,7 +107,7 @@ class SaddlePointProblem(ParametrizedDifferentialProblem):
         assert len(self.operator["inner_product_s_restricted"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.operator["inner_product_s_restricted"][0]
         assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))
-        assembled_operator_rhs = assembled_operator_bt*self._solution.vector()
+        assembled_operator_rhs = assembled_operator_bt*self._solution
         if self.dirichlet_bc["s"] is not None:
             assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc_s"), self.dirichlet_bc["s"]))
         else:

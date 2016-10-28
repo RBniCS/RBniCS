@@ -92,7 +92,7 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
     # Perform an online evaluation of the (compliant) output
     @override
     def output(self):
-        N = self._solution.vector().N
+        N = self._solution.N
         assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
         self._output = transpose(assembled_output_operator)*self._solution
         return self._output
@@ -120,7 +120,7 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
         
     # Internal method for error computation
     def _compute_error(self):
-        N = self._solution.vector().N
+        N = self._solution.N
         # Compute the error on the solution
         reduced_solution = self.Z[:N]*self._solution
         truth_solution = self.truth_problem._solution

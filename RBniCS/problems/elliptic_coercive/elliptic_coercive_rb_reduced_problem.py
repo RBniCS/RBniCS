@@ -114,7 +114,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         
     ## Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
-        N = self._solution.vector().N
+        N = self._solution.N
         theta_a = self.compute_theta("a")
         theta_f = self.compute_theta("f")
         return (
@@ -158,7 +158,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
                     homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
                 else:
                     homogeneous_dirichlet_bc = None
-                solver = LinearSolver(inner_product, self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n].vector(), homogeneous_dirichlet_bc)
+                solver = LinearSolver(inner_product, self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n], homogeneous_dirichlet_bc)
                 solver.solve()
                 self.riesz["a"][qa].enrich(self._riesz_solve_storage)
     

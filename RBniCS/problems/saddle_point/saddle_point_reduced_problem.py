@@ -146,7 +146,7 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
         
     # Internal method for error computation
     def _compute_error(self):
-        N = self._solution.vector().N
+        N = self._solution.N
         # Compute the error on the solution
         reduced_solution = self.Z[:N]*self._solution
         truth_solution = self.truth_problem._solution

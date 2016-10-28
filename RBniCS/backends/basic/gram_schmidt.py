@@ -41,9 +41,9 @@ class GramSchmidt(AbstractGramSchmidt):
         
         transpose = self.backend.transpose
 
-        n_basis = len(Z) # basis are store as a list of vectors
+        n_basis = len(Z)
         b = Z[n_basis - 1] # reference to the last basis
         for i in range(N_bc, n_basis - 1):
             b = self.wrapping.gram_schmidt_projection_step(b, X, Z[i], self.backend.transpose)
-        b.vector()[:] /= sqrt(transpose(b)*X*b)
+        b /= sqrt(transpose(b)*X*b)
         

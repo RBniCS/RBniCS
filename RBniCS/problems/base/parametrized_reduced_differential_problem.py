@@ -296,7 +296,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def export_solution(self, folder, filename, solution=None, component=None):
         if solution is None:
             solution = self._solution
-        N = solution.vector().N
+        N = solution.N
         self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution, component)
             
     #  @}
@@ -413,7 +413,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                         solve_message += " (obtained for mu = " + str(self.mu) + ") in the basis matrix"
                         print(solve_message)
                         lifting = self.truth_problem.solve()
-                        lifting.vector()[:] /= theta_bc[i]
+                        lifting /= theta_bc[i]
                         self.Z.enrich(lifting, component_name=component_name)
                     # Restore the standard compute_theta method
                     self.truth_problem.compute_theta = standard_compute_theta
