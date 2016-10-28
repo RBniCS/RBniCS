@@ -34,7 +34,6 @@ from RBniCS.backends.fenics.abs import abs
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.fenics.assign import assign
 from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.fenics.difference import difference
 from RBniCS.backends.fenics.eigen_solver import EigenSolver
 from RBniCS.backends.fenics.evaluate import evaluate
 from RBniCS.backends.fenics.export import export
@@ -53,7 +52,6 @@ from RBniCS.backends.fenics.product import product
 from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
-from RBniCS.backends.fenics.rescale import rescale
 from RBniCS.backends.fenics.separated_parametrized_form import SeparatedParametrizedForm
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
 from RBniCS.backends.fenics.sum import sum
@@ -69,7 +67,6 @@ __all__ = [
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',
-    'difference',
     'EigenSolver',
     'evaluate',
     'export',
@@ -88,7 +85,6 @@ __all__ = [
     'ProperOrthogonalDecomposition',
     'ReducedMesh',
     'ReducedVertices',
-    'rescale',
     'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',

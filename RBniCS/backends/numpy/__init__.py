@@ -26,7 +26,6 @@ from RBniCS.backends.numpy.abs import abs
 from RBniCS.backends.numpy.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.numpy.assign import assign
 from RBniCS.backends.numpy.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.numpy.difference import difference
 from RBniCS.backends.numpy.eigen_solver import EigenSolver
 from RBniCS.backends.numpy.evaluate import evaluate
 from RBniCS.backends.numpy.export import export
@@ -45,7 +44,6 @@ from RBniCS.backends.numpy.product import product
 from RBniCS.backends.numpy.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 #from RBniCS.backends.numpy.reduced_mesh import ReducedMesh
 #from RBniCS.backends.numpy.reduced_vertices import ReducedVertices
-from RBniCS.backends.numpy.rescale import rescale
 #from RBniCS.backends.numpy.separated_parametrized_form import SeparatedParametrizedForm
 from RBniCS.backends.numpy.snapshots_matrix import SnapshotsMatrix
 from RBniCS.backends.numpy.sum import sum
@@ -61,7 +59,6 @@ __all__ = [
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',
-    'difference',
     'EigenSolver',
     'evaluate',
     'export',
@@ -80,7 +77,6 @@ __all__ = [
     'ProperOrthogonalDecomposition',
 #    'ReducedMesh',
 #    'ReducedVertices',
-    'rescale',
 #    'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',
