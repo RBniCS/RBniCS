@@ -26,7 +26,7 @@ from __future__ import print_function
 from abc import ABCMeta, abstractmethod
 import types
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
-from RBniCS.backends import BasisFunctionsMatrix, difference, transpose
+from RBniCS.backends import BasisFunctionsMatrix, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.sampling import ParameterSpaceSubset
 from RBniCS.utils.decorators import Extends, override, StoreMapFromBasisFunctionsMatrixToReducedProblem, StoreMapFromProblemToReducedProblem, sync_setters
@@ -267,7 +267,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             if has_non_homogeneous_dirichlet_bc(component_name):
                 theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
                 assert_lengths(component_name)
-                return difference(snapshot, self.Z[:self.N_bc]*theta_bc)
+                return snapshot - self.Z[:self.N_bc]*theta_bc
             else:
                 return snapshot
         

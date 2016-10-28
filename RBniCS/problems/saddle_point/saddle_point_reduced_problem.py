@@ -25,7 +25,7 @@
 from math import sqrt
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.saddle_point.saddle_point_problem import SaddlePointProblem
-from RBniCS.backends import difference, LinearSolver, product, sum, transpose
+from RBniCS.backends import LinearSolver, product, sum, transpose
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
 from RBniCS.reduction_methods.saddle_point import SaddlePointReductionMethod
@@ -150,13 +150,13 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
         # Compute the error on the solution
         reduced_solution = self.Z[:N]*self._solution
         truth_solution = self.truth_problem._solution
-        error = difference(truth_solution, reduced_solution)
+        error = truth_solution - reduced_solution
         velocity_inner_product = self.truth_problem.inner_product["u"][0]
-        velocity_exact_norm_squared = transpose(truth_solution.vector())*velocity_inner_product*truth_solution.vector()
-        velocity_error_norm_squared = transpose(error.vector())*velocity_inner_product*error.vector()
+        velocity_exact_norm_squared = transpose(truth_solution)*velocity_inner_product*truth_solution
+        velocity_error_norm_squared = transpose(error)*velocity_inner_product*error
         pressure_inner_product = self.truth_problem.inner_product["p"][0]
-        pressure_exact_norm_squared = transpose(truth_solution.vector())*pressure_inner_product*truth_solution.vector()
-        pressure_error_norm_squared = transpose(error.vector())*pressure_inner_product*error.vector()
+        pressure_exact_norm_squared = transpose(truth_solution)*pressure_inner_product*truth_solution
+        pressure_error_norm_squared = transpose(error)*pressure_inner_product*error
         # Compute the error on the output
         reduced_output = self._output
         truth_output = self.truth_problem._output

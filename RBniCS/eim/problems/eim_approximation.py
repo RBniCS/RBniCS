@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import abs, copy, difference, evaluate, export, max
+from RBniCS.backends import abs, copy, evaluate, export, max
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
 
@@ -154,7 +154,7 @@ class EIMApproximation(ParametrizedProblem):
         
         # Compute the error (difference with the eim approximation)
         if N > 0:
-            error = difference(self.snapshot, self.Z[:N]*self._interpolation_coefficients)
+            error = self.snapshot - self.Z[:N]*self._interpolation_coefficients
         else:
             error = copy(self.snapshot) # need a copy because it will be rescaled
         

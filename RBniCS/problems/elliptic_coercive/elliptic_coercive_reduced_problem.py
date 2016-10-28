@@ -25,7 +25,7 @@
 from math import sqrt
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.backends import difference, LinearSolver, product, sum, transpose
+from RBniCS.backends import LinearSolver, product, sum, transpose
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
@@ -124,9 +124,9 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
         # Compute the error on the solution
         reduced_solution = self.Z[:N]*self._solution
         truth_solution = self.truth_problem._solution
-        error = difference(truth_solution, reduced_solution)
+        error = truth_solution - reduced_solution
         assembled_error_inner_product_operator = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
-        error_norm_squared = transpose(error.vector())*assembled_error_inner_product_operator*error.vector() # norm SQUARED of the error
+        error_norm_squared = transpose(error)*assembled_error_inner_product_operator*error # norm SQUARED of the error
         # Compute the error on the output
         error_output = abs(self.truth_problem._output - self._output)
         return (sqrt(error_norm_squared), error_output)

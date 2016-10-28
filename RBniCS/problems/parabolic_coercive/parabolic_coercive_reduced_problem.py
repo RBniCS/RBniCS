@@ -26,7 +26,7 @@ from math import sqrt
 from RBniCS.problems.base import TimeDependentReducedProblem
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveReducedProblem
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from RBniCS.backends import difference, product, sum, TimeQuadrature, TimeStepping
+from RBniCS.backends import product, sum, TimeQuadrature, TimeStepping
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
 from RBniCS.reduction_methods.parabolic_coercive import ParabolicCoerciveReductionMethod
