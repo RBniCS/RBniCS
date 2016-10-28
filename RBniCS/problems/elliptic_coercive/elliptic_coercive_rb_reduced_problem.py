@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
+from numpy import isclose
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 from RBniCS.backends import Function, FunctionsList, product, transpose, LinearSolver, sum
 from RBniCS.backends.online import OnlineAffineExpansionStorage
@@ -98,7 +99,6 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
-        from numpy import isclose
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert alpha >= 0.
         return sqrt(abs(eps2)/alpha)
@@ -107,7 +107,6 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     def estimate_error_output(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
-        from numpy import isclose
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert alpha >= 0.
         return abs(eps2)/alpha

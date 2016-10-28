@@ -22,7 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from math import sqrt
 from RBniCS.problems.base import TimeDependentReducedProblem
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveReducedProblem
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem

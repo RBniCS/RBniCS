@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
+from numpy import isclose
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.backends import LinearSolver, product, sum, transpose
@@ -129,7 +130,8 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
         error_norm_squared = transpose(error)*assembled_error_inner_product_operator*error # norm SQUARED of the error
         # Compute the error on the output
         error_output = abs(self.truth_problem._output - self._output)
-        return (sqrt(error_norm_squared), error_output)
+        assert error_norm_squared >= 0. or isclose(error_norm_squared, 0.)
+        return (sqrt(abs(error_norm_squared)), error_output)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ###########################

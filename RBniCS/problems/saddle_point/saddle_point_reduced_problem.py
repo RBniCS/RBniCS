@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
+from numpy import isclose
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.saddle_point.saddle_point_problem import SaddlePointProblem
 from RBniCS.backends import LinearSolver, product, sum, transpose
@@ -161,6 +162,10 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
         reduced_output = self._output
         truth_output = self.truth_problem._output
         error_output = abs(truth_output - reduced_output)
+        assert velocity_error_norm_squared >= 0. or isclose(velocity_error_norm_squared, 0.)
+        assert velocity_exact_norm_squared >= 0. or isclose(velocity_exact_norm_squared, 0.)
+        assert pressure_error_norm_squared >= 0. or isclose(pressure_error_norm_squared, 0.)
+        assert pressure_exact_norm_squared >= 0. or isclose(pressure_exact_norm_squared, 0.)
         return (sqrt(velocity_error_norm_squared), sqrt(velocity_error_norm_squared/velocity_exact_norm_squared), sqrt(pressure_error_norm_squared), sqrt(pressure_error_norm_squared/pressure_exact_norm_squared), error_output, error_output/truth_output)
         
     #  @}
