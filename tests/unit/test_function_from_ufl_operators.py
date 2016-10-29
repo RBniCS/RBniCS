@@ -62,6 +62,9 @@ def conversion_test(V, isclose):
     z1_minus_z2_over_4 = function_from_ufl_operators(z1 - z2/4.)
     assert isclose(z1_minus_z2_over_4.vector().array(), 0.5).all()
     
+    z1_minus_z2_over_2 = function_from_ufl_operators((z1 - z2)/2.)
+    assert isclose(z1_minus_z2_over_2.vector().array(), -0.5).all()
+    
     z3 = Function(V)
     z3.vector()[:] = 3.
     
@@ -136,6 +139,12 @@ def transpose_test(V, A, b, isclose):
     assert isclose(transpose(z1 - z2/4.)*A*(z1 - z2/4.), 0.25)
     assert isclose(transpose(b)*(z1 - z2/4.), 0.5)
     assert isclose(transpose(z1 - z2/4.)*b, 0.5)
+    
+    assert isclose(transpose(z1)*A*((z1 - z2)/2.), -0.5)
+    assert isclose(transpose((z1 - z2)/2.)*A*z1, -0.5)
+    assert isclose(transpose((z1 - z2)/2.)*A*((z1 - z2)/2.), 0.25)
+    assert isclose(transpose(b)*((z1 - z2)/2.), -0.5)
+    assert isclose(transpose((z1 - z2)/2.)*b, -0.5)
     
     z3 = Function(V)
     z3.vector()[:] = 3.

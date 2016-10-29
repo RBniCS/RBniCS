@@ -85,7 +85,7 @@ def _function_from_ufl_product(factor_1, factor_2):
         return product
         
 def _function_from_ufl_division(nominator, denominator):
-    assert isinstance(nominator, Function)
+    nominator = function_from_ufl_operators(nominator)
     assert isinstance(denominator, (float, ScalarValue))
     division = nominator.copy(deepcopy=True)
     division.vector()[:] /= float(denominator)
