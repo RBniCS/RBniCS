@@ -25,18 +25,20 @@
 from math import fabs, fabs as scalar_fabs
 from numpy import ndarray as VectorMatrixType, fabs as vector_matrix_fabs, argmax as vector_matrix_argmax
 from numpy.linalg import norm as vector_matrix_norm
+from ufl.core.operator import Operator
 from dolfin import as_backend_type, Point, vertices
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.wrapping_utils import function_from_ufl_operators
 from RBniCS.utils.decorators import backend_for
 from RBniCS.utils.mpi import parallel_max
 
 # abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max
 # even though here we actually carry out both the max and the abs!
-@backend_for("FEniCS", inputs=((Matrix.Type(), Vector.Type(), Function.Type()), ))
+@backend_for("FEniCS", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), Operator), ))
 def abs(expression):
-    assert isinstance(expression, (Matrix.Type(), Vector.Type(), Function.Type()))
+    assert isinstance(expression, (Matrix.Type(), Vector.Type(), Function.Type(), Operator))
     if isinstance(expression, Matrix.Type()):
         # Note: PETSc offers a method MatGetRowMaxAbs, but it is not wrapped in petsc4py. We do the same by hand
         mat = as_backend_type(expression).mat()
@@ -74,8 +76,8 @@ def abs(expression):
         mpi_comm = vec.comm.tompi4py()
         (global_value_max, global_i_max) = parallel_max(mpi_comm, value_max, (i_max, ), fabs)
         return AbsOutput(global_value_max, global_i_max)
-    elif isinstance(expression, Function.Type()):
-        function = expression
+    elif isinstance(expression, (Function.Type(), Operator)):
+        function = function_from_ufl_operators(expression)
         mesh = function.ufl_function_space().mesh()
         point_max = None
         value_max = None
