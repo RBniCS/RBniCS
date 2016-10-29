@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from ufl.core.operator import Operator
 from dolfin import FunctionSpace
 from RBniCS.backends.basic import FunctionsList as BasicFunctionsList
 import RBniCS.backends.fenics
@@ -35,7 +36,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 class FunctionsList(BasicFunctionsList):
     @override
     def __init__(self, V_or_Z):
-        BasicFunctionsList.__init__(self, V_or_Z, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy)
+        BasicFunctionsList.__init__(self, V_or_Z, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ))
         
     @override
     def _enrich(self, function, component=None, copy=True):

@@ -37,23 +37,27 @@ from RBniCS.utils.mpi import is_io_process
 @Extends(AbstractFunctionsList)
 class FunctionsList(AbstractFunctionsList):
     @override
-    def __init__(self, V_or_Z, backend, wrapping, online_backend):
+    def __init__(self, V_or_Z, backend, wrapping, online_backend, AdditionalFunctionTypes=None):
         self.V_or_Z = V_or_Z
         self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
         self.backend = backend
         self.wrapping = wrapping
         self.online_backend = online_backend
+        if AdditionalFunctionTypes is None:
+            self.FunctionTypes = (backend.Function.Type(), )
+        else:
+            self.FunctionTypes = AdditionalFunctionTypes + (backend.Function.Type(), )
         self._list = list() # of functions
         self._precomputed_slices = dict() # from tuple to FunctionsList
     
     @override
     def enrich(self, functions, component=None, copy=True):
         # Append to storage
-        assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function.Type()))
+        assert isinstance(functions, (tuple, list, FunctionsList, ) + self.FunctionTypes)
         if isinstance(functions, (tuple, list, FunctionsList)):
             for function in functions:
                 self._enrich(function)
-        elif isinstance(functions, self.backend.Function.Type()):
+        elif isinstance(functions, self.FunctionTypes):
             self._enrich(functions)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.enrich.")
