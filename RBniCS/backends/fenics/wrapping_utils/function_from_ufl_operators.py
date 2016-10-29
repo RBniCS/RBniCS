@@ -26,7 +26,6 @@ from ufl.algebra import Division, Product, Sum
 from ufl.constantvalue import ScalarValue
 from ufl.tensors import as_tensor, ComponentTensor
 from dolfin import Function, GenericVector
-from RBniCS.backends.fenics.wrapping import function_copy
 
 def function_from_ufl_operators(input_function):
     assert isinstance(input_function, (Function, Sum, Product, Division, ComponentTensor))
@@ -67,7 +66,7 @@ def _function_from_ufl_sum(addend_1, addend_2):
     addend_2 = function_from_ufl_operators(addend_2)
     assert isinstance(addend_1, Function)
     assert isinstance(addend_2, Function)
-    sum_ = function_copy(addend_1)
+    sum_ = addend_1.copy(deepcopy=True)
     sum_.vector().add_local(addend_2.vector().array())
     sum_.vector().apply("")
     return sum_
@@ -76,19 +75,19 @@ def _function_from_ufl_product(factor_1, factor_2):
     assert isinstance(factor_1, (float, ScalarValue)) or isinstance(factor_2, (float, ScalarValue))
     if isinstance(factor_1, (float, ScalarValue)):
         factor_2 = function_from_ufl_operators(factor_2)
-        product = function_copy(factor_2)
+        product = factor_2.copy(deepcopy=True)
         product.vector()[:] *= float(factor_1)
         return product
     else: # isinstance(factor_2, (float, ScalarValue))
         factor_1 = function_from_ufl_operators(factor_1)
-        product = function_copy(factor_1)
+        product = factor_1.copy(deepcopy=True)
         product.vector()[:] *= float(factor_2)
         return product
         
 def _function_from_ufl_division(nominator, denominator):
     assert isinstance(nominator, Function)
     assert isinstance(denominator, (float, ScalarValue))
-    division = function_copy(nominator)
+    division = nominator.copy(deepcopy=True)
     division.vector()[:] /= float(denominator)
     return division
     
