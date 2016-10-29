@@ -45,6 +45,9 @@ class _Function_Type(object):
     
     def vector(self):
         return self._v
+        
+    def __iter__(self):
+        return self._v.flat
 
         
 @backend_for("NumPy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)
