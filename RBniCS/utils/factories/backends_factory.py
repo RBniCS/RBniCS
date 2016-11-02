@@ -246,7 +246,10 @@ def are_subclass(input_types, backend_input_types):
         return False
     else:
         for (input_type, backend_input_type) in zip(input_types, backend_input_types):
-            if isinstance(input_type, _tuple_of):
+            if backend_input_type is None:
+                assert input_type is not None
+                return False
+            elif isinstance(input_type, _tuple_of):
                 if isinstance(backend_input_type, _tuple_of):
                     if not input_type.are_subclass(backend_input_type):
                         return False
