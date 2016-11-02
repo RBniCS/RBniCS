@@ -59,12 +59,6 @@ x = inner(du, v)*dx
 X = assemble(x)
 
 # ~~~ Sparse case ~~~ #
-# Residual and jacobian functions
-def sparse_residual_eval(solution):
-    return replace(r, {u: solution})
-def sparse_jacobian_eval(solution):
-    return replace(j, {u: solution})
-    
 # Define boundary condition
 bc = [DirichletBC(V, exact_solution_expression, boundary)]
 
@@ -77,28 +71,60 @@ def initial_guess():
     bc[0].apply(initial_guess.vector())
     return initial_guess
 
+# ::: Callbacks return forms :: #
+# Residual and jacobian functions
+def sparse_form_residual_eval(solution):
+    return replace(r, {u: solution})
+def sparse_form_jacobian_eval(solution):
+    return replace(j, {u: solution})
+    
 # Solve the nonlinear problem
-sparse_solution = initial_guess()
-sparse_solver = SparseNonlinearSolver(sparse_jacobian_eval, sparse_solution, sparse_residual_eval, bc)
-sparse_solver.set_parameters({
-    "nonlinear_solver": "snes",
-    "snes_solver": {
-        "linear_solver": "mumps",
-        "maximum_iterations": 20,
-        "report": True,
-        "error_on_nonconvergence": True
-    }
+sparse_form_solution = initial_guess()
+sparse_form_solver = SparseNonlinearSolver(sparse_form_jacobian_eval, sparse_form_solution, sparse_form_residual_eval, bc)
+sparse_form_solver.set_parameters({
+    "linear_solver": "mumps",
+    "maximum_iterations": 20,
+    "report": True,
+    "error_on_nonconvergence": True
 })
-sparse_solver.solve()
+sparse_form_solver.solve()
 
 # Compute the error
-sparse_error = Function(V)
-sparse_error.vector().add_local(+ sparse_solution.vector().array())
-sparse_error.vector().add_local(- exact_solution.vector().array())
-sparse_error.vector().apply("")
-sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-print "SparseNonlinearSolver error:", sparse_error_norm
-assert isclose(sparse_error_norm, 0., atol=1.e-5)
+sparse_form_error = Function(V)
+sparse_form_error.vector().add_local(+ sparse_form_solution.vector().array())
+sparse_form_error.vector().add_local(- exact_solution.vector().array())
+sparse_form_error.vector().apply("")
+sparse_form_error_norm = sparse_form_error.vector().inner(X*sparse_form_error.vector())
+print "SparseNonlinearSolver error (form callbacks):", sparse_form_error_norm
+assert isclose(sparse_form_error_norm, 0., atol=1.e-5)
+
+# ::: Callbacks return tensors :: #
+# Residual and jacobian functions
+def sparse_tensor_residual_eval(solution):
+    return assemble(replace(r, {u: solution}))
+def sparse_tensor_jacobian_eval(solution):
+    return assemble(replace(j, {u: solution}))
+    
+# Solve the nonlinear problem
+sparse_tensor_solution = initial_guess()
+sparse_tensor_solver = SparseNonlinearSolver(sparse_tensor_jacobian_eval, sparse_tensor_solution, sparse_tensor_residual_eval, bc)
+sparse_tensor_solver.set_parameters({
+    "linear_solver": "mumps",
+    "maximum_iterations": 20,
+    "report": True,
+    "error_on_nonconvergence": True
+})
+sparse_tensor_solver.solve()
+
+# Compute the error
+sparse_tensor_error = Function(V)
+sparse_tensor_error.vector().add_local(+ sparse_tensor_solution.vector().array())
+sparse_tensor_error.vector().add_local(- exact_solution.vector().array())
+sparse_tensor_error.vector().apply("")
+sparse_tensor_error_norm = sparse_tensor_error.vector().inner(X*sparse_tensor_error.vector())
+print "SparseNonlinearSolver error (tensor callbacks):", sparse_tensor_error_norm
+assert isclose(sparse_tensor_error_norm, 0., atol=1.e-5)
+assert isclose(sparse_tensor_error_norm, sparse_form_error_norm)
 
 # ~~~ Dense case ~~~ #
 if mesh.mpi_comm().size == 1: # dense solver is not partitioned
