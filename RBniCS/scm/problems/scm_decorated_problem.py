@@ -28,8 +28,6 @@ from RBniCS.scm.problems.scm_approximation import SCMApproximation
 def SCMDecoratedProblem(
     M_e = -1,
     M_p = -1,
-    constrain_minimum_eigenvalue = 1.e5,
-    constrain_maximum_eigenvalue = 1.e-5,
     bounding_box_minimum_eigensolver_parameters = None,
     bounding_box_maximum_eigensolver_parameters = None,
     coercivity_eigensolver_parameters = None,
@@ -47,8 +45,6 @@ def SCMDecoratedProblem(
     @ProblemDecoratorFor(SCM, ExactAlgorithm=ExactCoercivityConstant,
         M_e = M_e,
         M_p = M_p,
-        constrain_minimum_eigenvalue = constrain_minimum_eigenvalue,
-        constrain_maximum_eigenvalue = constrain_maximum_eigenvalue,
         bounding_box_minimum_eigensolver_parameters = bounding_box_minimum_eigensolver_parameters,
         bounding_box_maximum_eigensolver_parameters = bounding_box_maximum_eigensolver_parameters,
         coercivity_eigensolver_parameters = coercivity_eigensolver_parameters
@@ -66,8 +62,6 @@ def SCMDecoratedProblem(
                 decorator_inputs = dict()
                 decorator_inputs["M_e"] = M_e
                 decorator_inputs["M_p"] = M_p
-                decorator_inputs["constrain_minimum_eigenvalue"] = constrain_minimum_eigenvalue
-                decorator_inputs["constrain_maximum_eigenvalue"] = constrain_maximum_eigenvalue
                 decorator_inputs["bounding_box_minimum_eigensolver_parameters"] = bounding_box_minimum_eigensolver_parameters
                 decorator_inputs["bounding_box_maximum_eigensolver_parameters"] = bounding_box_maximum_eigensolver_parameters
                 decorator_inputs["coercivity_eigensolver_parameters"] = coercivity_eigensolver_parameters

@@ -23,14 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from dolfin import Function
 from RBniCS.backends import transpose
 from RBniCS.backends.online import OnlineVector
 from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList
 from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override
-from RBniCS.scm.problems import ParametrizedHermitianEigenProblem
+from RBniCS.scm.problems import ParametrizedCoercivityConstantEigenProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class SCM
@@ -61,8 +60,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self._offline__mu_index = 0
         
         # Get data that were temporarily store in the SCM_approximation
-        self.constrain_minimum_eigenvalue = self.SCM_approximation._input_storage_for_SCM_reduction["constrain_minimum_eigenvalue"]
-        self.constrain_maximum_eigenvalue = self.SCM_approximation._input_storage_for_SCM_reduction["constrain_maximum_eigenvalue"]
         self.bounding_box_minimum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_minimum_eigensolver_parameters"]
         self.bounding_box_maximum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"]
         del self.SCM_approximation._input_storage_for_SCM_reduction
@@ -139,6 +136,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
             # Evaluate the coercivity constant
             print("evaluate the stability factor for mu =", self.SCM_approximation.mu)
             (alpha, eigenvector) = self.SCM_approximation.exact_coercivity_constant_calculator.solve()
+            print("stability factor =", alpha)
             
             # Update internal data structures
             self.update_alpha_J(alpha)
@@ -172,13 +170,13 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         for q in range(Q):
             # Compute the minimum eigenvalue
-            minimum_eigenvalue_calculator = ParametrizedHermitianEigenProblem(self.SCM_approximation.truth_problem, ("a", q), False, self.constrain_minimum_eigenvalue, "smallest", self.bounding_box_minimum_eigensolver_parameters)
+            minimum_eigenvalue_calculator = ParametrizedCoercivityConstantEigenProblem(self.SCM_approximation.truth_problem, ("a", q), False, "smallest", self.bounding_box_minimum_eigensolver_parameters)
             minimum_eigenvalue_calculator.init()
             (self.SCM_approximation.B_min[q], _) = minimum_eigenvalue_calculator.solve()
             print("B_min[" + str(q) + "] = " + str(self.SCM_approximation.B_min[q]))
             
             # Compute the maximum eigenvalue
-            maximum_eigenvalue_calculator = ParametrizedHermitianEigenProblem(self.SCM_approximation.truth_problem, ("a", q), False, self.constrain_maximum_eigenvalue, "largest", self.bounding_box_maximum_eigensolver_parameters)
+            maximum_eigenvalue_calculator = ParametrizedCoercivityConstantEigenProblem(self.SCM_approximation.truth_problem, ("a", q), False, "largest", self.bounding_box_maximum_eigensolver_parameters)
             maximum_eigenvalue_calculator.init()
             (self.SCM_approximation.B_max[q], _) = maximum_eigenvalue_calculator.solve()
             print("B_max[" + str(q) + "] = " + str(self.SCM_approximation.B_max[q]))

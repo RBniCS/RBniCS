@@ -33,7 +33,7 @@ from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO, Folders
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("NumPy", inputs=((int, AbstractAffineExpansionStorage), (int, None)))
+@BackendFor("NumPy", inputs=((int, AbstractAffineExpansionStorage), (int, bool, None)))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def __init__(self, arg1, arg2=None):
@@ -45,9 +45,10 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         assert (
             (isinstance(arg1, int) and (isinstance(arg2, int) or arg2 is None))
                 or
-            (isinstance(arg1, AbstractAffineExpansionStorage) and arg2 is None)
+            (isinstance(arg1, AbstractAffineExpansionStorage) (isinstance(arg2, bool) or arg2 is None))
         )
         if isinstance(arg1, AbstractAffineExpansionStorage):
+            assert arg2 is None # the bool case has not been considered yet
             self._recursive = True
             self._content = arg1._content
             self._content_as_matrix = arg1._content_as_matrix

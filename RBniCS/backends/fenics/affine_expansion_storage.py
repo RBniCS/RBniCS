@@ -23,17 +23,17 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl import Form
-from dolfin import assemble, DirichletBC
+from dolfin import adjoint, assemble, DirichletBC
 from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("FEniCS", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Matrix.Type()), tuple_of(Vector.Type())), ))
+@BackendFor("FEniCS", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Matrix.Type()), tuple_of(Vector.Type())), (bool, None)))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
-    def __init__(self, args):
+    def __init__(self, args, symmetrize=None):
         self._content = None
         self._type = None
         # Type checking
@@ -52,12 +52,20 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 return TypeError("Invalid input arguments to AffineExpansionStorage")
         # Actual init
         if is_Form:
-            self._content = [assemble(arg) for arg in args]
+            if symmetrize is None or symmetrize is False:
+                self._content = [assemble(arg) for arg in args]
+            elif symmetrize is True:
+                # this case is required by SCM. keep_diagonal is enabled because it is needed to constrain DirichletBC eigenvalues
+                self._content = [assemble(0.5*(arg + adjoint(arg)), keep_diagonal=True) for arg in args]
+            else:
+                return TypeError("Invalid input arguments to AffineExpansionStorage")
             self._type = "Form"
         elif is_DirichletBC:
+            assert symmetrize is None
             self._content = args
             self._type = "DirichletBC"
         elif is_Tensor:
+            assert symmetrize is None
             self._content = args
             self._type = "Form"
         else:

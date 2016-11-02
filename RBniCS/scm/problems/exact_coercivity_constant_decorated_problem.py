@@ -24,11 +24,10 @@
 
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
-from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
+from RBniCS.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 from RBniCS.scm.problems.scm_decorated_problem import SCM
 
 def ExactCoercivityConstantDecoratedProblem(
-    constrain_minimum_eigenvalue = 1.e5,
     eigensolver_parameters = None,
     **decorator_kwargs
 ):
@@ -36,7 +35,6 @@ def ExactCoercivityConstantDecoratedProblem(
         eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
         
     @ProblemDecoratorFor(ExactCoercivityConstant, replaces=SCM,
-        constrain_minimum_eigenvalue = constrain_minimum_eigenvalue,
         eigensolver_parameters = eigensolver_parameters
     )
     def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
@@ -49,7 +47,7 @@ def ExactCoercivityConstantDecoratedProblem(
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 
-                self.exact_coercivity_constant_calculator = ParametrizedHermitianEigenProblem(self, "a", True, constrain_minimum_eigenvalue, "smallest", eigensolver_parameters)
+                self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(self, "a", True, "smallest", eigensolver_parameters)
                 
             ## Initialize data structures required for the online phase
             @override

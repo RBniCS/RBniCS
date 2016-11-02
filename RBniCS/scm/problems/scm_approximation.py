@@ -24,7 +24,6 @@
 
 from __future__ import print_function
 import glpk # for LB computation
-import sys # for sys.float_info.max
 import operator # to find closest parameters
 from math import sqrt
 from RBniCS.backends import export
@@ -32,7 +31,7 @@ from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import print
 from RBniCS.scm.utils.io import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
-from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
+from RBniCS.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class SCM
@@ -74,12 +73,10 @@ class SCMApproximation(ParametrizedProblem):
         # I/O
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         # 
-        self.exact_coercivity_constant_calculator = ParametrizedHermitianEigenProblem(truth_problem, "a", True, kwargs["constrain_minimum_eigenvalue"], "smallest", kwargs["coercivity_eigensolver_parameters"])
+        self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(truth_problem, "a", True, "smallest", kwargs["coercivity_eigensolver_parameters"])
         
         # Store here input parameters provided by the user that are needed by the reduction method
         self._input_storage_for_SCM_reduction = dict()
-        self._input_storage_for_SCM_reduction["constrain_minimum_eigenvalue"] = kwargs["constrain_minimum_eigenvalue"]
-        self._input_storage_for_SCM_reduction["constrain_maximum_eigenvalue"] = kwargs["constrain_maximum_eigenvalue"]
         self._input_storage_for_SCM_reduction["bounding_box_minimum_eigensolver_parameters"] = kwargs["bounding_box_minimum_eigensolver_parameters"]
         self._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"] = kwargs["bounding_box_maximum_eigensolver_parameters"]
         
@@ -254,7 +251,7 @@ class SCMApproximation(ParametrizedProblem):
             N = self.N
             UB_vectors_J = self.UB_vectors_J
             
-            alpha_UB = sys.float_info.max
+            alpha_UB = None
             self.truth_problem.set_mu(mu)
             current_theta_a = self.truth_problem.compute_theta("a")
             
@@ -266,9 +263,10 @@ class SCMApproximation(ParametrizedProblem):
                 for q in range(Q):
                     obj += UB_vector[q]*current_theta_a[q]
                 
-                if obj < alpha_UB:
+                if alpha_UB is None or obj < alpha_UB:
                     alpha_UB = obj
             
+            assert alpha_UB is not None
             alpha_UB = float(alpha_UB)
             self._get_stability_factor_upper_bound__previous_mu = self.mu
             self._get_stability_factor_upper_bound__previous_alpha_UB = alpha_UB

@@ -22,13 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import adjoint, Function, DirichletBC
+from numpy import isclose
+from dolfin import adjoint
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.backends import AffineExpansionStorage, EigenSolver, sum, product
 from RBniCS.utils.decorators import sync_setters, Extends, override
 
 @Extends(ParametrizedProblem)
-class ParametrizedHermitianEigenProblem(ParametrizedProblem):
+class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the EIM object
     #  @{
@@ -37,17 +38,12 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
     @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
-    def __init__(self, truth_problem, term, multiply_by_theta, constrain_eigenvalue, spectrum, eigensolver_parameters):
+    def __init__(self, truth_problem, term, multiply_by_theta, spectrum, eigensolver_parameters):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix="") # this class does not export anything
         self.truth_problem = truth_problem
         
-        # We need to discard dofs related to bcs in eigenvalue computations. To avoid having to create a PETSc submatrix
-        # we simply zero rows and columns and replace the diagonal element with an eigenvalue that for sure
-        # will not be the one we are interested in
-        self.constrain_eigenvalue = constrain_eigenvalue
-        # Matrices/vectors resulting from the truth discretization: condensed version discard
-        # Dirichlet DOFs
+        # Matrices/vectors resulting from the truth discretization
         self.term = term
         assert isinstance(self.term, (tuple, str))
         if isinstance(self.term, tuple):
@@ -56,8 +52,8 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
             isinstance(self.term[1], int)
         self.multiply_by_theta = multiply_by_theta
         assert isinstance(self.multiply_by_theta, bool)
-        self.operator__condensed = AffineExpansionStorage()
-        self.inner_product__condensed = AffineExpansionStorage() # even though it will contain only one matrix
+        self.operator = AffineExpansionStorage()
+        self.inner_product = AffineExpansionStorage() # even though it will contain only one matrix
         self.spectrum = spectrum
         self.eigensolver_parameters = eigensolver_parameters
         
@@ -70,32 +66,16 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
     ########################### end - CONSTRUCTORS - end ###########################
     
     def init(self):
-        # Condense the symmetric part of the required term
+        # Store the symmetric part of the required term
         if isinstance(self.term, tuple):
             forms = (self.truth_problem.assemble_operator(self.term[0])[ self.term[1] ], )
         else:
             assert isinstance(self.term, str)
             forms = self.truth_problem.assemble_operator(self.term)
-        symmetric_forms = [ 0.5*(form + adjoint(form)) for form in forms]
-        symmetric_forms = tuple(symmetric_forms)
-        self.operator__condensed = AffineExpansionStorage(symmetric_forms)
-        self.clear_constrained_dofs(self.operator__condensed, self.constrain_eigenvalue)
+        self.operator = AffineExpansionStorage(forms, symmetrize=True)
         
-        # Condense the inner product matrix
-        self.inner_product__condensed = AffineExpansionStorage(self.truth_problem.assemble_operator("inner_product"))
-        self.clear_constrained_dofs(self.inner_product__condensed, 1.)
-        
-    # Clear constrained dofs
-    def clear_constrained_dofs(self, operator, diag_value):
-        dirichlet_bc = self.truth_problem.dirichlet_bc
-        V = self.truth_problem.V
-        for op in operator:
-            if len(dirichlet_bc) > 0:
-                dummy = Function(V)
-                for bc_list in dirichlet_bc:
-                    for bc in bc_list:
-                        bc.zero(op)
-                        bc.zero_columns(op, dummy.vector(), diag_value)
+        # Store the inner product matrix
+        self.inner_product = AffineExpansionStorage(self.truth_problem.assemble_operator("inner_product"))
     
     def solve(self):
         if self._solve__previous_mu == self.mu:
@@ -103,16 +83,18 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
         else:
             if self.multiply_by_theta:
                 assert isinstance(self.term, str) # method untested otherwise
-                O = sum(product(self.truth_problem.compute_theta(self.term), self.operator__condensed))
+                O = sum(product(self.truth_problem.compute_theta(self.term), self.operator))
             else:
                 assert isinstance(self.term, tuple) # method untested otherwise
-                theta = (1.,)
-                assert len(theta) == len(self.operator__condensed)
-                O = sum(product(theta, self.operator__condensed))
-            assert len(self.inner_product__condensed) == 1
-            X = self.inner_product__condensed[0]
+                assert len(self.operator) == 1
+                O = self.operator[0]
+            assert len(self.inner_product) == 1
+            X = self.inner_product[0]
             
-            eigensolver = EigenSolver(O, X, self.truth_problem.V)
+            if self.truth_problem.dirichlet_bc is not None:
+                eigensolver = EigenSolver(self.truth_problem.V, O, X, self.truth_problem.dirichlet_bc)
+            else:
+                eigensolver = EigenSolver(self.truth_problem.V, O, X)
             eigensolver_parameters = dict()
             eigensolver_parameters["problem_type"] = "gen_hermitian"
             assert self.spectrum is "largest" or self.spectrum is "smallest"
@@ -125,12 +107,7 @@ class ParametrizedHermitianEigenProblem(ParametrizedProblem):
             r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
             r_vector, c_vector = eigensolver.get_eigenvector(0) # real and complex part of the eigenvectors
             
-            from numpy import isclose
             assert isclose(c, 0), "The required eigenvalue is not real"
-            assert not isclose(r, self.constrain_eigenvalue), "The required eigenvalue is too close to the one used to constrain Dirichlet boundary conditions"
-            #assert r >= 0 or isclose(r, 0), "The required eigenvalue is not positive"
-            
-            r_vector = Function(self.truth_problem.V, r_vector)
             
             self._solve__previous_mu = self.mu
             self._solve__previous_eigenvalue = r

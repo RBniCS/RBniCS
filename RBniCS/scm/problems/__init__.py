@@ -27,12 +27,12 @@ from RBniCS.scm.problems.scm_decorated_problem import SCM #, SCMDecoratedProblem
 from RBniCS.scm.problems.scm_decorated_reduced_problem import SCMDecoratedReducedProblem
 from RBniCS.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstant #, ExactCoercivityConstantDecoratedProblem # not needed
 from RBniCS.scm.problems.exact_coercivity_constant_decorated_reduced_problem import ExactCoercivityConstantDecoratedReducedProblem
-from RBniCS.scm.problems.parametrized_hermitian_eigenproblem import ParametrizedHermitianEigenProblem
+from RBniCS.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
 __all__ = [
     'SCM',
     'SCMDecoratedReducedProblem',
     'ExactCoercivityConstant',
     'ExactCoercivityConstantDecoratedReducedProblem',
-    'ParametrizedHermitianEigenProblem'
+    'ParametrizedCoercivityConstantEigenProblem'
 ]

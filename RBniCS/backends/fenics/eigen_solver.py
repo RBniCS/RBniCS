@@ -48,17 +48,6 @@ class EigenSolver(AbstractEigenSolver):
             self.A = self.A.copy()
             if self.B is not None:
                 self.B = self.B.copy()
-                
-            from petsc4py import PETSc
-            A_viewer = PETSc.Viewer().createASCII("Ab.m", comm= PETSc.COMM_WORLD)
-            A_viewer.pushFormat(PETSc.Viewer.Format.ASCII_MATLAB)
-            A_viewer.view(as_backend_type(self.A).mat())
-            A_viewer.popFormat()
-            b_viewer = PETSc.Viewer().createASCII("Bb.m", comm= PETSc.COMM_WORLD)
-            b_viewer.pushFormat(PETSc.Viewer.Format.ASCII_MATLAB)
-            b_viewer.view(as_backend_type(self.B).mat())
-            b_viewer.popFormat()
-            
         self._init_eigensolver(1.) # we will check in solve if it is an appropriate spurious eigenvalue
         
     def _init_eigensolver(self, spurious_eigenvalue):
@@ -71,24 +60,12 @@ class EigenSolver(AbstractEigenSolver):
             self.eigen_solver = SLEPcEigenSolver(as_backend_type(self.A), as_backend_type(self.B))
         else:
             self.eigen_solver = SLEPcEigenSolver(as_backend_type(self.A))
-            
-        if spurious_eigenvalue > 10:
-            from petsc4py import PETSc
-            A_viewer = PETSc.Viewer().createASCII("A.m", comm= PETSc.COMM_WORLD)
-            A_viewer.pushFormat(PETSc.Viewer.Format.ASCII_MATLAB)
-            A_viewer.view(as_backend_type(self.A).mat())
-            A_viewer.popFormat()
-            b_viewer = PETSc.Viewer().createASCII("B.m", comm= PETSc.COMM_WORLD)
-            b_viewer.pushFormat(PETSc.Viewer.Format.ASCII_MATLAB)
-            b_viewer.view(as_backend_type(self.B).mat())
-            b_viewer.popFormat()
 
     def _clear_constrained_dofs(self, operator, diag_value):
-        dummy = Function(self.V)
         for bc_list in self.bcs._content:
             for bc in bc_list:
-                bc.zero(operator)
-                bc.zero_columns(operator, dummy.vector(), diag_value)
+                constrained_dofs = [bc.function_space.dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
+                as_backend_type(operator).mat().zeroRowsColumns(constrained_dofs, diag_value)
         
     @override
     def set_parameters(self, parameters):
@@ -96,7 +73,7 @@ class EigenSolver(AbstractEigenSolver):
         assert parameters["spectrum"] in ("largest real", "smallest real")
         self._spectrum = parameters["spectrum"]
         if "spectral_shift" in parameters:
-            self._init_eigensolver(1./parameters["spectral_shift"]) # we will check in solve if it is an appropriate spurious eigenvalue
+            self._init_eigensolver(1./abs(parameters["spectral_shift"])) # we will check in solve if it is an appropriate spurious eigenvalue
         self.eigen_solver.parameters.update(parameters)
         
     @override
