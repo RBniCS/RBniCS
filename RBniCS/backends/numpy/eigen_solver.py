@@ -24,16 +24,17 @@
 
 from numpy import real, imag, matrix
 from scipy.linalg import eig, eigh
+from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
 from RBniCS.backends.abstract import EigenSolver as AbstractEigenSolver
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.function import Function
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractEigenSolver)
-@BackendFor("NumPy", inputs=(Matrix.Type(), (Matrix.Type(), None)))
+@BackendFor("NumPy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
 class EigenSolver(AbstractEigenSolver):
     @override
-    def __init__(self, A, B=None):
+    def __init__(self, Z, A, B=None, bcs=None):
         assert A.shape[0] == A.shape[1]
         if B is not None:
             assert B.shape[0] == B.shape[1]
@@ -44,6 +45,7 @@ class EigenSolver(AbstractEigenSolver):
         self.parameters = {}
         self.eigs = None
         self.eigv = None
+        assert bcs is None # the case bcs != None has not been implemented yet
         
     @override
     def set_parameters(self, parameters):

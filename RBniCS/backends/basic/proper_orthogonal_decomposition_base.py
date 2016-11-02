@@ -70,7 +70,9 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             else:
                 correlation = transpose(snapshots_matrix)*snapshots_matrix
             
-            eigensolver = OnlineEigenSolver(correlation)
+            Z = self.BasisContainerType(self.V_or_Z)
+            
+            eigensolver = OnlineEigenSolver(Z, correlation) 
             parameters = {
                 "problem_type": "hermitian",
                 "spectrum": "largest real"
@@ -78,7 +80,6 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             eigensolver.set_parameters(parameters)
             eigensolver.solve()
             
-            Z = self.BasisContainerType(self.V_or_Z)
             for i in range(Nmax):
                 (eigvector, _) = eigensolver.get_eigenvector(i)
                 b = self.snapshots_matrix*eigvector
