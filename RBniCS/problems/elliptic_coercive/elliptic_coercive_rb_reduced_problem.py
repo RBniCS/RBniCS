@@ -152,7 +152,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         inner_product = self.truth_problem.inner_product[0]
         for qa in range(self.Q["a"]):
             for n in range(len(self.riesz["a"][qa]), self.N + self.N_bc):
-                if len(self.truth_problem.dirichlet_bc) > 0:
+                if self.truth_problem.dirichlet_bc is not None:
                     theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
                     homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
                 else:
@@ -166,7 +166,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
         inner_product = self.truth_problem.inner_product[0]
         for qf in range(self.Q["f"]):
-            if len(self.truth_problem.dirichlet_bc) > 0:
+            if self.truth_problem.dirichlet_bc is not None:
                 theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
                 homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
             else:
