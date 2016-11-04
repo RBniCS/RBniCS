@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-import glpk # for LB computation
 import operator # to find closest parameters
 from math import sqrt
-from RBniCS.backends import export
+from RBniCS.backends import export, LinearProgramSolver
+from RBniCS.backends.abstract.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import print
@@ -130,8 +130,6 @@ class SCMApproximation(ParametrizedProblem):
     ## Get a lower bound for alpha
     def get_stability_factor_lower_bound(self, mu, safeguard=True):
         if self._get_stability_factor_lower_bound__previous_mu != self.mu:
-            lp = glpk.glp_create_prob()
-            glpk.glp_set_obj_dir(lp, glpk.GLP_MIN)
             Q = self.truth_problem.Q["a"]
             N = self.N
             M_e = self.M_e
@@ -145,28 +143,19 @@ class SCMApproximation(ParametrizedProblem):
             if M_p > len(self.complement_C_J):
                 M_p = len(self.complement_C_J)
             
-            # 1. Linear program unknowns: Q variables, y_1, ..., y_{Q_a}
-            glpk.glp_add_cols(lp, Q)
-            
-            # 2. Range: constrain the variables to be in the bounding box (note: GLPK indexing starts from 1)
+            # 1. Constrain the Q variables to be in the bounding box
+            bounds = list() # of Q pairs
             for q in range(Q):
-                if self.B_min[q] < self.B_max[q]: # the usual case
-                    glpk.glp_set_col_bnds(lp, q + 1, glpk.GLP_DB, self.B_min[q], self.B_max[q])
-                elif self.B_min[q] == self.B_max[q]: # unlikely, but possible
-                    glpk.glp_set_col_bnds(lp, q + 1, glpk.GLP_FX, self.B_min[q], self.B_max[q])
-                else: # there is something wrong in the bounding box: set as unconstrained variable
-                    print("Warning: wrong bounding box for affine expansion element #", q)
-                    glpk.glp_set_col_bnds(lp, q + 1, glpk.GLP_FR, 0., 0.)
+                assert self.B_min[q] <= self.B_max[q]
+                bounds.append((self.B_min[q], self.B_max[q]))
+                
+            # 2. Add three different sets of constraints.
+            #    Our constrains are of the form
+            #       a^T * x >= b
+            constraints_matrix = Matrix(M_e + M_p + 1, Q)
+            constraints_vector = Vector(M_e + M_p + 1)
             
-            # 3. Add two different sets of constraints
-            glpk.glp_add_rows(lp, M_e + M_p)
-            array_size = (M_e + M_p)*Q
-            matrix_row_index = glpk.intArray(array_size + 1) # + 1 since GLPK indexing starts from 1
-            matrix_column_index = glpk.intArray(array_size + 1)
-            matrix_content = glpk.doubleArray(array_size + 1)
-            glpk_container_size = 0
-            
-            # 3a. Add constraints: a constraint is added for the closest samples to mu in C_J
+            # 2a. Add constraints: a constraint is added for the closest samples to mu in C_J
             closest_C_J_indices = self._closest_parameters(M_e, self.C_J, mu)
             for j in range(M_e):
                 # Overwrite parameter values
@@ -176,51 +165,57 @@ class SCMApproximation(ParametrizedProblem):
                 
                 # Assemble the LHS of the constraint
                 for q in range(Q):
-                    matrix_row_index[glpk_container_size + 1] = int(j + 1)
-                    matrix_column_index[glpk_container_size + 1] = int(q + 1)
-                    matrix_content[glpk_container_size + 1] = current_theta_a[q]
-                    glpk_container_size += 1
+                    constraints_matrix[j, q] = current_theta_a[q]
                 
                 # Assemble the RHS of the constraint
-                glpk.glp_set_row_bnds(lp, j + 1, glpk.GLP_LO, self.alpha_J[ closest_C_J_indices[j] ], 0.)
+                constraints_vector[j] = self.alpha_J[ closest_C_J_indices[j] ]
             closest_C_J_indices = None
             
-            # 3b. Add constraints: also constrain the closest point in the complement of C_J, 
+            # 2b. Add constraints: also constrain the closest point in the complement of C_J, 
             #                      with RHS depending on previously computed lower bounds
             closest_complement_C_J_indices = self._closest_parameters(M_p, self.complement_C_J, mu)
             for j in range(M_p):
+                # Overwrite parameter values
                 nu = self.training_set[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
                 self.truth_problem.set_mu(nu)
                 current_theta_a = self.truth_problem.compute_theta("a")
-                # Assemble first the LHS
+                
+                # Assemble the LHS of the constraint
                 for q in range(Q):
-                    matrix_row_index[glpk_container_size + 1] = int(M_e + j + 1)
-                    matrix_column_index[glpk_container_size + 1] = int(q + 1)
-                    matrix_content[glpk_container_size + 1] = current_theta_a[q]
-                    glpk_container_size += 1
-                # ... and then the RHS
-                glpk.glp_set_row_bnds(lp, M_e + j + 1, glpk.GLP_LO, self.alpha_LB_on_training_set[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ], 0.)
+                    constraints_matrix[M_e + j, q] = current_theta_a[q]
+                    
+                # Assemble the RHS of the constraint
+                constraints_vector[M_e + j] = self.alpha_LB_on_training_set[ self.complement_C_J[ closest_complement_C_J_indices[j] ] ]
             closest_complement_C_J_indices = None
             
-            # Load the assembled LHS
-            glpk.glp_load_matrix(lp, array_size, matrix_row_index, matrix_column_index, matrix_content)
-            
-            # 4. Add cost function coefficients
+            # 2c. Add constraints: also constrain the coercivity constant for mu to be positive
+            # Overwrite parameter values
             self.truth_problem.set_mu(mu)
             current_theta_a = self.truth_problem.compute_theta("a")
+            
+            # Assemble the LHS of the constraint
             for q in range(Q):
-                glpk.glp_set_obj_coef(lp, q + 1, current_theta_a[q])
+                constraints_matrix[M_e + M_p, q] = current_theta_a[q]
+                
+            # Assemble the RHS of the constraint
+            constraints_vector[M_e + M_p] = 0.
             
-            # 5. Solve the linear programming problem
-            options = glpk.glp_smcp()
-            glpk.glp_init_smcp(options)
-            options.msg_lev = glpk.GLP_MSG_ERR
-            options.meth = glpk.GLP_DUAL
-            glpk.glp_simplex(lp, options)
-            alpha_LB = glpk.glp_get_obj_val(lp)
-            glpk.glp_delete_prob(lp)
+            # 3. Add cost function coefficients
+            cost = Vector(Q)
+            for q in range(Q):
+                cost[q] = current_theta_a[q]
             
-            # 6. If a safeguard is requested (when called in the online stage of the RB method),
+            # 4. Solve the linear programming problem
+            linear_program = LinearProgramSolver(cost, constraints_matrix, constraints_vector, bounds)
+            try:
+                alpha_LB = linear_program.solve()
+            except LinearProgramSolverError:
+                print("SCM warning at mu = " + str(mu) + ": error occured while solving linear program.")
+                print("Please consider switching to a different solver. A truth eigensolve will be performed.")
+                
+                (alpha_LB, _) = self.exact_coercivity_constant_calculator.solve()
+            
+            # 5. If a safeguard is requested (when called in the online stage of the RB method),
             #    we check the resulting value of alpha_LB. In order to avoid divisions by zero
             #    or taking the square root of a negative number, we allow an inefficient evaluation.
             if safeguard == True:

@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
+from numpy import isclose
 from RBniCS.backends import transpose
 from RBniCS.backends.online import OnlineVector
 from RBniCS.reduction_methods.base import ReductionMethod
@@ -234,7 +235,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
             UB = self.SCM_approximation.get_stability_factor_upper_bound(mu)
             error_estimator = (UB - LB)/UB
             
-            from numpy import isclose
             if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
                 print("SCM warning at mu =", mu , ": LB =", LB, "< 0")
             if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1

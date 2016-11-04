@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from scipy.integrate import simps
-from RBniCS.utils.decorators import BackendFor
+from RBniCS.utils.decorators import BackendFor, tuple_of
 
-@BackendFor("Abstract") # this class will be shared among all backends
+@BackendFor("Common", inputs=(tuple_of(float), float))
 class TimeQuadrature(object):
     def __init__(self, time_interval, time_step_size):
         self._time_step_size = time_step_size

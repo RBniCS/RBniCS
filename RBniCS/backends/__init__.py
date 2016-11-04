@@ -32,6 +32,7 @@ import RBniCS.backends.numpy
 
 # Combine all enabled backends available in the factory and store them in this module
 from RBniCS.utils.factories import backends_factory, enable_backend
+enable_backend("Common")
 enable_backend("FEniCS")
 enable_backend("NumPy")
 backends_factory(current_module)
