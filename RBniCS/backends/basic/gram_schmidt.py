@@ -45,6 +45,8 @@ class GramSchmidt(AbstractGramSchmidt):
         b = Z[n_basis - 1]
         for i in range(N_bc, n_basis - 1):
             b = self.wrapping.gram_schmidt_projection_step(b, X, Z[i], self.backend.transpose)
-        b /= sqrt(transpose(b)*X*b)
+        norm_b = sqrt(transpose(b)*X*b)
+        if norm_b != 0.:
+            b /= norm_b
         Z[n_basis - 1] = b
         
