@@ -270,6 +270,8 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
                 self.jacobian_matrix = jacobian_form_or_matrix
             else:
                 as_backend_type(jacobian_form_or_matrix).mat().copy(as_backend_type(self.jacobian_matrix).mat())
+            # Make sure to keep nonzero patter, as FEniCS does by default
+            as_backend_type(jacobian_form_or_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
         else:
             raise AssertionError("Invalid time order in _TimeDependentProblem1.jacobian_matrix_assemble.")
             
@@ -394,6 +396,8 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
                 self.jacobian_matrix = jacobian_form_or_matrix
             else:
                 as_backend_type(jacobian_form_or_matrix).mat().copy(as_backend_type(self.jacobian_matrix).mat())
+            # Make sure to keep nonzero patter, as FEniCS does by default
+            as_backend_type(jacobian_form_or_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
         else:
             raise AssertionError("Invalid time order in _TimeDependentProblem1.jacobian_matrix_assemble.")
             

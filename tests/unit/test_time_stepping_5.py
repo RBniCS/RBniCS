@@ -83,9 +83,9 @@ def sparse_residual_eval(t, solution, solution_dot):
     g.t = t
     return assemble(replace(r, {u: solution, u_dot: solution_dot}))
 def sparse_jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):
-    return assemble(
-        Constant(solution_dot_coefficient)*replace(j_u_dot, {u_dot: solution_dot}) +
-        replace(j_u, {u: solution})
+    return (
+        assemble(replace(j_u_dot, {u_dot: solution_dot}))*solution_dot_coefficient
+        + assemble(replace(j_u, {u: solution}))
     )
     
 # Define boundary condition

@@ -35,7 +35,7 @@ Solve
     u_t = cos(x),     (t, x) in {0}    x [0, 2*pi]
 for g such that u = u_ex = sin(x+t)
 
-The difference between this test and test_time_stepping_1 is that residual and jacobian eval functions return assembled tensors,
+The difference between this test and test_time_stepping_3 is that residual and jacobian eval functions return assembled tensors,
 rather than forms.
 """
 
@@ -79,11 +79,11 @@ X = assemble(x)
 # Residual and jacobian functions
 def sparse_residual_eval(t, solution, solution_dot, solution_dot_dot):
     g.t = t
-    return replace(r, {u: solution, u_dot_dot: solution_dot_dot})
+    return assemble(replace(r, {u: solution, u_dot_dot: solution_dot_dot}))
 def sparse_jacobian_eval(t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient):
     return (
-        Constant(solution_dot_dot_coefficient)*replace(j_u_dot_dot, {u_dot_dot: solution_dot_dot}) +
-        replace(j_u, {u: solution})
+        assemble(replace(j_u_dot_dot, {u_dot_dot: solution_dot_dot}))*solution_dot_dot_coefficient +
+        assemble(replace(j_u, {u: solution}))
     )
     
 # Define boundary condition
