@@ -31,16 +31,17 @@ from RBniCS.utils.io import Folders
 
 # Export a solution to file
 @backend_for("NumPy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None)))
-def export(solution, directory, filename, component=None):
+def export(solution, directory, filename, suffix=None, component=None):
     assert isinstance(solution, (Function.Type(), Matrix.Type(), Vector.Type()))
     if isinstance(solution, Function.Type()):
         if component is None:
-            function_save(solution, directory, filename)
+            function_save(solution, directory, filename, suffix=suffix)
         else:
             solution_component = function_component(solution, component, copy=True)
-            function_save(solution_component, directory, filename)
+            function_save(solution_component, directory, filename, suffix=suffix)
     elif isinstance(solution, (Matrix.Type(), Vector.Type())):
         assert component is None
+        assert suffix is None
         tensor_save(solution, directory, filename)
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in export.")

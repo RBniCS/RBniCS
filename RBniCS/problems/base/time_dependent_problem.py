@@ -56,6 +56,13 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
         def set_final_time(self, T):
             self.T = T
             self._time_stepping_parameters["final_time"] = T
+            
+        ## Export solution to file
+        def export_solution(self, folder, filename, solution_over_time=None, component=None):
+            if solution is None:
+                solution_over_time = self._solution_over_time
+            for (k, solution) in enumerate(solution_over_time):
+                export(solution, folder, filename, component, suffix=k)
                 
     # return value (a class) for the decorator
     return TimeDependentProblem_Class

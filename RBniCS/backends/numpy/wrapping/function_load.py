@@ -25,7 +25,9 @@
 from RBniCS.utils.io import NumpyIO
 from RBniCS.backends.numpy.function import Function
 
-def function_load(directory, filename, Z_unused):
+def function_load(directory, filename, Z_unused, suffix=None):
+    if suffix is not None:
+        filename = filename + "." + str(suffix)
     vec = NumpyIO.load_file(directory, filename)
     return Function(vec)
 

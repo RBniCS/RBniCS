@@ -26,6 +26,6 @@ from RBniCS.utils.decorators import abstract_backend
 
 # Export a solution to file
 @abstract_backend
-def export(solution, directory, filename, component=None):
+def export(solution, directory, filename, suffix=None, component=None):
     pass
     

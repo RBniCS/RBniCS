@@ -22,6 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_save(fun, directory, filename):
+def function_save(fun, directory, filename, suffix=None):
     pass
 

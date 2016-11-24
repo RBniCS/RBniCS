@@ -24,10 +24,14 @@
 
 from dolfin import File
 
-def function_save(fun, directory, filename):
+def function_save(fun, directory, filename, suffix=None):
+    # Ignore suffix, pvd files are able to store several snapshots
     full_filename = str(directory) + "/" + filename + ".pvd"
     file = File(full_filename, "compressed")
     file << fun
+    # Append suffix if needed for xml
+    if suffix is not None:
+        filename = filename + "." + str(suffix)
     full_filename = str(directory) + "/" + filename + ".xml"
     file = File(full_filename)
     file << fun
