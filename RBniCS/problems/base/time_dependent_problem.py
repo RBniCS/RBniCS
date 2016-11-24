@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import Function
+from RBniCS.backends import export, Function
 from RBniCS.utils.decorators import Extends, override
 
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
@@ -41,6 +41,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self.T  = None
             # Additional options for time stepping may be stored in the following dict
             self._time_stepping_parameters = dict()
+            self._time_stepping_parameters["initial_time"] = 0.
             # Time derivative of the solution, at the current time
             self._solution_dot = Function(self.V)
             # Solution and output over time
@@ -58,11 +59,12 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._time_stepping_parameters["final_time"] = T
             
         ## Export solution to file
+        @override
         def export_solution(self, folder, filename, solution_over_time=None, component=None):
-            if solution is None:
+            if solution_over_time is None:
                 solution_over_time = self._solution_over_time
             for (k, solution) in enumerate(solution_over_time):
-                export(solution, folder, filename, component, suffix=k)
+                export(solution, folder, filename, suffix=k, component=component)
                 
     # return value (a class) for the decorator
     return TimeDependentProblem_Class

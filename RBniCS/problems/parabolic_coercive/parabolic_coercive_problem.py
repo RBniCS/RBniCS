@@ -43,7 +43,7 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
     @override
     def __init__(self, V, **kwargs):
         # Call to parent
-        ParametrizedDifferentialProblem.__init__(self, V, **kwargs)
+        EllipticCoerciveProblem.__init__(self, V, **kwargs)
         
         # Form names for parabolic problems
         self.terms = ["m", "a", "f"]

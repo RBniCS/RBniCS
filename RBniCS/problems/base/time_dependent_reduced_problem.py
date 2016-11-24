@@ -78,6 +78,14 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         #  @}
         ########################### end - ERROR ANALYSIS - end ###########################
         
+        ## Export solution to file
+        @override
+        def export_solution(self, folder, filename, solution_over_time=None, component=None):
+            if solution_over_time is None:
+                solution_over_time = self._solution_over_time
+            for (k, solution) in enumerate(solution_over_time):
+                ParametrizedReducedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component)
+        
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class
     

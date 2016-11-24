@@ -22,17 +22,35 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import File
+from dolfin import assign, File
 
 def function_save(fun, directory, filename, suffix=None):
-    # Ignore suffix, pvd files are able to store several snapshots
-    full_filename = str(directory) + "/" + filename + ".pvd"
-    file = File(full_filename, "compressed")
-    file << fun
-    # Append suffix if needed for xml
+    _write_to_pvd_file(fun, directory, filename, suffix)
     if suffix is not None:
         filename = filename + "." + str(suffix)
     full_filename = str(directory) + "/" + filename + ".xml"
     file = File(full_filename)
     file << fun
-
+    
+def _write_to_pvd_file(fun, directory, filename, suffix):
+    full_filename = str(directory) + "/" + filename + ".pvd"
+    if suffix is not None:
+        if full_filename in _all_pvd_files:
+            assert _all_pvd_latest_suffix[full_filename] == suffix - 1
+            _all_pvd_latest_suffix[full_filename] = suffix
+        else:
+            assert suffix == 0
+            _all_pvd_files[full_filename] = File(full_filename, "compressed")
+            _all_pvd_latest_suffix[full_filename] = 0
+            _all_pvd_functions[full_filename] = fun.copy(deepcopy=True)
+        # Make sure to always use the same function, otherwise FEniCS
+        # changes the numbering and visualization is difficult in ParaView
+        assign(_all_pvd_functions[full_filename], fun)
+        _all_pvd_files[full_filename] << _all_pvd_functions[full_filename]
+    else:
+        file = File(full_filename, "compressed")
+        file << fun
+    
+_all_pvd_files = dict()
+_all_pvd_latest_suffix = dict()
+_all_pvd_functions = dict()

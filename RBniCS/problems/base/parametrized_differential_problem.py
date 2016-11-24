@@ -169,7 +169,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     def export_solution(self, folder, filename, solution=None, component=None):
         if solution is None:
             solution = self._solution
-        export(solution, folder, filename, component)
+        export(solution, folder, filename, component=component)
         
     #  @}
     ########################### end - I/O - end ########################### 
