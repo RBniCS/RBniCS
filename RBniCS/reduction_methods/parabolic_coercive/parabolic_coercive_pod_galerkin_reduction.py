@@ -22,22 +22,22 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-from RBniCS.backends import ProperOrthogonalDecomposition
-from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
-from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
+from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoercivePODGalerkinReduction
 #
+
+ParabolicCoercivePODGalerkinReduction_Base = ParabolicCoerciveReductionMethod(EllipticCoercivePODGalerkinReduction)
+
 # Base class containing the interface of a POD-Galerkin ROM
 # for parabolic coercive problems
-@Extends(EllipticCoercivePODGalerkinReduction) # needs to be first in order to override for last the methods
+@Extends(ParabolicCoercivePODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(ParabolicCoerciveProblem, "PODGalerkin")
-class ParabolicCoercivePODGalerkinReduction(EllipticCoercivePODGalerkinReduction):
+class ParabolicCoercivePODGalerkinReduction(ParabolicCoercivePODGalerkinReduction_Base):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
@@ -47,7 +47,7 @@ class ParabolicCoercivePODGalerkinReduction(EllipticCoercivePODGalerkinReduction
     @override
     def __init__(self, truth_problem):
         # Call the parent initialization
-        EllipticCoercivePODGalerkinReduction.__init__(self, truth_problem)
+        ParabolicCoercivePODGalerkinReduction_Base.__init__(self, truth_problem)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
