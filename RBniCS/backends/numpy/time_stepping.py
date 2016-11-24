@@ -39,10 +39,10 @@ from RBniCS.backends.numpy.nonlinear_solver import NonlinearSolver
 from RBniCS.backends.numpy.vector import Vector
 from RBniCS.backends.numpy.wrapping import function_copy
 from RBniCS.backends.numpy.wrapping_utils import DirichletBC
-from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
+from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractTimeStepping)
-@BackendFor("NumPy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, ThetaType + DictOfThetaType + (None,)))
+@BackendFor("NumPy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))
 class TimeStepping(AbstractTimeStepping):
     @override
     def __init__(self, jacobian_eval, solution, residual_eval, bcs_eval=None, time_order=1, solution_dot=None):
@@ -134,8 +134,8 @@ class _ScipyImplicitEuler(object):
             class _LinearSolver(LinearSolver):
                 def __init__(self_, t):
                     zero = Function(self.solution.vector().N) # equal to zero
-                    lhs = self.jacobian_eval(t, self.solution.vector(), zero.vector(), 1./self._time_step_size)
-                    rhs = self.residual_eval(t, self.solution.vector(), zero.vector())
+                    lhs = self.jacobian_eval(t, self.solution, zero, 1./self._time_step_size)
+                    rhs = self.residual_eval(t, self.solution, zero)
                     bcs_t = DirichletBC(lhs, rhs, self.bc_eval(t))
                     bcs_t_previous = DirichletBC(lhs, rhs, self.bc_eval(t - self._time_step_size))
                     bcs_increment = bcs_t - bcs_t_previous
@@ -158,10 +158,10 @@ class _ScipyImplicitEuler(object):
                         self_.solution_dot.vector()[:] = (solution - self.solution_previous.vector())/self._time_step_size
                     def _jacobian_eval(solution):
                         _store_solution_and_solution_dot(solution)
-                        return self.jacobian_eval(t, self_.solution.vector(), self_.solution_dot.vector(), 1./self._time_step_size)
+                        return self.jacobian_eval(t, self_.solution, self_.solution_dot, 1./self._time_step_size)
                     def _residual_eval(solution):
                         _store_solution_and_solution_dot(solution)
-                        return self.residual_eval(t, self_.solution.vector(), self_.solution_dot.vector())
+                        return self.residual_eval(t, self_.solution, self_.solution_dot)
                     bcs_t = self.bc_eval(t)
                     NonlinearSolver.__init__(self_, _jacobian_eval, self.solution, _residual_eval, bcs_t)
                 
@@ -221,7 +221,7 @@ class _ScipyImplicitEuler(object):
             self.solution_previous.vector()[:] = self.solution.vector()
             solution = solver.solve()
             if self._monitor is not None:
-                self._monitor(t, solution.vector())
+                self._monitor(t, solution)
             all_solutions.append(function_copy(solution))
         
         return all_solutions
@@ -235,8 +235,8 @@ if has_IDA:
             self.bc_eval = bc_eval
             self.jacobian_eval = jacobian_eval
             # We should be solving a square system
-            self.sample_residual = residual_eval(0, self.solution.vector(), self.solution_dot.vector())
-            self.sample_jacobian = jacobian_eval(0, self.solution.vector(), self.solution_dot.vector(), 0.)
+            self.sample_residual = residual_eval(0, self.solution, self.solution_dot)
+            self.sample_jacobian = jacobian_eval(0, self.solution, self.solution_dot, 0.)
             assert self.sample_jacobian.M == self.sample_jacobian.N
             assert self.sample_jacobian.N == self.sample_residual.N
             # Storage for current BC
@@ -254,7 +254,7 @@ if has_IDA:
                 # Convert to a matrix with one column, rather than an array
                 _store_solution_and_solution_dot(t, solution, solution_dot)
                 # Compute residual
-                residual_vector = self.residual_eval(t, solution, solution_dot)
+                residual_vector = self.residual_eval(t, self.solution, self.solution_dot)
                 # Apply BCs, if necessary
                 if self.bc_eval is not None:
                     self.current_bc.homogeneous_apply_to_vector(residual_vector)
@@ -264,7 +264,7 @@ if has_IDA:
                 # Convert to a matrix with one column, rather than an array
                 _store_solution_and_solution_dot(t, solution, solution_dot)
                 # Compute jacobian
-                jacobian_matrix = self.jacobian_eval(t, self.solution.vector(), self.solution_dot.vector(), solution_dot_coefficient)
+                jacobian_matrix = self.jacobian_eval(t, self.solution, self.solution_dot, solution_dot_coefficient)
                 # Apply BCs, if necessary
                 if self.bc_eval is not None:
                     self.current_bc.apply_to_matrix(jacobian_matrix)
@@ -347,7 +347,7 @@ if has_IDA:
                     self.current_bc.apply_to_vector(solution_as_function.vector())
                 all_solutions_as_functions.append(solution_as_function)
                 if self._monitor is not None:
-                    self._monitor(t, solution_as_function.vector())
+                    self._monitor(t, solution_as_function)
             self.solution.vector()[:] = all_solutions_as_functions[-1].vector()
             return all_solutions_as_functions
             

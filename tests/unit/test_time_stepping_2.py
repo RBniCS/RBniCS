@@ -164,7 +164,7 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
         return dense_jacobian
         
     def solution_from_dense_to_sparse(solution, u):
-        solution_array = asarray(solution).reshape(-1)
+        solution_array = asarray(solution.vector()).reshape(-1)
         solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
         u.vector().zero()
         u.vector().add_local(solution_array)
