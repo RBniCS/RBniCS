@@ -89,13 +89,13 @@ def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_val
                     log(DEBUG, "\t\tFound only one candidate: " + str(candidates[0]))
                 if inspect.isclass(candidates[0]):
                     log(DEBUG, "\tDiscarding parent classes of " + str(candidates[0]) + " from previous levels, if any")
-                    TypesList_to_be_removed = list() # of bools
-                    for t in TypesList:
+                    TypesList_to_be_removed = list() # of int
+                    for (index, t) in enumerate(TypesList):
                         assert inspect.isclass(t)
                         if issubclass(candidates[0], t):
                             assert candidates[0] is not t
                             log(DEBUG, "\t\tDiscarding " + str(t) + " in favor of its child " + str(candidates[0]))
-                            TypesList_to_be_removed.append(True)
+                            TypesList_to_be_removed.append(index)
                     for c in TypesList_to_be_removed:
                         del TypesList[c]
                 TypesList.append(candidates[0])

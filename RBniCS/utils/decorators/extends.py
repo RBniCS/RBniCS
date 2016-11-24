@@ -22,23 +22,36 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def Extends(Parent, preserve_class_name=False):
+import inspect
+
+def Extends(Parent_, preserve_class_name=False):
     def Extends_Decorator(Child):
         
-        bases = Child.__bases__
-        assert len(bases) == 1, "Child class has more than one base class"
-        Parent_is_base = False
-        while len(bases) == 1:
-            if bases[0] is Parent:
-                Parent_is_base = True
-                break
+        assert inspect.isclass(Parent_) or isinstance(Parent_, tuple)
+        if inspect.isclass(Parent_):
+            Parents = (Parent_, )
+        else:
+            Parents = Parent_
+        
+        Bases = Child.__bases__
+        assert len(Bases) == len(Parents), "Child class has more than base classes than the ones provided to Extends"
+        for (Parent, Base) in zip(Parents, Bases):
+            Parent_is_Base = False
+            if Base is Parent:
+                Parent_is_Base = True
             else:
-                bases = bases[0].__bases__
-        assert Parent_is_base, "The class that you have indicated as Parent is not a base class"
+                Ancestors = inspect.getmro(Base)
+                for Ancestor in Ancestors:
+                    if Ancestor is Parent:
+                        Parent_is_Base = True
+                        break
+            assert Parent_is_Base, "The class " + str(Parent) + ", that you have indicated as Parent, is not a base class"
         
         # TODO save the class documentation from the parent class
         
         if preserve_class_name:
+            assert len(Parents) == 1
+            Parent = Parents[0]
             setattr(Child, "__name__", Parent.__name__)
             setattr(Child, "__module__", Parent.__module__)
         

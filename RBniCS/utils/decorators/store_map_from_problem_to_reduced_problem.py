@@ -42,8 +42,11 @@ def StoreMapFromProblemToReducedProblem(ParametrizedReducedDifferentialProblem_D
     return StoreMapFromProblemToReducedProblem_Class
     
 def add_to_map_from_problem_to_reduced_problem(problem, reduced_problem):
-    assert problem not in _problem_to_reduced_problem_map
-    _problem_to_reduced_problem_map[problem] = reduced_problem
+    if problem not in _problem_to_reduced_problem_map:
+        _problem_to_reduced_problem_map[problem] = reduced_problem
+    else:
+        # this happens with multiple inheritance
+        assert _problem_to_reduced_problem_map[problem] == reduced_problem
     
 def get_reduced_problem_from_problem(problem):
     assert problem in _problem_to_reduced_problem_map
