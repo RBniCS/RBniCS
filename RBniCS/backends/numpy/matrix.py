@@ -23,6 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import ix_ as Slicer, ndarray as SlicerInnerType, matrix as MatrixBaseType
+from RBniCS.backends.numpy.function import Function
+from RBniCS.backends.numpy.vector import Vector
 from RBniCS.backends.numpy.wrapping_utils import slice_to_array, slice_to_size
 
 class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vectors correspond to two different types
@@ -64,7 +66,15 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
         return output
         
     def __mul__(self, other):
-        output = MatrixBaseType.__mul__(self, other)
+        if isinstance(other, (Function.Type(), Vector.Type())):
+            if isinstance(other, Function.Type()):
+                output_as_matrix = MatrixBaseType.__mul__(self, other.vector())
+            else:
+                output_as_matrix = MatrixBaseType.__mul__(self, other)
+            output = Vector(self.M)
+            output[:] = output_as_matrix[:]
+        else:
+            output = MatrixBaseType.__mul__(self, other)
         if isinstance(other, float):
             self._arithmetic_operations_preserve_attributes(other, output, other_is_matrix=False)
         return output
