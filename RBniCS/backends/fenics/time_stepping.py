@@ -427,6 +427,15 @@ class _PETScTSIntegrator(object):
             raise AssertionError("Invalid time order in _PETScTSIntegrator.__init__().")
         # ... and monitor
         self.ts.setMonitor(problem.monitor)
+        # Set sensible default values to parameters
+        default_parameters = {
+            "exact_final_time": "stepover",
+            "integrator_type": "beuler",
+            "problem_type": "linear",
+            "linear_solver": "mumps",
+            "report": True
+        }
+        self.set_parameters(default_parameters)
              
     def set_parameters(self, parameters):
         for (key, value) in parameters.iteritems():

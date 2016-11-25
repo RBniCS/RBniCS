@@ -275,6 +275,7 @@ if has_IDA:
             # Define an Assimulo IDA solver
             self.solver = IDA(self.problem)
             self.solver.display_progress = False
+            self.solver.verbosity = 50
             # Additional storage which will be setup by set_parameters
             self._final_time = None
             self._initial_time = 0.
@@ -318,6 +319,7 @@ if has_IDA:
                 elif key == "relative_tolerance":
                     self.solver.rtol = value
                 elif key == "report":
+                    self.solver.verbosity = 10
                     self.solver.display_progress = True
                     self.solver.report_continuously = True
                 elif key == "time_step_size":
