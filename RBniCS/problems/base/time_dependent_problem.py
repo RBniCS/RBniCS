@@ -42,19 +42,21 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             # Additional options for time stepping may be stored in the following dict
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["initial_time"] = 0.
-            # Time derivative of the solution, at the current time
-            self._solution_dot = Function(self.V)
             # Solution and output over time
             self._solution_over_time = list() # of Functions
             self._output_over_time = list() # of floats
             
         ## Set time step size
         def set_time_step_size(self, dt):
+            assert isinstance(dt, (float, int))
+            dt = float(dt)
             self.dt = dt
             self._time_stepping_parameters["time_step_size"] = dt
             
         ## Set final time
         def set_final_time(self, T):
+            assert isinstance(T, (float, int))
+            T = float(T)
             self.T = T
             self._time_stepping_parameters["final_time"] = T
             

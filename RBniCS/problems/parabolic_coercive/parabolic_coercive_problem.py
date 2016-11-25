@@ -24,7 +24,7 @@
 
 from RBniCS.problems.base import TimeDependentProblem
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
-from RBniCS.backends import assign, product, sum, TimeStepping
+from RBniCS.backends import assign, Function, product, sum, TimeStepping
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -62,8 +62,7 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
     def solve(self, **kwargs):
         # Functions required by the TimeStepping interface
         def residual_eval(t, solution, solution_dot):
-            store_time(t)
-            store_solution(solution, solution_dot)
+            self.t = t
             assembled_operator = dict()
             assembled_operator["m"] = sum(product(self.compute_theta("m"), self.operator["m"]))
             assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"]))
@@ -74,8 +73,7 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
                 - assembled_operator["f"]
             )
         def jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):
-            store_time(t)
-            store_solution(solution, solution_dot)
+            self.t = t
             assembled_operator = dict()
             assembled_operator["m"] = sum(product(self.compute_theta("m"), self.operator["m"]))
             assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"]))
@@ -84,17 +82,13 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
                 + assembled_operator["a"]
             )
         def bc_eval(t):
-            store_time(t)
+            self.t = t
             if self.dirichlet_bc is not None:
                 return sum(product(self.compute_theta("dirichlet_bc"), self.dirichlet_bc))
             else:
                 return None
-        def store_time(t):
-            self.t = t
-        def store_solution(solution, solution_dot):
-            assign(self._solution, solution)
-            assign(self._solution_dot, solution_dot)
         # Solve by TimeStepping object
+        assign(self._solution, Function(self.V))
         solver = TimeStepping(jacobian_eval, self._solution, residual_eval, bc_eval)
         solver.set_parameters(self._time_stepping_parameters)
         self._solution_over_time = solver.solve()

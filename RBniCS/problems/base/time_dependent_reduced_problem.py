@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import assign
+from RBniCS.backends import assign, TimeQuadrature
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override
 
@@ -46,8 +46,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["time_step_size"] = self.dt
             self._time_stepping_parameters["final_time"] = self.T
-            # Time derivative of the solution, at the current time
-            self._solution_dot = OnlineFunction()
             # Solution and output over time
             self._solution_over_time = list() # of Functions
             self._output_over_time = list() # of floats
@@ -66,9 +64,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assign(self.truth_problem._solution, truth_solution)
                 errors = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self)
                 if len(errors_over_time) == 0:
-                    errors_over_time = [list() for _ in range(len(errors_over_time))]
+                    errors_over_time = [list() for _ in range(len(errors))]
                 for (tuple_index, error) in enumerate(errors):
-                    errors[tuple_index].append(error)
+                    errors_over_time[tuple_index].append(error)
             time_quadrature = TimeQuadrature((0., self.T), self.dt)
             integrated_errors_over_time = list() # of real numbers
             for (tuple_index, error_over_time) in enumerate(errors_over_time):
@@ -83,8 +81,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def export_solution(self, folder, filename, solution_over_time=None, component=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
+            solution_over_time_as_truth_function = list()
             for (k, solution) in enumerate(solution_over_time):
-                ParametrizedReducedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component)
+                N = solution.N
+                solution_over_time_as_truth_function.append(self.Z[:N]*solution)
+            self.truth_problem.export_solution(folder, filename, solution_over_time_as_truth_function, component)
         
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class

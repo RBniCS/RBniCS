@@ -24,7 +24,7 @@
 
 from RBniCS.problems.base import TimeDependentReducedProblem
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from RBniCS.backends import product, sum, TimeQuadrature, TimeStepping
+from RBniCS.backends import assign, product, sum, TimeQuadrature, TimeStepping
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, MultiLevelReducedProblem
 from RBniCS.reduction_methods.parabolic_coercive import ParabolicCoerciveReductionMethod
@@ -71,8 +71,7 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
             N += self.N_bc
             # Functions required by the TimeStepping interface
             def residual_eval(t, solution, solution_dot):
-                store_time(t)
-                store_solution(solution, solution_dot)
+                self.t = t
                 assembled_operator = dict()
                 assembled_operator["m"] = sum(product(self.compute_theta("m"), self.operator["m"][:N, :N]))
                 assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
@@ -83,8 +82,7 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                     - assembled_operator["f"]
                 )
             def jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):
-                store_time(t)
-                store_solution(solution, solution_dot)
+                self.t = t
                 assembled_operator = dict()
                 assembled_operator["m"] = sum(product(self.compute_theta("m"), self.operator["m"][:N, :N]))
                 assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
@@ -93,19 +91,13 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                     + assembled_operator["a"]
                 )
             def bc_eval(t):
-                store_time(t)
+                self.t = t
                 if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
                     return self.compute_theta("dirichlet_bc")
                 else:
                     return None
-            def store_time(t):
-                self.t = t
-            def store_solution(solution, solution_dot):
-                assign(self._solution, solution)
-                assign(self._solution_dot, solution_dot)
             # Solve by TimeStepping object
             self._solution = OnlineFunction(N)
-            self._solution_dot = OnlineFunction(N)
             solver = TimeStepping(jacobian_eval, self._solution, residual_eval, bc_eval)
             solver.set_parameters(self._time_stepping_parameters)
             self._solution_over_time = solver.solve()
