@@ -26,6 +26,7 @@ import types
 from numpy import arange, asarray, linspace
 try:
     from assimulo.solvers import IDA
+    from assimulo.solvers.sundials import IDAError
     from assimulo.problem import Implicit_Problem
 except ImportError:
     has_IDA = False
@@ -337,7 +338,18 @@ if has_IDA:
             elif self._max_time_steps is not None:
                 all_t = linspace(self._initial_time, self._final_time, num=self._max_time_steps+1)
                 all_t = all_t.tolist()
-            all_times, all_solutions, all_solutions_dot = self.solver.simulate(self._final_time, ncp_list=all_t)
+            for ida_trial in range(5):
+                try:
+                    all_times, all_solutions, all_solutions_dot = self.solver.simulate(self._final_time, ncp_list=all_t)
+                except IDAError as error:
+                    if str(error) == "'Error test failures occurred too many times during one internal time step or minimum step size was reached. At time 0.000000.'":
+                        # There is no way to increase the number of error test failures in the assimulo interface, try again with smaller inith
+                        self.solver.inith /= 10.
+                    else:
+                        # There was an error, but we cannot handle it. Raise it again
+                        raise
+                else:
+                    break
             # Convert all_solutions to a list of Function
             all_solutions_as_functions = list()
             for (t, solution) in zip(all_times, all_solutions):
