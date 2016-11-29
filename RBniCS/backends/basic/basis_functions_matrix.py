@@ -53,8 +53,8 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
                 and
             self._component_name_to_function_component == component_name_to_function_component
         ): # Do nothing if it was already initialize with the same dicts
-            self.clear()
             # Initialize components FunctionsList
+            self._components.clear()
             for component_name in component_name_to_basis_component_index:
                 self._components[component_name] = self.backend.FunctionsList(self.V_or_Z)
             # Store the component_name_to_function_component dict
@@ -63,13 +63,15 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             self._component_name_to_basis_component_index = component_name_to_basis_component_index
             assert max(component_name_to_basis_component_index.values()) == len(component_name_to_basis_component_index) - 1
             # Reverse the component_name_to_basis_component_index dict and store it
-            self._basis_component_index_to_component_name = dict()
+            self._basis_component_index_to_component_name.clear()
             for (component_name, basis_component_index) in component_name_to_basis_component_index.iteritems():
                 self._basis_component_index_to_component_name[basis_component_index] = component_name
             # Prepare len components
-            self._component_name_to_basis_component_length = dict()
+            self._component_name_to_basis_component_length.clear()
             for component_name in component_name_to_basis_component_index:
                 self._component_name_to_basis_component_length[component_name] = 0
+            # Reset precomputed slices
+            self._precomputed_slices.clear()
             
     @override
     def enrich(self, functions, component_name=None, copy=True):
@@ -88,7 +90,7 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             
     def _prepare_trivial_precomputed_slice(self):
         # Reset precomputed slices
-        self._precomputed_slices = dict()
+        self._precomputed_slices.clear()
         # Prepare trivial precomputed slice
         if len(self._components) == 1:
             component_0 = self._components.keys()[0]
@@ -102,10 +104,12 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         
     @override
     def clear(self):
-        self._components = dict()
-        self._component_name_to_basis_component_length = dict()
-        # Reset precomputed slices
-        self._precomputed_slices = dict()
+        component_name_to_basis_component_index = self._component_name_to_basis_component_index
+        component_name_to_function_component = self._component_name_to_function_component
+        # Trick init into re-initializing everything
+        self._component_name_to_basis_component_index = None
+        self._component_name_to_function_component = None
+        self.init(component_name_to_basis_component_index, component_name_to_function_component)
         
     @override
     def save(self, directory, filename):
