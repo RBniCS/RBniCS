@@ -140,7 +140,7 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         
     ## Compute basis functions performing POD
     def compute_basis_functions(self):
-        (Z, N) = self.POD.apply(self.Nmax)
+        (_, Z, N) = self.POD.apply(self.Nmax)
         self.reduced_problem.Z.enrich(Z)
         self.reduced_problem.N += N
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")

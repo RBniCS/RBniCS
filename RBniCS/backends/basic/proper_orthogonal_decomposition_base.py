@@ -45,15 +45,15 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             
             # Declare a matrix to store the snapshots
             self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z)
-            # Declare the eigen solver to compute the POD
-            self.eigensolver = OnlineEigenSolver()
+            # Declare a list to store eigenvalues
+            self.eigenvalues = zeros(0) # correct size will be assigned later
             # Store inner product
             self.X = X
             
         @override
         def clear(self):
             self.snapshots_matrix.clear()
-            self.eigensolver = OnlineEigenSolver()
+            self.eigenvalues = zeros(0)
             
         # No implementation is provided for store_snapshot, because
         # it has different interface for the standard POD and
@@ -93,17 +93,21 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
                         b /= norm_b
                 Z.enrich(b)
                 
-            self.eigensolver = eigensolver
-            return (Z, Nmax)
-
+            Neigs = len(self.snapshots_matrix)
+            self.eigenvalues = zeros(Neigs)
+            for i in range(Neigs):
+                (eig_i_real, eig_i_complex) = eigensolver.get_eigenvalue(i)
+                assert isclose(eig_i_complex, 0.)
+                self.eigenvalues[i] = eig_i_real
+            
+            return (self.eigenvalues[:Nmax], Z, Nmax)
+                
         @override
         def print_eigenvalues(self, N=None):
             if N is None:
                 N = len(self.snapshots_matrix)
             for i in range(N):
-                (eig_i_real, eig_i_complex) = self.eigensolver.get_eigenvalue(i)
-                assert isclose(eig_i_complex, 0)
-                print("lambda_" + str(i) + " = " + str(eig_i_real))
+                print("lambda_" + str(i) + " = " + str(self.eigenvalues[i]))
             
         @override
         def save_eigenvalues_file(self, output_directory, eigenvalues_file):
@@ -111,20 +115,15 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
                 with open(str(output_directory) + "/" + eigenvalues_file, "w") as outfile:
                     N = len(self.snapshots_matrix)
                     for i in range(N):
-                        (eig_i_real, eig_i_complex) = self.eigensolver.get_eigenvalue(i)
-                        assert isclose(eig_i_complex, 0)
-                        outfile.write(str(i) + " " + str(eig_i_real) + "\n")
+                        outfile.write(str(i) + " " + str(self.eigenvalues[i]) + "\n")
             self.mpi_comm.barrier()
             
         @override
         def save_retained_energy_file(self, output_directory, retained_energy_file):
             if is_io_process(self.mpi_comm):
                 N = len(self.snapshots_matrix)
-                eigs = zeros(N)
-                for i in range(N):
-                    (eigs[i], _) = self.eigensolver.get_eigenvalue(i)
-                energy = compute_total_energy(eigs)
-                retained_energy = compute_retained_energy(eigs)
+                energy = compute_total_energy(self.eigenvalues)
+                retained_energy = compute_retained_energy(self.eigenvalues)
                 retained_energy /= energy
                 with open(str(output_directory) + "/" + retained_energy_file, "w") as outfile:
                     for i in range(N):

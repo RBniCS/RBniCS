@@ -133,7 +133,7 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
         for component_name in ("u", "s", "p"):
             print("# POD for component", component_name)
             POD = self.POD[component_name]
-            (Z, N) = POD.apply(self.Nmax)
+            (_, Z, N) = POD.apply(self.Nmax)
             self.reduced_problem.Z.enrich(Z, component_name=component_name)
             self.reduced_problem.N[component_name] += N
             POD.print_eigenvalues(N)
