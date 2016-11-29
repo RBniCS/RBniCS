@@ -213,6 +213,8 @@ class _ScipyImplicitEuler(object):
             
         all_solutions = list()
         all_solutions.append(function_copy(self.solution))
+        all_solutions_dot = list()
+        all_solutions_dot.append(Function(self.solution.N))
         for t in all_t:
             if self._report is not None:
                 self._report(t)
@@ -224,8 +226,11 @@ class _ScipyImplicitEuler(object):
             if self._monitor is not None:
                 self._monitor(t, solution)
             all_solutions.append(function_copy(solution))
+            solution_dot = Function(self.solution.vector().N)
+            solution_dot.vector()[:] = (all_solutions[-1].vector() - all_solutions[-2].vector())/self._time_step_size
+            all_solutions_dot.append(solution_dot)
         
-        return all_solutions
+        return all_t, all_solutions, all_solutions_dot
         
 if has_IDA:
     class _AssimuloIDA(object):
@@ -352,6 +357,7 @@ if has_IDA:
                     break
             # Convert all_solutions to a list of Function
             all_solutions_as_functions = list()
+            all_solutions_dot_as_functions = list()
             for (t, solution) in zip(all_times, all_solutions):
                 solution_as_function = Function(self.solution.vector().N)
                 solution_as_function.vector()[:] = solution.reshape((-1, 1))
@@ -362,6 +368,10 @@ if has_IDA:
                 all_solutions_as_functions.append(solution_as_function)
                 if self._monitor is not None:
                     self._monitor(t, solution_as_function)
+                solution_dot_as_function = Function(self.solution.vector().N)
+                if len(all_solutions_as_functions) > 1: # monitor is being called at t > 0.
+                    solution_dot_as_function.vector()[:] = (all_solutions_as_functions[-1].vector() - all_solutions_as_functions[-2].vector())/self._time_step_size
+                all_solutions_dot_as_functions.append(solution_dot_as_function)
             self.solution.vector()[:] = all_solutions_as_functions[-1].vector()
-            return all_solutions_as_functions
+            return all_times, all_solutions_as_functions, all_solutions_dot_as_functions
             

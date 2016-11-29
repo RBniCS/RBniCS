@@ -53,10 +53,21 @@ T = 1.
 
 # Define exact solution
 exact_solution_expression = Expression("sin(x[0]+t)", t=0, element=V.ufl_element())
-exact_solution_dot_expression = Expression("cos(x[0]+t)", t=0, element=V.ufl_element())
 # ... and interpolate it at the final time
 exact_solution_expression.t = T
 exact_solution = project(exact_solution_expression, V)
+
+# Define exact solution dot
+exact_solution_dot_expression = Expression("cos(x[0]+t)", t=0, element=V.ufl_element())
+# ... and interpolate it at the final time
+exact_solution_dot_expression.t = T
+exact_solution_dot = project(exact_solution_dot_expression, V)
+
+# Define exact solution dot dot
+exact_solution_dot_dot_expression = Expression("-sin(x[0]+t)", t=0, element=V.ufl_element())
+# ... and interpolate it at the final time
+exact_solution_dot_dot_expression.t = T
+exact_solution_dot_dot = project(exact_solution_dot_dot_expression, V)
 
 # Define variational problem
 du = TrialFunction(V)
@@ -113,8 +124,11 @@ sparse_solver.set_parameters({
     "monitor": sparse_monitor,
     "report": True
 })
-all_sparse_solutions = sparse_solver.solve()
+all_sparse_solutions_time, all_sparse_solutions, all_sparse_solutions_dot, all_sparse_solutions_dot_dot = sparse_solver.solve()
+assert len(all_sparse_solutions_time) == int(T/dt + 1)
 assert len(all_sparse_solutions) == int(T/dt + 1)
+assert len(all_sparse_solutions_dot) == int(T/dt + 1)
+assert len(all_sparse_solutions_dot_dot) == int(T/dt + 1)
 
 # Compute the error
 sparse_error = Function(V)
@@ -122,6 +136,18 @@ sparse_error.vector().add_local(+ sparse_solution.vector().array())
 sparse_error.vector().add_local(- exact_solution.vector().array())
 sparse_error.vector().apply("")
 sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-print "SparseTimeStepping error:", sparse_error_norm
+sparse_error_dot = Function(V)
+sparse_error_dot.vector().add_local(+ all_sparse_solutions_dot[-1].vector().array())
+sparse_error_dot.vector().add_local(- exact_solution_dot.vector().array())
+sparse_error_dot.vector().apply("")
+sparse_error_dot_norm = sparse_error_dot.vector().inner(X*sparse_error_dot.vector())
+sparse_error_dot_dot = Function(V)
+sparse_error_dot_dot.vector().add_local(+ all_sparse_solutions_dot_dot[-1].vector().array())
+sparse_error_dot_dot.vector().add_local(- exact_solution_dot_dot.vector().array())
+sparse_error_dot_dot.vector().apply("")
+sparse_error_dot_dot_norm = sparse_error_dot_dot.vector().inner(X*sparse_error_dot_dot.vector())
+print "SparseTimeStepping error:", sparse_error_norm, sparse_error_dot_norm, sparse_error_dot_dot_norm
 assert isclose(sparse_error_norm, 0., atol=1.e-5)
+assert isclose(sparse_error_dot_norm, 0., atol=1.e-5)
+assert isclose(sparse_error_dot_dot_norm, 0., atol=1.e-4)
 

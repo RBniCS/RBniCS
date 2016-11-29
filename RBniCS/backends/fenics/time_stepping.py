@@ -70,6 +70,8 @@ class TimeStepping(AbstractTimeStepping):
             raise AssertionError("Invalid time order in TimeStepping.__init__().")
         # Store solution input
         self.solution = solution
+        # Store time order input
+        self.time_order = time_order
             
     @override
     def set_parameters(self, parameters):
@@ -77,11 +79,21 @@ class TimeStepping(AbstractTimeStepping):
         
     @override
     def solve(self):
-        all_solutions = self.solver.solve()
+        if self.time_order == 1:
+            (all_solutions_time, all_solutions, all_solutions_dot) = self.solver.solve()
+        elif self.time_order == 2:
+            (all_solutions_time, all_solutions, all_solutions_dot, all_solutions_dot_dot) = self.solver.solve()
+        else:
+            raise AssertionError("Invalid time order in TimeStepping.solve().")
         self.solution.vector().zero()
         self.solution.vector().add_local(all_solutions[-1].vector().array())
         self.solution.vector().apply("")
-        return all_solutions
+        if self.time_order == 1:
+            return (all_solutions_time, all_solutions, all_solutions_dot)
+        elif self.time_order == 2:
+            return (all_solutions_time, all_solutions, all_solutions_dot, all_solutions_dot_dot)
+        else:
+            raise AssertionError("Invalid time order in TimeStepping.solve().")
         
 class _TimeDependentProblem_Base(object):
     def __init__(self, residual_eval, solution, bc_eval, jacobian_eval):
@@ -95,8 +107,11 @@ class _TimeDependentProblem_Base(object):
         # Storage for residual and jacobian
         self.residual_vector = PETScVector()
         self.jacobian_matrix = PETScMatrix()        
-        # Storage for solutions 
+        # Storage for solutions
+        self.all_solutions_time = list()
         self.all_solutions = list()
+        self.all_solutions_dot = list()
+        # Note: self.all_solutions_dot_dot will be defined for second order problems in child class
         self.output_dt = None
         self.output_t_prev = None
         self.output_t = None
@@ -132,20 +147,45 @@ class _TimeDependentProblem_Base(object):
         
         at_final_time_step = (step == -1)
         while (self.output_t <= time and self.output_t <= self.output_T) or at_final_time_step:
+            self.all_solutions_time.append(self.output_t)
             if self.time_order == 1:
                 output_solution = self.solution.copy(deepcopy=True)
                 output_solution_petsc = as_backend_type(output_solution.vector()).vec()
                 ts.interpolate(self.output_t, output_solution_petsc)
                 output_solution_petsc.assemble()
                 output_solution_petsc.ghostUpdate()
+                self.all_solutions.append(output_solution)
+                # Compute time derivative by a simple finite difference
+                output_solution_dot = self.all_solutions[-1].copy(deepcopy=True)
+                if len(self.all_solutions) == 1: # monitor is being called at t = 0.
+                    output_solution_dot.vector().zero()
+                else:
+                    output_solution_dot.vector().add_local(- self.all_solutions[-2].vector().array())
+                    output_solution_dot.vector().apply("")
+                    output_solution_dot.vector()[:] *= 1./self.output_dt
+                self.all_solutions_dot.append(output_solution_dot)
             else:
                 # ts.interpolate is not yet available for TSALPHA2, assume that no adaptation was carried out
-                (output_solution_petsc, _) = ts.getSolution2()
+                (output_solution_petsc, output_solution_dot_petsc) = ts.getSolution2()
                 output_solution_petsc.assemble()
                 output_solution_petsc.ghostUpdate()
                 output_solution = PETScFunction(self.V, PETScVector(output_solution_petsc))
                 output_solution = output_solution.copy(deepcopy=True)
-            self.all_solutions.append(output_solution)
+                self.all_solutions.append(output_solution)
+                output_solution_dot_petsc.assemble()
+                output_solution_dot_petsc.ghostUpdate()
+                output_solution_dot = PETScFunction(self.V, PETScVector(output_solution_dot_petsc))
+                output_solution_dot = output_solution_dot.copy(deepcopy=True)
+                self.all_solutions_dot.append(output_solution_dot)
+                # Compute time derivative by a simple finite difference
+                output_solution_dot_dot = self.all_solutions_dot[-1].copy(deepcopy=True)
+                if len(self.all_solutions_dot) == 1: # monitor is being called at t = 0.
+                    output_solution_dot_dot.vector().zero()
+                else:
+                    output_solution_dot_dot.vector().add_local(- self.all_solutions_dot[-2].vector().array())
+                    output_solution_dot_dot.vector().apply("")
+                    output_solution_dot_dot.vector()[:] *= 1./self.output_dt
+                self.all_solutions_dot_dot.append(output_solution_dot_dot)
             if self.output_monitor is not None:
                 self.output_monitor(self.output_t, output_solution)
             self.output_t_prev = self.output_t
@@ -292,7 +332,9 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         # Make sure that residual vector and jacobian matrix are properly initialized
         self.residual_vector_assemble(0., self.solution, self.solution_dot, self.solution_dot_dot, overwrite=True)
         self.jacobian_matrix_assemble(0., self.solution, self.solution_dot, self.solution_dot_dot, 0., 0., overwrite=True)
-   
+        # Storage for solutions 
+        self.all_solutions_dot_dot = list()
+        
     def residual_vector_eval(self, ts, t, solution, solution_dot, solution_dot_dot, residual):
         """
            TSSetI2Function - Set the function to compute F(t,U,U_t,U_tt) where F = 0 is the DAE to be solved.
@@ -526,6 +568,11 @@ class _PETScTSIntegrator(object):
         if not isclose(self.problem.output_t_prev, self.problem.output_T, atol=0.1*self.problem.output_dt):
             self.problem.monitor(self.ts, -1, self.problem.output_T, petsc_solution)
         # Return all solutions
-        return self.problem.all_solutions
-         
+        if self.problem.time_order == 1:
+            return self.problem.all_solutions_time, self.problem.all_solutions, self.problem.all_solutions_dot
+        elif self.problem.time_order == 2:
+            return self.problem.all_solutions_time, self.problem.all_solutions, self.problem.all_solutions_dot, self.problem.all_solutions_dot_dot
+        else:
+            raise AssertionError("Invalid time order in _PETScTSIntegrator.solve().")
+        
         
