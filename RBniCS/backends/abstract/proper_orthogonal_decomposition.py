@@ -39,7 +39,7 @@ class ProperOrthogonalDecomposition(object):
         
     ## Store a snapshot in the snapshot matrix
     @abstractmethod
-    def store_snapshot(self, snapshot, component=None):
+    def store_snapshot(self, snapshot, component=None, weight=None):
         pass
             
     ## Perform POD on the snapshots previously computed, and store the first

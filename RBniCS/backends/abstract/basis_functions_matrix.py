@@ -35,7 +35,7 @@ class BasisFunctionsMatrix(object):
         pass
         
     @abstractmethod
-    def enrich(self, functions, component_name=None, copy=True):
+    def enrich(self, functions, component_name=None, weights=None, copy=True):
         pass
         
     @abstractmethod

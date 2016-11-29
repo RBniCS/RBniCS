@@ -51,14 +51,19 @@ class FunctionsList(AbstractFunctionsList):
         self._precomputed_slices = dict() # from tuple to FunctionsList
     
     @override
-    def enrich(self, functions, component=None, copy=True):
+    def enrich(self, functions, component=None, weights=None, copy=True):
         # Append to storage
         assert isinstance(functions, (tuple, list, FunctionsList, ) + self.FunctionTypes)
         if isinstance(functions, (tuple, list, FunctionsList)):
-            for function in functions:
-                self._enrich(function)
+            if weights is not None:
+                assert len(weights) == len(functions)
+                for (index, function) in enumerate(functions):
+                    self._enrich(function, weight=weights[index])
+            else:
+                for function in functions:
+                    self._enrich(function)
         elif isinstance(functions, self.FunctionTypes):
-            self._enrich(functions)
+            self._enrich(functions, weight=weights)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.enrich.")
         # Reset precomputed slices
@@ -66,11 +71,11 @@ class FunctionsList(AbstractFunctionsList):
         # Prepare trivial precomputed slice
         self._precomputed_slices[len(self._list)] = self
         
-    def _enrich(self, function, component=None, copy=True):
+    def _enrich(self, function, component=None, weight=None, copy=True):
         if self.wrapping.function_component_as_restriction(function, component, self.V_or_Z):
-            self._list.append(self.wrapping.function_component(function, component, copy))
+            self._list.append(self.wrapping.function_component(function, component, copy, weight))
         else: # must be extended from subspace to function space
-            self._list.append(self.wrapping.function_extend(function, component, self.V_or_Z))
+            self._list.append(self.wrapping.function_extend(function, component, self.V_or_Z, weight))
         
     @override
     def clear(self):

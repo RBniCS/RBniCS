@@ -24,7 +24,7 @@
 
 from RBniCS.backends.numpy.function import Function
 
-def function_extend(function, component, Z):
+def function_extend(function, component, Z, weight):
     pass # TODO
     
 

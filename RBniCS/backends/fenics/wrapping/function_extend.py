@@ -25,13 +25,15 @@
 from dolfin import assign
 from RBniCS.backends.fenics.function import Function
 
-def function_extend(function, component, V):
+def function_extend(function, component, V, weight):
     extended_function = Function(V)
     V_sub = function.function_space()
     assert V.num_sub_spaces() > 1
     for (index, element) in enumerate(V.ufl_element().sub_elements()):
         if element == V_sub.ufl_element():
             assign(extended_function.sub(index), function)
+    if weight is not None:
+        extended_function.vector()[:] *= weight
     return extended_function
     
 

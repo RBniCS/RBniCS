@@ -22,6 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_component(function, component):
+def function_component(function, component, copy, weight):
     pass # TODO
 

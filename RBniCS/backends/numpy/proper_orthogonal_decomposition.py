@@ -40,6 +40,6 @@ class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
         ProperOrthogonalDecompositionBase.__init__(self, V_or_Z, X, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.SnapshotsMatrix, RBniCS.backends.numpy.FunctionsList)
         
     @override
-    def store_snapshot(self, snapshot, component=None):
-        self.snapshots_matrix.enrich(snapshot, component)
+    def store_snapshot(self, snapshot, component=None, weight=None):
+        self.snapshots_matrix.enrich(snapshot, component, weight)
         

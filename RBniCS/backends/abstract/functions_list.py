@@ -38,7 +38,7 @@ class FunctionsList(object):
         pass
     
     @abstractmethod
-    def enrich(self, functions, component=None, copy=True):
+    def enrich(self, functions, component=None, weights=None, copy=True):
         pass
         
     @abstractmethod

@@ -74,16 +74,16 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             self._precomputed_slices.clear()
             
     @override
-    def enrich(self, functions, component_name=None, copy=True):
+    def enrich(self, functions, component_name=None, weights=None, copy=True):
         assert component_name is None or component_name in self._components
         assert copy is True
         if component_name is None:
             assert len(self._components) == 1
             component_0 = self._components.keys()[0]
-            self._components[component_0].enrich(functions)
+            self._components[component_0].enrich(functions, weights=weights)
             self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
         else:
-            self._components[component_name].enrich(functions, self._component_name_to_function_component[component_name])
+            self._components[component_name].enrich(functions, component=self._component_name_to_function_component[component_name], weights=weights)
             self._component_name_to_basis_component_length[component_name] = len(self._components[component_name])
         # Reset and prepare precomputed slices
         self._prepare_trivial_precomputed_slice()

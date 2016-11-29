@@ -39,9 +39,9 @@ class FunctionsList(BasicFunctionsList):
         BasicFunctionsList.__init__(self, V_or_Z, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ))
         
     @override
-    def _enrich(self, function, component=None, copy=True):
+    def _enrich(self, function, component=None, weight=None, copy=True):
         function = function_from_ufl_operators(function)
-        BasicFunctionsList._enrich(self, function, component, copy)
+        BasicFunctionsList._enrich(self, function, component, weight, copy)
         
     @override
     def __setitem__(self, key, item):
