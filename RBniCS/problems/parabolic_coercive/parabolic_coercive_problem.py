@@ -91,8 +91,9 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
         assign(self._solution, Function(self.V))
         solver = TimeStepping(jacobian_eval, self._solution, residual_eval, bc_eval)
         solver.set_parameters(self._time_stepping_parameters)
-        self._solution_over_time = solver.solve()
+        (_, self._solution_over_time, self._solution_dot_over_time) = solver.solve()
         assign(self._solution, self._solution_over_time[-1])
+        assign(self._solution_dot, self._solution_dot_over_time[-1])
         return self._solution_over_time
         
     ## Perform a truth evaluation of the (compliant) output

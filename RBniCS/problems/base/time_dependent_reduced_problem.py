@@ -46,8 +46,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["time_step_size"] = self.dt
             self._time_stepping_parameters["final_time"] = self.T
+            # Time derivative of the solution, at the current time
+            self._solution_dot = OnlineFunction()
             # Solution and output over time
             self._solution_over_time = list() # of Functions
+            self._solution_dot_over_time = list() # of Functions
             self._output_over_time = list() # of floats
             
         ###########################     ERROR ANALYSIS     ########################### 

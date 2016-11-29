@@ -98,10 +98,12 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                     return None
             # Solve by TimeStepping object
             self._solution = OnlineFunction(N)
+            self._solution_dot = OnlineFunction(N)
             solver = TimeStepping(jacobian_eval, self._solution, residual_eval, bc_eval)
             solver.set_parameters(self._time_stepping_parameters)
-            self._solution_over_time = solver.solve()
+            (_, self._solution_over_time, self._solution_dot_over_time) = solver.solve()
             assign(self._solution, self._solution_over_time[-1])
+            assign(self._solution_dot, self._solution_dot_over_time[-1])
             return self._solution_over_time
             
         # Perform an online evaluation of the (compliant) output
