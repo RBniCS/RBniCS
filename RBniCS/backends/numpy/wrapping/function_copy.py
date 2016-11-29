@@ -27,7 +27,7 @@ from RBniCS.backends.numpy.vector import Vector
 
 def function_copy(function):
     original_vector = function.vector()
-    v = Vector(original_vector.size)
+    v = Vector(original_vector.N)
     v[:] = original_vector
     return Function(v)
 
