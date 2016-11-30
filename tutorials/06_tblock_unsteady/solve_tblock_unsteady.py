@@ -52,6 +52,10 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
     ## @defgroup ProblemSpecific Problem specific methods
     #  @{
     
+    ## Return the alpha_lower bound.
+    def get_stability_factor(self):
+        return min(self.compute_theta("a"))
+    
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -116,13 +120,15 @@ unsteady_thermal_block_problem.set_mu_range(mu_range)
 unsteady_thermal_block_problem.set_time_step_size(0.05)
 unsteady_thermal_block_problem.set_final_time(3)
 
-# 4. Prepare reduction with a POD-Galerkin method
-pod_galerkin_method = PODGalerkin(unsteady_thermal_block_problem)
-pod_galerkin_method.set_Nmax(20)
+# 4. Prepare reduction with a reduced basis method
+reduced_basis_method = ReducedBasis(unsteady_thermal_block_problem)
+reduced_basis_method.set_Nmax(40, POD_Greedy=(10, 2))
 
 # 5. Perform the offline phase
-pod_galerkin_method.initialize_training_set(10)
-reduced_unsteady_thermal_block_problem = pod_galerkin_method.offline()
+first_mu = (0.5,1.0)
+unsteady_thermal_block_problem.set_mu(first_mu)
+reduced_basis_method.initialize_training_set(100)
+reduced_unsteady_thermal_block_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
 online_mu = (8.0,-1.0)
@@ -131,5 +137,5 @@ reduced_unsteady_thermal_block_problem.solve()
 reduced_unsteady_thermal_block_problem.export_solution("UnsteadyThermalBlock", "online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(10)
-pod_galerkin_method.error_analysis()
+reduced_basis_method.initialize_testing_set(10)
+reduced_basis_method.error_analysis()

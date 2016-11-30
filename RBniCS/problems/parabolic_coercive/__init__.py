@@ -25,7 +25,7 @@
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_pod_galerkin_reduced_problem import ParabolicCoercivePODGalerkinReducedProblem
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 #from RBniCS.problems.parabolic_coercive.parabolic_coercive_rb_non_compliant_reduced_problem import ParabolicCoerciveRBNonCompliantReducedProblem
-#from RBniCS.problems.parabolic_coercive.parabolic_coercive_rb_reduced_problem import ParabolicCoerciveRBReducedProblem
+from RBniCS.problems.parabolic_coercive.parabolic_coercive_rb_reduced_problem import ParabolicCoerciveRBReducedProblem
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
 
 
@@ -33,6 +33,6 @@ __all__ = [
     'ParabolicCoercivePODGalerkinReducedProblem',
     'ParabolicCoerciveProblem',
 #    'ParabolicCoerciveRBNonCompliantReducedProblem',
-#    'ParabolicCoerciveRBReducedProblem',
+    'ParabolicCoerciveRBReducedProblem',
     'ParabolicCoerciveReducedProblem'
 ]
