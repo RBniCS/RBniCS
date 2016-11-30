@@ -197,6 +197,8 @@ class _ScipyImplicitEuler(object):
                     def print_time(t):
                         print("# t = " + str(t))
                     self._report = print_time
+                else:
+                    self._report = None
             elif key == "time_step_size":
                 self._time_step_size = value
             else:

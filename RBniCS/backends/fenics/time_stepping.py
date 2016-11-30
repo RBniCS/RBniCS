@@ -511,6 +511,10 @@ class _PETScTSIntegrator(object):
                         dt = ts.getTimeStep()
                         print("# t = " + str(t + dt))
                     self.ts.setPreStep(print_time)
+                else:
+                    def do_nothing(ts):
+                        pass
+                    self.ts.setPreStep(do_nothing)
             elif key == "snes_solver":
                 snes_tolerances = [1.e-10, 1.e-9, 1.e-16, 50]
                 for (key_snes, value_snes) in value.iteritems():
