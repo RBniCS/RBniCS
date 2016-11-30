@@ -112,12 +112,6 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
         
     ## Compute the Riesz representation of m
     def update_riesz_m(self):
-        # We need to clear out previously computed Riesz representors, because
-        # POD-Greedy basis are not hierarchical from one greedy iteration to the next one
-        for qm in range(self.Q["m"]):
-            self.riesz["m"][qm].clear()
-        
-        # Re-compute all Riesz representor of m
         assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
         inner_product = self.truth_problem.inner_product[0]
         for qm in range(self.Q["m"]):
@@ -130,16 +124,6 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
                 solver = LinearSolver(inner_product, self._riesz_solve_storage, -1.*self.truth_problem.operator["m"][qm]*self.Z[n], homogeneous_dirichlet_bc)
                 solver.solve()
                 self.riesz["m"][qm].enrich(self._riesz_solve_storage)
-                
-    ## Compute the Riesz representation of a
-    def update_riesz_a(self):
-        # We need to clear out previously computed Riesz representors, because
-        # POD-Greedy basis are not hierarchical from one greedy iteration to the next one
-        for qa in range(self.Q["a"]):
-            self.riesz["a"][qa].clear()
-            
-        # Re-compute all Riesz representor of a
-        ParabolicCoerciveRBReducedProblem_Base.update_riesz_a(self)
                 
     ## Assemble operators for error estimation
     def assemble_error_estimation_operators(self, term, current_stage="online"):

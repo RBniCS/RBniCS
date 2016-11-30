@@ -27,7 +27,8 @@ from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
-from RBniCS.backends import ProperOrthogonalDecomposition
+from RBniCS.backends import LinearSolver, ProperOrthogonalDecomposition, SnapshotsMatrix, transpose
+from RBniCS.backends.online import OnlineFunction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoerciveRBReduction
@@ -48,6 +49,10 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
         ParabolicCoerciveRBReduction_Base.__init__(self, truth_problem)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
+        # Choose among two versions of POD-Greedy
+        self.POD_greedy_basis_extension = "orthogonal" # or "POD"
+        #   orthogonal ~> Haasdonk, Ohlberger; ESAIM: M2AN, 2008
+        #   POD ~>  Nguyen, Rozza, Patera; Calcolo, 2009
         # Declare POD objects for basis computation using POD-Greedy
         self.POD_time_trajectory = ProperOrthogonalDecomposition()
         self.POD_basis = ProperOrthogonalDecomposition()
@@ -61,9 +66,12 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
         ParabolicCoerciveRBReduction_Base.set_Nmax(self, Nmax, **kwargs)
         # Set POD-Greedy sizes
         assert "POD_Greedy" in kwargs
-        assert len(kwargs["POD_Greedy"]) == 2
-        self.N1 = kwargs["POD_Greedy"][0]
-        self.N2 = kwargs["POD_Greedy"][1]
+        if self.POD_greedy_basis_extension == "POD":
+            assert len(kwargs["POD_Greedy"]) == 2
+            self.N1 = kwargs["POD_Greedy"][0]
+            self.N2 = kwargs["POD_Greedy"][1]
+        elif self.POD_greedy_basis_extension == "orthogonal":
+            self.N1 = kwargs["POD_Greedy"]
         
     ## Initialize data structures required for the offline phase
     @override
@@ -71,30 +79,73 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
         # Call parent to initialize inner product
         output = ParabolicCoerciveRBReduction_Base._init_offline(self)
         
-        # Declare two new PODs
+        # Check admissible values of POD_greedy_basis_extension
+        assert self.POD_greedy_basis_extension in ("orthogonal", "POD")
+        
+        # Declare new POD object(s)
         assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
         self.POD_time_trajectory = ProperOrthogonalDecomposition(self.truth_problem.V, self.truth_problem.inner_product[0])
-        self.POD_basis = ProperOrthogonalDecomposition(self.truth_problem.V, self.truth_problem.inner_product[0])
+        if self.POD_greedy_basis_extension == "POD":
+            self.POD_basis = ProperOrthogonalDecomposition(self.truth_problem.V, self.truth_problem.inner_product[0])
         
         # Return
         return output
         
     ## Update basis matrix by POD-Greedy
     def update_basis_matrix(self, snapshot):
-        # First, compress the time trajectory stored in snapshot
-        self.POD_time_trajectory.clear()
-        self.POD_time_trajectory.store_snapshot(snapshot)
-        (eigs1, Z1, N1) = self.POD_time_trajectory.apply(self.N1)
-        self.POD_time_trajectory.print_eigenvalues(N1)
-        
-        # Then, compress parameter dependence (thus, we do not clear the POD object)
-        self.POD_basis.store_snapshot(Z1, weight=[sqrt(e) for e in eigs1])
-        (_, Z2, _) = self.POD_basis.apply(self.reduced_problem.N + self.N2)
-        self.reduced_problem.Z.clear()
-        self.reduced_problem.Z.enrich(Z2)
-        self.reduced_problem.N += self.N2
-        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
-        self.POD_basis.print_eigenvalues(self.reduced_problem.N)
-        self.POD_basis.save_eigenvalues_file(self.folder["post_processing"], "eigs")
-        self.POD_basis.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
-        
+        if self.POD_greedy_basis_extension == "POD":
+            # First, compress the time trajectory stored in snapshot
+            self.POD_time_trajectory.clear()
+            self.POD_time_trajectory.store_snapshot(snapshot)
+            (eigs1, Z1, N1) = self.POD_time_trajectory.apply(self.N1)
+            self.POD_time_trajectory.print_eigenvalues(N1)
+            
+            # Then, compress parameter dependence (thus, we do not clear the POD object)
+            self.POD_basis.store_snapshot(Z1, weight=[sqrt(e) for e in eigs1])
+            (_, Z2, _) = self.POD_basis.apply(self.reduced_problem.N + self.N2)
+            self.reduced_problem.Z.clear()
+            self.reduced_problem.Z.enrich(Z2)
+            self.reduced_problem.N += self.N2
+            self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+            self.POD_basis.print_eigenvalues(self.reduced_problem.N)
+            self.POD_basis.save_eigenvalues_file(self.folder["post_processing"], "eigs")
+            self.POD_basis.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
+            
+            # Finally, we need to clear out previously computed Riesz representors, because
+            # POD-Greedy basis are not hierarchical from one greedy iteration to the next one
+            for qm in range(self.reduced_problem.Q["m"]):
+                self.reduced_problem.riesz["m"][qm].clear()
+            for qa in range(self.reduced_problem.Q["a"]):
+                self.reduced_problem.riesz["a"][qa].clear()
+            
+        elif self.POD_greedy_basis_extension == "orthogonal":
+            # Project the time trajectory on the orthogonal of the current basis
+            if self.reduced_problem.N > 0:
+                N = self.reduced_problem.N
+                projected_solution_N = OnlineFunction(self.reduced_problem.N)
+                
+                assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                X = self.truth_problem.inner_product[0]
+                assert len(self.reduced_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                X_N = self.reduced_problem.inner_product[0]
+                
+                Z = self.reduced_problem.Z
+                
+                orthogonal_snapshot = SnapshotsMatrix(self.truth_problem.V)
+                for solution in snapshot:
+                    solver = LinearSolver(X_N, projected_solution_N, transpose(Z)*X*solution)
+                    solver.solve()
+                    orthogonal_snapshot.enrich(solution - Z*projected_solution_N)
+            else:
+                orthogonal_snapshot = snapshot
+                
+            # Compress it using a POD
+            self.POD_time_trajectory.clear()
+            self.POD_time_trajectory.store_snapshot(orthogonal_snapshot)
+            (eigs1, Z1, N1) = self.POD_time_trajectory.apply(self.N1)
+            self.POD_time_trajectory.print_eigenvalues(N1)
+            self.POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs")
+            self.POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
+            self.reduced_problem.Z.enrich(Z1)
+            self.reduced_problem.N += N1
+            
