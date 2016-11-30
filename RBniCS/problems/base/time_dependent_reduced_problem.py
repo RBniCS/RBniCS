@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from math import sqrt
 from RBniCS.backends import assign, TimeQuadrature
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override
@@ -69,11 +70,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 if len(errors_over_time) == 0:
                     errors_over_time = [list() for _ in range(len(errors))]
                 for (tuple_index, error) in enumerate(errors):
-                    errors_over_time[tuple_index].append(error)
+                    errors_over_time[tuple_index].append(error**2)
             time_quadrature = TimeQuadrature((0., self.T), self.dt)
             integrated_errors_over_time = list() # of real numbers
             for (tuple_index, error_over_time) in enumerate(errors_over_time):
-                integrated_errors_over_time.append( time_quadrature.integrate(error_over_time) )
+                integrated_errors_over_time.append( sqrt(time_quadrature.integrate(error_over_time)) )
             return integrated_errors_over_time
             
         #  @}
