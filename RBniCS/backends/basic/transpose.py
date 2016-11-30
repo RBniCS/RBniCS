@@ -157,17 +157,17 @@ class FunctionsList_Transpose__times__Matrix(_FunctionsList_BasisFunctionsMatrix
     pass
     
 class BasisFunctionsMatrix_Transpose__times__Matrix(_FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix):
-    def __mul__(self, other_basis_functions_matrix):
-        assert isinstance(other_basis_functions_matrix, self.backend.BasisFunctionsMatrix) # The other cases implemented in Parent class never occur for basis functions matrixs, only for functions lists
-        output = _FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix.__mul__(self, other_basis_functions_matrix)
+    def __mul__(self, other_functions_list__or__function):
+        output = _FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix.__mul__(self, other_functions_list__or__function)
         # Attach a private attribute to output which stores the order of components and their basis length,
         # as discussed for BasisFunctionsMatrix_Transpose.__mul__
-        assert self._basis_component_index_to_component_name == other_basis_functions_matrix._basis_component_index_to_component_name
-        assert self._component_name_to_basis_component_index == other_basis_functions_matrix._component_name_to_basis_component_index
-        assert self._component_name_to_basis_component_length == other_basis_functions_matrix._component_name_to_basis_component_length
-        output._basis_component_index_to_component_name = other_basis_functions_matrix._basis_component_index_to_component_name
-        output._component_name_to_basis_component_index = other_basis_functions_matrix._component_name_to_basis_component_index
-        output._component_name_to_basis_component_length = other_basis_functions_matrix._component_name_to_basis_component_length
+        if isinstance(other_functions_list__or__function, self.backend.BasisFunctionsMatrix):
+            assert self._basis_component_index_to_component_name == other_functions_list__or__function._basis_component_index_to_component_name
+            assert self._component_name_to_basis_component_index == other_functions_list__or__function._component_name_to_basis_component_index
+            assert self._component_name_to_basis_component_length == other_functions_list__or__function._component_name_to_basis_component_length
+        output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
+        output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
+        output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
         return output
             
 # Auxiliary class: transpose of a vectorized matrix (i.e. vector obtained by stacking its columns)
