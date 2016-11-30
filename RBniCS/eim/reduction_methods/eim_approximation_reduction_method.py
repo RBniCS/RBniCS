@@ -146,8 +146,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self._offline__mu_index = 0
         # Resize the interpolation matrix
         self.EIM_approximation.interpolation_matrix[0] = OnlineMatrix(self.Nmax, self.Nmax)
-        for run in range(self.Nmax):
-            print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
+        while self.EIM_approximation.N < self.Nmax:
+            print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
             
             if self.EIM_approximation.basis_generation == "Greedy":
                 print("solve interpolation for mu =", self.EIM_approximation.mu)

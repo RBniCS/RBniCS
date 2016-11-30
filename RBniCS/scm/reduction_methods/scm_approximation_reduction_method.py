@@ -128,8 +128,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.SCM_approximation.set_mu(self.training_set[0])
         self._offline__mu_index = 0
         
-        for run in range(self.Nmax):
-            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        while self.SCM_approximation.N < self.Nmax:
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM N =", self.SCM_approximation.N, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             
             # Store the greedy parameter
             self.update_C_J()

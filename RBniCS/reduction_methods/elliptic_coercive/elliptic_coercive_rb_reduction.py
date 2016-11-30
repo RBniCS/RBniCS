@@ -132,8 +132,9 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         print("==============================================================")
         print("")
         
-        for run in range(self.Nmax):
-            print("############################## run =", run, "######################################")
+        run = 0
+        while self.reduced_problem.N < self.Nmax:
+            print("############################## N =", self.reduced_problem.N, "######################################")
             
             print("truth solve for mu =", self.truth_problem.mu)
             snapshot = self.truth_problem.solve()
@@ -142,6 +143,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
             
             print("update basis matrix")
             self.update_basis_matrix(snapshot)
+            run += 1
             
             print("build reduced operators")
             self.reduced_problem.build_reduced_operators()
