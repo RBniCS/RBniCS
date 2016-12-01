@@ -29,7 +29,8 @@ def tensor_copy(tensor):
     assert isinstance(tensor, (Matrix.Type(), Vector.Type()))
     output = tensor.copy()
     # Preserve generator for I/O
-    output.generator = tensor.generator
+    if hasattr(tensor, "generator"):
+        output.generator = tensor.generator
     #
     return output
 

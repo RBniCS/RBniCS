@@ -27,6 +27,8 @@ from dolfin import Constant, DirichletBC, project
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
+from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.wrapping import function_copy, tensor_copy
 from RBniCS.utils.decorators import backend_for, ThetaType
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
@@ -58,17 +60,24 @@ def product(thetas, operators, thetas2=None):
                 dirichlet_bc = DirichletBC(key[0], value_projected_collapsed, key[1], key[2])
             output.append(dirichlet_bc)
         return ProductOutput(output)
+    elif operators.type() == "Function":
+        output = function_copy(operators[0])
+        output.vector().zero()
+        for (theta, operator) in zip(thetas, operators):
+            output.vector().add_local(theta*operator.vector().array())
+        output.vector().apply("add")
+        return ProductOutput(output)
     elif operators.type() == "Form":
         assert isinstance(operators[0], (Matrix.Type(), Vector.Type()))
         # Carry out the dot product (with respect to the index q over the affine expansion)
         if isinstance(operators[0], Matrix.Type()):
-            output = operators[0].copy()
+            output = tensor_copy(operators[0])
             output.zero()
             for (theta, operator) in zip(thetas, operators):
                 output += theta*operator
             return ProductOutput(output)
         elif isinstance(operators[0], Vector.Type()):
-            output = operators[0].copy()
+            output = tensor_copy(operators[0])
             output.zero()
             for (theta, operator) in zip(thetas, operators):
                 output.add_local(theta*operator.array())

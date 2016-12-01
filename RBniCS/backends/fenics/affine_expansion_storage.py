@@ -27,10 +27,11 @@ from dolfin import adjoint, assemble, DirichletBC
 from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
+from RBniCS.backends.fenics.function import Function
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("FEniCS", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Matrix.Type()), tuple_of(Vector.Type())), (bool, None)))
+@BackendFor("FEniCS", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type())), (bool, None)))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def __init__(self, args, symmetrize=None):
@@ -39,13 +40,16 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         # Type checking
         is_Form = self._is_Form(args[0])
         is_DirichletBC = self._is_DirichletBC(args[0])
+        is_Function = self._is_Function(args[0])
         is_Tensor = self._is_Tensor(args[0])
-        assert is_Form or is_DirichletBC or is_Tensor
+        assert is_Form or is_DirichletBC or is_Function or is_Tensor
         for i in range(1, len(args)):
             if is_Form:
                 assert self._is_Form(args[i])
             elif is_DirichletBC:
                 assert self._is_DirichletBC(args[i])
+            elif is_Function:
+                assert self._is_Function(args[i])
             elif is_Tensor:
                 assert self._is_Tensor(args[i])
             else:
@@ -64,6 +68,10 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             assert symmetrize is None
             self._content = args
             self._type = "DirichletBC"
+        elif is_Function:
+            assert symmetrize is None
+            self._content = args
+            self._type = "Function"
         elif is_Tensor:
             assert symmetrize is None
             self._content = args
@@ -84,6 +92,10 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 if not isinstance(bc, DirichletBC):
                     return False
             return True
+            
+    @staticmethod
+    def _is_Function(arg):
+        return isinstance(arg, Function.Type())
 
     @staticmethod
     def _is_Tensor(arg):
