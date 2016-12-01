@@ -110,7 +110,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         # we do not assert for
         # (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
         # because self.dirichlet_bc may still be None after initialization, if there
-        # were no Dirichlet BCs at all
+        # were no Dirichlet BCs at all and the problem had only one component
         if self.dirichlet_bc_are_homogeneous is None: # init was not called already
             dirichlet_bc = dict()
             dirichlet_bc_are_homogeneous = dict()

@@ -24,7 +24,7 @@
 
 from RBniCS.problems.base import TimeDependentReducedProblem
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from RBniCS.backends import assign, product, sum, TimeQuadrature, TimeStepping
+from RBniCS.backends import assign, LinearSolver, product, sum, TimeQuadrature, TimeStepping
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, MultiLevelReducedProblem
 from RBniCS.reduction_methods.parabolic_coercive import ParabolicCoerciveReductionMethod
@@ -96,9 +96,16 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                     return self.compute_theta("dirichlet_bc")
                 else:
                     return None
-            # Solve by TimeStepping object
+            # Setup initial condition
             self._solution = OnlineFunction(N)
             self._solution_dot = OnlineFunction(N)
+            if self.initial_condition is not None:
+                assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                X_N = self.inner_product[:N, :N][0]
+                
+                solver = LinearSolver(X_N, self._solution, sum(product(self.compute_theta("initial_condition"), self.initial_condition[:N])))
+                solver.solve()
+            # Solve by TimeStepping object
             solver = TimeStepping(jacobian_eval, self._solution, residual_eval, bc_eval)
             solver.set_parameters(self._time_stepping_parameters)
             (_, self._solution_over_time, self._solution_dot_over_time) = solver.solve()

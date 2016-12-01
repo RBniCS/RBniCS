@@ -87,8 +87,12 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
                 return sum(product(self.compute_theta("dirichlet_bc"), self.dirichlet_bc))
             else:
                 return None
+        # Setup initial condition
+        if self.initial_condition is not None:
+            assign(self._solution, sum(product(self.compute_theta("initial_condition"), self.initial_condition)))
+        else:
+            assign(self._solution, Function(self.V))
         # Solve by TimeStepping object
-        assign(self._solution, Function(self.V))
         solver = TimeStepping(jacobian_eval, self._solution, residual_eval, bc_eval)
         solver.set_parameters(self._time_stepping_parameters)
         (_, self._solution_over_time, self._solution_dot_over_time) = solver.solve()

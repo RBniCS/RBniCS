@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
-from RBniCS.backends import assign, TimeQuadrature
-from RBniCS.backends.online import OnlineFunction
+from RBniCS.backends import assign, TimeQuadrature, transpose
+from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.utils.decorators import Extends, override
 
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -47,6 +47,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["time_step_size"] = self.dt
             self._time_stepping_parameters["final_time"] = self.T
+            # Online reduced space dimension
+            self.initial_condition = None # bool (for problems with one component) or dict of bools (for problem with several components)
+            self.initial_condition_is_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
+            # Number of terms in the affine expansion
+            self.Q_ic = None # integer (for problems with one component) or dict of integers (for problem with several components)
             # Time derivative of the solution, at the current time
             self._solution_dot = OnlineFunction()
             # Solution and output over time
@@ -54,6 +59,107 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._solution_dot_over_time = list() # of Functions
             self._output_over_time = list() # of floats
             
+        ## Initialize data structures required for the online phase
+        def init(self, current_stage="online"):
+            # Initialize first data structures related to initial conditions
+            self._init_initial_condition(current_stage)
+            # ... since the Parent call may be overridden to need them!
+            ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
+            
+        def _init_initial_condition(self, current_stage="online"):
+            assert current_stage in ("online", "offline")
+            n_components = len(self.truth_problem.components_name)
+            # Get helper strings depending on the number of components
+            if n_components > 1:
+                initial_condition_string = "initial_condition_{c}"
+            else:
+                initial_condition_string = "initial_condition"
+            # Detect how many theta terms are related to boundary conditions
+            # we do not assert for
+            # (self.initial_condition is None) == (self.initial_condition_is_homogeneous is None)
+            # because self.initial_condition may still be None after initialization, if there
+            # were no initial condition at all and the problem had only one component
+            if self.initial_condition_is_homogeneous is None: # init was not called already
+                initial_condition = dict()
+                initial_condition_is_homogeneous = dict()
+                Q_ic = dict()
+                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                    try:
+                        theta_ic = self.compute_theta(initial_condition_string.format(c=component_name))
+                    except ValueError: # there were no initial condition to be imposed by lifting
+                        initial_condition[component_name] = None
+                        initial_condition_is_homogeneous[component_name] = True
+                        Q_ic[component_name] = 0
+                    else:
+                        initial_condition_is_homogeneous[component_name] = False
+                        Q_ic[component_name] = len(theta_ic)
+                        if current_stage == "online":
+                            initial_condition[component_name] = self.assemble_operator(initial_condition_string.format(c=component_name), "online")
+                        elif current_stage == "offline":
+                            initial_condition[component_name] = OnlineAffineExpansionStorage(Q_ic[component_name])
+                        else:
+                            raise AssertionError("Invalid stage in _init_initial_condition().")
+                if n_components == 1:
+                    self.initial_condition = initial_condition.values()[0]
+                    self.initial_condition_is_homogeneous = initial_condition_is_homogeneous.values()[0]
+                    self.Q_ic = Q_ic.values()[0]
+                else:
+                    self.initial_condition = initial_condition
+                    self.initial_condition_is_homogeneous = initial_condition_is_homogeneous
+                    self.Q_ic = Q_ic
+                assert self.initial_condition_is_homogeneous == self.truth_problem.initial_condition_is_homogeneous
+                
+        ## Assemble the reduced order affine expansion.
+        def build_reduced_operators(self):
+            ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self)
+            # Initial condition
+            n_components = len(self.truth_problem.components_name)
+            if n_components > 1:
+                initial_condition_string = "initial_condition_{c}"
+                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                    if not self.initial_condition_is_homogeneous[component_name]:
+                        self.initial_condition[component_name] = self.assemble_operator(initial_condition_string.format(c=component_name), "offline")
+            else:
+                if not self.initial_condition_is_homogeneous:
+                    self.initial_condition = self.assemble_operator("initial_condition", "offline")
+                
+        ## Assemble the reduced order affine expansion
+        def assemble_operator(self, term, current_stage="online"):
+            assert current_stage in ("online", "offline")
+            if term.startswith("initial_condition"):
+                component_name = term.replace("initial_condition", "").replace("_", "")
+                # Compute
+                if current_stage == "online": # load from file
+                    initial_condition = OnlineAffineExpansionStorage(0) # it will be resized by load
+                    initial_condition.load(self.folder["reduced_operators"], term)
+                elif current_stage == "offline":
+                # Get truth initial condition
+                    if component_name != "":
+                        truth_initial_condition = self.truth_problem.initial_condition[component_name]
+                        truth_inner_product = self.truth_problem.inner_product[component_name]
+                        initial_condition = self.initial_condition[component_name]
+                    else:
+                        truth_initial_condition = self.truth_problem.initial_condition
+                        truth_inner_product = self.truth_problem.inner_product
+                        initial_condition = self.initial_condition
+                    assert len(truth_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                    for (q, truth_initial_condition_q) in enumerate(truth_initial_condition):
+                        initial_condition[q] = transpose(self.Z)*truth_inner_product[0]*truth_initial_condition_q
+                    initial_condition.save(self.folder["reduced_operators"], term)
+                else:
+                    raise AssertionError("Invalid stage in assemble_operator().")
+                # Assign
+                if component_name != "":
+                    assert component_name in self.truth_problem.components_name
+                    self.initial_condition[component_name] = initial_condition
+                else:
+                    assert len(self.truth_problem.components_name) == 1
+                    self.initial_condition = initial_condition
+                # Return
+                return initial_condition
+            else:
+                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
+                
         ###########################     ERROR ANALYSIS     ########################### 
         ## @defgroup ErrorAnalysis Error analysis
         #  @{

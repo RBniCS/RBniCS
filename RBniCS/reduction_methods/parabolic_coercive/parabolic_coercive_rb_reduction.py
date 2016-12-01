@@ -148,4 +148,5 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
             self.POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
             self.reduced_problem.Z.enrich(Z1)
             self.reduced_problem.N += N1
+            self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
             

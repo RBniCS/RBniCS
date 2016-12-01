@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import export, Function
+from RBniCS.backends import AffineExpansionStorage, export, Function
 from RBniCS.utils.decorators import Extends, override
 
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
@@ -42,6 +42,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             # Additional options for time stepping may be stored in the following dict
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["initial_time"] = 0.
+            # Matrices/vectors resulting from the truth discretization
+            self.initial_condition = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components)
+            self.initial_condition_is_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
             # Time derivative of the solution, at the current time
             self._solution_dot = Function(self.V)
             # Solution and output over time
@@ -70,6 +73,44 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solution_over_time = self._solution_over_time
             for (k, solution) in enumerate(solution_over_time):
                 export(solution, folder, filename, suffix=k, component=component)
+                
+        ## Initialize data structures required for the offline phase
+        @override
+        def init(self):
+            ParametrizedDifferentialProblem_DerivedClass.init(self)
+            self._init_initial_condition()
+            
+        def _init_initial_condition(self):
+            # Get helper strings depending on the number of basis components
+            n_components = len(self.components_name)
+            assert n_components > 0
+            if n_components > 1:
+                initial_condition_string = "initial_condition_{c}"
+            else:
+                initial_condition_string = "initial_condition"
+            # Assemble initial condition
+            # we do not assert for
+            # (self.initial_condition is None) == (self.initial_condition_is_homogeneous is None)
+            # because self.initial_condition may still be None after initialization, if there
+            # were no initial condition at all and the problem had only one component
+            if self.initial_condition_is_homogeneous is None: # init was not called already
+                initial_condition = dict()
+                initial_condition_is_homogeneous = dict()
+                for (component_index, component_name) in enumerate(self.components_name):
+                    try:
+                        operator_ic = AffineExpansionStorage(self.assemble_operator(initial_condition_string.format(c=component_name)))
+                    except ValueError: # there were no initial condition: assume homogeneous one
+                        initial_condition[component_name] = None
+                        initial_condition_is_homogeneous[component_name] = True
+                    else:
+                        initial_condition[component_name] = operator_ic
+                        initial_condition_is_homogeneous[component_name] = False
+                if n_components == 1:
+                    self.initial_condition = initial_condition.values()[0]
+                    self.initial_condition_is_homogeneous = initial_condition_is_homogeneous.values()[0]
+                else:
+                    self.initial_condition = initial_condition
+                    self.initial_condition_is_homogeneous = initial_condition_is_homogeneous
                 
     # return value (a class) for the decorator
     return TimeDependentProblem_Class
