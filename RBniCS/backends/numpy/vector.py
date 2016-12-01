@@ -33,8 +33,12 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
             (isinstance(key, tuple) and isinstance(key[0], tuple)) # indirect call through AffineExpansionStorage
         ):
             if isinstance(key, slice): # direct call of vector[:5]
+                # Prepare output
                 output = VectorBaseType.__getitem__(self, Slicer(*slice_to_array(key, self)))
-                output_size = slice_to_size(key)
+                if hasattr(self, "_component_name_to_basis_component_length"):
+                    output_size = slice_to_size(key, self._component_name_to_basis_component_length)
+                else:
+                    output_size = slice_to_size(key)
                 # Preserve N
                 assert len(output_size) == 1
                 output.N = output_size[0]

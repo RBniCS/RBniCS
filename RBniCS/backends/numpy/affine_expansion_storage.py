@@ -180,7 +180,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 return self._precomputed_slices[slices]
             else:
                 output = AffineExpansionStorage(*self._content.shape)
-                output_content_size = slice_to_size(key)
+                output_content_size = slice_to_size(key, self._component_name_to_basis_component_length)
                 it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
                 while not it.finished:
                     item = self._content[it.multi_index]

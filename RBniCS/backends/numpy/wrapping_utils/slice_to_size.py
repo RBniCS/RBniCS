@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def slice_to_size(key):
+def slice_to_size(key, length_dict=None):
     if isinstance(key, slice):
         key = (key,)
         
@@ -35,8 +35,17 @@ def slice_to_size(key):
         assert slice_.step is None
         assert isinstance(slice_.stop, (int, dict))
         if isinstance(slice_.stop, int):
-            size.append(slice_.stop)
+            assert isinstance(length_dict, dict) or length_dict is None
+            if length_dict is None:
+                size.append(slice_.stop)
+            else:
+                assert len(length_dict) == 1
+                current_size = dict()
+                current_size[length_dict.keys()[0]] = slice_.stop
+                size.append(current_size)
         else:
+            assert isinstance(length_dict, dict)
+            assert length_dict.keys() == slice_.stop.keys()
             current_size = dict()
             for (component_name, component_size) in slice_.stop.iteritems():
                 current_size[component_name] = component_size
