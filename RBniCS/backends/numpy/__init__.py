@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.numpy.abs import abs
+from RBniCS.backends.numpy.adjoint import adjoint
 from RBniCS.backends.numpy.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.numpy.assign import assign
 from RBniCS.backends.numpy.basis_functions_matrix import BasisFunctionsMatrix
@@ -57,6 +58,7 @@ from RBniCS.backends.numpy.vector import Vector
 
 __all__ = [
     'abs',
+    'adjoint',
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',

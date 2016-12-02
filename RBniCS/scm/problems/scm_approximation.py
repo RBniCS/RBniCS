@@ -67,6 +67,7 @@ class SCMApproximation(ParametrizedProblem):
         self.M_e = kwargs["M_e"] # integer denoting the number of constraints based on the exact eigenvalues. If < 0, then it is assumed to be len(C_J)
         self.M_p = kwargs["M_p"] # integer denoting the number of constraints based on the previous lower bounds. If < 0, then it is assumed to be len(C_J)
         self.training_set = None # SCM algorithms needs the training set also in the online stage, e.g. to query alpha_LB_on_training_set
+        self.N = 0
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Matrices/vectors resulting from the truth discretization

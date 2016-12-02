@@ -31,6 +31,7 @@ assert has_slepc()
 
 # Import modules
 from RBniCS.backends.fenics.abs import abs
+from RBniCS.backends.fenics.adjoint import adjoint
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.fenics.assign import assign
 from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
@@ -65,6 +66,7 @@ from RBniCS.backends.fenics.vector import Vector
 
 __all__ = [
     'abs',
+    'adjoint',
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',

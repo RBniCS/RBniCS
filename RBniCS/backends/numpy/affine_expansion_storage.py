@@ -43,12 +43,12 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._recursive = False
         # Carry out initialization
         assert (
-            (isinstance(arg1, int) and (isinstance(arg2, int) or arg2 is None))
+            (isinstance(arg1, int) and isinstance(arg1, AbstractAffineExpansionStorage))
                 or
-            (isinstance(arg1, AbstractAffineExpansionStorage) and (isinstance(arg2, int) or arg2 is None))
+            (isinstance(arg2, int) or arg2 is None)
         )
         if isinstance(arg1, AbstractAffineExpansionStorage):
-            assert arg2 is None # the bool case has not been considered yet
+            assert arg2 is None
             self._recursive = True
             self._content = arg1._content
             self._content_as_matrix = arg1._content_as_matrix

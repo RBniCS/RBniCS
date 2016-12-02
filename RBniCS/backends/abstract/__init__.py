@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.abstract.abs import abs
+from RBniCS.backends.abstract.adjoint import adjoint
 from RBniCS.backends.abstract.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.abstract.assign import assign
 from RBniCS.backends.abstract.basis_functions_matrix import BasisFunctionsMatrix

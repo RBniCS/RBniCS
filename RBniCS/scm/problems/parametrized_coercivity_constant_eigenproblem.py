@@ -23,9 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import isclose
-from dolfin import adjoint
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import AffineExpansionStorage, EigenSolver, sum, product
+from RBniCS.backends import adjoint, AffineExpansionStorage, EigenSolver, sum, product
 from RBniCS.utils.decorators import sync_setters, Extends, override
 
 @Extends(ParametrizedProblem)
@@ -72,7 +71,7 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         else:
             assert isinstance(self.term, str)
             forms = self.truth_problem.assemble_operator(self.term)
-        self.operator = AffineExpansionStorage(forms, symmetrize=True)
+        self.operator = AffineExpansionStorage(tuple(0.5*(f + adjoint(f)) for f in forms))
         
         # Store the inner product matrix
         self.inner_product = AffineExpansionStorage(self.truth_problem.assemble_operator("inner_product"))
