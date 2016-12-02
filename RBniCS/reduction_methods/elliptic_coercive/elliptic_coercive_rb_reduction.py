@@ -216,12 +216,12 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
         
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(N)
-        error_analysis_table.add_column("error_u", group_name="u", operations="mean")
-        error_analysis_table.add_column("error_estimator_u", group_name="u", operations="mean")
-        error_analysis_table.add_column("effectivity_u", group_name="u", operations=("min", "mean", "max"))
-        error_analysis_table.add_column("error_s", group_name="s", operations="mean")
-        error_analysis_table.add_column("error_estimator_s", group_name="s", operations="mean")
-        error_analysis_table.add_column("effectivity_s", group_name="s", operations=("min", "mean", "max"))
+        error_analysis_table.add_column("error_u", group_name="solution", operations="mean")
+        error_analysis_table.add_column("error_estimator_u", group_name="solution", operations="mean")
+        error_analysis_table.add_column("effectivity_u", group_name="solution", operations=("min", "mean", "max"))
+        error_analysis_table.add_column("error_s", group_name="output", operations="mean")
+        error_analysis_table.add_column("error_estimator_s", group_name="output", operations="mean")
+        error_analysis_table.add_column("effectivity_s", group_name="output", operations=("min", "mean", "max"))
         
         for (run, mu) in enumerate(self.testing_set):
             print("############################## run =", run, "######################################")

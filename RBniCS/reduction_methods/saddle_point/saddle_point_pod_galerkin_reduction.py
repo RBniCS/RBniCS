@@ -173,12 +173,12 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
         
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(Nmax)
-        error_analysis_table.add_column("error_u", group_name="u", operations="mean")
-        error_analysis_table.add_column("relative_error_u", group_name="u", operations="mean")
-        error_analysis_table.add_column("error_p", group_name="p", operations="mean")
-        error_analysis_table.add_column("relative_error_p", group_name="p", operations="mean")
-        error_analysis_table.add_column("error_j", group_name="j", operations="mean")
-        error_analysis_table.add_column("relative_error_j", group_name="j", operations="mean")
+        error_analysis_table.add_column("error_u", group_name="solution_u", operations="mean")
+        error_analysis_table.add_column("relative_error_u", group_name="solution_u", operations="mean")
+        error_analysis_table.add_column("error_p", group_name="solution_p", operations="mean")
+        error_analysis_table.add_column("relative_error_p", group_name="solution_p", operations="mean")
+        error_analysis_table.add_column("error_j", group_name="output", operations="mean")
+        error_analysis_table.add_column("relative_error_j", group_name="output", operations="mean")
         
         for (run, mu) in enumerate(self.testing_set):
             print("############################## run =", run, "######################################")
