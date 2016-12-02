@@ -68,7 +68,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         def _init_initial_condition(self, current_stage="online"):
             assert current_stage in ("online", "offline")
-            n_components = len(self.truth_problem.components_name)
+            n_components = len(self.components_name)
             # Get helper strings depending on the number of components
             if n_components > 1:
                 initial_condition_string = "initial_condition_{c}"
@@ -83,7 +83,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 initial_condition = dict()
                 initial_condition_is_homogeneous = dict()
                 Q_ic = dict()
-                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                for (component_index, component_name) in enumerate(self.components_name):
                     try:
                         theta_ic = self.compute_theta(initial_condition_string.format(c=component_name))
                     except ValueError: # there were no initial condition to be imposed by lifting
@@ -113,10 +113,10 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def build_reduced_operators(self):
             ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self)
             # Initial condition
-            n_components = len(self.truth_problem.components_name)
+            n_components = len(self.components_name)
             if n_components > 1:
                 initial_condition_string = "initial_condition_{c}"
-                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                for (component_index, component_name) in enumerate(self.components_name):
                     if not self.initial_condition_is_homogeneous[component_name]:
                         self.initial_condition[component_name] = self.assemble_operator(initial_condition_string.format(c=component_name), "offline")
             else:
@@ -150,10 +150,10 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     raise AssertionError("Invalid stage in assemble_operator().")
                 # Assign
                 if component_name != "":
-                    assert component_name in self.truth_problem.components_name
+                    assert component_name in self.components_name
                     self.initial_condition[component_name] = initial_condition
                 else:
-                    assert len(self.truth_problem.components_name) == 1
+                    assert len(self.components_name) == 1
                     self.initial_condition = initial_condition
                 # Return
                 return initial_condition

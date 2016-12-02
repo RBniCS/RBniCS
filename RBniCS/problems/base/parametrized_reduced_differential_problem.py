@@ -61,9 +61,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         self.N_bc = None # integer (for problems with one component) or dict of integers (for problem with several components)
         self.dirichlet_bc = None # bool (for problems with one component) or dict of bools (for problem with several components)
         self.dirichlet_bc_are_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
-        # Number of terms in the affine expansion
+        # Form names and order
         self.terms = truth_problem.terms
         self.terms_order = truth_problem.terms_order
+        self.components_name = truth_problem.components_name
+        # Number of terms in the affine expansion
         self.Q = dict() # from string to integer
         # Reduced order operators
         self.operator = dict() # from string to OnlineAffineExpansionStorage
@@ -98,11 +100,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         assert current_stage in ("online", "offline")
         if current_stage == "online":
             # Inner products
-            n_components = len(self.truth_problem.components_name)
+            n_components = len(self.components_name)
             if n_components > 1:
                 inner_product_string = "inner_product_{c}"
                 self.inner_product = dict()
-                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                for (component_index, component_name) in enumerate(self.components_name):
                     self.inner_product[component_name] = self.assemble_operator(inner_product_string.format(c=component_name), "online")
             else:
                 self.inner_product = self.assemble_operator("inner_product", "online")
@@ -112,10 +114,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 self.Q[term] = len(self.operator[term])
         elif current_stage == "offline":
             # Inner products
-            n_components = len(self.truth_problem.components_name)
+            n_components = len(self.components_name)
             if n_components > 1:
                 self.inner_product = dict()
-                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                for (component_index, component_name) in enumerate(self.components_name):
                     self.inner_product[component_name] = OnlineAffineExpansionStorage(1)
             else:
                 self.inner_product = OnlineAffineExpansionStorage(1)
@@ -128,7 +130,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def _init_basis_functions(self, current_stage="online"):
         assert current_stage in ("online", "offline")
-        n_components = len(self.truth_problem.components_name)
+        n_components = len(self.components_name)
         # Get helper strings depending on the number of basis components
         if n_components > 1:
             dirichlet_bc_string = "dirichlet_bc_{c}"
@@ -146,7 +148,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         assert (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
         if self.dirichlet_bc is None: # init was not called already
             dirichlet_bc = dict()
-            for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+            for (component_index, component_name) in enumerate(self.components_name):
                 try:
                     theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
                 except ValueError: # there were no Dirichlet BCs to be imposed by lifting
@@ -166,7 +168,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             if Z_loaded:
                 N = dict()
                 N_bc = dict()
-                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                for (component_index, component_name) in enumerate(self.components_name):
                     if has_non_homogeneous_dirichlet_bc(component_name):
                         theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
                         N[component_name] = len(get_Z(component_name)) - len(theta_bc)
@@ -184,7 +186,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                     self.N_bc = N_bc
         elif current_stage == "offline":
             # Store the lifting functions in self.Z
-            for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+            for (component_index, component_name) in enumerate(self.components_name):
                 self.assemble_operator(dirichlet_bc_string.format(c=component_name), "offline") # no return value from assemble_operator in this case
             # Save basis functions matrix, that contains up to now only lifting functions
             self.Z.save(self.folder["basis"], "basis")
@@ -197,7 +199,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             else:
                 N = dict()
                 N_bc = dict()
-                for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+                for (component_index, component_name) in enumerate(self.components_name):
                     N[component_name] = 0
                     N_bc[component_name] = len(self.Z[component_name])
                 self.N = N
@@ -237,10 +239,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         for term in self.terms:
             self.operator[term] = self.assemble_operator(term, "offline")
         # Inner products
-        n_components = len(self.truth_problem.components_name)
+        n_components = len(self.components_name)
         if n_components > 1:
             inner_product_string = "inner_product_{c}"
-            for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+            for (component_index, component_name) in enumerate(self.components_name):
                 self.inner_product[component_name] = self.assemble_operator(inner_product_string.format(c=component_name), "offline")
         else:
             self.inner_product = self.assemble_operator("inner_product", "offline")
@@ -248,7 +250,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
     # non-homogeneous Dirichlet boundary conditions
     def postprocess_snapshot(self, snapshot):
-        n_components = len(self.truth_problem.components_name)
+        n_components = len(self.components_name)
         # Get helper strings and functions depending on the number of basis components
         if n_components > 1:
             dirichlet_bc_string = "dirichlet_bc_{c}"
@@ -263,7 +265,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             def assert_lengths(component_name):
                 assert self.N_bc == len(theta_bc)
         # Carry out postprocessing
-        for (component_index, component_name) in enumerate(self.truth_problem.components_name):
+        for (component_index, component_name) in enumerate(self.components_name):
             if has_non_homogeneous_dirichlet_bc(component_name):
                 theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
                 assert_lengths(component_name)
@@ -319,10 +321,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             elif term.startswith("inner_product"):
                 component_name = term.replace("inner_product", "").replace("_", "")
                 if component_name != "":
-                    assert component_name in self.truth_problem.components_name
+                    assert component_name in self.components_name
                     self.inner_product[component_name] = OnlineAffineExpansionStorage(0) # it will be resized by load
                 else:
-                    assert len(self.truth_problem.components_name) == 1
+                    assert len(self.components_name) == 1
                     self.inner_product = OnlineAffineExpansionStorage(0) # it will be resized by load
             # Note that it would not be needed to return the loaded operator in 
             # init(), since it has been already modified in-place. We do this, however,
@@ -363,14 +365,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             elif term.startswith("inner_product"):
                 component_name = term.replace("inner_product", "").replace("_", "")
                 if component_name != "":
-                    assert component_name in self.truth_problem.components_name
+                    assert component_name in self.components_name
                     assert len(self.inner_product[component_name]) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product[component_name]) == 1 # the affine expansion storage contains only the inner product matrix
                     self.inner_product[component_name][0] = transpose(self.Z)*self.truth_problem.inner_product[component_name][0]*self.Z
                     self.inner_product[component_name].save(self.folder["reduced_operators"], term)
                     return self.inner_product[component_name]
                 else:
-                    assert len(self.truth_problem.components_name) == 1 # single component case
+                    assert len(self.components_name) == 1 # single component case
                     assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     self.inner_product[0] = transpose(self.Z)*self.truth_problem.inner_product[0]*self.Z
@@ -379,10 +381,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             elif term.startswith("dirichlet_bc"):
                 component_name = term.replace("dirichlet_bc", "").replace("_", "")
                 if component_name != "":
-                    assert component_name in self.truth_problem.components_name
+                    assert component_name in self.components_name
                     has_non_homogeneous_dirichlet_bc = self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]
                 else:
-                    assert len(self.truth_problem.components_name) == 1
+                    assert len(self.components_name) == 1
                     component_name = None
                     has_non_homogeneous_dirichlet_bc = self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
                 if has_non_homogeneous_dirichlet_bc:
