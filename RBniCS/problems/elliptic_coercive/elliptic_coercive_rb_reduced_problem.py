@@ -105,11 +105,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     
     ## Return an error bound for the current output
     def estimate_error_output(self):
-        eps2 = self.get_residual_norm_squared()
-        alpha = self.get_stability_factor()
-        assert eps2 >= 0. or isclose(eps2, 0.)
-        assert alpha >= 0.
-        return abs(eps2)/alpha
+        return self.estimate_error()**2
         
     ## Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):

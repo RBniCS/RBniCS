@@ -22,36 +22,23 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
+from RBniCS.utils.decorators import Extends, override, PrimalDualReducedProblem, ReducedProblemFor
+from RBniCS.backends import product, sum, transpose
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
-
-def _problem_is_noncompliant(truth_problem):
-    try:
-        theta_s = truth_problem.compute_theta("s")
-    except ValueError:
-        return False
-    else:
-        return True
+from RBniCS.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant_reduction import _problem_is_noncompliant
 
 @Extends(EllipticCoerciveRBReducedProblem) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction, replaces=EllipticCoerciveRBReducedProblem, replaces_if=_problem_is_noncompliant)
+@PrimalDualReducedProblem
 class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBReducedProblem):
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
-    
-    ## Default initialization of members.
+    # Perform an online evaluation of the non compliant output
     @override
-    def __init__(self, truth_problem):
-        # Call to parent
-        EllipticCoerciveRBReducedProblem.__init__(self, truth_problem)
+    def output(self):
+        N = self._solution.N
+        assembled_output_operator = sum(product(self.compute_theta("s"), self.operator["s"][:N]))
+        self._output = transpose(assembled_output_operator)*self._solution
+        return self._output
         
-        #raise NotImplementedError("This class has not been implemented yet.") # TODO
-
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    

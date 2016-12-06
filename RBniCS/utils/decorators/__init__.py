@@ -24,11 +24,15 @@
 
 from RBniCS.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractmethod, abstractonlinemethod, abstractproperty
 from RBniCS.utils.decorators.backend_for import BackendFor, backend_for, dict_of, DictOfThetaType, list_of, OnlineSizeType, ThetaType, tuple_of
+from RBniCS.utils.decorators.dual_problem import DualProblem
+from RBniCS.utils.decorators.dual_reduced_problem import DualReducedProblem
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.exact_problem import ExactProblem
 from RBniCS.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
 from RBniCS.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
 from RBniCS.utils.decorators.override import override
+from RBniCS.utils.decorators.primal_dual_reduced_problem import PrimalDualReducedProblem
+from RBniCS.utils.decorators.primal_dual_reduction_method import PrimalDualReductionMethod
 from RBniCS.utils.decorators.problem_decorator_for import ProblemDecoratorFor
 from RBniCS.utils.decorators.reduced_problem_decorator_for import ReducedProblemDecoratorFor
 from RBniCS.utils.decorators.reduced_problem_for import ReducedProblemFor
@@ -53,6 +57,8 @@ __all__ = [
     'backend_for',
     'dict_of',
     'DictOfThetaType',
+    'DualProblem',
+    'DualReducedProblem',
     'ExactProblem',
     'get_problem_from_solution',
     'get_reduced_problem_from_basis_functions_matrix',
@@ -62,6 +68,8 @@ __all__ = [
     'MultiLevelReductionMethod',
     'OnlineSizeType',
     'override',
+    'PrimalDualReducedProblem',
+    'PrimalDualReductionMethod',
     'ProblemDecoratorFor',
     'ReducedProblemDecoratorFor',
     'ReducedProblemFor',

@@ -24,15 +24,19 @@
 
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_pod_galerkin_reduced_problem import EllipticCoercivePODGalerkinReducedProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_rb_non_compliant_reduced_problem import EllipticCoerciveRBNonCompliantReducedProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
+from RBniCS.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem_dual import EllipticCoerciveRBReducedProblem_Dual
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 
 
 __all__ = [
     'EllipticCoercivePODGalerkinReducedProblem',
     'EllipticCoerciveProblem',
+    'EllipticCoerciveProblem_Dual',
     'EllipticCoerciveRBNonCompliantReducedProblem',
     'EllipticCoerciveRBReducedProblem',
+    'EllipticCoerciveRBReducedProblem_Dual',
     'EllipticCoerciveReducedProblem'
 ]

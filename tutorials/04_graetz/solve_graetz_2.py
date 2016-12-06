@@ -100,7 +100,8 @@ class Graetz(EllipticCoerciveProblem):
             f0 = Constant(0.0)*v*dx
             return (f0,)
         elif term == "s":
-            s0 = v*dx(2)
+            ds = self.ds
+            s0 = v*ds(4)
             return (s0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1),
@@ -120,7 +121,7 @@ class Graetz(EllipticCoerciveProblem):
             return (bc0, bc1)
         elif term == "inner_product":
             u = self.u
-            x0 = u*v*dx + inner(grad(u),grad(v))*dx
+            x0 = inner(grad(u),grad(v))*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -145,22 +146,22 @@ graetz_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis_method.set_Nmax(20, SCM=11)
+reduced_basis_method.set_Nmax(20, dual=20, SCM=15)
 
 # 5. Perform the offline phase
 first_mu = (1.0, 1.0, 1.0, 1.0)
 graetz_problem.set_mu(first_mu)
-reduced_basis_method.initialize_training_set(500, SCM=110)
+reduced_basis_method.initialize_training_set(500, dual=500, SCM=110)
 reduced_graetz_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
-online_mu = (10.0, 0.01, 1.5, 1.0)
+online_mu = (10.0, 0.01, 1.0, 1.0)
 reduced_graetz_problem.set_mu(online_mu)
 reduced_graetz_problem.solve()
 reduced_graetz_problem.export_solution("Graetz", "online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(100, SCM=110)
+reduced_basis_method.initialize_testing_set(100, dual=100, SCM=100)
 reduced_basis_method.error_analysis()
 
 # 8. Define a new class corresponding to the exact version of Graetz,
