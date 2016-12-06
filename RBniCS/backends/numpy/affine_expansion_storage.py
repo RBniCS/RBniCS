@@ -83,7 +83,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         # Save size
         it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
         item = self._content[it.multi_index]
-        assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), float)) # these are the only types which we are interested in saving
+        assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), float)) or item is None # these are the only types which we are interested in saving
         if isinstance(item, OnlineMatrix.Type()):
             ContentTypeIO.save_file("matrix", full_directory, "content_type")
             ContentSizeIO.save_file((item.M, item.N), full_directory, "content_size")
@@ -93,6 +93,9 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         elif isinstance(item, float):
             ContentTypeIO.save_file("scalar", full_directory, "content_type")
             ContentSizeIO.save_file(None, full_directory, "content_size")
+        elif item is None:
+            ContentTypeIO.save_file("empty", full_directory, "content_type")
+            ContentSizeIO.save_file(None, full_directory, "content_size")            
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid content type.")
     
@@ -122,7 +125,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         assert ContentTypeIO.exists_file(full_directory, "content_type")
         content_type = ContentTypeIO.load_file(full_directory, "content_type")
         assert ContentSizeIO.exists_file(full_directory, "content_size")
-        assert content_type in ("matrix", "vector", "scalar")
+        assert content_type in ("matrix", "vector", "scalar", "empty")
         if content_type == "matrix":
             (M, N) = ContentSizeIO.load_file(full_directory, "content_size")
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
@@ -137,6 +140,8 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 self._content[it.multi_index].N = N
                 it.iternext()
         elif content_type == "scalar":
+            pass # nothing to be done
+        elif content_type == "empty":
             pass # nothing to be done
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid content type.")
