@@ -356,29 +356,11 @@ def mesh_dofs_to_submesh_dofs(mesh_V, submesh_V):
     submesh_dofs_extended_integer = submesh_dofs_extended_rounded.astype('i')
     not_minus_one_mesh_local_indices = where(submesh_dofs_extended_integer >= 0)[0]
     not_minus_one_mesh_global_indices = [mesh_V.dofmap().local_to_global_index(local_dof) for local_dof in not_minus_one_mesh_local_indices]
-    return dict(zip(not_minus_one_mesh_global_indices, submesh_dofs_extended_integer[not_minus_one_mesh_local_indices]))
+    submesh_dofs_extended_integer = submesh_dofs_extended_integer[not_minus_one_mesh_local_indices]
+    assert len(unique(submesh_dofs_extended_integer)) == len(submesh_dofs_extended_integer)
+    return dict(zip(not_minus_one_mesh_global_indices, submesh_dofs_extended_integer))
     
 def submesh_dofs_to_mesh_dofs(submesh_V, mesh_V):
-    if mesh_V.ufl_element().family() == "Mixed":
-        assert mesh_V.num_sub_spaces() == submesh_V.num_sub_spaces()
-        for i in range(mesh_V.num_sub_spaces()):
-            assert mesh_V.sub(i).ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
-            assert submesh_V.sub(i).ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
-    else:
-        assert mesh_V.ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
-        assert submesh_V.ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
-    
-    interpolator = LagrangeInterpolator()
-    local_mesh_dofs = array(range(*mesh_V.dofmap().ownership_range()), dtype=float)
-    mesh_dofs = Function(mesh_V)
-    mesh_dofs.vector().set_local(local_mesh_dofs)
-    mesh_dofs.vector().apply("")
-    mesh_dofs_restricted = Function(submesh_V)
-    interpolator.interpolate(mesh_dofs_restricted, mesh_dofs)
-    mesh_dofs_restricted_rounded = round(mesh_dofs_restricted.vector().array())
-    assert max(abs( mesh_dofs_restricted_rounded - mesh_dofs_restricted.vector().array() )) < 1.e-10, \
-        "Restriction has produced non-integer DOF IDs. Are you sure that the mesh function space and submesh function space are conforming?"
-    mesh_dofs_restricted_integer = mesh_dofs_restricted_rounded.astype('i')
-    submesh_global_indices = [submesh_V.dofmap().local_to_global_index(local_dof) for local_dof in range(len(mesh_dofs_restricted_integer))]
-    return dict(zip(submesh_global_indices, mesh_dofs_restricted_integer))
+    inverse_map = mesh_dofs_to_submesh_dofs(mesh_V, submesh_V)
+    return dict(zip(inverse_map.values(), inverse_map.keys()))
     
