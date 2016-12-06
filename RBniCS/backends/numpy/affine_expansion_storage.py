@@ -179,7 +179,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             ( isinstance(key, tuple) and isinstance(key[0], slice) )
         ): # return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
             
-            slices = slice_to_array(key, self)
+            slices = slice_to_array(key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
             
             if slices in self._precomputed_slices:
                 return self._precomputed_slices[slices]

@@ -34,14 +34,14 @@ class DirichletBC(object):
                 self.bcs_base_index = None
             elif isinstance(self.bcs, dict):
                 # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
-                assert rhs._basis_component_index_to_component_name == lhs._basis_component_index_to_component_name
-                assert rhs._component_name_to_basis_component_index == lhs._component_name_to_basis_component_index
-                assert rhs._component_name_to_basis_component_length == lhs._component_name_to_basis_component_length
+                assert rhs._basis_component_index_to_component_name == lhs._basis_component_index_to_component_name[0]
+                assert rhs._component_name_to_basis_component_index == lhs._component_name_to_basis_component_index[0]
+                assert rhs._component_name_to_basis_component_length == lhs._component_name_to_basis_component_length[0]
                 assert rhs.N == lhs.N
                 # Fill in storage
                 bcs_base_index = dict() # from component name to first index
                 current_bcs_base_index = 0
-                for (basis_component_index, component_name) in sorted(lhs._basis_component_index_to_component_name.iteritems()):
+                for (basis_component_index, component_name) in sorted(rhs._basis_component_index_to_component_name.iteritems()):
                     bcs_base_index[component_name] = current_bcs_base_index
                     current_bcs_base_index += rhs.N[component_name]
                 self.bcs_base_index = bcs_base_index

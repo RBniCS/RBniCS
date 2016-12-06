@@ -37,10 +37,11 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
             assert len(key) == 2
             if isinstance(key[0], slice): # direct call of matrix[:5, :5]
                 # Prepare output
-                output = MatrixBaseType.__getitem__(self, Slicer(*slice_to_array(key, self)))
                 if hasattr(self, "_component_name_to_basis_component_length"):
+                    output = MatrixBaseType.__getitem__(self, Slicer(*slice_to_array(key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
                     output_size = slice_to_size(key, self._component_name_to_basis_component_length)
                 else:
+                    output = MatrixBaseType.__getitem__(self, Slicer(*slice_to_array(key)))
                     output_size = slice_to_size(key)
                 # Preserve M and N
                 assert len(output_size) == 2
@@ -125,7 +126,6 @@ def Matrix(M, N):
     assert isinstance(M, (int, dict))
     assert isinstance(N, (int, dict))
     assert isinstance(M, dict) == isinstance(N, dict)
-    assert M == N # otherwise private attribute such as _component_name_to_basis_component_length should be repeated for each axis
     if isinstance(M, dict):
         M_sum = sum(M.values())
         N_sum = sum(N.values())

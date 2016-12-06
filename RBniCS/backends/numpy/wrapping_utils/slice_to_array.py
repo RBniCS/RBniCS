@@ -24,16 +24,32 @@
 
 from numpy import cumsum
 
-def slice_to_array(key, obj):
+def slice_to_array(key, length_dict=None, index_dict=None):
     if isinstance(key, slice):
         key = (key,)
-        
     assert isinstance(key, tuple)
     assert isinstance(key[0], slice)
     
+    if length_dict is None:
+        length_dict = (None, )*len(key)
+    elif isinstance(length_dict, dict):
+        length_dict = (length_dict, )
+    assert isinstance(length_dict, tuple)
+    assert isinstance(length_dict[0], dict) or length_dict[0] is None
+    
+    if index_dict is None:
+        index_dict = (None, )*len(key)
+    elif isinstance(index_dict, dict):
+        index_dict = (index_dict, )
+    assert isinstance(index_dict, tuple)
+    assert isinstance(index_dict[0], dict) or index_dict[0] is None
+    
+    assert len(key) == len(length_dict)
+    assert len(key) == len(index_dict)
+    
     slices_start = list()
     slices_stop = list()
-    for slice_ in key:
+    for (slice_index, slice_) in enumerate(key):
         assert slice_.start is None 
         assert slice_.step is None
         assert isinstance(slice_.stop, (int, dict))
@@ -41,18 +57,15 @@ def slice_to_array(key, obj):
             slices_start.append(0)
             slices_stop.append(slice_.stop)
         else:
-            assert obj._basis_component_index_to_component_name is not None
-            assert obj._component_name_to_basis_component_index is not None
-            assert obj._component_name_to_basis_component_length is not None
-            current_slice_length = [0]*len(obj._component_name_to_basis_component_index)
-            for (component_name, basis_component_index) in obj._component_name_to_basis_component_index.iteritems():
-                current_slice_length[basis_component_index] = obj._component_name_to_basis_component_length[component_name]
+            current_slice_length = [0]*len(index_dict[slice_index])
+            for (component_name, basis_component_index) in index_dict[slice_index].iteritems():
+                current_slice_length[basis_component_index] = length_dict[slice_index][component_name]
             current_slice_length_cumsum = cumsum(current_slice_length).tolist()
             del current_slice_length_cumsum[-1]
             current_slice_start = [0]
             current_slice_start.extend(current_slice_length_cumsum)
-            current_slice_stop  = [0]*len(obj._component_name_to_basis_component_index)
-            for (component_name, basis_component_index) in obj._component_name_to_basis_component_index.iteritems():
+            current_slice_stop  = [0]*len(index_dict[slice_index])
+            for (component_name, basis_component_index) in index_dict[slice_index].iteritems():
                 current_slice_stop[basis_component_index]  = current_slice_start[basis_component_index] + slice_.stop[component_name]
             assert len(current_slice_start) == len(current_slice_stop)
             slices_start.append(current_slice_start)

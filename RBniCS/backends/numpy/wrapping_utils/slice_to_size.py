@@ -25,27 +25,35 @@
 def slice_to_size(key, length_dict=None):
     if isinstance(key, slice):
         key = (key,)
-        
     assert isinstance(key, tuple)
     assert isinstance(key[0], slice)
     
+    if length_dict is None:
+        length_dict = (None, )*len(key)
+    elif isinstance(length_dict, dict):
+        length_dict = (length_dict, )
+    assert isinstance(length_dict, tuple)
+    assert isinstance(length_dict[0], dict) or length_dict[0] is None
+    
+    assert len(key) == len(length_dict)
+    
     size = list()
-    for slice_ in key:
+    for (slice_index, slice_) in enumerate(key):
         assert slice_.start is None
         assert slice_.step is None
         assert isinstance(slice_.stop, (int, dict))
         if isinstance(slice_.stop, int):
-            assert isinstance(length_dict, dict) or length_dict is None
-            if length_dict is None:
+            assert isinstance(length_dict[slice_index], dict) or length_dict[slice_index] is None
+            if length_dict[slice_index] is None:
                 size.append(slice_.stop)
             else:
-                assert len(length_dict) == 1
+                assert len(length_dict[slice_index]) == 1
                 current_size = dict()
-                current_size[length_dict.keys()[0]] = slice_.stop
+                current_size[length_dict[slice_index].keys()[0]] = slice_.stop
                 size.append(current_size)
         else:
-            assert isinstance(length_dict, dict)
-            assert length_dict.keys() == slice_.stop.keys()
+            assert isinstance(length_dict[slice_index], dict)
+            assert length_dict[slice_index].keys() == slice_.stop.keys()
             current_size = dict()
             for (component_name, component_size) in slice_.stop.iteritems():
                 current_size[component_name] = component_size
