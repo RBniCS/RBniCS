@@ -22,20 +22,32 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import importlib
+import os
 import sys
 current_module = sys.modules[__name__]
+current_directory = os.path.dirname(os.path.realpath(__file__))
+available_backends = list()
+for root, dirs, files in os.walk(current_directory):
+    available_backends.extend(dirs)
+    break # prevent recursive exploration
+available_backends.remove("abstract")
+available_backends.remove("basic")
+available_backends.remove("online")
 
 # Make sure to import all available backends, so that they are added to the factory storage
 import RBniCS.backends.abstract
-import RBniCS.backends.fenics
-import RBniCS.backends.numpy
+for backend in available_backends:
+    importlib.import_module("RBniCS.backends." + backend)
 
 # Combine all enabled backends available in the factory and store them in this module
 from RBniCS.utils.factories import backends_factory, enable_backend
 enable_backend("Common")
-enable_backend("FEniCS")
-enable_backend("NumPy")
+for backend in available_backends:
+    enable_backend(backend)
 backends_factory(current_module)
 
 # Clean up
 del current_module
+del current_directory
+del available_backends

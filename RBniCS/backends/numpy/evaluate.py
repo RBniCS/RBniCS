@@ -27,7 +27,7 @@ from RBniCS.backends.numpy.vector import Vector
 from RBniCS.utils.decorators import backend_for, tuple_of
 
 # Evaluate a parametrized expression, possibly at a specific location
-@backend_for("NumPy", inputs=((Matrix.Type(), Vector.Type()), (tuple_of((tuple_of(int), int)), None)))
+@backend_for("numpy", inputs=((Matrix.Type(), Vector.Type()), (tuple_of((tuple_of(int), int)), None)))
 def evaluate(expression, at=None):
     assert isinstance(expression, (Matrix.Type(), Vector.Type()))
     if isinstance(expression, (Matrix.Type(), Vector.Type())):

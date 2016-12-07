@@ -22,6 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-# ParametrizedTensorFactory is not provided for NumPy backend because
-# we are not interested in applying DEIM on NumPy
+# ParametrizedTensorFactory is not provided for numpy backend because
+# we are not interested in applying DEIM on numpy
         

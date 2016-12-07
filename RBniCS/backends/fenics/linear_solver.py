@@ -30,7 +30,7 @@ from RBniCS.backends.fenics.function import Function
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractLinearSolver)
-@BackendFor("FEniCS", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (list_of(DirichletBC), None)))
+@BackendFor("fenics", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (list_of(DirichletBC), None)))
 class LinearSolver(AbstractLinearSolver):
     @override
     def __init__(self, lhs, solution, rhs, bcs=None):

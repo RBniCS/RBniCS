@@ -30,7 +30,7 @@ from RBniCS.backends.abstract import EigenSolver as AbstractEigenSolver
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractEigenSolver)
-@BackendFor("FEniCS", inputs=(FunctionSpace, Matrix.Type(), (Matrix.Type(), None), (AffineExpansionStorage, None)))
+@BackendFor("fenics", inputs=(FunctionSpace, Matrix.Type(), (Matrix.Type(), None), (AffineExpansionStorage, None)))
 class EigenSolver(AbstractEigenSolver):
     @override
     def __init__(self, V, A, B=None, bcs=None):

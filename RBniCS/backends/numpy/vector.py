@@ -111,7 +111,7 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
 from numpy import zeros as _VectorContent_Base
 from RBniCS.utils.decorators import backend_for, OnlineSizeType
 
-@backend_for("NumPy", inputs=(OnlineSizeType, ), output=_Vector_Type)
+@backend_for("numpy", inputs=(OnlineSizeType, ), output=_Vector_Type)
 def Vector(N):
     assert isinstance(N, (int, dict))
     if isinstance(N, dict):

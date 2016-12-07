@@ -121,7 +121,7 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
 from numpy import zeros as _MatrixContent_Base
 from RBniCS.utils.decorators import backend_for, OnlineSizeType
 
-@backend_for("NumPy", inputs=(OnlineSizeType, OnlineSizeType), output=_Matrix_Type)
+@backend_for("numpy", inputs=(OnlineSizeType, OnlineSizeType), output=_Matrix_Type)
 def Matrix(M, N):
     assert isinstance(M, (int, dict))
     assert isinstance(N, (int, dict))

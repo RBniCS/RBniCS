@@ -22,6 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-# ParametrizedExpressionFactory is not provided for NumPy backend because
-# we are not interested in applying (standard) EIM on NumPy
+# ParametrizedExpressionFactory is not provided for numpy backend because
+# we are not interested in applying (standard) EIM on numpy
         

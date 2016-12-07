@@ -28,7 +28,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.io import ExportableList
 
 @Extends(AbstractReducedVertices)
-@BackendFor("FEniCS", inputs=(Mesh, ))
+@BackendFor("fenics", inputs=(Mesh, ))
 class ReducedVertices(AbstractReducedVertices):
     def __init__(self, mesh, original_vertex_list=None, original_component_list=None):
         AbstractReducedVertices.__init__(self, mesh)

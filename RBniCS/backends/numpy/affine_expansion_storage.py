@@ -33,7 +33,7 @@ from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO, Folders
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("NumPy", inputs=((int, AbstractAffineExpansionStorage), (int, None)))
+@BackendFor("numpy", inputs=((int, AbstractAffineExpansionStorage), (int, None)))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def __init__(self, arg1, arg2=None):

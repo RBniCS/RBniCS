@@ -29,7 +29,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
 from mpi4py.MPI import MAX, MIN
 
 @Extends(AbstractMeshMotion)
-@BackendFor("FEniCS", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
+@BackendFor("fenics", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
 class MeshMotion(AbstractMeshMotion):
     @override
     def __init__(self, V, subdomains, shape_parametrization_expression):

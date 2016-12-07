@@ -25,7 +25,7 @@
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.utils.decorators import backend_for, tuple_of
 
-@backend_for("NumPy", inputs=((Matrix.Type(), tuple_of(Matrix.Type())), ))
+@backend_for("numpy", inputs=((Matrix.Type(), tuple_of(Matrix.Type())), ))
 def adjoint(arg):
     assert isinstance(arg, (Matrix.Type(), tuple))
     if isinstance(arg, Matrix.Type()):

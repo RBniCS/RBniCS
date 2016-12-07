@@ -43,7 +43,7 @@ from RBniCS.backends.numpy.wrapping_utils import DirichletBC
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractTimeStepping)
-@BackendFor("NumPy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))
+@BackendFor("numpy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))
 class TimeStepping(AbstractTimeStepping):
     @override
     def __init__(self, jacobian_eval, solution, residual_eval, bcs_eval=None, time_order=1, solution_dot=None):

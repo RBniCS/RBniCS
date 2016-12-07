@@ -27,7 +27,7 @@ from RBniCS.backends.fenics.tensors_list import TensorsList
 from RBniCS.utils.decorators import BackendFor, Extends
 
 @Extends(TensorsList)
-@BackendFor("FEniCS", online_backend="NumPy", inputs=(FunctionSpace, ))
+@BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, ))
 class TensorBasisList(TensorsList):
     pass
 

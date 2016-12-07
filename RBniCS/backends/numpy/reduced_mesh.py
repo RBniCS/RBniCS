@@ -27,7 +27,7 @@ from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractReducedMesh)
-@BackendFor("NumPy", inputs=(AbstractFunctionsList, ))
+@BackendFor("numpy", inputs=(AbstractFunctionsList, ))
 class ReducedMesh(AbstractReducedMesh):
     def __init__(self, Z):
         AbstractReducedMesh.__init__(self, Z)

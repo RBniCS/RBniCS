@@ -30,7 +30,7 @@ from RBniCS.utils.decorators import backend_for, ThetaType
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
-@backend_for("NumPy", inputs=(ThetaType, AffineExpansionStorage, ThetaType + (None,)))
+@backend_for("numpy", inputs=(ThetaType, AffineExpansionStorage, ThetaType + (None,)))
 def product(thetas, operators, thetas2=None):
     order = operators.order()
     first_operator = None

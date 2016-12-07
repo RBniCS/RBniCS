@@ -26,7 +26,7 @@ from dolfin import assign as dolfin_assign
 from RBniCS.backends.fenics.function import Function
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("FEniCS", inputs=(Function.Type(), Function.Type()))
+@backend_for("fenics", inputs=(Function.Type(), Function.Type()))
 def assign(function_to, function_from):
     dolfin_assign(function_to, function_from)
         

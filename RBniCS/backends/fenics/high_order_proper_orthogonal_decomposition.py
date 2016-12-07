@@ -33,7 +33,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
 
 @Extends(HighOrderProperOrthogonalDecompositionBase)
-@BackendFor("FEniCS", inputs=(Matrix.Type(), FunctionSpace))
+@BackendFor("fenics", inputs=(Matrix.Type(), FunctionSpace))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
     @override
     def __init__(self, V_or_Z):

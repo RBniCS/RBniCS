@@ -30,7 +30,7 @@ from RBniCS.backends.fenics.vector import Vector
 import RBniCS.backends.fenics.wrapping
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("FEniCS", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), ))
+@backend_for("fenics", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), ))
 def copy(arg):
     return basic_copy(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
     

@@ -41,7 +41,7 @@ from numpy import zeros as array, ndarray as PointType, ndarray as VectorMatrixT
 from mpi4py.MPI import MAX
 
 # Evaluate a parametrized expression, possibly at a specific location
-@backend_for("FEniCS", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory), (ReducedMesh, ReducedVertices, None)))
+@backend_for("fenics", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory), (ReducedMesh, ReducedVertices, None)))
 def evaluate(expression_, at=None):
     assert isinstance(expression_, (Matrix.Type(), Vector.Type(), Function.Type(), TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory))
     assert at is None or isinstance(at, (ReducedMesh, ReducedVertices))

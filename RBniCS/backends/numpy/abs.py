@@ -29,7 +29,7 @@ from numpy import argmax, abs as numpy_abs, unravel_index
 
 # abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max,
 # even though here we actually carry out both the max and the abs!
-@backend_for("NumPy", inputs=((Matrix.Type(), Vector.Type()), ))
+@backend_for("numpy", inputs=((Matrix.Type(), Vector.Type()), ))
 def abs(expression):
     assert isinstance(expression, (Matrix.Type(), Vector.Type()))
     if isinstance(expression, Matrix.Type()):

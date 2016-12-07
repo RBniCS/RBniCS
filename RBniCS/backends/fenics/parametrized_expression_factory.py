@@ -32,7 +32,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
-@BackendFor("FEniCS", inputs=(Expression, ))
+@BackendFor("fenics", inputs=(Expression, ))
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
     def __init__(self, expression):
         AbstractParametrizedExpressionFactory.__init__(self, expression)

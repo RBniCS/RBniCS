@@ -35,7 +35,7 @@ from RBniCS.backends.fenics.wrapping_utils import get_form_name, get_form_argume
 from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
 
 @Extends(AbstractParametrizedTensorFactory)
-@BackendFor("FEniCS", inputs=(Form, ))
+@BackendFor("fenics", inputs=(Form, ))
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     # This are needed for proper I/O in tensor_load/tensor_save
     _all_forms = dict()

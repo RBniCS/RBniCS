@@ -29,7 +29,7 @@ import RBniCS.backends.fenics.wrapping
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicGramSchmidt)
-@BackendFor("FEniCS", inputs=(Matrix.Type(), ))
+@BackendFor("fenics", inputs=(Matrix.Type(), ))
 class GramSchmidt(BasicGramSchmidt):
     @override
     def __init__(self, X):

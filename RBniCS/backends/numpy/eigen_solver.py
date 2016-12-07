@@ -31,7 +31,7 @@ from RBniCS.backends.numpy.function import Function
 from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractEigenSolver)
-@BackendFor("NumPy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
+@BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
 class EigenSolver(AbstractEigenSolver):
     @override
     def __init__(self, Z, A, B=None, bcs=None):

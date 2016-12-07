@@ -27,7 +27,7 @@ from RBniCS.utils.decorators import backend_for
 
 _Function_Type = Function
 
-@backend_for("FEniCS", inputs=(FunctionSpace, (int, None)), output=_Function_Type)
+@backend_for("fenics", inputs=(FunctionSpace, (int, None)), output=_Function_Type)
 def Function(V, component=None):
     if component is None:
         return _Function_Type(V)

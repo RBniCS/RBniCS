@@ -26,7 +26,7 @@ from ufl import Form
 from dolfin import adjoint as dolfin_adjoint
 from RBniCS.utils.decorators import backend_for, tuple_of
 
-@backend_for("FEniCS", inputs=((Form, tuple_of(Form)), ))
+@backend_for("fenics", inputs=((Form, tuple_of(Form)), ))
 def adjoint(arg):
     assert isinstance(arg, (Form, tuple))
     if isinstance(arg, Form):

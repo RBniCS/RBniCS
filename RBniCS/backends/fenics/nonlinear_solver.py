@@ -32,7 +32,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 from RBniCS.utils.mpi import print
 
 @Extends(AbstractNonlinearSolver)
-@BackendFor("FEniCS", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (list_of(DirichletBC), None)))
+@BackendFor("fenics", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (list_of(DirichletBC), None)))
 class NonlinearSolver(AbstractNonlinearSolver):
     @override
     def __init__(self, jacobian_eval, solution, residual_eval, bcs=None):

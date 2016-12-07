@@ -29,7 +29,7 @@ import RBniCS.backends.numpy.wrapping
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicTensorsList)
-@BackendFor("NumPy", online_backend="NumPy", inputs=(AbstractTensorsList, ))
+@BackendFor("numpy", online_backend="numpy", inputs=(AbstractTensorsList, ))
 class TensorsList(BasicTensorsList):
     @override
     def __init__(self, V_or_Z):

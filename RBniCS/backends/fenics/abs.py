@@ -36,7 +36,7 @@ from RBniCS.utils.mpi import parallel_max
 
 # abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max
 # even though here we actually carry out both the max and the abs!
-@backend_for("FEniCS", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), Operator), ))
+@backend_for("fenics", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), Operator), ))
 def abs(expression):
     assert isinstance(expression, (Matrix.Type(), Vector.Type(), Function.Type(), Operator))
     if isinstance(expression, Matrix.Type()):

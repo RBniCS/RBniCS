@@ -29,7 +29,7 @@ import RBniCS.backends.numpy.wrapping
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicFunctionsList)
-@BackendFor("NumPy", online_backend="NumPy", inputs=(AbstractFunctionsList, ))
+@BackendFor("numpy", online_backend="numpy", inputs=(AbstractFunctionsList, ))
 class FunctionsList(BasicFunctionsList):
     @override
     def __init__(self, V_or_Z):

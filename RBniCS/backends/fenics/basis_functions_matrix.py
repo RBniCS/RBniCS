@@ -30,7 +30,7 @@ import RBniCS.backends.numpy
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicBasisFunctionsMatrix)
-@BackendFor("FEniCS", online_backend="NumPy", inputs=(FunctionSpace, ))
+@BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, ))
 class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
     @override
     def __init__(self, V_or_Z):

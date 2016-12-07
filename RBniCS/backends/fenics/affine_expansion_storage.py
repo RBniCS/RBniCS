@@ -31,7 +31,7 @@ from RBniCS.backends.fenics.function import Function
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("FEniCS", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type())), ))
+@BackendFor("fenics", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type())), ))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def __init__(self, args):

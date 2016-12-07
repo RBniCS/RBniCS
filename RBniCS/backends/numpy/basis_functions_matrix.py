@@ -28,7 +28,7 @@ import RBniCS.backends.numpy
 import RBniCS.backends.numpy.wrapping
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
-@BackendFor("NumPy", online_backend="NumPy", inputs=(AbstractFunctionsList, ))
+@BackendFor("numpy", online_backend="numpy", inputs=(AbstractFunctionsList, ))
 @Extends(BasicBasisFunctionsMatrix)
 class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
     @override

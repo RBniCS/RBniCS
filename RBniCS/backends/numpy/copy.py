@@ -30,7 +30,7 @@ from RBniCS.backends.numpy.vector import Vector
 import RBniCS.backends.numpy.wrapping
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("NumPy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), ))
+@backend_for("numpy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), ))
 def copy(arg):
     return basic_copy(arg, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping)
     

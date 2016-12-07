@@ -39,7 +39,7 @@ from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSepara
 from RBniCS.backends.fenics.wrapping_utils import get_form_name
 
 @Extends(AbstractSeparatedParametrizedForm)
-@BackendFor("FEniCS", inputs=(Form, ))
+@BackendFor("fenics", inputs=(Form, ))
 class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     def __init__(self, form):
         AbstractSeparatedParametrizedForm.__init__(self, form)

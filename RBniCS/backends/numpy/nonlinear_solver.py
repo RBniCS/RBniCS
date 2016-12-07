@@ -32,7 +32,7 @@ from RBniCS.backends.numpy.wrapping_utils import DirichletBC
 from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractNonlinearSolver)
-@BackendFor("NumPy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, ThetaType + DictOfThetaType + (None,)))
+@BackendFor("numpy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, ThetaType + DictOfThetaType + (None,)))
 class NonlinearSolver(AbstractNonlinearSolver):
     @override
     def __init__(self, jacobian_eval, solution, residual_eval, bcs=None):

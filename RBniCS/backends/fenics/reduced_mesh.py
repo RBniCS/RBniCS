@@ -33,7 +33,7 @@ from mpi4py.MPI import MAX, SUM
 from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs
 
 @Extends(AbstractReducedMesh)
-@BackendFor("FEniCS", inputs=(FunctionSpace, ))
+@BackendFor("fenics", inputs=(FunctionSpace, ))
 class ReducedMesh(AbstractReducedMesh):
     def __init__(self, V, subdomain_data=None, **kwargs):
         AbstractReducedMesh.__init__(self, V)

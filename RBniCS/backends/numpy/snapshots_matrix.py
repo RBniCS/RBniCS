@@ -27,7 +27,7 @@ from RBniCS.backends.numpy.functions_list import FunctionsList
 from RBniCS.utils.decorators import BackendFor, Extends
 
 @Extends(FunctionsList)
-@BackendFor("NumPy", online_backend="NumPy", inputs=(AbstractFunctionsList, ))
+@BackendFor("numpy", online_backend="numpy", inputs=(AbstractFunctionsList, ))
 class SnapshotsMatrix(FunctionsList):
     pass
 

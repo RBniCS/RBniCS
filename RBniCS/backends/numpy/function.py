@@ -50,7 +50,7 @@ class _Function_Type(object):
         return self._v.flat
 
         
-@backend_for("NumPy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)
+@backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)
 def Function(arg):
     return _Function_Type(arg)
     

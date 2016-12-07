@@ -34,7 +34,7 @@ from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractTimeStepping)
-@BackendFor("FEniCS", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))
+@BackendFor("fenics", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))
 class TimeStepping(AbstractTimeStepping):
     @override
     def __init__(self, jacobian_eval, solution, residual_eval, bcs_eval=None, time_order=1, solution_dot=None):
