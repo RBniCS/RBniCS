@@ -1,0 +1,42 @@
+# Ignore everything ...
+*
+*/
+# ... except this file ...
+!.gitignore
+# ... __init__ file of this package ...
+!__init__.py
+# ... abastract subpackage ...
+!abstract/
+!abstract/*
+abstract/*~
+abstract/*.bak
+abstract/*.pyc
+!abstract/*/
+# ... basic subpackage ...
+!basic/
+!basic/*
+basic/*~
+basic/*.bak
+basic/*.pyc
+!basic/*/
+# ... fenics subpackage ...
+!fenics/
+!fenics/*
+fenics/*~
+fenics/*.bak
+fenics/*.pyc
+!fenics/*/
+# ... numpy subpackage ...
+!numpy/
+!numpy/*
+numpy/*~
+numpy/*.bak
+numpy/*.pyc
+!numpy/*/
+# ... online subpackage ...
+!online/
+!online/*
+online/*~
+online/*.bak
+online/*.pyc
+!online/*/
