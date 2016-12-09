@@ -27,6 +27,7 @@ from abc import ABCMeta, abstractmethod
 import inspect
 import itertools
 from functools import wraps
+from numpy import ndarray as array
 from RBniCS.utils.mpi import log, DEBUG
 
 def BackendFor(library, online_backend=None, inputs=None):
@@ -144,13 +145,18 @@ def combine_inputs(inputs):
     
 def validate_inputs(inputs):
     for input_ in inputs:
-        if isinstance(input_, (list, tuple)):
+        if (
+            type(input_) in (list, tuple) # more strict than isinstance(input_, (list, tuple)): custom types inherited from array or list or tuple should be preserved
+                or
+            (type(input_) in (array, ) and input_.dtype == object)
+        ):
             validate_inputs(input_)
         else:
+            assert not (input_ is array and input_.dtype == object), "Please use array_of defined in this module to specify the type of each element"
             assert input_ is not dict, "Please use dict_of defined in this module to specify the type of keys and values"
             assert input_ is not list, "Please use list_of defined in this module to specify the type of each element"
             assert input_ is not tuple, "Please use tuple_of defined in this module to specify the type of each element"
-            assert inspect.isclass(input_) or isinstance(input_, (_dict_of, _list_of, _tuple_of)) or input_ is None
+            assert inspect.isclass(input_) or isinstance(input_, (_array_of, _dict_of, _list_of, _tuple_of)) or input_ is None
     
 def logging_all_classes_functions(storage):
     output = "{" + "\n"
@@ -179,20 +185,20 @@ def logging_all_classes_functions_inputs(storage):
     return output
     
 # Helper functions to be more precise when input types are tuple or list
-class _tuple_or_list_of(object):
+class _tuple_or_list_or_array_of(object):
     def __init__(self, types):
         self.types = types
         
     def are_subclass(self, other):
         def is_subclass(item_self, item_other):
-            if isinstance(item_self, _tuple_or_list_of) and isinstance(item_other, _tuple_or_list_of):
+            if isinstance(item_self, _tuple_or_list_or_array_of) and isinstance(item_other, _tuple_or_list_or_array_of):
                 return item_self.are_subclass(item_other)
-            elif isinstance(item_self, _tuple_or_list_of) or isinstance(item_other, _tuple_or_list_of): # but not both
+            elif isinstance(item_self, _tuple_or_list_or_array_of) or isinstance(item_other, _tuple_or_list_or_array_of): # but not both
                 return False
             else:
                 return issubclass(item_self, item_other)
                 
-        if not isinstance(other, _tuple_or_list_of) or type(self) != type(other):
+        if not isinstance(other, _tuple_or_list_or_array_of) or type(self) != type(other):
             return False
         elif isinstance(self.types, tuple) and isinstance(other.types, tuple):
             if len(self.types) != len(other.types):
@@ -208,20 +214,25 @@ class _tuple_or_list_of(object):
             assert not isinstance(self.types, list), "Please use tuples instead"
             return is_subclass(self.types, other.types)
 
-class _tuple_of(_tuple_or_list_of):        
+class _tuple_of(_tuple_or_list_or_array_of):        
     def __str__(self):
         return "tuple_of(" + str(self.types) + ")"
     __repr__ = __str__
     
-class _list_of(_tuple_or_list_of):
+class _list_of(_tuple_or_list_or_array_of):
     def __str__(self):
         return "list_of(" + str(self.types) + ")"
     __repr__ = __str__
     
+class _array_of(_tuple_or_list_or_array_of):
+    def __str__(self):
+        return "array_of(" + str(self.types) + ")"
+    __repr__ = __str__
+    
 class _dict_of(object):
     def __init__(self, types_from, types_to):
-        self.types_from = _tuple_or_list_of(types_from)
-        self.types_to = _tuple_or_list_of(types_to)
+        self.types_from = _tuple_or_list_or_array_of(types_from)
+        self.types_to = _tuple_or_list_or_array_of(types_to)
         
     def are_subclass(self, other):
         return self.types_from.are_subclass(other.types_from) and self.types_to.are_subclass(other.types_to)
@@ -232,6 +243,7 @@ class _dict_of(object):
     
 _all_tuple_of_instances = dict()
 _all_list_of_instances = dict()
+_all_array_of_instances = dict()
 _all_dict_of_instances = dict()
 
 def tuple_of(types):
@@ -243,6 +255,11 @@ def list_of(types):
     if types not in _all_list_of_instances:
         _all_list_of_instances[types] = _list_of(types)
     return _all_list_of_instances[types]
+    
+def array_of(types):
+    if types not in _all_array_of_instances:
+        _all_array_of_instances[types] = _array_of(types)
+    return _all_array_of_instances[types]
     
 def dict_of(types_from, types_to):
     types = (types_from, types_to)
