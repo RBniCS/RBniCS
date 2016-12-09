@@ -22,27 +22,17 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends.basic import export as basic_export
+import RBniCS.backends.fenics
 from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.wrapping import function_component, function_save, tensor_save
+import RBniCS.backends.fenics.wrapping
 from RBniCS.utils.decorators import backend_for
 from RBniCS.utils.io import Folders
 
 # Export a solution to file
 @backend_for("fenics", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None)))
 def export(solution, directory, filename, suffix=None, component=None):
-    assert isinstance(solution, (Function.Type(), Matrix.Type(), Vector.Type()))
-    if isinstance(solution, Function.Type()):
-        if component is None:
-            function_save(solution, directory, filename, suffix=suffix)
-        else:
-            solution_component = function_component(solution, component, copy=True)
-            function_save(solution_component, directory, filename, suffix=suffix)
-    elif isinstance(solution, (Matrix.Type(), Vector.Type())):
-        assert component is None
-        assert suffix is None
-        tensor_save(solution, directory, filename)
-    else: # impossible to arrive here anyway, thanks to the assert
-        raise AssertionError("Invalid arguments in export.")
+    basic_export(solution, directory, filename, suffix, component, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
     
