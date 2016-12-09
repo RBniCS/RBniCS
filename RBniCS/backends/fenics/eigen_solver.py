@@ -36,10 +36,7 @@ class EigenSolver(AbstractEigenSolver):
     def __init__(self, V, A, B=None, bcs=None):
         self.V = V
         self.A = A
-        if B is not None:
-            self.B = B
-        else:
-            self.B = None
+        self.B = B
         self.bcs = bcs
         if self.bcs is not None:
             assert self.bcs.type() == "DirichletBC"
@@ -69,6 +66,7 @@ class EigenSolver(AbstractEigenSolver):
         
     @override
     def set_parameters(self, parameters):
+        self._parameters = parameters
         assert "spectrum" in parameters
         assert parameters["spectrum"] in ("largest real", "smallest real")
         self._spectrum = parameters["spectrum"]
@@ -90,16 +88,18 @@ class EigenSolver(AbstractEigenSolver):
                 if self._spectrum == "largest real":
                     smallest_computed_eigenvalue, smallest_computed_eigenvalue_imag = self.eigen_solver.get_eigenvalue(n_eigs - 1)
                     assert isclose(smallest_computed_eigenvalue_imag, 0), "The required eigenvalue is not real"
-                    if self._spurious_eigenvalue >= smallest_computed_eigenvalue:
+                    if self._spurious_eigenvalue - smallest_computed_eigenvalue >= 0. or isclose(self._spurious_eigenvalue - smallest_computed_eigenvalue, 0.):
                         self._init_eigensolver(0.1*smallest_computed_eigenvalue)
+                        self.set_parameters(self._parameters)
                         return True
                     else:
                         return False
                 elif self._spectrum == "smallest real":
                     largest_computed_eigenvalue, largest_computed_eigenvalue_imag = self.eigen_solver.get_eigenvalue(n_eigs - 1)
                     assert isclose(largest_computed_eigenvalue_imag, 0), "The required eigenvalue is not real"
-                    if self._spurious_eigenvalue <= largest_computed_eigenvalue:
+                    if self._spurious_eigenvalue - largest_computed_eigenvalue <= 0. or isclose(self._spurious_eigenvalue - largest_computed_eigenvalue, 0.):
                         self._init_eigensolver(10.*largest_computed_eigenvalue)
+                        self.set_parameters(self._parameters)
                         return True
                     else:
                         return False
