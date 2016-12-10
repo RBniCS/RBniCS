@@ -42,11 +42,10 @@ class LinearSolver(AbstractLinearSolver):
             self.rhs = rhs.copy()
             self.bcs = bcs
             # Apply BCs
-            if self.bcs is not None:
-                assert isinstance(self.bcs, list)
-                for bc in self.bcs:
-                    assert isinstance(bc, DirichletBC)
-                    bc.apply(self.lhs, self.rhs)
+            assert isinstance(self.bcs, list)
+            for bc in self.bcs:
+                assert isinstance(bc, DirichletBC)
+                bc.apply(self.lhs, self.rhs)
         else:
             self.lhs = lhs
             self.rhs = rhs
