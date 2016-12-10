@@ -51,6 +51,7 @@ def BackendFor(library, online_backend=None, inputs=None):
         else:
             if Class.__name__ not in BackendFor._all_classes[library]:
                 BackendFor._all_classes[library][Class.__name__] = dict() # from online_backend to class
+            assert online_backend not in BackendFor._all_classes[library][Class.__name__]
             BackendFor._all_classes[library][Class.__name__][online_backend] = Class
         
         if library is not "Abstract":
@@ -75,6 +76,10 @@ def BackendFor(library, online_backend=None, inputs=None):
         
         return Class
     return BackendFor_Decorator
+    
+def SameBackendFor(library, source_library, Class, online_backend=None, inputs=None):
+    # TODO check that inputs are the same for library and source_library
+    pass
     
 BackendFor._all_classes = dict() # from library to dict from class name to class
 BackendFor._all_classes_inputs = dict() # from inputs to library
@@ -129,6 +134,10 @@ def backend_for(library, online_backend=None, inputs=None, output=None):
         
         return function
     return backend_for_decorator
+    
+def same_backend_for(library, source_library, Class, online_backend=None, inputs=None, output=None):
+    # TODO check that inputs/output are the same for library and source_library
+    pass
 
 backend_for._all_functions = dict() # from library to dict from function name to function
 backend_for._all_functions_inputs = dict() # from inputs to library
