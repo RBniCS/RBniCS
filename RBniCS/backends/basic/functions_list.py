@@ -54,7 +54,9 @@ class FunctionsList(AbstractFunctionsList):
     def enrich(self, functions, component=None, weights=None, copy=True):
         # Append to storage
         assert isinstance(functions, (tuple, list, FunctionsList, ) + self.FunctionTypes)
-        if isinstance(functions, (tuple, list, FunctionsList)):
+        if isinstance(functions, self.FunctionTypes):
+            self._enrich(functions, weight=weights)
+        elif isinstance(functions, (tuple, list, FunctionsList)):
             if weights is not None:
                 assert len(weights) == len(functions)
                 for (index, function) in enumerate(functions):
@@ -62,8 +64,6 @@ class FunctionsList(AbstractFunctionsList):
             else:
                 for function in functions:
                     self._enrich(function)
-        elif isinstance(functions, self.FunctionTypes):
-            self._enrich(functions, weight=weights)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.enrich.")
         # Reset precomputed slices
