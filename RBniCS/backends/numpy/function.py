@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from itertools import imap
 from numpy import matrix
 from RBniCS.utils.decorators import backend_for, OnlineSizeType
 from RBniCS.backends.numpy.vector import Vector
@@ -47,7 +48,7 @@ class _Function_Type(object):
         return self._v
         
     def __iter__(self):
-        return self._v.flat
+        return imap(float, self._v.flat)
 
         
 @backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)
