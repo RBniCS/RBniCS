@@ -12,127 +12,127 @@ subid = input('Enter subdomain id number: ')
 
 
 if subid == 1:
-	x1 = 1;
-	y1 = -1;
-	x2 = -1;
-	y2 = -1;
-	x3 = -2;
-	y3 = -2;
-	
-	xo_1 = m1;
-	yo_1 = -m2;
-	xo_2 = -m1;
-	yo_2 = -m2;
-	xo_3 = x3;
-	yo_3 = y3;
+    x1 = 1;
+    y1 = -1;
+    x2 = -1;
+    y2 = -1;
+    x3 = -2;
+    y3 = -2;
+    
+    xo_1 = m1;
+    yo_1 = -m2;
+    xo_2 = -m1;
+    yo_2 = -m2;
+    xo_3 = x3;
+    yo_3 = y3;
 
 if subid == 2:
-	x1 = -2;
-	y1 = -2;
-	x2 = 2;
-	y2 = -2;
-	x3 = 1;
-	y3 = -1;
-	
-	xo_1 = x1;
-	yo_1 = y1;
-	xo_2 = x2;
-	yo_2 = y2;
-	xo_3 = m1;
-	yo_3 = -m2;
+    x1 = -2;
+    y1 = -2;
+    x2 = 2;
+    y2 = -2;
+    x3 = 1;
+    y3 = -1;
+    
+    xo_1 = x1;
+    yo_1 = y1;
+    xo_2 = x2;
+    yo_2 = y2;
+    xo_3 = m1;
+    yo_3 = -m2;
 
 if subid == 3:
-	x1 = -2;
-	y1 = -2;
-	x2 = -1;
-	y2 = -1;
-	x3 = -1;
-	y3 = 1;
-	
-	xo_1 = x1;
-	yo_1 = y1;
-	xo_2 = -m1;
-	yo_2 = -m2;
-	xo_3 = -m1;
-	yo_3 = m2;
+    x1 = -2;
+    y1 = -2;
+    x2 = -1;
+    y2 = -1;
+    x3 = -1;
+    y3 = 1;
+    
+    xo_1 = x1;
+    yo_1 = y1;
+    xo_2 = -m1;
+    yo_2 = -m2;
+    xo_3 = -m1;
+    yo_3 = m2;
 
 
 if subid == 4:
-	x1 = -2;
-	y1 = -2;
-	x2 = -1;
-	y2 = 1;
-	x3 = -2;
-	y3 = 2;
-	
-	xo_1 = x1;
-	yo_1 = y1;
-	xo_2 = -m1;
-	yo_2 = m2;
-	xo_3 = x3;
-	yo_3 = y3;
+    x1 = -2;
+    y1 = -2;
+    x2 = -1;
+    y2 = 1;
+    x3 = -2;
+    y3 = 2;
+    
+    xo_1 = x1;
+    yo_1 = y1;
+    xo_2 = -m1;
+    yo_2 = m2;
+    xo_3 = x3;
+    yo_3 = y3;
 
 if subid == 5:
-	x1 = 2;
-	y1 = -2;
-	x2 = 1;
-	y2 = 1;
-	x3 = 1;
-	y3 = -1;
-	
-	xo_1 = x1;
-	yo_1 = y1;
-	xo_2 = m1;
-	yo_2 = m2;
-	xo_3 = m1;
-	yo_3 = -m2;
+    x1 = 2;
+    y1 = -2;
+    x2 = 1;
+    y2 = 1;
+    x3 = 1;
+    y3 = -1;
+    
+    xo_1 = x1;
+    yo_1 = y1;
+    xo_2 = m1;
+    yo_2 = m2;
+    xo_3 = m1;
+    yo_3 = -m2;
 
 if subid == 6:
-	x1 = 2;
-	y1 = -2;
-	x2 = 2;
-	y2 = 2;
-	x3 = 1;
-	y3 = 1;
-	
-	xo_1 = x1;
-	yo_1 = y1;
-	xo_2 = x2;
-	yo_2 = y2;
-	xo_3 = m1;
-	yo_3 = m2;
+    x1 = 2;
+    y1 = -2;
+    x2 = 2;
+    y2 = 2;
+    x3 = 1;
+    y3 = 1;
+    
+    xo_1 = x1;
+    yo_1 = y1;
+    xo_2 = x2;
+    yo_2 = y2;
+    xo_3 = m1;
+    yo_3 = m2;
 
 if subid == 7:
-	x1 = -1;
-	y1 = 1;
-	x2 = 1;
-	y2 = 1;
-	x3 = -2;
-	y3 = 2;
-	
-	xo_1 = -m1;
-	yo_1 = m2;
-	xo_2 = m1;
-	yo_2 = m2;
-	xo_3 = x3;
-	yo_3 = y3;
+    x1 = -1;
+    y1 = 1;
+    x2 = 1;
+    y2 = 1;
+    x3 = -2;
+    y3 = 2;
+    
+    xo_1 = -m1;
+    yo_1 = m2;
+    xo_2 = m1;
+    yo_2 = m2;
+    xo_3 = x3;
+    yo_3 = y3;
 
 if subid == 8:
-	x1 = 1;
-	y1 = 1;
-	x2 = 2;
-	y2 = 2;
-	x3 = -2;
-	y3 = 2;
-	
-	xo_1 = m1;
-	yo_1 = m2;
-	xo_2 = x2;
-	yo_2 = y2;
-	xo_3 = x3;
-	yo_3 = y3;
+    x1 = 1;
+    y1 = 1;
+    x2 = 2;
+    y2 = 2;
+    x3 = -2;
+    y3 = 2;
+    
+    xo_1 = m1;
+    yo_1 = m2;
+    xo_2 = x2;
+    yo_2 = y2;
+    xo_3 = x3;
+    yo_3 = y3;
 # else:
-# 	print('wrong number of subdomain id')
+#   print('wrong number of subdomain id')
 
 
 
