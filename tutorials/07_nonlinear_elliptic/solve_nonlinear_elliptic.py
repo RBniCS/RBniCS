@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 7: NONLINEAR PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-@EIM()
+@DEIM()
 class NonlinearElliptic(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -48,7 +48,7 @@ class NonlinearElliptic(EllipticCoerciveProblem):
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         # Store the forcing term expression
         self.f = Expression("sin(2*pi*x[0])*cos(2*pi*x[1])", element=self.V.ufl_element())
-    
+        
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
     
@@ -78,9 +78,9 @@ class NonlinearElliptic(EllipticCoerciveProblem):
         v = self.v
         dx = self.dx
         if term == "a":
-            mu2 = ParametrizedConstant(self, "mu[1]", mu=self.mu)
             u = self.u
-            a0 = inner(grad(u),grad(v))*dx
+            mu2 = self.mu[1]
+            a0 = inner(grad(u), grad(v))*dx
             a1 = exp(mu2*u - 1)/mu2*v*dx
             return (a0, a1)
         elif term == "da":
@@ -88,6 +88,7 @@ class NonlinearElliptic(EllipticCoerciveProblem):
             u = self.u
             return tuple(derivative(ai, u, du) for ai in self.assemble_operator("a"))
         elif term == "f":
+            f = self.f
             f0 = f*v*dx
             return (f0,)
         elif term == "dirichlet_bc":
@@ -120,12 +121,12 @@ nonlinear_elliptic_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(nonlinear_elliptic_problem)
-reduced_basis_method.set_Nmax(20, EIM=21)
+reduced_basis_method.set_Nmax(20, DEIM=21)
 
 # 5. Perform the offline phase
 first_mu = (1.0,1.0)
 nonlinear_elliptic_problem.set_mu(first_mu)
-reduced_basis_method.initialize_training_set(50, EIM=60)
+reduced_basis_method.initialize_training_set(50, DEIM=60)
 reduced_nonlinear_elliptic_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
@@ -135,5 +136,5 @@ reduced_nonlinear_elliptic_problem.solve()
 reduced_nonlinear_elliptic_problem.export_solution("NonlinearElliptic", "online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set((50, EIM=60)
+reduced_basis_method.initialize_testing_set(50, DEIM=60)
 reduced_basis_method.error_analysis()
