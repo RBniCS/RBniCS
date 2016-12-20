@@ -49,7 +49,20 @@ def EIMDecoratedProblem(
                 self.separated_forms = dict() # from terms to AffineExpansionSeparatedFormsStorage
                 self.EIM_approximations = dict() # from coefficients to EIMApproximation
                 
+                # Store value of N_EIM passed to solve
+                self._N_EIM = None
+                            
+                # Avoid useless assignments
+                self._update_N_EIM__previous_kwargs = None
+                
+            @override
+            def set_mu_range(self, mu_range):
+                # Call to parent
+                ParametrizedDifferentialProblem_DerivedClass.set_mu_range(self, mu_range)
+                
                 # Preprocess each term in the affine expansions
+                # Note that this cannot be done in __init__ because operators may depend on self.mu,
+                # which is not defined at __init__ time
                 for term in self.terms:
                     forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                     Q = len(forms)
@@ -62,12 +75,6 @@ def EIMDecoratedProblem(
                             for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
                                 if factor not in self.EIM_approximations:
                                     self.EIM_approximations[factor] = EIMApproximation(self, ParametrizedExpressionFactory(factor), type(self).__name__ + "/eim/" + factor_name, basis_generation)
-                
-                # Store value of N_EIM passed to solve
-                self._N_EIM = None
-                            
-                # Avoid useless assignments
-                self._update_N_EIM__previous_kwargs = None
                 
             @override
             def solve(self, **kwargs):

@@ -48,7 +48,20 @@ def DEIMDecoratedProblem(
                 self.DEIM_approximations = dict() # from term to dict of DEIMApproximation
                 self.non_DEIM_forms = dict() # from term to dict of forms
                 
+                # Store value of N_DEIM passed to solve
+                self._N_DEIM = None
+                
+                # Avoid useless assignments
+                self._update_N_DEIM__previous_kwargs = None
+                
+            @override
+            def set_mu_range(self, mu_range):
+                # Call to parent
+                ParametrizedDifferentialProblem_DerivedClass.set_mu_range(self, mu_range)
+                
                 # Preprocess each term in the affine expansions
+                # Note that this cannot be done in __init__ because operators may depend on self.mu,
+                # which is not defined at __init__ time
                 for term in self.terms:
                     forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                     self.DEIM_approximations[term] = dict()
@@ -59,12 +72,6 @@ def DEIMDecoratedProblem(
                             self.DEIM_approximations[term][q] = DEIMApproximation(self, ParametrizedTensorFactory(form_q), type(self).__name__ + "/deim/" + separated_form_q.name(), basis_generation)
                         else:
                             self.non_DEIM_forms[term][q] = form_q
-                
-                # Store value of N_DEIM passed to solve
-                self._N_DEIM = None
-                
-                # Avoid useless assignments
-                self._update_N_DEIM__previous_kwargs = None
                 
             @override
             def solve(self, **kwargs):
