@@ -28,6 +28,7 @@ from RBniCS.backends.fenics.wrapping_utils.dofs_parallel_io_helpers import build
 from RBniCS.backends.fenics.wrapping_utils.function_from_ufl_operators import function_from_ufl_operators
 from RBniCS.backends.fenics.wrapping_utils.get_form_name import get_form_name
 from RBniCS.backends.fenics.wrapping_utils.get_form_argument import get_form_argument
+from RBniCS.backends.fenics.wrapping_utils.parametrized_constant import ParametrizedConstant
 from RBniCS.backends.fenics.wrapping_utils.parametrized_expression import ParametrizedExpression
 from RBniCS.backends.fenics.wrapping_utils.plot import plot
 
@@ -41,6 +42,7 @@ __all__ = [
     'get_form_name',
     'get_form_argument',
     'mesh_dofs_to_submesh_dofs',
+    'ParametrizedConstant',
     'ParametrizedExpression',
     'plot',
     'submesh_dofs_to_mesh_dofs'

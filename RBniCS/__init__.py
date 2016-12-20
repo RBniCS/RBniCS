@@ -29,7 +29,7 @@ __version__ = "0.0.1"
 __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
 
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.backends.fenics.wrapping_utils import DirichletBC, ParametrizedExpression, plot
+from RBniCS.backends.fenics.wrapping_utils import DirichletBC, ParametrizedConstant, ParametrizedExpression, plot
 from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.problems.parabolic_coercive import ParabolicCoerciveProblem
@@ -43,6 +43,7 @@ from RBniCS.utils.factories import ReducedBasis, PODGalerkin
 __all__ = [
     # RBniCS.backends
     'DirichletBC',
+    'ParametrizedConstant',
     'ParametrizedExpression',
     'plot',
     # RBniCS.eim
