@@ -12,6 +12,10 @@ abstract/*~
 abstract/*.bak
 abstract/*.pyc
 !abstract/*/
+!abstract/*/*
+abstract/*/*~
+abstract/*/*.bak
+abstract/*/*.pyc
 # ... basic subpackage ...
 !basic/
 !basic/*
@@ -19,6 +23,10 @@ basic/*~
 basic/*.bak
 basic/*.pyc
 !basic/*/
+!basic/*/*
+basic/*/*~
+basic/*/*.bak
+basic/*/*.pyc
 # ... fenics subpackage ...
 !fenics/
 !fenics/*
@@ -26,6 +34,10 @@ fenics/*~
 fenics/*.bak
 fenics/*.pyc
 !fenics/*/
+!fenics/*/*
+fenics/*/*~
+fenics/*/*.bak
+fenics/*/*.pyc
 # ... numpy subpackage ...
 !numpy/
 !numpy/*
@@ -33,6 +45,10 @@ numpy/*~
 numpy/*.bak
 numpy/*.pyc
 !numpy/*/
+!numpy/*/*
+numpy/*/*~
+numpy/*/*.bak
+numpy/*/*.pyc
 # ... online subpackage ...
 !online/
 !online/*
@@ -40,3 +56,7 @@ online/*~
 online/*.bak
 online/*.pyc
 !online/*/
+!online/*/*
+online/*/*~
+online/*/*.bak
+online/*/*.pyc
