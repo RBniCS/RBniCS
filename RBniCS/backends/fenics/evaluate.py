@@ -26,6 +26,7 @@ from dolfin import Argument, as_backend_type, assemble, Point, project
 from ufl import Measure, replace
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
+from ufl.geometry import GeometricQuantity
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
@@ -145,7 +146,7 @@ def evaluate(expression_, at=None):
                 tensor.generator = expression_ # for I/O
                 return tensor
             else:
-                form = replace_test_trial_functions(expression_._form, at.get_reduced_function_spaces(), at.get_reduced_subdomain_data())
+                form = form_on_reduced_function_space(expression_._form, at.get_reduced_function_spaces(), at.get_reduced_subdomain_data())
                 dofs = at.get_reduced_dofs_list()
                 sparse_out = assemble(form)
                 form_rank = len(form.arguments())
@@ -199,22 +200,32 @@ def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
         out[index] += mpi_comm.bcast(out_index, root=out_index_processor)
     return out
     
-def replace_test_trial_functions(form, reduced_V, reduced_subdomain_data):
-    if (form, reduced_V) not in replace_test_trial_functions__cache:
-        trial_test_functions_replacements = dict()
+def form_on_reduced_function_space(form, reduced_V, reduced_subdomain_data):
+    if (form, reduced_V) not in form_on_reduced_function_space__cache:
+        replacements = dict()
         
-        # Look for all trial and test functions
+        # Look for terminals on high fidelity mesh
         for integral in form.integrals():
             for expression in iter_expressions(integral):
                 for node in traverse_unique_terminals(expression):
-                    if isinstance(node, Argument) and node not in trial_test_functions_replacements:
-                        trial_test_functions_replacements[node] = Argument(reduced_V[node.number()], node.number(), node.part())
+                    if node in replacements:
+                        continue
+                    # ... test and trial functions
+                    elif isinstance(node, Argument):
+                        replacements[node] = Argument(reduced_V[node.number()], node.number(), node.part())
+                    # ... problem solutions related to nonlinear terms
+                    # TODO
+                    # ... geometric quantities
+                    elif isinstance(node, GeometricQuantity):
+                        if len(reduced_V) == 2:
+                            assert reduced_V[0].mesh().ufl_domain() == reduced_V[1].mesh().ufl_domain()
+                        replacements[node] = type(node)(reduced_V[0].mesh())
         # ... and replace them
-        form_replaced_test_trial_functions = replace(form, trial_test_functions_replacements)
+        replaced_form = replace(form, replacements)
         
         # Look for measures and replace them
-        form_replaced_test_trial_functions_and_measures = 0
-        for integral in form_replaced_test_trial_functions.integrals():
+        replaced_form_with_replaced_measures = 0
+        for integral in replaced_form.integrals():
             # Prepare measure for the new form (from firedrake/mg/ufl_utils.py)
             if len(reduced_V) == 2:
                 assert reduced_V[0].mesh().ufl_domain() == reduced_V[1].mesh().ufl_domain()
@@ -231,11 +242,14 @@ def replace_test_trial_functions(form, reduced_V, reduced_subdomain_data):
                 subdomain_data=measure_reduced_subdomain_data,
                 metadata=integral.metadata()
             )
-            form_replaced_test_trial_functions_and_measures += integral.integrand()*measure
+            replaced_form_with_replaced_measures += integral.integrand()*measure
         
         # Cache the resulting form
-        replace_test_trial_functions__cache[(form, reduced_V)] = form_replaced_test_trial_functions_and_measures
-            
-    return replace_test_trial_functions__cache[(form, reduced_V)]
-replace_test_trial_functions__cache = dict()
+        form_on_reduced_function_space__cache[(form, reduced_V)] = replaced_form_with_replaced_measures
+    
+    # Solve problem associated to nonlinear terms
+    # TODO
+    
+    return form_on_reduced_function_space__cache[(form, reduced_V)]
+form_on_reduced_function_space__cache = dict()
     
