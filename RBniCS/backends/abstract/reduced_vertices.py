@@ -26,7 +26,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ReducedVertices(object):
-    def __init__(self, mesh):
+    def __init__(self, V_or_Z):
         pass
         
     @abstractmethod

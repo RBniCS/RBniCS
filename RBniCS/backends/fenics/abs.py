@@ -78,7 +78,7 @@ def abs(expression):
         return AbsOutput(global_value_max, global_i_max)
     elif isinstance(expression, (Function.Type(), Operator)):
         function = function_from_ufl_operators(expression)
-        mesh = function.ufl_function_space().mesh()
+        mesh = function.function_space().mesh()
         point_max = None
         value_max = None
         value_max_norm = None

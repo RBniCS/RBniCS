@@ -23,11 +23,20 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from RBniCS import EquispacedDistribution, ParametrizedConstant
-from RBniCS.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
+from RBniCS import EquispacedDistribution
+from RBniCS.backends import ParametrizedTensorFactory
+from RBniCS.backends.fenics import ParametrizedExpressionFactory as ParametrizedExpressionFactory_Base
+from RBniCS.backends.fenics.wrapping_utils import ParametrizedConstant
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
+    def __init__(self, expression, mesh):
+        ParametrizedExpressionFactory_Base.__init__(self, expression)
+        # Use a ridiculously high finite element space to have an accuracy comparable to the one of test 1,
+        # where exact evaluation is carried out
+        self._space = FunctionSpace(mesh, "CG", 10)
+        
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V
@@ -39,7 +48,7 @@ class ParametrizedFunctionApproximation(EIMApproximation):
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f), "test_eim_approximation_9_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f, V.mesh()), "test_eim_approximation_9_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(V)
             form = f*v*dx
@@ -61,7 +70,7 @@ mesh = IntervalMesh(100, -1., 1.)
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the ParametrizedFunctionApproximation class
-expression_type = "Vector" # Vector or Matrix
+expression_type = "Function" # Function or Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
 parametrized_function_approximation = ParametrizedFunctionApproximation(V, expression_type, basis_generation)
 mu_range = [(1., pi), ]

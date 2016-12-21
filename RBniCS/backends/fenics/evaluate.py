@@ -22,7 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import Argument, as_backend_type, assemble, Point, project
+from ufl.core.operator import Operator
+from dolfin import Argument, as_backend_type, assemble, Expression, Point, project
 from ufl import Measure, replace
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
@@ -97,12 +98,12 @@ def evaluate(expression_, at=None):
                     out[i, j] = out_ij
             return out
         elif isinstance(expression_, ParametrizedExpressionFactory):
-            expression = expression_._expression
             if at is None:
+                expression = expression_on_truth_mesh(expression_._expression)
                 space = expression_._space
                 return project(expression, space)
             else:
-                assert at is not None
+                expression = expression_on_reduced_mesh(expression_._expression, at.get_reduced_mesh(), at.get_reduced_function_space())
                 reduced_vertices = at._vertex_list
                 reduced_components = at._component_list
                 assert len(reduced_vertices) == len(reduced_components)
@@ -141,7 +142,7 @@ def evaluate(expression_, at=None):
             return out
         elif isinstance(expression_, ParametrizedTensorFactory):
             if at is None:
-                form = expression_._form
+                form = form_on_truth_function_space(expression_._form)
                 tensor = assemble(form)
                 tensor.generator = expression_ # for I/O
                 return tensor
@@ -200,11 +201,66 @@ def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
         out[index] += mpi_comm.bcast(out_index, root=out_index_processor)
     return out
     
-def form_on_reduced_function_space(form, reduced_V, reduced_subdomain_data):
-    if (form, reduced_V) not in form_on_reduced_function_space__cache:
+def expression_on_truth_mesh(expression):
+    return expression
+    
+def expression_on_reduced_mesh(expression, reduced_mesh, reduced_V):
+    if (expression, reduced_mesh) not in expression_on_reduced_mesh__expression_cache:
         replacements = dict()
         
-        # Look for terminals on high fidelity mesh
+        # Look for terminals on truth mesh
+        for subexpression in iter_expressions(expression):
+            for node in traverse_unique_terminals(subexpression):
+                if node in replacements:
+                    continue
+                # ... problem solutions related to nonlinear terms
+                # TODO
+                # ... geometric quantities
+                elif isinstance(node, GeometricQuantity):
+                    replacements[node] = type(node)(reduced_mesh)
+        # ... and replace them
+        replaced_expression = replace(expression, replacements)
+        
+        # Cache the resulting expression
+        expression_on_reduced_mesh__expression_cache[(expression, reduced_mesh)] = replaced_expression
+        
+    assert isinstance(expression, (Expression, Operator))
+    if isinstance(expression, Expression):
+        return expression_on_reduced_mesh__expression_cache[(expression, reduced_mesh)]
+    elif isinstance(expression, Operator):
+        return project(expression_on_reduced_mesh__expression_cache[(expression, reduced_mesh)], reduced_V)
+    else:
+        raise AssertionError("Invalid expression in expression_on_reduced_mesh.")
+expression_on_reduced_mesh__expression_cache = dict()
+    
+def form_on_truth_function_space(form):
+    if form not in form_on_truth_function_space__problems_cache:
+        solutions = list()
+        
+        # Look for terminals on truth mesh
+        for integral in form.integrals():
+            for expression in iter_expressions(integral):
+                for node in traverse_unique_terminals(expression):
+                    if node in solutions:
+                        continue
+                    # ... problem solutions related to nonlinear terms
+                    # TODO
+        
+        # Get truth problems corresponding to nonlinear terms
+        problems = list()
+        # TODO
+        
+        # Cache the resulting problems
+        form_on_truth_function_space__problems_cache[form] = problems
+    
+    return form
+form_on_truth_function_space__problems_cache = dict()
+
+def form_on_reduced_function_space(form, reduced_V, reduced_subdomain_data):
+    if (form, reduced_V) not in form_on_reduced_function_space__form_cache:
+        replacements = dict()
+        
+        # Look for terminals on truth mesh
         for integral in form.integrals():
             for expression in iter_expressions(integral):
                 for node in traverse_unique_terminals(expression):
@@ -243,13 +299,21 @@ def form_on_reduced_function_space(form, reduced_V, reduced_subdomain_data):
                 metadata=integral.metadata()
             )
             replaced_form_with_replaced_measures += integral.integrand()*measure
+            
+        # Get reduced problems corresponding to nonlinear terms
+        problems = list()
+        # TODO
         
         # Cache the resulting form
-        form_on_reduced_function_space__cache[(form, reduced_V)] = replaced_form_with_replaced_measures
+        form_on_reduced_function_space__form_cache[(form, reduced_V)] = replaced_form_with_replaced_measures
+        
+        # Cache the resulting problems
+        form_on_reduced_function_space__problem_cache[(form, reduced_V)] = problems
     
     # Solve problem associated to nonlinear terms
     # TODO
     
-    return form_on_reduced_function_space__cache[(form, reduced_V)]
-form_on_reduced_function_space__cache = dict()
-    
+    return form_on_reduced_function_space__form_cache[(form, reduced_V)]
+form_on_reduced_function_space__form_cache = dict()
+form_on_reduced_function_space__problem_cache = dict()
+

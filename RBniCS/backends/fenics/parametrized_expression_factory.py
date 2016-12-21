@@ -22,26 +22,35 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import assemble, dx, Expression, FunctionSpace, inner, Point, TensorElement, TestFunction, TrialFunction, VectorElement
+from ufl.core.operator import Operator
+from dolfin import assemble, dx, Expression, FunctionSpace, inner, Point, project, TensorElement, TestFunction, TrialFunction, VectorElement
 from RBniCS.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
 from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
-@BackendFor("fenics", inputs=(Expression, ))
+@BackendFor("fenics", inputs=((Expression, Operator), ))
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
     def __init__(self, expression):
         AbstractParametrizedExpressionFactory.__init__(self, expression)
-        self._expression = expression
-        self._space = FunctionSpace(expression.mesh, expression.ufl_element())
+        assert isinstance(expression, (Expression, Operator))
+        if isinstance(expression, Expression):
+            self._expression = expression
+            self._space = FunctionSpace(expression.mesh, expression.ufl_element())
+        elif isinstance(expression, Operator):
+            self._expression = expression
+            self._space = project(expression).function_space() # automatically determines the FunctionSpace
+        else:
+            raise AssertionError("Invalid expression in ParametrizedExpressionFactory.__init__().")
             
     @override
     def create_interpolation_locations_container(self):
-        return ReducedVertices(self._space.mesh())
+        return ReducedVertices(self._space)
         
     @override
     def create_snapshots_container(self):

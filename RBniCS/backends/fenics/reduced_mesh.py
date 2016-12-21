@@ -27,7 +27,7 @@ if has_hdf5():
     from dolfin import HDF5File
 from RBniCS.backends.abstract import ReducedMesh as AbstractReducedMesh
 from RBniCS.utils.decorators import BackendFor, Extends, override
-from RBniCS.utils.io import ExportableList
+from RBniCS.utils.io import ExportableList, Folders
 from RBniCS.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
 from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs
@@ -146,7 +146,7 @@ class ReducedMesh(AbstractReducedMesh):
         assert isinstance(global_dofs, tuple)
         assert len(global_dofs) == len(self.V)
         self.reduced_mesh_dofs_list.append(global_dofs)
-        # Mark all cells (with an increasing marker)
+        # Mark all cells
         for (component, global_dof) in enumerate(global_dofs):
             global_dof_found = 0
             if global_dof in self.dof_to_cells[component]:
@@ -200,11 +200,14 @@ class ReducedMesh(AbstractReducedMesh):
     @override
     def save(self, directory, filename):
         self._assert_list_lengths()
+        # Get full directory name
+        full_directory = Folders.Folder(directory + "/" + filename)
+        full_directory.create()
         # Nmax
         self._save_Nmax(directory, filename)
         # reduced_mesh
         for (index, reduced_mesh) in enumerate(self.reduced_mesh):
-            mesh_filename = str(directory) + "/" + filename + "_" + str(index)
+            mesh_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index)
             if not has_hdf5():
                 assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
                 mesh_filename = mesh_filename + ".xml"
@@ -219,7 +222,7 @@ class ReducedMesh(AbstractReducedMesh):
             for (index, reduced_subdomain_data) in enumerate(self.reduced_subdomain_data):
                 subdomain_index = 0
                 for (subdomain, reduced_subdomain) in reduced_subdomain_data.iteritems():
-                    subdomain_filename = str(directory) + "/" + filename + "_" + str(index) + "_subdomain_" + str(subdomain_index)
+                    subdomain_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index)
                     if not has_hdf5():
                         assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
                         subdomain_filename = subdomain_filename + ".xml"
@@ -235,7 +238,7 @@ class ReducedMesh(AbstractReducedMesh):
         for reduced_mesh_dof in self.reduced_mesh_dofs_list:
             for (component, reduced_mesh_dof__component) in enumerate(reduced_mesh_dof):
                 exportable_reduced_mesh_dofs_list.append(self.reduced_mesh_dofs_list__dof_map_writer_mapping[component][reduced_mesh_dof__component])
-        exportable_reduced_mesh_dofs_list.save(directory, filename + "_dofs")
+        exportable_reduced_mesh_dofs_list.save(full_directory, "dofs")
         # reduced_mesh_reduced_dofs_list
         assert len(self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping) == len(self.reduced_mesh) - 1
         reduced_mesh_reduced_dofs_list__dof_map_writer_mapping = list()
@@ -247,11 +250,11 @@ class ReducedMesh(AbstractReducedMesh):
             for reduced_mesh_reduced_dof in reduced_mesh_reduced_dofs_list:
                 for (component, reduced_mesh_reduced_dof__component) in enumerate(reduced_mesh_reduced_dof):
                     exportable_reduced_mesh_reduced_dofs_list.append(self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping[index][component][reduced_mesh_reduced_dof__component])
-            exportable_reduced_mesh_reduced_dofs_list.save(directory, filename + "_reduced_dofs_" + str(index))
+            exportable_reduced_mesh_reduced_dofs_list.save(full_directory, "reduced_dofs_" + str(index))
             
     def _save_Nmax(self, directory, filename):
         if is_io_process(self.mpi_comm):
-            with open(str(directory) + "/" + filename + ".length", "w") as length:
+            with open(str(directory) + "/" + filename + "/" + "reduced_mesh.length", "w") as length:
                 length.write(str(len(self.reduced_mesh)))
         self.mpi_comm.barrier()
     
@@ -262,11 +265,13 @@ class ReducedMesh(AbstractReducedMesh):
             return False
         else:
             self._assert_list_lengths()
+            # Get full directory name
+            full_directory = directory + "/" + filename
             # Nmax
             Nmax = self._load_Nmax(directory, filename)
             # reduced_mesh
             for index in range(Nmax):
-                mesh_filename = str(directory) + "/" + filename + "_" + str(index)
+                mesh_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index)
                 if not has_hdf5():
                     assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
                     mesh_filename = mesh_filename + ".xml"
@@ -287,7 +292,7 @@ class ReducedMesh(AbstractReducedMesh):
                 if self.subdomain_data is not None:
                     reduced_subdomain_data = dict()
                     for (subdomain_index, subdomain) in enumerate(self.subdomain_data):
-                        subdomain_filename = str(directory) + "/" + filename + "_" + str(index) + "_subdomain_" + str(subdomain_index)
+                        subdomain_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index)
                         if not has_hdf5():
                             assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
                             subdomain_filename = subdomain_filename + ".xml"
@@ -304,7 +309,7 @@ class ReducedMesh(AbstractReducedMesh):
                     self.reduced_subdomain_data.append(0) # cannot use None because otherwise it would not be appended by the copy constructor
             # reduced_mesh_dofs_list
             importable_reduced_mesh_dofs_list = ExportableList("pickle")
-            importable_reduced_mesh_dofs_list.load(directory, filename + "_dofs")
+            importable_reduced_mesh_dofs_list.load(full_directory, "dofs")
             assert len(self.reduced_mesh_dofs_list) == 0
             importable_reduced_mesh_dofs_list__iterator = 0
             importable_reduced_mesh_dofs_list_tuple_length = len(self.V)
@@ -323,7 +328,7 @@ class ReducedMesh(AbstractReducedMesh):
                     reduced_mesh_reduced_dofs_list__dof_map_reader_mapping.append( build_dof_map_reader_mapping(reduced_V__component) )
                 self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping.append( tuple(reduced_mesh_reduced_dofs_list__dof_map_reader_mapping) )
                 importable_reduced_mesh_reduced_dofs_list = ExportableList("pickle")
-                importable_reduced_mesh_reduced_dofs_list.load(directory, filename + "_reduced_dofs_" + str(index))
+                importable_reduced_mesh_reduced_dofs_list.load(full_directory, "reduced_dofs_" + str(index))
                 assert len(self.reduced_mesh_reduced_dofs_list) == index
                 self.reduced_mesh_reduced_dofs_list.append( list() )
                 importable_reduced_mesh_reduced_dofs_list__iterator = 0
@@ -342,7 +347,7 @@ class ReducedMesh(AbstractReducedMesh):
     def _load_Nmax(self, directory, filename):
         Nmax = None
         if is_io_process(self.mpi_comm):
-            with open(str(directory) + "/" + filename + ".length", "r") as length:
+            with open(str(directory) + "/" + filename + "/" + "reduced_mesh.length", "r") as length:
                 Nmax = int(length.readline())
         Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
         return Nmax
