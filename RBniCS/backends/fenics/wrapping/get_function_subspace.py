@@ -22,6 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_component_as_restriction(function, component, Z):
-    return True # TODO
+def get_function_subspace(function_space, components):
+    assert isinstance(components, (int, tuple))
+    assert not isinstance(components, list), "FEniCS does not handle yet the case of a list of components"
+    if isinstance(int):
+        return function_space.sub(components).collapse()
+    else:
+        return function_space.extract_sub_space(components).collapse()
 

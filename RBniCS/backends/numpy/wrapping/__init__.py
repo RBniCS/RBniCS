@@ -22,13 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.wrapping.function_component import function_component
-from RBniCS.backends.numpy.wrapping.function_component_as_restriction import function_component_as_restriction
 from RBniCS.backends.numpy.wrapping.function_copy import function_copy
-from RBniCS.backends.numpy.wrapping.function_extend import function_extend
+from RBniCS.backends.numpy.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from RBniCS.backends.numpy.wrapping.function_load import function_load
 from RBniCS.backends.numpy.wrapping.function_save import function_save
 from RBniCS.backends.numpy.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
+from RBniCS.backends.numpy.wrapping.get_function_subspace import get_function_subspace
 from RBniCS.backends.numpy.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.backends.numpy.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from RBniCS.backends.numpy.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
@@ -39,15 +38,14 @@ from RBniCS.backends.basic.wrapping.tensors_list_mul import tensors_list_mul_onl
 from RBniCS.backends.numpy.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
-    'function_component',
-    'function_component_as_restriction',
     'function_copy',
-    'function_extend',
+    'function_extend_or_restrict',
     'function_load',
     'function_save',
     'functions_list_basis_functions_matrix_mul_online_matrix', 
     'functions_list_basis_functions_matrix_mul_online_vector', 
     'functions_list_basis_functions_matrix_mul_online_function',
+    'get_function_subspace',
     'get_mpi_comm',
     'gram_schmidt_projection_step',
     'matrix_mul_vector',

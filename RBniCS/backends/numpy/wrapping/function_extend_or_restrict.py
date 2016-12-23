@@ -22,6 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_extend(function, component, V_or_Z):
-    pass
+from RBniCS.backends.numpy.function import Function
+
+def function_extend_or_restrict(function, function_components, Z, Z_components, weight, copy):
+    pass # TODO
+    
 

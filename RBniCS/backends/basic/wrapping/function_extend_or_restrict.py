@@ -22,6 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def function_component_as_restriction(function, component, V):
-    return function.function_space() == V
+def function_extend_or_restrict(function, function_components, V_or_Z, V_or_Z_components, weight, copy):
+    pass
 
