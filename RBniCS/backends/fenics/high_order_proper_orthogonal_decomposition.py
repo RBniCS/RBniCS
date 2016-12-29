@@ -23,7 +23,6 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import FunctionSpace
-from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from RBniCS.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
 import RBniCS.backends.fenics
@@ -33,11 +32,11 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
 
 @Extends(HighOrderProperOrthogonalDecompositionBase)
-@BackendFor("fenics", inputs=(Matrix.Type(), FunctionSpace))
+@BackendFor("fenics", inputs=(FunctionSpace, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
     @override
-    def __init__(self, V_or_Z):
-        HighOrderProperOrthogonalDecompositionBase.__init__(self, V_or_Z, None, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.fenics.TensorSnapshotsList, RBniCS.backends.fenics.TensorBasisList)
+    def __init__(self, V):
+        HighOrderProperOrthogonalDecompositionBase.__init__(self, V, None, None, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.fenics.TensorSnapshotsList, RBniCS.backends.fenics.TensorBasisList)
         
     @override
     def store_snapshot(self, snapshot):

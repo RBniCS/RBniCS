@@ -52,7 +52,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         # Form names and order (to be filled in by child classes)
         self.terms = list()
         self.terms_order = dict()
-        self.components_name = list()
+        self.components = list()
         # Number of terms in the affine expansion
         self.Q = dict() # from string to integer
         # Matrices/vectors resulting from the truth discretization
@@ -78,7 +78,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         
     def _init_operators(self):
         # Get helper strings depending on the number of basis components
-        n_components = len(self.components_name)
+        n_components = len(self.components)
         assert n_components > 0
         if n_components > 1:
             inner_product_string = "inner_product_{c}"
@@ -87,8 +87,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         # Assemble inner products
         if self.inner_product is None: # init was not called already
             inner_product = dict()
-            for (component_index, component_name) in enumerate(self.components_name):
-                inner_product[component_name] = AffineExpansionStorage(self.assemble_operator(inner_product_string.format(c=component_name)))
+            for component in self.components:
+                inner_product[component] = AffineExpansionStorage(self.assemble_operator(inner_product_string.format(c=component)))
             if n_components == 1:
                 self.inner_product = inner_product.values()[0]
             else:
@@ -100,7 +100,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             
     def _init_dirichlet_bc(self):
         # Get helper strings depending on the number of basis components
-        n_components = len(self.components_name)
+        n_components = len(self.components)
         assert n_components > 0
         if n_components > 1:
             dirichlet_bc_string = "dirichlet_bc_{c}"
@@ -114,33 +114,33 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         if self.dirichlet_bc_are_homogeneous is None: # init was not called already
             dirichlet_bc = dict()
             dirichlet_bc_are_homogeneous = dict()
-            for (component_index, component_name) in enumerate(self.components_name):
+            for component in self.components:
                 try:
-                    operator_bc = AffineExpansionStorage(self.assemble_operator(dirichlet_bc_string.format(c=component_name)))
+                    operator_bc = AffineExpansionStorage(self.assemble_operator(dirichlet_bc_string.format(c=component)))
                 except ValueError: # there were no Dirichlet BCs
-                    dirichlet_bc[component_name] = None
-                    dirichlet_bc_are_homogeneous[component_name] = False
+                    dirichlet_bc[component] = None
+                    dirichlet_bc_are_homogeneous[component] = False
                 else:
-                    dirichlet_bc[component_name] = operator_bc
+                    dirichlet_bc[component] = operator_bc
                     try:
-                        theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
+                        theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
                     except ValueError: # there were no theta functions
                         # We provide in this case a shortcut for the case of homogeneous Dirichlet BCs,
                         # that do not require an additional lifting functions.
                         # The user needs to implement the dirichlet_bc case for assemble_operator, 
                         # but not the one in compute_theta (since theta would not matter, being multiplied by zero)
-                        def generate_modified_compute_theta(component_name):
+                        def generate_modified_compute_theta(component):
                             standard_compute_theta = self.compute_theta
                             def modified_compute_theta(self, term):
-                                if term == dirichlet_bc_string.format(c=component_name):
+                                if term == dirichlet_bc_string.format(c=component):
                                     return (0,)*len(operator_bc)
                                 else:
                                     return standard_compute_theta(term)
                             return modified_compute_theta
-                        self.compute_theta = types.MethodType(generate_modified_compute_theta(component_name), self)
-                        dirichlet_bc_are_homogeneous[component_name] = True
+                        self.compute_theta = types.MethodType(generate_modified_compute_theta(component), self)
+                        dirichlet_bc_are_homogeneous[component] = True
                     else:
-                        dirichlet_bc_are_homogeneous[component_name] = False
+                        dirichlet_bc_are_homogeneous[component] = False
             if n_components == 1:
                 self.dirichlet_bc = dirichlet_bc.values()[0]
                 self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous.values()[0]

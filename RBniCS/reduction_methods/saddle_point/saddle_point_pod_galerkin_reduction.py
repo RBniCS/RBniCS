@@ -70,9 +70,12 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
         
         # Declare a new POD for each basis component
         assert len(self.truth_problem.inner_product) == 3 # saddle point problems have two components and one supremizer
-        for component_name in ("u", "s", "p"):
-            inner_product = self.truth_problem.inner_product[component_name][0]
-            self.POD[component_name] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)        
+        for component in ("u", "p"):
+            inner_product = self.truth_problem.inner_product[component][0]
+            self.POD[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
+        for component in ("s", ):
+            inner_product = self.truth_problem.inner_product[component][0]
+            self.POD[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product, component="s")
         # Return
         return output
             
@@ -95,16 +98,13 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
             
             print("truth solve for mu =", self.truth_problem.mu)
             snapshot = self.truth_problem.solve()
-            for component_name in ("u", "p"):
-                function_component = self.truth_problem.component_name_to_function_component[component_name]
-                self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + component_name + "_" + str(run), snapshot, function_component)
+            for component in ("u", "p"):
+                self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + component + "_" + str(run), snapshot, component)
             snapshot = self.reduced_problem.postprocess_snapshot(snapshot)
             
             print("supremizer solve for mu =", self.truth_problem.mu)
             supremizer = self.truth_problem.solve_supremizer()
-            for component_name in ("s", ):
-                function_component = self.truth_problem.component_name_to_function_component[component_name]
-                self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + component_name + "_" + str(run), supremizer, function_component)
+            self.truth_problem.export_solution(self.folder["snapshots"], "truth_s_" + str(run), supremizer)
             
             print("update snapshots matrix")
             self.update_snapshots_matrix(snapshot, supremizer)
@@ -130,25 +130,23 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
         
     ## Compute basis functions performing POD
     def compute_basis_functions(self):
-        for component_name in ("u", "s", "p"):
-            print("# POD for component", component_name)
-            POD = self.POD[component_name]
+        for component in ("u", "s", "p"):
+            print("# POD for component", component)
+            POD = self.POD[component]
             (_, Z, N) = POD.apply(self.Nmax)
-            self.reduced_problem.Z.enrich(Z, component_name=component_name)
-            self.reduced_problem.N[component_name] += N
+            self.reduced_problem.Z.enrich(Z, component=component)
+            self.reduced_problem.N[component] += N
             POD.print_eigenvalues(N)
-            POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component_name)
-            POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component_name)
+            POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
+            POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
         
     ## Update the snapshots matrix
     def update_snapshots_matrix(self, snapshot, supremizer):
-        for component_name in ("u", "p"):
-            function_component = self.truth_problem.component_name_to_function_component[component_name]
-            self.POD[component_name].store_snapshot(snapshot, function_component)
-        for component_name in ("s", ):
-            function_component = self.truth_problem.component_name_to_function_component[component_name]
-            self.POD[component_name].store_snapshot(supremizer, function_component)
+        for component in ("u", "p"):
+            self.POD[component].store_snapshot(snapshot, component=component)
+        for component in ("s", ):
+            self.POD[component].store_snapshot(supremizer)
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

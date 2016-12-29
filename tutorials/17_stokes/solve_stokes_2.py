@@ -171,11 +171,11 @@ class Stokes(SaddlePointProblem):
                 V_s = self.V.sub(0).collapse()
             bc0 = [DirichletBC(V_s, Constant((0.0, 0.0)), self.boundaries, 3)]
             return (bc0,)
-        elif term == "inner_product_u" or term == "inner_product_s" or term == "inner_product_s_restricted":
-            if term == "inner_product_u" or term == "inner_product_s":
+        elif term == "inner_product_u" or term == "inner_product_s":
+            if term == "inner_product_u":
                 u = self.u
                 v = self.v
-            elif term == "inner_product_s_restricted":
+            elif term == "inner_product_s":
                 u = self.s
                 v = self.r
             x0 = inner(grad(u),grad(v))*dx
@@ -202,7 +202,7 @@ boundaries = MeshFunction("size_t", mesh, "data/t_bypass_facet_region.xml")
 element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
 element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 element   = MixedElement(element_u, element_p)
-V = FunctionSpace(mesh, element)
+V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the Elastic Block class
 stokes_problem = Stokes(V, subdomains=subdomains, boundaries=boundaries)
@@ -228,8 +228,8 @@ reduced_stokes_problem = pod_galerkin_method.offline()
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution("Stokes", "online_solution_u", component=0)
-reduced_stokes_problem.export_solution("Stokes", "online_solution_p", component=1)
+reduced_stokes_problem.export_solution("Stokes", "online_solution_u", component="u")
+reduced_stokes_problem.export_solution("Stokes", "online_solution_p", component="p")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), EIM=10)

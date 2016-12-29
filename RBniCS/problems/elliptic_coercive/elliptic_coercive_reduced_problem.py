@@ -57,15 +57,6 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
-    
-    ## Initialize data structures required for the online phase
-    def init(self, current_stage="online"):
-        # Elliptic problems have only one (scalar or vector) unknown, so the map
-        # between snapshot component and basis component is the identity
-        self.Z.init({"u": 0}, {"u": 0})
-        
-        # Call Parent initialization
-        ParametrizedReducedDifferentialProblem.init(self, current_stage)
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     @override

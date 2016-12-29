@@ -57,13 +57,6 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
     ###########################     ONLINE STAGE     ########################### 
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
-    
-    ## Initialize data structures required for the online phase
-    def init(self, current_stage="online"):
-        self.Z.init(self.truth_problem.component_name_to_basis_component_index, self.truth_problem.component_name_to_function_component)
-        
-        # Call Parent initialization
-        ParametrizedReducedDifferentialProblem.init(self, current_stage)
             
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     @override
@@ -74,8 +67,7 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
     
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
-        for component_name in ("u", "s", "p"):
-            N[component_name] += self.N_bc[component_name]
+        N += self.N_bc
         assembled_operator = dict()
         for term in ("a", "b", "bt", "f", "g"):
             assert self.terms_order[term] in (1, 2)
@@ -86,9 +78,9 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
             else:
                 raise AssertionError("Invalid value for order of term " + term)
         theta_bc = dict()
-        for component_name in ("u", "p"):
-            if self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]:
-                theta_bc[component_name] = self.compute_theta("dirichlet_bc_" + component_name)
+        for component in ("u", "p"):
+            if self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]:
+                theta_bc[component] = self.compute_theta("dirichlet_bc_" + component)
         if len(theta_bc) == 0:
             theta_bc = None
         self._solution = OnlineFunction(N)
@@ -100,23 +92,6 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
         )
         solver.solve()
         return self._solution
-        
-    def _online_size_from_kwargs(self, N, **kwargs):
-        if N is None:
-            for component_name in ("u", "s", "p"):
-                if component_name not in kwargs:
-                    N = dict(self.N) # copy the default dict
-                    break
-            else: # for loop was not broken: all components found
-                N = {component_name:kwargs[component_name] for component_name in ("u", "s", "p")}
-                for component_name in ("u", "s", "p"):
-                    del kwargs[component_name]
-        else:
-            assert isinstance(N, int)
-            N = {component_name:N for component_name in ("u", "s", "p")}
-            for component_name in ("u", "s", "p"):
-                assert component_name not in kwargs
-        return N, kwargs
         
     # Perform an online evaluation of the output
     @override
@@ -180,9 +155,9 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
         if term == "bt_restricted":
             self.operator["bt_restricted"] = self.operator["bt"]
             return self.operator["bt_restricted"]
-        elif term == "inner_product_s_restricted":
-            self.operator["inner_product_s_restricted"] = self.inner_product["s"]
-            return self.operator["inner_product_s_restricted"]
+        elif term == "inner_product_s":
+            self.inner_product["s"] = self.inner_product["u"]
+            return self.inner_product["s"]
         else:
             return ParametrizedReducedDifferentialProblem.assemble_operator(self, term, current_stage)
                                 

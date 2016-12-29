@@ -25,7 +25,7 @@
 from RBniCS.utils.decorators import abstract_backend
 
 @abstract_backend
-def Function(V_or_N):
+def Function(V_or_N, component=None):
     pass
     
 # Moreover, it should also expose a Type method containing the type of the returned instance. 

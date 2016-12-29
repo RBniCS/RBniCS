@@ -36,15 +36,19 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
     class ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
 
         @override
-        def __init__(self, V_or_Z, X, backend, wrapping, SnapshotsContainerType, BasisContainerType):
+        def __init__(self, V_or_Z, X, component, backend, wrapping, SnapshotsContainerType, BasisContainerType):
             self.X = X
             self.backend = backend
             self.BasisContainerType = BasisContainerType
             self.V_or_Z = V_or_Z
+            self.component = component
             self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
             
             # Declare a matrix to store the snapshots
-            self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z)
+            if self.component is None:
+                self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z)
+            else:
+                self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z, component)
             # Declare a list to store eigenvalues
             self.eigenvalues = zeros(0) # correct size will be assigned later
             # Store inner product
@@ -70,8 +74,11 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             else:
                 correlation = transpose(snapshots_matrix)*snapshots_matrix
             
-            Z = self.BasisContainerType(self.V_or_Z)
-            
+            if self.component is None:
+                Z = self.BasisContainerType(self.V_or_Z)
+            else:
+                Z = self.BasisContainerType(self.V_or_Z, self.component)
+                            
             eigensolver = OnlineEigenSolver(Z, correlation) 
             parameters = {
                 "problem_type": "hermitian",

@@ -68,7 +68,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         def _init_initial_condition(self, current_stage="online"):
             assert current_stage in ("online", "offline")
-            n_components = len(self.components_name)
+            n_components = len(self.components)
             # Get helper strings depending on the number of components
             if n_components > 1:
                 initial_condition_string = "initial_condition_{c}"
@@ -83,20 +83,20 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 initial_condition = dict()
                 initial_condition_is_homogeneous = dict()
                 Q_ic = dict()
-                for (component_index, component_name) in enumerate(self.components_name):
+                for component in self.components:
                     try:
-                        theta_ic = self.compute_theta(initial_condition_string.format(c=component_name))
+                        theta_ic = self.compute_theta(initial_condition_string.format(c=component))
                     except ValueError: # there were no initial condition to be imposed by lifting
-                        initial_condition[component_name] = None
-                        initial_condition_is_homogeneous[component_name] = True
-                        Q_ic[component_name] = 0
+                        initial_condition[component] = None
+                        initial_condition_is_homogeneous[component] = True
+                        Q_ic[component] = 0
                     else:
-                        initial_condition_is_homogeneous[component_name] = False
-                        Q_ic[component_name] = len(theta_ic)
+                        initial_condition_is_homogeneous[component] = False
+                        Q_ic[component] = len(theta_ic)
                         if current_stage == "online":
-                            initial_condition[component_name] = self.assemble_operator(initial_condition_string.format(c=component_name), "online")
+                            initial_condition[component] = self.assemble_operator(initial_condition_string.format(c=component), "online")
                         elif current_stage == "offline":
-                            initial_condition[component_name] = OnlineAffineExpansionStorage(Q_ic[component_name])
+                            initial_condition[component] = OnlineAffineExpansionStorage(Q_ic[component])
                         else:
                             raise AssertionError("Invalid stage in _init_initial_condition().")
                 if n_components == 1:
@@ -113,12 +113,12 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def build_reduced_operators(self):
             ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self)
             # Initial condition
-            n_components = len(self.components_name)
+            n_components = len(self.components)
             if n_components > 1:
                 initial_condition_string = "initial_condition_{c}"
-                for (component_index, component_name) in enumerate(self.components_name):
-                    if not self.initial_condition_is_homogeneous[component_name]:
-                        self.initial_condition[component_name] = self.assemble_operator(initial_condition_string.format(c=component_name), "offline")
+                for component in self.components:
+                    if not self.initial_condition_is_homogeneous[component]:
+                        self.initial_condition[component] = self.assemble_operator(initial_condition_string.format(c=component), "offline")
             else:
                 if not self.initial_condition_is_homogeneous:
                     self.initial_condition = self.assemble_operator("initial_condition", "offline")
@@ -127,17 +127,17 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def assemble_operator(self, term, current_stage="online"):
             assert current_stage in ("online", "offline")
             if term.startswith("initial_condition"):
-                component_name = term.replace("initial_condition", "").replace("_", "")
+                component = term.replace("initial_condition", "").replace("_", "")
                 # Compute
                 if current_stage == "online": # load from file
                     initial_condition = OnlineAffineExpansionStorage(0) # it will be resized by load
                     initial_condition.load(self.folder["reduced_operators"], term)
                 elif current_stage == "offline":
                 # Get truth initial condition
-                    if component_name != "":
-                        truth_initial_condition = self.truth_problem.initial_condition[component_name]
-                        truth_inner_product = self.truth_problem.inner_product[component_name]
-                        initial_condition = self.initial_condition[component_name]
+                    if component != "":
+                        truth_initial_condition = self.truth_problem.initial_condition[component]
+                        truth_inner_product = self.truth_problem.inner_product[component]
+                        initial_condition = self.initial_condition[component]
                     else:
                         truth_initial_condition = self.truth_problem.initial_condition
                         truth_inner_product = self.truth_problem.inner_product
@@ -149,11 +149,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 else:
                     raise AssertionError("Invalid stage in assemble_operator().")
                 # Assign
-                if component_name != "":
-                    assert component_name in self.components_name
-                    self.initial_condition[component_name] = initial_condition
+                if component != "":
+                    assert component in self.components
+                    self.initial_condition[component] = initial_condition
                 else:
-                    assert len(self.components_name) == 1
+                    assert len(self.components) == 1
                     self.initial_condition = initial_condition
                 # Return
                 return initial_condition

@@ -37,8 +37,11 @@ from RBniCS.utils.mpi import is_io_process
 @Extends(AbstractFunctionsList)
 class FunctionsList(AbstractFunctionsList):
     @override
-    def __init__(self, V_or_Z, backend, wrapping, online_backend, AdditionalFunctionTypes=None):
-        self.V_or_Z = V_or_Z
+    def __init__(self, V_or_Z, component, backend, wrapping, online_backend, AdditionalFunctionTypes=None):
+        if component is None:
+            self.V_or_Z = V_or_Z
+        else:
+            self.V_or_Z = wrapping.get_function_subspace(V_or_Z, component)
         self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
         self.backend = backend
         self.wrapping = wrapping
@@ -55,15 +58,15 @@ class FunctionsList(AbstractFunctionsList):
         # Append to storage
         assert isinstance(functions, (tuple, list, FunctionsList, ) + self.FunctionTypes)
         if isinstance(functions, self.FunctionTypes):
-            self._enrich(functions, weight=weights)
+            self._enrich(functions, component=component, weight=weights, copy=copy)
         elif isinstance(functions, (tuple, list, FunctionsList)):
             if weights is not None:
                 assert len(weights) == len(functions)
                 for (index, function) in enumerate(functions):
-                    self._enrich(function, weight=weights[index])
+                    self._enrich(function, component=component, weight=weights[index], copy=copy)
             else:
                 for function in functions:
-                    self._enrich(function)
+                    self._enrich(function, component=component, copy=copy)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.enrich.")
         # Reset precomputed slices
@@ -72,10 +75,7 @@ class FunctionsList(AbstractFunctionsList):
         self._precomputed_slices[len(self._list)] = self
         
     def _enrich(self, function, component=None, weight=None, copy=True):
-        if self.wrapping.function_component_as_restriction(function, component, self.V_or_Z):
-            self._list.append(self.wrapping.function_component(function, component, copy, weight))
-        else: # must be extended from subspace to function space
-            self._list.append(self.wrapping.function_extend(function, component, self.V_or_Z, weight))
+        self._list.append(self.wrapping.function_extend_or_restrict(function, component, self.V_or_Z, component, weight, copy))
         
     @override
     def clear(self):

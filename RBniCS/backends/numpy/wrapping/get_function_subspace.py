@@ -22,6 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def get_function_subspace(function_space, components):
+def get_function_subspace(function_space, component):
     return None # TODO
 

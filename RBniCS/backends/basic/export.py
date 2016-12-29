@@ -28,8 +28,8 @@ def export(solution, directory, filename, suffix, component, backend, wrapping):
         if component is None:
             wrapping.function_save(solution, directory, filename, suffix=suffix)
         else:
-            solution_component = function_component(solution, component, copy=True)
-            wrapping.function_save(solution_component, directory, filename, suffix=suffix)
+            restricted_solution = wrapping.function_extend_or_restrict(solution, component, wrapping.get_function_subspace(solution.function_space(), component), None, weight=None, copy=True)
+            wrapping.function_save(restricted_solution, directory, filename, suffix=suffix)
     elif isinstance(solution, (backend.Matrix.Type(), backend.Vector.Type())):
         assert component is None
         assert suffix is None

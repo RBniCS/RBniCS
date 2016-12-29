@@ -33,11 +33,11 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
 
 @Extends(ProperOrthogonalDecompositionBase)
-@BackendFor("fenics", inputs=(FunctionSpace, Matrix.Type()))
+@BackendFor("fenics", inputs=(FunctionSpace, Matrix.Type(), (str, None)))
 class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
     @override
-    def __init__(self, V_or_Z, X):
-        ProperOrthogonalDecompositionBase.__init__(self, V_or_Z, X, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.fenics.SnapshotsMatrix, RBniCS.backends.fenics.FunctionsList)
+    def __init__(self, V, X, component=None):
+        ProperOrthogonalDecompositionBase.__init__(self, V, X, component, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.fenics.SnapshotsMatrix, RBniCS.backends.fenics.FunctionsList)
         
     @override
     def store_snapshot(self, snapshot, component=None, weight=None):

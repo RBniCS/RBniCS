@@ -82,7 +82,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             
         def _init_initial_condition(self):
             # Get helper strings depending on the number of basis components
-            n_components = len(self.components_name)
+            n_components = len(self.components)
             assert n_components > 0
             if n_components > 1:
                 initial_condition_string = "initial_condition_{c}"
@@ -96,15 +96,15 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             if self.initial_condition_is_homogeneous is None: # init was not called already
                 initial_condition = dict()
                 initial_condition_is_homogeneous = dict()
-                for (component_index, component_name) in enumerate(self.components_name):
+                for component in self.components:
                     try:
-                        operator_ic = AffineExpansionStorage(self.assemble_operator(initial_condition_string.format(c=component_name)))
+                        operator_ic = AffineExpansionStorage(self.assemble_operator(initial_condition_string.format(c=component)))
                     except ValueError: # there were no initial condition: assume homogeneous one
-                        initial_condition[component_name] = None
-                        initial_condition_is_homogeneous[component_name] = True
+                        initial_condition[component] = None
+                        initial_condition_is_homogeneous[component] = True
                     else:
-                        initial_condition[component_name] = operator_ic
-                        initial_condition_is_homogeneous[component_name] = False
+                        initial_condition[component] = operator_ic
+                        initial_condition_is_homogeneous[component] = False
                 if n_components == 1:
                     self.initial_condition = initial_condition.values()[0]
                     self.initial_condition_is_homogeneous = initial_condition_is_homogeneous.values()[0]

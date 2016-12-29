@@ -48,7 +48,6 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
         # Form names for parabolic problems
         self.terms = ["m", "a", "f"]
         self.terms_order = {"m": 2, "a": 2, "f": 1}
-        self.components_name = ["u"]
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 

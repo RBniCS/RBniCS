@@ -64,7 +64,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         # Form names and order
         self.terms = truth_problem.terms
         self.terms_order = truth_problem.terms_order
-        self.components_name = truth_problem.components_name
+        self.components = truth_problem.components
         # Number of terms in the affine expansion
         self.Q = dict() # from string to integer
         # Reduced order operators
@@ -100,12 +100,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         assert current_stage in ("online", "offline")
         if current_stage == "online":
             # Inner products
-            n_components = len(self.components_name)
+            n_components = len(self.components)
             if n_components > 1:
                 inner_product_string = "inner_product_{c}"
                 self.inner_product = dict()
-                for (component_index, component_name) in enumerate(self.components_name):
-                    self.inner_product[component_name] = self.assemble_operator(inner_product_string.format(c=component_name), "online")
+                for component in self.components:
+                    self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), "online")
             else:
                 self.inner_product = self.assemble_operator("inner_product", "online")
             # Terms
@@ -114,11 +114,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 self.Q[term] = len(self.operator[term])
         elif current_stage == "offline":
             # Inner products
-            n_components = len(self.components_name)
+            n_components = len(self.components)
             if n_components > 1:
                 self.inner_product = dict()
-                for (component_index, component_name) in enumerate(self.components_name):
-                    self.inner_product[component_name] = OnlineAffineExpansionStorage(1)
+                for component in self.components:
+                    self.inner_product[component] = OnlineAffineExpansionStorage(1)
             else:
                 self.inner_product = OnlineAffineExpansionStorage(1)
             # Terms
@@ -130,31 +130,34 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def _init_basis_functions(self, current_stage="online"):
         assert current_stage in ("online", "offline")
-        n_components = len(self.components_name)
+        # Initialize basis functions mappings
+        self.Z.init(self.components)
+        # Get number of components
+        n_components = len(self.components)
         # Get helper strings depending on the number of basis components
         if n_components > 1:
             dirichlet_bc_string = "dirichlet_bc_{c}"
-            def has_non_homogeneous_dirichlet_bc(component_name):
-                return self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]
-            def get_Z(component_name):
-                return self.Z[component_name]
+            def has_non_homogeneous_dirichlet_bc(component):
+                return self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]
+            def get_Z(component):
+                return self.Z[component]
         else:
             dirichlet_bc_string = "dirichlet_bc"
-            def has_non_homogeneous_dirichlet_bc(component_name):
+            def has_non_homogeneous_dirichlet_bc(component):
                 return self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
-            def get_Z(component_name):
+            def get_Z(component):
                 return self.Z
         # Detect how many theta terms are related to boundary conditions
         assert (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
         if self.dirichlet_bc is None: # init was not called already
             dirichlet_bc = dict()
-            for (component_index, component_name) in enumerate(self.components_name):
+            for component in self.components:
                 try:
-                    theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
+                    theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
                 except ValueError: # there were no Dirichlet BCs to be imposed by lifting
-                    dirichlet_bc[component_name] = False
+                    dirichlet_bc[component] = False
                 else:
-                    dirichlet_bc[component_name] = True
+                    dirichlet_bc[component] = True
             if n_components == 1:
                 self.dirichlet_bc = dirichlet_bc.values()[0]
             else:
@@ -168,14 +171,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             if Z_loaded:
                 N = dict()
                 N_bc = dict()
-                for (component_index, component_name) in enumerate(self.components_name):
-                    if has_non_homogeneous_dirichlet_bc(component_name):
-                        theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
-                        N[component_name] = len(get_Z(component_name)) - len(theta_bc)
-                        N_bc[component_name] = len(theta_bc)
+                for component in self.components:
+                    if has_non_homogeneous_dirichlet_bc(component):
+                        theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
+                        N[component] = len(get_Z(component)) - len(theta_bc)
+                        N_bc[component] = len(theta_bc)
                     else:
-                        N[component_name] = len(get_Z(component_name))
-                        N_bc[component_name] = 0
+                        N[component] = len(get_Z(component))
+                        N_bc[component] = 0
                 assert len(N) == len(N_bc)
                 assert len(N) > 0
                 if len(N) == 1:
@@ -186,8 +189,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                     self.N_bc = N_bc
         elif current_stage == "offline":
             # Store the lifting functions in self.Z
-            for (component_index, component_name) in enumerate(self.components_name):
-                self.assemble_operator(dirichlet_bc_string.format(c=component_name), "offline") # no return value from assemble_operator in this case
+            for component in self.components:
+                self.assemble_operator(dirichlet_bc_string.format(c=component), "offline") # no return value from assemble_operator in this case
             # Save basis functions matrix, that contains up to now only lifting functions
             self.Z.save(self.folder["basis"], "basis")
             # Properly fill in self.N_bc
@@ -199,9 +202,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             else:
                 N = dict()
                 N_bc = dict()
-                for (component_index, component_name) in enumerate(self.components_name):
-                    N[component_name] = 0
-                    N_bc[component_name] = len(self.Z[component_name])
+                for component in self.components:
+                    N[component] = 0
+                    N_bc[component] = len(self.Z[component])
                 self.N = N
                 self.N_bc = N_bc
                 total_N_bc = sum(N_bc.values())
@@ -226,6 +229,68 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def output(self):
         raise NotImplementedError("The method output() is problem-specific and needs to be overridden.")
         
+    def _online_size_from_kwargs(self, N, **kwargs):
+        class OnlineSizeDict(dict):
+            __slots__ = ()
+            
+            def __init__(self_, *args_, **kwargs_):
+                super(OnlineSizeDict, self_).__init__(*args_, **kwargs_)
+                
+            def __getitem__(self_, k):
+                return super(OnlineSizeDict, self_).__getitem__(k)
+                
+            def __setitem__(self_, k, v):
+                return super(OnlineSizeDict, self_).__setitem__(k, v)
+                
+            def __delitem__(self_, k):
+                return super(OnlineSizeDict, self_).__delitem__(k)
+                
+            def get(self_, k, default=None):
+                return super(OnlineSizeDict, self_).get(k, default)
+                
+            def setdefault(self_, k, default=None):
+                return super(OnlineSizeDict, self_).setdefault(k, default)
+                
+            def pop(self_, k):
+                return super(OnlineSizeDict, self_).pop(k)
+                
+            def update(self_, **kwargs_):
+                super(OnlineSizeDict, self_).update(**kwargs_)
+                
+            def __contains__(self_, k):
+                return super(OnlineSizeDict, self_).__contains__(k)
+                
+            # Override N += N_bc so that it is possible to increment online size due to boundary conditions
+            def __iadd__(self_, other_):
+                for component in self.components:
+                    self_[component] += other_[component]
+                return self_
+                                    
+        assert len(self.components) > 1 # otherwise there is no need to use this method
+        if N is None:
+            all_components_in_kwargs = self.components[0] in kwargs
+            for component in self.components:
+                if all_components_in_kwargs:
+                    assert component in kwargs, "You need to specify the online size of all components in kwargs" 
+                else:
+                    assert component not in kwargs, "You need to specify the online size of all components in kwargs"
+            if all_components_in_kwargs:
+                N = OnlineSizeDict()
+                for component in self.components:
+                    N[component] = kwargs[component]
+                    del kwargs[component]
+            else:
+                N = OnlineSizeDict(self.N) # copy the default dict
+        else:
+            assert isinstance(N, int)
+            N_int = N
+            N = OnlineSizeDict()
+            for component in self.components:
+                N[component] = N_int
+                assert component not in kwargs, "You cannot provide both an int and kwargs for components"
+                
+        return N, kwargs
+        
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
 
@@ -239,36 +304,36 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         for term in self.terms:
             self.operator[term] = self.assemble_operator(term, "offline")
         # Inner products
-        n_components = len(self.components_name)
+        n_components = len(self.components)
         if n_components > 1:
             inner_product_string = "inner_product_{c}"
-            for (component_index, component_name) in enumerate(self.components_name):
-                self.inner_product[component_name] = self.assemble_operator(inner_product_string.format(c=component_name), "offline")
+            for component in self.components:
+                self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), "offline")
         else:
             self.inner_product = self.assemble_operator("inner_product", "offline")
         
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
     # non-homogeneous Dirichlet boundary conditions
     def postprocess_snapshot(self, snapshot):
-        n_components = len(self.components_name)
+        n_components = len(self.components)
         # Get helper strings and functions depending on the number of basis components
         if n_components > 1:
             dirichlet_bc_string = "dirichlet_bc_{c}"
-            def has_non_homogeneous_dirichlet_bc(component_name):
-                return self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]
-            def assert_lengths(component_name):
-                assert self.N_bc[component_name] == len(theta_bc)
+            def has_non_homogeneous_dirichlet_bc(component):
+                return self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]
+            def assert_lengths(component):
+                assert self.N_bc[component] == len(theta_bc)
         else:
             dirichlet_bc_string = "dirichlet_bc"
-            def has_non_homogeneous_dirichlet_bc(component_name):
+            def has_non_homogeneous_dirichlet_bc(component):
                 return self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
-            def assert_lengths(component_name):
+            def assert_lengths(component):
                 assert self.N_bc == len(theta_bc)
         # Carry out postprocessing
-        for (component_index, component_name) in enumerate(self.components_name):
-            if has_non_homogeneous_dirichlet_bc(component_name):
-                theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component_name))
-                assert_lengths(component_name)
+        for component in self.components:
+            if has_non_homogeneous_dirichlet_bc(component):
+                theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
+                assert_lengths(component)
                 return snapshot - self.Z[:self.N_bc]*theta_bc
             else:
                 return snapshot
@@ -319,12 +384,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             if term in self.terms and not term in self.operator:
                 self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by load
             elif term.startswith("inner_product"):
-                component_name = term.replace("inner_product", "").replace("_", "")
-                if component_name != "":
-                    assert component_name in self.components_name
-                    self.inner_product[component_name] = OnlineAffineExpansionStorage(0) # it will be resized by load
+                component = term.replace("inner_product", "").replace("_", "")
+                if component != "":
+                    assert component in self.components
+                    self.inner_product[component] = OnlineAffineExpansionStorage(0) # it will be resized by load
                 else:
-                    assert len(self.components_name) == 1
+                    assert len(self.components) == 1
                     self.inner_product = OnlineAffineExpansionStorage(0) # it will be resized by load
             # Note that it would not be needed to return the loaded operator in 
             # init(), since it has been already modified in-place. We do this, however,
@@ -335,9 +400,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 self.operator[term].load(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
             elif term.startswith("inner_product"):
-                if component_name != "":
-                    self.inner_product[component_name].load(self.folder["reduced_operators"], term)
-                    return self.inner_product[component_name]
+                if component != "":
+                    self.inner_product[component].load(self.folder["reduced_operators"], term)
+                    return self.inner_product[component]
                 else:
                     self.inner_product.load(self.folder["reduced_operators"], term)
                     return self.inner_product
@@ -363,29 +428,29 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
             elif term.startswith("inner_product"):
-                component_name = term.replace("inner_product", "").replace("_", "")
-                if component_name != "":
-                    assert component_name in self.components_name
-                    assert len(self.inner_product[component_name]) == 1 # the affine expansion storage contains only the inner product matrix
-                    assert len(self.truth_problem.inner_product[component_name]) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.inner_product[component_name][0] = transpose(self.Z)*self.truth_problem.inner_product[component_name][0]*self.Z
-                    self.inner_product[component_name].save(self.folder["reduced_operators"], term)
-                    return self.inner_product[component_name]
+                component = term.replace("inner_product", "").replace("_", "")
+                if component != "":
+                    assert component in self.components
+                    assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                    self.inner_product[component][0] = transpose(self.Z)*self.truth_problem.inner_product[component][0]*self.Z
+                    self.inner_product[component].save(self.folder["reduced_operators"], term)
+                    return self.inner_product[component]
                 else:
-                    assert len(self.components_name) == 1 # single component case
+                    assert len(self.components) == 1 # single component case
                     assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     self.inner_product[0] = transpose(self.Z)*self.truth_problem.inner_product[0]*self.Z
                     self.inner_product.save(self.folder["reduced_operators"], term)
                     return self.inner_product
             elif term.startswith("dirichlet_bc"):
-                component_name = term.replace("dirichlet_bc", "").replace("_", "")
-                if component_name != "":
-                    assert component_name in self.components_name
-                    has_non_homogeneous_dirichlet_bc = self.dirichlet_bc[component_name] and not self.dirichlet_bc_are_homogeneous[component_name]
+                component = term.replace("dirichlet_bc", "").replace("_", "")
+                if component != "":
+                    assert component in self.components
+                    has_non_homogeneous_dirichlet_bc = self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]
                 else:
-                    assert len(self.components_name) == 1
-                    component_name = None
+                    assert len(self.components) == 1
+                    component = None
                     has_non_homogeneous_dirichlet_bc = self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
                 if has_non_homogeneous_dirichlet_bc:
                     # Compute lifting functions for the value of mu possibly provided by the user
@@ -410,13 +475,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                         # ... and store the solution of the truth problem corresponding to that boundary condition
                         # as lifting function
                         solve_message = "Computing and storing lifting function n. " + str(i)
-                        if component_name is not None:
-                            solve_message += " for component " + component_name
+                        if component is not None:
+                            solve_message += " for component " + component
                         solve_message += " (obtained for mu = " + str(self.mu) + ") in the basis matrix"
                         print(solve_message)
                         lifting = self.truth_problem.solve()
                         lifting /= theta_bc[i]
-                        self.Z.enrich(lifting, component_name=component_name)
+                        self.Z.enrich(lifting, component=component)
                     # Restore the standard compute_theta method
                     self.truth_problem.compute_theta = standard_compute_theta
             else:

@@ -27,17 +27,16 @@ from RBniCS.backends.abstract import HighOrderProperOrthogonalDecomposition as A
 from RBniCS.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
 import RBniCS.backends.numpy
 import RBniCS.backends.numpy.wrapping
-from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
 
 @Extends(HighOrderProperOrthogonalDecompositionBase)
-@BackendFor("numpy", inputs=(Matrix.Type(), AbstractFunctionsList))
+@BackendFor("numpy", inputs=(AbstractFunctionsList, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
     @override
-    def __init__(self, V_or_Z):
-        HighOrderProperOrthogonalDecompositionBase.__init__(self, V_or_Z, None, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.TensorSnapshotsList, RBniCS.backends.numpy.TensorBasisList)
+    def __init__(self, Z):
+        HighOrderProperOrthogonalDecompositionBase.__init__(self, Z, None, None, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.TensorSnapshotsList, RBniCS.backends.numpy.TensorBasisList)
         
     @override
     def store_snapshot(self, snapshot):

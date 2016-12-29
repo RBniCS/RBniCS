@@ -42,49 +42,43 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         self._components = dict() # of FunctionsList
         self._precomputed_slices = dict() # from tuple to FunctionsList
         self._basis_component_index_to_component_name = dict() # filled in by init
+        self._components_name = list() # filled in by init
         self._component_name_to_basis_component_index = dict() # filled in by init
         self._component_name_to_basis_component_length = dict() # of int
-        self._component_name_to_function_component = dict() # filled in by init
 
-    @override
-    def init(self, component_name_to_basis_component_index, component_name_to_function_component):
-        if not (
-            self._component_name_to_basis_component_index == component_name_to_basis_component_index
-                and
-            self._component_name_to_function_component == component_name_to_function_component
-        ): # Do nothing if it was already initialize with the same dicts
+    def init(self, components_name):
+        if self._components_name != components_name: # Do nothing if it was already initialize with the same dicts
+            # Store components name
+            self._components_name = components_name
             # Initialize components FunctionsList
             self._components.clear()
-            for component_name in component_name_to_basis_component_index:
+            for component_name in components_name:
                 self._components[component_name] = self.backend.FunctionsList(self.V_or_Z)
-            # Store the component_name_to_function_component dict
-            self._component_name_to_function_component = component_name_to_function_component
-            # Store the component_name_to_basis_component_index dict
-            self._component_name_to_basis_component_index = component_name_to_basis_component_index
-            assert max(component_name_to_basis_component_index.values()) == len(component_name_to_basis_component_index) - 1
-            # Reverse the component_name_to_basis_component_index dict and store it
+            # Intialize the component_name_to_basis_component_index dict, and its inverse
+            self._component_name_to_basis_component_index.clear()
             self._basis_component_index_to_component_name.clear()
-            for (component_name, basis_component_index) in component_name_to_basis_component_index.iteritems():
+            for (basis_component_index, component_name) in enumerate(components_name):
+                self._component_name_to_basis_component_index[component_name] = basis_component_index
                 self._basis_component_index_to_component_name[basis_component_index] = component_name
             # Prepare len components
             self._component_name_to_basis_component_length.clear()
-            for component_name in component_name_to_basis_component_index:
+            for component_name in self._components_name:
                 self._component_name_to_basis_component_length[component_name] = 0
             # Reset precomputed slices
             self._precomputed_slices.clear()
             
     @override
-    def enrich(self, functions, component_name=None, weights=None, copy=True):
-        assert component_name is None or component_name in self._components
+    def enrich(self, functions, component=None, weights=None, copy=True):
+        assert component is None or component in self._components
         assert copy is True
-        if component_name is None:
+        if component is None:
             assert len(self._components) == 1
             component_0 = self._components.keys()[0]
             self._components[component_0].enrich(functions, weights=weights)
             self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
         else:
-            self._components[component_name].enrich(functions, component=self._component_name_to_function_component[component_name], weights=weights)
-            self._component_name_to_basis_component_length[component_name] = len(self._components[component_name])
+            self._components[component].enrich(functions, component=component, weights=weights)
+            self._component_name_to_basis_component_length[component] = len(self._components[component])
         # Reset and prepare precomputed slices
         self._prepare_trivial_precomputed_slice()
             
@@ -104,12 +98,10 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         
     @override
     def clear(self):
-        component_name_to_basis_component_index = self._component_name_to_basis_component_index
-        component_name_to_function_component = self._component_name_to_function_component
-        # Trick init into re-initializing everything
-        self._component_name_to_basis_component_index = None
-        self._component_name_to_function_component = None
-        self.init(component_name_to_basis_component_index, component_name_to_function_component)
+        components_name = self._components_name
+        # Trick _init into re-initializing everything
+        self._components_name = None
+        self.init(components_name)
         
     @override
     def save(self, directory, filename):
@@ -146,7 +138,7 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         if isinstance(other, self.online_backend.Matrix.Type()):
             def BasisFunctionsMatrixWithInit(V_or_Z):
                 output = self.backend.BasisFunctionsMatrix(V_or_Z)
-                output.init(self._component_name_to_basis_component_index, self._component_name_to_function_component)
+                output.init(self._components_name)
                 return output
             return self.wrapping.functions_list_basis_functions_matrix_mul_online_matrix(self, other, BasisFunctionsMatrixWithInit, self.backend)
         elif isinstance(other, (self.online_backend.Vector.Type(), tuple)): # tuple is used when multiplying by theta_bc
@@ -195,7 +187,7 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             N_key = N
         if not N_key in self._precomputed_slices:
             self._precomputed_slices[N_key] = self.backend.BasisFunctionsMatrix(self.V_or_Z)
-            self._precomputed_slices[N_key].init(self._component_name_to_basis_component_index, self._component_name_to_function_component)
+            self._precomputed_slices[N_key].init(self._components_name)
             for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.iteritems()):
                 if isinstance(N, dict):
                     N_component = N[component_name]

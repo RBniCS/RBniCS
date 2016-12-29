@@ -32,11 +32,11 @@ import RBniCS.backends.numpy
 from RBniCS.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicFunctionsList)
-@BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, ))
+@BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, (str, None)))
 class FunctionsList(BasicFunctionsList):
     @override
-    def __init__(self, V_or_Z):
-        BasicFunctionsList.__init__(self, V_or_Z, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ))
+    def __init__(self, V, component=None):
+        BasicFunctionsList.__init__(self, V, component, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ))
         
     @override
     def _enrich(self, function, component=None, weight=None, copy=True):

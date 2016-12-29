@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def get_function_subspace(function_space, components):
-    assert isinstance(components, (int, tuple))
-    assert not isinstance(components, list), "FEniCS does not handle yet the case of a list of components"
-    if isinstance(int):
-        return function_space.sub(components).collapse()
+def get_function_subspace(function_space, component):
+    assert isinstance(component, (int, str, tuple))
+    assert not isinstance(component, list), "FEniCS does not handle yet the case of a list of components"
+    if isinstance(component, tuple):
+        return function_space.extract_sub_space(component).collapse()
     else:
-        return function_space.extract_sub_space(components).collapse()
+        return function_space.sub(component).collapse()
 

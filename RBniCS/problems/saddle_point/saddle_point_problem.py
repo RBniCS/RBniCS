@@ -47,33 +47,17 @@ class SaddlePointProblem(ParametrizedDifferentialProblem):
         self.terms = [
             "a", "b", "bt", "f", "g",
             # Auxiliary terms for supremizer enrichment
-            "inner_product_s_restricted", "bt_restricted"
+            "bt_restricted"
         ]
         self.terms_order = {
             "a": 2, "b": 2, "bt": 2, "f": 1, "g": 1,
             # Auxiliary terms for supremizer enrichment
-            "inner_product_s_restricted": 2, "bt_restricted": 2
+            "bt_restricted": 2
         }
-        self.components_name = ["u", "s", "p"]
-        
-        # Saddle point problems have three components: two variables and one supremizer: must
-        # declare mapping from components to basis.
-        # The first component of each snapshot will be mapped to the first component of the basis.
-        # The first component of each auxiliary supremizer snapshot will be mapped to the second component of the basis.
-        # The second component of each snapshot will be mapped to the third component of the basis.
-        self.component_name_to_basis_component_index = {
-            "u": 0,
-            "s": 1,
-            "p": 2
-        }
-        self.component_name_to_function_component = {
-            "u": 0,
-            "s": 0,
-            "p": 1
-        }
+        self.components = ["u", "s", "p"]
         
         # Auxiliary storage for supremizer enrichment, using a subspace of V
-        self._supremizer = Function(V, self.component_name_to_function_component["s"])
+        self._supremizer = Function(V, "s")
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -89,9 +73,9 @@ class SaddlePointProblem(ParametrizedDifferentialProblem):
         for term in ("a", "b", "bt", "f", "g"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         assembled_dirichlet_bc = list()
-        for component_name in ("u", "p"):
-            if self.dirichlet_bc[component_name] is not None:
-                assembled_dirichlet_bc.extend(sum(product(self.compute_theta("dirichlet_bc_" + component_name), self.dirichlet_bc[component_name])))
+        for component in ("u", "p"):
+            if self.dirichlet_bc[component] is not None:
+                assembled_dirichlet_bc.extend(sum(product(self.compute_theta("dirichlet_bc_" + component), self.dirichlet_bc[component])))
         if len(assembled_dirichlet_bc) == 0:
             assembled_dirichlet_bc = None
         solver = LinearSolver(
@@ -104,8 +88,8 @@ class SaddlePointProblem(ParametrizedDifferentialProblem):
         return self._solution
     
     def solve_supremizer(self):
-        assert len(self.operator["inner_product_s_restricted"]) == 1 # the affine expansion storage contains only the inner product matrix
-        assembled_operator_lhs = self.operator["inner_product_s_restricted"][0]
+        assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+        assembled_operator_lhs = self.inner_product["s"][0]
         assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))
         assembled_operator_rhs = assembled_operator_bt*self._solution
         if self.dirichlet_bc["s"] is not None:

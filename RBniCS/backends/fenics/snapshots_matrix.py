@@ -27,7 +27,7 @@ from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.utils.decorators import BackendFor, Extends
 
 @Extends(FunctionsList)
-@BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, ))
+@BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, (str, None)))
 class SnapshotsMatrix(FunctionsList):
     pass
 

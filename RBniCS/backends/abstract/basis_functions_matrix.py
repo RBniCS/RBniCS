@@ -31,11 +31,11 @@ class BasisFunctionsMatrix(object):
         pass
     
     @abstractmethod
-    def init(self, component_name_to_basis_component_index, component_name_to_function_component):
+    def init(self, components):
         pass
         
     @abstractmethod
-    def enrich(self, functions, component_name=None, weights=None, copy=True):
+    def enrich(self, functions, component=None, weights=None, copy=True):
         pass
         
     @abstractmethod

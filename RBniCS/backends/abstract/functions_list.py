@@ -34,7 +34,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 # allow to write expressions like transpose(Z)*A*Z and transpose(Z)*F
 @AbstractBackend
 class FunctionsList(object):
-    def __init__(self, V_or_Z):
+    def __init__(self, V_or_Z, component=None):
         pass
     
     @abstractmethod

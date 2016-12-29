@@ -32,6 +32,6 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 @Extends(BasicBasisFunctionsMatrix)
 class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
     @override
-    def __init__(self, V_or_Z):
-        BasicBasisFunctionsMatrix.__init__(self, V_or_Z, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
+    def __init__(self, Z):
+        BasicBasisFunctionsMatrix.__init__(self, Z, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
 

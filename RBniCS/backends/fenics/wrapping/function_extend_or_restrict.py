@@ -29,18 +29,22 @@ from RBniCS.backends.fenics.function import Function
 def function_extend_or_restrict(function, function_components, V, V_components, weight, copy):
     function_V = function.function_space()
     if function_components is not None:
-        assert isinstance(function_components, (int, tuple))
+        assert isinstance(function_components, (int, str, tuple))
         assert not isinstance(function_components, list), "FEniCS does not handle yet the case of a list of components"
-        if isinstance(function_components, int):
+        if isinstance(function_components, str):
+            function_components = function_V.component_to_index(function_components)
+        if not isinstance(function_components, tuple):
             function_V_index = (function_components, )
         else:
             function_V_index = function_components
     else:
         function_V_index = None
     if V_components is not None:
-        assert isinstance(V_components, (int, tuple))
+        assert isinstance(V_components, (int, str, tuple))
         assert not isinstance(V_components, list), "FEniCS does not handle yet the case of a list of components"
-        if isinstance(V_components, int):
+        if isinstance(V_components, str):
+            V_components = V.component_to_index(V_components)
+        if not isinstance(V_components, tuple):
             V_index = (V_components, )
         else:
             V_index = V_components
@@ -147,6 +151,8 @@ def _function_spaces_gt(V, W, V_to_W_mapping, index_V, index_W): # V > W
     return _function_spaces_lt(W, V, V_to_W_mapping, index_W, index_V)
 
 def _get_sub_elements(V, index_V):
+    if index_V is not None:
+        V = V.extract_sub_space(index_V)
     sub_elements = _get_sub_elements__recursive(V, index_V)
     # Re-order sub elements for increasing tuple length to help
     # avoiding ambiguities
@@ -157,11 +163,10 @@ def _get_sub_elements(V, index_V):
             sub_elements__sorted_by_index_length[index_length] = OrderedDict()
         assert index not in sub_elements__sorted_by_index_length[index_length]
         sub_elements__sorted_by_index_length[index_length][index] = element
-    assert min(sub_elements__sorted_by_index_length.keys()) == 1
-    assert max(sub_elements__sorted_by_index_length.keys()) == len(sub_elements__sorted_by_index_length)
     output = OrderedDict()
-    for index_length in range(1, len(sub_elements__sorted_by_index_length) + 1):
-        output.update(sub_elements__sorted_by_index_length[index_length])
+    for index_length in range(min(sub_elements__sorted_by_index_length.keys()), max(sub_elements__sorted_by_index_length.keys()) + 1):
+        if index_length in sub_elements__sorted_by_index_length:
+            output.update(sub_elements__sorted_by_index_length[index_length])
     return output
         
 def _get_sub_elements__recursive(V, index_V):
