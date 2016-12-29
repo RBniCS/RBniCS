@@ -65,12 +65,12 @@ class EigenSolver(AbstractEigenSolver):
                 as_backend_type(operator).mat().zeroRowsColumns(constrained_dofs, diag_value)
         
     @override
-    def set_parameters(self, parameters):
+    def set_parameters(self, parameters, skip_init=False):
         self._parameters = parameters
         assert "spectrum" in parameters
         assert parameters["spectrum"] in ("largest real", "smallest real")
         self._spectrum = parameters["spectrum"]
-        if "spectral_shift" in parameters:
+        if not skip_init and "spectral_shift" in parameters:
             self._init_eigensolver(1./abs(parameters["spectral_shift"])) # we will check in solve if it is an appropriate spurious eigenvalue
         self.eigen_solver.parameters.update(parameters)
         
@@ -90,7 +90,7 @@ class EigenSolver(AbstractEigenSolver):
                     assert isclose(smallest_computed_eigenvalue_imag, 0), "The required eigenvalue is not real"
                     if self._spurious_eigenvalue - smallest_computed_eigenvalue >= 0. or isclose(self._spurious_eigenvalue - smallest_computed_eigenvalue, 0.):
                         self._init_eigensolver(0.1*smallest_computed_eigenvalue)
-                        self.set_parameters(self._parameters)
+                        self.set_parameters(self._parameters, skip_init=True)
                         return True
                     else:
                         return False
@@ -99,7 +99,7 @@ class EigenSolver(AbstractEigenSolver):
                     assert isclose(largest_computed_eigenvalue_imag, 0), "The required eigenvalue is not real"
                     if self._spurious_eigenvalue - largest_computed_eigenvalue <= 0. or isclose(self._spurious_eigenvalue - largest_computed_eigenvalue, 0.):
                         self._init_eigensolver(10.*largest_computed_eigenvalue)
-                        self.set_parameters(self._parameters)
+                        self.set_parameters(self._parameters, skip_init=True)
                         return True
                     else:
                         return False
