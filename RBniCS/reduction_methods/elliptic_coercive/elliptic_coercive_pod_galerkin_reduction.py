@@ -175,8 +175,8 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoerciveReductionMethod):
         
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(N)
-        error_analysis_table.add_column("error_u", group_name="solution", operations="mean")
-        error_analysis_table.add_column("error_s", group_name="output", operations="mean")
+        error_analysis_table.add_column("error_u", group_name="solution", operations=("mean", "max"))
+        error_analysis_table.add_column("error_s", group_name="output", operations=("mean", "max"))
         
         for (run, mu) in enumerate(self.testing_set):
             print("############################## run =", run, "######################################")
