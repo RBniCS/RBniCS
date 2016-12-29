@@ -25,7 +25,7 @@
 import types
 from RBniCS.utils.decorators.override import override
 
-def sync_setters(other_object__name, method__name, private_attribute__name):
+def sync_setters__internal(other_object__name, method__name, private_attribute__name, method__decorator=None):
     def sync_setters_decorator(__init__):
         
         def __synced__init__(self, *args, **kwargs):
@@ -43,6 +43,8 @@ def sync_setters(other_object__name, method__name, private_attribute__name):
                     self__original_method(arg)
                     if getattr(other_object, private_attribute__name) is not arg:
                         other_object__original_method(arg)
+                if method__decorator is not None:
+                    self__overridden_method = method__decorator(self__overridden_method)
                 self__overridden_method = override(self__overridden_method)
                 setattr(self, method__name, types.MethodType(self__overridden_method, self))
                 # Override setter of other_object to propagate from other_object to self
@@ -50,6 +52,8 @@ def sync_setters(other_object__name, method__name, private_attribute__name):
                     other_object__original_method(arg)
                     if getattr(self, private_attribute__name) is not arg:
                         self__original_method(arg)
+                if method__decorator is not None:
+                    other_object__overridden_method = method__decorator(other_object__overridden_method)
                 other_object__overridden_method = override(other_object__overridden_method)
                 setattr(other_object, method__name, types.MethodType(other_object__overridden_method, other_object))
                 # Make sure that the value of my attribute is in sync with the value the is currently 
@@ -59,3 +63,33 @@ def sync_setters(other_object__name, method__name, private_attribute__name):
         return __synced__init__
     return sync_setters_decorator
 
+def sync_setters(other_object__name, method__name, private_attribute__name):
+    assert method__name in ("set_mu", "set_mu_range") # other uses have not been considered yet
+    if method__name == "set_mu":
+        return sync_setters__internal(other_object__name, method__name, private_attribute__name)
+    elif method__name == "set_mu_range":
+        def set_mu_range__decorator(set_mu_range__method):
+            def set_mu_range__decorated(self_, mu_range):
+                try:
+                    set_mu_range__method(self_, mu_range)
+                except AssertionError as assertion:
+                    if str(assertion) == "mu and mu_range must have the same length":
+                        # This may happen because mu_range has not been set yet when
+                        # called recursively across e.g. SCM, EIM, etc.
+                        # Temporarily disable it, since it will be called anyway at 
+                        # the last recursion step
+                        original_set_mu = self_.set_mu
+                        def disabled_set_mu(self_, mu):
+                            pass
+                        setattr(self_, "set_mu", types.MethodType(disabled_set_mu, self_))
+                        # Call again set_mu_range
+                        set_mu_range__method(self_, mu_range)
+                        # Restore original set_mu
+                        setattr(self_, "set_mu", original_set_mu)
+                    else:
+                        raise
+            return set_mu_range__decorated
+        return sync_setters__internal(other_object__name, method__name, private_attribute__name, set_mu_range__decorator)
+    else:
+        raise AssertionError("Invalid method in sync_setters.")
+    

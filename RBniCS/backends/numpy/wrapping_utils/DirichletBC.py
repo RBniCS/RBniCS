@@ -60,7 +60,7 @@ class DirichletBC(object):
                 # Apply BCs to the increment
                 for (component_name, component_bc) in self.bcs.iteritems():
                     for (i, bc_i) in enumerate(component_bc):
-                        block_i = bcs_base_index[component_name] + i
+                        block_i = self.bcs_base_index[component_name] + i
                         vector[block_i] = bc_i
             else:
                 raise AssertionError("Invalid bc in DirichletBC.apply_to_vector().")
@@ -75,7 +75,7 @@ class DirichletBC(object):
                 # Apply BCs to the increment
                 for (component_name, component_bc) in self.bcs.iteritems():
                     for (i, _) in enumerate(component_bc):
-                        block_i = bcs_base_index[component_name] + i
+                        block_i = self.bcs_base_index[component_name] + i
                         vector[block_i] = 0.
             else:
                 raise AssertionError("Invalid bc in DirichletBC.homogeneous_apply_to_vector().")
@@ -91,7 +91,7 @@ class DirichletBC(object):
                 # Apply BCs
                 for (component_name, component_bc) in self.bcs.iteritems():
                     for (i, _) in enumerate(component_bc):
-                        block_i = bcs_base_index[component_name] + i
+                        block_i = self.bcs_base_index[component_name] + i
                         matrix[block_i, :] = 0.
                         matrix[block_i, block_i] = 1.
             else:

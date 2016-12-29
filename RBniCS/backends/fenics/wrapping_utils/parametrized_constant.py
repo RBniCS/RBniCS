@@ -26,7 +26,10 @@ from RBniCS.backends.fenics.wrapping_utils.parametrized_expression import Parame
 
 def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, **kwargs):
     if "element" not in kwargs:
-        kwargs["element"] = truth_problem.V.ufl_element()
+        element = truth_problem.V.ufl_element()
+        while element.num_sub_elements() > 0:
+            element = element.sub_elements()[0]
+        kwargs["element"] = element
     return ParametrizedExpression(truth_problem, parametrized_constant_code, *args, **kwargs)
     
 import types
