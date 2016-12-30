@@ -89,7 +89,10 @@ class EigenSolver(AbstractEigenSolver):
                     smallest_computed_eigenvalue, smallest_computed_eigenvalue_imag = self.eigen_solver.get_eigenvalue(n_eigs - 1)
                     assert isclose(smallest_computed_eigenvalue_imag, 0), "The required eigenvalue is not real"
                     if self._spurious_eigenvalue - smallest_computed_eigenvalue >= 0. or isclose(self._spurious_eigenvalue - smallest_computed_eigenvalue, 0.):
-                        self._init_eigensolver(0.1*smallest_computed_eigenvalue)
+                        new_spurious_eigenvalue = 0.1*smallest_computed_eigenvalue
+                        if new_spurious_eigenvalue == self._spurious_eigenvalue: # recursion limit was exhausted
+                            return False
+                        self._init_eigensolver(new_spurious_eigenvalue)
                         self.set_parameters(self._parameters, skip_init=True)
                         return True
                     else:
@@ -98,7 +101,10 @@ class EigenSolver(AbstractEigenSolver):
                     largest_computed_eigenvalue, largest_computed_eigenvalue_imag = self.eigen_solver.get_eigenvalue(n_eigs - 1)
                     assert isclose(largest_computed_eigenvalue_imag, 0), "The required eigenvalue is not real"
                     if self._spurious_eigenvalue - largest_computed_eigenvalue <= 0. or isclose(self._spurious_eigenvalue - largest_computed_eigenvalue, 0.):
-                        self._init_eigensolver(10.*largest_computed_eigenvalue)
+                        new_spurious_eigenvalue = 10.*largest_computed_eigenvalue
+                        if new_spurious_eigenvalue == self._spurious_eigenvalue: # recursion limit was exhausted
+                            return False
+                        self._init_eigensolver(new_spurious_eigenvalue)
                         self.set_parameters(self._parameters, skip_init=True)
                         return True
                     else:
@@ -107,9 +113,8 @@ class EigenSolver(AbstractEigenSolver):
                 return False
                 
         do_solve()
-        if have_spurious_eigenvalue():
+        while have_spurious_eigenvalue():
             do_solve() # the spurious eigenvalue has been changed by the previous call to have_spurious_eigenvalue
-            assert not have_spurious_eigenvalue()
     
     @override
     def get_eigenvalue(self, i):
