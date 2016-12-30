@@ -42,9 +42,9 @@ class EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod):
     
     ## Default initialization of members
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        DifferentialProblemReductionMethod.__init__(self, truth_problem)
+        DifferentialProblemReductionMethod.__init__(self, truth_problem, **kwargs)
             
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################

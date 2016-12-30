@@ -28,7 +28,7 @@ from RBniCS.utils.decorators import Extends, PrimalDualReductionMethod, Reductio
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem, EllipticCoerciveProblem_Dual
 from RBniCS.reduction_methods.elliptic_coercive.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
 
-def _problem_is_noncompliant(truth_problem):
+def _problem_is_noncompliant(truth_problem, **kwargs):
     try:
         theta_s = truth_problem.compute_theta("s")
     except ValueError:

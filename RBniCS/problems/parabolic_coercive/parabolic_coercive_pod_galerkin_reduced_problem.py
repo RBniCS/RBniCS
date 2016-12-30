@@ -42,7 +42,7 @@ class ParabolicCoercivePODGalerkinReducedProblem(ParabolicCoercivePODGalerkinRed
     
     ## Default initialization of members.
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        ParabolicCoercivePODGalerkinReducedProblem_Base.__init__(self, truth_problem)
+        ParabolicCoercivePODGalerkinReducedProblem_Base.__init__(self, truth_problem, **kwargs)
         

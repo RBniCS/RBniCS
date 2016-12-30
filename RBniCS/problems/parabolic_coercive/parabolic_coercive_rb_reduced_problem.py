@@ -46,9 +46,9 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
     
     ## Default initialization of members.
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        ParabolicCoerciveRBReducedProblem_Base.__init__(self, truth_problem)
+        ParabolicCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
         
         # Storage related to error estimation for initial condition
         self.initial_condition_product = None # will be of class OnlineAffineExpansionStorage

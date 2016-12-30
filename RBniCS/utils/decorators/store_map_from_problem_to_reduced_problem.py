@@ -31,9 +31,9 @@ def StoreMapFromProblemToReducedProblem(ParametrizedReducedDifferentialProblem_D
     class StoreMapFromProblemToReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Populate problem to reduced problem map
             add_to_map_from_problem_to_reduced_problem(truth_problem, self)

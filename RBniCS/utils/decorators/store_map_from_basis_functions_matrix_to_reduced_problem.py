@@ -31,9 +31,9 @@ def StoreMapFromBasisFunctionsMatrixToReducedProblem(ParametrizedReducedDifferen
     class StoreMapFromBasisFunctionsMatrixToReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Populate basis functions matrix to reduced problem map
             add_to_map_from_basis_functions_matrix_to_reduced_problem(self.Z, self)

@@ -39,9 +39,9 @@ def ShapeParametrizationDecoratedReducedProblem(ParametrizedReducedDifferentialP
         #  @{
         
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call the standard initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
                          
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################

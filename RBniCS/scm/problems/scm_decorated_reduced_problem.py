@@ -32,9 +32,9 @@ def SCMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
     class SCMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
         
     # return value (a class) for the decorator
     return SCMDecoratedReducedProblem_Class

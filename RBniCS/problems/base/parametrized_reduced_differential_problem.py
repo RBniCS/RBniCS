@@ -51,7 +51,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call to parent
         ParametrizedProblem.__init__(self, type(truth_problem).__name__)
         

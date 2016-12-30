@@ -31,12 +31,13 @@ from RBniCS.utils.factories.factory_helper import FactoryGenerateTypes
 from RBniCS.utils.mpi import log, DEBUG
 
 # Factory to generate a reduced problem corresponding to a given reduction method and truth problem
-def ReducedProblemFactory(truth_problem, reduction_method):
+def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     
     log(DEBUG,
         "In ReducedProblemFactory with\n" +
         "\ttruth problem = " + str(type(truth_problem)) + "\n" +
-        "\treduction_method = " + str(type(reduction_method))
+        "\treduction_method = " + str(type(reduction_method)) + "\n" +
+        "\tkwargs = " + str(kwargs)
     )
     if hasattr(type(truth_problem), "ProblemDecorators"):
         log(DEBUG,
@@ -56,7 +57,7 @@ def ReducedProblemFactory(truth_problem, reduction_method):
         return (
             candidate_replaces_if is None # replace in any case
                 or
-            candidate_replaces_if(truth_problem)
+            candidate_replaces_if(truth_problem, **kwargs)
         )
     log(DEBUG, "Generate ReducedProblem types based on Problem type")
     TypesList.extend(
@@ -73,7 +74,7 @@ def ReducedProblemFactory(truth_problem, reduction_method):
             return (
                 candidate_replaces_if is None # replace in any case
                     or
-                candidate_replaces_if(truth_problem)
+                candidate_replaces_if(truth_problem, **kwargs)
             )
         log(DEBUG, "Append ReducedProblemDecorator types based on Algorithm type")
         TypesList.extend(
@@ -93,5 +94,5 @@ def ReducedProblemFactory(truth_problem, reduction_method):
         ComposedType = TypesList[t](ComposedType)
         
     # Finally, return an instance of the generated class
-    return ComposedType(truth_problem)
+    return ComposedType(truth_problem, **kwargs)
     

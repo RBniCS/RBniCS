@@ -33,9 +33,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
     class TimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Store quantities related to the time discretization
             assert truth_problem.t == 0.
             self.t = 0.

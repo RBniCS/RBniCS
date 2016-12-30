@@ -31,9 +31,9 @@ def DualReducedProblem(ParametrizedDifferentialReducedProblem_DerivedClass):
     class DualReducedProblem_Class(ParametrizedDifferentialReducedProblem_DerivedClass):
         ## Default initialization of members.
         @override
-        def __init__(self, dual_problem):
+        def __init__(self, dual_problem, **kwargs):
             # Call to parent
-            ParametrizedDifferentialReducedProblem_DerivedClass.__init__(self, dual_problem)
+            ParametrizedDifferentialReducedProblem_DerivedClass.__init__(self, dual_problem, **kwargs)
             
             # Primal truth problem
             self.primal_problem = dual_problem.primal_problem

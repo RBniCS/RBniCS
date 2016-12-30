@@ -34,14 +34,14 @@ def PrimalDualReductionMethod(DualProblem):
     
             ## Default initialization of members
             @override
-            def __init__(self, truth_problem):
+            def __init__(self, truth_problem, **kwargs):
                 # Call the parent initialization
-                DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
+                DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
                 
                 # Dual high fidelity problem
                 self.dual_truth_problem = DualProblem(truth_problem)
                 # Dual reduction method
-                self.dual_reduction_method = DifferentialProblemReductionMethod_DerivedClass(self.dual_truth_problem)
+                self.dual_reduction_method = DifferentialProblemReductionMethod_DerivedClass(self.dual_truth_problem, **kwargs)
                 
                 # Change the folder names in dual reduction method
                 new_folder_prefix = self.dual_truth_problem.folder_prefix

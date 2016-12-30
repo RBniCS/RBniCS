@@ -38,9 +38,9 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
             class _AlsoDecorateErrorEstimationOperators_Class(ReducedParametrizedProblem_DecoratedClass):
                 @override
-                def __init__(self, truth_problem):
+                def __init__(self, truth_problem, **kwargs):
                     # Call the parent initialization
-                    ReducedParametrizedProblem_DecoratedClass.__init__(self, truth_problem)
+                    ReducedParametrizedProblem_DecoratedClass.__init__(self, truth_problem, **kwargs)
                     # Avoid useless assemblies
                     self._estimate_error__previous_mu = None
                     self._estimate_error__previous_self_N = None
@@ -151,9 +151,9 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
     class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Avoid useless assemblies
             self._solve__previous_mu = None
             self._solve__previous_self_N = None

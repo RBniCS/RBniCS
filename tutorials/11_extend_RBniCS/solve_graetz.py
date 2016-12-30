@@ -54,7 +54,7 @@ class Graetz(EllipticCoerciveProblem):
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
         
-        # TODO: when you change the problem make sure that this flag is still here
+         # TODO Do not attach it to truth problem, rather use kwargs to ReducedBasis
         self.use_dual = False
                 
     #  @}

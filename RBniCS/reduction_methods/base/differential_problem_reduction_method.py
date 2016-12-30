@@ -41,13 +41,14 @@ class DifferentialProblemReductionMethod(ReductionMethod):
     
     ## Default initialization of members
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call to parent
         ReductionMethod.__init__(self, type(truth_problem).__name__, truth_problem.mu_range)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Reduced order problem
         self.reduced_problem = None
+        self._init_kwargs = kwargs
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -67,7 +68,7 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.truth_problem.init()
         
         # Initialize reduced order data structures in the reduced problem
-        self.reduced_problem = ReducedProblemFactory(self.truth_problem, self)
+        self.reduced_problem = ReducedProblemFactory(self.truth_problem, self, **self._init_kwargs)
         
         # Prepare folders and init reduced problem
         all_folders = Folders()

@@ -26,8 +26,8 @@ from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
-def _has_use_dual_flag(truth_problem):
-    return hasattr(truth_problem, "use_dual")
+def _has_use_dual_flag(truth_problem, **kwargs):
+    return hasattr(truth_problem, "use_dual") # TODO Do not attach it to truth problem, rather use kwargs
 
 @Extends(EllipticCoerciveRBReduction) # needs to be first in order to override for last the methods
 @ReductionMethodFor(EllipticCoerciveProblem, "ReducedBasis", replaces=EllipticCoerciveRBReduction, replaces_if=_has_use_dual_flag)

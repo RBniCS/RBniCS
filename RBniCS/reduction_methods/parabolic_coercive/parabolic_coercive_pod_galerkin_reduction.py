@@ -45,9 +45,9 @@ class ParabolicCoercivePODGalerkinReduction(ParabolicCoercivePODGalerkinReductio
     
     ## Default initialization of members
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
-        ParabolicCoercivePODGalerkinReduction_Base.__init__(self, truth_problem)
+        ParabolicCoercivePODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 

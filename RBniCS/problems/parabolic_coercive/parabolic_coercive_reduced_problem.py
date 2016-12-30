@@ -27,7 +27,6 @@ from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import Parabo
 from RBniCS.backends import assign, LinearSolver, product, sum, TimeQuadrature, TimeStepping
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, MultiLevelReducedProblem
-from RBniCS.reduction_methods.parabolic_coercive import ParabolicCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoerciveReducedOrderModelBase
@@ -47,9 +46,9 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
         
         ## Default initialization of members.
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            EllipticCoerciveReducedProblem_DerivedClass.__init__(self, truth_problem)
+            EllipticCoerciveReducedProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
         #  @}
         ########################### end - CONSTRUCTORS - end ########################### 

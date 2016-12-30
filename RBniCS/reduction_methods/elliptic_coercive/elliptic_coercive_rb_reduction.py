@@ -87,9 +87,9 @@ class EllipticCoerciveRBReduction(EllipticCoerciveReductionMethod):
     
     ## Default initialization of members
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
-        EllipticCoerciveReductionMethod.__init__(self, truth_problem)
+        EllipticCoerciveReductionMethod.__init__(self, truth_problem, **kwargs)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a GS object

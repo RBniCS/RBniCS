@@ -26,8 +26,8 @@ from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem, EllipticC
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
 from elliptic_coercive_rb_reduction_with_greedy_on_output import EllipticCoerciveRBReductionWithGreedyOnOutput
 
-def _do_not_use_dual(truth_problem):
-    return not truth_problem.use_dual
+def _do_not_use_dual(truth_problem, **kwargs):
+    return not truth_problem.use_dual # TODO Do not attach it to truth problem, rather use kwargs
 
 @Extends(EllipticCoerciveRBReducedProblem) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReductionWithGreedyOnOutput, replaces=EllipticCoerciveRBNonCompliantReducedProblem, replaces_if=_do_not_use_dual)

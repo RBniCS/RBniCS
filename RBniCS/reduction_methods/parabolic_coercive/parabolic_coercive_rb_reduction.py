@@ -44,9 +44,9 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
     
     ## Default initialization of members
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
-        ParabolicCoerciveRBReduction_Base.__init__(self, truth_problem)
+        ParabolicCoerciveRBReduction_Base.__init__(self, truth_problem, **kwargs)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Choose among two versions of POD-Greedy

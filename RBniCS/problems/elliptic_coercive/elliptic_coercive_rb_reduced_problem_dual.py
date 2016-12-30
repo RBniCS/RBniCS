@@ -46,9 +46,9 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem):
     
     ## Default initialization of members.
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        EllipticCoerciveRBReducedProblem.__init__(self, truth_problem)
+        EllipticCoerciveRBReducedProblem.__init__(self, truth_problem, **kwargs)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Residual terms

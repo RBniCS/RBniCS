@@ -47,9 +47,9 @@ class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
     
     ## Default initialization of members.
     @override
-    def __init__(self, truth_problem):
+    def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        ParametrizedReducedDifferentialProblem.__init__(self, truth_problem)
+        ParametrizedReducedDifferentialProblem.__init__(self, truth_problem, **kwargs)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 

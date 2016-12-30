@@ -42,9 +42,9 @@ def ParabolicCoerciveReductionMethod(EllipticCoerciveReductionMethod_DerivedClas
         
         ## Default initialization of members
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            EllipticCoerciveReductionMethod_DerivedClass.__init__(self, truth_problem)
+            EllipticCoerciveReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
                 
         #  @}
         ########################### end - CONSTRUCTORS - end ###########################

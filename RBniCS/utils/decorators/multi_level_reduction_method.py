@@ -40,7 +40,7 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
         })
         
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Get the truth_problem recursion level: indeed a truth problem itself
             # can be a reduced problem! In the standard case (truth_problem is actually
             # a FE approximation) then this is the first reduction, so reduction level is 1
@@ -51,7 +51,7 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
                 self._reduction_level += 1
                 
             # Call the parent initialization
-            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Change the folder names in Parent
             self.folder_prefix = self.additional_folder_prefix[self._reduction_level] + self.folder_prefix

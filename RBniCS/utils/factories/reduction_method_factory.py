@@ -22,21 +22,20 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCED METHOD FACTORY CLASSES     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ReducedBasis
-#
+#~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCTION METHOD FACTORY CLASSES     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
 from RBniCS.utils.decorators import ReductionMethodFor, ReductionMethodDecoratorFor
 from RBniCS.utils.factories.factory_helper import FactoryGenerateTypes
 from RBniCS.utils.mpi import log, DEBUG
 
 # Factory to generate a reduction method corresponding to a category (e.g. RB or POD) and a given truth problem
-def ReductionMethodFactory(truth_problem, category):
+def ReductionMethodFactory(truth_problem, category, **kwargs):
 
     log(DEBUG,
         "In ReductionMethodFactory with\n" +
         "\ttruth problem = " + str(type(truth_problem)) + "\n" +
-        "\tcategory = " + str(category)
+        "\tcategory = " + str(category) + "\n" +
+        "\tkwargs = " + str(kwargs)
     )
     if hasattr(type(truth_problem), "ProblemDecorators"):
         log(DEBUG,
@@ -56,7 +55,7 @@ def ReductionMethodFactory(truth_problem, category):
         return (
             candidate_replaces_if is None # replace in any case
                 or
-            candidate_replaces_if(truth_problem)
+            candidate_replaces_if(truth_problem, **kwargs)
         )
     log(DEBUG, "Generate ReductionMethod type based on Problem type")
     TypesList.extend(
@@ -73,7 +72,7 @@ def ReductionMethodFactory(truth_problem, category):
             return (
                 candidate_replaces_if is None # replace in any case
                     or
-                candidate_replaces_if(truth_problem)
+                candidate_replaces_if(truth_problem, **kwargs)
             )
         log(DEBUG, "Append ReductionMethodDecorator types based on Algorithm type")
         TypesList.extend(
@@ -92,11 +91,11 @@ def ReductionMethodFactory(truth_problem, category):
     for t in range(1, len(TypesList)):
         ComposedType = TypesList[t](ComposedType)
         
-    return ComposedType(truth_problem)
+    return ComposedType(truth_problem, **kwargs)
     
-def ReducedBasis(truth_problem):
-    return ReductionMethodFactory(truth_problem, "ReducedBasis")
+def ReducedBasis(truth_problem, **kwargs):
+    return ReductionMethodFactory(truth_problem, "ReducedBasis", **kwargs)
 
-def PODGalerkin(truth_problem):
-    return ReductionMethodFactory(truth_problem, "PODGalerkin")
+def PODGalerkin(truth_problem, **kwargs):
+    return ReductionMethodFactory(truth_problem, "PODGalerkin", **kwargs)
     

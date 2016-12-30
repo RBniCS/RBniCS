@@ -31,9 +31,9 @@ def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReduction
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class ExactCoercivityConstantDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         @override
-        def __init__(self, truth_problem):
+        def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
         @override
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
