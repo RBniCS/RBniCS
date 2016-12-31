@@ -145,7 +145,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.set_mu(self.training_set[0])
             self._offline__mu_index = 0
         # Resize the interpolation matrix
-        self.EIM_approximation.interpolation_matrix[0] = OnlineMatrix(self.Nmax, self.Nmax)
         while self.EIM_approximation.N < self.Nmax:
             print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
             
