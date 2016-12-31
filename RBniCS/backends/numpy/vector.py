@@ -91,19 +91,26 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
     def _arithmetic_operations_preserve_attributes(self, other, output, other_is_vector=True):
         # Preserve N
         if other_is_vector:
-            assert self.N == other.N
+            if isinstance(self.N, int) and isinstance(other.N, dict):
+                assert len(other.N) == 1
+                assert other.N.values()[0] == self.N
+            elif isinstance(self.N, dict) and isinstance(other.N, int):
+                assert len(self.N) == 1
+                assert self.N.values()[0] == other.N
+            else:
+                assert self.N == other.N
         output.N = self.N
         # Preserve auxiliary attributes related to basis functions matrix
         assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
         assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")
         if hasattr(self, "_basis_component_index_to_component_name"):
             if other_is_vector:
-                assert hasattr(other, "_basis_component_index_to_component_name")
-                assert hasattr(other, "_component_name_to_basis_component_index")
-                assert hasattr(other, "_component_name_to_basis_component_length")
-                assert self._basis_component_index_to_component_name == other._basis_component_index_to_component_name
-                assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
-                assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
+                if hasattr(other, "_basis_component_index_to_component_name"):
+                    assert self._basis_component_index_to_component_name == other._basis_component_index_to_component_name
+                if hasattr(other, "_component_name_to_basis_component_index"):
+                    assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
+                if hasattr(other, "_component_name_to_basis_component_length"):
+                    assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
             output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
             output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
             output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
