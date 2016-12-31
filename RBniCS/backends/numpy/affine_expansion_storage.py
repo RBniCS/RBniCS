@@ -41,6 +41,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._content_as_matrix = None
         self._precomputed_slices = dict() # from tuple to AffineExpansionStorage
         self._recursive = False
+        self._largest_key = None
         # Carry out initialization
         assert (
             (isinstance(arg1, int) and isinstance(arg1, AbstractAffineExpansionStorage))
@@ -57,10 +58,12 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             if arg2 is None:
                 self._recursive = False
                 self._content = AffineExpansionStorageContent_Base((arg1, ), dtype=object)
+                self._largest_key = arg1 - 1
             else:
                 assert isinstance(arg2, int)
                 self._recursive = False
                 self._content = AffineExpansionStorageContent_Base((arg1, arg2), dtype=object)
+                self._largest_key = (arg1 - 1, arg2 - 1)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to AffineExpansionStorage")
         # Auxiliary storage for __getitem__ slicing
@@ -257,7 +260,8 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         # Reset internal copies
         self._content_as_matrix = None
         # Reset and prepare precomputed slices
-        self._prepare_trivial_precomputed_slice(item)
+        if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
+            self._prepare_trivial_precomputed_slice(item)
         
     @override
     def __iter__(self):
