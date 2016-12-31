@@ -81,6 +81,23 @@ def SameBackendFor(library, source_library, Class, online_backend=None, inputs=N
     # TODO check that inputs are the same for library and source_library
     pass
     
+def OverrideBackendFor(library, online_backend=None, inputs=None):
+    def OverrideBackendFor_Decorator(Class):
+        if online_backend is None:
+            assert Class.__name__ in BackendFor._all_classes[library]
+            del BackendFor._all_classes[library][Class.__name__]
+        else:
+            assert online_backend in BackendFor._all_classes[library][Class.__name__]
+            del BackendFor._all_classes[library][Class.__name__][online_backend]
+            
+        if library is not "Abstract":
+            for possible_inputs in combine_inputs(inputs):
+                assert possible_inputs in BackendFor._all_classes_inputs[Class.__name__]
+                del BackendFor._all_classes_inputs[Class.__name__][possible_inputs]
+            
+        return BackendFor(library, online_backend, inputs)(Class)
+    return OverrideBackendFor_Decorator
+    
 BackendFor._all_classes = dict() # from library to dict from class name to class
 BackendFor._all_classes_inputs = dict() # from inputs to library
     
@@ -105,6 +122,7 @@ def backend_for(library, online_backend=None, inputs=None, output=None):
         else:
             if function.__name__ not in backend_for._all_functions[library]:
                 backend_for._all_functions[library][function.__name__] = dict() # from online_backend to function
+            assert online_backend not in backend_for._all_functions[library][function.__name__]
             backend_for._all_functions[library][function.__name__][online_backend] = function
             
         if library is not "Abstract":
@@ -138,6 +156,23 @@ def backend_for(library, online_backend=None, inputs=None, output=None):
 def same_backend_for(library, source_library, Class, online_backend=None, inputs=None, output=None):
     # TODO check that inputs/output are the same for library and source_library
     pass
+    
+def override_backend_for(library, online_backend=None, inputs=None, output=None):
+    def override_backend_for_decorator(function):
+        if online_backend is None:
+            assert function.__name__ in backend_for._all_functions[library]
+            del backend_for._all_functions[library][function.__name__]
+        else:
+            assert online_backend in backend_for._all_functions[library][function.__name__]
+            del backend_for._all_functions[library][function.__name__][online_backend]
+            
+        if library is not "Abstract":
+            for possible_inputs in combine_inputs(inputs):
+                assert possible_inputs in backend_for._all_functions_inputs[function.__name__]
+                del backend_for._all_functions_inputs[function.__name__][possible_inputs]
+                
+        return backend_for(library, online_backend, inputs, output)(function)
+    return override_backend_for_decorator
 
 backend_for._all_functions = dict() # from library to dict from function name to function
 backend_for._all_functions_inputs = dict() # from inputs to library

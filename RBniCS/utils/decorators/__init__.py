@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractmethod, abstractonlinemethod, abstractproperty
-from RBniCS.utils.decorators.backend_for import array_of, BackendFor, backend_for, dict_of, DictOfThetaType, list_of, OnlineSizeType, SameBackendFor, same_backend_for, ThetaType, tuple_of
+from RBniCS.utils.decorators.backend_for import array_of, BackendFor, backend_for, dict_of, DictOfThetaType, list_of, OnlineSizeType, OverrideBackendFor, override_backend_for, SameBackendFor, same_backend_for, ThetaType, tuple_of
 from RBniCS.utils.decorators.dual_problem import DualProblem
 from RBniCS.utils.decorators.dual_reduced_problem import DualReducedProblem
 from RBniCS.utils.decorators.extends import Extends
@@ -69,6 +69,8 @@ __all__ = [
     'MultiLevelReductionMethod',
     'OnlineSizeType',
     'override',
+    'OverrideBackendFor',
+    'override_backend_for',
     'PrimalDualReducedProblem',
     'PrimalDualReductionMethod',
     'ProblemDecoratorFor',
