@@ -27,10 +27,10 @@ from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
-from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
+from RBniCS.utils.decorators import BackendFor, dict_of, Extends, list_of, override
 
 @Extends(AbstractLinearSolver)
-@BackendFor("fenics", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (list_of(DirichletBC), None)))
+@BackendFor("fenics", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (list_of(DirichletBC), dict_of(str, list_of(DirichletBC)), None)))
 class LinearSolver(AbstractLinearSolver):
     @override
     def __init__(self, lhs, solution, rhs, bcs=None):
@@ -42,14 +42,22 @@ class LinearSolver(AbstractLinearSolver):
             self.rhs = rhs.copy()
             self.bcs = bcs
             # Apply BCs
-            assert isinstance(self.bcs, list)
-            for bc in self.bcs:
-                assert isinstance(bc, DirichletBC)
-                bc.apply(self.lhs, self.rhs)
+            assert isinstance(self.bcs, (dict, list))
+            if isinstance(self.bcs, list):
+                for bc in self.bcs:
+                    assert isinstance(bc, DirichletBC)
+                    bc.apply(self.lhs, self.rhs)
+            elif isinstance(self.bcs, dict):
+                for key in self.bcs:
+                    for bc in self.bcs[key]:
+                        assert isinstance(bc, DirichletBC)
+                        bc.apply(self.lhs, self.rhs)
+            else:
+                raise AssertionError("Invalid type for bcs.")
         else:
             self.lhs = lhs
             self.rhs = rhs
-            self.bcs = bcs
+            self.bcs = None
             
     @override
     def set_parameters(self, parameters):

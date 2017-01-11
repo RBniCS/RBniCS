@@ -28,11 +28,11 @@ from ufl import Form
 from dolfin import as_backend_type, assemble, DirichletBC, GenericMatrix, GenericVector, NonlinearProblem, PETScSNESSolver
 from RBniCS.backends.abstract import NonlinearSolver as AbstractNonlinearSolver
 from RBniCS.backends.fenics.function import Function
-from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
+from RBniCS.utils.decorators import BackendFor, dict_of, Extends, list_of, override
 from RBniCS.utils.mpi import print
 
 @Extends(AbstractNonlinearSolver)
-@BackendFor("fenics", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (list_of(DirichletBC), None)))
+@BackendFor("fenics", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (list_of(DirichletBC), dict_of(str, list_of(DirichletBC)), None)))
 class NonlinearSolver(AbstractNonlinearSolver):
     @override
     def __init__(self, jacobian_eval, solution, residual_eval, bcs=None):
@@ -68,8 +68,16 @@ class _NonlinearProblem(NonlinearProblem):
         # Assemble the residual
         self.residual_vector_assemble(residual_vector, self.solution)
         # Apply boundary conditions
-        for bc in self.bcs:
-            bc.apply(residual_vector, self.solution.vector())
+        assert isinstance(self.bcs, (dict, list))
+        if isinstance(self.bcs, list):
+            for bc in self.bcs:
+                bc.apply(residual_vector, self.solution.vector())
+        elif isinstance(self.bcs, dict):
+            for key in self.bcs:
+                for bc in self.bcs[key]:
+                    bc.apply(residual_vector, self.solution.vector())
+        else:
+            raise AssertionError("Invalid type for bcs.")
             
     def residual_vector_assemble(self, residual_vector, solution):
         residual_form_or_vector = self.residual_eval(solution)
@@ -85,8 +93,17 @@ class _NonlinearProblem(NonlinearProblem):
         # Assemble the jacobian
         self.jacobian_matrix_assemble(jacobian_matrix, self.solution)
         # Apply boundary conditions
-        for bc in self.bcs:
-            bc.apply(jacobian_matrix)
+        # Apply boundary conditions
+        assert isinstance(self.bcs, (dict, list))
+        if isinstance(self.bcs, list):
+            for bc in self.bcs:
+                    bc.apply(jacobian_matrix)
+        elif isinstance(self.bcs, dict):
+            for key in self.bcs:
+                for bc in self.bcs[key]:
+                    bc.apply(jacobian_matrix)
+        else:
+            raise AssertionError("Invalid type for bcs.")
             
     def jacobian_matrix_assemble(self, jacobian_matrix, solution):
         jacobian_form_or_matrix = self.jacobian_eval(solution)

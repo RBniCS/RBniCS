@@ -72,10 +72,10 @@ class SaddlePointProblem(ParametrizedDifferentialProblem):
         assembled_operator = dict()
         for term in ("a", "b", "bt", "f", "g"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
-        assembled_dirichlet_bc = list()
+        assembled_dirichlet_bc = dict()
         for component in ("u", "p"):
             if self.dirichlet_bc[component] is not None:
-                assembled_dirichlet_bc.extend(sum(product(self.compute_theta("dirichlet_bc_" + component), self.dirichlet_bc[component])))
+                assembled_dirichlet_bc[component] = sum(product(self.compute_theta("dirichlet_bc_" + component), self.dirichlet_bc[component]))
         if len(assembled_dirichlet_bc) == 0:
             assembled_dirichlet_bc = None
         solver = LinearSolver(

@@ -233,8 +233,17 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         self.residual_vector = PETScVector(residual)
         self.residual_vector_assemble(t, self.solution, self.solution_dot)
         # 3. Apply boundary conditions
-        for bc in self.bc_eval(t):
-            bc.apply(self.residual_vector, self.solution.vector())
+        bcs = self.bc_eval(t)
+        assert isinstance(bcs, (dict, list))
+        if isinstance(bcs, list):
+            for bc in bcs:
+                bc.apply(self.residual_vector, self.solution.vector())
+        elif isinstance(bcs, dict):
+            for key in bcs:
+                for bc in bcs[key]:
+                    bc.apply(self.residual_vector, self.solution.vector())
+        else:
+            raise AssertionError("Invalid type for bcs.")
             
     def residual_vector_assemble(self, t, solution, solution_dot, overwrite=False):
         residual_form_or_vector = self.residual_eval(t, solution, solution_dot)
@@ -297,8 +306,17 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         self.jacobian_matrix = PETScMatrix(jacobian)
         self.jacobian_matrix_assemble(t, self.solution, self.solution_dot, solution_dot_coefficient)
         # 3. Apply boundary conditions
-        for bc in self.bc_eval(t):
-            bc.apply(self.jacobian_matrix)
+        bcs = self.bc_eval(t)
+        assert isinstance(bcs, (dict, list))
+        if isinstance(bcs, list):
+            for bc in bcs:
+                bc.apply(self.jacobian_matrix)
+        elif isinstance(bcs, dict):
+            for key in bcs:
+                for bc in bcs[key]:
+                    bc.apply(self.jacobian_matrix)
+        else:
+            raise AssertionError("Invalid type for bcs.")
             
     def jacobian_matrix_assemble(self, t, solution, solution_dot, solution_dot_coefficient, overwrite=False):
         jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_coefficient)
@@ -365,8 +383,17 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         self.residual_vector = PETScVector(residual)
         self.residual_vector_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot)
         # 3. Apply boundary conditions
-        for bc in self.bc_eval(t):
-            bc.apply(self.residual_vector, self.solution.vector())
+        bcs = self.bc_eval(t)
+        assert isinstance(bcs, (dict, list))
+        if isinstance(bcs, list):
+            for bc in bcs:
+                bc.apply(self.residual_vector, self.solution.vector())
+        elif isinstance(bcs, dict):
+            for key in bcs:
+                for bc in bcs[key]:
+                    bc.apply(self.residual_vector, self.solution.vector())
+        else:
+            raise AssertionError("Invalid type for bcs.")
             
     def residual_vector_assemble(self, t, solution, solution_dot, solution_dot_dot, overwrite=False):
         residual_form_or_vector = self.residual_eval(t, solution, solution_dot, solution_dot_dot)
@@ -425,8 +452,17 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         self.jacobian_matrix = PETScMatrix(jacobian)
         self.jacobian_matrix_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)
         # 3. Apply boundary conditions
-        for bc in self.bc_eval(t):
-            bc.apply(self.jacobian_matrix)
+        bcs = self.bc_eval(t)
+        assert isinstance(bcs, (dict, list))
+        if isinstance(bcs, list):
+            for bc in bcs:
+                bc.apply(self.jacobian_matrix)
+        elif isinstance(bcs, dict):
+            for key in bcs:
+                for bc in bcs[key]:
+                    bc.apply(self.jacobian_matrix)
+        else:
+            raise AssertionError("Invalid type for bcs.")
             
     def jacobian_matrix_assemble(self, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient, overwrite=False):
         jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)
