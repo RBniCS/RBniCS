@@ -28,8 +28,10 @@ __license__ = "LGPL"
 __version__ = "0.0.1"
 __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
 
+# Set empty __all__ variable to be possibly extended by backends
+__all__ = []
+
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.backends.fenics.wrapping_utils import DirichletBC, FunctionSpace, ParametrizedExpression, plot
 from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.problems.parabolic_coercive import ParabolicCoerciveProblem
@@ -40,12 +42,7 @@ from RBniCS.shape_parametrization import ShapeParametrization
 from RBniCS.utils.decorators import ExactProblem
 from RBniCS.utils.factories import ReducedBasis, PODGalerkin
 
-__all__ = [
-    # RBniCS.backends
-    'DirichletBC',
-    'FunctionSpace',
-    'ParametrizedExpression',
-    'plot',
+__all__ += [
     # RBniCS.eim
     'DEIM',
     'EIM',

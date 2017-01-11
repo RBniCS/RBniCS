@@ -49,3 +49,10 @@ __all__ = [
     'plot',
     'submesh_dofs_to_mesh_dofs'
 ]
+
+__overridden__ = [
+    'DirichletBC',
+    'FunctionSpace',
+    'ParametrizedExpression',
+    'plot'
+]
