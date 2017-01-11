@@ -230,8 +230,20 @@ def logging_all_classes_functions_inputs(storage):
     
 # Helper functions to be more precise when input types are tuple or list
 class _tuple_or_list_or_array_of(object):
-    def __init__(self, types):
-        self.types = types
+    def __init__(self, types, ChildClass):
+        if not ChildClass is None and isinstance(types, tuple) and all([isinstance(t, ChildClass) for t in types]):
+            all_types = set()
+            for t in types:
+                if isinstance(t.types, tuple):
+                    for tt in t.types:
+                        assert inspect.isclass(tt)
+                    all_types.update(t.types)
+                else:
+                    assert inspect.isclass(t.types)
+                    all_types.add(t.types)
+            self.types = tuple(all_types)
+        else:
+            self.types = types
         
     def are_subclass(self, other):
         def is_subclass(item_self, item_other):
@@ -258,25 +270,34 @@ class _tuple_or_list_or_array_of(object):
             assert not isinstance(self.types, list), "Please use tuples instead"
             return is_subclass(self.types, other.types)
 
-class _tuple_of(_tuple_or_list_or_array_of):        
+class _tuple_of(_tuple_or_list_or_array_of):
+    def __init__(self, types):
+        _tuple_or_list_or_array_of.__init__(self, types, _tuple_of)
+        
     def __str__(self):
         return "tuple_of(" + str(self.types) + ")"
     __repr__ = __str__
     
 class _list_of(_tuple_or_list_or_array_of):
+    def __init__(self, types):
+        _tuple_or_list_or_array_of.__init__(self, types, _list_of)
+        
     def __str__(self):
         return "list_of(" + str(self.types) + ")"
     __repr__ = __str__
     
 class _array_of(_tuple_or_list_or_array_of):
+    def __init__(self, types):
+        _tuple_or_list_or_array_of.__init__(self, types, _array_of)
+        
     def __str__(self):
         return "array_of(" + str(self.types) + ")"
     __repr__ = __str__
     
 class _dict_of(object):
     def __init__(self, types_from, types_to):
-        self.types_from = _tuple_or_list_or_array_of(types_from)
-        self.types_to = _tuple_or_list_or_array_of(types_to)
+        self.types_from = _tuple_or_list_or_array_of(types_from, None)
+        self.types_to = _tuple_or_list_or_array_of(types_to, None)
         
     def are_subclass(self, other):
         return self.types_from.are_subclass(other.types_from) and self.types_to.are_subclass(other.types_to)
