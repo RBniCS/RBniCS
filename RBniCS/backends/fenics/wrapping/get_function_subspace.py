@@ -22,11 +22,19 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-def get_function_subspace(function_space, component):
-    assert isinstance(component, (int, str, tuple))
-    assert not isinstance(component, list), "FEniCS does not handle yet the case of a list of components"
-    if isinstance(component, tuple):
-        return function_space.extract_sub_space(component).collapse()
+from dolfin import Function, FunctionSpace
+
+def get_function_subspace(function_space__or__function, component):
+    if isinstance(function_space__or__function, Function):
+        function = function_space__or__function
+        return get_function_subspace(function.function_space(), component)
     else:
-        return function_space.sub(component).collapse()
+        assert isinstance(function_space__or__function, FunctionSpace)
+        function_space = function_space__or__function
+        assert isinstance(component, (int, str, tuple))
+        assert not isinstance(component, list), "FEniCS does not handle yet the case of a list of components"
+        if isinstance(component, tuple):
+            return function_space.extract_sub_space(component).collapse()
+        else:
+            return function_space.sub(component).collapse()
 
