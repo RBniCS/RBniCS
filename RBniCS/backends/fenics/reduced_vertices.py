@@ -23,7 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import ndarray as array
-from dolfin import Cell, CellFunction, File, FunctionSpace, has_hdf5, HDF5File, Mesh, Point
+from dolfin import Cell, CellFunction, File, FunctionSpace, has_hdf5, Mesh, Point
+if has_hdf5():
+    from dolfin import HDF5File
 from RBniCS.backends.abstract import ReducedVertices as AbstractReducedVertices
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.io import ExportableList, Folders
