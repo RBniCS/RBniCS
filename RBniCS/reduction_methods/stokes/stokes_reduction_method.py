@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.reduction_methods.base import DifferentialProblemReductionMethod
-from RBniCS.problems.saddle_point.saddle_point_problem import SaddlePointProblem
+from RBniCS.problems.stokes.stokes_problem import StokesProblem
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -32,9 +32,9 @@ from RBniCS.utils.decorators import Extends, override, ReductionMethodFor, Multi
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
 @Extends(DifferentialProblemReductionMethod) # needs to be first in order to override for last the methods.
-@ReductionMethodFor(SaddlePointProblem, "Abstract")
+@ReductionMethodFor(StokesProblem, "Abstract")
 @MultiLevelReductionMethod
-class SaddlePointReductionMethod(DifferentialProblemReductionMethod):
+class StokesReductionMethod(DifferentialProblemReductionMethod):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object

@@ -31,7 +31,7 @@ from RBniCS.utils.decorators import Extends, override
 #
 # Base class containing the definition of saddle point problems
 @Extends(ParametrizedDifferentialProblem)
-class SaddlePointProblem(ParametrizedDifferentialProblem):
+class StokesProblem(ParametrizedDifferentialProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the elliptic problem

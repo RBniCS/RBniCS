@@ -16,21 +16,18 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 ## @file __init__.py
-#  @brief Init file for auxiliary problems module
+#  @brief Init file for auxiliary reduction methods module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.saddle_point.saddle_point_pod_galerkin_reduced_problem import SaddlePointPODGalerkinReducedProblem
-from RBniCS.problems.saddle_point.saddle_point_problem import SaddlePointProblem
-#from RBniCS.problems.saddle_point.saddle_point_rb_reduced_problem import SaddlePointRBReducedProblem
-from RBniCS.problems.saddle_point.saddle_point_reduced_problem import SaddlePointReducedProblem
-
+from RBniCS.reduction_methods.stokes.stokes_pod_galerkin_reduction import StokesPODGalerkinReduction
+#from RBniCS.reduction_methods.stokes.stokes_rb_reduction import StokesRBReduction
+from RBniCS.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
 
 __all__ = [
-    'SaddlePointPODGalerkinReducedProblem',
-    'SaddlePointProblem',
-#    'SaddlePointRBReducedProblem',
-    'SaddlePointReducedProblem'
+    'StokesPODGalerkinReduction',
+#    'StokesRBReduction',
+    'StokesReductionMethod'
 ]

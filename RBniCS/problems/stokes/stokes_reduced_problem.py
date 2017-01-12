@@ -25,11 +25,11 @@
 from math import sqrt
 from numpy import isclose
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
-from RBniCS.problems.saddle_point.saddle_point_problem import SaddlePointProblem
+from RBniCS.problems.stokes.stokes_problem import StokesProblem
 from RBniCS.backends import LinearSolver, product, sum, transpose
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
-from RBniCS.reduction_methods.saddle_point import SaddlePointReductionMethod
+from RBniCS.reduction_methods.stokes import StokesReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
@@ -37,9 +37,9 @@ from RBniCS.reduction_methods.saddle_point import SaddlePointReductionMethod
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
 @Extends(ParametrizedReducedDifferentialProblem) # needs to be first in order to override for last the methods.
-@ReducedProblemFor(SaddlePointProblem, SaddlePointReductionMethod)
+@ReducedProblemFor(StokesProblem, StokesReductionMethod)
 @MultiLevelReducedProblem
-class SaddlePointReducedProblem(ParametrizedReducedDifferentialProblem):
+class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object

@@ -34,7 +34,7 @@ from sampling import LinearlyDependentUniformDistribution
     ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 3
     ("mu[1]*x[0]", "mu[2]*x[1]"), # subdomain 4
 )
-class Stokes(SaddlePointProblem):
+class Stokes(StokesProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -43,7 +43,7 @@ class Stokes(SaddlePointProblem):
     ## Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
-        SaddlePointProblem.__init__(self, V, **kwargs)
+        StokesProblem.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
         assert "subdomains" in kwargs
         assert "boundaries" in kwargs

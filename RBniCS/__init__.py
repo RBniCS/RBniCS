@@ -35,7 +35,7 @@ __all__ = []
 from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.problems.parabolic_coercive import ParabolicCoerciveProblem
-from RBniCS.problems.saddle_point import SaddlePointProblem
+from RBniCS.problems.stokes import StokesProblem
 from RBniCS.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
 from RBniCS.scm import SCM, ExactCoercivityConstant
 from RBniCS.shape_parametrization import ShapeParametrization
@@ -50,7 +50,7 @@ __all__ += [
     # RBniCS.problems
     'EllipticCoerciveProblem',
     'ParabolicCoerciveProblem',
-    'SaddlePointProblem',
+    'StokesProblem',
     # RBniCS.sampling
     'DrawFrom',
     'EquispacedDistribution',

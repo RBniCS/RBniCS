@@ -22,18 +22,18 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.saddle_point.saddle_point_reduced_problem import SaddlePointReducedProblem
+from RBniCS.problems.stokes.stokes_reduced_problem import StokesReducedProblem
 from RBniCS.utils.decorators import Extends, ReducedProblemFor
-from RBniCS.problems.saddle_point.saddle_point_problem import SaddlePointProblem
-from RBniCS.reduction_methods.saddle_point import SaddlePointPODGalerkinReduction
+from RBniCS.problems.stokes.stokes_problem import StokesProblem
+from RBniCS.reduction_methods.stokes import StokesPODGalerkinReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class SaddlePointReducedOrderModelBase
+## @class StokesReducedOrderModelBase
 #
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(SaddlePointReducedProblem) # needs to be first in order to override for last the methods
-@ReducedProblemFor(SaddlePointProblem, SaddlePointPODGalerkinReduction)
-class SaddlePointPODGalerkinReducedProblem(SaddlePointReducedProblem):
+@Extends(StokesReducedProblem) # needs to be first in order to override for last the methods
+@ReducedProblemFor(StokesProblem, StokesPODGalerkinReduction)
+class StokesPODGalerkinReducedProblem(StokesReducedProblem):
     pass
         

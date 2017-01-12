@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file saddle_point_pod_galerkin_reduction.py
+## @file stokes_pod_galerkin_reduction.py
 #  @brief Implementation of a POD-Galerkin ROM for elliptic coervice problems
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
@@ -27,17 +27,17 @@ from RBniCS.backends import ProperOrthogonalDecomposition
 from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
 from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.problems.saddle_point.saddle_point_problem import SaddlePointProblem
-from RBniCS.reduction_methods.saddle_point.saddle_point_reduction_method import SaddlePointReductionMethod
+from RBniCS.problems.stokes.stokes_problem import StokesProblem
+from RBniCS.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class SaddlePointPODGalerkinReduction
+## @class StokesPODGalerkinReduction
 #
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
-@Extends(SaddlePointReductionMethod) # needs to be first in order to override for last the methods
-@ReductionMethodFor(SaddlePointProblem, "PODGalerkin")
-class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):    
+@Extends(StokesReductionMethod) # needs to be first in order to override for last the methods
+@ReductionMethodFor(StokesProblem, "PODGalerkin")
+class StokesPODGalerkinReduction(StokesReductionMethod):    
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
     #  @{
@@ -46,7 +46,7 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
-        SaddlePointReductionMethod.__init__(self, truth_problem, **kwargs)
+        StokesReductionMethod.__init__(self, truth_problem, **kwargs)
                 
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Declare a POD object
@@ -66,7 +66,7 @@ class SaddlePointPODGalerkinReduction(SaddlePointReductionMethod):
     @override
     def _init_offline(self):
         # Call parent to initialize inner product and reduced problem
-        output = SaddlePointReductionMethod._init_offline(self)
+        output = StokesReductionMethod._init_offline(self)
         
         # Declare a new POD for each basis component
         assert len(self.truth_problem.inner_product) == 3 # saddle point problems have two components and one supremizer
