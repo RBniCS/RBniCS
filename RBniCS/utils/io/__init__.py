@@ -40,7 +40,6 @@ __all__ = [
     'GreedyErrorEstimatorsList',
     'GreedySelectedParametersList',
     'NumpyIO',
-    'ParametrizedExpression',
     'PickleIO',
     'SpeedupAnalysisTable',
     'TextIO'

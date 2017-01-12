@@ -34,7 +34,7 @@ class MeshMotion(AbstractMeshMotion):
     @override
     def __init__(self, V, subdomains, shape_parametrization_expression):
         # Store FEniCS data structure related to the geometrical parametrization
-        self.mesh = V.mesh()
+        self.mesh = subdomains.mesh()
         self.subdomains = subdomains
         self.reference_coordinates = self.mesh.coordinates().copy()
         self.deformation_V = VectorFunctionSpace(self.mesh, "Lagrange", 1)
@@ -81,7 +81,8 @@ class MeshMotion(AbstractMeshMotion):
                     problem,
                     tuple(shape_parametrization_expression_on_subdomain),
                     mu=problem.mu,
-                    element=self.deformation_V.ufl_element()
+                    element=self.deformation_V.ufl_element(),
+                    domain=self.mesh
                 )
             )
         
