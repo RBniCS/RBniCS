@@ -244,8 +244,7 @@ reduced_stokes_problem = pod_galerkin_method.offline()
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution("Stokes", "online_solution_u", component="u")
-reduced_stokes_problem.export_solution("Stokes", "online_solution_p", component="p")
+reduced_stokes_problem.export_solution("Stokes", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())

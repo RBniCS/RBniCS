@@ -72,7 +72,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
             for (k, solution) in enumerate(solution_over_time):
-                export(solution, folder, filename, suffix=k, component=component)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component)
                 
         ## Initialize data structures required for the offline phase
         @override

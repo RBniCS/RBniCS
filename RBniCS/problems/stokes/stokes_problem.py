@@ -114,3 +114,17 @@ class StokesProblem(ParametrizedDifferentialProblem):
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
     
+    ###########################     I/O     ########################### 
+    ## @defgroup IO Input/output methods
+    #  @{
+        
+    ## Export solution to file
+    @override
+    def export_solution(self, folder, filename, solution=None, component=None):
+        if component is None:
+            component = ["u", "p"] # but not "s"
+        ParametrizedDifferentialProblem.export_solution(self, folder, filename, solution=solution, component=component)
+            
+    #  @}
+    ########################### end - I/O - end ########################### 
+    
