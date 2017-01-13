@@ -91,12 +91,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
         solver.solve()
         return self._solution
         
-    # Perform an online evaluation of the output
-    @override
-    def output(self):
-        self._output = 1. # TODO
-        return self._output
-        
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
     

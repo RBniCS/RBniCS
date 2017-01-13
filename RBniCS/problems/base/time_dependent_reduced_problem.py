@@ -225,6 +225,13 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 N = solution.N
                 solution_over_time_as_truth_function.append(self.Z[:N]*solution)
             self.truth_problem.export_solution(folder, filename, solution_over_time_as_truth_function, component)
+            
+        # Perform an online evaluation of the output
+        @override
+        def output(self):
+            self._output_over_time = [NotImplemented]*len(self._solution_over_time)
+            self._output = NotImplemented
+            return self._output
         
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class

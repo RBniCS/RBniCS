@@ -228,9 +228,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         raise NotImplementedError("The method solve() is problem-specific and needs to be overridden.")
     
     # Perform an online evaluation of the output
-    @abstractmethod
     def output(self):
-        raise NotImplementedError("The method output() is problem-specific and needs to be overridden.")
+        self._output = NotImplemented
+        return self._output
         
     def _online_size_from_kwargs(self, N, **kwargs):
         class OnlineSizeDict(dict):

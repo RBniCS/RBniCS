@@ -104,12 +104,6 @@ class StokesProblem(ParametrizedDifferentialProblem):
         )
         solver.solve()
         return self._supremizer
-        
-    ## Perform a truth evaluation of the output
-    @override
-    def output(self):
-        self._output = 1. # TODO
-        return self._output
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

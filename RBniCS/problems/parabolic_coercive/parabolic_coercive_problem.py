@@ -98,11 +98,6 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
         assign(self._solution, self._solution_over_time[-1])
         assign(self._solution_dot, self._solution_dot_over_time[-1])
         return self._solution_over_time
-        
-    ## Perform a truth evaluation of the (compliant) output
-    @override
-    def output(self):
-        return 1. # TODO fill in self._output_over_time and self._output
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

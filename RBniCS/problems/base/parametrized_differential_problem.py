@@ -154,9 +154,9 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         raise NotImplementedError("The method solve() is problem-specific and needs to be overridden.")
         
     ## Perform a truth evaluation of the (compliant) output
-    @abstractmethod
     def output(self):
-        raise NotImplementedError("The method output() is problem-specific and needs to be overridden.")
+        self._output = NotImplemented
+        return self._output
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

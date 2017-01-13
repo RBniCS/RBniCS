@@ -112,6 +112,13 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     self.initial_condition = initial_condition
                     self.initial_condition_is_homogeneous = initial_condition_is_homogeneous
                 
+        ## Perform a truth evaluation of the output
+        @override
+        def output(self):
+            self._output_over_time = [NotImplemented]*len(self._solution_over_time)
+            self._output = NotImplemented
+            return self._output
+            
     # return value (a class) for the decorator
     return TimeDependentProblem_Class
     
