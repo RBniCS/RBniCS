@@ -23,9 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.reduction_methods.base.differential_problem_reduction_method import DifferentialProblemReductionMethod
+from RBniCS.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
+from RBniCS.reduction_methods.base.rb_reduction import RBReduction
 from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
 
 __all__ = [
     'DifferentialProblemReductionMethod',
+    'PODGalerkinReduction',
+    'RBReduction',
     'ReductionMethod'
 ]

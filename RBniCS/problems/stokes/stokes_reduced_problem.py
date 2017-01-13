@@ -108,16 +108,20 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
     @override
     def _compute_error(self):
         components = ["u", "p"] # but not "s"
-        assert "components" not in kwargs
-        kwargs["components"] = components
+        if "components" not in kwargs:
+            kwargs["components"] = components
+        else:
+            assert kwargs["components"] == components
         return ParametrizedReducedDifferentialProblem._compute_error(self, **kwargs)
         
     # Internal method for relative error computation
     @override
     def _compute_relative_error(self, absolute_error, **kwargs):
         components = ["u", "p"] # but not "s"
-        assert "components" not in kwargs
-        kwargs["components"] = components
+        if "components" not in kwargs:
+            kwargs["components"] = components
+        else:
+            assert kwargs["components"] == components
         return ParametrizedReducedDifferentialProblem._compute_relative_error(self, absolute_error, **kwargs)
         
     #  @}
