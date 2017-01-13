@@ -22,8 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from math import sqrt
-from numpy import isclose
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.backends import LinearSolver, product, sum, transpose
@@ -96,33 +94,23 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
     ## @defgroup ErrorAnalysis Error analysis
     #  @{
     
-    # Compute the error of the reduced order approximation with respect to the full order one
-    # for the current value of mu
-    @override
-    def compute_error(self, N=None, **kwargs):
-        if self._compute_error__previous_mu != self.mu:
-            self.truth_problem.solve(**kwargs)
-            self.truth_problem.output()
-            # Do not carry out truth solves anymore for the same parameter
-            self._compute_error__previous_mu = self.mu
-        # Compute the error on the solution and output
-        self.solve(N, **kwargs)
-        self.output()
-        return self._compute_error()
-        
     # Internal method for error computation
-    def _compute_error(self):
-        N = self._solution.N
-        # Compute the error on the solution
-        reduced_solution = self.Z[:N]*self._solution
-        truth_solution = self.truth_problem._solution
-        error = truth_solution - reduced_solution
-        assembled_error_inner_product_operator = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm (skew part will discarded by the scalar product)
-        error_norm_squared = transpose(error)*assembled_error_inner_product_operator*error # norm SQUARED of the error
-        # Compute the error on the output
-        error_output = abs(self.truth_problem._output - self._output)
-        assert error_norm_squared >= 0. or isclose(error_norm_squared, 0.)
-        return (sqrt(abs(error_norm_squared)), error_output)
+    @override
+    def _compute_error(self, **kwargs):
+        inner_product = dict()
+        inner_product["u"] = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
+        assert "inner_product" not in kwargs
+        kwargs["inner_product"] = inner_product
+        return ParametrizedReducedDifferentialProblem._compute_error(self, **kwargs)
+        
+    # Internal method for relative error computation
+    @override
+    def _compute_relative_error(self, absolute_error, **kwargs):
+        inner_product = dict()
+        inner_product["u"] = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
+        assert "inner_product" not in kwargs
+        kwargs["inner_product"] = inner_product
+        return ParametrizedReducedDifferentialProblem._compute_relative_error(self, absolute_error, **kwargs)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ###########################

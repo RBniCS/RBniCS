@@ -22,8 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from math import sqrt
-from numpy import isclose
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.stokes.stokes_problem import StokesProblem
 from RBniCS.backends import LinearSolver, product, sum, transpose
@@ -106,42 +104,21 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
     ## @defgroup ErrorAnalysis Error analysis
     #  @{
     
-    # Compute the error of the reduced order approximation with respect to the full order one
-    # for the current value of mu
-    @override
-    def compute_error(self, N=None, **kwargs):
-        if self._compute_error__previous_mu != self.mu:
-            self.truth_problem.solve(**kwargs)
-            self.truth_problem.output()
-            # Do not carry out truth solves anymore for the same parameter
-            self._compute_error__previous_mu = self.mu
-        # Compute the error on the solution and output
-        self.solve(N, **kwargs)
-        self.output()
-        return self._compute_error()
-        
     # Internal method for error computation
+    @override
     def _compute_error(self):
-        N = self._solution.N
-        # Compute the error on the solution
-        reduced_solution = self.Z[:N]*self._solution
-        truth_solution = self.truth_problem._solution
-        error = truth_solution - reduced_solution
-        velocity_inner_product = self.truth_problem.inner_product["u"][0]
-        velocity_exact_norm_squared = transpose(truth_solution)*velocity_inner_product*truth_solution
-        velocity_error_norm_squared = transpose(error)*velocity_inner_product*error
-        pressure_inner_product = self.truth_problem.inner_product["p"][0]
-        pressure_exact_norm_squared = transpose(truth_solution)*pressure_inner_product*truth_solution
-        pressure_error_norm_squared = transpose(error)*pressure_inner_product*error
-        # Compute the error on the output
-        reduced_output = self._output
-        truth_output = self.truth_problem._output
-        error_output = abs(truth_output - reduced_output)
-        assert velocity_error_norm_squared >= 0. or isclose(velocity_error_norm_squared, 0.)
-        assert velocity_exact_norm_squared >= 0. or isclose(velocity_exact_norm_squared, 0.)
-        assert pressure_error_norm_squared >= 0. or isclose(pressure_error_norm_squared, 0.)
-        assert pressure_exact_norm_squared >= 0. or isclose(pressure_exact_norm_squared, 0.)
-        return (sqrt(velocity_error_norm_squared), sqrt(velocity_error_norm_squared/velocity_exact_norm_squared), sqrt(pressure_error_norm_squared), sqrt(pressure_error_norm_squared/pressure_exact_norm_squared), error_output, error_output/truth_output)
+        components = ["u", "p"] # but not "s"
+        assert "components" not in kwargs
+        kwargs["components"] = components
+        return ParametrizedReducedDifferentialProblem._compute_error(self, **kwargs)
+        
+    # Internal method for relative error computation
+    @override
+    def _compute_relative_error(self, absolute_error, **kwargs):
+        components = ["u", "p"] # but not "s"
+        assert "components" not in kwargs
+        kwargs["components"] = components
+        return ParametrizedReducedDifferentialProblem._compute_relative_error(self, absolute_error, **kwargs)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ###########################

@@ -165,23 +165,52 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         #  @{
             
         # Internal method for error computation
-        def _compute_error(self):
-            errors_over_time = list() # (over compute_error tuple output index) of list (over time) of real numbers
+        @override
+        def _compute_error(self, **kwargs):
+            error_over_time = list()
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
                 self.t = k*self.dt
                 assign(self._solution, reduced_solution)
                 self.truth_problem.t = k*self.dt
                 assign(self.truth_problem._solution, truth_solution)
-                errors = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self)
-                if len(errors_over_time) == 0:
-                    errors_over_time = [list() for _ in range(len(errors))]
-                for (tuple_index, error) in enumerate(errors):
-                    errors_over_time[tuple_index].append(error**2)
-            time_quadrature = TimeQuadrature((0., self.T), self.dt)
-            integrated_errors_over_time = list() # of real numbers
-            for (tuple_index, error_over_time) in enumerate(errors_over_time):
-                integrated_errors_over_time.append( sqrt(time_quadrature.integrate(error_over_time)) )
-            return integrated_errors_over_time
+                error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self, **kwargs)
+                error_over_time.append(error)
+            return error_over_time
+            
+        # Internal method for relative error computation
+        @override
+        def _compute_relative_error(self, absolute_error_over_time, **kwargs):
+            relative_error_over_time = list()
+            for (k, (truth_solution, absolute_error)) in enumerate(zip(self.truth_problem._solution_over_time, absolute_error_over_time)):
+                self.truth_problem.t = k*self.dt
+                assign(self.truth_problem._solution, truth_solution)
+                relative_error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error(self, absolute_error, **kwargs)
+                relative_error_over_time.append(relative_error)
+            return relative_error_over_time
+            
+        # Internal method for output error computation
+        @override
+        def _compute_error_output(self, **kwargs):
+            error_output_over_time = list()
+            for (k, (truth_output, reduced_output)) in enumerate(zip(self.truth_problem._output_over_time, self._output_over_time)):
+                self.t = k*self.dt
+                self._output = reduced_output
+                self.truth_problem.t = k*self.dt
+                self.truth_problem._output = truth_output
+                error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error_output(self, **kwargs)
+                error_output_over_time.append(error_output)
+            return error_output_over_time
+            
+        # Internal method for output relative error computation
+        @override
+        def _compute_relative_error_output(self, absolute_error_output_over_time, **kwargs):
+            relative_error_output_over_time = list()
+            for (k, (truth_output, absolute_error)) in enumerate(zip(self.truth_problem._output_over_time, absolute_error_output_over_time)):
+                self.truth_problem.t = k*self.dt
+                self.truth_problem._output = truth_output
+                relative_error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error_output(self, absolute_error_output, **kwargs)
+                relative_error_output_over_time.append(relative_error_output)
+            return relative_error_output_over_time
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ###########################

@@ -25,6 +25,8 @@
 from __future__ import print_function
 from abc import ABCMeta, abstractmethod
 import types
+from math import sqrt
+from numpy import isclose
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.backends import BasisFunctionsMatrix, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
@@ -74,6 +76,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         self._solution = OnlineFunction()
         self._output = 0
         self._compute_error__previous_mu = None
+        self._compute_error_output__previous_mu = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -347,9 +350,127 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
-    @abstractmethod
     def compute_error(self, N=None, **kwargs):
-        raise NotImplementedError("The method compute_error() is problem-specific and needs to be overridden.")
+        if self._compute_error__previous_mu != self.mu:
+            self.truth_problem.solve(**kwargs)
+            self.truth_problem.output()
+            # Do not carry out truth solves anymore for the same parameter
+            self._compute_error__previous_mu = self.mu
+        # Compute the error on the solution
+        self.solve(N, **kwargs)
+        return self._compute_error(**kwargs)
+        
+    # Internal method for error computation
+    def _compute_error(self, **kwargs):
+        (components, inner_product) = self._preprocess_compute_error_and_relative_error_kwargs(**kwargs)
+        # Storage
+        error = dict()
+        # Compute the error on the solution
+        if len(components) > 0:
+            N = self._solution.N
+            reduced_solution = self.Z[:N]*self._solution
+            truth_solution = self.truth_problem._solution
+            error = truth_solution - reduced_solution
+            for component in components:
+                error_norm_squared_component = transpose(error)*inner_product[component]*error
+                assert error_norm_squared_component >= 0. or isclose(error_norm_squared_component, 0.)
+                error[component] = sqrt(error_norm_squared_component)
+        # Simplify trivial case
+        if len(components) == 1:
+            error = error[components[0]]
+        #
+        return error
+        
+    # Compute the relative error of the reduced order approximation with respect to the full order one
+    # for the current value of mu
+    def compute_relative_error(self, N=None, **kwargs):
+        absolute_error = self.compute_error(N, **kwargs)
+        return self._compute_relative_error(absolute_error, **kwargs)
+        
+    # Internal method for relative error computation
+    def _compute_relative_error(self, absolute_error, **kwargs):
+        (components, inner_product) = self._preprocess_compute_error_and_relative_error_kwargs(**kwargs)
+        # Handle trivial case from compute_error
+        if len(components) == 1:
+            absolute_error_ = dict()
+            absolute_error_[components[0]] = absolute_error
+            absolute_error = absolute_error_
+        # Storage
+        relative_error = dict()
+        # Compute the relative error on the solution
+        if len(components) > 0:
+            truth_solution = self.truth_problem._solution
+            for component in components:
+                exact_norm_squared_component = transpose(truth_solution)*inner_product[component]*truth_solution
+                assert exact_norm_squared_component >= 0. or isclose(exact_norm_squared_component, 0.)
+                relative_error[component] = absolute_error[component]/sqrt(exact_norm_squared_component)
+        # Simplify trivial case
+        if len(components) == 1:
+            relative_error = relative_error[components[0]]
+        #
+        return relative_error
+                
+    def _preprocess_compute_error_and_relative_error_kwargs(self, **kwargs):
+        # Set default components, if needed
+        if "components" not in kwargs:
+            kwargs["components"] = self.components
+        # Set inner product for components, if needed
+        if "inner_product" not in kwargs:
+            inner_product = dict()
+            for component in components:
+                assert len(self.truth_problem.inner_product[component]) == 1
+                inner_product[component] = self.truth_problem.inner_product[component][0]
+            kwargs["inner_product"] = inner_product
+        else:
+            assert isinstance(kwargs["inner_product"], dict)
+            assert set(kwargs["inner_product"].keys()) == set(kwargs["components"])
+        #
+        return (kwargs["components"], kwargs["inner_product"])
+                
+    # Compute the error of the reduced order output with respect to the full order one
+    # for the current value of mu
+    def compute_error_output(self, N=None, **kwargs):
+        if self._compute_error__previous_mu != self.mu:
+            self.truth_problem.solve(**kwargs)
+            # Do not carry out truth solves anymore for the same parameter
+            self._compute_error__previous_mu = self.mu
+        if self._compute_error_output__previous_mu != self.mu:
+            self.truth_problem.output()
+            # Do not carry out truth solves anymore for the same parameter
+            self._compute_error_output__previous_mu = self.mu
+        # Compute the error on the output
+        self.solve(N, **kwargs)
+        self.output()
+        return self._compute_error_output(**kwargs)
+                
+    # Internal method for output error computation
+    def _compute_error_output(self, **kwargs):
+        # Skip if no output defined
+        if self._output is NotImplemented:
+            assert self.truth_problem._output is NotImplemented
+            return NotImplemented
+        else: # Compute the error on the output
+            reduced_output = self._output
+            truth_output = self.truth_problem._output
+            error_output = abs(truth_output - reduced_output)
+            return error_output
+        
+    # Compute the relative error of the reduced order approximation with respect to the full order one
+    # for the current value of mu
+    def compute_relative_error_output(self, N=None, **kwargs):
+        absolute_error_output = self.compute_error_output(N, **kwargs)
+        return self._compute_relative_error_output(absolute_error_output, **kwargs)
+        
+    # Internal method for output error computation
+    def _compute_relative_error_output(self, absolute_error_output, **kwargs):
+        # Skip if no output defined
+        if self._output is NotImplemented:
+            assert self.truth_problem._output is NotImplemented
+            assert absolute_error_output is NotImplemented
+            return NotImplemented
+        else: # Compute the relative error on the output
+            truth_output = self.truth_problem._output
+            return absolute_error_output/truth_output
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

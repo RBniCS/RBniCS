@@ -91,7 +91,7 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                         self.truth_problem = self.truth_problem.truth_problem
                 else:
                     raise ValueError("Invalid value for kwargs")
-                # Make sure that truth solution is recomputed is truth problem is different from the previous one
+                # Make sure that truth solution is recomputed if truth problem is different from the previous one
                 if self._compute_error__previous_truth_problem != self.truth_problem:
                     self._compute_error__previous_mu = None # of Parent class
                     self._compute_error__previous_truth_problem = self.truth_problem
@@ -122,6 +122,8 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                     reduced_solution_and_output = (reduced_solution, reduced_output)
             # Call Parent
             return ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self)
+            
+        # TODO all other compute error functions (relative, output, relative output) should be overridden as well
             
     # return value (a class) for the decorator
     return MultiLevelReducedProblem_Class
