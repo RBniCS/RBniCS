@@ -58,30 +58,35 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     # Thus, for any value of current_stage, we initialize error estimation
                     # operators of the reduced problem as if we were offline
                     ReducedParametrizedProblem_DecoratedClass._init_error_estimation_operators(self, "offline")
-                    for term1 in self.truth_problem.Q:
-                        for term2 in self.truth_problem.Q:
-                            if term1 > term2: # alphabetical order
-                                continue
-                            
+                    for (index1, term1) in enumerate(self.terms):
+                        for (index2, term2) in enumerate(self.terms[index1:], start=index1):
                             self._disable_load_and_save_for_online_storage(self.riesz_product[term1 + term2], self.folder["error_estimation"])
                                                     
-                ## Return the numerator of the error bound for the current solution
+                ## Return the error estimator for the current solution
                 @override
-                def estimate_error(self):
-                    # The offline/online separation does not hold anymore, so, similarly to what we did in
-                    # the truth problem, also at the reduced-order level we need to re-assemble operators,
-                    # because the assemble_operator() *may* return parameter dependent operators.
-                    assert(self._solve__previous_mu == self.mu) # estimate_error is always called after _solve
-                    if self._estimate_error__previous_mu != self.mu or self._estimate_error__previous_self_N != self.N:
-                        self.build_error_estimation_operators("online")
-                        # Avoid useless assemblies
-                        self._estimate_error__previous_mu = self.mu
-                        self._estimate_error__previous_self_N = self.N
-                    return ReducedParametrizedProblem_DecoratedClass.estimate_error(self)
+                def estimate_error(self, **kwargs):
+                    self._rebuild_error_estimation_operators()
+                    return ReducedParametrizedProblem_DecoratedClass.estimate_error(self, **kwargs)
                     
-                ## Return the numerator of the error bound for the current output
+                ## Return the relative error estimator for the current solution
                 @override
-                def estimate_error_output(self):
+                def estimate_relative_error(self, **kwargs):
+                    self._rebuild_error_estimation_operators()
+                    return ReducedParametrizedProblem_DecoratedClass.estimate_relative_error(self, **kwargs)
+                    
+                ## Return the error estimator for the current output
+                @override
+                def estimate_error_output(self, **kwargs):
+                    self._rebuild_error_estimation_operators()
+                    return ReducedParametrizedProblem_DecoratedClass.estimate_error_output(self, **kwargs)
+                    
+                ## Return the relative error estimator for the current output
+                @override
+                def estimate_relative_error_output(self, **kwargs):
+                    self._rebuild_error_estimation_operators()
+                    return ReducedParametrizedProblem_DecoratedClass.estimate_relative_error_output(self, **kwargs)
+                    
+                def _rebuild_error_estimation_operators(self):
                     # The offline/online separation does not hold anymore, so, similarly to what we did in
                     # the truth problem, also at the reduced-order level we need to re-assemble operators,
                     # because the assemble_operator() *may* return parameter dependent operators.
@@ -91,9 +96,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         # Avoid useless assemblies
                         self._estimate_error__previous_mu = self.mu
                         self._estimate_error__previous_self_N = self.N
-                        # Note that we use the the same cache as estimate_error, since (at least part of)
+                        # Note that we use the the same cache in all error estimators, since (at least part of)
                         # error estimation operators is used by both methods
-                    return ReducedParametrizedProblem_DecoratedClass.estimate_error_output(self)
                         
                 #  @}
                 ########################### end - ONLINE STAGE - end ########################### 
@@ -107,7 +111,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 def build_error_estimation_operators(self, current_stage="offline"):
                     if current_stage == "online":
                         log(PROGRESS, "build operators for error estimation (due to inefficient evaluation)")
-                        for term in self.truth_problem.Q:
+                        for term in self.terms:
                             for q in range(self.truth_problem.Q[term]):
                                 self.riesz[term][q].clear()
                         self.build_error_estimation_operators__initialized = False
