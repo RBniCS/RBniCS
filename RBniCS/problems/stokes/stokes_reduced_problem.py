@@ -138,4 +138,15 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
                                 
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
-
+    
+    ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
+    def postprocess_snapshot(self, snapshot):
+        # Compute supremizer
+        print("supremizer solve for mu =", self.truth_problem.mu)
+        supremizer = self.truth_problem.solve_supremizer()
+        self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(run) + "_s", supremizer, component="s")
+        # Call parent
+        snapshot = ParametrizedReducedDifferentialProblem.postprocess_snapshot(self, snapshot)
+        # Return a tuple
+        return (snapshot, supremizer)
+        
