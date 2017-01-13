@@ -153,7 +153,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     def solve(self, **kwargs):
         raise NotImplementedError("The method solve() is problem-specific and needs to be overridden.")
         
-    ## Perform a truth evaluation of the (compliant) output
+    ## Perform a truth evaluation of the output
     def output(self):
         self._output = NotImplemented
         return self._output

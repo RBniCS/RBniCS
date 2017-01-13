@@ -25,15 +25,19 @@
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 from RBniCS.utils.decorators import Extends, ReducedProblemFor
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.problems.base import PODGalerkinReducedProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
+
+EllipticCoercivePODGalerkinReducedProblem_Base = PODGalerkinReducedProblem(EllipticCoerciveReducedProblem)
+
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(EllipticCoerciveReducedProblem) # needs to be first in order to override for last the methods
+@Extends(EllipticCoercivePODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoercivePODGalerkinReduction)
-class EllipticCoercivePODGalerkinReducedProblem(EllipticCoerciveReducedProblem):
+class EllipticCoercivePODGalerkinReducedProblem(EllipticCoercivePODGalerkinReducedProblem_Base):
     pass
         

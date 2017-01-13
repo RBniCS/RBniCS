@@ -29,16 +29,20 @@ from RBniCS.backends import Function, FunctionsList, product, transpose, LinearS
 from RBniCS.backends.online import OnlineAffineExpansionStorage
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from RBniCS.problems.base import RBReducedProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
 #
+
+EllipticCoerciveRBReducedProblem_Base = RBReducedProblem(EllipticCoerciveReducedProblem)
+
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 @Extends(EllipticCoerciveReducedProblem) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction)
-class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
+class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -48,19 +52,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        EllipticCoerciveReducedProblem.__init__(self, truth_problem, **kwargs)
-        
-        # $$ ONLINE DATA STRUCTURES $$ #
-        # Residual terms
-        self._riesz_solve_storage = Function(self.truth_problem.V)
-        self.riesz = dict() # from string to FunctionsList
-        self.riesz_product = dict() # from string to OnlineAffineExpansionStorage
-        self.build_error_estimation_operators__initialized = False
-        
-        # $$ OFFLINE DATA STRUCTURES $$ #
-        # I/O
-        self.folder["error_estimation"] = self.folder_prefix + "/" + "error_estimation"
-
+        EllipticCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -69,33 +61,8 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
     
-    ## Initialize data structures required for the online phase
-    @override
-    def init(self, current_stage="online"):
-        EllipticCoerciveReducedProblem.init(self, current_stage)
-        self._init_error_estimation_operators(current_stage)
-        
-    def _init_error_estimation_operators(self, current_stage="online"):
-        # Also initialize data structures related to error estimation
-        assert current_stage in ("online", "offline")
-        if current_stage == "online":
-            self.riesz_product["aa"] = self.assemble_error_estimation_operators("riesz_product_aa", "online")
-            self.riesz_product["af"] = self.assemble_error_estimation_operators("riesz_product_af", "online")
-            self.riesz_product["ff"] = self.assemble_error_estimation_operators("riesz_product_ff", "online")
-        elif current_stage == "offline":
-            self.riesz["a"] = OnlineAffineExpansionStorage(self.Q["a"])
-            for qa in range(self.Q["a"]):
-                self.riesz["a"][qa] = FunctionsList(self.truth_problem.V)
-            self.riesz["f"] = OnlineAffineExpansionStorage(self.Q["f"])
-            for qf in range(self.Q["f"]):
-                self.riesz["f"][qf] = FunctionsList(self.truth_problem.V) # even though it will be composed of only one function
-            self.riesz_product["aa"] = OnlineAffineExpansionStorage(self.Q["a"], self.Q["a"])
-            self.riesz_product["af"] = OnlineAffineExpansionStorage(self.Q["a"], self.Q["f"])
-            self.riesz_product["ff"] = OnlineAffineExpansionStorage(self.Q["f"], self.Q["f"])
-        else:
-            raise AssertionError("Invalid stage in _init_error_estimation_operators().")
-    
     ## Return an error bound for the current solution
+    @override
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -104,6 +71,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
         return sqrt(abs(eps2)/alpha)
     
     ## Return an error bound for the current output
+    @override
     def estimate_error_output(self):
         return self.estimate_error()**2
         
@@ -124,52 +92,35 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     ###########################     OFFLINE STAGE     ########################### 
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
-    
-    ## Build operators for error estimation
-    def build_error_estimation_operators(self):
-        if not self.build_error_estimation_operators__initialized: # this part does not depend on N, so we compute it only once
-            # Compute the Riesz representation of f
-            self.compute_riesz_f()
-            # Compute the (f, f) Riesz representors product
-            self.assemble_error_estimation_operators("riesz_product_ff", "offline")
-            #
-            self.build_error_estimation_operators__initialized = True
-            
-        # Update the Riesz representation of -A*Z with the new basis function(s)
-        self.update_riesz_a()
-        # Update the (a, f) Riesz representors product with the new basis function
-        self.assemble_error_estimation_operators("riesz_product_af", "offline")
-        # Update the (a, a) Riesz representors product with the new basis function
-        self.assemble_error_estimation_operators("riesz_product_aa", "offline")
-            
-    ## Compute the Riesz representation of a
-    def update_riesz_a(self):
+                
+    ## Compute the Riesz representation of term
+    @override
+    def compute_riesz(self, term):
         assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
         inner_product = self.truth_problem.inner_product[0]
-        for qa in range(self.Q["a"]):
-            for n in range(len(self.riesz["a"][qa]), self.N + self.N_bc):
+        if term == "a":
+            for qa in range(self.Q["a"]):
+                for n in range(len(self.riesz["a"][qa]), self.N + self.N_bc):
+                    if self.truth_problem.dirichlet_bc is not None:
+                        theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
+                        homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
+                    else:
+                        homogeneous_dirichlet_bc = None
+                    solver = LinearSolver(inner_product, self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n], homogeneous_dirichlet_bc)
+                    solver.solve()
+                    self.riesz["a"][qa].enrich(self._riesz_solve_storage)
+        elif term == "f":
+            for qf in range(self.Q["f"]):
                 if self.truth_problem.dirichlet_bc is not None:
                     theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
                     homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
                 else:
                     homogeneous_dirichlet_bc = None
-                solver = LinearSolver(inner_product, self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n], homogeneous_dirichlet_bc)
+                solver = LinearSolver(inner_product, self._riesz_solve_storage, self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
                 solver.solve()
-                self.riesz["a"][qa].enrich(self._riesz_solve_storage)
-    
-    ## Compute the Riesz representation of f
-    def compute_riesz_f(self):
-        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-        inner_product = self.truth_problem.inner_product[0]
-        for qf in range(self.Q["f"]):
-            if self.truth_problem.dirichlet_bc is not None:
-                theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
-                homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
-            else:
-                homogeneous_dirichlet_bc = None
-            solver = LinearSolver(inner_product, self._riesz_solve_storage, self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
-            solver.solve()
-            self.riesz["f"][qf].enrich(self._riesz_solve_storage)
+                self.riesz["f"][qf].enrich(self._riesz_solve_storage)
+        else:
+            raise ValueError("Invalid term for assemble_operator().")
             
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -179,6 +130,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveReducedProblem):
     #  @{
     
     ## Assemble operators for error estimation
+    @override
     def assemble_error_estimation_operators(self, term, current_stage="online"):
         assert current_stage in ("online", "offline")
         short_term = term.replace("riesz_product_", "")

@@ -22,22 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.stokes.stokes_reduced_problem import StokesReducedProblem
-from RBniCS.utils.decorators import Extends, ReducedProblemFor
-from RBniCS.problems.stokes.stokes_problem import StokesProblem
-from RBniCS.problems.base import PODGalerkinReducedProblem
-from RBniCS.reduction_methods.stokes import StokesPODGalerkinReduction
+from RBniCS.utils.decorators import Extends
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class StokesReducedOrderModelBase
-#
-
-StokesPODGalerkinReducedProblem_Base = PODGalerkinReducedProblem(StokesReducedProblem)
-
-# Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
-@Extends(StokesPODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
-@ReducedProblemFor(StokesProblem, StokesPODGalerkinReduction)
-class StokesPODGalerkinReducedProblem(StokesPODGalerkinReducedProblem_Base):
-    pass
+def PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
+    @Extends(EllipticCoerciveReducedProblem, preserve_class_name=True)
+    class PODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+        pass
         
+    # return value (a class) for the decorator
+    return PODGalerkinReducedProblem_Class
+    
