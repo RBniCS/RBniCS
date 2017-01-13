@@ -24,7 +24,7 @@
 
 from RBniCS.problems.base import TimeDependentReducedProblem
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from RBniCS.backends import assign, LinearSolver, product, sum, TimeQuadrature, TimeStepping
+from RBniCS.backends import assign, LinearSolver, product, sum, TimeStepping
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, MultiLevelReducedProblem
 

@@ -34,6 +34,7 @@ def ParabolicCoerciveReductionMethod(EllipticCoerciveReductionMethod_DerivedClas
     @Extends(EllipticCoerciveReductionMethod_DerivedClass) # needs to be first in order to override for last the methods.
     #@ReductionMethodFor(ParabolicCoerciveProblem, "Abstract") # disabled, since now this is a decorator which depends on a derived (e.g. POD or RB) class
     @MultiLevelReductionMethod
+    @TimeDependentReductionMethod
     class ParabolicCoerciveReductionMethod_Class(EllipticCoerciveReductionMethod_DerivedClass):
         
         ###########################     CONSTRUCTORS     ########################### 

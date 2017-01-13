@@ -26,10 +26,16 @@ from RBniCS.reduction_methods.base.differential_problem_reduction_method import 
 from RBniCS.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
 from RBniCS.reduction_methods.base.rb_reduction import RBReduction
 from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
+from RBniCS.reduction_methods.base.time_dependent_pod_galerkin_reduction import TimeDependentPODGalerkinReduction
+from RBniCS.reduction_methods.base.time_dependent_rb_reduction import TimeDependentRBReduction
+from RBniCS.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
 
 __all__ = [
     'DifferentialProblemReductionMethod',
     'PODGalerkinReduction',
     'RBReduction',
-    'ReductionMethod'
+    'ReductionMethod',
+    'TimeDependentPODGalerkinReduction',
+    'TimeDependentRBReduction',
+    'TimeDependentReductionMethod'
 ]

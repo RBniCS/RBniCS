@@ -176,7 +176,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
             
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
             error_analysis_table.set_Nmax(Nmax)
-            for component in self.components:
+            for component in components:
                 error_analysis_table.add_column("error_" + component, group_name="solution_" + component, operations=("mean", "max"))
                 error_analysis_table.add_column("relative_error_" + component, group_name="solution_" + component, operations=("mean", "max"))
             error_analysis_table.add_column("error_output", group_name="output", operations=("mean", "max"))

@@ -24,6 +24,7 @@
 
 from math import sqrt
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
+from RBniCS.problems.base import TimeDependentRBReduction
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
@@ -34,7 +35,7 @@ from RBniCS.backends.online import OnlineFunction
 ## @class ParabolicCoerciveRBReduction
 #
 
-ParabolicCoerciveRBReduction_Base = ParabolicCoerciveReductionMethod(EllipticCoerciveRBReduction)
+ParabolicCoerciveRBReduction_Base = ParabolicCoerciveReductionMethod(TimeDependentRBReduction(EllipticCoerciveRBReduction))
 
 # Base class containing the interface of a RB ROM
 # for parabolic coercive problems

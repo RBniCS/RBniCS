@@ -27,7 +27,9 @@ from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.base.parametrized_reduced_differential_problem import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.base.pod_galerkin_reduced_problem import PODGalerkinReducedProblem
 from RBniCS.problems.base.rb_reduced_problem import RBReducedProblem
+from RBniCS.problems.base.time_dependent_pod_galerkin_reduced_problem import TimeDependentPODGalerkinReducedProblem
 from RBniCS.problems.base.time_dependent_problem import TimeDependentProblem
+from RBniCS.problems.base.time_dependent_rb_reduced_problem import TimeDependentRBReducedProblem
 from RBniCS.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
 
 
@@ -37,6 +39,8 @@ __all__ = [
     'ParametrizedReducedDifferentialProblem',
     'PODGalerkinReducedProblem',
     'RBReducedProblem',
+    'TimeDependentPODGalerkinReducedProblem',
     'TimeDependentProblem',
+    'TimeDependentRBReducedProblem',
     'TimeDependentReducedProblem'
 ]

@@ -27,8 +27,9 @@ from numpy import min, exp, mean, log, max
 
 class PerformanceTable(object):
     
-    # Storage for class method
+    # Storage for class methods
     _suppressed_groups = list()
+    _preprocessor_setitem = dict()
     
     def __init__(self, testing_set):
         self._columns = dict() # string to Content matrix
@@ -67,6 +68,14 @@ class PerformanceTable(object):
     @classmethod
     def clear_suppressed_groups(cls):
         cls._suppressed_groups = list()
+        
+    @classmethod
+    def preprocess_setitem(cls, group_name, function):
+        cls._preprocessor_setitem[group_name] = function
+        
+    @classmethod
+    def clear_setitem_preprocessing(cls):
+        cls._preprocessor_setitem.clear()
     
     def __getitem__(self, args):
         assert len(args) == 3
@@ -74,7 +83,10 @@ class PerformanceTable(object):
         
     def __setitem__(self, args, value):
         assert len(args) == 3
-        self._columns[args[0]][args[1] - self._Nmin, args[2]] = value
+        if args[0] not in self._preprocessor_setitem:
+            self._columns[args[0]][args[1] - self._Nmin, args[2]] = value
+        else:
+            self._columns[args[0]][args[1] - self._Nmin, args[2]] = self._preprocessor_setitem[args[0]](value)
             
     def __str__(self):
         output = ""

@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
+from RBniCS.problems.base import TimeDependentPODGalerkinReduction
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
 from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
@@ -31,7 +32,7 @@ from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_me
 ## @class ParabolicCoercivePODGalerkinReduction
 #
 
-ParabolicCoercivePODGalerkinReduction_Base = ParabolicCoerciveReductionMethod(EllipticCoercivePODGalerkinReduction)
+ParabolicCoercivePODGalerkinReduction_Base = ParabolicCoerciveReductionMethod(TimeDependentPODGalerkinReduction(EllipticCoercivePODGalerkinReduction))
 
 # Base class containing the interface of a POD-Galerkin ROM
 # for parabolic coercive problems

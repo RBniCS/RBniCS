@@ -187,7 +187,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
             
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
             error_analysis_table.set_Nmax(Nmax)
-            for component in self.components:
+            for component in components:
                 error_analysis_table.add_column("error_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
                 error_analysis_table.add_column("error_estimator_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
                 error_analysis_table.add_column("effectivity_" + component, group_name="solution_" + component + "_error", operations=("min", "mean", "max"))

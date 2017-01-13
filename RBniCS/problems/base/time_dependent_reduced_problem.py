@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
-from RBniCS.backends import assign, TimeQuadrature, transpose
+from RBniCS.backends import assign, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.utils.decorators import Extends, override
 
