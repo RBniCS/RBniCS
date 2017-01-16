@@ -34,7 +34,7 @@ class PerformanceTable(object):
     def __init__(self, testing_set):
         self._columns = dict() # string to Content matrix
         self._columns_operations = dict() # string to tuple
-        self._column_to_group = dict() # string to string
+        self._columns_not_implemented = dict() # string to bool
         self._groups = dict() # string to list
         self._group_names_sorted = list()
         self._len_testing_set = len(testing_set)
@@ -51,7 +51,7 @@ class PerformanceTable(object):
         assert self._Nmax > 0
         assert self._Nmax >= self._Nmin
         self._columns[column_name] = Content((self._Nmax - self._Nmin + 1, self._len_testing_set))
-        self._column_to_group[column_name] = group_name
+        self._columns_not_implemented[column_name] = None # will be set to a bool
         if group_name not in self._groups:
             self._groups[group_name] = list()
             self._group_names_sorted.append(group_name) # preserve the ordering provided by the user
@@ -81,74 +81,136 @@ class PerformanceTable(object):
     
     def __getitem__(self, args):
         assert len(args) == 3
-        return self._columns[args[0]][args[1] - self._Nmin, args[2]]
+        column_name = args[0]
+        N = args[1]
+        run = args[2]
+        assert self._columns_not_implemented[column_name] in (True, False)
+        if not self._columns_not_implemented[column_name]:
+            return self._columns[args[0]][args[1] - self._Nmin, args[2]]
+        else:
+            return CustomNotImplementedAfterDiv
         
     def __setitem__(self, args, value):
         assert len(args) == 3
-        group = self._column_to_group[args[0]]
-        if group not in self._preprocessor_setitem:
-            self._columns[args[0]][args[1] - self._Nmin, args[2]] = value
+        column_name = args[0]
+        N = args[1]
+        run = args[2]
+        if is_not_implemented(value):
+            assert self._columns_not_implemented[column_name] in (None, True)
+            if self._columns_not_implemented[column_name] is None:
+                self._columns_not_implemented[column_name] = True
         else:
-            self._columns[args[0]][args[1] - self._Nmin, args[2]] = self._preprocessor_setitem[group](value)
+            assert self._columns_not_implemented[column_name] in (None, False)
+            if self._columns_not_implemented[column_name] is None:
+                self._columns_not_implemented[column_name] = False
+            if column_name not in self._preprocessor_setitem:
+                self._columns[column_name][N - self._Nmin, run] = value
+            else:
+                self._columns[column_name][N - self._Nmin, run] = self._preprocessor_setitem[column_name](value)
             
     def __str__(self):
         output = ""
         for group in self._group_names_sorted:
-            if not group in self._suppressed_groups:
-                table_index = list() # of strings
-                table_header = dict() # from string to string
-                table_content = dict() # from string to Content array
-                column_size = dict() # from string to int
-                # First column should be the reduced space dimension
-                table_index.append("N")
-                table_header["N"] = "N"
-                table_content["N"] = range(self._Nmin, self._Nmax + 1)
-                column_size["N"] = max([max([len(str(x)) for x in table_content["N"]]), len("N")])
-                # Then fill in with postprocessed data
-                for column in self._groups[group]:
-                    for operation in self._columns_operations[column]:
-                        # Set header
-                        if operation in ("min", "max"):
-                            current_table_header = operation + "(" + column + ")"
-                            current_table_index = operation + "_" + column
+            # Skip suppresed groups
+            if group in self._suppressed_groups:
+                continue
+            # Populate all columns
+            columns = list()
+            for column in self._groups[group]:
+                assert self._columns_not_implemented[column] in (True, False)
+                if self._columns_not_implemented[column] is False:
+                    columns.append(column)
+            if len(columns) == 0:
+                continue
+            # Storage for print
+            table_index = list() # of strings
+            table_header = dict() # from string to string
+            table_content = dict() # from string to Content array
+            column_size = dict() # from string to int
+            # First column should be the reduced space dimension
+            table_index.append("N")
+            table_header["N"] = "N"
+            table_content["N"] = range(self._Nmin, self._Nmax + 1)
+            column_size["N"] = max([max([len(str(x)) for x in table_content["N"]]), len("N")])
+            # Then fill in with postprocessed data
+            for column in columns:
+                for operation in self._columns_operations[column]:
+                    # Set header
+                    if operation in ("min", "max"):
+                        current_table_header = operation + "(" + column + ")"
+                        current_table_index = operation + "_" + column
+                    elif operation == "mean":
+                        current_table_header = "gmean(" + column + ")"
+                        current_table_index = "gmean_" + column
+                    else:
+                        raise ValueError("Invalid operation in PerformanceTable")
+                    table_index.append(current_table_index)
+                    table_header[current_table_index] = current_table_header
+                    # Compute the required operation of each column over the second index (testing set)
+                    table_content[current_table_index] = Content((self._Nmax - self._Nmin + 1,))
+                    for n in range(self._Nmin, self._Nmax + 1):
+                        if operation == "min":
+                            current_table_content = min(self._columns[column][n - self._Nmin, :])
                         elif operation == "mean":
-                            current_table_header = "gmean(" + column + ")"
-                            current_table_index = "gmean_" + column
+                            current_table_content = exp(mean(log(self._columns[column][n - self._Nmin, :])))
+                        elif operation == "max":
+                            current_table_content = max(self._columns[column][n - self._Nmin, :])
                         else:
                             raise ValueError("Invalid operation in PerformanceTable")
-                        table_index.append(current_table_index)
-                        table_header[current_table_index] = current_table_header
-                        # Compute the required operation of each column over the second index (testing set)
-                        table_content[current_table_index] = Content((self._Nmax - self._Nmin + 1,))
-                        for n in range(self._Nmin, self._Nmax + 1):
-                            if operation == "min":
-                                current_table_content = min(self._columns[column][n - self._Nmin, :])
-                            elif operation == "mean":
-                                current_table_content = exp(mean(log(self._columns[column][n - self._Nmin, :])))
-                            elif operation == "max":
-                                current_table_content = max(self._columns[column][n - self._Nmin, :])
-                            else:
-                                raise ValueError("Invalid operation in PerformanceTable")
-                            table_content[current_table_index][n - self._Nmin] = current_table_content
-                        # Get the width of the columns
-                        column_size[current_table_index] = max([max([len(str(x)) for x in table_content[current_table_index]]), len(current_table_header)])
-                # Prepare formetter for string conversion
-                formatter = ""
-                for (column_index, column_name) in enumerate(table_index):
-                    formatter += "{" + str(column_index) + ":<{" + column_name + "}}"
-                    if column_index < len(table_index) - 1:
-                        formatter += "\t"
-                # Print the header
+                        table_content[current_table_index][n - self._Nmin] = current_table_content
+                    # Get the width of the columns
+                    column_size[current_table_index] = max([max([len(str(x)) for x in table_content[current_table_index]]), len(current_table_header)])
+            # Prepare formetter for string conversion
+            formatter = ""
+            for (column_index, column_name) in enumerate(table_index):
+                formatter += "{" + str(column_index) + ":<{" + column_name + "}}"
+                if column_index < len(table_index) - 1:
+                    formatter += "\t"
+            # Print the header
+            current_line = list()
+            for t in table_index:
+                current_line.append(table_header[t])
+            output += formatter.format(*current_line, **column_size) + "\n"
+            # Print the content
+            for n in range(self._Nmin, self._Nmax + 1):
                 current_line = list()
                 for t in table_index:
-                    current_line.append(table_header[t])
+                    current_line.append(table_content[t][n - self._Nmin])
                 output += formatter.format(*current_line, **column_size) + "\n"
-                # Print the content
-                for n in range(self._Nmin, self._Nmax + 1):
-                    current_line = list()
-                    for t in table_index:
-                        current_line.append(table_content[t][n - self._Nmin])
-                    output += formatter.format(*current_line, **column_size) + "\n"
-                output += "\n"
+            output += "\n"
         return output[:-2] # remove the last two newlines
         
+class CustomNotImplementedType(object):
+    def __init__(self):
+        pass
+CustomNotImplemented = CustomNotImplementedType()
+        
+def is_not_implemented(value):
+    if value is NotImplemented:
+        return True
+    elif value is CustomNotImplemented:
+        return True
+    elif isinstance(value, list):
+        each_is_not_implemented = [is_not_implemented(v) for v in value]
+        assert all(b == each_is_not_implemented[0] for b in each_is_not_implemented)
+        return each_is_not_implemented[0]
+    else:
+        return False
+        
+class CustomNotImplementedAfterDivType(CustomNotImplementedType):
+    def __init__(self):
+        pass
+    
+    def __div__(self, other):
+        return CustomNotImplemented
+        
+    def __rdiv__(self, other):
+        return CustomNotImplemented
+        
+    def __truediv__(self, other):
+        return CustomNotImplemented
+        
+    def __rtruediv__(self, other):
+        return CustomNotImplemented
+CustomNotImplementedAfterDiv = CustomNotImplementedAfterDivType()
+
