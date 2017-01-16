@@ -23,10 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from abc import ABCMeta, abstractmethod
+from RBniCS.backends import Function, FunctionsList
+from RBniCS.backends.online import OnlineAffineExpansionStorage
 from RBniCS.utils.decorators import Extends, override
 
-def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
-    @Extends(EllipticCoerciveReducedProblem, preserve_class_name=True)
+def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class RBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         __metaclass__ = ABCMeta
         
@@ -38,7 +40,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            EllipticCoerciveReducedProblem.__init__(self, truth_problem, **kwargs)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # $$ ONLINE DATA STRUCTURES $$ #
             # Residual terms
@@ -63,7 +65,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
         ## Initialize data structures required for the online phase
         @override
         def init(self, current_stage="online"):
-            EllipticCoerciveReducedProblem.init(self, current_stage)
+            ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
             self._init_error_estimation_operators(current_stage)
             
         def _init_error_estimation_operators(self, current_stage="online"):
@@ -101,7 +103,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
             
         ## Return an error bound for the current output. Provides a default implementation which is consistent with the default
         ## output computation.
-        @abstractmethod
         def estimate_relative_error_output(self):
             return NotImplemented
             

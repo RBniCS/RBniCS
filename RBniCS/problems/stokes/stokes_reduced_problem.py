@@ -22,12 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.stokes.stokes_problem import StokesProblem
 from RBniCS.backends import LinearSolver, product, sum, transpose
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
 from RBniCS.reduction_methods.stokes import StokesReductionMethod
+from RBniCS.utils.mpi import print
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
@@ -48,6 +50,10 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         ParametrizedReducedDifferentialProblem.__init__(self, truth_problem, **kwargs)
+        
+        # $$ OFFLINE DATA STRUCTURES $$ #
+        # I/O
+        self.folder["supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -100,7 +106,7 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
     
     # Internal method for error computation
     @override
-    def _compute_error(self):
+    def _compute_error(self, **kwargs):
         components = ["u", "p"] # but not "s"
         if "components" not in kwargs:
             kwargs["components"] = components
@@ -140,13 +146,13 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
     ########################### end - PROBLEM SPECIFIC - end ########################### 
     
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
-    def postprocess_snapshot(self, snapshot):
+    def postprocess_snapshot(self, snapshot, snapshot_index):
         # Compute supremizer
         print("supremizer solve for mu =", self.truth_problem.mu)
         supremizer = self.truth_problem.solve_supremizer()
-        self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(run) + "_s", supremizer, component="s")
+        self.truth_problem.export_solution(self.folder["supremizer_snapshots"], "truth_" + str(snapshot_index) + "_s", supremizer, component="s")
         # Call parent
-        snapshot = ParametrizedReducedDifferentialProblem.postprocess_snapshot(self, snapshot)
+        snapshot = ParametrizedReducedDifferentialProblem.postprocess_snapshot(self, snapshot, snapshot_index)
         # Return a tuple
         return (snapshot, supremizer)
         

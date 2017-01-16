@@ -42,3 +42,19 @@ class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBReducedProb
         self._output = transpose(assembled_output_operator)*self._solution
         return self._output
         
+    ## Compute the Riesz representation of term
+    @override
+    def compute_riesz(self, term):
+        if term == "s":
+            pass
+        else:
+            return EllipticCoerciveRBReducedProblem.compute_riesz(self, term)
+            
+    ## Assemble operators for error estimation
+    @override
+    def assemble_error_estimation_operators(self, term, current_stage="online"):
+        if term in ("riesz_product_as", "riesz_product_fs", "riesz_product_ss"):
+            pass
+        else:
+            return EllipticCoerciveRBReducedProblem.assemble_error_estimation_operators(self, term, current_stage)
+            

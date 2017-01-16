@@ -22,8 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
-from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from RBniCS.reduction_methods.base import RBReduction
@@ -99,7 +97,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveRBReduction_Base):
     #  @{
         
     ## Choose the next parameter in the offline stage in a greedy fashion
-    def greedy(self):
+    def _greedy(self):
         def solve_and_estimate_error(mu, index):
             self.reduced_problem.set_mu(mu)
             self.reduced_problem._solve(self.reduced_problem.N)

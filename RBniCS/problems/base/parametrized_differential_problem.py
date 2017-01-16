@@ -170,12 +170,11 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         if solution is None:
             solution = self._solution
         assert component is None or isinstance(component, (str, list))
+        if component is None and len(self.components) > 1:
+            component = self.components
         if component is None:
-            if len(self.components) > 1:
-                component = self.components
-            else:
-                component = self.components[0]
-        if isinstance(component, str):
+            export(solution, folder, filename)
+        elif isinstance(component, str):
             export(solution, folder, filename, component=component)
         elif isinstance(component, list):
             for c in component:

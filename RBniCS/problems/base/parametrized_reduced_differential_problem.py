@@ -317,7 +317,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
     # non-homogeneous Dirichlet boundary conditions
-    def postprocess_snapshot(self, snapshot):
+    def postprocess_snapshot(self, snapshot, snapshot_index):
         n_components = len(self.components)
         # Get helper strings and functions depending on the number of basis components
         if n_components > 1:
@@ -370,9 +370,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             N = self._solution.N
             reduced_solution = self.Z[:N]*self._solution
             truth_solution = self.truth_problem._solution
-            error = truth_solution - reduced_solution
+            error_function = truth_solution - reduced_solution
             for component in components:
-                error_norm_squared_component = transpose(error)*inner_product[component]*error
+                error_norm_squared_component = transpose(error_function)*inner_product[component]*error_function
                 assert error_norm_squared_component >= 0. or isclose(error_norm_squared_component, 0.)
                 error[component] = sqrt(error_norm_squared_component)
         # Simplify trivial case
@@ -417,7 +417,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         # Set inner product for components, if needed
         if "inner_product" not in kwargs:
             inner_product = dict()
-            for component in components:
+            for component in kwargs["components"]:
                 assert len(self.truth_problem.inner_product[component]) == 1
                 inner_product[component] = self.truth_problem.inner_product[component][0]
             kwargs["inner_product"] = inner_product

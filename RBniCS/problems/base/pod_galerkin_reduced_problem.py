@@ -24,8 +24,8 @@
 
 from RBniCS.utils.decorators import Extends
 
-def PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
-    @Extends(EllipticCoerciveReducedProblem, preserve_class_name=True)
+def PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class PODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
         

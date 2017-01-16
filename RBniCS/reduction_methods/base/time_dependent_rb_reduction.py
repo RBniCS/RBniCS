@@ -22,12 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import TimeQuadrature
+from math import sqrt
 from RBniCS.utils.decorators import Extends, override
+from RBniCS.utils.io import ErrorAnalysisTable
 
-def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
+def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
-    class TimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
+    class TimeDependentRBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ###########################     ERROR ANALYSIS     ########################### 
         ## @defgroup ErrorAnalysis Error analysis
@@ -40,24 +41,22 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             if "components" in kwargs:
                 components = kwargs["components"]
             else:
-                components = self.components
-                
-            time_quadrature = TimeQuadrature((0., self.truth_problem.T), self.truth_problem.dt)
+                components = self.truth_problem.components
                 
             for component in components:
                 def solution_preprocess_setitem(component):
                     def solution_preprocess_setitem__function(list_over_time):
                         list_squared_over_time = [v**2 for v in list_over_time]
-                        return sqrt(time_quadrature.integrate(list_squared_over_time))
+                        return sqrt(self.time_quadrature.integrate(list_squared_over_time))
                     return solution_preprocess_setitem__function
-                ErrorAnalysisTable.preprocess_setitem("solution_" + component + "_error", solution_preprocess_setitem)
-                ErrorAnalysisTable.preprocess_setitem("solution_" + component + "_relative_error", solution_preprocess_setitem)
+                for column_prefix in ("error_", "error_estimator_", "relative_error_", "relative_error_estimator_"):
+                    ErrorAnalysisTable.preprocess_setitem(column_prefix + component, solution_preprocess_setitem(component))
                 
             def output_preprocess_setitem(list_over_time):
-                return time_quadrature.integrate(list_over_time)
-            ErrorAnalysisTable.preprocess_setitem("output_error", solution_preprocess_setitem)
-            ErrorAnalysisTable.preprocess_setitem("output_relative_error", solution_preprocess_setitem)
-                
+                return self.time_quadrature.integrate(list_over_time)
+            for column in ("error_output", "error_estimator_output", "relative_error_output", "relative_error_estimator_output"):
+                ErrorAnalysisTable.preprocess_setitem(column, solution_preprocess_setitem)
+            
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
             ErrorAnalysisTable.clear_setitem_preprocessing()
@@ -66,5 +65,5 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         ########################### end - ERROR ANALYSIS - end ########################### 
         
     # return value (a class) for the decorator
-    return TimeDependentReductionMethod_Class
+    return TimeDependentRBReduction_Class
     

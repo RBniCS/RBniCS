@@ -41,7 +41,14 @@ def _enable_string_components(components, function_space):
     
     original_sub = function_space.sub
     def custom_sub(self_, i):
+        assert i is not None
         i_int = _convert_component_to_int(self_, i)
+        if i_int is None:
+            def custom_collapse(self_, collapsed_dofs=False):
+                assert not collapsed_dofs
+                return self_
+            self_.collapse = types.MethodType(custom_collapse, self_)
+            return self_
         assert isinstance(i_int, (int, tuple))
         if isinstance(i_int, int):
             output = original_sub(i_int)

@@ -22,11 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
 from RBniCS.backends import ProperOrthogonalDecomposition
 from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
 from RBniCS.utils.decorators import Extends, override
+from RBniCS.utils.mpi import print
 
-def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
+def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class PODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
@@ -38,7 +40,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            DifferentialProblemReductionMethod.__init__(self, truth_problem, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
                     
             # $$ OFFLINE DATA STRUCTURES $$ #
             # Declare a POD object
@@ -58,12 +60,12 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
         @override
         def _init_offline(self):
             # Call parent to initialize inner product and reduced problem
-            output = DifferentialProblemReductionMethod._init_offline(self)
+            output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
             
             # Declare a new POD for each basis component
-            if len(self.components) > 1:
+            if len(self.truth_problem.components) > 1:
                 self.POD = dict()
-                for component in self.components:
+                for component in self.truth_problem.components:
                     assert len(self.truth_problem.inner_product[component]) == 1
                     inner_product = self.truth_problem.inner_product[component][0]
                     self.POD[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
@@ -95,7 +97,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
                 print("truth solve for mu =", self.truth_problem.mu)
                 snapshot = self.truth_problem.solve()
                 self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(run), snapshot)
-                snapshot = self.reduced_problem.postprocess_snapshot(snapshot)
+                snapshot = self.reduced_problem.postprocess_snapshot(snapshot, run)
                 
                 print("update snapshots matrix")
                 self.update_snapshots_matrix(snapshot)
@@ -121,16 +123,16 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
 
         ## Update the snapshots matrix
         def update_snapshots_matrix(self, snapshot):
-            if len(self.components) > 1:
-                for component in self.components:
+            if len(self.truth_problem.components) > 1:
+                for component in self.truth_problem.components:
                     self.POD[component].store_snapshot(snapshot, component=component)
             else:
                 self.POD.store_snapshot(snapshot)
             
         ## Compute basis functions performing POD
         def compute_basis_functions(self):
-            if len(self.components) > 1:
-                for component in self.components:
+            if len(self.truth_problem.components) > 1:
+                for component in self.truth_problem.components:
                     print("# POD for component", component)
                     POD = self.POD[component]
                     (_, Z, N) = POD.apply(self.Nmax)
@@ -165,7 +167,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
             if "components" in kwargs:
                 components = kwargs["components"]
             else:
-                components = self.components
+                components = self.truth_problem.components
             
             self._init_error_analysis(**kwargs)
             
@@ -175,7 +177,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
             print("")
             
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
-            error_analysis_table.set_Nmax(Nmax)
+            error_analysis_table.set_Nmax(N)
             for component in components:
                 error_analysis_table.add_column("error_" + component, group_name="solution_" + component, operations=("mean", "max"))
                 error_analysis_table.add_column("relative_error_" + component, group_name="solution_" + component, operations=("mean", "max"))
@@ -187,7 +189,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass)
                 
                 self.reduced_problem.set_mu(mu)
                             
-                for n in range(1, Nmax + 1): # n = 1, ... Nmax
+                for n in range(1, N + 1): # n = 1, ... N
                     error = self.reduced_problem.compute_error(n, **kwargs)
                     relative_error = self.reduced_problem.compute_relative_error(n, **kwargs)
                     if len(components) > 1:

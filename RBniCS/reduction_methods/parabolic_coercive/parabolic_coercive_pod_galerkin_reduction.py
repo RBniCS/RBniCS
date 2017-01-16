@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.problems.base import TimeDependentPODGalerkinReduction
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
+from RBniCS.reduction_methods.base import TimeDependentPODGalerkinReduction
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
 from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
 

@@ -24,8 +24,8 @@
 
 from RBniCS.utils.decorators import Extends
 
-def TimeDependentPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
-    @Extends(EllipticCoerciveReducedProblem, preserve_class_name=True)
+def TimeDependentPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class TimeDependentPODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
                 

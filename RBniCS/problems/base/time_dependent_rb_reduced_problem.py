@@ -24,8 +24,8 @@
 
 from RBniCS.utils.decorators import Extends, override
 
-def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
-    @Extends(EllipticCoerciveReducedProblem, preserve_class_name=True)
+def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class TimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
                 
         ###########################     CONSTRUCTORS     ########################### 

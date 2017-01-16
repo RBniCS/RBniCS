@@ -22,9 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from __future__ import print_function
 from RBniCS.backends import ProperOrthogonalDecomposition
-from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
 from RBniCS.problems.stokes.stokes_problem import StokesProblem
 from RBniCS.reduction_methods.base import PODGalerkinReduction

@@ -34,6 +34,7 @@ class PerformanceTable(object):
     def __init__(self, testing_set):
         self._columns = dict() # string to Content matrix
         self._columns_operations = dict() # string to tuple
+        self._column_to_group = dict() # string to string
         self._groups = dict() # string to list
         self._group_names_sorted = list()
         self._len_testing_set = len(testing_set)
@@ -50,6 +51,7 @@ class PerformanceTable(object):
         assert self._Nmax > 0
         assert self._Nmax >= self._Nmin
         self._columns[column_name] = Content((self._Nmax - self._Nmin + 1, self._len_testing_set))
+        self._column_to_group[column_name] = group_name
         if group_name not in self._groups:
             self._groups[group_name] = list()
             self._group_names_sorted.append(group_name) # preserve the ordering provided by the user
@@ -83,10 +85,11 @@ class PerformanceTable(object):
         
     def __setitem__(self, args, value):
         assert len(args) == 3
-        if args[0] not in self._preprocessor_setitem:
+        group = self._column_to_group[args[0]]
+        if group not in self._preprocessor_setitem:
             self._columns[args[0]][args[1] - self._Nmin, args[2]] = value
         else:
-            self._columns[args[0]][args[1] - self._Nmin, args[2]] = self._preprocessor_setitem[args[0]](value)
+            self._columns[args[0]][args[1] - self._Nmin, args[2]] = self._preprocessor_setitem[group](value)
             
     def __str__(self):
         output = ""

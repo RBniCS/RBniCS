@@ -25,10 +25,36 @@
 from RBniCS.backends import TimeQuadrature
 from RBniCS.utils.decorators import Extends, override
 
-def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
+def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class TimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
-        pass
+        
+        ## Default initialization of members
+        @override
+        def __init__(self, truth_problem, **kwargs):
+            # Call to parent
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
+            
+            # Time quadrature
+            self.time_quadrature = None
+            
+        ## Initialize data structures required for the offline phase
+        @override
+        def _init_offline(self):
+            output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
+            
+            if self.time_quadrature is None:
+                self.time_quadrature = TimeQuadrature((0., self.truth_problem.T), self.truth_problem.dt)
+                
+            return output
+            
+        ## Initialize data structures required for the error analysis phase
+        @override
+        def _init_error_analysis(self, **kwargs):
+            DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
+            
+            if self.time_quadrature is None:
+                self.time_quadrature = TimeQuadrature((0., self.truth_problem.T), self.truth_problem.dt)
         
     # return value (a class) for the decorator
     return TimeDependentReductionMethod_Class

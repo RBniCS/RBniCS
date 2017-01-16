@@ -24,8 +24,8 @@
 
 from math import sqrt
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.problems.base import TimeDependentRBReduction
 from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
+from RBniCS.reduction_methods.base import TimeDependentRBReduction
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
 from RBniCS.backends import LinearSolver, ProperOrthogonalDecomposition, SnapshotsMatrix, transpose
@@ -91,6 +91,17 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
         
         # Return
         return output
+        
+    ## Choose the next parameter in the offline stage in a greedy fashion
+    def _greedy(self):
+        def solve_and_estimate_error(mu, index):
+            self.reduced_problem.set_mu(mu)
+            self.reduced_problem._solve(self.reduced_problem.N)
+            error_estimator_over_time = self.reduced_problem.estimate_error()
+            error_estimator_squared_over_time = [v**2 for v in error_estimator_over_time]
+            return sqrt(self.time_quadrature.integrate(error_estimator_squared_over_time))
+            
+        return self.training_set.max(solve_and_estimate_error)
         
     ## Update basis matrix by POD-Greedy
     def update_basis_matrix(self, snapshot):

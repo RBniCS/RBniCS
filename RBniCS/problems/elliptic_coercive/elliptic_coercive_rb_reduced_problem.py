@@ -25,7 +25,7 @@
 from math import sqrt
 from numpy import isclose
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from RBniCS.backends import Function, FunctionsList, product, transpose, LinearSolver, sum
+from RBniCS.backends import product, transpose, LinearSolver, sum
 from RBniCS.backends.online import OnlineAffineExpansionStorage
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
@@ -69,11 +69,21 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert alpha >= 0.
         return sqrt(abs(eps2)/alpha)
+        
+    ## Return a relative error bound for the current solution
+    @override
+    def estimate_relative_error(self):
+        return NotImplemented
     
     ## Return an error bound for the current output
     @override
     def estimate_error_output(self):
         return self.estimate_error()**2
+        
+    ## Return a relative error bound for the current output
+    @override
+    def estimate_relative_error_output(self):
+        return NotImplemented
         
     ## Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
@@ -120,7 +130,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
                 solver.solve()
                 self.riesz["f"][qf].enrich(self._riesz_solve_storage)
         else:
-            raise ValueError("Invalid term for assemble_operator().")
+            raise ValueError("Invalid term for compute_riesz().")
             
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

@@ -107,7 +107,7 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                 return ParametrizedReducedDifferentialProblem_DerivedClass.compute_error(self, N, **kwargs)
                 
         @override
-        def _compute_error(self):
+        def _compute_error(self, **kwargs):
             if self._compute_error__current_with_respect_to_level is not None:
                 raise NotImplementedError # TODO
                 with_respect_to_level = self._compute_error__current_with_respect_to_level

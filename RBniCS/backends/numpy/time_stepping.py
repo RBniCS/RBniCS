@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
 import types
 from numpy import arange, asarray, linspace
 try:
@@ -41,6 +42,7 @@ from RBniCS.backends.numpy.vector import Vector
 from RBniCS.backends.numpy.wrapping import function_copy
 from RBniCS.backends.numpy.wrapping_utils import DirichletBC
 from RBniCS.utils.decorators import BackendFor, Extends, override
+from RBniCS.utils.mpi import print
 
 @Extends(AbstractTimeStepping)
 @BackendFor("numpy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))

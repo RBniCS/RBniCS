@@ -22,12 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
 from abc import ABCMeta, abstractmethod
 from RBniCS.backends import GramSchmidt
 from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
 from RBniCS.utils.decorators import Extends, override
+from RBniCS.utils.mpi import print
 
-def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
+def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         __metaclass__ = ABCMeta
@@ -40,7 +42,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            DifferentialProblemReductionMethod.__init__(self, truth_problem, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
                     
             # $$ OFFLINE DATA STRUCTURES $$ #
             # Declare a GS object
@@ -60,14 +62,14 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
         
         ## Initialize data structures required for the offline phase
         @override
-        def _init_offline(self)
+        def _init_offline(self):
             # Call parent to initialize inner product and reduced problem
-            output = DifferentialProblemReductionMethod._init_offline(self)
+            output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
             
             # Declare a new POD for each basis component
-            if len(self.components) > 1:
+            if len(self.truth_problem.components) > 1:
                 self.GS = dict()
-                for component in self.components:
+                for component in self.truth_problem.components:
                     assert len(self.truth_problem.inner_product[component]) == 1
                     inner_product = self.truth_problem.inner_product[component][0]
                     self.GS[component] = GramSchmidt(inner_product)
@@ -98,7 +100,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
                 print("truth solve for mu =", self.truth_problem.mu)
                 snapshot = self.truth_problem.solve()
                 self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(run), snapshot)
-                snapshot = self.reduced_problem.postprocess_snapshot(snapshot)
+                snapshot = self.reduced_problem.postprocess_snapshot(snapshot, run)
                 
                 print("update basis matrix")
                 self.update_basis_matrix(snapshot)
@@ -132,8 +134,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
             
         ## Update basis matrix
         def update_basis_matrix(self, snapshot):
-            if len(self.components) > 1:
-                for component in self.components:
+            if len(self.truth_problem.components) > 1:
+                for component in self.truth_problem.components:
                     self.reduced_problem.Z.enrich(snapshot, component=component)
                     self.GS[component].apply(self.reduced_problem.Z[component], self.reduced_problem.N_bc[component])
                     self.reduced_problem.N[component] += 1
@@ -176,7 +178,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
             if "components" in kwargs:
                 components = kwargs["components"]
             else:
-                components = self.components
+                components = self.truth_problem.components
             
             self._init_error_analysis(**kwargs)
             
@@ -186,7 +188,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
             print("")
             
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
-            error_analysis_table.set_Nmax(Nmax)
+            error_analysis_table.set_Nmax(N)
             for component in components:
                 error_analysis_table.add_column("error_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
                 error_analysis_table.add_column("error_estimator_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
@@ -206,7 +208,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
                 
                 self.reduced_problem.set_mu(mu)
                             
-                for n in range(1, Nmax + 1): # n = 1, ... Nmax
+                for n in range(1, N + 1): # n = 1, ... N
                     error = self.reduced_problem.compute_error(n, **kwargs)
                     error_estimator = self.reduced_problem.estimate_error()
                     relative_error = self.reduced_problem.compute_relative_error(n, **kwargs)
@@ -215,18 +217,22 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass)
                         for component in components:
                             error_analysis_table["error_" + component, n, run] = error[component]
                             error_analysis_table["error_estimator_" + component, n, run] = error_estimator[component]
-                            error_analysis_table["effectivity_" + component, n, run] = error_estimator[component]/error[component]
+                            error_analysis_table["effectivity_" + component, n, run] = \
+                                error_analysis_table["error_estimator_" + component, n, run]/error_analysis_table["error_" + component, n, run]
                             error_analysis_table["relative_error_" + component, n, run] = relative_error[component]
                             error_analysis_table["relative_error_estimator_" + component, n, run] = relative_error_estimator[component]
-                            error_analysis_table["relative_effectivity_" + component, n, run] = relative_error_estimator[component]/relative_error[component]
+                            error_analysis_table["relative_effectivity_" + component, n, run] = \
+                                error_analysis_table["relative_error_estimator_" + component, n, run]/error_analysis_table["relative_error_" + component, n, run]
                     else:
                         component = components[0]
                         error_analysis_table["error_" + component, n, run] = error
                         error_analysis_table["error_estimator_" + component, n, run] = error_estimator
-                        error_analysis_table["effectivity_" + component, n, run] = error_estimator/error
+                        error_analysis_table["effectivity_" + component, n, run] = \
+                            error_analysis_table["error_estimator_" + component, n, run]/error_analysis_table["error_" + component, n, run]
                         error_analysis_table["relative_error_" + component, n, run] = relative_error
                         error_analysis_table["relative_error_estimator_" + component, n, run] = relative_error_estimator
-                        error_analysis_table["relative_effectivity_" + component, n, run] = relative_error_estimator/relative_error
+                        error_analysis_table["relative_effectivity_" + component, n, run] = \
+                            error_analysis_table["relative_error_estimator_" + component, n, run]/error_analysis_table["relative_error_" + component, n, run]
                     
                     error_analysis_table["error_output", n, run] = self.reduced_problem.compute_error_output(n, **kwargs)
                     error_analysis_table["error_estimator_output", n, run] = self.reduced_problem.estimate_error_output()
