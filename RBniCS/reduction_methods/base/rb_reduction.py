@@ -173,7 +173,9 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
         # over the testing set
         @override
         def error_analysis(self, N=None, **kwargs):
-            assert N is not None
+            N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
+            if isinstance(N, dict):
+                N = min(N.values())
             
             if "components" in kwargs:
                 components = kwargs["components"]

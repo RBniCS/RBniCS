@@ -98,14 +98,11 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
     @override
-    def error_analysis(self, N=None, **kwargs):
-        N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
-        Nmax = max(N.values())
-        
+    def error_analysis(self, N=None, **kwargs):        
         components = ["u", "p"] # but not "s"
         kwargs["components"] = components
                 
-        StokesPODGalerkinReduction_Base.error_analysis(self, Nmax, **kwargs)
+        StokesPODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

@@ -56,32 +56,4 @@ class EllipticCoercivePODGalerkinReduction(EllipticCoercivePODGalerkinReduction_
     A typical usage of this class is reported in tutorial 2.
 
     """
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
-    #  @{
-    
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call the parent initialization
-        EllipticCoercivePODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
-    
-    # Compute the error of the reduced order approximation with respect to the full order one
-    # over the testing set
-    @override
-    def error_analysis(self, N=None, **kwargs):
-        if N is None:
-            N = self.reduced_problem.N
-            
-        EllipticCoercivePODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
+    pass 
