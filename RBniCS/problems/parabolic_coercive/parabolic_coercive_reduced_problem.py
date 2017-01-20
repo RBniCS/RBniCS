@@ -56,14 +56,6 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
         ###########################     ONLINE STAGE     ########################### 
         ## @defgroup OnlineStage Methods related to the online stage
         #  @{
-                    
-        # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-        @override
-        def solve(self, N=None, **kwargs):
-            if N is None:
-                N = self.N
-            uN = self._solve(N, **kwargs)
-            return uN
         
         # Perform an online solve (internal)
         def _solve(self, N, **kwargs):

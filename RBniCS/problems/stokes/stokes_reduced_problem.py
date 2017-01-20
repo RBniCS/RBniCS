@@ -62,13 +62,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
     ## @defgroup OnlineStage Methods related to the online stage
     #  @{
             
-    # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-    @override
-    def solve(self, N=None, **kwargs):
-        N, kwargs = self._online_size_from_kwargs(N, **kwargs)
-        uN = self._solve(N, **kwargs)
-        return uN
-    
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
         N += self.N_bc

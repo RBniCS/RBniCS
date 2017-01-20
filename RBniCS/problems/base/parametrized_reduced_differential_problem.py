@@ -222,10 +222,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         else:
             raise AssertionError("Invalid stage in _init_basis_functions().")
             
-    # Perform an online solve.
-    @abstractmethod
+    # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
+    @override
     def solve(self, N=None, **kwargs):
-        raise NotImplementedError("The method solve() is problem-specific and needs to be overridden.")
+        N, kwargs = self._online_size_from_kwargs(N, **kwargs)
+        return self._solve(N, **kwargs)
+        
+    # Perform an online solve. Internal method
+    @abstractmethod
+    def _solve(self, N, **kwargs):
+        raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
     
     # Perform an online evaluation of the output
     def output(self):
@@ -268,29 +274,39 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 for component in self.components:
                     self_[component] += other_[component]
                 return self_
-                                    
-        assert len(self.components) > 1 # otherwise there is no need to use this method
-        if N is None:
-            all_components_in_kwargs = self.components[0] in kwargs
-            for component in self.components:
+        
+        if len(self.components) > 1:
+            if N is None:
+                all_components_in_kwargs = self.components[0] in kwargs
+                for component in self.components:
+                    if all_components_in_kwargs:
+                        assert component in kwargs, "You need to specify the online size of all components in kwargs" 
+                    else:
+                        assert component not in kwargs, "You need to specify the online size of all components in kwargs"
                 if all_components_in_kwargs:
-                    assert component in kwargs, "You need to specify the online size of all components in kwargs" 
+                    N = OnlineSizeDict()
+                    for component in self.components:
+                        N[component] = kwargs[component]
+                        del kwargs[component]
                 else:
-                    assert component not in kwargs, "You need to specify the online size of all components in kwargs"
-            if all_components_in_kwargs:
+                    N = OnlineSizeDict(self.N) # copy the default dict
+            else:
+                assert isinstance(N, int)
+                N_int = N
                 N = OnlineSizeDict()
                 for component in self.components:
-                    N[component] = kwargs[component]
-                    del kwargs[component]
-            else:
-                N = OnlineSizeDict(self.N) # copy the default dict
+                    N[component] = N_int
+                    assert component not in kwargs, "You cannot provide both an int and kwargs for components"
         else:
-            assert isinstance(N, int)
-            N_int = N
-            N = OnlineSizeDict()
-            for component in self.components:
-                N[component] = N_int
-                assert component not in kwargs, "You cannot provide both an int and kwargs for components"
+            if N is None:
+                assert len(self.components) == 1
+                component_0 = self.components[0]
+                if component_0 in kwargs:
+                    N = kwargs[component_0]
+                else:
+                    N = self.N
+            else:
+                assert isinstance(N, int)
                 
         return N, kwargs
         
