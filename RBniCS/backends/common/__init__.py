@@ -15,20 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file solve.py
-#  @brief solve function for the solution of a linear system, similar to FEniCS' solve
+## @file __init__.py
+#  @brief Init file for auxiliary linear algebra module
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import AbstractBackend
+from RBniCS.backends.common.linear_program_solver import LinearProgramSolver
+from RBniCS.backends.common.time_quadrature import TimeQuadrature
 
-@AbstractBackend
-class TimeQuadrature(object):
-    def __init__(self, time_interval, time_step_size):
-        pass
-        
-    def integrate(self, function):
-        pass
-        
+__all__ = [
+    'LinearProgramSolver',
+    'TimeQuadrature'
+]

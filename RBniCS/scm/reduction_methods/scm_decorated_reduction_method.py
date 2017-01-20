@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.linear_program_solver import LinearProgramSolver
+from RBniCS.backends.common.linear_program_solver import LinearProgramSolver
 from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
 from RBniCS.scm.problems import SCM
 from RBniCS.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod

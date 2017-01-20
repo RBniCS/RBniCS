@@ -27,6 +27,17 @@ basic/*.pyc
 basic/*/*~
 basic/*/*.bak
 basic/*/*.pyc
+# ... common subpackage ...
+!common/
+!common/*
+common/*~
+common/*.bak
+common/*.pyc
+!common/*/
+!common/*/*
+common/*/*~
+common/*/*.bak
+common/*/*.pyc
 # ... fenics subpackage ...
 !fenics/
 !fenics/*

@@ -33,16 +33,18 @@ for root, dirs, files in os.walk(current_directory):
     break # prevent recursive exploration
 available_backends.remove("abstract")
 available_backends.remove("basic")
+available_backends.remove("common")
 available_backends.remove("online")
 
 # Make sure to import all available backends, so that they are added to the factory storage
 import RBniCS.backends.abstract
+import RBniCS.backends.common
 for backend in available_backends:
     importlib.import_module("RBniCS.backends." + backend)
 
 # Combine all enabled backends available in the factory and store them in this module
 from RBniCS.utils.factories import backends_factory, enable_backend
-enable_backend("Common")
+enable_backend("common")
 for backend in available_backends:
     enable_backend(backend)
 backends_factory(current_module)

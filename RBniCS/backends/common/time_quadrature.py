@@ -22,13 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import AbstractBackend
+from scipy.integrate import simps
+from RBniCS.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
+from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
 
-@AbstractBackend
-class TimeQuadrature(object):
+@Extends(AbstractTimeQuadrature)
+@BackendFor("common", inputs=(tuple_of(float), float))
+class TimeQuadrature(AbstractTimeQuadrature):
     def __init__(self, time_interval, time_step_size):
-        pass
+        self._time_step_size = time_step_size
         
     def integrate(self, function):
-        pass
+        return simps(function, dx=self._time_step_size)
         

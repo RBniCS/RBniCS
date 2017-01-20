@@ -26,7 +26,7 @@ from __future__ import print_function
 import operator # to find closest parameters
 from math import sqrt
 from RBniCS.backends import export, LinearProgramSolver
-from RBniCS.backends.abstract.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
+from RBniCS.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.utils.decorators import sync_setters, Extends, override
 from RBniCS.utils.mpi import print
