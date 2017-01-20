@@ -555,11 +555,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             # operator
             if term in self.terms:
                 for q in range(self.Q[term]):
-                    assert self.terms_order[term] in (1, 2)
+                    assert self.terms_order[term] in (0, 1, 2)
                     if self.terms_order[term] == 2:
                         self.operator[term][q] = transpose(self.Z)*self.truth_problem.operator[term][q]*self.Z
                     elif self.terms_order[term] == 1:
                         self.operator[term][q] = transpose(self.Z)*self.truth_problem.operator[term][q]
+                    elif self.terms_order[term] == 0:
+                        self.operator[term][q] = self.truth_problem.operator[term][q]
                     else:
                         raise AssertionError("Invalid value for order of term " + term)
                 self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)

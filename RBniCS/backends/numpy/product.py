@@ -37,7 +37,7 @@ def product(thetas, operators, thetas2=None):
     assert order in (1, 2)
     if order == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
         first_operator = operators[0]
-        assert isinstance(first_operator, (Matrix.Type(), Vector.Type(), Function.Type()))
+        assert isinstance(first_operator, (Matrix.Type(), Vector.Type(), Function.Type(), float))
         assert thetas2 is None
         assert len(thetas) == len(operators)
         # Single for loop version:

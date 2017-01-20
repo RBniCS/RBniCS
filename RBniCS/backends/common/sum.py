@@ -15,23 +15,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary linear algebra module
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.common.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.common.linear_program_solver import LinearProgramSolver
-from RBniCS.backends.common.product import product
-from RBniCS.backends.common.sum import sum
-from RBniCS.backends.common.time_quadrature import TimeQuadrature
+from RBniCS.backends.common.product import ProductOutput
+from RBniCS.utils.decorators import backend_for
 
-__all__ = [
-    'AffineExpansionStorage',
-    'LinearProgramSolver',
-    'product',
-    'sum',
-    'TimeQuadrature'
-]
+# product function to assemble truth/reduced affine expansions. To be used in combination with product,
+# even though product actually carries out both the sum and the product!
+@backend_for("common", inputs=(ProductOutput, ))
+def sum(product_output):
+    return product_output.sum_product_return_value
+        
