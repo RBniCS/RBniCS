@@ -34,6 +34,7 @@ __all__ = []
 # Import the minimum subset of RBniCS required to run tutorials
 from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
+from RBniCS.problems.elliptic_optimal_control import EllipticOptimalControlProblem
 from RBniCS.problems.parabolic_coercive import ParabolicCoerciveProblem
 from RBniCS.problems.stokes import StokesProblem
 from RBniCS.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
@@ -49,6 +50,7 @@ __all__ += [
     'ExactParametrizedFunctions',
     # RBniCS.problems
     'EllipticCoerciveProblem',
+    'EllipticOptimalControlProblem',
     'ParabolicCoerciveProblem',
     'StokesProblem',
     # RBniCS.sampling
