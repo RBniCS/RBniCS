@@ -75,7 +75,15 @@ class FunctionsList(AbstractFunctionsList):
         self._precomputed_slices[len(self._list)] = self
         
     def _enrich(self, function, component=None, weight=None, copy=True):
-        self._list.append(self.wrapping.function_extend_or_restrict(function, component, self.V_or_Z, component, weight, copy))
+        assert component is None or isinstance(component, (str, dict))
+        if component is None or isinstance(component, str):
+            self._list.append(self.wrapping.function_extend_or_restrict(function, component, self.V_or_Z, component, weight, copy))
+        else:
+            assert len(component.keys()) == 1
+            component_from = component.keys()[0]
+            assert len(component.values()) == 1
+            component_to = component.values()[0]
+            self._list.append(self.wrapping.function_extend_or_restrict(function, component_from, self.V_or_Z, component_to, weight, copy))
         
     @override
     def clear(self):

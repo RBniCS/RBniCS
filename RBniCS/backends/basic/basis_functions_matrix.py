@@ -69,7 +69,6 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             
     @override
     def enrich(self, functions, component=None, weights=None, copy=True):
-        assert component is None or component in self._components
         assert copy is True
         if component is None:
             assert len(self._components) == 1
@@ -77,8 +76,17 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             self._components[component_0].enrich(functions, weights=weights)
             self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
         else:
-            self._components[component].enrich(functions, component=component, weights=weights)
-            self._component_name_to_basis_component_length[component] = len(self._components[component])
+            assert isinstance(component, (str, dict))
+            if isinstance(component, str):
+                assert component in self._components
+                self._components[component].enrich(functions, component=component, weights=weights)
+                self._component_name_to_basis_component_length[component] = len(self._components[component])
+            else:
+                assert len(component.values()) == 1
+                component_to = component.values()[0]
+                assert component_to in self._components
+                self._components[component_to].enrich(functions, component=component, weights=weights)
+                self._component_name_to_basis_component_length[component_to] = len(self._components[component_to])
         # Reset and prepare precomputed slices
         self._prepare_trivial_precomputed_slice()
             
