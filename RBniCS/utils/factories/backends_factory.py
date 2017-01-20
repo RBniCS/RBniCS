@@ -117,9 +117,11 @@ def backends_factory(backends_module):
                     raise TypeError("Invalid type in get_input_types()")
             elif type(input_) in (dict, ): # more strict than isinstance(input_, (dict, ))
                 input_subtypes_from = get_input_types(input_.keys())
+                input_subtypes_from = tuple(set(input_subtypes_from)) # remove repeated types
                 if len(input_subtypes_from) == 1:
                     input_subtypes_from = input_subtypes_from[0]
                 input_subtypes_to = get_input_types(input_.values())
+                input_subtypes_to = tuple(set(input_subtypes_to)) # remove repeated types
                 if len(input_subtypes_to) == 1:
                     input_subtypes_to = input_subtypes_to[0]
                 input_types.append(dict_of(input_subtypes_from, input_subtypes_to))
