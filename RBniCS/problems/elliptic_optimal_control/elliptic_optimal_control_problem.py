@@ -120,7 +120,7 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         self._output = (
             0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 
-            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) + 
+            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) - 
             transpose(assembled_operator["g"])*self._solution + 
             0.5*assembled_operator["h"]
         )
