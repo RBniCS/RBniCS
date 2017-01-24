@@ -75,7 +75,7 @@ class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerk
         self.reduced_problem.Z.enrich(Z["u"], component="u")
         self.reduced_problem.N["u"] += self.Nmax
         
-        # Aggregate POD modes related to state and control
+        # Aggregate POD modes related to state and adjoint
         for component_to in ("y", "p"):
             for i in range(self.Nmax):
                 for component_from in ("y", "p"):

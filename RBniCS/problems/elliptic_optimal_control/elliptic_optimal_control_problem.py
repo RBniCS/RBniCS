@@ -45,7 +45,7 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
         a(y, q) - c(u, q)            = <f, q>     for all q in Q
         
     and compute the cost functional
-        J(y, u) = 1/2 m(y, y) + 1/2 n(u, u) - <g, y> + h
+        J(y, u) = 1/2 m(y, y) + 1/2 n(u, u) - <g, y> + 1/2 h
         
     where
         a*(., .) is the adjoint of a
@@ -65,10 +65,10 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
         ParametrizedDifferentialProblem.__init__(self, V, **kwargs)
         
         # Form names for saddle point problems
-        self.terms = ["a", "at", "c", "ct", "m", "n", "f", "g", "h"]
+        self.terms = ["a", "a*", "c", "c*", "m", "n", "f", "g", "h"]
         self.terms_order = {
-            "a": 2, "at": 2, 
-            "c": 2, "ct": 2,
+            "a": 2, "a*": 2, 
+            "c": 2, "c*": 2,
             "m": 2, "n": 2,
             "f": 1, "g": 1,
             "h": 0
@@ -97,8 +97,8 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
             assembled_dirichlet_bc = None
         solver = LinearSolver(
             (
-                  assembled_operator["m"]                           + assembled_operator["at"]
-                                          + assembled_operator["n"] - assembled_operator["ct"]
+                  assembled_operator["m"]                           + assembled_operator["a*"]
+                                          + assembled_operator["n"] - assembled_operator["c*"]
                 + assembled_operator["a"] - assembled_operator["c"]
             ),
             self._solution,

@@ -64,12 +64,12 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
     def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
-        if term == "a" or term == "at":
+        if term == "a" or term == "a*":
             theta_a0 = 1.0
             theta_a1 = 1.0/mu1
             theta_a2 = mu1
             return (theta_a0, theta_a1, theta_a2)
-        elif term == "c" or term == "ct":
+        elif term == "c" or term == "c*":
             theta_c0 = 1.0
             theta_c1 = mu1
             return (theta_c0, theta_c1)
@@ -108,25 +108,25 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             a1 = y.dx(0)*q.dx(0)*dx(2)
             a2 = y.dx(1)*q.dx(1)*dx(2)
             return (a0, a1, a2)
-        elif term == "at":
+        elif term == "a*":
             z = self.z
             p = self.p
-            at0 = inner(grad(z),grad(p))*dx(1)
-            at1 = z.dx(0)*p.dx(0)*dx(2)
-            at2 = z.dx(1)*p.dx(1)*dx(2)
-            return (at0, at1, at2)
+            as0 = inner(grad(z),grad(p))*dx(1)
+            as1 = z.dx(0)*p.dx(0)*dx(2)
+            as2 = z.dx(1)*p.dx(1)*dx(2)
+            return (as0, as1, as2)
         elif term == "c":
             u = self.u
             q = self.q
             c0 = u*q*dx(1)
             c1 = u*q*dx(2)
             return (c0, c1)
-        elif term == "ct":
+        elif term == "c*":
             v = self.v
             p = self.p
-            ct0 = v*p*dx(1)
-            ct1 = v*p*dx(2)
-            return (ct0, ct1)
+            cs0 = v*p*dx(1)
+            cs1 = v*p*dx(2)
+            return (cs0, cs1)
         elif term == "m":
             y = self.y
             z = self.z

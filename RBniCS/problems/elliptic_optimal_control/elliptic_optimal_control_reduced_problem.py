@@ -82,8 +82,8 @@ class EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProble
         self._solution = OnlineFunction(N)
         solver = LinearSolver(
             (
-                  assembled_operator["m"]                           + assembled_operator["at"]
-                                          + assembled_operator["n"] - assembled_operator["ct"]
+                  assembled_operator["m"]                           + assembled_operator["a*"]
+                                          + assembled_operator["n"] - assembled_operator["c*"]
                 + assembled_operator["a"] - assembled_operator["c"]
             ),
             self._solution,
