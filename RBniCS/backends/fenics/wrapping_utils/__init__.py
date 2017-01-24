@@ -28,6 +28,7 @@ from RBniCS.backends.fenics.wrapping_utils.dofs_parallel_io_helpers import build
 from RBniCS.backends.fenics.wrapping_utils.function_from_ufl_operators import function_from_ufl_operators
 from RBniCS.backends.fenics.wrapping_utils.function_space import FunctionSpace
 from RBniCS.backends.fenics.wrapping_utils.get_expression_description import get_expression_description
+from RBniCS.backends.fenics.wrapping_utils.get_expression_name import get_expression_name
 from RBniCS.backends.fenics.wrapping_utils.get_form_argument import get_form_argument
 from RBniCS.backends.fenics.wrapping_utils.get_form_description import get_form_description
 from RBniCS.backends.fenics.wrapping_utils.get_form_name import get_form_name
@@ -44,6 +45,7 @@ __all__ = [
     'function_from_ufl_operators',
     'FunctionSpace',
     'get_expression_description',
+    'get_expression_name',
     'get_form_argument',
     'get_form_description',
     'get_form_name',

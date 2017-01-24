@@ -23,27 +23,26 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import __version__ as dolfin_version
-from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
+from ufl.corealg.traversal import pre_traversal
 import hashlib
 
-def get_form_name(form):
+def get_expression_name(expression):
     str_repr = ""
     coefficients_replacement = {}
     function_indices = {}
     min_index = None
-    for integral in form.integrals():
-        for n in pre_traversal(integral.integrand()):
-            if hasattr(n, "cppcode"):
-                coefficients_replacement[repr(n)] = str(n.cppcode)
-                str_repr += repr(n.cppcode)
-            else:
-                str_repr += repr(n)
-        for t in traverse_unique_terminals(integral.integrand()):
-            if str(t).startswith("f_"):
-                index = int(str(t).replace("f_", ""))
-                function_indices[repr(t)] = index
-                if min_index is None or index < min_index:
-                    min_index = index
+    for n in pre_traversal(expression):
+        if hasattr(n, "cppcode"):
+            coefficients_replacement[repr(n)] = str(n.cppcode)
+            str_repr += repr(n.cppcode)
+        else:
+            str_repr += repr(n)
+    for t in traverse_unique_terminals(expression):
+        if str(t).startswith("f_"):
+            index = int(str(t).replace("f_", ""))
+            function_indices[repr(t)] = index
+            if min_index is None or index < min_index:
+                min_index = index
     for key, index in function_indices.iteritems():
         coefficients_replacement[key] = "f_" + str(index - min_index)
     for key, value in coefficients_replacement.iteritems():

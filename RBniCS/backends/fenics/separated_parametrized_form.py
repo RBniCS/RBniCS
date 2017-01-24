@@ -24,7 +24,6 @@
 
 from numpy import ones, zeros
 from dolfin import Constant, Expression, Function, log, PROGRESS
-from dolfin import __version__ as dolfin_version
 from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
 from ufl.algorithms import Transformer
@@ -32,11 +31,10 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.core.multiindex import MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
-import hashlib
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from RBniCS.backends.fenics.wrapping_utils import get_form_name
+from RBniCS.backends.fenics.wrapping_utils import get_expression_name, get_form_name
 
 @Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("fenics", inputs=(Form, ))
@@ -206,16 +204,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         for addend in self._coefficients:
             self._placeholder_names.append( list() ) # of string
             for factor in addend:
-                str_repr = ""
-                for n in pre_traversal(factor):
-                    if hasattr(n, "cppcode"):
-                        str_repr += repr(n.cppcode)
-                    else:
-                        str_repr += repr(n)
-                hash_code = hashlib.sha1(
-                                (str_repr + dolfin_version).encode("utf-8")
-                            ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
-                self._placeholder_names[-1].append(hash_code)
+                self._placeholder_names[-1].append(get_expression_name(factor))
                 
         log(PROGRESS, "4. Assert list length consistency")
         assert len(self._coefficients) == len(self._placeholders)
