@@ -74,7 +74,7 @@ def EIMDecoratedProblem(
                         for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
                             for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
                                 if factor not in self.EIM_approximations:
-                                    self.EIM_approximations[factor] = EIMApproximation(self, ParametrizedExpressionFactory(factor, factor_name), type(self).__name__ + "/eim/" + factor_name, basis_generation)
+                                    self.EIM_approximations[factor] = EIMApproximation(self, ParametrizedExpressionFactory(factor), type(self).__name__ + "/eim/" + factor_name, basis_generation)
                 
             @override
             def solve(self, **kwargs):

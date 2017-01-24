@@ -30,23 +30,21 @@ from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogo
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
-from RBniCS.backends.fenics.wrapping_utils import get_expression_description
+from RBniCS.backends.fenics.wrapping_utils import get_expression_description, get_expression_name
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
-@BackendFor("fenics", inputs=((Expression, Operator), str))
+@BackendFor("fenics", inputs=((Expression, Operator), ))
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
-    def __init__(self, expression, name):
-        AbstractParametrizedExpressionFactory.__init__(self, expression, name)
+    def __init__(self, expression):
+        AbstractParametrizedExpressionFactory.__init__(self, expression)
+        self._expression = expression
+        self._name = get_expression_name(expression)
         assert isinstance(expression, (Expression, Operator))
         if isinstance(expression, Expression):
-            self._expression = expression
-            self._name = name
             self._space = FunctionSpace(expression.mesh, expression.ufl_element())
         elif isinstance(expression, Operator):
-            self._expression = expression
-            self._name = name
             self._space = project(expression).function_space() # automatically determines the FunctionSpace
         else:
             raise AssertionError("Invalid expression in ParametrizedExpressionFactory.__init__().")

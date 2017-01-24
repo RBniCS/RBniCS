@@ -26,7 +26,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ParametrizedTensorFactory(object):
-    def __init__(self, tensor, name):
+    def __init__(self, tensor):
         pass
     
     @abstractmethod

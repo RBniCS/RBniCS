@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import __version__ as dolfin_version
-from ufl.corealg.traversal import pre_traversal
+from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 import hashlib
 
 def get_expression_name(expression):

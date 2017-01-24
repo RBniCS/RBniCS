@@ -26,7 +26,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ParametrizedExpressionFactory(object):
-    def __init__(self, expression, name):
+    def __init__(self, expression):
         pass
     
     @abstractmethod

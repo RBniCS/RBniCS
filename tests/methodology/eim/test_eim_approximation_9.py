@@ -31,8 +31,8 @@ from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
 class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
-    def __init__(self, expression, name, mesh):
-        ParametrizedExpressionFactory_Base.__init__(self, expression, name)
+    def __init__(self, expression, mesh):
+        ParametrizedExpressionFactory_Base.__init__(self, expression)
         # Use a ridiculously high finite element space to have an accuracy comparable to the one of test 1,
         # where exact evaluation is carried out
         self._space = FunctionSpace(mesh, "CG", 10)
@@ -48,18 +48,18 @@ class ParametrizedFunctionApproximation(EIMApproximation):
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f, "f", V.mesh()), "test_eim_approximation_9_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f, V.mesh()), "test_eim_approximation_9_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(V)
             form = f*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form, "form"), "test_eim_approximation_9_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_9_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(V)
             v = TestFunction(V)
             form = f*u*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form, "form"), "test_eim_approximation_9_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_9_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 
