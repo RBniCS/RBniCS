@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import DirichletBC, solve
+from dolfin import DirichletBC, PETScLUSolver
 from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
@@ -65,6 +65,7 @@ class LinearSolver(AbstractLinearSolver):
         
     @override
     def solve(self):
-        solve(self.lhs, self.solution.vector(), self.rhs)
+        solver = PETScLUSolver("mumps")
+        solver.solve(self.lhs, self.solution.vector(), self.rhs)
         return self.solution
         
