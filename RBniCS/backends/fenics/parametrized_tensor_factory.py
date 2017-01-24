@@ -31,20 +31,21 @@ from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
 from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
 from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
-from RBniCS.backends.fenics.wrapping_utils import get_form_name, get_form_argument
+from RBniCS.backends.fenics.wrapping_utils import get_form_argument, get_form_description
 from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
 
 @Extends(AbstractParametrizedTensorFactory)
-@BackendFor("fenics", inputs=(Form, ))
+@BackendFor("fenics", inputs=(Form, str))
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     # This are needed for proper I/O in tensor_load/tensor_save
     _all_forms = dict()
     _all_forms_assembled_containers = dict()
     
-    def __init__(self, form):
-        AbstractParametrizedTensorFactory.__init__(self, form)
+    def __init__(self, form, name):
+        AbstractParametrizedTensorFactory.__init__(self, form, name)
         # Store form
         self._form = form
+        self._name = name
         # Extract spaces from forms
         len_spaces = len(form.arguments())
         assert len_spaces in (1, 2)
@@ -59,11 +60,10 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
             )
         self._spaces = spaces
         # Store for I/O
-        form_name = get_form_name(form)
         assembled_form = assemble(form)
         assembled_form.generator = form
-        ParametrizedTensorFactory._all_forms[form_name] = form
-        ParametrizedTensorFactory._all_forms_assembled_containers[form_name] = assembled_form
+        ParametrizedTensorFactory._all_forms[self._name] = form
+        ParametrizedTensorFactory._all_forms_assembled_containers[self._name] = assembled_form
     
     @override
     def create_interpolation_locations_container(self):
@@ -90,4 +90,15 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     @override
     def create_POD_container(self):
         return HighOrderProperOrthogonalDecomposition(self._spaces)
+        
+    @override
+    def description(self):
+        return PrettyTuple(self._form, get_form_description(self._form), self._name)
+        
+class PrettyTuple(tuple):
+    def __new__(cls, arg0, arg1, arg2):
+        as_list = [str(arg0) + ",", "where"]
+        as_list.extend([str(s) for s in arg1])
+        as_list.append("with id " + str(arg2))
+        return tuple.__new__(cls, tuple(as_list))
         

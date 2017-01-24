@@ -103,11 +103,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
             return self.EIM_approximation
             
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
-        interpolation_method_name_headings = interpolation_method_name.rjust(4)
+        description = self.EIM_approximation.parametrized_expression.description()
         
         # Evaluate the parametrized expression for all parameters in the training set
         print("==============================================================")
-        print("=            " + interpolation_method_name_headings + " preprocessing phase begins                 =")
+        print("=" + "{:^60}".format(interpolation_method_name + " preprocessing phase begins for") + "=")
+        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
         print("==============================================================")
         print("")
         
@@ -131,12 +132,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
             print("")
         
         print("==============================================================")
-        print("=            " + interpolation_method_name_headings + " preprocessing phase ends                   =")
+        print("=" + "{:^60}".format(interpolation_method_name + " preprocessing phase ends for") + "=")
+        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
         print("==============================================================")
         print("")
         
         print("==============================================================")
-        print("=            " + interpolation_method_name_headings + " offline phase begins                       =")
+        print("=" + "{:^60}".format(interpolation_method_name + " offline phase begins for") + "=")
+        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
         print("==============================================================")
         print("")
         
@@ -189,7 +192,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             print("")
             
         print("==============================================================")
-        print("=            " + interpolation_method_name_headings + " offline phase ends                         =")
+        print("=" + "{:^60}".format(interpolation_method_name + " offline phase ends for") + "=")
+        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
         print("==============================================================")
         print("")
         
@@ -279,10 +283,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self._init_error_analysis(**kwargs)
         
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
-        interpolation_method_name_headings = interpolation_method_name.rjust(4)
+        description = self.EIM_approximation.parametrized_expression.description()
         
         print("==============================================================")
-        print("=            " + interpolation_method_name_headings + " error analysis begins                      =")
+        print("=" + "{:^60}".format(interpolation_method_name + " error analysis begins for") + "=")
+        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
         print("==============================================================")
         print("")
         
@@ -309,7 +314,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
         print("")
         print("==============================================================")
-        print("=            " + interpolation_method_name_headings + " error analysis ends                        =")
+        print("=" + "{:^60}".format(interpolation_method_name + " error analysis ends for") + "=")
+        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
         print("==============================================================")
         print("")
         

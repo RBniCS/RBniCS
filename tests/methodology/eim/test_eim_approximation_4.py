@@ -39,18 +39,18 @@ class ParametrizedFunctionApproximation(EIMApproximation):
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f), "test_eim_approximation_4_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f, "f"), "test_eim_approximation_4_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(V)
             form = f*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_4_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form, "form"), "test_eim_approximation_4_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(V)
             v = TestFunction(V)
             form = f*u*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_4_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form, "form"), "test_eim_approximation_4_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 

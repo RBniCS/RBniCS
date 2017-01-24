@@ -30,20 +30,23 @@ from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogo
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
+from RBniCS.backends.fenics.wrapping_utils import get_expression_description
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
-@BackendFor("fenics", inputs=((Expression, Operator), ))
+@BackendFor("fenics", inputs=((Expression, Operator), str))
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
-    def __init__(self, expression):
-        AbstractParametrizedExpressionFactory.__init__(self, expression)
+    def __init__(self, expression, name):
+        AbstractParametrizedExpressionFactory.__init__(self, expression, name)
         assert isinstance(expression, (Expression, Operator))
         if isinstance(expression, Expression):
             self._expression = expression
+            self._name = name
             self._space = FunctionSpace(expression.mesh, expression.ufl_element())
         elif isinstance(expression, Operator):
             self._expression = expression
+            self._name = name
             self._space = project(expression).function_space() # automatically determines the FunctionSpace
         else:
             raise AssertionError("Invalid expression in ParametrizedExpressionFactory.__init__().")
@@ -67,4 +70,15 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
         g = TestFunction(self._space)
         inner_product = assemble(inner(f, g)*dx)
         return ProperOrthogonalDecomposition(self._space, inner_product)
+        
+    @override
+    def description(self):
+        return PrettyTuple(self._expression, get_expression_description(self._expression), self._name)
+        
+class PrettyTuple(tuple):
+    def __new__(cls, arg0, arg1, arg2):
+        as_list = [str(arg0) + ",", "where"]
+        as_list.extend([str(s) for s in arg1])
+        as_list.append("with id " + str(arg2))
+        return tuple.__new__(cls, tuple(as_list))
         

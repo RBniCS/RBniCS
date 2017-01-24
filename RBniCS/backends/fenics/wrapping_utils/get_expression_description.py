@@ -22,33 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import AbstractBackend, abstractmethod
+from ufl.corealg.traversal import traverse_unique_terminals
 
-@AbstractBackend
-class ParametrizedExpressionFactory(object):
-    def __init__(self, expression, name):
-        pass
-    
-    @abstractmethod
-    def create_interpolation_locations_container(self):
-        pass
-        
-    @abstractmethod
-    def create_snapshots_container(self):
-        pass
-        
-    @abstractmethod
-    def create_basis_container(self):
-        pass
-        
-    @abstractmethod
-    def create_POD_container(self):
-        pass
-        
-    def interpolation_method_name(self):
-        return "EIM"
-        
-    @abstractmethod
-    def description(self):
-        pass
-            
+def get_expression_description(expression):
+    coefficients_repr = {}
+    for n in traverse_unique_terminals(expression):
+        if hasattr(n, "cppcode"):
+            coefficients_repr[n] = str(n.cppcode)
+    all_str = list()
+    for key, value in coefficients_repr.iteritems():
+        all_str.append(str(key) + " = " + value)
+    return all_str

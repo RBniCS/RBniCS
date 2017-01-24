@@ -26,7 +26,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ParametrizedTensorFactory(object):
-    def __init__(self, tensor):
+    def __init__(self, tensor, name):
         pass
     
     @abstractmethod
@@ -47,4 +47,8 @@ class ParametrizedTensorFactory(object):
         
     def interpolation_method_name(self):
         return "DEIM"
+        
+    @abstractmethod
+    def description(self):
+        pass
         
