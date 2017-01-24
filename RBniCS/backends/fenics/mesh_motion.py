@@ -45,13 +45,19 @@ class MeshMotion(AbstractMeshMotion):
                 self.subdomain_id_to_deformation_dofs[subdomain_id] = list()
             dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
             for dof in dofs:
-                self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
+                global_dof = self.deformation_V.dofmap().local_to_global_index(dof)
+                if (
+                    self.deformation_V.dofmap().ownership_range()[0] <= global_dof
+                        and
+                    global_dof < self.deformation_V.dofmap().ownership_range()[1]
+                ):
+                    self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
         # In parallel some subdomains may not be present on all processors. Fill in
         # the dict with empty lists if that is the case
         mpi_comm = self.mesh.mpi_comm().tompi4py()
         min_subdomain_id = mpi_comm.allreduce(min(self.subdomain_id_to_deformation_dofs.keys()), op=MIN)
         max_subdomain_id = mpi_comm.allreduce(max(self.subdomain_id_to_deformation_dofs.keys()), op=MAX)
-        for subdomain_id in range(min_subdomain_id, max_subdomain_id):
+        for subdomain_id in range(min_subdomain_id, max_subdomain_id + 1):
             if subdomain_id not in self.subdomain_id_to_deformation_dofs:
                 self.subdomain_id_to_deformation_dofs[subdomain_id] = list()
         # Subdomain numbering is contiguous
@@ -79,7 +85,7 @@ class MeshMotion(AbstractMeshMotion):
             self.displacement_expression.append(
                 ParametrizedExpression(
                     problem,
-                    tuple(shape_parametrization_expression_on_subdomain),
+                    tuple(displacement_expression_on_subdomain),
                     mu=problem.mu,
                     element=self.deformation_V.ufl_element(),
                     domain=self.mesh
