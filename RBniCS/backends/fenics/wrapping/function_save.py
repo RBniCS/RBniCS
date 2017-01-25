@@ -23,9 +23,17 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import assign, File
+from RBniCS.backends.fenics.wrapping.function_extend_or_restrict import function_extend_or_restrict
+from RBniCS.backends.fenics.wrapping.get_function_subspace import get_function_subspace
 
 def function_save(fun, directory, filename, suffix=None):
-    _write_to_pvd_file(fun, directory, filename, suffix)
+    fun_V = fun.function_space()
+    if hasattr(fun_V, "_component_to_index") and len(fun_V._component_to_index) > 1:
+        for (component, index) in fun_V._component_to_index.iteritems():
+            sub_fun = function_extend_or_restrict(fun, component, get_function_subspace(fun_V, component), None, weight=None, copy=True)
+            _write_to_pvd_file(sub_fun, directory, filename + "_component_" + str(index), suffix)
+    else:
+        _write_to_pvd_file(fun, directory, filename, suffix)
     if suffix is not None:
         filename = filename + "." + str(suffix)
     full_filename = str(directory) + "/" + filename + ".xml"

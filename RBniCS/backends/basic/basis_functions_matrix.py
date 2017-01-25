@@ -115,7 +115,7 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
     def save(self, directory, filename):
         if len(self._components) > 1:
             for (component_name, basis_functions) in self._components.iteritems():
-                basis_functions.save(directory, filename + "_component_" + component_name)
+                basis_functions.save(directory, filename + "_" + component_name)
         else:
             component_0 = self._components.keys()[0]
             self._components[component_0].save(directory, filename)
@@ -126,7 +126,7 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         assert len(self._components) > 0
         if len(self._components) > 1:
             for (component_name, basis_functions) in self._components.iteritems():
-                return_value_component = basis_functions.load(directory, filename + "_component_" + component_name)
+                return_value_component = basis_functions.load(directory, filename + "_" + component_name)
                 return_value = return_value and return_value_component
                 # Also populate component length
                 self._component_name_to_basis_component_length[component_name] = len(basis_functions)
