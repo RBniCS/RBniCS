@@ -48,6 +48,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             # I/O
             self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
             self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+            self.label = "POD-Galerkin"
             
         #  @}
         ########################### end - CONSTRUCTORS - end ########################### 
@@ -85,7 +86,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 return self.reduced_problem
             
             print("==============================================================")
-            print("=             Offline phase begins                           =")
+            print("=" + "{:^60}".format(self.label + " offline phase begins") + "=")
             print("==============================================================")
             print("")
             
@@ -114,7 +115,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             print("")
             print("==============================================================")
-            print("=             Offline phase ends                             =")
+            print("=" + "{:^60}".format(self.label + " offline phase ends") + "=")
             print("==============================================================")
             print("")
             
@@ -174,7 +175,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._init_error_analysis(**kwargs)
             
             print("==============================================================")
-            print("=             Error analysis begins                          =")
+            print("=" + "{:^60}".format(self.label + " error analysis begins") + "=")
             print("==============================================================")
             print("")
             
@@ -212,7 +213,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             print("")
             print("==============================================================")
-            print("=             Error analysis ends                            =")
+            print("=" + "{:^60}".format(self.label + " error analysis ends") + "=")
             print("==============================================================")
             print("")
             
@@ -229,7 +230,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._init_speedup_analysis(**kwargs)
             
             print("==============================================================")
-            print("=            Speedup analysis begins                         =")
+            print("=" + "{:^60}".format(self.label + " speedup analysis begins") + "=")
             print("==============================================================")
             print("")
             
@@ -272,7 +273,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             print("")
             print("==============================================================")
-            print("=            Speedup analysis ends                           =")
+            print("=" + "{:^60}".format(self.label + " speedup analysis ends") + "=")
             print("==============================================================")
             print("")
             

@@ -49,6 +49,9 @@ def PrimalDualReductionMethod(DualProblem):
                     self.dual_reduction_method.folder[key] = name.replace(self.dual_reduction_method.folder_prefix, new_folder_prefix)
                 self.dual_reduction_method.folder_prefix = new_folder_prefix
                 
+                # Change the label in dual reduction method
+                self.dual_reduction_method.label = "Dual " + self.dual_reduction_method.label
+                
             ###########################     SETTERS     ########################### 
             ## @defgroup Setters Set properties of the reduced order approximation
             #  @{

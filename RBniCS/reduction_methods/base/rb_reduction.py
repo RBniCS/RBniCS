@@ -52,6 +52,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
             self.greedy_selected_parameters = GreedySelectedParametersList()
             self.greedy_error_estimators = GreedyErrorEstimatorsList()
+            self.label = "RB"
             
         #  @}
         ########################### end - CONSTRUCTORS - end ########################### 
@@ -89,7 +90,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 return self.reduced_problem
                         
             print("==============================================================")
-            print("=             Offline phase begins                           =")
+            print("=" + "{:^60}".format(self.label + " offline phase begins") + "=")
             print("==============================================================")
             print("")
             
@@ -125,7 +126,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 print("")
                 
             print("==============================================================")
-            print("=             Offline phase ends                             =")
+            print("=" + "{:^60}".format(self.label + " offline phase ends") + "=")
             print("==============================================================")
             print("")
             
@@ -185,7 +186,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._init_error_analysis(**kwargs)
             
             print("==============================================================")
-            print("=             Error analysis begins                          =")
+            print("=" + "{:^60}".format(self.label + " error analysis begins") + "=")
             print("==============================================================")
             print("")
             
@@ -251,7 +252,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             print("")
             print("==============================================================")
-            print("=             Error analysis ends                            =")
+            print("=" + "{:^60}".format(self.label + " error analysis ends") + "=")
             print("==============================================================")
             print("")
             
@@ -268,7 +269,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._init_speedup_analysis(**kwargs)
             
             print("==============================================================")
-            print("=            Speedup analysis begins                         =")
+            print("=" + "{:^60}".format(self.label + " speedup analysis begins") + "=")
             print("==============================================================")
             print("")
             
@@ -315,7 +316,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             print("")
             print("==============================================================")
-            print("=            Speedup analysis ends                           =")
+            print("=" + "{:^60}".format(self.label + " speedup analysis ends") + "=")
             print("==============================================================")
             print("")
             

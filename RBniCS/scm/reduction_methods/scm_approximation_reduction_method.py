@@ -116,7 +116,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
             return self.SCM_approximation
         
         print("==============================================================")
-        print("=             SCM offline phase begins                       =")
+        print("=" + "{:^60}".format("SCM offline phase begins") + "=")
         print("==============================================================")
         print("")
         
@@ -154,7 +154,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
             print("")
         
         print("==============================================================")
-        print("=             SCM offline phase ends                         =")
+        print("=" + "{:^60}".format("SCM offline phase ends") + "=")
         print("==============================================================")
         print("")
         
@@ -280,7 +280,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self._init_error_analysis(**kwargs)
         
         print("==============================================================")
-        print("=             SCM error analysis begins                      =")
+        print("=" + "{:^60}".format("SCM error analysis begins") + "=")
         print("==============================================================")
         print("")
         
@@ -314,7 +314,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         print("")
         print("==============================================================")
-        print("=             SCM error analysis ends                        =")
+        print("=" + "{:^60}".format("SCM error analysis ends") + "=")
         print("==============================================================")
         print("")
         
@@ -331,7 +331,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self._init_speedup_analysis(**kwargs)
         
         print("==============================================================")
-        print("=             SCM speedup analysis begins                      =")
+        print("=" + "{:^60}".format("SCM speedup analysis begins") + "=")
         print("==============================================================")
         print("")
         
@@ -365,7 +365,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         print("")
         print("==============================================================")
-        print("=             SCM speedup analysis ends                        =")
+        print("=" + "{:^60}".format("SCM speedup analysis ends") + "=")
         print("==============================================================")
         print("")
         
