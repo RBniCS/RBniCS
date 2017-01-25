@@ -138,3 +138,6 @@ reduced_nonlinear_elliptic_problem.export_solution("NonlinearElliptic", "online_
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(50, DEIM=60)
 reduced_basis_method.error_analysis()
+
+# 8. Perform a speedup analysis
+reduced_basis_method.speedup_analysis()

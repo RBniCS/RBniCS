@@ -249,3 +249,6 @@ reduced_stokes_problem.export_solution("Stokes", "online_solution")
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
 pod_galerkin_method.error_analysis()
+
+# 8. Perform a speedup analysis
+pod_galerkin_method.speedup_analysis()

@@ -106,6 +106,18 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
             
+        @override
+        def _init_speedup_analysis(self, **kwargs):
+            # TODO
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
+            
+        @override
+        def _finalize_speedup_analysis(self, **kwargs):
+            # TODO
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)
+            
     # return value (a class) for the decorator
     return MultiLevelReductionMethod_Class
     

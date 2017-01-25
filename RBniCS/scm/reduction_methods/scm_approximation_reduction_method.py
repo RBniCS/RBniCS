@@ -27,7 +27,7 @@ from numpy import isclose
 from RBniCS.backends import transpose
 from RBniCS.backends.online import OnlineVector
 from RBniCS.reduction_methods.base import ReductionMethod
-from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList
+from RBniCS.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override
 from RBniCS.scm.problems import ParametrizedCoercivityConstantEigenProblem
@@ -269,8 +269,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
         # Initialize reduced order data structures in the SCM online problem
         self.SCM_approximation.init("online")
     
-    # Compute the error of the empirical interpolation approximation with respect to the
-    # exact function over the testing set
+    # Compute the error of the scm approximation with respect to the
+    # exact coercivity over the testing set
     @override
     def error_analysis(self, N=None, **kwargs):
         if N is None:
@@ -319,6 +319,57 @@ class SCMApproximationReductionMethod(ReductionMethod):
         print("")
         
         self._finalize_error_analysis(**kwargs)
+        
+    # Compute the speedup of the scm approximation with respect to the
+    # exact coercivity over the testing set
+    @override
+    def speedup_analysis(self, N=None, **kwargs):
+        if N is None:
+            N = self.SCM_approximation.N
+        assert len(kwargs) == 0 # not used in this method
+            
+        self._init_speedup_analysis(**kwargs)
+        
+        print("==============================================================")
+        print("=             SCM speedup analysis begins                      =")
+        print("==============================================================")
+        print("")
+        
+        speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
+        speedup_analysis_table.set_Nmin(N)
+        speedup_analysis_table.set_Nmax(N)
+        speedup_analysis_table.add_column("speedup", group_name="speedup", operations=("min", "mean", "max"))
+        
+        exact_timer = Timer("parallel")
+        SCM_timer = Timer("serial")
+        
+        for (run, mu) in enumerate(self.testing_set):
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            
+            self.SCM_approximation.set_mu(mu)
+            
+            exact_timer.start()
+            self.SCM_approximation.exact_coercivity_constant_calculator.solve()
+            elapsed_exact = exact_timer.stop()
+            
+            SCM_timer.start()
+            LB = self.SCM_approximation.get_stability_factor_lower_bound(self.SCM_approximation.mu, False)
+            UB = self.SCM_approximation.get_stability_factor_upper_bound(self.SCM_approximation.mu)
+            elapsed_SCM = SCM_timer.stop()
+            
+            speedup_analysis_table["speedup", N, run] = elapsed_exact/elapsed_SCM
+        
+        # Print
+        print("")
+        print(speedup_analysis_table)
+        
+        print("")
+        print("==============================================================")
+        print("=             SCM speedup analysis ends                        =")
+        print("==============================================================")
+        print("")
+        
+        self._finalize_speedup_analysis(**kwargs)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

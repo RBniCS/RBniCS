@@ -142,7 +142,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                                                 # an exact parametrized functions, 
                                                 # so he probably is not interested in the error analysis of DEIM
                     and
-                "N_DEIM" not in kwargs           # otherwise we assume the user was interested in computing the error for a fixed number of DEIM basis
+                "N_DEIM" not in kwargs          # otherwise we assume the user was interested in computing the error for a fixed number of DEIM basis
                                                 # functions, thus he has already carried out the error analysis of DEIM
             ):
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
@@ -150,6 +150,25 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                         DEIM_reduction_term_q.error_analysis(N)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            
+        # Compute the speedup of the reduced order approximation with respect to the full order one
+        # over the testing set
+        @override
+        def speedup_analysis(self, N=None, **kwargs):
+            # Perform first the DEIM speedup analysis, ...
+            if (
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t. 
+                                                # an exact parametrized functions, 
+                                                # so he probably is not interested in the speedup analysis of DEIM
+                    and
+                "N_DEIM" not in kwargs          # otherwise we assume the user was interested in computing the speedup for a fixed number of DEIM basis
+                                                # functions, thus he has already carried out the speedup analysis of DEIM
+            ):
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                        DEIM_reduction_term_q.speedup_analysis(N)
+            # ..., and then call the parent method.
+            DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
             
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 

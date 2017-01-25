@@ -104,6 +104,15 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem.init("online")
         
+    ## Initialize data structures required for the speedup analysis phase
+    @override
+    def _init_speedup_analysis(self, **kwargs): 
+        # Initialize the affine expansion in the truth problem
+        self.truth_problem.init()
+        
+        # Initialize reduced order data structures in the reduced problem
+        self.reduced_problem.init("online")
+        
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
     

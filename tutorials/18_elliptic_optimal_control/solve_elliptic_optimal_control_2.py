@@ -206,3 +206,5 @@ print "Reduced output for mu =", online_mu, "is", reduced_elliptic_optimal_contr
 pod_galerkin_method.initialize_testing_set(100)
 pod_galerkin_method.error_analysis()
 
+# 8. Perform a speedup analysis
+pod_galerkin_method.speedup_analysis()

@@ -26,7 +26,7 @@ from __future__ import print_function
 from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.backends import evaluate
 from RBniCS.backends.online import OnlineMatrix
-from RBniCS.utils.io import Folders, ErrorAnalysisTable, SpeedupAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList
+from RBniCS.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from RBniCS.utils.mpi import print
 from RBniCS.utils.decorators import Extends, override
 
@@ -320,6 +320,61 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("")
         
         self._finalize_error_analysis(**kwargs)
+        
+    # Compute the speedup of the empirical interpolation approximation with respect to the
+    # exact function over the testing set
+    @override
+    def speedup_analysis(self, N=None, **kwargs):
+        if N is None:
+            N = self.EIM_approximation.N
+        assert len(kwargs) == 0 # not used in this method
+            
+        self._init_speedup_analysis(**kwargs)
+        
+        interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
+        description = self.EIM_approximation.parametrized_expression.description()
+        
+        print("==============================================================")
+        print("=" + "{:^60}".format(interpolation_method_name + " speedup analysis begins for") + "=")
+        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
+        print("==============================================================")
+        print("")
+        
+        speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
+        speedup_analysis_table.set_Nmax(N)
+        speedup_analysis_table.add_column("speedup", group_name="speedup", operations=("min", "mean", "max"))
+        
+        evaluate_timer = Timer("parallel")
+        EIM_timer = Timer("serial")
+        
+        for (run, mu) in enumerate(self.testing_set):
+            print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
+            
+            self.EIM_approximation.set_mu(mu)
+            
+            # Evaluate the exact function on the truth grid
+            evaluate_timer.start()
+            self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
+            elapsed_evaluate = evaluate_timer.stop()
+            
+            for n in range(1, N + 1): # n = 1, ... N
+                EIM_timer.start()
+                self.EIM_approximation.solve(n)
+                elapsed_EIM = EIM_timer.stop()
+                speedup_analysis_table["speedup", n, run] = elapsed_evaluate/elapsed_EIM
+        
+        # Print
+        print("")
+        print(speedup_analysis_table)
+        
+        print("")
+        print("==============================================================")
+        print("=" + "{:^60}".format(interpolation_method_name + " speedup analysis ends for") + "=")
+        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
+        print("==============================================================")
+        print("")
+        
+        self._finalize_speedup_analysis(**kwargs)
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ###########################

@@ -141,7 +141,21 @@ class ReductionMethod(object):
     def _finalize_error_analysis(self, **kwargs):
         pass
         
+    # Compute the speedup analysis of the reduced order approximation with respect to the full order one
+    # over the testing set
+    @abstractmethod
+    def speedup_analysis(self, N=None, **kwargs):
+        raise NotImplementedError("Please implement the speedup analysis of the reduced order model.")
+        
+    ## Initialize data structures required for the error analysis phase
+    def _init_speedup_analysis(self, **kwargs):
+        pass
+        
+    ## Finalize data structures required after the error analysis phase
+    def _finalize_speedup_analysis(self, **kwargs):
+        pass
+        
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
     
-
+        

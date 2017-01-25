@@ -149,6 +149,24 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
+        # Compute the speedup of the reduced order approximation with respect to the full order one
+        # over the testing set
+        @override
+        def speedup_analysis(self, N=None, **kwargs):
+            # Perform first the EIM speedup analysis, ...
+            if (
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t. 
+                                                # an exact parametrized functions, 
+                                                # so he probably is not interested in the speedup analysis of EIM
+                    and
+                "N_EIM" not in kwargs           # otherwise we assume the user was interested in computing the speedup for a fixed number of EIM basis
+                                                # functions, thus he has already carried out the speedup analysis of EIM
+            ):
+                for coeff in self.EIM_reductions:
+                    self.EIM_reductions[coeff].speedup_analysis(N)
+            # ..., and then call the parent method.
+            DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
+            
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 
         

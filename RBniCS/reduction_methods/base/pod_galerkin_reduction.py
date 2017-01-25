@@ -24,7 +24,7 @@
 
 from __future__ import print_function
 from RBniCS.backends import ProperOrthogonalDecomposition
-from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
+from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
 from RBniCS.utils.decorators import Extends, override
 from RBniCS.utils.mpi import print
 
@@ -217,6 +217,66 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
             
             self._finalize_error_analysis(**kwargs)
+            
+        # Compute the speedup of the reduced order approximation with respect to the full order one
+        # over the testing set
+        @override
+        def speedup_analysis(self, N=None, **kwargs):
+            N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
+            if isinstance(N, dict):
+                N = min(N.values())
+            
+            self._init_speedup_analysis(**kwargs)
+            
+            print("==============================================================")
+            print("=            Speedup analysis begins                         =")
+            print("==============================================================")
+            print("")
+            
+            speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
+            speedup_analysis_table.set_Nmax(N)
+            speedup_analysis_table.add_column("speedup_solve", group_name="speedup_solve", operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column("speedup_output", group_name="speedup_output", operations=("min", "mean", "max"))
+            
+            truth_timer = Timer("parallel")
+            reduced_timer = Timer("serial")
+                        
+            for (run, mu) in enumerate(self.testing_set):
+                print("############################## run =", run, "######################################")
+                
+                self.reduced_problem.set_mu(mu)
+                
+                truth_timer.start()
+                self.truth_problem.solve(**kwargs)
+                elapsed_truth_solve = truth_timer.stop()
+                
+                truth_timer.start()
+                self.truth_problem.output()
+                elapsed_truth_output = truth_timer.stop()
+                
+                for n in range(1, N + 1): # n = 1, ... N
+                    reduced_timer.start()
+                    self.reduced_problem.solve(n, **kwargs)
+                    elapsed_reduced_solve = reduced_timer.stop()
+                    
+                    reduced_timer.start()
+                    self.reduced_problem.output()
+                    elapsed_reduced_output = reduced_timer.stop()
+                    
+                    speedup_analysis_table["speedup_solve", n, run] = elapsed_truth_solve/elapsed_reduced_solve
+                    speedup_analysis_table["speedup_output", n, run] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
+            
+            # Print
+            print("")
+            print(speedup_analysis_table)
+            
+            print("")
+            print("==============================================================")
+            print("=            Speedup analysis ends                           =")
+            print("==============================================================")
+            print("")
+            
+            self._finalize_speedup_analysis(**kwargs)
         
         #  @}
         ########################### end - ERROR ANALYSIS - end ########################### 

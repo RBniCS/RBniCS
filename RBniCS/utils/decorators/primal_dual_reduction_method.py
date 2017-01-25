@@ -112,6 +112,15 @@ def PrimalDualReductionMethod(DualProblem):
                 ErrorAnalysisTable.suppress_group("output")
                 self.dual_reduction_method.error_analysis(N, **kwargs)
                 ErrorAnalysisTable.clear_suppressed_groups()
+                
+            # Compute the speedup of the reduced order approximation with respect to the full order one
+            # over the testing set
+            @override
+            def speedup_analysis(self, N=None, **kwargs):
+                # Carry out primal speedup analysis ...
+                DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
+                # ... and then dual speedup analysis
+                self.dual_reduction_method.speedup_analysis(N, **kwargs)
                         
         # return value (a class) for the decorator
         return PrimalDualReductionMethod_Class
