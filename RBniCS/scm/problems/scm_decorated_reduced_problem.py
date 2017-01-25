@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
-from RBniCS.scm.problems.scm_decorated_problem import SCM
+from RBniCS.scm.problems.scm import SCM
 
 @ReducedProblemDecoratorFor(SCM)
 def SCMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):

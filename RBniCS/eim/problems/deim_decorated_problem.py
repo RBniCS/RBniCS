@@ -31,7 +31,8 @@ def DEIMDecoratedProblem(
     basis_generation="POD",
     **decorator_kwargs
 ):
-    from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions
+    from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    from RBniCS.eim.problems.deim import DEIM
     
     @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactParametrizedFunctions)
     def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
@@ -145,6 +146,3 @@ def DEIMDecoratedProblem(
         
     # return the decorator itself
     return DEIMDecoratedProblem_Decorator
-    
-# For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
-DEIM = DEIMDecoratedProblem

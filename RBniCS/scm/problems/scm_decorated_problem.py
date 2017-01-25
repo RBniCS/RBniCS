@@ -40,7 +40,8 @@ def SCMDecoratedProblem(
     if coercivity_eigensolver_parameters is None:
         coercivity_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
     
-    from RBniCS.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstant    
+    from RBniCS.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
+    from RBniCS.scm.problems.scm import SCM
     
     @ProblemDecoratorFor(SCM, ExactAlgorithm=ExactCoercivityConstant,
         M_e = M_e,
@@ -78,7 +79,3 @@ def SCMDecoratedProblem(
     
     # return the decorator itself
     return SCMDecoratedProblem_Decorator
-    
-# For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
-SCM = SCMDecoratedProblem
-    

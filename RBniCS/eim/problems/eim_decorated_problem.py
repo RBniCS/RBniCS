@@ -32,7 +32,8 @@ def EIMDecoratedProblem(
     basis_generation="Greedy",
     **decorator_kwargs
 ):
-    from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctions
+    from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    from RBniCS.eim.problems.eim import EIM
     
     @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactParametrizedFunctions)
     def EIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
@@ -166,6 +167,3 @@ def EIMDecoratedProblem(
         
     # return the decorator itself
     return EIMDecoratedProblem_Decorator
-    
-# For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
-EIM = EIMDecoratedProblem

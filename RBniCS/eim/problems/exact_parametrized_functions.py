@@ -22,20 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
-from RBniCS.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
-from RBniCS.scm.problems.scm import SCM
+from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctionsDecoratedProblem
 
-@ReducedProblemDecoratorFor(ExactCoercivityConstant, replaces=SCM)
-def ExactCoercivityConstantDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class ExactCoercivityConstantDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        ## Default initialization of members
-        @override
-        def __init__(self, truth_problem, **kwargs):
-            # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-        
-    # return value (a class) for the decorator
-    return ExactCoercivityConstantDecoratedReducedProblem_Class
+# For the sake of the user, since this is the only class that he/she needs to use, rename the decorated problem to an easier name
+ExactParametrizedFunctions = ExactParametrizedFunctionsDecoratedProblem

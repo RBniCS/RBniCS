@@ -23,10 +23,14 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
-from RBniCS.eim.problems.eim_decorated_problem import EIM
 
 def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
-    @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
+
+    from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    from RBniCS.eim.problems.eim import EIM
+    from RBniCS.eim.problems.deim import DEIM
+    
+    @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM, DEIM))
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
@@ -63,6 +67,3 @@ def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
         
     # return the decorator itself
     return ExactParametrizedFunctionsDecoratedProblem_Decorator
-    
-# For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
-ExactParametrizedFunctions = ExactParametrizedFunctionsDecoratedProblem
