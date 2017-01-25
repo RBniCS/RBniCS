@@ -57,9 +57,6 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             self.folder_prefix = self.additional_folder_prefix[self._reduction_level] + self.folder_prefix
             for (key, name) in self.folder.iteritems():
                 self.folder[key] = self.additional_folder_prefix[self._reduction_level] + name
-                
-            # Backup truth problem for error analysis
-            self._error_analysis__current_bak_truth_problem = None
         
         @override
         def _init_error_analysis(self, **kwargs):
@@ -68,12 +65,12 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
                     assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
                                                                  # otherwise how should we know to which level in the 
                                                                  # hierarchy is this truth problem supposed to be?
+                    self._error_analysis__bak_truth_problem = self.truth_problem
                     self.truth_problem = kwargs["with_respect_to"]
-                    self._compute_error__current_bak_truth_problem = self.truth_problem
                     
                     # Make sure that stability factors computations at the reduced order level
                     # call the correct problem
-                    self._finalize_error_analysis__get_stability_factor__original = self.reduced_problem.get_stability_factor
+                    self._error_analysis__get_stability_factor__original = self.reduced_problem.get_stability_factor
                     def get_stability_factor__with_respect_to(self):
                         return kwargs["with_respect_to"].get_stability_factor()
                     self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
@@ -92,12 +89,13 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
                     assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
                                                                  # otherwise how should we know to which level in the 
                                                                  # hierarchy is this truth problem supposed to be?
-                    self.truth_problem = self._compute_error__current_bak_truth_problem
+                    self.truth_problem = self._error_analysis__bak_truth_problem
+                    del self._error_analysis__bak_truth_problem
                     
                     # Make sure that stability factors computations at the reduced order level
                     # are reset to the standard method
-                    self.reduced_problem.get_stability_factor = types.MethodType(self._finalize_error_analysis__get_stability_factor__original, self.reduced_problem)
-                    del self._finalize_error_analysis__get_stability_factor__original
+                    self.reduced_problem.get_stability_factor = self._error_analysis__get_stability_factor__original
+                    del self._error_analysis__get_stability_factor__original
 
                 elif "with_respect_to_level" in kwargs:
                     pass # TODO
@@ -108,13 +106,47 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             
         @override
         def _init_speedup_analysis(self, **kwargs):
-            # TODO
+            if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
+                if "with_respect_to" in kwargs:
+                    assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
+                                                                 # otherwise how should we know to which level in the 
+                                                                 # hierarchy is this truth problem supposed to be?
+                    self._speedup_analysis__bak_truth_problem = self.truth_problem
+                    self.truth_problem = kwargs["with_respect_to"]
+                    
+                    # Make sure that stability factors computations at the reduced order level
+                    # call the correct problem
+                    self._speedup_analysis__get_stability_factor__original = self.reduced_problem.get_stability_factor
+                    def get_stability_factor__with_respect_to(self):
+                        return kwargs["with_respect_to"].get_stability_factor()
+                    self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
+                    
+                elif "with_respect_to_level" in kwargs:
+                    pass # TODO
+                else:
+                    raise ValueError("Invalid value for kwargs")
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             
         @override
         def _finalize_speedup_analysis(self, **kwargs):
-            # TODO
+            if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
+                if "with_respect_to" in kwargs:
+                    assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
+                                                                 # otherwise how should we know to which level in the 
+                                                                 # hierarchy is this truth problem supposed to be?
+                    self.truth_problem = self._speedup_analysis__bak_truth_problem
+                    del self._speedup_analysis__bak_truth_problem
+                    
+                    # Make sure that stability factors computations at the reduced order level
+                    # are reset to the standard method
+                    self.reduced_problem.get_stability_factor = self._speedup_analysis__get_stability_factor__original
+                    del self._speedup_analysis__get_stability_factor__original
+
+                elif "with_respect_to_level" in kwargs:
+                    pass # TODO
+                else:
+                    raise ValueError("Invalid value for kwargs")
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)
             

@@ -63,68 +63,72 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                 self.folder[key] = self.additional_folder_prefix[self._reduction_level] + name
                 
             # Avoid useless computations
-            self._compute_error__previous_truth_problem = None
-            self._compute_error__current_with_respect_to = None
-            self._compute_error__current_with_respect_to_level = None
-            self._compute_error__current_bak_truth_problem = None
-        
-        @override
-        def compute_error(self, N=None, **kwargs):
-            if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
-                if "with_respect_to" in kwargs:
-                    assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
-                                                                 # otherwise how should we know to which level in the 
-                                                                 # hierarchy is this truth problem supposed to be?
-                    self._compute_error__current_bak_truth_problem = self.truth_problem
-                    self.truth_problem = kwargs["with_respect_to"]
-                    self._compute_error__current_with_respect_to = kwargs["with_respect_to"]
-                    self._compute_error__current_with_respect_to_level = None
-                elif "with_respect_to_level" in kwargs:
-                    with_respect_to_level = kwargs["with_respect_to_level"]
-                    self._compute_error__current_with_respect_to = None
-                    self._compute_error__current_with_respect_to_level = with_respect_to_level
-                    assert isinstance(with_respect_to_level, int)
-                    assert with_respect_to_level >= 0
-                    assert with_respect_to_level <= self._reduction_level - 1
-                    self._compute_error__current_bak_truth_problem = self.truth_problem
-                    for level in range(self._reduction_level - 1, with_respect_to_level, -1):
-                        self.truth_problem = self.truth_problem.truth_problem
-                else:
-                    raise ValueError("Invalid value for kwargs")
-                # Make sure that truth solution is recomputed if truth problem is different from the previous one
-                if self._compute_error__previous_truth_problem != self.truth_problem:
-                    self._compute_error__previous_mu = None # of Parent class
-                    self._compute_error__previous_truth_problem = self.truth_problem
-                # Make sure to update mu in the truth_problem (sync is only guaranteed with the original truth problem)
-                self.truth_problem.set_mu(self.mu)
-                # Call Parent
-                error = ParametrizedReducedDifferentialProblem_DerivedClass.compute_error(self, N, **kwargs)
-                # Restore backup
-                self.truth_problem = self._compute_error__current_bak_truth_problem
-                # Return
-                return error
-            else:
-                return ParametrizedReducedDifferentialProblem_DerivedClass.compute_error(self, N, **kwargs)
-                
-        @override
-        def _compute_error(self, **kwargs):
-            if self._compute_error__current_with_respect_to_level is not None:
-                raise NotImplementedError # TODO
-                with_respect_to_level = self._compute_error__current_with_respect_to_level
-                if with_respect_to_level > 0:
-                    reduced_solution = reduced_solution_and_output[0]
-                    reduced_output = reduced_solution_and_output[1]
-                    truth_problem_l = self._compute_error__current_bak_truth_problem
-                    for level in range(self._reduction_level - 1, with_respect_to_level, -1):
-                        N_l = reduced_solution.N
-                        reduced_solution = truth_problem_l.Z[:N_l]*reduced_solution
-                        truth_problem_l = truth_problem_l.truth_problem
-                    reduced_solution_and_output = (reduced_solution, reduced_output)
-            # Call Parent
-            return ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self)
+            self._error_computation_override__previous_truth_problem = None
+            self._error_computation_override__current_with_respect_to = None
+            self._error_computation_override__current_with_respect_to_level = None
+            self._error_computation_override__current_bak_truth_problem = None
             
-        # TODO all other compute error functions (relative, output, relative output) should be overridden as well
+        @override_error_computation
+        def compute_error(self, N=None, **kwargs):
+            return ParametrizedReducedDifferentialProblem_DerivedClass.compute_error(self, N, **kwargs)
+            
+        @override_error_computation
+        def compute_relative_error(self, N=None, **kwargs):
+            return ParametrizedReducedDifferentialProblem_DerivedClass.compute_relative_error(self, N, **kwargs)
+            
+        @override_error_computation
+        def compute_error_output(self, N=None, **kwargs):
+            return ParametrizedReducedDifferentialProblem_DerivedClass.compute_error_output(self, N, **kwargs)
+            
+        @override_error_computation
+        def compute_relative_error_output(self, N=None, **kwargs):
+            return ParametrizedReducedDifferentialProblem_DerivedClass.compute_relative_error_output(self, N, **kwargs)
             
     # return value (a class) for the decorator
     return MultiLevelReducedProblem_Class
+    
+def override_error_computation(error_computation_method):
+    def overridden_error_computation_method(self, N=None, **kwargs):
+        if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
+            if "with_respect_to" in kwargs:
+                assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
+                                                             # otherwise how should we know to which level in the 
+                                                             # hierarchy is this truth problem supposed to be?
+                self._error_computation_override__current_bak_truth_problem = self.truth_problem
+                self.truth_problem = kwargs["with_respect_to"]
+                self._error_computation_override__current_with_respect_to = kwargs["with_respect_to"]
+                self._error_computation_override__current_with_respect_to_level = None
+            elif "with_respect_to_level" in kwargs:
+                raise NotImplementedError # TODO
+                with_respect_to_level = kwargs["with_respect_to_level"]
+                self._error_computation_override__current_with_respect_to = None
+                self._error_computation_override__current_with_respect_to_level = with_respect_to_level
+                assert isinstance(with_respect_to_level, int)
+                assert with_respect_to_level >= 0
+                assert with_respect_to_level <= self._reduction_level - 1
+                self._error_computation_override__current_bak_truth_problem = self.truth_problem
+                for level in range(self._reduction_level - 1, with_respect_to_level, -1):
+                    self.truth_problem = self.truth_problem.truth_problem
+            # Check if truth problem has changed
+            truth_problem_has_changed = (self._error_computation_override__previous_truth_problem != self.truth_problem)
+            if truth_problem_has_changed:
+                self._error_computation_override__previous_truth_problem = self.truth_problem
+            # Make sure that truth solution is recomputed if truth problem is different from the previous one
+            if truth_problem_has_changed:
+                self._compute_error__previous_mu = None # of Parent class
+            # Make sure that truth output is recomputed if truth problem is different from the previous one
+            if truth_problem_has_changed:
+                self._compute_error_output__previous_mu = None # of Parent class
+            # Make sure to update mu in the truth_problem (sync is only guaranteed with the original truth problem)
+            if self.truth_problem.mu != self.mu:
+                self.truth_problem.set_mu(self.mu)
+            # Call Parent
+            error = error_computation_method(self, N, **kwargs)
+            # Restore backup
+            self.truth_problem = self._error_computation_override__current_bak_truth_problem
+            # Return
+            return error
+        else:
+            return error_computation_method(self, N, **kwargs)
+    return overridden_error_computation_method
     
