@@ -32,6 +32,7 @@ from RBniCS.utils.io.numpy_io import NumpyIO
 from RBniCS.utils.io.pickle_io import PickleIO
 from RBniCS.utils.io.speedup_analysis_table import SpeedupAnalysisTable
 from RBniCS.utils.io.text_io import TextIO
+from RBniCS.utils.io.timer import Timer
 
 __all__ = [
     'ErrorAnalysisTable',
@@ -42,5 +43,6 @@ __all__ = [
     'NumpyIO',
     'PickleIO',
     'SpeedupAnalysisTable',
-    'TextIO'
+    'TextIO',
+    'Timer'
 ]
