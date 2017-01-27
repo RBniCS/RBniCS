@@ -155,6 +155,10 @@ class ReducedMesh(AbstractReducedMesh):
                     self.reduced_mesh_cells_marker[cell] = 1
             global_dof_found = self.mpi_comm.allreduce(global_dof_found, op=MAX)
             assert global_dof_found == 1
+        # Actually update to data structures using updated cells marker
+        self._update()
+        
+    def _update(self):
         # Create submesh
         reduced_mesh = create_submesh(self.mesh, self.reduced_mesh_cells_marker, 1)
         self.reduced_mesh.append(reduced_mesh)
