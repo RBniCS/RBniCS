@@ -32,28 +32,28 @@ class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V
         # Parametrized function to be interpolated
-        f = ParametrizedExpression(self, "1/sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)", mu=(-1., -1.), element=V.ufl_element())
+        f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f), "test_eim_approximation_2_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f), "test_eim_approximation_03_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(V)
             form = f*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_2_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_03_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(V)
             v = TestFunction(V)
             form = f*u*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_2_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_03_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 
 # 1. Create the mesh for this test
-mesh = RectangleMesh(Point(0.1, 0.1), Point(0.9, 0.9), 20, 20)
+mesh = Mesh("../../../tutorials/05_gaussian/data/gaussian.xml")
 
 # 2. Create Finite Element space (Lagrange P1)
 V = FunctionSpace(mesh, "Lagrange", 1)
@@ -62,15 +62,15 @@ V = FunctionSpace(mesh, "Lagrange", 1)
 expression_type = "Function" # Function or Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
 parametrized_function_approximation = ParametrizedFunctionApproximation(V, expression_type, basis_generation)
-mu_range = [(-1., -0.01), (-1., -0.01)]
+mu_range = [(-1.0, 1.0), (-1.0, 1.0)]
 parametrized_function_approximation.set_mu_range(mu_range)
 
 # 4. Prepare reduction with EIM
 parametrized_function_reduction_method = EIMApproximationReductionMethod(parametrized_function_approximation)
-parametrized_function_reduction_method.set_Nmax(50)
+parametrized_function_reduction_method.set_Nmax(20)
 
 # 5. Perform the offline phase
-parametrized_function_reduction_method.initialize_training_set(225, sampling=EquispacedDistribution())
+parametrized_function_reduction_method.initialize_training_set(100, sampling=EquispacedDistribution())
 reduced_parametrized_function_approximation = parametrized_function_reduction_method.offline()
 
 # 6. Perform an online solve
@@ -79,5 +79,5 @@ reduced_parametrized_function_approximation.set_mu(online_mu)
 reduced_parametrized_function_approximation.solve()
 
 # 7. Perform an error analysis
-parametrized_function_reduction_method.initialize_testing_set(225)
+parametrized_function_reduction_method.initialize_testing_set(100)
 parametrized_function_reduction_method.error_analysis()

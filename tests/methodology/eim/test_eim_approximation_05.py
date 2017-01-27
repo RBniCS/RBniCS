@@ -29,43 +29,45 @@ from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
 class ParametrizedFunctionApproximation(EIMApproximation):
-    def __init__(self, V, subdomains, expression_type, basis_generation):
+    def __init__(self, V, expression_type, basis_generation):
         self.V = V
         # Parametrized function to be interpolated
-        f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
-        # Subdomain measure
-        dx = Measure("dx")(subdomain_data=subdomains)(1)
+        f1 = ParametrizedExpression(self, "1/sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)", mu=(-1., -1.), element=V.sub(1).ufl_element())
+        f2 = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(-1., -1.), element=V.sub(1).ufl_element())
+        f3 = ParametrizedExpression(self, "(1-x[0])*cos(3*pi*(pi+mu[1])*(1+x[1]))*exp(-(pi+mu[0])*(1+x[0]))", mu=(-1., -1.), element=V.sub(1).ufl_element())
         #
-        assert expression_type in ("Function", "Vector", "Matrix")
-        if expression_type == "Function":
+        assert expression_type in ("Vector", "Matrix")
+        if expression_type == "Vector":
+            vq = TestFunction(V)
+            (v, q) = split(vq)
+            form = f1*v[0]*dx + f2*v[1]*dx + f3*q*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f), "test_eim_approximation_4_function.output_dir", basis_generation)
-        elif expression_type == "Vector":
-            v = TestFunction(V)
-            form = f*v*dx
-            # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_4_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_05_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
-            u = TrialFunction(V)
-            v = TestFunction(V)
-            form = f*u*v*dx
+            up = TrialFunction(V)
+            vq = TestFunction(V)
+            (u, p) = split(up)
+            (v, q) = split(vq)
+            form = f1*inner(grad(u), grad(v))*dx + f2*p*div(v)*dx + f3*q*div(u)*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_4_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_05_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 
 # 1. Create the mesh for this test
-mesh = Mesh("../../../tutorials/01_tblock/data/tblock.xml")
-subdomains = MeshFunction("size_t", mesh, "../../../tutorials/01_tblock/data/tblock_physical_region.xml")
+mesh = RectangleMesh(Point(0.1, 0.1), Point(0.9, 0.9), 20, 20)
 
 # 2. Create Finite Element space (Lagrange P1)
-V = FunctionSpace(mesh, "Lagrange", 1)
+element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+element   = MixedElement(element_0, element_1)
+V = FunctionSpace(mesh, element)
 
 # 3. Allocate an object of the ParametrizedFunctionApproximation class
-expression_type = "Function" # Function or Vector or Matrix
+expression_type = "Matrix" # Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
-parametrized_function_approximation = ParametrizedFunctionApproximation(V, subdomains, expression_type, basis_generation)
-mu_range = [(-1.0, 1.0), (-1.0, 1.0)]
+parametrized_function_approximation = ParametrizedFunctionApproximation(V, expression_type, basis_generation)
+mu_range = [(-1., -0.01), (-1., -0.01)]
 parametrized_function_approximation.set_mu_range(mu_range)
 
 # 4. Prepare reduction with EIM

@@ -32,25 +32,28 @@ class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V
         # Parametrized function to be interpolated
-        f1 = ParametrizedExpression(self, "1/sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)", mu=(-1., -1.), element=V.sub(1).ufl_element())
-        f2 = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(-1., -1.), element=V.sub(1).ufl_element())
-        f3 = ParametrizedExpression(self, "(1-x[0])*cos(3*pi*(pi+mu[1])*(1+x[1]))*exp(-(pi+mu[0])*(1+x[0]))", mu=(-1., -1.), element=V.sub(1).ufl_element())
+        vector_element = VectorElement(V.ufl_element())
+        f_expression = (
+            "1/sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)",
+            "10.*(1-x[0])*cos(3*pi*(pi+mu[1])*(1+x[1]))*exp(-(pi+mu[0])*(1+x[0]))"
+        )
+        f = ParametrizedExpression(self, f_expression, mu=(-1., -1.), element=vector_element)
         #
-        assert expression_type in ("Vector", "Matrix")
-        if expression_type == "Vector":
-            vq = TestFunction(V)
-            (v, q) = split(vq)
-            form = f1*v[0]*dx + f2*v[1]*dx + f3*q*dx
+        assert expression_type in ("Function", "Vector", "Matrix")
+        if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_5_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f), "test_eim_approximation_06_function.output_dir", basis_generation)
+        elif expression_type == "Vector":
+            v = TestFunction(V)
+            form = inner(f, grad(v))*dx
+            # Call Parent constructor
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_06_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
-            up = TrialFunction(V)
-            vq = TestFunction(V)
-            (u, p) = split(up)
-            (v, q) = split(vq)
-            form = f1*inner(grad(u), grad(v))*dx + f2*p*div(v)*dx + f3*q*div(u)*dx
+            u = TrialFunction(V)
+            v = TestFunction(V)
+            form = inner(f, grad(u))*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_5_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_06_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 
@@ -58,13 +61,10 @@ class ParametrizedFunctionApproximation(EIMApproximation):
 mesh = RectangleMesh(Point(0.1, 0.1), Point(0.9, 0.9), 20, 20)
 
 # 2. Create Finite Element space (Lagrange P1)
-element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
-element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-element   = MixedElement(element_0, element_1)
-V = FunctionSpace(mesh, element)
+V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the ParametrizedFunctionApproximation class
-expression_type = "Matrix" # Vector or Matrix
+expression_type = "Function" # Function or Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
 parametrized_function_approximation = ParametrizedFunctionApproximation(V, expression_type, basis_generation)
 mu_range = [(-1., -0.01), (-1., -0.01)]
@@ -72,10 +72,10 @@ parametrized_function_approximation.set_mu_range(mu_range)
 
 # 4. Prepare reduction with EIM
 parametrized_function_reduction_method = EIMApproximationReductionMethod(parametrized_function_approximation)
-parametrized_function_reduction_method.set_Nmax(20)
+parametrized_function_reduction_method.set_Nmax(50)
 
 # 5. Perform the offline phase
-parametrized_function_reduction_method.initialize_training_set(100, sampling=EquispacedDistribution())
+parametrized_function_reduction_method.initialize_training_set(225, sampling=EquispacedDistribution())
 reduced_parametrized_function_approximation = parametrized_function_reduction_method.offline()
 
 # 6. Perform an online solve
@@ -84,5 +84,5 @@ reduced_parametrized_function_approximation.set_mu(online_mu)
 reduced_parametrized_function_approximation.solve()
 
 # 7. Perform an error analysis
-parametrized_function_reduction_method.initialize_testing_set(100)
+parametrized_function_reduction_method.initialize_testing_set(225)
 parametrized_function_reduction_method.error_analysis()
