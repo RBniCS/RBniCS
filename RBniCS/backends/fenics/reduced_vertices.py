@@ -86,7 +86,7 @@ class ReducedVertices(AbstractReducedVertices):
         vertex_as_point = Point(vertex)
         self._is_local.append(self._bounding_box_tree.collides_entity(vertex_as_point))
         # Update reduced mesh
-        self._reduced_mesh._init_for_offline_if_needed()
+        self._reduced_mesh._init_for_append_if_needed()
         global_dof_min = None
         distance_min = None
         if self._is_local[-1]:
@@ -178,4 +178,10 @@ class ReducedVertices(AbstractReducedVertices):
         
     def get_reduced_dofs_list(self, index=None):
         return self._reduced_mesh.get_reduced_dofs_list(index)
+        
+    def get_auxiliary_reduced_function_space(self, auxiliary_problem, index=None):
+        return self._reduced_mesh._get_auxiliary_reduced_function_space(self, auxiliary_problem, index)
+                
+    def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, auxiliary_reduced_problem, index=None):
+        return self._reduced_mesh._get_auxiliary_basis_functions_matrix(auxiliary_problem, auxiliary_reduced_problem, index)
         

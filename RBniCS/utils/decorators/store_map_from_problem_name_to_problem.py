@@ -25,29 +25,29 @@
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.override import override
 
-def StoreMapFromBasisFunctionsMatrixToReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+def StoreMapFromProblemNameToProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class StoreMapFromBasisFunctionsMatrixToReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    class StoreMapFromProblemNameToProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
-            # Populate basis functions matrix to reduced problem map
-            add_to_map_from_basis_functions_matrix_to_reduced_problem(self.Z, self)
+            # Populate problem name to problem map
+            add_to_map_from_problem_name_to_problem(type(self).__name__, self)
             
     # return value (a class) for the decorator
-    return StoreMapFromBasisFunctionsMatrixToReducedProblem_Class
+    return StoreMapFromProblemNameToProblem_Class
     
-def add_to_map_from_basis_functions_matrix_to_reduced_problem(Z, problem):
-    assert Z not in _basis_functions_matrix_to_reduced_problem_map
-    _basis_functions_matrix_to_reduced_problem_map[Z] = problem
+def add_to_map_from_problem_name_to_problem(problem_name, problem):
+    assert problem_name not in _problem_name_to_problem_map
+    _problem_name_to_problem_map[problem_name] = problem
     
-def get_reduced_problem_from_basis_functions_matrix(Z):
-    assert Z in _basis_functions_matrix_to_reduced_problem_map
-    return _basis_functions_matrix_to_reduced_problem_map[Z]
+def get_problem_from_problem_name(problem_name):
+    assert problem_name in _problem_name_to_problem_map
+    return _problem_name_to_problem_map[Z]
     
-_basis_functions_matrix_to_reduced_problem_map = dict()
+_problem_name_to_problem_map = dict()
 

@@ -26,13 +26,14 @@ from abc import ABCMeta, abstractmethod
 import types
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.backends import AffineExpansionStorage, export, Function
-from RBniCS.utils.decorators import Extends, override, StoreMapFromSolutionToProblem
+from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromSolutionToProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem
 #
 # Base class containing the definition of elliptic coercive problems
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
+@StoreMapFromProblemNameToProblem
 @StoreMapFromSolutionToProblem
 class ParametrizedDifferentialProblem(ParametrizedProblem):
     __metaclass__ = ABCMeta

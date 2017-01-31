@@ -26,11 +26,12 @@ from dolfin import CellFunction, cells, DEBUG, File, FunctionSpace, has_hdf5, lo
 if has_hdf5():
     from dolfin import HDF5File
 from RBniCS.backends.abstract import ReducedMesh as AbstractReducedMesh
+from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.io import ExportableList, Folders
 from RBniCS.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
-from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs
+from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, evaluate_basis_functions_matrix_at_dofs, mesh_dofs_to_submesh_dofs
 
 @Extends(AbstractReducedMesh)
 @BackendFor("fenics", inputs=(FunctionSpace, ))
@@ -59,7 +60,7 @@ class ReducedMesh(AbstractReducedMesh):
             key_as_slice = None
             key_as_int = None
             
-        # Prepare storage for an auxiliary dof to cell dict
+        # Prepare storage for an helper dof to cell dict
         self.dof_to_cells = tuple() # of size len(V)
         # ... which is not initialized in the constructor to avoid wasting time online
         # ... since it is only needed offline in the append() method
@@ -72,17 +73,11 @@ class ReducedMesh(AbstractReducedMesh):
         self.reduced_mesh_dofs_list = list() # list over N of tuple (of size len(V)) of dofs
         if copy_from is not None:
             self.reduced_mesh_dofs_list.extend(copy_from.reduced_mesh_dofs_list[key_as_slice])
-        # Prepare storage for auxiliary mapping needed for I/O
+        # Prepare storage for helper mapping needed for I/O
         self.reduced_mesh_dofs_list__dof_map_writer_mapping = tuple() # of size len(V)
         self.reduced_mesh_dofs_list__dof_map_reader_mapping = tuple() # of size len(V)
-        # ... and initialize the mapping required for input only if copy_from is None,
-        # ... since only in that case we will use it to read from file
-        if copy_from is None:
-            reduced_mesh_dofs_list__dof_map_reader_mapping = list()
-            for V_component in self.V:
-                reduced_mesh_dofs_list__dof_map_reader_mapping.append( build_dof_map_reader_mapping(V_component) )
-            self.reduced_mesh_dofs_list__dof_map_reader_mapping = tuple(reduced_mesh_dofs_list__dof_map_reader_mapping)
-        
+        # ... which will be initialized as needed in the save and load methods
+                
         # Reduced meshes, for all N
         self.reduced_mesh = list() # list (over N) of Mesh
         if copy_from is not None:
@@ -102,46 +97,36 @@ class ReducedMesh(AbstractReducedMesh):
         self.reduced_mesh_reduced_dofs_list = list() # list (over N, mesh index) of list of tuple (of size len(V)) of dofs
         if copy_from is not None:
             self.reduced_mesh_reduced_dofs_list.append(copy_from.reduced_mesh_reduced_dofs_list[key_as_int])
-            # Dot not waste time recreating mappings which are used only for I/O
-        # Prepare storage for auxiliary mapping needed for I/O
+        # Prepare storage for helper mapping needed for I/O
         self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping = list() # over N of tuple (of size len(V))
         self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping = list() # over N of tuple (of size len(V))
         # ... which will be initialized as needed in the save and load methods
         
-    def _init_for_offline_if_needed(self):
-        # Initialize dof to cells map only the first time
-        if len(self.dof_to_cells) == 0:
-            self.dof_to_cells = list() # of size len(V)
-            for (component, V_component) in enumerate(self.V):
-                dof_to_cells = dict() # from global dof to cell
-                for cell in cells(self.mesh):
-                    local_dofs = V_component.dofmap().cell_dofs(cell.index())
-                    for local_dof in local_dofs:
-                        global_dof = V_component.dofmap().local_to_global_index(local_dof)
-                        if not global_dof in dof_to_cells:
-                            dof_to_cells[global_dof] = list()
-                        if not cell in dof_to_cells[global_dof]:
-                            dof_to_cells[global_dof].append(cell)
-                # Debugging
-                log(DEBUG, "DOFs to cells map (component " + str(component) +") on processor " + str(self.mpi_comm.rank) + ":")
-                for (global_dof, cells_) in dof_to_cells.iteritems():
-                    log(DEBUG, "\t" + str(global_dof) + ": " + str([cell.global_index() for cell in cells_]))
-                # Add to storage
-                self.dof_to_cells.append(dof_to_cells)
-            self.dof_to_cells = tuple(self.dof_to_cells)
-        # Initialize cells marker only the first time
-        if self.reduced_mesh_cells_marker is None:
-            self.reduced_mesh_cells_marker = CellFunction("size_t", self.mesh, 0)
-        # Initialize dof map mappings for output
-        if len(self.reduced_mesh_dofs_list__dof_map_writer_mapping) == 0:
-            reduced_mesh_dofs_list__dof_map_writer_mapping = list()
-            for V_component in self.V:
-                reduced_mesh_dofs_list__dof_map_writer_mapping.append( build_dof_map_writer_mapping(V_component) )
-            self.reduced_mesh_dofs_list__dof_map_writer_mapping = tuple(reduced_mesh_dofs_list__dof_map_writer_mapping)
+        ## The following members are related to auxiliary basis functions for nonlinear terms. Since their computation
+        ## is done only when required, and only for the values of N that are required, the data structures use
+        ## a dict rather than a list
+        # Spaces for auxiliary basis functions
+        self._auxiliary_reduced_function_space = dict() # from (problem, N) to FunctionSpace
+        if copy_from is not None:
+            self._auxiliary_reduced_function_space = copy_from._auxiliary_reduced_function_space
+        # Mapping between DOFs on the reduced mesh and DOFs on the full mesh for auxiliary basis functions
+        self._auxiliary_dofs_to_reduced_dofs = dict() # from (problem, N) to dict from int to int
+        if copy_from is not None:
+            self._auxiliary_dofs_to_reduced_dofs = copy_from._auxiliary_dofs_to_reduced_dofs
+        # Auxiliary basis functions
+        self._auxiliary_basis_functions_matrix = dict() # from (problem, N) to BasisFunctionsMatrix
+        if copy_from is not None:
+            self._auxiliary_basis_functions_matrix = copy_from._auxiliary_basis_functions_matrix
+        # Prepare storage for helper mapping needed for I/O
+        self._auxiliary_dofs__dof_map_writer_mapping = dict() # from problem
+        self._auxiliary_dofs__dof_map_reader_mapping = dict() # from problem
+        self._auxiliary_reduced_dofs__dof_map_writer_mapping = dict() # from (problem, N)
+        self._auxiliary_reduced_dofs__dof_map_reader_mapping = dict() # from (problem, N)
+        # ... which will be initialized as needed in the save and load methods
         
     @override
     def append(self, global_dofs):
-        self._init_for_offline_if_needed()
+        self._init_for_append_if_needed()
         # Consistency checks
         assert isinstance(global_dofs, tuple)
         assert len(global_dofs) == len(self.V)
@@ -200,10 +185,36 @@ class ReducedMesh(AbstractReducedMesh):
         log(DEBUG, "Reduced DOFs list " + str(reduced_mesh_reduced_dofs_list))
         log(DEBUG, "corresponding to DOFs list " + str(self.reduced_mesh_dofs_list))
         self.reduced_mesh_reduced_dofs_list.append(reduced_mesh_reduced_dofs_list)
+        
+    def _init_for_append_if_needed(self):
+        # Initialize dof to cells map only the first time
+        if len(self.dof_to_cells) == 0:
+            self.dof_to_cells = list() # of size len(V)
+            for (component, V_component) in enumerate(self.V):
+                dof_to_cells = dict() # from global dof to cell
+                for cell in cells(self.mesh):
+                    local_dofs = V_component.dofmap().cell_dofs(cell.index())
+                    for local_dof in local_dofs:
+                        global_dof = V_component.dofmap().local_to_global_index(local_dof)
+                        if not global_dof in dof_to_cells:
+                            dof_to_cells[global_dof] = list()
+                        if not cell in dof_to_cells[global_dof]:
+                            dof_to_cells[global_dof].append(cell)
+                # Debugging
+                log(DEBUG, "DOFs to cells map (component " + str(component) +") on processor " + str(self.mpi_comm.rank) + ":")
+                for (global_dof, cells_) in dof_to_cells.iteritems():
+                    log(DEBUG, "\t" + str(global_dof) + ": " + str([cell.global_index() for cell in cells_]))
+                # Add to storage
+                self.dof_to_cells.append(dof_to_cells)
+            self.dof_to_cells = tuple(self.dof_to_cells)
+        # Initialize cells marker only the first time
+        if self.reduced_mesh_cells_marker is None:
+            self.reduced_mesh_cells_marker = CellFunction("size_t", self.mesh, 0)
     
     @override
     def save(self, directory, filename):
         self._assert_list_lengths()
+        self._init_for_save_if_needed()
         # Get full directory name
         full_directory = Folders.Folder(directory + "/" + filename)
         full_directory.create()
@@ -221,6 +232,7 @@ class ReducedMesh(AbstractReducedMesh):
                 output_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "w")
                 output_file.write(reduced_mesh, "/mesh")
                 output_file.close()
+        # cannot save reduced_function_spaces to file
         # reduced_subdomain_data
         if self.subdomain_data is not None:
             for (index, reduced_subdomain_data) in enumerate(self.reduced_subdomain_data):
@@ -244,11 +256,6 @@ class ReducedMesh(AbstractReducedMesh):
                 exportable_reduced_mesh_dofs_list.append(self.reduced_mesh_dofs_list__dof_map_writer_mapping[component][reduced_mesh_dof__component])
         exportable_reduced_mesh_dofs_list.save(full_directory, "dofs")
         # reduced_mesh_reduced_dofs_list
-        assert len(self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping) == len(self.reduced_mesh) - 1
-        reduced_mesh_reduced_dofs_list__dof_map_writer_mapping = list()
-        for reduced_V__component in self.reduced_function_spaces[-1]:
-            reduced_mesh_reduced_dofs_list__dof_map_writer_mapping.append( build_dof_map_writer_mapping(reduced_V__component) )
-        self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping.append( tuple(reduced_mesh_reduced_dofs_list__dof_map_writer_mapping) )
         for (index, reduced_mesh_reduced_dofs_list) in enumerate(self.reduced_mesh_reduced_dofs_list):
             exportable_reduced_mesh_reduced_dofs_list = ExportableList("pickle")
             for reduced_mesh_reduced_dof in reduced_mesh_reduced_dofs_list:
@@ -256,11 +263,73 @@ class ReducedMesh(AbstractReducedMesh):
                     exportable_reduced_mesh_reduced_dofs_list.append(self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping[index][component][reduced_mesh_reduced_dof__component])
             exportable_reduced_mesh_reduced_dofs_list.save(full_directory, "reduced_dofs_" + str(index))
             
+        ## Auxiliary basis functions
+        # Consistency check
+        assert len(self._auxiliary_reduced_function_space) == len(self._auxiliary_dofs_to_reduced_dofs)
+        assert len(self._auxiliary_reduced_function_space) == len(self._auxiliary_basis_functions_matrix)
+        for key in self._auxiliary_reduced_function_space:
+            assert key in self._auxiliary_dofs_to_reduced_dofs
+            assert key in self._auxiliary_basis_functions_matrix
+        # Save auxiliary reduced function spaces keys
+        exportable_auxiliary_keys = ExportableList("pickle")
+        for key in self._auxiliary_reduced_function_space:
+            exportable_auxiliary_keys.append(key[0].__name__, key[1])
+        exportable_auxiliary_keys.save(full_directory, "auxiliary_keys")
+        # Init
+        self._init_for_auxiliary_save_if_needed()
+        # Save auxiliary dofs and reduced dofs
+        for (key, auxiliary_dofs_to_reduced_dofs) in self._auxiliary_dofs_to_reduced_dofs:
+            # auxiliary dofs
+            exportable_auxiliary_dofs = ExportableList("pickle")
+            for auxiliary_dof in auxiliary_dofs_to_reduced_dofs.keys():
+                exportable_auxiliary_dofs.append(self._auxiliary_dofs__dof_map_writer_mapping[auxiliary_dof])
+            full_directory_plus_key__dofs = Folders.Folder(full_directory + "/auxiliary_dofs/" + key[0].__name__ + "/" + key[1])
+            full_directory_plus_key__dofs.create()
+            exportable_auxiliary_dofs.save(full_directory_plus_key__dofs, "auxiliary_dofs")
+            # auxiliary reduced dofs
+            exportable_auxiliary_reduced_dofs = ExportableList("pickle")
+            for auxiliary_reduced_dof in auxiliary_dofs_to_reduced_dofs.values():
+                exportable_auxiliary_reduced_dofs.append(self._auxiliary_reduced_dofs__dof_map_writer_mapping[auxiliary_reduced_dof])
+            full_directory_plus_key__reduced_dofs = Folders.Folder(full_directory + "/auxiliary_reduced_dofs/" + key[0].__name__ + "/" + key[1])
+            full_directory_plus_key__reduced_dofs.create()
+            exportable_auxiliary_reduced_dofs.save(full_directory_plus_key__reduced_dofs, "auxiliary_reduced_dofs")
+        # Save auxiliary basis functions matrix
+        for (key, auxiliary_basis_functions_matrix) in self._auxiliary_basis_functions_matrix.iteritems():
+            full_directory_plus_key = Folders.Folder(full_directory + "/auxiliary_basis_functions/" + key[0].__name__ + "/" + key[1])
+            full_directory_plus_key.create()
+            auxiliary_basis_functions_matrix.save(full_directory_plus_key, "auxiliary_basis")
+            
     def _save_Nmax(self, directory, filename):
         if is_io_process(self.mpi_comm):
             with open(str(directory) + "/" + filename + "/" + "reduced_mesh.length", "w") as length:
                 length.write(str(len(self.reduced_mesh)))
         self.mpi_comm.barrier()
+        
+    def _init_for_save_if_needed(self):
+        # Initialize dof map mappings for output
+        if len(self.reduced_mesh_dofs_list__dof_map_writer_mapping) == 0:
+            reduced_mesh_dofs_list__dof_map_writer_mapping = list()
+            for V_component in self.V:
+                reduced_mesh_dofs_list__dof_map_writer_mapping.append( build_dof_map_writer_mapping(V_component) )
+            self.reduced_mesh_dofs_list__dof_map_writer_mapping = tuple(reduced_mesh_dofs_list__dof_map_writer_mapping)
+            
+        # Initialize reduced dof mapping for output
+        assert len(self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping) == len(self.reduced_mesh) - 1
+        reduced_mesh_reduced_dofs_list__dof_map_writer_mapping = list()
+        for reduced_V__component in self.reduced_function_spaces[-1]:
+            reduced_mesh_reduced_dofs_list__dof_map_writer_mapping.append( build_dof_map_writer_mapping(reduced_V__component) )
+        self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping.append( tuple(reduced_mesh_reduced_dofs_list__dof_map_writer_mapping) )
+            
+    def _init_for_auxiliary_save_if_needed(self):
+        # Initialize auxiliary dof map mappings and auxiliary reduced dof map mappings for output
+        for (key, auxiliary_reduced_V) in self._auxiliary_reduced_function_space.iteritems():
+            # auxiliary dof map mappings
+            auxiliary_problem = key[0]
+            if auxiliary_problem not in self._auxiliary_dofs__dof_map_writer_mapping:
+                self._auxiliary_dofs__dof_map_writer_mapping[auxiliary_problem] = build_dof_map_writer_mapping(auxiliary_problem.V)
+            # auxiliary reduced dof map mappings
+            if key not in self._auxiliary_reduced_dofs__dof_map_writer_mapping:
+                self._auxiliary_reduced_dofs__dof_map_writer_mapping[key] = build_dof_map_writer_mapping(auxiliary_reduced_V)
     
     @override
     def load(self, directory, filename):
@@ -273,6 +342,8 @@ class ReducedMesh(AbstractReducedMesh):
             full_directory = directory + "/" + filename
             # Nmax
             Nmax = self._load_Nmax(directory, filename)
+            #
+            self._init_for_load_if_needed(Nmax)
             # reduced_mesh
             for index in range(Nmax):
                 mesh_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index)
@@ -287,6 +358,7 @@ class ReducedMesh(AbstractReducedMesh):
                     input_file.read(reduced_mesh, "/mesh", False)
                     input_file.close()
                 self.reduced_mesh.append(reduced_mesh)
+                # Also initialize reduced function spaces
                 reduced_function_spaces = list()
                 for V_component in self.V:
                     reduced_function_spaces.append(FunctionSpace(reduced_mesh, V_component.ufl_element()))
@@ -326,11 +398,6 @@ class ReducedMesh(AbstractReducedMesh):
                 self.reduced_mesh_dofs_list.append(tuple(reduced_mesh_dof))
             # reduced_mesh_reduced_dofs_list
             for index in range(Nmax):
-                assert len(self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping) == index
-                reduced_mesh_reduced_dofs_list__dof_map_reader_mapping = list()
-                for reduced_V__component in self.reduced_function_spaces[index]:
-                    reduced_mesh_reduced_dofs_list__dof_map_reader_mapping.append( build_dof_map_reader_mapping(reduced_V__component) )
-                self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping.append( tuple(reduced_mesh_reduced_dofs_list__dof_map_reader_mapping) )
                 importable_reduced_mesh_reduced_dofs_list = ExportableList("pickle")
                 importable_reduced_mesh_reduced_dofs_list.load(full_directory, "reduced_dofs_" + str(index))
                 assert len(self.reduced_mesh_reduced_dofs_list) == index
@@ -346,8 +413,67 @@ class ReducedMesh(AbstractReducedMesh):
                     self.reduced_mesh_reduced_dofs_list[index].append(tuple(reduced_mesh_dof))
             #
             self._assert_list_lengths()
+            
+            ## Auxiliary basis functions
+            # Load auxiliary reduced function spaces keys
+            importable_auxiliary_keys = ExportableList("pickle")
+            importable_auxiliary_keys.load(full_directory, "auxiliary_keys")
+            # Create auxiliary reduced function spaces
+            for key in importable_auxiliary_keys:
+                auxiliary_problem = get_problem_from_problem_name(key[0])
+                auxiliary_V = auxiliary_problem.V
+                index = key[1]
+                self._auxiliary_reduced_function_space[key] = FunctionSpace(self.reduced_mesh[index], auxiliary_V.ufl_element())
+            # Init
+            self._init_for_auxiliary_load_if_needed()
+            # Load auxiliary dofs and reduced dofs
+            for key in self._auxiliary_reduced_function_space:
+                importable_auxiliary_dofs = ExportableList("pickle")
+                importable_auxiliary_reduced_dofs = ExportableList("pickle")
+                full_directory_plus_key__dofs = Folders.Folder(full_directory + "/auxiliary_dofs/" + key[0].__name__ + "/" + key[1])
+                full_directory_plus_key__reduced_dofs = Folders.Folder(full_directory + "/auxiliary_reduced_dofs/" + key[0].__name__ + "/" + key[1])
+                importable_auxiliary_dofs.load(full_directory_plus_key__dofs, "auxiliary_dofs")
+                importable_auxiliary_reduced_dofs.load(full_directory_plus_key__reduced_dofs, "auxiliary_reduced_dofs")
+                for (dof_input, reduced_dof_input) in zip(importable_auxiliary_dofs, importable_auxiliary_reduced_dofs):
+                    dof = self._auxiliary_dofs__dof_map_reader_mapping[dof_input[0]][dof_input[1]]
+                    reduced_dof = self._auxiliary_reduced_dofs__dof_map_reader_mapping[reduced_dof_input[0]][reduced_dof_input[1]]
+                    self._auxiliary_dofs_to_reduced_dofs[dof] = reduced_dof
+            # Load auxiliary basis functions matrix
+            for (key, auxiliary_reduced_V) in self._auxiliary_reduced_function_space.iteritems():
+                full_directory_plus_key = Folders.Folder(full_directory + "/auxiliary_basis_functions/" + key[0].__name__ + "/" + key[1])
+                auxiliary_basis_functions_matrix = BasisFunctionsMatrix(auxiliary_reduced_V)
+                auxiliary_basis_functions_matrix.init(key[0].components)
+                auxiliary_basis_functions_matrix.save(full_directory_plus_key, "auxiliary_basis")
+                self._auxiliary_basis_functions_matrix[key] = auxiliary_basis_functions_matrix
+            
             return True
-        
+            
+    def _init_for_load_if_needed(self, Nmax):
+        # Initialize dof map mappings for input
+        if len(self.reduced_mesh_dofs_list__dof_map_reader_mapping) == 0:
+            reduced_mesh_dofs_list__dof_map_reader_mapping = list()
+            for V_component in self.V:
+                reduced_mesh_dofs_list__dof_map_reader_mapping.append( build_dof_map_reader_mapping(V_component) )
+            self.reduced_mesh_dofs_list__dof_map_reader_mapping = tuple(reduced_mesh_dofs_list__dof_map_reader_mapping)
+            
+        # Initialize reduced dof map mappings for input
+        for index in range(len(self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping), Nmax):
+            reduced_mesh_reduced_dofs_list__dof_map_reader_mapping = list()
+            for reduced_V__component in self.reduced_function_spaces[index]:
+                reduced_mesh_reduced_dofs_list__dof_map_reader_mapping.append( build_dof_map_reader_mapping(reduced_V__component) )
+            self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping.append( tuple(reduced_mesh_reduced_dofs_list__dof_map_reader_mapping) )
+            
+    def _init_for_auxiliary_load_if_needed(self):
+        # Initialize auxiliary dof map mappings and auxiliary reduced dof map mappings for input
+        for (key, auxiliary_reduced_V) in self._auxiliary_reduced_function_space.iteritems():
+            # auxiliary dof map mappings
+            auxiliary_problem = key[0]
+            if auxiliary_problem not in self._auxiliary_dofs__dof_map_reader_mapping:
+                self._auxiliary_dofs__dof_map_reader_mapping[auxiliary_problem] = build_dof_map_reader_mapping(auxiliary_problem.V)
+            # auxiliary reduced dof map mappings
+            if key not in self._auxiliary_reduced_dofs__dof_map_reader_mapping:
+                self._auxiliary_reduced_dofs__dof_map_reader_mapping[key] = build_dof_map_reader_mapping(auxiliary_reduced_V)
+                
     def _load_Nmax(self, directory, filename):
         Nmax = None
         if is_io_process(self.mpi_comm):
@@ -355,7 +481,7 @@ class ReducedMesh(AbstractReducedMesh):
                 Nmax = int(length.readline())
         Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
         return Nmax
-        
+            
     def _assert_list_lengths(self):
         assert len(self.reduced_mesh) == len(self.reduced_function_spaces)
         assert len(self.reduced_mesh) == len(self.reduced_subdomain_data)
@@ -398,4 +524,32 @@ class ReducedMesh(AbstractReducedMesh):
             index = -1
         
         return self.reduced_mesh_reduced_dofs_list[index]
+        
+    def get_auxiliary_reduced_function_space(self, auxiliary_problem, index=None):
+        if index is None:
+            index = len(self.reduced_mesh) - 1
+        auxiliary_V = auxiliary_problem.V
+        key = (auxiliary_problem, index)
+        if not key in self._auxiliary_reduced_function_space[key]:
+            auxiliary_reduced_V = FunctionSpace(self.reduced_mesh[index], auxiliary_V.ufl_element())
+            self._auxiliary_reduced_function_space[key] = auxiliary_reduced_V
+            # Get the map between DOFs on auxiliary_V and auxiliary_reduced_V
+            auxiliary_dofs_to_reduced_dofs = mesh_dofs_to_submesh_dofs(auxiliary_V, auxiliary_reduced_V)
+            log(DEBUG, "Auxiliary DOFs to reduced DOFs is " + str(auxiliary_dofs_to_reduced_dofs))
+            self._auxiliary_dofs_to_reduced_dofs[key] = auxiliary_dofs_to_reduced_dofs
+        else:
+            assert key in self._auxiliary_dofs_to_reduced_dofs
+        return self._auxiliary_dofs_to_reduced_dofs[key]
+        
+    def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, auxiliary_reduced_problem, index=None):
+        if index is None:
+            index = len(self.reduced_mesh) - 1
+        key = (auxiliary_problem, index) # the mapping between problem and reduced problem is one to one, so there is no need to store both of them in the key
+        if not key in self._auxiliary_basis_functions_matrix:
+            auxiliary_reduced_V = self._get_auxiliary_reduced_function_space(auxiliary_problem, index)
+            self._auxiliary_basis_functions_matrix[key] = evaluate_basis_functions_matrix_at_dofs(
+                auxiliary_reduced_problem.Z, self._auxiliary_dofs_to_reduced_dofs[key].keys(), 
+                auxiliary_reduced_V, self._auxiliary_dofs_to_reduced_dofs[key].values()
+            )
+        return self._auxiliary_basis_functions_matrix[key]
         

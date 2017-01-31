@@ -115,8 +115,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
         for (run, mu) in enumerate(self.training_set):
             print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
             
-            print("evaluate parametrized expression")
             self.EIM_approximation.set_mu(mu)
+            
+            print("evaluate parametrized expression at mu =", self.EIM_approximation.mu)
             self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
             self.EIM_approximation.export_solution(self.folder["snapshots"], "truth_" + str(run), self.EIM_approximation.snapshot)
             
