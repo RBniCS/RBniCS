@@ -30,7 +30,7 @@ from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogo
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
-from RBniCS.backends.fenics.wrapping_utils import get_expression_description, get_expression_name
+from RBniCS.backends.fenics.wrapping import get_expression_description, get_expression_name
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 

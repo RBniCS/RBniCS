@@ -25,8 +25,7 @@
 from numpy import isclose
 from dolfin import *
 from RBniCS.backends.fenics import Function
-from RBniCS.backends.fenics.wrapping import function_extend_or_restrict
-from RBniCS.backends.fenics.wrapping_utils import FunctionSpace
+from RBniCS.backends.fenics.wrapping import function_extend_or_restrict, FunctionSpace
 
 mesh = UnitSquareMesh(10, 10)
 

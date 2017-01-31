@@ -28,7 +28,7 @@ from numpy import asmatrix as AffineExpansionStorageContent_AsMatrix
 from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, FunctionsList as AbstractFunctionsList
 from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
 from RBniCS.backends.numpy.vector import Vector as OnlineVector
-from RBniCS.backends.numpy.wrapping_utils import slice_to_array, slice_to_size
+from RBniCS.backends.numpy.wrapping import slice_to_array, slice_to_size
 from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO, Folders, PickleIO as ContentSizeIO, PickleIO as ContentTypeIO, PickleIO as DictIO
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
 

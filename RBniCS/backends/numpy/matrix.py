@@ -25,7 +25,7 @@
 from numpy import ix_ as Slicer, ndarray as SlicerInnerType, matrix as MatrixBaseType
 from RBniCS.backends.numpy.function import Function
 from RBniCS.backends.numpy.vector import Vector
-from RBniCS.backends.numpy.wrapping_utils import slice_to_array, slice_to_size
+from RBniCS.backends.numpy.wrapping import slice_to_array, slice_to_size
 
 class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vectors correspond to two different types
     def __getitem__(self, key):

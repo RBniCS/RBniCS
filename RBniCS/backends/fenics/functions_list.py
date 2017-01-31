@@ -27,7 +27,7 @@ from dolfin import FunctionSpace
 from RBniCS.backends.basic import FunctionsList as BasicFunctionsList
 import RBniCS.backends.fenics
 import RBniCS.backends.fenics.wrapping
-from RBniCS.backends.fenics.wrapping_utils import function_from_ufl_operators
+from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
 import RBniCS.backends.numpy
 from RBniCS.utils.decorators import BackendFor, Extends, override
 

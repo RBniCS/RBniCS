@@ -27,7 +27,7 @@ from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.vector import Vector
 from RBniCS.backends.numpy.function import Function
-from RBniCS.backends.numpy.wrapping_utils import DirichletBC
+from RBniCS.backends.numpy.wrapping import DirichletBC
 from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractLinearSolver)

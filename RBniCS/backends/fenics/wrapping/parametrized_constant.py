@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.fenics.wrapping_utils.parametrized_expression import ParametrizedExpression
+from RBniCS.backends.fenics.wrapping.parametrized_expression import ParametrizedExpression
 
 def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, **kwargs):
     if "element" not in kwargs:

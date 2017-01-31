@@ -31,7 +31,7 @@ from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
 from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
 from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
-from RBniCS.backends.fenics.wrapping_utils import get_form_argument, get_form_description, get_form_name
+from RBniCS.backends.fenics.wrapping import get_form_argument, get_form_description, get_form_name
 from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
 
 @Extends(AbstractParametrizedTensorFactory)

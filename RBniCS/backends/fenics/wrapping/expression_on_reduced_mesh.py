@@ -27,7 +27,7 @@ from ufl.core.operator import Operator
 from ufl.corealg.traversal import traverse_unique_terminals
 from ufl.geometry import GeometricQuantity
 from dolfin import Expression, Function, project
-from RBniCS.backends.fenics.wrapping_utils.function_from_subfunction_if_any import function_from_subfunction_if_any
+from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem
 
 def expression_on_reduced_mesh(expression, at):

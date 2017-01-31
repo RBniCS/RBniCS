@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import EquispacedDistribution
 from RBniCS.backends import ParametrizedTensorFactory
 from RBniCS.backends.fenics import ParametrizedExpressionFactory as ParametrizedExpressionFactory_Base
-from RBniCS.backends.fenics.wrapping_utils import ParametrizedConstant
+from RBniCS.backends.fenics.wrapping import ParametrizedConstant
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 

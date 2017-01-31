@@ -49,13 +49,13 @@ for backend in available_backends:
     enable_backend(backend)
 backends_factory(current_module)
 
-# Extend parent module __all__ variable with backends wrapping_utils
+# Extend parent module __all__ variable with backends wrapping
 for backend in available_backends:
-    importlib.import_module("RBniCS.backends." + backend + ".wrapping_utils")
-    wrapping_utils_overridden = sys.modules["RBniCS.backends." + backend + ".wrapping_utils"].__overridden__
-    for class_or_function in wrapping_utils_overridden:
+    importlib.import_module("RBniCS.backends." + backend + ".wrapping")
+    wrapping_overridden = sys.modules["RBniCS.backends." + backend + ".wrapping"].__overridden__
+    for class_or_function in wrapping_overridden:
         assert not hasattr(sys.modules["RBniCS"], class_or_function)
-        setattr(sys.modules["RBniCS"], class_or_function, getattr(sys.modules["RBniCS.backends." + backend + ".wrapping_utils"], class_or_function))
+        setattr(sys.modules["RBniCS"], class_or_function, getattr(sys.modules["RBniCS.backends." + backend + ".wrapping"], class_or_function))
         sys.modules["RBniCS"].__all__ += [class_or_function]
 
 # Clean up

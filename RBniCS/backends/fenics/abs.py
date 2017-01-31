@@ -30,7 +30,7 @@ from dolfin import as_backend_type, Point, vertices
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.wrapping_utils import function_from_ufl_operators
+from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
 from RBniCS.utils.decorators import backend_for
 from RBniCS.utils.mpi import parallel_max
 

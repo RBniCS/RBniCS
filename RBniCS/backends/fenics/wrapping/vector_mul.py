@@ -24,7 +24,7 @@
 
 from ufl.core.operator import Operator
 from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.wrapping_utils import function_from_ufl_operators
+from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
 
 def vector_mul_vector(vector1, vector2):
     if isinstance(vector1, (Function.Type(), Operator)):

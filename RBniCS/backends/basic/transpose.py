@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic.wrapping_utils import functions_list_basis_functions_matrix_adapter
+from RBniCS.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
 
 def transpose(arg, backend, wrapping, online_backend, AdditionalFunctionTypes=None):
     if AdditionalFunctionTypes is None:

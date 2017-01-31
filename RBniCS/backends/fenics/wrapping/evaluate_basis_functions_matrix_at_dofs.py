@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.fenics.wrapping_utils.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
+from RBniCS.backends.fenics.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
 
 def evaluate_basis_functions_matrix_at_dofs(input_basis_functions_matrix, dofs_list, reduced_V, reduced_dofs_list):
     components = input_basis_functions_matrix._components_name

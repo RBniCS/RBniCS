@@ -39,8 +39,7 @@ from RBniCS.backends.numpy.linear_solver import LinearSolver
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.nonlinear_solver import NonlinearSolver
 from RBniCS.backends.numpy.vector import Vector
-from RBniCS.backends.numpy.wrapping import function_copy
-from RBniCS.backends.numpy.wrapping_utils import DirichletBC
+from RBniCS.backends.numpy.wrapping import DirichletBC, function_copy
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import print
 

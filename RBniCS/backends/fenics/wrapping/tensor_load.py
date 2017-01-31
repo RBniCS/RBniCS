@@ -27,7 +27,7 @@ from petsc4py import PETSc
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
-from RBniCS.backends.fenics.wrapping_utils import build_dof_map_reader_mapping
+from RBniCS.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_reader_mapping
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
 from RBniCS.utils.mpi import is_io_process

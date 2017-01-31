@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import ix_ as Slicer, matrix as VectorBaseType
-from RBniCS.backends.numpy.wrapping_utils import slice_to_array, slice_to_size
+from RBniCS.backends.numpy.wrapping import slice_to_array, slice_to_size
 
 class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vectors correspond to two different types
     def __getitem__(self, key):

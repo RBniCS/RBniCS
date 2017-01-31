@@ -27,7 +27,7 @@ from ufl.core.operator import Operator
 from dolfin import as_backend_type
 from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.wrapping_utils import function_from_ufl_operators
+from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
 
 def matrix_mul_vector(matrix, vector):
     if isinstance(vector, (Function.Type(), Operator)):

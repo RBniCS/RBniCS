@@ -34,7 +34,7 @@ from ufl.indexed import Indexed
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from RBniCS.backends.fenics.wrapping_utils import get_expression_name, get_form_name
+from RBniCS.backends.fenics.wrapping import get_expression_name, get_form_name
 
 @Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("fenics", inputs=(Form, ))
