@@ -24,7 +24,7 @@
 
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
-from dolfin import Function
+from dolfin import assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem
 
@@ -36,7 +36,7 @@ def expression_on_truth_mesh(expression):
         # Look for terminals on truth mesh
         for subexpression in iter_expressions(expression):
             for node in traverse_unique_terminals(subexpression):
-                node = function_from_subfunction(node)
+                node = function_from_subfunction_if_any(node)
                 if node in visited:
                     continue
                 # ... problem solutions related to nonlinear terms

@@ -22,6 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from mpi4py.MPI import MAX
+from numpy import zeros as array, ndarray as VectorMatrixType
 from dolfin import Argument, assemble, project
 from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.functions_list import FunctionsList
@@ -32,9 +34,9 @@ from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.tensors_list import TensorsList
 from RBniCS.backends.fenics.vector import Vector
+from RBniCS.backends.fenics.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_vector_at_dofs, expression_on_reduced_mesh, expression_on_truth_mesh, form_on_reduced_function_space, form_on_truth_function_space
 from RBniCS.backends.online import OnlineMatrix, OnlineVector
 from RBniCS.utils.decorators import backend_for
-from numpy import zeros as array, ndarray as VectorMatrixType
 
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("fenics", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory), (ReducedMesh, ReducedVertices, None)))

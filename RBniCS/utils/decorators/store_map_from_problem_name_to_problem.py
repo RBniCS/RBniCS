@@ -47,7 +47,7 @@ def add_to_map_from_problem_name_to_problem(problem_name, problem):
     
 def get_problem_from_problem_name(problem_name):
     assert problem_name in _problem_name_to_problem_map
-    return _problem_name_to_problem_map[Z]
+    return _problem_name_to_problem_map[problem_name]
     
 _problem_name_to_problem_map = dict()
 

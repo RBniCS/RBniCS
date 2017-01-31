@@ -180,8 +180,8 @@ class ReducedVertices(AbstractReducedVertices):
         return self._reduced_mesh.get_reduced_dofs_list(index)
         
     def get_auxiliary_reduced_function_space(self, auxiliary_problem, index=None):
-        return self._reduced_mesh._get_auxiliary_reduced_function_space(self, auxiliary_problem, index)
+        return self._reduced_mesh.get_auxiliary_reduced_function_space(auxiliary_problem, index)
                 
     def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, auxiliary_reduced_problem, index=None):
-        return self._reduced_mesh._get_auxiliary_basis_functions_matrix(auxiliary_problem, auxiliary_reduced_problem, index)
+        return self._reduced_mesh.get_auxiliary_basis_functions_matrix(auxiliary_problem, auxiliary_reduced_problem, index)
         

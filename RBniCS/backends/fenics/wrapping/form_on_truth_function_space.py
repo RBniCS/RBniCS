@@ -24,7 +24,8 @@
 
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
-from dolfin import assign
+from dolfin import assign, Function
+from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem
 
 def form_on_truth_function_space(form):
@@ -36,11 +37,11 @@ def form_on_truth_function_space(form):
         for integral in form.integrals():
             for expression in iter_expressions(integral):
                 for node in traverse_unique_terminals(expression):
-                    node = _preprocess_node(node)
+                    node = function_from_subfunction_if_any(node)
                     if node in visited:
                         continue
                     # ... problem solutions related to nonlinear terms
-                    elif isinstance(node, Function.Type()):
+                    elif isinstance(node, Function):
                         truth_problem = get_problem_from_solution(node)
                         reduced_problem = get_reduced_problem_from_problem(truth_problem)
                         reduced_problem_to_truth_solution[reduced_problem] = node

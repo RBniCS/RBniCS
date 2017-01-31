@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl.core.operator import Operator
-from dolfin import assemble, dx, Expression, FunctionSpace, inner, Point, project, TensorElement, TestFunction, TrialFunction, VectorElement
+from dolfin import assemble, dx, Expression, Function, FunctionSpace, inner, Point, project, TensorElement, TestFunction, TrialFunction, VectorElement
 from RBniCS.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
 from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
@@ -35,15 +35,17 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
-@BackendFor("fenics", inputs=((Expression, Operator), ))
+@BackendFor("fenics", inputs=((Expression, Function, Operator), ))
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
     def __init__(self, expression):
         AbstractParametrizedExpressionFactory.__init__(self, expression)
         self._expression = expression
         self._name = get_expression_name(expression)
-        assert isinstance(expression, (Expression, Operator))
+        assert isinstance(expression, (Expression, Function, Operator))
         if isinstance(expression, Expression):
             self._space = FunctionSpace(expression.mesh, expression.ufl_element())
+        elif isinstance(expression, Function):
+            self._space = expression.function_space()
         elif isinstance(expression, Operator):
             self._space = project(expression).function_space() # automatically determines the FunctionSpace
         else:

@@ -22,10 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from ufl import Measure, replace
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
-from dolfin import Argument, assign
-from ufl.algorithms.traversal import iter_expressions
+from ufl.geometry import GeometricQuantity
+from dolfin import Argument, assign, Function
+from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem
 
 def form_on_reduced_function_space(form, at):
@@ -41,23 +43,23 @@ def form_on_reduced_function_space(form, at):
         for integral in form.integrals():
             for expression in iter_expressions(integral):
                 for node in traverse_unique_terminals(expression):
-                    node = _preprocess_node(node)
+                    node = function_from_subfunction_if_any(node)
                     if node in replacements:
                         continue
                     # ... test and trial functions
                     elif isinstance(node, Argument):
                         replacements[node] = Argument(reduced_V[node.number()], node.number(), node.part())
                     # ... problem solutions related to nonlinear terms
-                    elif isinstance(node, Function.Type()):
+                    elif isinstance(node, Function):
                         truth_problem = get_problem_from_solution(node)
                         reduced_problem = get_reduced_problem_from_problem(truth_problem)
                         # Get the function space corresponding to node on the reduced mesh
-                        auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(form, truth_problem)
+                        auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem)
                         # Define a replacement
                         replacements[node] = Function(auxiliary_reduced_V)
                         reduced_problem_to_reduced_mesh_solution[reduced_problem] = replacements[node]
                         # Get reduced problem basis functions on reduced mesh
-                        reduced_problem_to_reduced_Z[reduced_problem] = at.get_auxiliary_basis_functions_matrix(form, truth_problem, reduced_problem)
+                        reduced_problem_to_reduced_Z[reduced_problem] = at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem)
                     # ... geometric quantities
                     elif isinstance(node, GeometricQuantity):
                         if len(reduced_V) == 2:

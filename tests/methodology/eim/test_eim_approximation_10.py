@@ -22,44 +22,63 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from __future__ import print_function
 from dolfin import *
 from RBniCS import EquispacedDistribution
-from RBniCS.backends import BasisFunctionsMatrix, ParametrizedTensorFactory
-from RBniCS.backends.fenics import ParametrizedExpressionFactory as ParametrizedExpressionFactory_Base
-from RBniCS.backends.fenics.wrapping_utils import ParametrizedConstant
+from RBniCS.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, transpose
+from RBniCS.backends.fenics.wrapping import ParametrizedConstant
 from RBniCS.backends.online import OnlineFunction
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromSolutionToProblem, sync_setters
-
-class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
-    def __init__(self, expression, mesh):
-        ParametrizedExpressionFactory_Base.__init__(self, expression)
-        # Use a ridiculously high finite element space to have an accuracy comparable to the one of test 1,
-        # where exact evaluation is carried out
-        self._space = FunctionSpace(mesh, "CG", 10)
+from RBniCS.utils.io import Folders
+from RBniCS.utils.mpi import print
 
 @StoreMapFromProblemNameToProblem
 @StoreMapFromSolutionToProblem
 class MockProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):
+        # Call parent
+        ParametrizedProblem.__init__(self, "test_eim_approximation_10_mock_problem.output_dir")
         # Minimal subset of a ParametrizedDifferentialProblem
         self.V = V
         self._solution = Function(V)
+        self.components = ["f"]
         # Parametrized function to be interpolated
         x = SpatialCoordinate(V.mesh())
         mu = ParametrizedConstant(self, "mu[0]", mu=(1., ))
         self.f = (1-x[0])*cos(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
+        # Inner product
+        f = TrialFunction(self.V)
+        g = TestFunction(self.V)
+        self.X = assemble(f*g*dx)
 
 class MockReductionMethod(ReductionMethod):
     def __init__(self, truth_problem, **kwargs):
+        # Call parent
+        ReductionMethod.__init__(self, "test_eim_approximation_10_mock_problem.output_dir", truth_problem.mu_range)
+        # Minimal subset of a DifferentialProblemReductionMethod
         self.truth_problem = truth_problem
         self.reduced_problem = None
+        # I/O
+        self.folder["basis"] = self.truth_problem.folder_prefix + "/" + "basis"
+        # Gram Schmidt
+        self.GS = GramSchmidt(self.truth_problem.X)
         
     def offline(self):
         self.reduced_problem = MockReducedProblem(self.truth_problem)
+        if self.folder["basis"].create(): # basis folder was not available yet
+            for mu in self.training_set:
+                self.truth_problem.set_mu(mu)
+                print("solving mock problem at mu =", self.truth_problem.mu)
+                f = project(self.truth_problem.f, self.truth_problem.V)
+                self.reduced_problem.Z.enrich(f)
+                self.GS.apply(self.reduced_problem.Z, 0)
+            self.reduced_problem.Z.save(self.folder["basis"], "basis")
+        else:
+            self.reduced_problem.Z.load(self.folder["basis"], "basis")
         return self.reduced_problem
         
     def error_analysis(self, N=None, **kwargs):
@@ -73,22 +92,20 @@ class MockReducedProblem(ParametrizedProblem):
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, **kwargs):
+        # Call parent
+        ParametrizedProblem.__init__(self, "test_eim_approximation_10_vector.mock_problem_dir")
         # Minimal subset of a ParametrizedReducedDifferentialProblem
         self.truth_problem = truth_problem
         self.Z = BasisFunctionsMatrix(V)
-        self.Z.init(["f"])
-        self._solution = OnlineFunction(1)
+        self.Z.init(self.truth_problem.components)
+        self._solution = OnlineFunction()
         
     def solve(self):
-        print "Solving mock reduced problem at mu =", self.mu
-        # This is not really a reduced problem, it carries out the
-        # exact interpolation by updating the basis functions matrix in
-        # the truth problem
-        self.Z.clear()
+        print("solving mock reduced problem at mu =", self.mu)
         f = project(self.truth_problem.f, self.truth_problem.V)
-        self.Z.enrich(f)
+        f_N = transpose(self.Z)*self.truth_problem.X*f
         # Return the reduced solution
-        self._solution.vector()[0] = 1.
+        self._solution = OnlineFunction(f_N)
         return self._solution
         
 class ParametrizedFunctionApproximation(EIMApproximation):
@@ -99,7 +116,7 @@ class ParametrizedFunctionApproximation(EIMApproximation):
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, truth_problem, ParametrizedExpressionFactory(self.truth_problem._solution, self.V.mesh()), "test_eim_approximation_10_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, truth_problem, ParametrizedExpressionFactory(self.truth_problem._solution), "test_eim_approximation_10_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(self.V)
             form = self.truth_problem._solution*v*dx
@@ -128,17 +145,18 @@ problem.set_mu_range(mu_range)
 # 4. Create a reduction method and run the offline phase to generate the corresponding
 #    reduced problem
 reduction_method = MockReductionMethod(problem)
+reduction_method.initialize_training_set(12, sampling=EquispacedDistribution())
 reduced_problem = reduction_method.offline()
 
 # 5. Allocate an object of the ParametrizedFunctionApproximation class
-expression_type = "Vector" # Function or Vector or Matrix
+expression_type = "Function" # Function or Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
 parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation)
 parametrized_function_approximation.set_mu_range(mu_range)
 
 # 6. Prepare reduction with EIM
 parametrized_function_reduction_method = EIMApproximationReductionMethod(parametrized_function_approximation)
-parametrized_function_reduction_method.set_Nmax(30)
+parametrized_function_reduction_method.set_Nmax(12)
 
 # 7. Perform EIM offline phase
 parametrized_function_reduction_method.initialize_training_set(51, sampling=EquispacedDistribution())

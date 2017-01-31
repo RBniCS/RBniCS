@@ -22,7 +22,6 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from ufl import Measure, replace
 from ufl.core.multiindex import MultiIndex
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor

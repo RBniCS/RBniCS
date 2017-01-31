@@ -28,10 +28,18 @@ from RBniCS.backends.fenics.wrapping.evaluate_sparse_function_at_dofs import eva
 def evaluate_basis_functions_matrix_at_dofs(input_basis_functions_matrix, dofs_list, reduced_V, reduced_dofs_list):
     components = input_basis_functions_matrix._components_name
     output_basis_functions_matrix = RBniCS.backends.fenics.BasisFunctionsMatrix(reduced_V)
-    output_basis_functions_matrix.init(components_name)
-    for component in components:
-        input_functions_list = input_basis_functions_matrix._components[component_name]
+    output_basis_functions_matrix.init(components)
+    if len(components) > 1:
+        for component in components:
+            input_functions_list = input_basis_functions_matrix._components[component]
+            for basis_function in input_functions_list:
+                reduced_basis_function = evaluate_sparse_function_at_dofs(basis_function, dofs_list, reduced_V, reduced_dofs_list)
+                output_basis_functions_matrix.enrich(reduced_basis_function, component=component)
+    else:
+        input_functions_list = input_basis_functions_matrix._components[components[0]]
         for basis_function in input_functions_list:
             reduced_basis_function = evaluate_sparse_function_at_dofs(basis_function, dofs_list, reduced_V, reduced_dofs_list)
-            output_basis_functions_matrix.enrich(reduced_basis_function, component=component)
+            output_basis_functions_matrix.enrich(reduced_basis_function)
+    return output_basis_functions_matrix
+    
             
