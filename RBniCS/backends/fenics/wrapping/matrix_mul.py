@@ -25,18 +25,17 @@
 from petsc4py import PETSc
 from ufl.core.operator import Operator
 from dolfin import as_backend_type
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.matrix import Matrix
+import RBniCS.backends # avoid circular imports when importing fenics backend
 from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
 
 def matrix_mul_vector(matrix, vector):
-    if isinstance(vector, (Function.Type(), Operator)):
+    if isinstance(vector, (RBniCS.backends.fenics.Function.Type(), Operator)):
         vector = function_from_ufl_operators(vector).vector()
     return matrix*vector
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    assert isinstance(matrix, Matrix.Type())
-    assert isinstance(other_matrix, Matrix.Type())
+    assert isinstance(matrix, RBniCS.backends.fenics.Matrix.Type())
+    assert isinstance(other_matrix, RBniCS.backends.fenics.Matrix.Type())
     matrix = as_backend_type(matrix).mat()
     other_matrix = as_backend_type(other_matrix).mat()
     mat = matrix.transposeMatMult(other_matrix)

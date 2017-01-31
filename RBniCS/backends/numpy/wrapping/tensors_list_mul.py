@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.numpy.wrapping.tensor_copy import tensor_copy
-from RBniCS.backends.numpy.function import Function as OnlineFunction
+import RBniCS.backends # avoid circular imports when importing numpy backend
 
 def tensors_list_mul_online_function(tensors_list, online_function):
-    assert isinstance(online_function, OnlineFunction.Type())
+    assert isinstance(online_function, RBniCS.backends.numpy.Function.Type())
     online_vector = online_function.vector()
     
     output = tensor_copy(tensors_list._list[0])

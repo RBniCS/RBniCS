@@ -22,12 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.function import Function
-from RBniCS.backends.numpy.vector import Vector
+import RBniCS.backends # avoid circular imports when importing numpy backend
 
 def function_copy(function):
     original_vector = function.vector()
-    v = Vector(original_vector.N)
+    v = RBniCS.backends.numpy.Vector(original_vector.N)
     v[:] = original_vector
-    return Function(v)
+    return RBniCS.backends.numpy.Function(v)
 

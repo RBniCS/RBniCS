@@ -23,13 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl.core.operator import Operator
-from RBniCS.backends.fenics.function import Function
+import RBniCS.backends # avoid circular imports when importing fenics backend
 from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
 
 def vector_mul_vector(vector1, vector2):
-    if isinstance(vector1, (Function.Type(), Operator)):
+    if isinstance(vector1, (RBniCS.backends.fenics.Function.Type(), Operator)):
         vector1 = function_from_ufl_operators(vector1).vector()
-    if isinstance(vector2, (Function.Type(), Operator)):
+    if isinstance(vector2, (RBniCS.backends.fenics.Function.Type(), Operator)):
         vector2 = function_from_ufl_operators(vector2).vector()
     return vector1.inner(vector2)
 

@@ -24,13 +24,13 @@
 
 from mpi4py.MPI import MAX
 from dolfin import as_backend_type
-from RBniCS.backends.online import OnlineVector
+import RBniCS.backends # avoid circular imports when importing online backend
 
 def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
     vec = as_backend_type(sparse_vector).vec()
     row_start, row_end = vec.getOwnershipRange()
     out_size = len(dofs_list)
-    out = OnlineVector(out_size)
+    out = RBniCS.backends.online.OnlineVector(out_size)
     mpi_comm = vec.comm.tompi4py()
     for (index, dofs) in enumerate(dofs_list):
         assert len(dofs) == 1

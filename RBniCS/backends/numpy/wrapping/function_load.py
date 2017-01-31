@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import RBniCS.backends # avoid circular imports when importing numpy backend
 from RBniCS.utils.io import NumpyIO
-from RBniCS.backends.numpy.function import Function
 
 def function_load(directory, filename, Z_unused, suffix=None):
     if suffix is not None:
         filename = filename + "." + str(suffix)
     vec = NumpyIO.load_file(directory, filename)
-    return Function(vec)
+    return RBniCS.backends.numpy.Function(vec)
 

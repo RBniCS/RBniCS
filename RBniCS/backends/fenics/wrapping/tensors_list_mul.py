@@ -23,21 +23,19 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
-from RBniCS.backends.numpy.function import Function as OnlineFunction
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
+import RBniCS.backends # avoid circular imports when importing fenics and numpy backends
 
 def tensors_list_mul_online_function(tensors_list, online_function):
-    assert isinstance(online_function, OnlineFunction.Type())
+    assert isinstance(online_function, RBniCS.backends.numpy.Function.Type())
     online_vector = online_function.vector()
     
     output = tensor_copy(tensors_list._list[0])
     output.zero()
-    assert isinstance(output, (Matrix.Type(), Vector.Type()))
-    if isinstance(output, Matrix.Type()):
+    assert isinstance(output, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
+    if isinstance(output, RBniCS.backends.fenics.Matrix.Type()):
         for (i, matrix_i) in enumerate(tensors_list._list):
             output += matrix_i*online_vector.item(i)
-    elif isinstance(output, Vector.Type()):
+    elif isinstance(output, RBniCS.backends.fenics.Vector.Type()):
         for (i, vector_i) in enumerate(tensors_list._list):
             output.add_local(vector_i.array()*online_vector.item(i))
         output.apply("add")
