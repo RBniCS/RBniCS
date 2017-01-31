@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.backends.numpy.wrapping.DirichletBC import DirichletBC
 from RBniCS.backends.numpy.wrapping.function_copy import function_copy
 from RBniCS.backends.numpy.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from RBniCS.backends.numpy.wrapping.function_load import function_load
@@ -31,6 +32,8 @@ from RBniCS.backends.numpy.wrapping.get_function_subspace import get_function_su
 from RBniCS.backends.numpy.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.backends.numpy.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from RBniCS.backends.numpy.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
+from RBniCS.backends.numpy.wrapping.slice_to_array import slice_to_array
+from RBniCS.backends.numpy.wrapping.slice_to_size import slice_to_size
 from RBniCS.backends.basic.wrapping.tensor_copy import tensor_copy
 from RBniCS.backends.basic.wrapping.tensor_load import tensor_load
 from RBniCS.backends.basic.wrapping.tensor_save import tensor_save
@@ -38,6 +41,7 @@ from RBniCS.backends.basic.wrapping.tensors_list_mul import tensors_list_mul_onl
 from RBniCS.backends.numpy.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
+    'DirichletBC',
     'function_copy',
     'function_extend_or_restrict',
     'function_load',
@@ -49,6 +53,8 @@ __all__ = [
     'get_mpi_comm',
     'gram_schmidt_projection_step',
     'matrix_mul_vector',
+    'slice_to_array',
+    'slice_to_size',
     'tensor_copy',
     'tensor_load',
     'tensor_save',
@@ -56,3 +62,6 @@ __all__ = [
     'vector_mul_vector',
     'vectorized_matrix_inner_vectorized_matrix'
 ]
+
+__overridden__ = []
+

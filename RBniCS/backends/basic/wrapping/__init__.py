@@ -26,6 +26,7 @@ from RBniCS.backends.basic.wrapping.function_copy import function_copy
 from RBniCS.backends.basic.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from RBniCS.backends.basic.wrapping.function_load import function_load
 from RBniCS.backends.basic.wrapping.function_save import function_save
+from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_adapter import functions_list_basis_functions_matrix_adapter
 from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
 from RBniCS.backends.basic.wrapping.get_function_subspace import get_function_subspace
 from RBniCS.backends.basic.wrapping.get_mpi_comm import get_mpi_comm
@@ -42,6 +43,7 @@ __all__ = [
     'function_extend_or_restrict',
     'function_load',
     'function_save',
+    'functions_list_basis_functions_matrix_adapter',
     'functions_list_basis_functions_matrix_mul_online_matrix',
     'functions_list_basis_functions_matrix_mul_online_vector',
     'functions_list_basis_functions_matrix_mul_online_function',
