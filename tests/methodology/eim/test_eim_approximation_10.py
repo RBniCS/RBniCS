@@ -110,24 +110,23 @@ class MockReducedProblem(ParametrizedProblem):
         
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, truth_problem, expression_type, basis_generation):
-        self.truth_problem = truth_problem
         self.V = truth_problem.V
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, truth_problem, ParametrizedExpressionFactory(self.truth_problem._solution), "test_eim_approximation_10_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(truth_problem._solution), "test_eim_approximation_10_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(self.V)
-            form = self.truth_problem._solution*v*dx
+            form = truth_problem._solution*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, truth_problem, ParametrizedTensorFactory(form), "test_eim_approximation_10_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_10_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(self.V)
             v = TestFunction(self.V)
-            form = self.truth_problem._solution*u*v*dx
+            form = truth_problem._solution*u*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, truth_problem, ParametrizedTensorFactory(form), "test_eim_approximation_10_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_10_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 

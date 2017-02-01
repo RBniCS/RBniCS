@@ -27,8 +27,12 @@ from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem
+from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
-def form_on_truth_function_space(form):
+def form_on_truth_function_space(form_wrapper):
+    form = form_wrapper._form
+    EIM_approximation = get_EIM_approximation_from_parametrized_expression(form_wrapper)
+    
     if form not in form_on_truth_function_space__reduced_problem_to_truth_solution_cache:
         visited = list()
         reduced_problem_to_truth_solution = dict()
@@ -55,6 +59,7 @@ def form_on_truth_function_space(form):
         
     # Solve reduced problem associated to nonlinear terms
     for (reduced_problem, truth_solution) in reduced_problem_to_truth_solution.iteritems():
+        reduced_problem.set_mu(EIM_approximation.mu)
         reduced_solution = reduced_problem.solve()
         assign(truth_solution, reduced_problem.Z[:reduced_solution.N]*reduced_solution)
     

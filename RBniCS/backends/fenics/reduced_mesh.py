@@ -242,7 +242,7 @@ class ReducedMesh(AbstractReducedMesh):
         if self.subdomain_data is not None:
             for (index, reduced_subdomain_data) in self.reduced_subdomain_data.iteritems():
                 subdomain_index = 0
-                for (subdomain, reduced_subdomain) in enumerate(reduced_subdomain_data):
+                for (subdomain, reduced_subdomain) in reduced_subdomain_data.iteritems():
                     subdomain_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index)
                     if not has_hdf5():
                         assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"

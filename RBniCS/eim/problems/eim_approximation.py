@@ -26,12 +26,14 @@ from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.backends import abs, copy, evaluate, export, max
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import sync_setters, Extends, override
+from RBniCS.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMApproximation
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EIM
 #
 # Empirical interpolation method for the interpolation of parametrized functions
 @Extends(ParametrizedProblem)
+@StoreMapFromParametrizedExpressionToEIMApproximation
 class EIMApproximation(ParametrizedProblem):
 
     ###########################     CONSTRUCTORS     ########################### 

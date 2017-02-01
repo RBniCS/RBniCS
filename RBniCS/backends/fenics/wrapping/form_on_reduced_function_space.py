@@ -29,8 +29,11 @@ from ufl.geometry import GeometricQuantity
 from dolfin import Argument, assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem
+from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
-def form_on_reduced_function_space(form, at):
+def form_on_reduced_function_space(form_wrapper, at):
+    form = form_wrapper._form
+    EIM_approximation = get_EIM_approximation_from_parametrized_expression(form_wrapper)
     reduced_V = at.get_reduced_function_spaces()
     reduced_subdomain_data = at.get_reduced_subdomain_data()
     
@@ -101,6 +104,7 @@ def form_on_reduced_function_space(form, at):
     
     # Solve reduced problem associated to nonlinear terms
     for (reduced_problem, reduced_mesh_solution) in reduced_problem_to_reduced_mesh_solution.iteritems():
+        reduced_problem.set_mu(EIM_approximation.mu)
         reduced_solution = reduced_problem.solve()
         reduced_Z = reduced_problem_to_reduced_Z[reduced_problem]
         assign(reduced_mesh_solution, reduced_Z[:reduced_solution.N]*reduced_solution)

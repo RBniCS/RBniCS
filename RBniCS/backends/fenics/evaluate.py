@@ -95,11 +95,11 @@ def evaluate(expression_, at=None):
             return out
         elif isinstance(expression_, ParametrizedExpressionFactory):
             if at is None:
-                expression = expression_on_truth_mesh(expression_._expression)
+                expression = expression_on_truth_mesh(expression_)
                 space = expression_._space
                 return project(expression, space)
             else:
-                expression = expression_on_reduced_mesh(expression_._expression, at)
+                expression = expression_on_reduced_mesh(expression_, at)
                 reduced_vertices = at._vertex_list
                 reduced_components = at._component_list
                 assert len(reduced_vertices) == len(reduced_components)
@@ -138,12 +138,12 @@ def evaluate(expression_, at=None):
             return out
         elif isinstance(expression_, ParametrizedTensorFactory):
             if at is None:
-                form = form_on_truth_function_space(expression_._form)
+                form = form_on_truth_function_space(expression_)
                 tensor = assemble(form)
                 tensor.generator = expression_ # for I/O
                 return tensor
             else:
-                form = form_on_reduced_function_space(expression_._form, at)
+                form = form_on_reduced_function_space(expression_, at)
                 dofs = at.get_reduced_dofs_list()
                 sparse_out = assemble(form)
                 form_rank = len(form.arguments())
