@@ -40,6 +40,7 @@ from RBniCS.backends.fenics.wrapping.function_from_ufl_operators import function
 from RBniCS.backends.fenics.wrapping.function_load import function_load
 from RBniCS.backends.fenics.wrapping.function_save import function_save
 from RBniCS.backends.fenics.wrapping.function_space import FunctionSpace
+from RBniCS.backends.fenics.wrapping.function_space_for_expression_projection import function_space_for_expression_projection
 from RBniCS.backends.fenics.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
 from RBniCS.backends.fenics.wrapping.get_expression_description import get_expression_description
 from RBniCS.backends.fenics.wrapping.get_expression_name import get_expression_name
@@ -80,6 +81,7 @@ __all__ = [
     'function_load',
     'function_save',
     'FunctionSpace',
+    'function_space_for_expression_projection',
     'functions_list_basis_functions_matrix_mul_online_function',
     'functions_list_basis_functions_matrix_mul_online_matrix',
     'functions_list_basis_functions_matrix_mul_online_vector',

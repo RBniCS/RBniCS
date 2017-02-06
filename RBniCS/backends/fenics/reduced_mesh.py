@@ -123,11 +123,11 @@ class ReducedMesh(AbstractReducedMesh):
         self._auxiliary_reduced_dofs__dof_map_reader_mapping = dict() # from (problem, N)
         # ... which will be initialized as needed in the save and load methods
         # Store directory and filename passed to save()
-        self._auxiliary_save_directory = None
-        self._auxiliary_save_filename = None
+        self._auxiliary_io_directory = None
+        self._auxiliary_io_filename = None
         if copy_from is not None:
-            self._auxiliary_save_directory = copy_from._auxiliary_save_directory
-            self._auxiliary_save_filename = copy_from._auxiliary_save_filename
+            self._auxiliary_io_directory = copy_from._auxiliary_io_directory
+            self._auxiliary_io_filename = copy_from._auxiliary_io_filename
         
     @override
     def append(self, global_dofs):
@@ -273,14 +273,14 @@ class ReducedMesh(AbstractReducedMesh):
         ## Auxiliary basis functions
         # We will not save anything, because saving to file is handled by get_auxiliary_* methods.
         # We need howewer to store the directory and filename where to save
-        if self._auxiliary_save_directory is None:
-            self._auxiliary_save_directory = directory
+        if self._auxiliary_io_directory is None:
+            self._auxiliary_io_directory = directory
         else:
-            assert self._auxiliary_save_directory == directory
-        if self._auxiliary_save_filename is None:
-            self._auxiliary_save_filename = filename
+            assert self._auxiliary_io_directory == directory
+        if self._auxiliary_io_filename is None:
+            self._auxiliary_io_filename = filename
         else:
-            assert self._auxiliary_save_filename == filename
+            assert self._auxiliary_io_filename == filename
             
     def _save_Nmax(self, directory, filename):
         if is_io_process(self.mpi_comm):
@@ -290,7 +290,7 @@ class ReducedMesh(AbstractReducedMesh):
             
     def _save_all_auxiliary_keys(self):
         # Get full directory name
-        full_directory = Folders.Folder(self._auxiliary_save_directory + "/" + self._auxiliary_save_filename)
+        full_directory = Folders.Folder(self._auxiliary_io_directory + "/" + self._auxiliary_io_filename)
         full_directory.create()
         # Save all auxiliary reduced function spaces keys
         exportable_auxiliary_keys = ExportableList("pickle")
@@ -301,7 +301,7 @@ class ReducedMesh(AbstractReducedMesh):
     def _save_auxiliary_reduced_function_space(self, key):
         self._save_all_auxiliary_keys()
         # Get full directory name
-        full_directory = Folders.Folder(self._auxiliary_save_directory + "/" + self._auxiliary_save_filename)
+        full_directory = Folders.Folder(self._auxiliary_io_directory + "/" + self._auxiliary_io_filename)
         full_directory.create()
         # Init
         self._init_for_auxiliary_save_if_needed()
@@ -325,7 +325,7 @@ class ReducedMesh(AbstractReducedMesh):
     def _save_auxiliary_basis_functions_matrix(self, key):
         self._save_all_auxiliary_keys()
         # Get full directory name
-        full_directory = Folders.Folder(self._auxiliary_save_directory + "/" + self._auxiliary_save_filename)
+        full_directory = Folders.Folder(self._auxiliary_io_directory + "/" + self._auxiliary_io_filename)
         full_directory.create()
         # Save auxiliary basis functions matrix
         auxiliary_basis_functions_matrix = self._auxiliary_basis_functions_matrix[key]
@@ -443,6 +443,16 @@ class ReducedMesh(AbstractReducedMesh):
             self._assert_dict_lengths()
             
             ## Auxiliary basis functions
+            # Store the directory and filename where to load (and possibily save _get_auxiliary_*
+            # quantities which were not computed already)
+            if self._auxiliary_io_directory is None:
+                self._auxiliary_io_directory = directory
+            else:
+                assert self._auxiliary_io_directory == directory
+            if self._auxiliary_io_filename is None:
+                self._auxiliary_io_filename = filename
+            else:
+                assert self._auxiliary_io_filename == filename
             # Load auxiliary reduced function spaces keys
             importable_auxiliary_keys = ExportableList("pickle")
             importable_auxiliary_keys.load(full_directory, "auxiliary_keys")

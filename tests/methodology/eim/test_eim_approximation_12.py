@@ -41,28 +41,36 @@ from RBniCS.utils.mpi import print
 class MockProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):
         # Call parent
-        ParametrizedProblem.__init__(self, "test_eim_approximation_10_mock_problem.output_dir")
+        ParametrizedProblem.__init__(self, "test_eim_approximation_12_mock_problem.output_dir")
         # Minimal subset of a ParametrizedDifferentialProblem
         self.V = V
         self._solution = Function(V)
         self.components = ["f"]
         # Parametrized function to be interpolated
         x = SpatialCoordinate(V.mesh())
-        mu = ParametrizedConstant(self, "mu[0]", mu=(1., ))
-        self.f = (1-x[0])*cos(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
+        mu = (ParametrizedConstant(self, "mu[0]", mu=(-1., -1.)), ParametrizedConstant(self, "mu[1]", mu=(-1., -1.)))
+        self.f00 = 1./sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)
+        self.f01 = 1./sqrt(pow(x[0]-mu[1], 2) + pow(x[1]-mu[0], 2) + 0.01)
         # Inner product
         f = TrialFunction(self.V)
         g = TestFunction(self.V)
-        self.X = assemble(f*g*dx)
+        self.X = assemble(inner(f, g)*dx)
+        # Collapsed vector and space
+        self.V0 = V.sub(0).collapse()
+        self.V00 = V.sub(0).sub(0).collapse()
+        self.V1 = V.sub(1).collapse()
         
     def solve(self):
-        project(self.f, self.V, function=self._solution)
+        f00 = project(self.f00, self.V00)
+        f01 = project(self.f01, self.V00)
+        assign(self._solution.sub(0).sub(0), f00)
+        assign(self._solution.sub(0).sub(1), f01)
         return self._solution
 
 class MockReductionMethod(ReductionMethod):
     def __init__(self, truth_problem, **kwargs):
         # Call parent
-        ReductionMethod.__init__(self, "test_eim_approximation_10_mock_problem.output_dir", truth_problem.mu_range)
+        ReductionMethod.__init__(self, "test_eim_approximation_12_mock_problem.output_dir", truth_problem.mu_range)
         # Minimal subset of a DifferentialProblemReductionMethod
         self.truth_problem = truth_problem
         self.reduced_problem = None
@@ -97,7 +105,7 @@ class MockReducedProblem(ParametrizedProblem):
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, **kwargs):
         # Call parent
-        ParametrizedProblem.__init__(self, "test_eim_approximation_10_vector.mock_problem_dir")
+        ParametrizedProblem.__init__(self, "test_eim_approximation_12_vector.mock_problem_dir")
         # Minimal subset of a ParametrizedReducedDifferentialProblem
         self.truth_problem = truth_problem
         self.Z = BasisFunctionsMatrix(self.truth_problem.V)
@@ -114,41 +122,45 @@ class MockReducedProblem(ParametrizedProblem):
         
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, truth_problem, expression_type, basis_generation):
-        self.V = truth_problem.V
+        self.V = truth_problem.V1
+        (f0, _) = split(truth_problem._solution)
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(truth_problem._solution), "test_eim_approximation_10_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f0), "test_eim_approximation_12_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(self.V)
-            form = truth_problem._solution*v*dx
+            form = inner(f0, grad(v))*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_10_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_12_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(self.V)
             v = TestFunction(self.V)
-            form = truth_problem._solution*u*v*dx
+            form = inner(f0, grad(u))*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_10_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_12_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 
 # 1. Create the mesh for this test
-mesh = IntervalMesh(100, -1., 1.)
+mesh = RectangleMesh(Point(0.1, 0.1), Point(0.9, 0.9), 20, 20)
 
 # 2. Create Finite Element space (Lagrange P1)
-V = FunctionSpace(mesh, "Lagrange", 1)
+element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+element   = MixedElement(element_0, element_1)
+V = FunctionSpace(mesh, element)
 
 # 3. Create a parametrized problem
 problem = MockProblem(V)
-mu_range = [(1., pi), ]
+mu_range = [(-1., -0.01), (-1., -0.01)]
 problem.set_mu_range(mu_range)
 
 # 4. Create a reduction method and run the offline phase to generate the corresponding
 #    reduced problem
 reduction_method = MockReductionMethod(problem)
-reduction_method.initialize_training_set(12, sampling=EquispacedDistribution())
+reduction_method.initialize_training_set(16, sampling=EquispacedDistribution())
 reduced_problem = reduction_method.offline()
 
 # 5. Allocate an object of the ParametrizedFunctionApproximation class
@@ -159,14 +171,14 @@ parametrized_function_approximation.set_mu_range(mu_range)
 
 # 6. Prepare reduction with EIM
 parametrized_function_reduction_method = EIMApproximationReductionMethod(parametrized_function_approximation)
-parametrized_function_reduction_method.set_Nmax(12)
+parametrized_function_reduction_method.set_Nmax(16)
 
 # 7. Perform EIM offline phase
-parametrized_function_reduction_method.initialize_training_set(51, sampling=EquispacedDistribution())
+parametrized_function_reduction_method.initialize_training_set(64, sampling=EquispacedDistribution())
 reduced_parametrized_function_approximation = parametrized_function_reduction_method.offline()
 
 # 8. Perform EIM online solve
-online_mu = (1., )
+online_mu = (-1., -1.)
 reduced_parametrized_function_approximation.set_mu(online_mu)
 reduced_parametrized_function_approximation.solve()
 

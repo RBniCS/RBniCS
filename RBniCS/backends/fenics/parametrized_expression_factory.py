@@ -23,14 +23,14 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl.core.operator import Operator
-from dolfin import assemble, dx, Expression, Function, FunctionSpace, inner, Point, project, TensorElement, TestFunction, TrialFunction, VectorElement
+from dolfin import assemble, dx, Expression, Function, FunctionSpace, inner, TestFunction, TrialFunction
 from RBniCS.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
 from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
-from RBniCS.backends.fenics.wrapping import get_expression_description, get_expression_name
+from RBniCS.backends.fenics.wrapping import function_space_for_expression_projection, get_expression_description, get_expression_name
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.mpi import parallel_max
 
@@ -47,7 +47,7 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
         elif isinstance(expression, Function):
             self._space = expression.function_space()
         elif isinstance(expression, Operator):
-            self._space = project(expression).function_space() # automatically determines the FunctionSpace
+            self._space = function_space_for_expression_projection(expression)
         else:
             raise AssertionError("Invalid expression in ParametrizedExpressionFactory.__init__().")
             
