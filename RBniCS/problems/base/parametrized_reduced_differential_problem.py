@@ -485,7 +485,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             return NotImplemented
         else: # Compute the relative error on the output
             truth_output = self.truth_problem._output
-            return absolute_error_output/truth_output
+            if truth_output == 0.:
+                return float('NaN')
+            else:
+                return absolute_error_output/truth_output
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
