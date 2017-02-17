@@ -25,6 +25,7 @@
 from RBniCS.backends.common.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.common.linear_program_solver import LinearProgramSolver
 from RBniCS.backends.common.product import product
+from RBniCS.backends.common.separated_parametrized_form import SeparatedParametrizedForm
 from RBniCS.backends.common.sum import sum
 from RBniCS.backends.common.time_quadrature import TimeQuadrature
 
@@ -32,6 +33,7 @@ __all__ = [
     'AffineExpansionStorage',
     'LinearProgramSolver',
     'product',
+    'SeparatedParametrizedForm',
     'sum',
     'TimeQuadrature'
 ]
