@@ -22,29 +22,34 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import __version__ as dolfin_version
+from numpy import zeros
+from dolfin import __version__ as dolfin_version, Constant, Function
+from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
+from ufl.indexed import Indexed
 import hashlib
+from RBniCS.utils.decorators import get_problem_from_solution
 
 def get_expression_name(expression):
     str_repr = ""
     coefficients_replacement = {}
-    function_indices = {}
-    min_index = None
     for n in pre_traversal(expression):
+        n = _preprocess_indexed(n, coefficients_replacement, str_repr)
         if hasattr(n, "cppcode"):
             coefficients_replacement[repr(n)] = str(n.cppcode)
             str_repr += repr(n.cppcode)
+        elif isinstance(n, Function):
+            problem = get_problem_from_solution(n)
+            coefficients_replacement[repr(n)] = str(type(problem).__name__)
+            str_repr += repr(type(problem).__name__)
+        elif isinstance(n, Constant):
+            x = zeros(1)
+            vals = zeros(n.value_size())
+            n.eval(vals, x)
+            coefficients_replacement[repr(n)] = str(vals)
+            str_repr += repr(str(vals))
         else:
             str_repr += repr(n)
-    for t in traverse_unique_terminals(expression):
-        if str(t).startswith("f_"):
-            index = int(str(t).replace("f_", ""))
-            function_indices[repr(t)] = index
-            if min_index is None or index < min_index:
-                min_index = index
-    for key, index in function_indices.iteritems():
-        coefficients_replacement[key] = "f_" + str(index - min_index)
     for key, value in coefficients_replacement.iteritems():
         str_repr = str_repr.replace(key, value)
     hash_code = hashlib.sha1(
@@ -52,3 +57,21 @@ def get_expression_name(expression):
                 ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
     return hash_code
     
+def _preprocess_indexed(n, coefficients_replacement, str_repr):
+    if isinstance(n, Indexed):
+        assert len(n.ufl_operands) == 2
+        assert isinstance(n.ufl_operands[1], MultiIndex)
+        index_id = 0
+        for index in n.ufl_operands[1].indices():
+            assert isinstance(index, (FixedIndex, Index))
+            if isinstance(index, FixedIndex):
+                str_repr += repr(str(index))
+            elif isinstance(index, Index):
+                if repr(index) not in coefficients_replacement:
+                    coefficients_replacement[repr(index)] = "i_" + str(index_id)
+                    index_id += 1
+                str_repr += coefficients_replacement[repr(index)]
+        return n.ufl_operands[0]
+    else:
+        return n
+        

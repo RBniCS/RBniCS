@@ -22,15 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from ufl.corealg.traversal import traverse_unique_terminals
+from RBniCS.backends.fenics.wrapping.get_expression_description import get_expression_description
 
 def get_form_description(form):
     coefficients_repr = {}
     for integral in form.integrals():
-        for n in traverse_unique_terminals(integral.integrand()):
-            if hasattr(n, "cppcode"):
-                coefficients_repr[n] = str(n.cppcode)
-    all_str = list()
-    for key, value in coefficients_repr.iteritems():
-        all_str.append(str(key) + " = " + value)
-    return all_str
+        coefficients_repr_integral = get_expression_description(integral.integrand())
+        # Check consistency
+        intersection = set(coefficients_repr_integral.keys()).intersection(set(coefficients_repr.keys()))
+        for key in intersection:
+            assert coefficients_repr_integral[key] == coefficients_repr[key]
+        # Update
+        coefficients_repr.update(coefficients_repr_integral)
+    return coefficients_repr

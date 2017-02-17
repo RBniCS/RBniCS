@@ -22,14 +22,27 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from numpy import zeros
+from dolfin import Constant, Function
 from ufl.corealg.traversal import traverse_unique_terminals
+from RBniCS.utils.decorators import get_problem_from_solution
 
 def get_expression_description(expression):
     coefficients_repr = {}
     for n in traverse_unique_terminals(expression):
         if hasattr(n, "cppcode"):
             coefficients_repr[n] = str(n.cppcode)
-    all_str = list()
-    for key, value in coefficients_repr.iteritems():
-        all_str.append(str(key) + " = " + value)
-    return all_str
+        elif isinstance(n, Function):
+            problem = get_problem_from_solution(n)
+            coefficients_repr[n] = "solution of " + str(type(problem).__name__)
+        elif isinstance(n, Constant):
+            x = zeros(1)
+            vals = zeros(n.value_size())
+            n.eval(vals, x)
+            if len(vals) == 1:
+                coefficients_repr[n] = str(vals[0])
+            else:
+                coefficients_repr[n] = str(vals.reshape(n.ufl_shape))
+        else:
+            assert not str(n).startswith("f_")
+    return coefficients_repr
