@@ -193,7 +193,7 @@ class Stokes(StokesProblem):
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
 
-@EIM(basis_generation="POD")
+@EIM()
 @ShapeParametrization(*shape_parametrization)
 class AdvectionDiffusion(EllipticCoerciveProblem):
     
@@ -352,7 +352,7 @@ advection_diffusion_problem.set_mu_range(mu_range)
 
 # 4b. Prepare reduction with a POD-Galerkin method
 advection_diffusion_pod_galerkin_method = PODGalerkin(advection_diffusion_problem)
-advection_diffusion_pod_galerkin_method.set_Nmax(25, EIM={"a": (3, 25), "f": 1})
+advection_diffusion_pod_galerkin_method.set_Nmax(25, EIM={"a": (3, 50), "f": 1})
 
 # 5b. Perform the offline phase
 first_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
@@ -367,7 +367,7 @@ reduced_advection_diffusion_problem.export_solution("AdvectionDiffusion", "onlin
 
 # 7a. Perform an error analysis
 stokes_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), EIM=10)
-#stokes_pod_galerkin_method.error_analysis()
+stokes_pod_galerkin_method.error_analysis()
 
 # 7b. Perform an error analysis
 advection_diffusion_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), EIM=100)

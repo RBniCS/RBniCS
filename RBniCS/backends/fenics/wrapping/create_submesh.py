@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import Cell, cells, compile_extension_module, DEBUG, Facet, facets, Function, FunctionSpace, LagrangeInterpolator, Mesh, MeshEditor, MeshFunction, log, Vertex, vertices
-from numpy import abs, array, isclose, float, max, round, uintp, unique, where
+from dolfin import Cell, cells, compile_extension_module, DEBUG, Facet, facets, Function, FunctionSpace, LagrangeInterpolator, Mesh, MeshEditor, MeshFunction, log, parameters, Vertex, vertices
+from numpy import abs, array, isclose, float, logical_and, max, round, uintp, unique, where, zeros
 from mpi4py.MPI import SUM
 
 # Implement an extended version of cbcpost create_submesh that:
@@ -329,8 +329,12 @@ def create_submesh_subdomains(mesh, submesh, mesh_subdomains):
             raise AssertionError("Invalid arguments in create_submesh_subdomains.")
         submesh_subdomains.append(submesh_subdomain)
     return submesh_subdomains
-    
+
 def mesh_dofs_to_submesh_dofs(mesh_V, submesh_V):
+    inverse_map = submesh_dofs_to_mesh_dofs(submesh_V, mesh_V)
+    return dict(zip(inverse_map.values(), inverse_map.keys()))
+    
+def submesh_dofs_to_mesh_dofs(submesh_V, mesh_V):
     if mesh_V.ufl_element().family() == "Mixed":
         assert mesh_V.num_sub_spaces() == submesh_V.num_sub_spaces()
         for i in range(mesh_V.num_sub_spaces()):
@@ -340,27 +344,37 @@ def mesh_dofs_to_submesh_dofs(mesh_V, submesh_V):
         assert mesh_V.ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
         assert submesh_V.ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
     
-    interpolator = LagrangeInterpolator()
-    local_submesh_dofs = array(range(*submesh_V.dofmap().ownership_range()), dtype=float)
-    submesh_dofs = Function(submesh_V)
-    submesh_dofs.vector().set_local(local_submesh_dofs)
-    submesh_dofs.vector().apply("")
-    submesh_dofs.vector()[:] += 1 # otherwise you cannot distinguish dof 0 from the value=0. which is assigned on mesh_V \setminus submesh_V
-    submesh_dofs_extended = Function(mesh_V)
-    interpolator.interpolate(submesh_dofs_extended, submesh_dofs)
-    submesh_dofs.vector()[:] -= 1
-    submesh_dofs_extended.vector()[:] -= 1 # in this way dofs which are not in the submesh_V are marked by -1
-    submesh_dofs_extended_rounded = round(submesh_dofs_extended.vector().array())
-    assert max(abs( submesh_dofs_extended_rounded - submesh_dofs_extended.vector().array() )) < 1.e-10, \
-        "Extension has produced non-integer DOF IDs. Are you sure that the mesh function space and submesh function space are conforming?"
-    submesh_dofs_extended_integer = submesh_dofs_extended_rounded.astype('i')
-    not_minus_one_mesh_local_indices = where(submesh_dofs_extended_integer >= 0)[0]
-    not_minus_one_mesh_global_indices = [mesh_V.dofmap().local_to_global_index(local_dof) for local_dof in not_minus_one_mesh_local_indices]
-    submesh_dofs_extended_integer = submesh_dofs_extended_integer[not_minus_one_mesh_local_indices]
-    assert len(unique(submesh_dofs_extended_integer)) == len(submesh_dofs_extended_integer)
-    return dict(zip(not_minus_one_mesh_global_indices, submesh_dofs_extended_integer))
+    previous_allow_extrapolation_value = parameters["allow_extrapolation"]
+    parameters["allow_extrapolation"] = True
     
-def submesh_dofs_to_mesh_dofs(submesh_V, mesh_V):
-    inverse_map = mesh_dofs_to_submesh_dofs(mesh_V, submesh_V)
-    return dict(zip(inverse_map.values(), inverse_map.keys()))
+    interpolator = LagrangeInterpolator()
+    mesh_V_ownership_range = array(range(*mesh_V.dofmap().ownership_range()), dtype=float)
+    mesh_V_dofs = Function(mesh_V)
+    mesh_V_dofs.vector().set_local(mesh_V_ownership_range)
+    mesh_V_dofs.vector().apply("")
+    mesh_V_dofs_restricted_to_submesh_V = Function(submesh_V)
+    interpolator.interpolate(mesh_V_dofs_restricted_to_submesh_V, mesh_V_dofs)
+    mesh_V_dofs_restricted_to_submesh_V = mesh_V_dofs_restricted_to_submesh_V.vector().array()
+    submesh_V_local_indices = where(logical_and(
+        mesh_V_dofs_restricted_to_submesh_V >= - 0.5,
+        logical_and(
+            mesh_V_dofs_restricted_to_submesh_V <= mesh_V.dim() + 0.5, 
+            abs(mesh_V_dofs_restricted_to_submesh_V - round(mesh_V_dofs_restricted_to_submesh_V)) < 1.e-10
+        )
+    ))[0]
+    submesh_V_global_indices = [submesh_V.dofmap().local_to_global_index(local_dof) for local_dof in submesh_V_local_indices]
+    mesh_V_global_indices = round(mesh_V_dofs_restricted_to_submesh_V[submesh_V_local_indices]).astype('i')
+    assert len(unique(mesh_V_global_indices)) == len(mesh_V_global_indices)
+    assert len(mesh_V_global_indices) == submesh_V.dofmap().ownership_range()[1] - submesh_V.dofmap().ownership_range()[0]
+    
+    parameters["allow_extrapolation"] = previous_allow_extrapolation_value
+    
+    submesh_V_to_mesh_V_global_indices = dict(zip(submesh_V_global_indices, mesh_V_global_indices))
+    
+    mpi_comm = submesh_V.mesh().mpi_comm().tompi4py()
+    allgathered_submesh_V_to_mesh_V_global_indices = mpi_comm.bcast(submesh_V_to_mesh_V_global_indices, root=0)
+    for r in range(1, mpi_comm.size):
+        allgathered_submesh_V_to_mesh_V_global_indices.update( mpi_comm.bcast(submesh_V_to_mesh_V_global_indices, root=r) )
+    
+    return allgathered_submesh_V_to_mesh_V_global_indices
     
