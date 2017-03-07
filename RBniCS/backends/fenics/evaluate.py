@@ -58,7 +58,7 @@ def evaluate(expression_, at=None):
                 out_index = None
                 out_index_type = None
                 out_index_processor = -1
-                if at.is_local(index):
+                if at.is_mesh_local(index):
                     out_index = function(vertex)
                     out_index_processor = mpi_comm.rank
                     assert isinstance(out_index, (float, VectorMatrixType))
@@ -109,7 +109,7 @@ def evaluate(expression_, at=None):
                 for (index, (vertex, component)) in enumerate(zip(reduced_vertices, reduced_components)):
                     out_index = array(expression.value_size())
                     out_index_processor = -1
-                    if at.is_local(index):
+                    if at.is_reduced_mesh_local(index):
                         expression.eval(out_index, vertex)
                         out_index_processor = mpi_comm.rank
                     out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)

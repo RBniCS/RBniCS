@@ -62,9 +62,12 @@ class ReducedVertices(AbstractReducedVertices):
         self._bounding_box_tree = self._mesh.bounding_box_tree()
         self._mpi_comm = self._mesh.mpi_comm().tompi4py()
         if copy_from is None:
-            self._is_local = list() # list of bool
+            self._is_mesh_local = list() # list of bool
         else:
-            self._is_local = copy_from._is_local[key_as_slice]
+            self._is_mesh_local = copy_from._is_mesh_local[key_as_slice]
+        self._is_reduced_mesh_local = dict() # from N to list of bool
+        if copy_from is not None:
+            self._is_reduced_mesh_local[key_as_int] = copy_from._is_reduced_mesh_local[key_as_int]
         # Additional storage for reduced mesh
         if copy_from is None:
             self._reduced_mesh = ReducedMesh((V, ))
@@ -82,14 +85,14 @@ class ReducedVertices(AbstractReducedVertices):
         component = vertex_and_component[1]
         self._vertex_list.append(vertex)
         self._component_list.append(component)
-        # Initialize _is_local map
+        # Update _is_mesh_local map using mesh partitioning
         vertex_as_point = Point(vertex)
-        self._is_local.append(self._bounding_box_tree.collides_entity(vertex_as_point))
+        self._is_mesh_local.append(self._bounding_box_tree.collides_entity(vertex_as_point))
         # Update reduced mesh
         self._reduced_mesh._init_for_append_if_needed()
         global_dof_min = None
         distance_min = None
-        if self._is_local[-1]:
+        if self._is_mesh_local[-1]:
             cell_id = self._bounding_box_tree.compute_first_entity_collision(vertex_as_point)
             cell = Cell(self._mesh, cell_id)
             self._reduced_mesh.reduced_mesh_cells_marker[cell] = 1
@@ -119,6 +122,13 @@ class ReducedVertices(AbstractReducedVertices):
         assert distance_min_over_processors is not None
         self._reduced_mesh.reduced_mesh_dofs_list.append((global_dof_min_over_processors, ))
         self._reduced_mesh._update()
+        # Update _is_reduced_mesh_local map using reduced mesh partitiong
+        key_as_int = len(self._vertex_list) - 1
+        reduced_bounding_box_tree = self._reduced_mesh.reduced_mesh[key_as_int].bounding_box_tree()
+        self._is_reduced_mesh_local[key_as_int] = list()
+        for other_vertex in self._vertex_list:
+            other_vertex_as_point = Point(other_vertex)
+            self._is_reduced_mesh_local[key_as_int].append(reduced_bounding_box_tree.collides_entity(other_vertex_as_point))
         
     @override
     def save(self, directory, filename):
@@ -143,11 +153,14 @@ class ReducedVertices(AbstractReducedVertices):
         assert vertex_import_successful == component_import_successful
         # Load reduced mesh
         self._reduced_mesh.load(directory, filename)
-        # Recompute is_local map, if required
-        if len(self._is_local) == 0: # avoid computing multiple times
-            for vertex in self._vertex_list:
+        # Recompute is_reduced_mesh_local map
+        for (index, reduced_mesh) in self._reduced_mesh.reduced_mesh.iteritems():
+            reduced_bounding_box_tree = reduced_mesh.bounding_box_tree()
+            self._is_reduced_mesh_local[index] = list()
+            for vertex in self._vertex_list[:(index+1)]:
                 vertex_as_point = Point(vertex)
-                self._is_local.append(self._bounding_box_tree.collides_entity(vertex_as_point))
+                self._is_reduced_mesh_local[index].append(reduced_bounding_box_tree.collides_entity(vertex_as_point))
+        # is_mesh_local map is not used in the online stage
         # Return
         return vertex_import_successful and component_import_successful
         
@@ -157,9 +170,13 @@ class ReducedVertices(AbstractReducedVertices):
         assert key.start is None 
         assert key.step is None
         return ReducedVertices(self._V, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
-                
-    def is_local(self, index):
-        return self._is_local[index]
+        
+    def is_mesh_local(self, vertex_index):
+        return self._is_mesh_local[vertex_index]
+        
+    def is_reduced_mesh_local(self, vertex_index, index=None):
+        index = self._reduced_mesh._get_dict_index(index)
+        return self._is_reduced_mesh_local[index][vertex_index]
         
     def get_reduced_mesh(self, index=None):
         return self._reduced_mesh.get_reduced_mesh(index)
