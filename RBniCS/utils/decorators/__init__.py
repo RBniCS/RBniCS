@@ -27,7 +27,7 @@ from RBniCS.utils.decorators.backend_for import array_of, BackendFor, backend_fo
 from RBniCS.utils.decorators.dual_problem import DualProblem
 from RBniCS.utils.decorators.dual_reduced_problem import DualReducedProblem
 from RBniCS.utils.decorators.extends import Extends
-from RBniCS.utils.decorators.exact_problem import ExactProblem
+from RBniCS.utils.decorators.exact_problem import exact_problem
 from RBniCS.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
 from RBniCS.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
 from RBniCS.utils.decorators.override import override
@@ -60,7 +60,7 @@ __all__ = [
     'DictOfThetaType',
     'DualProblem',
     'DualReducedProblem',
-    'ExactProblem',
+    'exact_problem',
     'get_problem_from_problem_name',
     'get_problem_from_solution',
     'get_reduced_problem_from_problem',

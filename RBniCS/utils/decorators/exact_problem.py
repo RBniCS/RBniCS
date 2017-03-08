@@ -24,15 +24,16 @@
 
 from RBniCS.utils.decorators.extends import Extends
 
-def ExactProblem(DecoratedProblem):
-    
+def exact_problem(decorated_problem, preserve_class_name=False):
+    DecoratedProblem = type(decorated_problem)
     if hasattr(DecoratedProblem, "ProblemDecorators"):
         assert hasattr(DecoratedProblem, "UndecoratedProblemClass")
         @Extends(DecoratedProblem.UndecoratedProblemClass, preserve_class_name=True)
         class ExactProblem_Class(DecoratedProblem.UndecoratedProblemClass):
             pass
-            
-        setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
+        
+        if not preserve_class_name:
+            setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
         
         # Re-apply decorators, replacing e.g. EIM with ExactParametrizedFunctions:
         for (Decorator, ExactDecorator, kwargs) in zip(DecoratedProblem.ProblemDecorators, DecoratedProblem.ProblemExactDecorators, DecoratedProblem.ProblemDecoratorsKwargs):
@@ -40,9 +41,14 @@ def ExactProblem(DecoratedProblem):
                 ExactProblem_Class = ExactDecorator(**kwargs)(ExactProblem_Class)
             else:
                 ExactProblem_Class = Decorator(**kwargs)(ExactProblem_Class)
-                
+        
+        # Create a new instance of ExactProblem_Class
+        exact_problem = ExactProblem_Class(decorated_problem.V, **decorated_problem.problem_kwargs)
+        exact_problem.set_mu_range(decorated_problem.mu_range)
+        exact_problem.set_mu(decorated_problem.mu)
+        
         # Return
-        return ExactProblem_Class
+        return exact_problem
     else:
-        return DecoratedProblem
+        return decorated_problem
         

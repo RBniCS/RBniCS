@@ -201,16 +201,12 @@ reduced_basis_method.error_analysis()
 # 8. Perform a speedup analysis
 reduced_basis_method.speedup_analysis()
 
-# 9. Define a new class corresponding to the exact version of Graetz,
+# 9. Allocate an object corresponding to the exact version of Graetz,
 #    for which SCM is replaced by ExactCoercivityConstant
-ExactGraetz = ExactProblem(Graetz)
+exact_graetz_problem = exact_problem(graetz_problem)
 
-# 10. Allocate an object of the ExactGraetz class
-exact_graetz_problem = ExactGraetz(V, subdomains=subdomains, boundaries=boundaries)
-exact_graetz_problem.set_mu_range(mu_range)
-
-# 11. Perform an error analysis with respect to the exact problem
+# 10. Perform an error analysis with respect to the exact problem
 reduced_basis_method.error_analysis(with_respect_to=exact_graetz_problem)
 
-# 12. Perform a speedup analysis with respect to the exact problem
+# 11. Perform a speedup analysis with respect to the exact problem
 reduced_basis_method.speedup_analysis(with_respect_to=exact_graetz_problem)

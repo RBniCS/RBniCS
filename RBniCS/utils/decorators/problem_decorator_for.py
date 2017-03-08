@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.mpi import log, DEBUG
+from RBniCS.utils.decorators import Extends, override
 
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
     def ProblemDecoratorFor_Decorator(ProblemDecorator):
@@ -45,8 +46,18 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
                 ProblemExactDecorators = list()
                 
             # Apply decorator
-            DecoratedProblem = ProblemDecorator(Problem)
+            DecoratedProblem_Base = ProblemDecorator(Problem)
             
+            # Also store **kwargs as passed to init
+            @Extends(DecoratedProblem_Base, preserve_class_name=True)
+            class DecoratedProblem(DecoratedProblem_Base):
+                @override
+                def __init__(self, V, **kwargs):
+                    # Call the parent initialization
+                    DecoratedProblem_Base.__init__(self, V, **kwargs)
+                    # Store **kwargs
+                    self.problem_kwargs = kwargs
+                    
             # Move attributes from the base class to the decorated class
             DecoratedProblem.UndecoratedProblemClass = UndecoratedProblemClass
             if hasattr(Problem, "UndecoratedProblemClass"):
