@@ -27,7 +27,7 @@ from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 7: NONLINEAR PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @DEIM()
-class NonlinearElliptic(EllipticCoerciveProblem):
+class NonlinearElliptic(NonlinearEllipticProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
     ## @defgroup Constructors Methods related to the construction of the reduced order model object
@@ -36,7 +36,7 @@ class NonlinearElliptic(EllipticCoerciveProblem):
     ## Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
-        EllipticCoerciveProblem.__init__(self, V, **kwargs)
+        NonlinearEllipticProblem.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
         assert "subdomains" in kwargs
         assert "boundaries" in kwargs
@@ -47,7 +47,14 @@ class NonlinearElliptic(EllipticCoerciveProblem):
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         # Store the forcing term expression
-        self.f = Expression("sin(2*pi*x[0])*cos(2*pi*x[1])", element=self.V.ufl_element())
+        self.f = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", element=self.V.ufl_element())
+        # Customize nonlinear solver parameters
+        self._nonlinear_solver_parameters = {
+            "linear_solver": "mumps",
+            "maximum_iterations": 20,
+            "report": True,
+            "error_on_nonconvergence": True
+        }
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -81,7 +88,7 @@ class NonlinearElliptic(EllipticCoerciveProblem):
             u = self.u
             mu2 = self.mu[1]
             a0 = inner(grad(u), grad(v))*dx
-            a1 = exp(mu2*u - 1)/mu2*v*dx
+            a1 = (exp(mu2*u) - 1)/mu2*v*dx
             return (a0, a1)
         elif term == "da":
             du = self.du
@@ -95,8 +102,8 @@ class NonlinearElliptic(EllipticCoerciveProblem):
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1)]
             return (bc0,)
         elif term == "inner_product":
-            u = self.u
-            x0 = inner(grad(u),grad(v))*dx
+            du = self.du
+            x0 = inner(grad(du),grad(v))*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -120,7 +127,7 @@ mu_range = [(0.01, 10.0), (0.01, 10.0)]
 nonlinear_elliptic_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
-reduced_basis_method = ReducedBasis(nonlinear_elliptic_problem)
+reduced_basis_method = PODGalerkin(nonlinear_elliptic_problem)
 reduced_basis_method.set_Nmax(20, DEIM=21)
 
 # 5. Perform the offline phase

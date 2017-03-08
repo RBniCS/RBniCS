@@ -29,11 +29,14 @@ from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.wrapping import function_copy, tensor_copy
-from RBniCS.utils.decorators import backend_for, ThetaType
+from RBniCS.utils.decorators import backend_for, ComputeThetaType
+
+# Need to customize ThetaType in order to also include FEniCS' Constant, which is a side effect of DEIM decorator
+ThetaType = ComputeThetaType((Constant, ))
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
-@backend_for("fenics", inputs=(ThetaType, AffineExpansionStorage, ThetaType + (None,)))
+@backend_for("fenics", inputs=(ThetaType, AffineExpansionStorage, ThetaType + (None, )))
 def product(thetas, operators, thetas2=None):
     assert thetas2 is None
     assert len(thetas) == len(operators)
@@ -64,6 +67,7 @@ def product(thetas, operators, thetas2=None):
         output = function_copy(operators[0])
         output.vector().zero()
         for (theta, operator) in zip(thetas, operators):
+            theta = float(theta)
             output.vector().add_local(theta*operator.vector().array())
         output.vector().apply("add")
         return ProductOutput(output)
@@ -74,12 +78,14 @@ def product(thetas, operators, thetas2=None):
             output = tensor_copy(operators[0])
             output.zero()
             for (theta, operator) in zip(thetas, operators):
+                theta = float(theta)
                 output += theta*operator
             return ProductOutput(output)
         elif isinstance(operators[0], Vector.Type()):
             output = tensor_copy(operators[0])
             output.zero()
             for (theta, operator) in zip(thetas, operators):
+                theta = float(theta)
                 output.add_local(theta*operator.array())
             output.apply("add")
             return ProductOutput(output)

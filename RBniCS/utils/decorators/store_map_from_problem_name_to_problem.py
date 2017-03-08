@@ -42,8 +42,14 @@ def StoreMapFromProblemNameToProblem(ParametrizedReducedDifferentialProblem_Deri
     return StoreMapFromProblemNameToProblem_Class
     
 def add_to_map_from_problem_name_to_problem(problem_name, problem):
-    assert problem_name not in _problem_name_to_problem_map
-    _problem_name_to_problem_map[problem_name] = problem
+    if hasattr(type(problem), "__exact__"):
+        assert type(problem).__exact__ is True
+        if problem_name.startswith("Exact"):
+            problem_name = problem_name[len("Exact"):]
+        assert problem_name in _problem_name_to_problem_map
+    else:
+        assert problem_name not in _problem_name_to_problem_map
+        _problem_name_to_problem_map[problem_name] = problem
     
 def get_problem_from_problem_name(problem_name):
     assert problem_name in _problem_name_to_problem_map

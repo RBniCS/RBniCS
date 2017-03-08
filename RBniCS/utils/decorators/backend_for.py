@@ -27,7 +27,7 @@ from abc import ABCMeta, abstractmethod
 import inspect
 import itertools
 from functools import wraps
-from numpy import ndarray as array
+from numpy import ndarray as array, float64
 from RBniCS.utils.mpi import log, DEBUG
 
 def BackendFor(library, online_backend=None, inputs=None):
@@ -329,8 +329,19 @@ def dict_of(types_from, types_to):
         _all_dict_of_instances[types] = _dict_of(types_from, types_to)
     return _all_dict_of_instances[types]
 
-from numpy import float64
-ThetaType = (tuple_of(float), tuple_of(float64),  tuple_of(int), tuple_of((float, float64)), tuple_of((float, int)), tuple_of((float64, int)), tuple_of((float, float64, int)))
+def ComputeThetaType(additional_types=None):
+    all_types = [float, float64, int]
+    if additional_types is not None:
+        all_types.extend(list(additional_types))
+    powerset = itertools.chain.from_iterable(itertools.combinations(all_types, r) for r in range(1, len(all_types)+1)) # equivalent to itertools.powerset without empty tuple
+    theta_type = list()
+    for t in powerset:
+        if len(t) == 1:
+            theta_type.append(tuple_of(t[0]))
+        else:
+            theta_type.append(tuple_of(t))
+    return tuple(theta_type)
+ThetaType = ComputeThetaType()
 DictOfThetaType = tuple(dict_of(str, theta_subtype) for theta_subtype in ThetaType)
 OnlineSizeType = (int, dict_of(str, int))
 
