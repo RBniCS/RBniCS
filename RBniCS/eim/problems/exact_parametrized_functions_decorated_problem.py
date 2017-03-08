@@ -26,11 +26,11 @@ from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 
 def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
 
-    from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
-    from RBniCS.eim.problems.eim import EIM
     from RBniCS.eim.problems.deim import DEIM
+    from RBniCS.eim.problems.eim import EIM
+    from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     
-    @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM, DEIM))
+    @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(DEIM, EIM))
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)

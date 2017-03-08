@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from RBniCS.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor
 from RBniCS.eim.problems import EIM
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
@@ -39,8 +39,8 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self.EIM_reductions = dict() # from coefficients to _EIMReductionMethod
             
             # Preprocess each term in the affine expansions
-            for coeff in self.truth_problem.EIM_approximations:
-                self.EIM_reductions[coeff] = EIMApproximationReductionMethod(self.truth_problem.EIM_approximations[coeff])
+            for (coeff, EIM_approximation_coeff) in self.truth_problem.EIM_approximations.iteritems():
+                self.EIM_reductions[coeff] = EIMApproximationReductionMethod(EIM_approximation_coeff)
             
         ###########################     SETTERS     ########################### 
         ## @defgroup Setters Set properties of the reduced order approximation
@@ -101,8 +101,8 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                                     return_value = current_return_value and return_value
             else:
                 assert isinstance(kwarg_EIM, int)
-                for coeff in self.EIM_reductions:
-                    current_return_value = setter(self.EIM_reductions[coeff], kwarg_EIM)
+                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                    current_return_value = setter(EIM_reduction_coeff, kwarg_EIM)
                     return_value = current_return_value and return_value
             return return_value # an "and" with a None results in None, so this method returns only if necessary
             
@@ -116,13 +116,32 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         ## Perform the offline phase of the reduced order model
         @override
         def offline(self):
-            # Perform first the EIM offline phase, ...
-            bak_first_mu = tuple(list(self.truth_problem.mu))
-            for coeff in self.EIM_reductions:
-                self.EIM_reductions[coeff].offline()
-            # ..., and then call the parent method.
-            self.truth_problem.set_mu(bak_first_mu)
-            return DifferentialProblemReductionMethod_DerivedClass.offline(self)
+            # Check for nonlinear terms
+            is_nonlinear = False
+            for (coeff, EIM_approximation_coeff) in self.truth_problem.EIM_approximations.iteritems():
+                is_nonlinear = is_nonlinear or EIM_approximation_coeff.parametrized_expression.is_nonlinear()
+            
+            if not is_nonlinear:
+                # Perform first the EIM offline phase, ...
+                bak_first_mu = tuple(list(self.truth_problem.mu))
+                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                    EIM_reduction_coeff.offline()
+                # ..., and then call the parent method.
+                self.truth_problem.set_mu(bak_first_mu)
+                return DifferentialProblemReductionMethod_DerivedClass.offline(self)
+            else:
+                bak_truth_problem = self.truth_problem
+                self.truth_problem = exact_problem(bak_truth_problem, preserve_class_name=True)
+                # Perform first parent offline phase (with exact operators)
+                bak_first_mu = tuple(list(self.truth_problem.mu))
+                return_value = DifferentialProblemReductionMethod_DerivedClass.offline(self)
+                # ..., and the carry out EIM offline phase
+                self.truth_problem = bak_truth_problem
+                self.truth_problem.set_mu(bak_first_mu)
+                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                    EIM_reduction_coeff.offline()
+                #
+                return return_value
     
         #  @}
         ########################### end - OFFLINE STAGE - end ###########################
@@ -144,8 +163,8 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 "N_EIM" not in kwargs           # otherwise we assume the user was interested in computing the error for a fixed number of EIM basis
                                                 # functions, thus he has already carried out the error analysis of EIM
             ):
-                for coeff in self.EIM_reductions:
-                    self.EIM_reductions[coeff].error_analysis(N)
+                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                    EIM_reduction_coeff.error_analysis(N)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
@@ -162,8 +181,8 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 "N_EIM" not in kwargs           # otherwise we assume the user was interested in computing the speedup for a fixed number of EIM basis
                                                 # functions, thus he has already carried out the speedup analysis of EIM
             ):
-                for coeff in self.EIM_reductions:
-                    self.EIM_reductions[coeff].speedup_analysis(N)
+                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                    EIM_reduction_coeff.speedup_analysis(N)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
             

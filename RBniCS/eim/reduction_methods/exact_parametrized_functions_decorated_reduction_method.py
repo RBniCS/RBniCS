@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
-from RBniCS.eim.problems import EIM, ExactParametrizedFunctions
+from RBniCS.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 
-@ReductionMethodDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
+@ReductionMethodDecoratorFor(ExactParametrizedFunctions, replaces=(DEIM, EIM))
 def ExactParametrizedFunctionsDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)

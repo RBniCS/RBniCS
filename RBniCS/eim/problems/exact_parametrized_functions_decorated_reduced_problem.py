@@ -27,9 +27,10 @@ import types
 from RBniCS.utils.mpi import log, print, PROGRESS
 from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
 from RBniCS.eim.problems.eim import EIM
+from RBniCS.eim.problems.deim import DEIM
 from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
 
-@ReducedProblemDecoratorFor(ExactParametrizedFunctions, replaces=(EIM,))
+@ReducedProblemDecoratorFor(ExactParametrizedFunctions, replaces=(DEIM, EIM))
 def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):

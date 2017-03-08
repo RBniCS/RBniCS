@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from RBniCS.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor
 from RBniCS.eim.problems import DEIM
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
 
@@ -115,15 +115,35 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         ## Perform the offline phase of the reduced order model
         @override
         def offline(self):
-            # Perform first the DEIM offline phase, ...
-            bak_first_mu = tuple(list(self.truth_problem.mu))
-            for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
-                    DEIM_reduction_term_q.offline()
-            # ..., and then call the parent method.
-            self.truth_problem.set_mu(bak_first_mu)
-            return DifferentialProblemReductionMethod_DerivedClass.offline(self)
-            
+            # Check for nonlinear terms
+            is_nonlinear = False
+            for (term, DEIM_approximations_term) in self.truth_problem.DEIM_approximations.iteritems():
+                for (_, DEIM_approximation_term_q) in DEIM_approximations_term.iteritems():
+                    is_nonlinear = is_nonlinear or DEIM_approximation_term_q.parametrized_expression.is_nonlinear()
+                
+            if not is_nonlinear:
+                # Perform first the DEIM offline phase, ...
+                bak_first_mu = tuple(list(self.truth_problem.mu))
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                        DEIM_reduction_term_q.offline()
+                # ..., and then call the parent method.
+                self.truth_problem.set_mu(bak_first_mu)
+                return DifferentialProblemReductionMethod_DerivedClass.offline(self)
+            else:
+                bak_truth_problem = self.truth_problem
+                self.truth_problem = exact_problem(bak_truth_problem, preserve_class_name=True)
+                # Perform first parent offline phase (with exact operators)
+                bak_first_mu = tuple(list(self.truth_problem.mu))
+                return_value = DifferentialProblemReductionMethod_DerivedClass.offline(self)
+                # ..., and the carry out EIM offline phase
+                self.truth_problem = bak_truth_problem
+                self.truth_problem.set_mu(bak_first_mu)
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                        DEIM_reduction_term_q.offline()
+                #
+                return return_value
     
         #  @}
         ########################### end - OFFLINE STAGE - end ###########################

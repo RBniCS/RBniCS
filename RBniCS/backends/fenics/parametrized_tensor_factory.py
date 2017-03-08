@@ -25,25 +25,26 @@
 from ufl import Form
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
-from dolfin import Argument, assemble, FunctionSpace
+from dolfin import Argument, assemble, Function, FunctionSpace
 from RBniCS.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
 from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
 from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
-from RBniCS.backends.fenics.wrapping import get_form_argument, get_form_description, get_form_name
-from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
+from RBniCS.backends.fenics.wrapping import function_from_subfunction_if_any, get_form_argument, get_form_description, get_form_name
+from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_solution, override, tuple_of
 
 @Extends(AbstractParametrizedTensorFactory)
-@BackendFor("fenics", inputs=(Form, ))
+@BackendFor("fenics", inputs=(object, Form)) # object will actually be a ParametrizedDifferentialProblem
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     # This are needed for proper I/O in tensor_load/tensor_save
     _all_forms = dict()
     _all_forms_assembled_containers = dict()
     
-    def __init__(self, form):
-        AbstractParametrizedTensorFactory.__init__(self, form)
-        # Store form
+    def __init__(self, truth_problem, form):
+        AbstractParametrizedTensorFactory.__init__(self, truth_problem, form)
+        # Store input
+        self._truth_problem = truth_problem
         self._form = form
         # Compute name
         self._name = get_form_name(form)
@@ -95,6 +96,25 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     @override
     def description(self):
         return PrettyTuple(self._form, get_form_description(self._form), self._name)
+        
+    @override
+    def is_nonlinear(self):
+        visited = list()
+        all_truth_problems = list()
+        
+        # Look for terminals on truth mesh
+        for integral in self._form.integrals():
+            for expression in iter_expressions(integral):
+                for node in traverse_unique_terminals(expression):
+                    node = function_from_subfunction_if_any(node)
+                    if node in visited:
+                        continue
+                    # ... problem solutions related to nonlinear terms
+                    elif isinstance(node, Function):
+                        truth_problem = get_problem_from_solution(node)
+                        all_truth_problems.append(truth_problem)
+                        
+        return self._truth_problem in all_truth_problems
         
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):

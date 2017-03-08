@@ -26,7 +26,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ParametrizedTensorFactory(object):
-    def __init__(self, tensor):
+    def __init__(self, truth_problem, tensor):
         pass
     
     @abstractmethod
@@ -50,5 +50,9 @@ class ParametrizedTensorFactory(object):
         
     @abstractmethod
     def description(self):
+        pass
+        
+    @abstractmethod
+    def is_nonlinear(self):
         pass
         
