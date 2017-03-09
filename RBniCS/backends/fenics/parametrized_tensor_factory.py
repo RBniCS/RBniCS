@@ -32,7 +32,7 @@ from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import Hi
 from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
 from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
 from RBniCS.backends.fenics.wrapping import function_from_subfunction_if_any, get_form_argument, get_form_description, get_form_name
-from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_solution, override, tuple_of
+from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_solution, is_problem_solution, override, tuple_of
 
 @Extends(AbstractParametrizedTensorFactory)
 @BackendFor("fenics", inputs=(object, Form)) # object will actually be a ParametrizedDifferentialProblem
@@ -111,7 +111,7 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
                     if isinstance(node, Expression) and "mu_0" in node.user_parameters:
                         return True
                     # ... problem solutions related to nonlinear terms
-                    elif isinstance(node, Function):
+                    elif isinstance(node, Function) and is_problem_solution(node):
                         truth_problem = get_problem_from_solution(node)
                         return True
         return False
@@ -128,7 +128,7 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
                     if node in visited:
                         continue
                     # ... problem solutions related to nonlinear terms
-                    elif isinstance(node, Function):
+                    elif isinstance(node, Function) and is_problem_solution(node):
                         truth_problem = get_problem_from_solution(node)
                         all_truth_problems.append(truth_problem)
                         visited.append(node)

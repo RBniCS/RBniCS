@@ -33,7 +33,7 @@ from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
 from RBniCS.backends.fenics.wrapping import function_from_subfunction_if_any, function_space_for_expression_projection, get_expression_description, get_expression_name
-from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_solution, get_reduced_problem_from_problem, override
+from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, override
 from RBniCS.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
@@ -91,7 +91,7 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
                 if isinstance(node, Expression) and "mu_0" in node.user_parameters:
                     return True
                 # ... problem solutions related to nonlinear terms
-                elif isinstance(node, Function):
+                elif isinstance(node, Function) and is_problem_solution(node):
                     truth_problem = get_problem_from_solution(node)
                     return True
         return False
@@ -107,7 +107,7 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
                 if node in visited:
                     continue
                 # ... problem solutions related to nonlinear terms
-                elif isinstance(node, Function):
+                elif isinstance(node, Function) and is_problem_solution(node):
                     truth_problem = get_problem_from_solution(node)
                     all_truth_problems.append(truth_problem)
                     visited.append(node)

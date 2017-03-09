@@ -25,14 +25,14 @@
 from numpy import zeros
 from dolfin import Constant, Function
 from ufl.corealg.traversal import traverse_unique_terminals
-from RBniCS.utils.decorators import get_problem_from_solution
+from RBniCS.utils.decorators import get_problem_from_solution, is_problem_solution
 
 def get_expression_description(expression):
     coefficients_repr = {}
     for n in traverse_unique_terminals(expression):
         if hasattr(n, "cppcode"):
             coefficients_repr[n] = str(n.cppcode)
-        elif isinstance(n, Function):
+        elif isinstance(n, Function) and is_problem_solution(n):
             problem = get_problem_from_solution(n)
             coefficients_repr[n] = "solution of " + str(type(problem).__name__)
         elif isinstance(n, Constant):

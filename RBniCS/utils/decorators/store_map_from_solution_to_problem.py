@@ -49,5 +49,8 @@ def get_problem_from_solution(solution):
     assert solution in _solution_to_problem_map
     return _solution_to_problem_map[solution]
     
+def is_problem_solution(solution):
+    return solution in _solution_to_problem_map
+    
 _solution_to_problem_map = dict()
 

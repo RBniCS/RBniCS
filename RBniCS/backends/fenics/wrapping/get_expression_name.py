@@ -28,7 +28,7 @@ from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 from ufl.indexed import Indexed
 import hashlib
-from RBniCS.utils.decorators import get_problem_from_solution
+from RBniCS.utils.decorators import get_problem_from_solution, is_problem_solution
 
 def get_expression_name(expression):
     str_repr = ""
@@ -38,7 +38,7 @@ def get_expression_name(expression):
         if hasattr(n, "cppcode"):
             coefficients_replacement[repr(n)] = str(n.cppcode)
             str_repr += repr(n.cppcode)
-        elif isinstance(n, Function):
+        elif isinstance(n, Function) and is_problem_solution(n):
             problem = get_problem_from_solution(n)
             coefficients_replacement[repr(n)] = str(type(problem).__name__)
             str_repr += repr(type(problem).__name__)

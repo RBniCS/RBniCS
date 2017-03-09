@@ -26,7 +26,7 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
-from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem
+from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution
 from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
 def expression_on_truth_mesh(expression_wrapper):
@@ -44,7 +44,7 @@ def expression_on_truth_mesh(expression_wrapper):
                 if node in visited:
                     continue
                 # ... problem solutions related to nonlinear terms
-                elif isinstance(node, Function):
+                elif isinstance(node, Function) and is_problem_solution(node):
                     truth_problem = get_problem_from_solution(node)
                     reduced_problem = get_reduced_problem_from_problem(truth_problem)
                     reduced_problem_to_truth_solution[reduced_problem] = node
