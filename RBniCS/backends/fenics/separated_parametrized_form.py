@@ -26,7 +26,7 @@ from numpy import ones, zeros
 from dolfin import Constant, Expression, Function, log, PROGRESS
 from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
-from ufl.algorithms import Transformer
+from ufl.algorithms import expand_derivatives, Transformer
 from ufl.algorithms.traversal import iter_expressions
 from ufl.core.multiindex import MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
@@ -41,6 +41,7 @@ from RBniCS.backends.fenics.wrapping import get_expression_name
 class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     def __init__(self, form):
         AbstractSeparatedParametrizedForm.__init__(self, form)
+        form = expand_derivatives(form)
         self._form = form
         self._coefficients = list() # of list of ParametrizedExpression
         self._placeholders = list() # of list of Constants

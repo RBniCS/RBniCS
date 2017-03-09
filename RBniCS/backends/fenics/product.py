@@ -23,13 +23,14 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl import Form
-from dolfin import Constant, DirichletBC, project
+from dolfin import assemble, Constant, DirichletBC, project
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.wrapping import function_copy, tensor_copy
 from RBniCS.utils.decorators import backend_for, ComputeThetaType
+from RBniCS.utils.mpi import log, PROGRESS
 
 # Need to customize ThetaType in order to also include FEniCS' Constant, which is a side effect of DEIM decorator
 ThetaType = ComputeThetaType((Constant, ))
@@ -40,7 +41,27 @@ ThetaType = ComputeThetaType((Constant, ))
 def product(thetas, operators, thetas2=None):
     assert thetas2 is None
     assert len(thetas) == len(operators)
-    if operators.type() == "DirichletBC": 
+    if operators.type() == "AssembledForm":
+        assert isinstance(operators[0], (Matrix.Type(), Vector.Type()))
+        # Carry out the dot product (with respect to the index q over the affine expansion)
+        if isinstance(operators[0], Matrix.Type()):
+            output = tensor_copy(operators[0])
+            output.zero()
+            for (theta, operator) in zip(thetas, operators):
+                theta = float(theta)
+                output += theta*operator
+            return ProductOutput(output)
+        elif isinstance(operators[0], Vector.Type()):
+            output = tensor_copy(operators[0])
+            output.zero()
+            for (theta, operator) in zip(thetas, operators):
+                theta = float(theta)
+                output.add_local(theta*operator.array())
+            output.apply("add")
+            return ProductOutput(output)
+        else: # impossible to arrive here anyway thanks to the assert
+            raise AssertionError("product(): invalid operands.")
+    elif operators.type() == "DirichletBC": 
         # Detect BCs defined on the same boundary
         combined = dict() # from (function space, boundary) to value
         for (op_index, op) in enumerate(operators):
@@ -63,6 +84,15 @@ def product(thetas, operators, thetas2=None):
                 dirichlet_bc = DirichletBC(key[0], value_projected_collapsed, key[1], key[2])
             output.append(dirichlet_bc)
         return ProductOutput(output)
+    elif operators.type() == "Form":
+        log(PROGRESS, "re-assemblying form (due to inefficient evaluation)")
+        assert isinstance(operators[0], Form)
+        output = 0
+        for (theta, operator) in zip(thetas, operators):
+            output += Constant(theta)*operator
+        # keep_diagonal is enabled because it is needed to constrain DirichletBC eigenvalues in SCM
+        output = assemble(output, keep_diagonal=True)
+        return ProductOutput(output)
     elif operators.type() == "Function":
         output = function_copy(operators[0])
         output.vector().zero()
@@ -71,26 +101,6 @@ def product(thetas, operators, thetas2=None):
             output.vector().add_local(theta*operator.vector().array())
         output.vector().apply("add")
         return ProductOutput(output)
-    elif operators.type() == "Form":
-        assert isinstance(operators[0], (Matrix.Type(), Vector.Type()))
-        # Carry out the dot product (with respect to the index q over the affine expansion)
-        if isinstance(operators[0], Matrix.Type()):
-            output = tensor_copy(operators[0])
-            output.zero()
-            for (theta, operator) in zip(thetas, operators):
-                theta = float(theta)
-                output += theta*operator
-            return ProductOutput(output)
-        elif isinstance(operators[0], Vector.Type()):
-            output = tensor_copy(operators[0])
-            output.zero()
-            for (theta, operator) in zip(thetas, operators):
-                theta = float(theta)
-                output.add_local(theta*operator.array())
-            output.apply("add")
-            return ProductOutput(output)
-        else: # impossible to arrive here anyway thanks to the assert
-            raise AssertionError("product(): invalid operands.")
     else:
         raise AssertionError("product(): invalid operands.")
         

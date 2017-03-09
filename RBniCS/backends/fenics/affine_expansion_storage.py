@@ -28,10 +28,11 @@ from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExp
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
 from RBniCS.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("fenics", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type())), ))
+@BackendFor("fenics", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type()), tuple_of((Form, Matrix.Type())), tuple_of((Form, Vector.Type()))), ))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def __init__(self, args):
@@ -39,35 +40,50 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._type = None
         # Type checking
         is_Form = self._is_Form(args[0])
+        is_Tensor = self._is_Tensor(args[0])
         is_DirichletBC = self._is_DirichletBC(args[0])
         is_Function = self._is_Function(args[0])
-        is_Tensor = self._is_Tensor(args[0])
         assert is_Form or is_DirichletBC or is_Function or is_Tensor
-        for i in range(1, len(args)):
-            if is_Form:
-                assert self._is_Form(args[i])
+        all_is_Form = list()
+        all_is_Tensor = list()
+        all_is_parametrized = list()
+        for i in range(len(args)):
+            if is_Form or is_Tensor:
+                all_is_Form.append(self._is_Form(args[i]))
+                all_is_Tensor.append(self._is_Tensor(args[i]))
+                assert all_is_Form[i] or all_is_Tensor[i]
+                if all_is_Form[i]:
+                    all_is_parametrized.append(ParametrizedTensorFactory(None, args[i]).is_parametrized())
+                else:
+                    all_is_parametrized.append(False)
             elif is_DirichletBC:
                 assert self._is_DirichletBC(args[i])
             elif is_Function:
                 assert self._is_Function(args[i])
-            elif is_Tensor:
-                assert self._is_Tensor(args[i])
             else:
                 return TypeError("Invalid input arguments to AffineExpansionStorage")
         # Actual init
-        if is_Form:
-            # keep_diagonal is enabled because it is needed to constrain DirichletBC eigenvalues in SCM
-            self._content = [assemble(arg, keep_diagonal=True) for arg in args]
-            self._type = "Form"
+        if is_Form or is_Tensor:
+            is_parametrized = any(all_is_parametrized)
+            if not is_parametrized:
+                # keep_diagonal is enabled because it is needed to constrain DirichletBC eigenvalues in SCM
+                self._content = list()
+                for (arg, arg_is_Form) in zip(args, all_is_Form):
+                    if arg_is_Form:
+                        self._content.append(assemble(arg, keep_diagonal=True))
+                    else:
+                        self._content.append(arg)
+                self._type = "AssembledForm"
+            else:
+                assert all(all_is_Form)
+                self._content = args
+                self._type = "Form"
         elif is_DirichletBC:
             self._content = args
             self._type = "DirichletBC"
         elif is_Function:
             self._content = args
             self._type = "Function"
-        elif is_Tensor:
-            self._content = args
-            self._type = "Form"
         else:
             return TypeError("Invalid input arguments to AffineExpansionStorage")
         

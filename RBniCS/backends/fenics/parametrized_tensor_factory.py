@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl import Form
+from ufl.algorithms import expand_derivatives
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import Argument, assemble, Expression, Function, FunctionSpace
@@ -44,6 +45,7 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     def __init__(self, truth_problem, form):
         AbstractParametrizedTensorFactory.__init__(self, truth_problem, form)
         # Store input
+        form = expand_derivatives(form)
         self._truth_problem = truth_problem
         self._form = form
         # Compute name

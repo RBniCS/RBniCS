@@ -22,7 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from ufl import Form
 from ufl.core.operator import Operator
+from dolfin import assemble
 from RBniCS.backends.basic import transpose as basic_transpose
 import RBniCS.backends.fenics
 from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
@@ -33,7 +35,12 @@ import RBniCS.backends.fenics.wrapping
 import RBniCS.backends.numpy
 from RBniCS.utils.decorators import backend_for
 
-@backend_for("fenics", online_backend="numpy", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Operator, Vector.Type()), ))
+@backend_for("fenics", online_backend="numpy", inputs=((BasisFunctionsMatrix, Form, Function.Type(), FunctionsList, Operator, Vector.Type()), ))
 def transpose(arg):
-    return basic_transpose(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ))
+    def AdditionalIsVector(arg):
+        return isinstance(arg, Form) and len(arg.arguments()) is 1
+    def AdditionalIsMatrix(arg):
+        return isinstance(arg, Form) and len(arg.arguments()) is 2
+    return basic_transpose(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ), AdditionalIsVector=AdditionalIsVector, AdditionalIsMatrix=AdditionalIsMatrix)
     
+        

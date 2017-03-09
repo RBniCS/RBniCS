@@ -192,7 +192,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 raise AttributeError("Cannot load from file due to inefficient evaluation")
             online_storage.load = types.MethodType(error_load, online_storage)
             # However, write a dummy file to make sure that restart is enabled
-            folder.touch_file("disabled_due_to_inefficient_evaluation")
+            folder.touch_file(".exact_parametrized_functions_placeholder")
             
         
         # Perform an online solve (internal)

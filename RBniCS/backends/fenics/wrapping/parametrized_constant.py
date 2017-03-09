@@ -38,8 +38,8 @@ import RBniCS.utils.decorators
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor as ProblemDecoratorFor_Base
 
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
-    from RBniCS.eim.problems import DEIM, ExactParametrizedFunctions
-    if Algorithm is DEIM:
+    from RBniCS.eim.problems import DEIM, EIM, ExactParametrizedFunctions
+    if Algorithm in (DEIM, EIM):
         # Change ProblemDecoratorFor to override DEIMDecoratedProblem.set_mu_range so that querying self.mu
         # actually returns a ParametrizedConstant rather than a float
         def ProblemDecoratorFor_Decorator(ProblemDecorator):
@@ -83,8 +83,8 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
                     def assemble_operator(self, term):
                         # Storage for backup of parameter assigned while calling set_mu
                         self._mu_Constant_override = self.mu
-                        # Temporarily replace float by Constant(float)
-                        self.mu = [Constant(mu_i) for mu_i in self._mu_Constant_override]
+                        # Temporarily replace float by a parametrized constant
+                        self.mu = [ParametrizedConstant(self, "mu[" + str(idx) + "]", mu=self.mu) for (idx, _) in enumerate(self.mu)]
                         # Call parent
                         output = DecoratedProblem_Base.assemble_operator(self, term)
                         # Restore self.mu
@@ -95,6 +95,7 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
                 return DecoratedProblem
             return ProblemDecoratorFor_DecoratedProblemGenerator
         return ProblemDecoratorFor_Decorator
+
     else:
         return ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)
     

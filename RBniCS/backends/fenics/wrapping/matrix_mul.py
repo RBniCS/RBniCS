@@ -23,19 +23,30 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from petsc4py import PETSc
+from ufl import Form
 from ufl.core.operator import Operator
-from dolfin import as_backend_type
+from dolfin import as_backend_type, assemble
 import RBniCS.backends # avoid circular imports when importing fenics backend
 from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
 
 def matrix_mul_vector(matrix, vector):
     if isinstance(vector, (RBniCS.backends.fenics.Function.Type(), Operator)):
         vector = function_from_ufl_operators(vector).vector()
+    elif isinstance(vector, Form):
+        assert len(vector.arguments()) is 1
+        vector = assemble(vector)
+    if isinstance(matrix, Form):
+        assert len(matrix.arguments()) is 2
+        matrix = assemble(matrix)
     return matrix*vector
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    assert isinstance(matrix, RBniCS.backends.fenics.Matrix.Type())
-    assert isinstance(other_matrix, RBniCS.backends.fenics.Matrix.Type())
+    assert isinstance(matrix, RBniCS.backends.fenics.Matrix.Type()) or (isinstance(matrix, Form) and len(matrix.arguments()) is 2)
+    assert isinstance(other_matrix, RBniCS.backends.fenics.Matrix.Type()) or (isinstance(other_matrix, Form) and len(other_matrix.arguments()) is 2)
+    if isinstance(matrix, Form) and len(matrix.arguments()) is 2:
+        matrix = assemble(matrix)
+    if isinstance(other_matrix, Form) and len(other_matrix.arguments()) is 2:
+        other_matrix = assemble(other_matrix)
     matrix = as_backend_type(matrix).mat()
     other_matrix = as_backend_type(other_matrix).mat()
     mat = matrix.transposeMatMult(other_matrix)

@@ -24,73 +24,87 @@
 
 from RBniCS.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
 
-def transpose(arg, backend, wrapping, online_backend, AdditionalFunctionTypes=None):
+def transpose(arg, backend, wrapping, online_backend, AdditionalFunctionTypes=None, AdditionalIsVector=None, AdditionalIsMatrix=None):
     if AdditionalFunctionTypes is None:
         FunctionTypes = (backend.Function.Type(), )
     else:
         FunctionTypes = AdditionalFunctionTypes + (backend.Function.Type(), )
-    assert isinstance(arg, FunctionTypes + (backend.FunctionsList, backend.BasisFunctionsMatrix, backend.Vector.Type(), backend.Matrix.Type(), backend.TensorsList))
+    if AdditionalIsVector is None:
+        def _AdditionalIsVector(arg):
+            return False
+        AdditionalIsVector = _AdditionalIsVector
+    if AdditionalIsMatrix is None:
+        def _AdditionalIsMatrix(arg):
+            return False
+        AdditionalIsMatrix = _AdditionalIsMatrix
+    assert isinstance(arg, FunctionTypes + (backend.FunctionsList, backend.BasisFunctionsMatrix, backend.Vector.Type(), backend.Matrix.Type(), backend.TensorsList)) or AdditionalIsVector(arg) or AdditionalIsMatrix(arg)
     if isinstance(arg, backend.FunctionsList):
-        return FunctionsList_Transpose(arg, backend, wrapping, online_backend, FunctionTypes)
+        return FunctionsList_Transpose(arg, backend, wrapping, online_backend, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix)
     elif isinstance(arg, backend.BasisFunctionsMatrix):
-        return BasisFunctionsMatrix_Transpose(arg, backend, wrapping, online_backend, FunctionTypes)
+        return BasisFunctionsMatrix_Transpose(arg, backend, wrapping, online_backend, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix)
     elif isinstance(arg, backend.TensorsList):
         return TensorsList_Transpose(arg, backend, wrapping, online_backend)
-    elif isinstance(arg, FunctionTypes + (backend.Vector.Type(), )):
-        return Vector_Transpose(arg, backend, wrapping, FunctionTypes)
-    elif isinstance(arg, backend.Matrix.Type()):
-        return VectorizedMatrix_Transpose(arg, backend, wrapping)
+    elif isinstance(arg, FunctionTypes + (backend.Vector.Type(), )) or AdditionalIsVector(arg):
+        return Vector_Transpose(arg, backend, wrapping, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix)
+    elif isinstance(arg, backend.Matrix.Type()) or AdditionalIsMatrix(arg):
+        return VectorizedMatrix_Transpose(arg, backend, wrapping, AdditionalIsMatrix)
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in transpose.")
         
 # Auxiliary class: transpose of a vector
 class Vector_Transpose(object):
-    def __init__(self, vector, backend, wrapping, FunctionTypes):
-        assert isinstance(vector, FunctionTypes + (backend.Vector.Type(), ))
+    def __init__(self, vector, backend, wrapping, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix):
+        assert isinstance(vector, FunctionTypes + (backend.Vector.Type(), )) or AdditionalIsVector(vector)
         self.vector = vector
         self.backend = backend
         self.wrapping = wrapping
         self.FunctionTypes = FunctionTypes
-            
+        self.AdditionalIsVector = AdditionalIsVector
+        self.AdditionalIsMatrix = AdditionalIsMatrix
+        
     def __mul__(self, matrix_or_vector):
-        assert isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Matrix.Type(), self.backend.Vector.Type()))
-        if isinstance(matrix_or_vector, self.backend.Matrix.Type()):
-            return Vector_Transpose__times__Matrix(self.vector, matrix_or_vector, self.backend, self.wrapping, self.FunctionTypes)
-        elif isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Vector.Type(), )):
+        assert isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Matrix.Type(), self.backend.Vector.Type())) or self.AdditionalIsVector(matrix_or_vector) or self.AdditionalIsMatrix(matrix_or_vector)
+        if isinstance(matrix_or_vector, self.backend.Matrix.Type()) or self.AdditionalIsMatrix(matrix_or_vector):
+            return Vector_Transpose__times__Matrix(self.vector, matrix_or_vector, self.backend, self.wrapping, self.FunctionTypes, self.AdditionalIsVector, self.AdditionalIsMatrix)
+        elif isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(matrix_or_vector):
             return self.wrapping.vector_mul_vector(self.vector, matrix_or_vector)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in Vector_Transpose.__mul__.")
             
 # Auxiliary class: multiplication of the transpose of a Vector with a Matrix
 class Vector_Transpose__times__Matrix(object):
-    def __init__(self, vector, matrix, backend, wrapping, FunctionTypes):
-        assert isinstance(vector, FunctionTypes + (backend.Vector.Type(), ))
-        assert isinstance(matrix, backend.Matrix.Type())
+    def __init__(self, vector, matrix, backend, wrapping, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix):
+        assert isinstance(vector, FunctionTypes + (backend.Vector.Type(), )) or AdditionalIsVector(vector)
+        assert isinstance(matrix, backend.Matrix.Type()) or AdditionalIsMatrix(matrix)
         self.vector = vector
         self.matrix = matrix
         self.backend = backend
         self.wrapping = wrapping
         self.FunctionTypes = FunctionTypes
+        self.AdditionalIsVector = AdditionalIsVector
+        self.AdditionalIsMatrix = AdditionalIsMatrix
         
     def __mul__(self, other_vector):
-        assert isinstance(other_vector, self.FunctionTypes + (self.backend.Vector.Type(), ))
+        assert isinstance(other_vector, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(other_vector)
         return self.wrapping.vector_mul_vector(self.vector, self.wrapping.matrix_mul_vector(self.matrix, other_vector))
         
 # Auxiliary class: transpose of a FunctionsList or a BasisFunctionsMatrix
 class _FunctionsList_BasisFunctionsMatrix_Transpose(object):
-    def __init__(self, functions, backend, wrapping, online_backend, FunctionTypes, Functions_Transpose__times__Matrix):
+    def __init__(self, functions, backend, wrapping, online_backend, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix, Functions_Transpose__times__Matrix):
         (self.functions_list, self.functions_list_dim) = functions_list_basis_functions_matrix_adapter(functions, backend)
         self.backend = backend
         self.wrapping = wrapping
         self.online_backend = online_backend
         self.FunctionTypes = FunctionTypes
+        self.AdditionalIsVector = AdditionalIsVector
+        self.AdditionalIsMatrix = AdditionalIsMatrix
         self.Functions_Transpose__times__Matrix = Functions_Transpose__times__Matrix
     
     def __mul__(self, matrix_or_vector):
-        assert isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Matrix.Type(), self.backend.Vector.Type()))
-        if isinstance(matrix_or_vector, self.backend.Matrix.Type()):
-            return self.Functions_Transpose__times__Matrix(self.functions_list, self.functions_list_dim, matrix_or_vector, self.backend, self.wrapping, self.online_backend, self.FunctionTypes)
-        elif isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Vector.Type(), )):
+        assert isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Matrix.Type(), self.backend.Vector.Type())) or self.AdditionalIsVector(matrix_or_vector) or self.AdditionalIsMatrix(matrix_or_vector)
+        if isinstance(matrix_or_vector, self.backend.Matrix.Type()) or self.AdditionalIsMatrix(matrix_or_vector):
+            return self.Functions_Transpose__times__Matrix(self.functions_list, self.functions_list_dim, matrix_or_vector, self.backend, self.wrapping, self.online_backend, self.FunctionTypes, self.AdditionalIsVector, self.AdditionalIsMatrix)
+        elif isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(matrix_or_vector):
             online_vector = self.online_backend.Vector(self.functions_list_dim)
             for (i, fun_i) in enumerate(self.functions_list):
                 online_vector[i] = self.wrapping.vector_mul_vector(fun_i, matrix_or_vector)
@@ -99,12 +113,12 @@ class _FunctionsList_BasisFunctionsMatrix_Transpose(object):
             raise AssertionError("Invalid arguments in _FunctionsList_BasisFunctionsMatrix_Transpose.__mul__.")
             
 class FunctionsList_Transpose(_FunctionsList_BasisFunctionsMatrix_Transpose):
-    def __init__(self, basis_functions_matrix, backend, wrapping, online_backend, FunctionTypes):
-        _FunctionsList_BasisFunctionsMatrix_Transpose.__init__(self, basis_functions_matrix, backend, wrapping, online_backend, FunctionTypes, FunctionsList_Transpose__times__Matrix)
+    def __init__(self, basis_functions_matrix, backend, wrapping, online_backend, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix):
+        _FunctionsList_BasisFunctionsMatrix_Transpose.__init__(self, basis_functions_matrix, backend, wrapping, online_backend, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix, FunctionsList_Transpose__times__Matrix)
     
 class BasisFunctionsMatrix_Transpose(_FunctionsList_BasisFunctionsMatrix_Transpose):
-    def __init__(self, basis_functions_matrix, backend, wrapping, online_backend, FunctionTypes):
-        _FunctionsList_BasisFunctionsMatrix_Transpose.__init__(self, basis_functions_matrix, backend, wrapping, online_backend, FunctionTypes, BasisFunctionsMatrix_Transpose__times__Matrix)
+    def __init__(self, basis_functions_matrix, backend, wrapping, online_backend, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix):
+        _FunctionsList_BasisFunctionsMatrix_Transpose.__init__(self, basis_functions_matrix, backend, wrapping, online_backend, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix, BasisFunctionsMatrix_Transpose__times__Matrix)
         self._basis_component_index_to_component_name = basis_functions_matrix._basis_component_index_to_component_name
         self._component_name_to_basis_component_index = basis_functions_matrix._component_name_to_basis_component_index
         self._component_name_to_basis_component_length = basis_functions_matrix._component_name_to_basis_component_length
@@ -122,19 +136,21 @@ class BasisFunctionsMatrix_Transpose(_FunctionsList_BasisFunctionsMatrix_Transpo
             
 # Auxiliary class: multiplication of the transpose of a FunctionsList with a Matrix
 class _FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix(object):
-    def __init__(self, functions_list, functions_list_dim, matrix, backend, wrapping, online_backend, FunctionTypes):
+    def __init__(self, functions_list, functions_list_dim, matrix, backend, wrapping, online_backend, FunctionTypes, AdditionalIsVector, AdditionalIsMatrix):
         self.functions_list = functions_list
         self.functions_list_dim = functions_list_dim
-        assert isinstance(matrix, backend.Matrix.Type())
+        assert isinstance(matrix, backend.Matrix.Type()) or AdditionalIsMatrix(matrix)
         self.matrix = matrix
         self.backend = backend
         self.wrapping = wrapping
         self.online_backend = online_backend
         self.FunctionTypes = FunctionTypes
+        self.AdditionalIsVector = AdditionalIsVector
+        self.AdditionalIsMatrix = AdditionalIsMatrix
         
     # self * other [used e.g. to compute Z^T*A*Z or S^T*X*S (return OnlineMatrix), or Riesz_A^T*X*Riesz_F (return OnlineVector)]
     def __mul__(self, other_functions_list__or__function):
-        assert isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.BasisFunctionsMatrix, self.backend.FunctionsList, self.backend.Vector.Type()))
+        assert isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.BasisFunctionsMatrix, self.backend.FunctionsList, self.backend.Vector.Type())) or self.AdditionalIsVector(other_functions_list__or__function)
         if isinstance(other_functions_list__or__function, (self.backend.BasisFunctionsMatrix, self.backend.FunctionsList)):
             (other_functions_list, other_functions_list_dim) = functions_list_basis_functions_matrix_adapter(other_functions_list__or__function, self.backend)
             online_matrix = self.online_backend.Matrix(self.functions_list_dim, other_functions_list_dim)
@@ -143,7 +159,7 @@ class _FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix(object):
                 for (i, fun_i) in enumerate(self.functions_list):
                     online_matrix[i, j] = self.wrapping.vector_mul_vector(fun_i, matrix_times_fun_j)
             return online_matrix
-        elif isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.Vector.Type(), )):
+        elif isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(other_functions_list__or__function):
             function = other_functions_list__or__function
             online_vector = self.online_backend.Vector(self.functions_list_dim)
             matrix_times_function = self.wrapping.matrix_mul_vector(self.matrix, function)
@@ -158,7 +174,7 @@ class FunctionsList_Transpose__times__Matrix(_FunctionsList_BasisFunctionsMatrix
     
 class BasisFunctionsMatrix_Transpose__times__Matrix(_FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix):
     def __mul__(self, other_functions_list__or__function):
-        assert isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.BasisFunctionsMatrix, self.backend.Vector.Type()))
+        assert isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.BasisFunctionsMatrix, self.backend.Vector.Type())) or self.AdditionalIsVector(other_functions_list__or__function)
         output = _FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix.__mul__(self, other_functions_list__or__function)
         # Attach a private attribute to output which stores the order of components and their basis length,
         # as discussed for BasisFunctionsMatrix_Transpose.__mul__
@@ -166,7 +182,7 @@ class BasisFunctionsMatrix_Transpose__times__Matrix(_FunctionsList_BasisFunction
             output._basis_component_index_to_component_name = (self._basis_component_index_to_component_name, other_functions_list__or__function._basis_component_index_to_component_name)
             output._component_name_to_basis_component_index = (self._component_name_to_basis_component_index, other_functions_list__or__function._component_name_to_basis_component_index)
             output._component_name_to_basis_component_length = (self._component_name_to_basis_component_length, other_functions_list__or__function._component_name_to_basis_component_length)
-        elif isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.Vector.Type(), )):
+        elif isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(other_functions_list__or__function):
             output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
             output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
             output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
@@ -176,14 +192,15 @@ class BasisFunctionsMatrix_Transpose__times__Matrix(_FunctionsList_BasisFunction
             
 # Auxiliary class: transpose of a vectorized matrix (i.e. vector obtained by stacking its columns)
 class VectorizedMatrix_Transpose(object):
-    def __init__(self, matrix, backend, wrapping):
+    def __init__(self, matrix, backend, wrapping, AdditionalIsMatrix):
         assert isinstance(matrix, backend.Matrix.Type())
         self.matrix = matrix
         self.backend = backend
         self.wrapping = wrapping
+        self.AdditionalIsMatrix = AdditionalIsMatrix
             
     def __mul__(self, other_matrix):
-        assert isinstance(other_matrix, self.backend.Matrix.Type())
+        assert isinstance(other_matrix, self.backend.Matrix.Type()) or self.AdditionalIsMatrix(other_matrix)
         return self.wrapping.vectorized_matrix_inner_vectorized_matrix(self.matrix, other_matrix)
         
 # Auxiliary class: transpose of a TensorsList
