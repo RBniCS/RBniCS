@@ -68,9 +68,9 @@ def DEIMDecoratedProblem(
                     self.DEIM_approximations[term] = dict()
                     self.non_DEIM_forms[term] = dict()
                     for (q, form_q) in enumerate(forms):
-                        separated_form_q = SeparatedParametrizedForm(form_q)
-                        if separated_form_q.is_parametrized():
-                            self.DEIM_approximations[term][q] = DEIMApproximation(self, ParametrizedTensorFactory(self, form_q), type(self).__name__ + "/deim/" + separated_form_q.name(), basis_generation)
+                        factory_form_q = ParametrizedTensorFactory(self, form_q)
+                        if factory_form_q.is_parametrized():
+                            self.DEIM_approximations[term][q] = DEIMApproximation(self, factory_form_q, type(self).__name__ + "/deim/" + factory_form_q.name(), basis_generation)
                         else:
                             self.non_DEIM_forms[term][q] = form_q
                 

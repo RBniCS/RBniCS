@@ -75,15 +75,32 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
         return ProperOrthogonalDecomposition(self._space, inner_product)
         
     @override
+    def name(self):
+        return self._name
+        
+    @override
     def description(self):
         return PrettyTuple(self._expression, get_expression_description(self._expression), self._name)
+        
+    @override
+    def is_parametrized(self):
+        for subexpression in iter_expressions(self._expression):
+            for node in traverse_unique_terminals(subexpression):
+                node = function_from_subfunction_if_any(node)
+                # ... parametrized expressions
+                if isinstance(node, Expression) and "mu_0" in node.user_parameters:
+                    return True
+                # ... problem solutions related to nonlinear terms
+                elif isinstance(node, Function):
+                    truth_problem = get_problem_from_solution(node)
+                    return True
+        return False
         
     @override
     def is_nonlinear(self):
         visited = list()
         all_truth_problems = list()
         
-        # Look for terminals on truth mesh
         for subexpression in iter_expressions(self._expression):
             for node in traverse_unique_terminals(subexpression):
                 node = function_from_subfunction_if_any(node)
@@ -93,6 +110,7 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
                 elif isinstance(node, Function):
                     truth_problem = get_problem_from_solution(node)
                     all_truth_problems.append(truth_problem)
+                    visited.append(node)
                     
         return self._truth_problem in all_truth_problems
         

@@ -49,10 +49,18 @@ class ParametrizedExpressionFactory(object):
         return "EIM"
         
     @abstractmethod
+    def name(self):
+        pass
+        
+    @abstractmethod
     def description(self):
+        pass
+    
+    @abstractmethod
+    def is_parametrized(self):
         pass
         
     @abstractmethod
     def is_nonlinear(self):
         pass
-            
+        

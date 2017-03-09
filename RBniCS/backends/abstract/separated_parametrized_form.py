@@ -28,15 +28,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod, abstractpro
 class SeparatedParametrizedForm(object):
     def __init__(self, form):
         pass
-    
-    @abstractmethod
-    def is_parametrized(self):
-        pass
         
-    @abstractmethod
-    def name(self):
-        pass
-    
     @abstractmethod
     def separate(self):
         pass

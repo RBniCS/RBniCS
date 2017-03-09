@@ -36,20 +36,6 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form_unchanged.append(form)
     
     @override
-    def is_parametrized(self):
-        return False
-        
-    @override
-    def name(self):
-        assert isinstance(self._form, (float, int))
-        if isinstance(self._form, float):
-            return "float_" + str(self._form)
-        elif isinstance(self._form, int):
-            return "int_" + str(self._form)
-        else:
-            raise AssertionError("Invalid form type")
-    
-    @override
     def separate(self):
         pass
 

@@ -34,7 +34,7 @@ from ufl.indexed import Indexed
 from RBniCS.utils.io import ExportableList
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from RBniCS.backends.fenics.wrapping import get_expression_name, get_form_name
+from RBniCS.backends.fenics.wrapping import get_expression_name
 
 @Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("fenics", inputs=(Form, ))
@@ -49,18 +49,6 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form_unchanged = list() # of forms
         # Internal usage
         self._NaN = float('NaN')
-    
-    @override
-    def is_parametrized(self):
-        for integral in self._form.integrals():
-            for e in pre_traversal(integral.integrand()):
-                if isinstance(e, Expression) and "mu_0" in e.user_parameters:
-                    return True
-        return False
-        
-    @override
-    def name(self):
-        return get_form_name(self._form)
     
     @override
     def separate(self):

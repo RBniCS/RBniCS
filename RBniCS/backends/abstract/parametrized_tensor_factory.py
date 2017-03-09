@@ -49,7 +49,15 @@ class ParametrizedTensorFactory(object):
         return "DEIM"
         
     @abstractmethod
+    def name(self):
+        pass
+        
+    @abstractmethod
     def description(self):
+        pass
+        
+    @abstractmethod
+    def is_parametrized(self):
         pass
         
     @abstractmethod
