@@ -42,7 +42,7 @@ from RBniCS.problems.stokes_optimal_control import StokesOptimalControlProblem
 from RBniCS.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
 from RBniCS.scm import SCM, ExactCoercivityConstant
 from RBniCS.shape_parametrization import ShapeParametrization
-from RBniCS.utils.decorators import exact_problem
+from RBniCS.utils.decorators import CustomizeReducedProblemFor, CustomizeReductionMethodFor, exact_problem
 from RBniCS.utils.factories import ReducedBasis, PODGalerkin
 
 __all__ += [
@@ -68,6 +68,8 @@ __all__ += [
     # RBniCS.shape_parametrization
     'ShapeParametrization',
     # RBniCS.utils.decorators
+    'CustomizeReducedProblemFor',
+    'CustomizeReductionMethodFor',
     'exact_problem',
     # RBniCS.utils.factories
     'ReducedBasis',

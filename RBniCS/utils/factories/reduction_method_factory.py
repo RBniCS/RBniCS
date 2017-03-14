@@ -24,7 +24,7 @@
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCTION METHOD FACTORY CLASSES     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
-from RBniCS.utils.decorators import ReductionMethodFor, ReductionMethodDecoratorFor
+from RBniCS.utils.decorators import CustomizeReductionMethodFor, ReductionMethodFor, ReductionMethodDecoratorFor
 from RBniCS.utils.factories.factory_helper import FactoryGenerateTypes
 from RBniCS.utils.mpi import log, DEBUG
 
@@ -61,6 +61,11 @@ def ReductionMethodFactory(truth_problem, category, **kwargs):
     TypesList.extend(
         FactoryGenerateTypes(ReductionMethodFor._all_reduction_methods, ReductionMethod_condition_on_dict_key, ReductionMethod_condition_for_valid_candidate, ReductionMethod_condition_for_candidate_replacement)
     )
+    
+    # Look if any customizer has been defined
+    for (Problem, customizer) in CustomizeReductionMethodFor._all_reduction_method_customizers.iteritems():
+        if isinstance(truth_problem, Problem):
+            TypesList.append(customizer)
     
     # Append ReductionMethodDecorator types based on Algorithm type
     if hasattr(type(truth_problem), "ProblemDecorators"):

@@ -26,7 +26,7 @@
 ## @class ReducedProblemFactory
 #
 
-from RBniCS.utils.decorators import ReducedProblemFor, ReducedProblemDecoratorFor
+from RBniCS.utils.decorators import CustomizeReducedProblemFor, ReducedProblemFor, ReducedProblemDecoratorFor
 from RBniCS.utils.factories.factory_helper import FactoryGenerateTypes
 from RBniCS.utils.mpi import log, DEBUG
 
@@ -63,6 +63,11 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     TypesList.extend(
         FactoryGenerateTypes(ReducedProblemFor._all_reduced_problems, ReducedProblem_condition_on_dict_key, ReducedProblem_condition_for_valid_candidate, ReducedProblem_condition_for_candidate_replacement)
     )
+    
+    # Look if any customizer has been defined
+    for (Problem, customizer) in CustomizeReducedProblemFor._all_reduced_problems_customizers.iteritems():
+        if isinstance(truth_problem, Problem):
+            TypesList.append(customizer)
     
     # Append ReducedProblemDecorator types based on Algorithm type
     if hasattr(type(truth_problem), "ProblemDecorators"):

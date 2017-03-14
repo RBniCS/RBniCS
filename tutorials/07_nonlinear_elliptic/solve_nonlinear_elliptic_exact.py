@@ -111,6 +111,17 @@ class NonlinearElliptic(NonlinearEllipticProblem):
     #  @}
     ########################### end - PROBLEM SPECIFIC - end ########################### 
 
+# Customize the resulting reduced problem
+@CustomizeReducedProblemFor(NonlinearEllipticProblem)
+def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
+    class ReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
+        def __init__(self, truth_problem, **kwargs):
+            ReducedNonlinearElliptic_Base.__init__(self, truth_problem, **kwargs)
+            self._nonlinear_solver_parameters["report"] = True
+            self._nonlinear_solver_parameters["line_search"] = False
+            
+    return ReducedNonlinearElliptic
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 7: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
 # 1. Read the mesh for this problem
@@ -127,12 +138,12 @@ mu_range = [(0.01, 10.0), (0.01, 10.0)]
 nonlinear_elliptic_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
-reduced_basis_method = PODGalerkin(nonlinear_elliptic_problem)
-reduced_basis_method.set_Nmax(20)
+pod_galerkin_method = PODGalerkin(nonlinear_elliptic_problem)
+pod_galerkin_method.set_Nmax(20)
 
 # 5. Perform the offline phase
-reduced_basis_method.initialize_training_set(50)
-reduced_nonlinear_elliptic_problem = reduced_basis_method.offline()
+pod_galerkin_method.initialize_training_set(50)
+reduced_nonlinear_elliptic_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
 online_mu = (0.01, 10.0)
@@ -141,8 +152,8 @@ reduced_nonlinear_elliptic_problem.solve()
 reduced_nonlinear_elliptic_problem.export_solution("NonlinearElliptic", "online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(50)
-reduced_basis_method.error_analysis()
+pod_galerkin_method.initialize_testing_set(50)
+pod_galerkin_method.error_analysis()
 
 # 8. Perform a speedup analysis
-reduced_basis_method.speedup_analysis()
+pod_galerkin_method.speedup_analysis()
