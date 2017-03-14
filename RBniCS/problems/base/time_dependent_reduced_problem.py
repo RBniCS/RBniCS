@@ -68,6 +68,20 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def set_time(self, t):
             self.t = t
             
+        ## Set time step size
+        def set_time_step_size(self, dt):
+            assert isinstance(dt, (float, int))
+            dt = float(dt)
+            self.dt = dt
+            self._time_stepping_parameters["time_step_size"] = dt
+            
+        ## Set final time
+        def set_final_time(self, T):
+            assert isinstance(T, (float, int))
+            T = float(T)
+            self.T = T
+            self._time_stepping_parameters["final_time"] = T
+            
         ## Initialize data structures required for the online phase
         def init(self, current_stage="online"):
             # Initialize first data structures related to initial conditions

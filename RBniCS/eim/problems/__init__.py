@@ -32,6 +32,7 @@ from RBniCS.eim.problems.eim_decorated_reduced_problem import EIMDecoratedReduce
 from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
 #from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctionsDecoratedProblem # not needed
 from RBniCS.eim.problems.exact_parametrized_functions_decorated_reduced_problem import ExactParametrizedFunctionsDecoratedReducedProblem
+#from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation # not needed
 
 __all__ = [
     'DEIM',

@@ -27,6 +27,7 @@ from RBniCS.backends import ParametrizedExpressionFactory, SeparatedParametrized
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
+from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 
 def EIMDecoratedProblem(
     basis_generation="Greedy",
@@ -75,7 +76,12 @@ def EIMDecoratedProblem(
                         for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
                             for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
                                 if factor not in self.EIM_approximations:
-                                    self.EIM_approximations[factor] = EIMApproximation(self, ParametrizedExpressionFactory(self, factor), type(self).__name__ + "/eim/" + factor_name, basis_generation)
+                                    factory_factor = ParametrizedExpressionFactory(self, factor)
+                                    if factory_factor.is_time_dependent():
+                                        EIMApproximationType = TimeDependentEIMApproximation
+                                    else:
+                                        EIMApproximationType = EIMApproximation
+                                    self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, type(self).__name__ + "/eim/" + factor_name, basis_generation)
                 
             @override
             def solve(self, **kwargs):

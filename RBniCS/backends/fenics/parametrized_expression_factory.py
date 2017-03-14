@@ -37,7 +37,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_soluti
 from RBniCS.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
-@BackendFor("fenics", inputs=(object, (Expression, Function, Operator))) # object will actually be a ParametrizedDifferentialProblem
+@BackendFor("fenics", inputs=((object, None), (Expression, Function, Operator))) # object will actually be a ParametrizedDifferentialProblem
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
     def __init__(self, truth_problem, expression):
         AbstractParametrizedExpressionFactory.__init__(self, truth_problem, expression)
@@ -84,6 +84,8 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
         
     @override
     def is_parametrized(self):
+        if self.is_time_dependent():
+            return True
         for subexpression in iter_expressions(self._expression):
             for node in traverse_unique_terminals(subexpression):
                 node = function_from_subfunction_if_any(node)
@@ -113,6 +115,21 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
                     visited.append(node)
                     
         return self._truth_problem in all_truth_problems
+        
+    @override
+    def is_time_dependent(self):
+        for subexpression in iter_expressions(self._expression):
+            for node in traverse_unique_terminals(subexpression):
+                node = function_from_subfunction_if_any(node)
+                # ... parametrized expressions
+                if isinstance(node, Expression) and "t" in node.user_parameters:
+                    return True
+                # ... problem solutions related to nonlinear terms
+                elif isinstance(node, Function) and is_problem_solution(node):
+                    truth_problem = get_problem_from_solution(node)
+                    if hasattr(truth_problem, "set_time"):
+                        return True
+        return False
         
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):

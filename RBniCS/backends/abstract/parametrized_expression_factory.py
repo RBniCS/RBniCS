@@ -64,3 +64,7 @@ class ParametrizedExpressionFactory(object):
     def is_nonlinear(self):
         pass
         
+    @abstractmethod
+    def is_time_dependent(self):
+        pass
+        

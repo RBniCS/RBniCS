@@ -38,7 +38,6 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     assert mu is not None
     assert isinstance(mu, tuple)
     P = len(mu)
-    assert len(mu) > 0
     for p in range(P):
         assert isinstance(parametrized_expression_code, (tuple, str))
         if isinstance(parametrized_expression_code, tuple):

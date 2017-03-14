@@ -41,8 +41,10 @@ def sync_setters__internal(other_object__name, method__name, private_attribute__
                 # Override my setter to propagate from self to other_object
                 def self__overridden_method(self, arg):
                     self__original_method(arg)
-                    if getattr(other_object, private_attribute__name) is not arg:
-                        other_object__original_method(arg)
+                    self_attribute = getattr(self, private_attribute__name)
+                    other_attribute = getattr(other_object, private_attribute__name)
+                    if other_attribute is not self_attribute:
+                        other_object__original_method(self_attribute)
                 if method__decorator is not None:
                     self__overridden_method = method__decorator(self__overridden_method)
                 self__overridden_method = override(self__overridden_method)
@@ -50,8 +52,10 @@ def sync_setters__internal(other_object__name, method__name, private_attribute__
                 # Override setter of other_object to propagate from other_object to self
                 def other_object__overridden_method(_, arg): # _ is other_object, self is an instance of the parent class
                     other_object__original_method(arg)
-                    if getattr(self, private_attribute__name) is not arg:
-                        self__original_method(arg)
+                    other_attribute = getattr(other_object, private_attribute__name)
+                    self_attribute = getattr(self, private_attribute__name)
+                    if self_attribute is not other_attribute:
+                        self__original_method(other_attribute)
                 if method__decorator is not None:
                     other_object__overridden_method = method__decorator(other_object__overridden_method)
                 other_object__overridden_method = override(other_object__overridden_method)

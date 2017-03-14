@@ -43,8 +43,6 @@ class ReductionMethod(object):
         self.folder_prefix = folder_prefix
         self.folder = Folders()
         
-        assert len(mu_range) > 0
-        
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Maximum reduced order space dimension to be used for the stopping criterion in the basis selection
         self.Nmax = 0

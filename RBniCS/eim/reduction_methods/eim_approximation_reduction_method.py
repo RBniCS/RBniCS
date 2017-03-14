@@ -117,7 +117,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             self.EIM_approximation.set_mu(mu)
             
-            print("evaluate parametrized expression at mu =", self.EIM_approximation.mu)
+            print("evaluate parametrized expression at mu =", mu)
             self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
             self.EIM_approximation.export_solution(self.folder["snapshots"], "truth_" + str(run), self.EIM_approximation.snapshot)
             
@@ -153,7 +153,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
             
             if self.EIM_approximation.basis_generation == "Greedy":
-                print("solve interpolation for mu =", self.EIM_approximation.mu)
+                mu_index = self._offline__mu_index
+                print("solve interpolation for mu =", self.training_set[mu_index])
                 self.EIM_approximation.solve()
                 
                 print("compute and locate maximum interpolation error")

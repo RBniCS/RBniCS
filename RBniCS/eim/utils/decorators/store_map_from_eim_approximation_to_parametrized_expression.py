@@ -22,8 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators.extends import Extends
-from RBniCS.utils.decorators.override import override
+from RBniCS.utils.decorators import Extends, override
 
 def StoreMapFromParametrizedExpressionToEIMApproximation(EIMApproximation_DerivedClass):
             

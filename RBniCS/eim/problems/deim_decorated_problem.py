@@ -26,6 +26,7 @@ from itertools import product as cartesian_product
 from RBniCS.backends import ParametrizedTensorFactory, SeparatedParametrizedForm
 from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
 from RBniCS.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
+from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 
 def DEIMDecoratedProblem(
     basis_generation="POD",
@@ -70,7 +71,11 @@ def DEIMDecoratedProblem(
                     for (q, form_q) in enumerate(forms):
                         factory_form_q = ParametrizedTensorFactory(self, form_q)
                         if factory_form_q.is_parametrized():
-                            self.DEIM_approximations[term][q] = DEIMApproximation(self, factory_form_q, type(self).__name__ + "/deim/" + factory_form_q.name(), basis_generation)
+                            if factory_form_q.is_time_dependent():
+                                DEIMApproximationType = TimeDependentDEIMApproximation
+                            else:
+                                DEIMApproximationType = DEIMApproximation
+                            self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, type(self).__name__ + "/deim/" + factory_form_q.name(), basis_generation)
                         else:
                             self.non_DEIM_forms[term][q] = form_q
                 

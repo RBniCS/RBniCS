@@ -24,7 +24,10 @@
 
 from RBniCS.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor, regenerate_reduced_problem_from_exact_reduced_problem
 from RBniCS.eim.problems import EIM
+from RBniCS.eim.problems.eim_approximation import EIMApproximation
+from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
+from RBniCS.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
 
 @ReductionMethodDecoratorFor(EIM)
 def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -40,6 +43,11 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
             # Preprocess each term in the affine expansions
             for (coeff, EIM_approximation_coeff) in self.truth_problem.EIM_approximations.iteritems():
+                assert isinstance(EIM_approximation_coeff, (EIMApproximation, TimeDependentEIMApproximation))
+                if isinstance(EIM_approximation_coeff, TimeDependentEIMApproximation):
+                    EIMApproximationReductionMethodType = TimeDependentEIMApproximationReductionMethod
+                else:
+                    EIMApproximationReductionMethodType = EIMApproximationReductionMethod
                 self.EIM_reductions[coeff] = EIMApproximationReductionMethod(EIM_approximation_coeff)
             
         ###########################     SETTERS     ########################### 

@@ -24,7 +24,10 @@
 
 from RBniCS.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor, regenerate_reduced_problem_from_exact_reduced_problem
 from RBniCS.eim.problems import DEIM
+from RBniCS.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
+from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
+from RBniCS.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod as TimeDependentDEIMApproximationReductionMethod
 
 @ReductionMethodDecoratorFor(DEIM)
 def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -42,7 +45,12 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             for (term, DEIM_approximations_term) in self.truth_problem.DEIM_approximations.iteritems():
                 self.DEIM_reductions[term] = dict()
                 for (q, DEIM_approximations_term_q) in DEIM_approximations_term.iteritems():
-                    self.DEIM_reductions[term][q] = DEIMApproximationReductionMethod(DEIM_approximations_term_q)
+                    assert isinstance(DEIM_approximations_term_q, (DEIMApproximation, TimeDependentDEIMApproximation))
+                    if isinstance(DEIM_approximations_term_q, TimeDependentDEIMApproximation):
+                        DEIMApproximationReductionMethodType = TimeDependentDEIMApproximationReductionMethod
+                    else:
+                        DEIMApproximationReductionMethodType = DEIMApproximationReductionMethod
+                    self.DEIM_reductions[term][q] = DEIMApproximationReductionMethodType(DEIM_approximations_term_q)
             
         ###########################     SETTERS     ########################### 
         ## @defgroup Setters Set properties of the reduced order approximation
