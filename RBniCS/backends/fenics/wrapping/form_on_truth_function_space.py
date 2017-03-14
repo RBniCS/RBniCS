@@ -60,6 +60,7 @@ def form_on_truth_function_space(form_wrapper):
     # Solve reduced problem associated to nonlinear terms
     for (reduced_problem, truth_solution) in reduced_problem_to_truth_solution.iteritems():
         reduced_problem.set_mu(EIM_approximation.mu)
+        assert not hasattr(reduced_problem, "_is_solving")
         reduced_solution = reduced_problem.solve()
         assign(truth_solution, reduced_problem.Z[:reduced_solution.N]*reduced_solution)
     

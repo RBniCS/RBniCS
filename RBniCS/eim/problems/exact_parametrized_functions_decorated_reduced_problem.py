@@ -24,6 +24,8 @@
 
 from __future__ import print_function
 import types
+import RBniCS.backends
+from RBniCS.backends import assign, copy
 from RBniCS.utils.mpi import log, print, PROGRESS
 from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
 from RBniCS.eim.problems.eim import EIM
@@ -45,6 +47,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     # Avoid useless assemblies
                     self._estimate_error__previous_mu = None
                     self._estimate_error__previous_self_N = None
+                    # Precomputation of error estimation operators is disabled
+                    self.folder.pop("error_estimation")
                     
                 ###########################     ONLINE STAGE     ########################### 
                 ## @defgroup OnlineStage Methods related to the online stage
@@ -61,7 +65,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     ReducedParametrizedProblem_DecoratedClass._init_error_estimation_operators(self, "offline")
                     for (index1, term1) in enumerate(self.terms):
                         for (index2, term2) in enumerate(self.terms[index1:], start=index1):
-                            self._disable_load_and_save_for_online_storage(self.riesz_product[term1 + term2], self.folder["error_estimation"])
+                            self._disable_load_and_save_for_online_storage(self.riesz_product[term1 + term2])
                                                     
                 ## Return the error estimator for the current solution
                 @override
@@ -150,9 +154,37 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             return _AlsoDecorateErrorEstimationOperators_Class
         else:
             return ReducedParametrizedProblem_DecoratedClass
+            
+    def _AlsoDecorateNonlinearSolutionStorage(ReducedParametrizedProblem_DecoratedClass):
+        if hasattr(ReducedParametrizedProblem_DecoratedClass, "_store_solution"):
+            @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
+            class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
+                # Override online assign to make sure that the truth solution is updated,
+                # and that operators are re-assembled
+                @override
+                def _store_solution(self, solution):
+                    ParametrizedReducedDifferentialProblem_DerivedClass._store_solution(self, solution)
+                    # Update truth solution
+                    assign(self.truth_problem._solution, self.Z[:solution.N]*solution)
+                    # Re-assemble 
+                    self.build_reduced_operators("online")
+                
+                # Override to make sure that self.truth_problem._solution is backed up and restore
+                # after the reduced solve
+                @override
+                def _solve(self, N, **kwargs):
+                    bak_truth_solution = copy(self.truth_problem._solution)
+                    reduced_solution = ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
+                    assign(self.truth_problem._solution, bak_truth_solution)
+                    return reduced_solution
+                    
+            return _AlsoDecorateNonlinearSolutionStorage_Class
+        else:
+            return ReducedParametrizedProblem_DecoratedClass
            
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     @_AlsoDecorateErrorEstimationOperators
+    @_AlsoDecorateNonlinearSolutionStorage
     class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
@@ -162,6 +194,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             # Avoid useless assemblies
             self._solve__previous_mu = None
             self._solve__previous_self_N = None
+            # Precomputation of operators is disabled
+            self.folder.pop("reduced_operators")
         
         ###########################     ONLINE STAGE     ########################### 
         ## @defgroup OnlineStage Methods related to the online stage
@@ -175,36 +209,39 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             # we need to re-assemble operators. Thus, for any value of current_stage,
             # we initialize the operators of the reduced problem as if we were offline
             self._init_operators("offline")
+            # Inner products
+            n_components = len(self.components)
+            if n_components > 1:
+                for component in self.components:
+                    self._disable_load_and_save_for_online_storage(self.inner_product[component])
+            else:
+                self._disable_load_and_save_for_online_storage(self.inner_product)
+            # Terms
             for term in self.terms:
-                self._disable_load_and_save_for_online_storage(self.operator[term], self.folder["reduced_operators"])
+                self._disable_load_and_save_for_online_storage(self.operator[term])
 
         
-        def _disable_load_and_save_for_online_storage(self, online_storage, folder):
+        def _disable_load_and_save_for_online_storage(self, online_storage):
             # Make sure to disable the save() method of the operator, which is 
             # called internally by assemble_operator() since it is not possible
             # to precompute operators, and thus they should not be saved
             def disabled_save(self, folder, filename):
-                pass
+                raise AttributeError("Cannot save to file due to inefficient evaluation")
             online_storage.save = types.MethodType(disabled_save, online_storage)
             # Make sure to raise an error if the load() method of the operator,
             # since we have not saved anything and it should never be called
             def error_load(self, folder, filename):
                 raise AttributeError("Cannot load from file due to inefficient evaluation")
             online_storage.load = types.MethodType(error_load, online_storage)
-            # However, write a dummy file to make sure that restart is enabled
-            folder.touch_file(".exact_parametrized_functions_placeholder")
             
-        
         # Perform an online solve (internal)
         @override
         def _solve(self, N, **kwargs):
-            # The offline/online separation does not hold anymore, so, similarly to what we did in
-            # the truth problem, also at the reduced-order level we need to re-assemble operators,
-            # because the assemble_operator() *may* return parameter dependent operators.
+            # The offline/online separation does not hold anymore, so at the reduced-order level 
+            # we need to re-assemble operators, because the assemble_operator() *may* return 
+            # parameter dependent operators.
             if self._solve__previous_mu != self.mu or self._solve__previous_self_N != self.N:
-                if self._solve__previous_mu != self.mu: # re-assemble truth operators
-                    assert self.truth_problem.mu == self.mu
-                    self.truth_problem.init()
+                # Re-assemble operators
                 self.build_reduced_operators("online")
                 # Avoid useless assemblies
                 self._solve__previous_mu = self.mu

@@ -56,6 +56,16 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             if self.time_quadrature is None:
                 self.time_quadrature = TimeQuadrature((0., self.truth_problem.T), self.truth_problem.dt)
         
+        ## Initialize data structures required for the speedup analysis phase
+        @override
+        def _init_speedup_analysis(self, **kwargs):
+            DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
+            
+            # Make sure to clean up reduced problem solution cache to ensure that
+            # reduced solution are actually computed
+            self.reduced_problem._solution_over_time_cache.clear()
+            self.reduced_problem._solution_dot_over_time_cache.clear()
+        
     # return value (a class) for the decorator
     return TimeDependentReductionMethod_Class
     

@@ -49,6 +49,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
         self._absolute_tolerance = None
         self._line_search = True
         self._maximum_iterations = None
+        self._monitor = None
         self._relative_tolerance = None
         self._report = False
         self._solution_tolerance = None
@@ -69,7 +70,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
             elif key == "solution_tolerance":
                 self._solution_tolerance = value
             else:
-                raise ValueError("Invalid paramater passed to PETSc SNES object.")
+                raise ValueError("Invalid paramater passed to scipy object.")
                 
     @override
     def solve(self):
@@ -79,7 +80,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
         solution_vector = nonlin_solve(
             residual, initial_guess_vector, jacobian=jacobian, verbose=self._report,
             f_tol=self._absolute_tolerance, f_rtol=self._relative_tolerance, x_rtol=self._solution_tolerance, maxiter=self._maximum_iterations,
-            line_search=self._line_search
+            line_search=self._line_search, callback=self._monitor
         )
         self.problem.solution.vector()[:] = solution_vector.reshape((-1, 1))
         return self.problem.solution
@@ -90,8 +91,8 @@ class _NonlinearProblem(object):
         self.solution = solution
         self.jacobian_eval = jacobian_eval
         # We should be solving a square system
-        sample_residual = residual_eval(solution.vector())
-        sample_jacobian = jacobian_eval(solution.vector())
+        sample_residual = residual_eval(solution)
+        sample_jacobian = jacobian_eval(solution)
         assert sample_jacobian.M == sample_jacobian.N
         assert sample_jacobian.N == sample_residual.N
         # Prepare storage for BCs, if necessary
@@ -104,9 +105,9 @@ class _NonlinearProblem(object):
         
     def residual(self, solution):
         # Convert to a matrix with one column, rather than an array
-        solution = solution.reshape((-1, 1))
+        self.solution.vector()[:] = solution.reshape((-1, 1))
         # Compute residual
-        residual_vector = self.residual_eval(solution)
+        residual_vector = self.residual_eval(self.solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
             self.bcs.homogeneous_apply_to_vector(residual_vector)
@@ -115,9 +116,9 @@ class _NonlinearProblem(object):
         
     def jacobian(self, solution):
         # Convert to a matrix with one column, rather than an array
-        solution = solution.reshape((-1, 1))
+        self.solution.vector()[:] = solution.reshape((-1, 1))
         # Compute jacobian
-        jacobian_matrix = self.jacobian_eval(solution)
+        jacobian_matrix = self.jacobian_eval(self.solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
             self.bcs.apply_to_matrix(jacobian_matrix)

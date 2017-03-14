@@ -113,6 +113,10 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem.init("online")
         
+        # Make sure to clean up reduced problem solution cache to ensure that
+        # reduced solution are actually computed
+        self.reduced_problem._solution_cache.clear()
+        
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 
     

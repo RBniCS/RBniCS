@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
-from RBniCS.backends import NonlinearSolver, product, sum
+from RBniCS.backends import assign, Function, NonlinearSolver, product, sum
 from RBniCS.utils.decorators import Extends, override
 
 @Extends(EllipticCoerciveProblem)
@@ -52,17 +52,19 @@ class NonlinearEllipticProblem(EllipticCoerciveProblem):
     ###########################     OFFLINE STAGE     ########################### 
     ## @defgroup OfflineStage Methods related to the offline stage
     #  @{
-    
-    ## Perform a truth solve
+            
+    ## Perform a truth solve.
     @override
     def solve(self, **kwargs):
         # Functions required by the NonlinearSolver interface
         def residual_eval(solution):
+            self._store_solution(solution)
             assembled_operator = dict()
             assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"]))
             assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"]))
             return assembled_operator["a"] - assembled_operator["f"]
         def jacobian_eval(solution):
+            self._store_solution(solution)
             return sum(product(self.compute_theta("da"), self.operator["da"]))
         def bc_eval():
             if self.dirichlet_bc is not None:
@@ -70,10 +72,14 @@ class NonlinearEllipticProblem(EllipticCoerciveProblem):
             else:
                 return None
         # Solve by NonlinearSolver object
+        assign(self._solution, Function(self.V))
         solver = NonlinearSolver(jacobian_eval, self._solution, residual_eval, bc_eval())
         solver.set_parameters(self._nonlinear_solver_parameters)
         solver.solve()
         return self._solution
+    
+    def _store_solution(self, solution):
+        assign(self._solution, solution)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

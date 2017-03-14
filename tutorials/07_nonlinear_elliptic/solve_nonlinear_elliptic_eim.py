@@ -84,16 +84,16 @@ class NonlinearElliptic(NonlinearEllipticProblem):
     def assemble_operator(self, term):
         v = self.v
         dx = self.dx
-        if term == "a":
+        if term == "a" or term == "da":
             u = self.u
             mu2 = self.mu[1]
             a0 = inner(grad(u), grad(v))*dx
             a1 = (exp(mu2*u) - 1)/mu2*v*dx
-            return (a0, a1)
-        elif term == "da":
-            du = self.du
-            u = self.u
-            return tuple(derivative(ai, u, du) for ai in self.assemble_operator("a"))
+            if term == "a":
+                return (a0, a1)
+            else:
+                du = self.du
+                return tuple(derivative(ai, u, du) for ai in (a0, a1))
         elif term == "f":
             f = self.f
             f0 = f*v*dx
@@ -131,13 +131,11 @@ reduced_basis_method = PODGalerkin(nonlinear_elliptic_problem)
 reduced_basis_method.set_Nmax(20, EIM=21)
 
 # 5. Perform the offline phase
-first_mu = (1.0,1.0)
-nonlinear_elliptic_problem.set_mu(first_mu)
 reduced_basis_method.initialize_training_set(50, EIM=60)
 reduced_nonlinear_elliptic_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
-online_mu = (8.0,1.0)
+online_mu = (0.01, 1.0)
 reduced_nonlinear_elliptic_problem.set_mu(online_mu)
 reduced_nonlinear_elliptic_problem.solve()
 reduced_nonlinear_elliptic_problem.export_solution("NonlinearElliptic", "online_solution")

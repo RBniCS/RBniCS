@@ -73,6 +73,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         self.inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
         # Solution
         self._solution = OnlineFunction()
+        self._solution_cache = dict() # of Functions
         self._output = 0
         self._compute_error__previous_mu = None
         self._compute_error_output__previous_mu = None
@@ -225,7 +226,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     @override
     def solve(self, N=None, **kwargs):
         N, kwargs = self._online_size_from_kwargs(N, **kwargs)
-        return self._solve(N, **kwargs)
+        cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
+        if cache_key in self._solution_cache:
+            self._solution = self._solution_cache[cache_key]
+        else:
+            assert not hasattr(self, "_is_solving")
+            self._is_solving = True
+            self._solve(N, **kwargs)
+            delattr(self, "_is_solving")
+            self._solution_cache[cache_key] = self._solution
+        return self._solution
         
     # Perform an online solve. Internal method
     @abstractmethod
@@ -309,6 +319,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 
         return N, kwargs
         
+    def _cache_key_from_N_and_kwargs(self, N, **kwargs):
+        if isinstance(N, dict):
+            return (self.mu, tuple(sorted(N.items())), tuple(sorted(kwargs.items())))
+        else:
+            assert isinstance(N, int)
+            return (self.mu, N, tuple(sorted(kwargs.items())))
+            
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
 
@@ -432,9 +449,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         # Set inner product for components, if needed
         if "inner_product" not in kwargs:
             inner_product = dict()
-            for component in kwargs["components"]:
-                assert len(self.truth_problem.inner_product[component]) == 1
-                inner_product[component] = self.truth_problem.inner_product[component][0]
+            if len(kwargs["components"]) > 1:
+                for component in kwargs["components"]:
+                    assert len(self.truth_problem.inner_product[component]) == 1
+                    inner_product[component] = self.truth_problem.inner_product[component][0]
+            else:
+                assert len(self.truth_problem.inner_product) == 1
+                inner_product[kwargs["components"][0]] = self.truth_problem.inner_product[0]
             kwargs["inner_product"] = inner_product
         else:
             assert isinstance(kwargs["inner_product"], dict)
@@ -566,7 +587,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                         self.operator[term][q] = self.truth_problem.operator[term][q]
                     else:
                         raise AssertionError("Invalid value for order of term " + term)
-                self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
+                if "reduced_operators" in self.folder:
+                    self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
             elif term.startswith("inner_product"):
                 component = term.replace("inner_product", "").replace("_", "")
@@ -575,14 +597,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                     assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     self.inner_product[component][0] = transpose(self.Z)*self.truth_problem.inner_product[component][0]*self.Z
-                    self.inner_product[component].save(self.folder["reduced_operators"], term)
+                    if "reduced_operators" in self.folder:
+                        self.inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.inner_product[component]
                 else:
                     assert len(self.components) == 1 # single component case
                     assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     self.inner_product[0] = transpose(self.Z)*self.truth_problem.inner_product[0]*self.Z
-                    self.inner_product.save(self.folder["reduced_operators"], term)
+                    if "reduced_operators" in self.folder:
+                        self.inner_product.save(self.folder["reduced_operators"], term)
                     return self.inner_product
             elif term.startswith("dirichlet_bc"):
                 component = term.replace("dirichlet_bc", "").replace("_", "")

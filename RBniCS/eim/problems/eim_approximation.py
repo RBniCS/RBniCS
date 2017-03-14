@@ -72,10 +72,6 @@ class EIMApproximation(ParametrizedProblem):
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         
-        # Avoid useless linear system solves
-        self._solve__previous_mu = None
-        self._solve__previous_N = None
-        
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
 
@@ -103,13 +99,7 @@ class EIMApproximation(ParametrizedProblem):
         if N is None:
             N = self.N
         
-        if self._solve__previous_mu != self.mu or self._solve__previous_N != N:
-            self._solve(self.parametrized_expression, N)
-            
-            # Store to avoid repeated computations
-            self._solve__previous_mu = self.mu
-            self._solve__previous_N = N
-        
+        self._solve(self.parametrized_expression, N)
         return self._interpolation_coefficients
         
     def _solve(self, rhs_, N=None):

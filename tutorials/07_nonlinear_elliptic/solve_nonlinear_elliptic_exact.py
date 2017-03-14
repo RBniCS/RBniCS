@@ -26,7 +26,7 @@ from dolfin import *
 from RBniCS import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 7: NONLINEAR PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-@DEIM(basis_generation="Greedy")
+@ExactParametrizedFunctions()
 class NonlinearElliptic(NonlinearEllipticProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -128,10 +128,10 @@ nonlinear_elliptic_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = PODGalerkin(nonlinear_elliptic_problem)
-reduced_basis_method.set_Nmax(20, DEIM=21)
+reduced_basis_method.set_Nmax(20)
 
 # 5. Perform the offline phase
-reduced_basis_method.initialize_training_set(50, DEIM=60)
+reduced_basis_method.initialize_training_set(50)
 reduced_nonlinear_elliptic_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
@@ -141,7 +141,7 @@ reduced_nonlinear_elliptic_problem.solve()
 reduced_nonlinear_elliptic_problem.export_solution("NonlinearElliptic", "online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(50, DEIM=60)
+reduced_basis_method.initialize_testing_set(50)
 reduced_basis_method.error_analysis()
 
 # 8. Perform a speedup analysis

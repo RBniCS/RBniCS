@@ -79,7 +79,10 @@ def expression_on_reduced_mesh(expression_wrapper, at):
     # Solve reduced problem associated to nonlinear terms
     for (reduced_problem, reduced_mesh_solution) in reduced_problem_to_reduced_mesh_solution.iteritems():
         reduced_problem.set_mu(EIM_approximation.mu)
-        reduced_solution = reduced_problem.solve()
+        if not hasattr(reduced_problem, "_is_solving"):
+            reduced_solution = reduced_problem.solve()
+        else:
+            reduced_solution = reduced_problem._solution
         reduced_Z = reduced_problem_to_reduced_Z[reduced_problem]
         assign(reduced_mesh_solution, reduced_Z[:reduced_solution.N]*reduced_solution)
         

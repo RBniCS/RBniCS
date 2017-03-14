@@ -34,7 +34,8 @@ def exact_problem(decorated_problem, preserve_class_name=False):
         
         if not preserve_class_name:
             setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
-        setattr(ExactProblem_Class, "__exact__", True)
+        setattr(ExactProblem_Class, "__is_exact__", True)
+        setattr(ExactProblem_Class, "__DecoratedProblem__", DecoratedProblem)
         
         # Re-apply decorators, replacing e.g. EIM with ExactParametrizedFunctions:
         for (Decorator, ExactDecorator, kwargs) in zip(DecoratedProblem.ProblemDecorators, DecoratedProblem.ProblemExactDecorators, DecoratedProblem.ProblemDecoratorsKwargs):
@@ -47,6 +48,7 @@ def exact_problem(decorated_problem, preserve_class_name=False):
         exact_problem = ExactProblem_Class(decorated_problem.V, **decorated_problem.problem_kwargs)
         exact_problem.set_mu_range(decorated_problem.mu_range)
         exact_problem.set_mu(decorated_problem.mu)
+        setattr(exact_problem, "__decorated_problem__", decorated_problem)
         
         # Return
         return exact_problem

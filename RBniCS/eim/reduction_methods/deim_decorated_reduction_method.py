@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor
+from RBniCS.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor, regenerate_reduced_problem_from_exact_reduced_problem
 from RBniCS.eim.problems import DEIM
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
 
@@ -93,7 +93,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                         if isinstance(kwarg_DEIM[term], int):
                             kwarg_DEIM[term] = [kwarg_DEIM[term]]*len(self.DEIM_reductions[term])
                         else:
-                            assert len(self.DEIM_reductions[term]) == len(kwarg_DEIM[term])
+                            assert max(self.DEIM_reductions[term].keys()) == len(kwarg_DEIM[term]) - 1
                         for (q, DEIM_reductions_term_q) in self.DEIM_reductions[term].iteritems():
                             current_return_value = setter(DEIM_reductions_term_q, kwarg_DEIM[term][q])
                             return_value = current_return_value and return_value
@@ -111,17 +111,18 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         ###########################     OFFLINE STAGE     ########################### 
         ## @defgroup OfflineStage Methods related to the offline stage
         #  @{
-    
-        ## Perform the offline phase of the reduced order model
-        @override
-        def offline(self):
-            # Check for nonlinear terms
+        
+        def _is_nonlinear(self):
             is_nonlinear = False
             for (term, DEIM_approximations_term) in self.truth_problem.DEIM_approximations.iteritems():
                 for (_, DEIM_approximation_term_q) in DEIM_approximations_term.iteritems():
                     is_nonlinear = is_nonlinear or DEIM_approximation_term_q.parametrized_expression.is_nonlinear()
-                
-            if not is_nonlinear:
+            return is_nonlinear
+        
+        ## Perform the offline phase of the reduced order model
+        @override
+        def offline(self):
+            if not self._is_nonlinear():
                 # Perform first the DEIM offline phase, ...
                 bak_first_mu = tuple(list(self.truth_problem.mu))
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
@@ -135,15 +136,17 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 self.truth_problem = exact_problem(bak_truth_problem, preserve_class_name=True)
                 # Perform first parent offline phase (with exact operators)
                 bak_first_mu = tuple(list(self.truth_problem.mu))
-                return_value = DifferentialProblemReductionMethod_DerivedClass.offline(self)
-                # ..., and the carry out EIM offline phase
-                self.truth_problem = bak_truth_problem
+                exact_reduced_problem = DifferentialProblemReductionMethod_DerivedClass.offline(self)
+                # Then carry out DEIM offline phase
                 self.truth_problem.set_mu(bak_first_mu)
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
                         DEIM_reduction_term_q.offline()
-                #
-                return return_value
+                # Restore the original truth problem
+                self.truth_problem = bak_truth_problem
+                # Re-generate a reduced problem associated to the original truth problem
+                self.reduced_problem = regenerate_reduced_problem_from_exact_reduced_problem(self.truth_problem, self, exact_reduced_problem)
+                return self.reduced_problem
     
         #  @}
         ########################### end - OFFLINE STAGE - end ###########################
@@ -161,14 +164,20 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t. 
                                                 # an exact parametrized functions, 
                                                 # so he probably is not interested in the error analysis of DEIM
-                    and
-                "N_DEIM" not in kwargs          # otherwise we assume the user was interested in computing the error for a fixed number of DEIM basis
+                    and 
+                (
+                    "DEIM" not in kwargs        # otherwise we assume the user was interested in computing the error for a fixed number of DEIM basis
                                                 # functions, thus he has already carried out the error analysis of DEIM
+                        or
+                    ("DEIM" in kwargs and kwargs["DEIM"] is not None) # shorthand to disable DEIM error analysis
+                )
             ):
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
                         DEIM_reduction_term_q.error_analysis(N)
             # ..., and then call the parent method.
+            if "DEIM" in kwargs and kwargs["DEIM"] is None:
+                del kwargs["DEIM"]
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
         # Compute the speedup of the reduced order approximation with respect to the full order one
@@ -181,13 +190,19 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                                                 # an exact parametrized functions, 
                                                 # so he probably is not interested in the speedup analysis of DEIM
                     and
-                "N_DEIM" not in kwargs          # otherwise we assume the user was interested in computing the speedup for a fixed number of DEIM basis
+                (
+                    "DEIM" not in kwargs        # otherwise we assume the user was interested in computing the speedup for a fixed number of DEIM basis
                                                 # functions, thus he has already carried out the speedup analysis of DEIM
+                        or
+                    ("DEIM" in kwargs and kwargs["DEIM"] is not None) # shorthand to disable DEIM speedup analysis
+                )
             ):
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
                         DEIM_reduction_term_q.speedup_analysis(N)
             # ..., and then call the parent method.
+            if "DEIM" in kwargs and kwargs["DEIM"] is None:
+                del kwargs["DEIM"]
             DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
             
         #  @}

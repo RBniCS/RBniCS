@@ -43,6 +43,8 @@ def StoreMapFromProblemToReducedProblem(ParametrizedReducedDifferentialProblem_D
     
 def add_to_map_from_problem_to_reduced_problem(problem, reduced_problem):
     if problem not in _problem_to_reduced_problem_map:
+        if hasattr(type(problem), "__is_exact__"):
+            problem = problem.__decorated_problem__
         _problem_to_reduced_problem_map[problem] = reduced_problem
     else:
         # this happens with multiple inheritance

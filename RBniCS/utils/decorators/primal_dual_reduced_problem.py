@@ -42,9 +42,9 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
 
         # Perform an online solve. Overridden to also solve the dual problem for output correction and error estimation.
         @override
-        def solve(self, N=None, **kwargs):
+        def _solve(self, N, **kwargs):
             # Solve primal problem
-            primal_solution = ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
+            primal_solution = ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
             # Defer dual problem solve to output() method, since (i) reduced dual problem has not been built yet during the
             # primal offline stage, (ii) in any case dual solution is only required when computing output and its error estimation
             if "dual" in kwargs:

@@ -68,6 +68,10 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             self._error_computation_override__current_with_respect_to_level = None
             self._error_computation_override__current_bak_truth_problem = None
             
+            # Default values for kwargs
+            self._error_computation_override__default_with_respect_to = None
+            self._error_computation_override__default_with_respect_to_level = None
+            
         @override_error_computation
         def compute_error(self, N=None, **kwargs):
             return ParametrizedReducedDifferentialProblem_DerivedClass.compute_error(self, N, **kwargs)
@@ -89,6 +93,10 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
     
 def override_error_computation(error_computation_method):
     def overridden_error_computation_method(self, N=None, **kwargs):
+        if "with_respect_to" not in kwargs and self._error_computation_override__default_with_respect_to is not None:
+            kwargs["with_respect_to"] = self._error_computation_override__default_with_respect_to
+        if "with_respect_to_level" not in kwargs and self._error_computation_override__default_with_respect_to_level is not None:
+            kwargs["with_respect_to_level"] = self._error_computation_override__default_with_respect_to_level
         if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
             if "with_respect_to" in kwargs:
                 assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
