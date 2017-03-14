@@ -22,6 +22,14 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.problems.base.nonlinear_pod_galerkin_reduced_problem import NonlinearPODGalerkinReducedProblem
+from RBniCS.problems.base.nonlinear_problem import NonlinearProblem
+from RBniCS.problems.base.nonlinear_rb_reduced_problem import NonlinearRBReducedProblem
+from RBniCS.problems.base.nonlinear_reduced_problem import NonlinearReducedProblem
+from RBniCS.problems.base.nonlinear_time_dependent_pod_galerkin_reduced_problem import NonlinearTimeDependentPODGalerkinReducedProblem
+from RBniCS.problems.base.nonlinear_time_dependent_problem import NonlinearTimeDependentProblem
+from RBniCS.problems.base.nonlinear_time_dependent_rb_reduced_problem import NonlinearTimeDependentRBReducedProblem
+from RBniCS.problems.base.nonlinear_time_dependent_reduced_problem import NonlinearTimeDependentReducedProblem
 from RBniCS.problems.base.parametrized_differential_problem import ParametrizedDifferentialProblem
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.problems.base.parametrized_reduced_differential_problem import ParametrizedReducedDifferentialProblem
@@ -34,6 +42,14 @@ from RBniCS.problems.base.time_dependent_reduced_problem import TimeDependentRed
 
 
 __all__ = [
+    'NonlinearPODGalerkinReducedProblem',
+    'NonlinearProblem',
+    'NonlinearRBReducedProblem',
+    'NonlinearReducedProblem',
+    'NonlinearTimeDependentPODGalerkinProblem',
+    'NonlinearTimeDependentProblem',
+    'NonlinearTimeDependentRBReducedProblem',
+    'NonlinearTimeDependentReducedProblem',
     'ParametrizedDifferentialProblem',
     'ParametrizedProblem',
     'ParametrizedReducedDifferentialProblem',

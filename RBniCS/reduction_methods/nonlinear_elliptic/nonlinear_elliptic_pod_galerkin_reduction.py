@@ -23,11 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
+from RBniCS.reduction_methods.base import NonlinearPODGalerkinReduction
 from RBniCS.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from RBniCS.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
 from RBniCS.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_reduction_method import NonlinearEllipticReductionMethod
 
-NonlinearEllipticPODGalerkinReduction_Base = NonlinearEllipticReductionMethod(EllipticCoercivePODGalerkinReduction)
+NonlinearEllipticPODGalerkinReduction_Base = NonlinearEllipticReductionMethod(NonlinearPODGalerkinReduction(EllipticCoercivePODGalerkinReduction))
 
 @Extends(NonlinearEllipticPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(NonlinearEllipticProblem, "PODGalerkin")

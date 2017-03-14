@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.problems.base import NonlinearReducedProblem
 from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
 from RBniCS.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from RBniCS.backends import assign, NonlinearSolver, product, sum
@@ -32,6 +33,7 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
     @Extends(EllipticCoerciveReducedProblem_DerivedClass) # needs to be first in order to override for last the methods.
     #@ReducedProblemFor(NonlinearEllipticProblem, NonlinearEllipticReductionMethod) # disabled, since now this is a decorator which depends on a derived (e.g. POD or RB) class
     @MultiLevelReducedProblem
+    @NonlinearReducedProblem
     class NonlinearEllipticReducedProblem_Class(EllipticCoerciveReducedProblem_DerivedClass):
         
         ###########################     CONSTRUCTORS     ########################### 
@@ -43,9 +45,6 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             EllipticCoerciveReducedProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
-            # Additional parameters
-            self._nonlinear_solver_parameters = dict()
             
         #  @}
         ########################### end - CONSTRUCTORS - end ########################### 
@@ -78,10 +77,6 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
             solver.set_parameters(self._nonlinear_solver_parameters)
             solver.solve()
             return self._solution
-            
-        # Store solution while solving the nonlinear problem
-        def _store_solution(self, solution):
-            assign(self._solution, solution)
             
         #  @}
         ########################### end - ONLINE STAGE - end ########################### 

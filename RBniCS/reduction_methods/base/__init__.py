@@ -23,6 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.reduction_methods.base.differential_problem_reduction_method import DifferentialProblemReductionMethod
+from RBniCS.reduction_methods.base.nonlinear_pod_galerkin_reduction import NonlinearPODGalerkinReduction
+from RBniCS.reduction_methods.base.nonlinear_rb_reduction import NonlinearRBReduction
+from RBniCS.reduction_methods.base.nonlinear_reduction_method import NonlinearReductionMethod
+from RBniCS.reduction_methods.base.nonlinear_time_dependent_pod_galerkin_reduction import NonlinearTimeDependentPODGalerkinReduction
+from RBniCS.reduction_methods.base.nonlinear_time_dependent_rb_reduction import NonlinearTimeDependentRBReduction
+from RBniCS.reduction_methods.base.nonlinear_time_dependent_reduction_method import NonlinearTimeDependentReductionMethod
 from RBniCS.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
 from RBniCS.reduction_methods.base.rb_reduction import RBReduction
 from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
@@ -32,6 +38,12 @@ from RBniCS.reduction_methods.base.time_dependent_reduction_method import TimeDe
 
 __all__ = [
     'DifferentialProblemReductionMethod',
+    'NonlinearPODGalerkinReduction',
+    'NonlinearRBReduction',
+    'NonlinearReductionMethod',
+    'NonlinearTimeDependentPODGalerkinReduction',
+    'NonlinearTimeDependentRBReduction',
+    'NonlinearTimeDependentReductionMethod',
     'PODGalerkinReduction',
     'RBReduction',
     'ReductionMethod',

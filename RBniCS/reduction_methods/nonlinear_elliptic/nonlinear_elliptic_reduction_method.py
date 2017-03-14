@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.reduction_methods.base import NonlinearReductionMethod
 from RBniCS.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from RBniCS.utils.decorators import Extends, override, MultiLevelReductionMethod
 
@@ -29,6 +30,7 @@ def NonlinearEllipticReductionMethod(EllipticCoerciveReductionMethod_DerivedClas
     @Extends(EllipticCoerciveReductionMethod_DerivedClass) # needs to be first in order to override for last the methods.
     #@ReductionMethodFor(NonlinearEllipticProblem, "Abstract") # disabled, since now this is a decorator which depends on a derived (e.g. POD or RB) class
     @MultiLevelReductionMethod
+    @NonlinearReductionMethod
     class NonlinearEllipticReductionMethod_Class(EllipticCoerciveReductionMethod_DerivedClass):
         
         ###########################     CONSTRUCTORS     ########################### 

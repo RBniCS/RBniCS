@@ -22,11 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.problems.base import NonlinearProblem
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.backends import assign, Function, NonlinearSolver, product, sum
 from RBniCS.utils.decorators import Extends, override
 
 @Extends(EllipticCoerciveProblem)
+@NonlinearProblem
 class NonlinearEllipticProblem(EllipticCoerciveProblem):
     
     ###########################     CONSTRUCTORS     ########################### 
@@ -42,9 +44,6 @@ class NonlinearEllipticProblem(EllipticCoerciveProblem):
         # Form names for nonlinear problems
         self.terms = ["a", "da", "f"]
         self.terms_order = {"a": 1, "da": 2, "f": 1}
-        
-        # Additional parameters
-        self._nonlinear_solver_parameters = dict()
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -77,9 +76,6 @@ class NonlinearEllipticProblem(EllipticCoerciveProblem):
         solver.set_parameters(self._nonlinear_solver_parameters)
         solver.solve()
         return self._solution
-    
-    def _store_solution(self, solution):
-        assign(self._solution, solution)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
