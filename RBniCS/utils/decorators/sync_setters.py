@@ -64,8 +64,8 @@ def sync_setters__internal(other_object__name, method__name, private_attribute__
     return sync_setters_decorator
 
 def sync_setters(other_object__name, method__name, private_attribute__name):
-    assert method__name in ("set_mu", "set_mu_range") # other uses have not been considered yet
-    if method__name == "set_mu":
+    assert method__name in ("set_final_time", "set_mu", "set_mu_range", "set_time", "set_time_step_size") # other uses have not been considered yet
+    if method__name in ("set_final_time", "set_mu", "set_time", "set_time_step_size"):
         return sync_setters__internal(other_object__name, method__name, private_attribute__name)
     elif method__name == "set_mu_range":
         def set_mu_range__decorator(set_mu_range__method):

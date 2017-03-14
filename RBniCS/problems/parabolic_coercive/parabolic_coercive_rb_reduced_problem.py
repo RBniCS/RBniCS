@@ -106,7 +106,7 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
         for (k, (solution, solution_dot)) in enumerate(zip(self._solution_over_time, self._solution_dot_over_time)):
             if k > 0:
                 # Set current time
-                self.t = k*self.dt
+                self.set_time(k*self.dt)
                 # Set current solution and solution_dot
                 self._solution = solution
                 self._solution_dot = solution_dot

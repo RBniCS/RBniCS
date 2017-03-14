@@ -25,7 +25,7 @@
 from math import sqrt
 from RBniCS.backends import assign, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from RBniCS.utils.decorators import Extends, override
+from RBniCS.utils.decorators import Extends, override, sync_setters
 
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
@@ -33,6 +33,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
     class TimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
+        @sync_setters("truth_problem", "set_time", "t")
+        @sync_setters("truth_problem", "set_time_step_size", "dt")
+        @sync_setters("truth_problem", "set_final_time", "T")
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -60,6 +63,10 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._solution_over_time_cache = dict() # of list of Functions
             self._solution_dot_over_time_cache = dict() # of list of Functions
             self._output_over_time = list() # of floats
+            
+        ## Set current time
+        def set_time(self, t):
+            self.t = t
             
         ## Initialize data structures required for the online phase
         def init(self, current_stage="online"):
@@ -171,9 +178,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def _compute_error(self, **kwargs):
             error_over_time = list()
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
-                self.t = k*self.dt
+                self.set_time(k*self.dt)
                 assign(self._solution, reduced_solution)
-                self.truth_problem.t = k*self.dt
                 assign(self.truth_problem._solution, truth_solution)
                 error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self, **kwargs)
                 error_over_time.append(error)
@@ -184,7 +190,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def _compute_relative_error(self, absolute_error_over_time, **kwargs):
             relative_error_over_time = list()
             for (k, (truth_solution, absolute_error)) in enumerate(zip(self.truth_problem._solution_over_time, absolute_error_over_time)):
-                self.truth_problem.t = k*self.dt
+                self.set_time(k*self.dt)
                 assign(self.truth_problem._solution, truth_solution)
                 if absolute_error != 0.0:
                     relative_error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error(self, absolute_error, **kwargs)
@@ -198,9 +204,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def _compute_error_output(self, **kwargs):
             error_output_over_time = list()
             for (k, (truth_output, reduced_output)) in enumerate(zip(self.truth_problem._output_over_time, self._output_over_time)):
-                self.t = k*self.dt
+                self.set_time(k*self.dt)
                 self._output = reduced_output
-                self.truth_problem.t = k*self.dt
                 self.truth_problem._output = truth_output
                 error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error_output(self, **kwargs)
                 error_output_over_time.append(error_output)
@@ -211,7 +216,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def _compute_relative_error_output(self, absolute_error_output_over_time, **kwargs):
             relative_error_output_over_time = list()
             for (k, (truth_output, absolute_error_output)) in enumerate(zip(self.truth_problem._output_over_time, absolute_error_output_over_time)):
-                self.truth_problem.t = k*self.dt
+                self.set_time(k*self.dt)
                 self.truth_problem._output = truth_output
                 if absolute_error_output != 0.0:
                     relative_error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error_output(self, absolute_error_output, **kwargs)

@@ -51,7 +51,13 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._solution_over_time = list() # of Functions
             self._solution_dot_over_time = list() # of Functions
             self._output_over_time = list() # of floats
-            
+
+        ## Set current time
+        def set_time(self, t):
+            assert isinstance(t, (float, int))
+            t = float(t)
+            self.t = t
+                    
         ## Set time step size
         def set_time_step_size(self, dt):
             assert isinstance(dt, (float, int))

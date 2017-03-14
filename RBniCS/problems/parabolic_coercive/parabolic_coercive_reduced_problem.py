@@ -62,7 +62,7 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
             N += self.N_bc
             # Functions required by the TimeStepping interface
             def residual_eval(t, solution, solution_dot):
-                self.t = t
+                self.set_time(t)
                 assembled_operator = dict()
                 assembled_operator["m"] = sum(product(self.compute_theta("m"), self.operator["m"][:N, :N]))
                 assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
@@ -73,7 +73,7 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                     - assembled_operator["f"]
                 )
             def jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):
-                self.t = t
+                self.set_time(t)
                 assembled_operator = dict()
                 assembled_operator["m"] = sum(product(self.compute_theta("m"), self.operator["m"][:N, :N]))
                 assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
@@ -82,7 +82,7 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                     + assembled_operator["a"]
                 )
             def bc_eval(t):
-                self.t = t
+                self.set_time(t)
                 if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
                     return self.compute_theta("dirichlet_bc")
                 else:

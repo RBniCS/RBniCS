@@ -69,14 +69,15 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         mu_dict[ "mu_" + str(p) ] = mu_p
     del kwargs["mu"]
     kwargs.update(mu_dict)
-            
+    
     expression = Expression(parametrized_expression_code, *args, **kwargs)
     expression.mu = mu # to avoid repeated assignments
     if "domain" in kwargs:
         expression.mesh = kwargs["domain"]
     else:
         expression.mesh = truth_problem.V.mesh()
-        
+    
+    # Keep mu in sync
     standard_set_mu = truth_problem.set_mu
     def overridden_set_mu(self, mu):
         standard_set_mu(mu)
@@ -91,6 +92,15 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     # since (1) we do not want to define a new child class, (2) we have to execute some preprocessing
     # on the data, (3) it is a one-way propagation rather than a sync. 
     # For these reasons, the decorator @sync_setters is not used but we partially duplicate some code
+    
+    # Possibly also keep time in sync
+    if hasattr(truth_problem, "set_time"):
+        standard_set_time = truth_problem.set_time
+        def overridden_set_time(self, t):
+            standard_set_time(t)
+            if expression.t is not t:
+                expression.t = t
+        truth_problem.set_time = types.MethodType(overridden_set_time, truth_problem)
     
     return expression
 
