@@ -25,7 +25,7 @@
 from math import sqrt
 from RBniCS.backends import assign, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from RBniCS.utils.decorators import Extends, override, sync_setters
+from RBniCS.utils.decorators import copy, Extends, override, sync_setters
 
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
@@ -57,6 +57,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self.Q_ic = None # integer (for problems with one component) or dict of integers (for problem with several components)
             # Time derivative of the solution, at the current time
             self._solution_dot = OnlineFunction()
+            self._solution_dot_cache = dict() # of Functions
             # Solution and output over time
             self._solution_over_time = list() # of Functions
             self._solution_dot_over_time = list() # of Functions
@@ -256,29 +257,41 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         @override
         def solve(self, N=None, **kwargs):
             N, kwargs = self._online_size_from_kwargs(N, **kwargs)
+            N += self.N_bc
             cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
+            self._solution = OnlineFunction(N)
+            self._solution_dot = OnlineFunction(N)
             if cache_key in self._solution_cache:
+                assert cache_key in self._solution_dot_cache
                 assert cache_key in self._solution_over_time_cache
                 assert cache_key in self._solution_dot_over_time_cache
-                self._solution = self._solution_cache[cache_key]
-                self._solution_over_time = self._solution_over_time_cache[cache_key]
-                self._solution_dot_over_time = self._solution_dot_over_time_cache[cache_key]
+                assign(self._solution, self._solution_cache[cache_key])
+                assign(self._solution_dot, self._solution_dot_cache[cache_key])
+                assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
+                assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
             else:
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
                 self._solve(N, **kwargs)
                 delattr(self, "_is_solving")
-                self._solution_cache[cache_key] = self._solution
-                self._solution_over_time_cache[cache_key] = self._solution_over_time
-                self._solution_dot_over_time_cache[cache_key] = self._solution_dot_over_time
+                self._solution_cache[cache_key] = copy(self._solution)
+                self._solution_dot_cache[cache_key] = copy(self._solution_dot)
+                self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
+                self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
             return self._solution_over_time
                 
         # Perform an online evaluation of the output
         @override
-        def output(self):
+        def compute_output(self):
+            N = self._solution.N
+            self._compute_output(N)
+            return self._output_over_time
+            
+        # Perform an online evaluation of the output. Internal method
+        @override
+        def _compute_output(self, N):
             self._output_over_time = [NotImplemented]*len(self._solution_over_time)
             self._output = NotImplemented
-            return self._output
         
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class

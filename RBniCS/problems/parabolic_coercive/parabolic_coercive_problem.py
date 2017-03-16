@@ -58,7 +58,7 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
     
     ## Perform a truth solve
     @override
-    def solve(self, **kwargs):
+    def _solve(self, **kwargs):
         # Functions required by the TimeStepping interface
         def residual_eval(t, solution, solution_dot):
             self.set_time(t)
@@ -97,7 +97,6 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
         (_, self._solution_over_time, self._solution_dot_over_time) = solver.solve()
         assign(self._solution, self._solution_over_time[-1])
         assign(self._solution_dot, self._solution_dot_over_time[-1])
-        return self._solution_over_time
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

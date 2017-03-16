@@ -100,7 +100,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveRBReduction_Base):
     def _greedy(self):
         def solve_and_estimate_error(mu, index):
             self.reduced_problem.set_mu(mu)
-            self.reduced_problem._solve(self.reduced_problem.N)
+            self.reduced_problem.solve(self.reduced_problem.N)
             return self.reduced_problem.estimate_error()
             
         return self.training_set.max(solve_and_estimate_error)

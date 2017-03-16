@@ -276,7 +276,7 @@ online_mu = (1.7, 1.5)
 reduced_stokes_optimal_control.set_mu(online_mu)
 reduced_stokes_optimal_control.solve()
 reduced_stokes_optimal_control.export_solution("StokesOptimalControl", "online_solution")
-print "Reduced output for mu =", online_mu, "is", reduced_stokes_optimal_control.output()
+print "Reduced output for mu =", online_mu, "is", reduced_stokes_optimal_control.compute_output()
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100)

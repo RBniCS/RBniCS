@@ -68,7 +68,7 @@ def expression_on_truth_mesh(expression_wrapper):
     for (truth_problem, truth_solution) in truth_problem_to_truth_solution.iteritems():
         truth_problem.set_mu(EIM_approximation.mu)
         assert not hasattr(truth_problem, "_is_solving")
-        truth_problem.solve()
+        assign(truth_solution, truth_problem.solve())
         
     # Solve reduced problems associated to nonlinear terms
     for (reduced_problem, truth_solution) in reduced_problem_to_truth_solution.iteritems():

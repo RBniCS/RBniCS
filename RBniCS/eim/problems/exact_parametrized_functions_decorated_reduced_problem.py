@@ -172,9 +172,9 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 # Override to make sure that self.truth_problem._solution is backed up and restore
                 # after the reduced solve
                 @override
-                def _solve(self, N, **kwargs):
+                def solve(self, N, **kwargs):
                     bak_truth_solution = copy(self.truth_problem._solution)
-                    reduced_solution = ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
+                    reduced_solution = ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
                     assign(self.truth_problem._solution, bak_truth_solution)
                     return reduced_solution
                     
@@ -236,7 +236,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             
         # Perform an online solve (internal)
         @override
-        def _solve(self, N, **kwargs):
+        def solve(self, N, **kwargs):
             # The offline/online separation does not hold anymore, so at the reduced-order level 
             # we need to re-assemble operators, because the assemble_operator() *may* return 
             # parameter dependent operators.
@@ -246,7 +246,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 # Avoid useless assemblies
                 self._solve__previous_mu = self.mu
                 self._solve__previous_self_N = self.N
-            return ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
+            return ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
     
         #  @}
         ########################### end - ONLINE STAGE - end ########################### 

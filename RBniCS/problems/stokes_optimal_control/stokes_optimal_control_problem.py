@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems.base import ParametrizedDifferentialProblem
-from RBniCS.backends import AffineExpansionStorage, Function, LinearSolver, product, sum, transpose
+from RBniCS.backends import Function, LinearSolver, product, sum, transpose
 from RBniCS.utils.decorators import Extends, override
 
 @Extends(ParametrizedDifferentialProblem)
@@ -97,7 +97,7 @@ class StokesOptimalControlProblem(ParametrizedDifferentialProblem):
         
     ## Perform a truth solve
     @override
-    def solve(self, **kwargs):
+    def _solve(self, **kwargs):
         assembled_operator = dict()
         for term in ("a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "l"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
@@ -127,7 +127,6 @@ class StokesOptimalControlProblem(ParametrizedDifferentialProblem):
             assembled_dirichlet_bc
         )
         solver.solve()
-        return self._solution
         
     def solve_state_supremizer(self):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
@@ -167,7 +166,7 @@ class StokesOptimalControlProblem(ParametrizedDifferentialProblem):
         
     ## Perform a truth evaluation of the cost functional
     @override
-    def output(self):
+    def _compute_output(self):
         assembled_operator = dict()
         for term in ("m", "n", "g", "h"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
@@ -177,7 +176,6 @@ class StokesOptimalControlProblem(ParametrizedDifferentialProblem):
             transpose(assembled_operator["g"])*self._solution + 
             0.5*assembled_operator["h"]
         )
-        return self._output
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

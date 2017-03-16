@@ -58,7 +58,6 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
     
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
-        N += self.N_bc
         assembled_operator = dict()
         assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
         assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
@@ -66,18 +65,14 @@ class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
             theta_bc = self.compute_theta("dirichlet_bc")
         else:
             theta_bc = None
-        self._solution = OnlineFunction(N)
         solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
         solver.solve()
-        return self._solution
         
     # Perform an online evaluation of the (compliant) output
     @override
-    def output(self):
-        N = self._solution.N
+    def _compute_output(self, N):
         assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
         self._output = transpose(assembled_output_operator)*self._solution
-        return self._output
         
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 

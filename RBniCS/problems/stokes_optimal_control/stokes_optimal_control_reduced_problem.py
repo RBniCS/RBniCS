@@ -60,7 +60,6 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
         
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
-        N += self.N_bc
         assembled_operator = dict()
         for term in ("a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "l"):
             assert self.terms_order[term] in (1, 2)
@@ -77,7 +76,6 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
         assert self.dirichlet_bc["u"] is False, "Control should not be constrained by Dirichlet BCs"
         if len(theta_bc) == 0:
             theta_bc = None
-        self._solution = OnlineFunction(N)
         solver = LinearSolver(
             (
                   assembled_operator["m"]                                                      + assembled_operator["a*"] + assembled_operator["bt*"]
@@ -97,12 +95,10 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
             theta_bc
         )
         solver.solve()
-        return self._solution
         
     # Perform an online evaluation of the cost functional
     @override
-    def output(self):
-        N = self._solution.N
+    def _compute_output(self, N):
         assembled_operator = dict()
         for term in ("m", "n", "g", "h"):
             assert self.terms_order[term] in (0, 1, 2)
@@ -120,7 +116,6 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
             transpose(assembled_operator["g"])*self._solution + 
             0.5*assembled_operator["h"]
         )
-        return self._output
     
     # If a value of N was provided, make sure to double it when dealing with y and p, due to
     # the aggregated component approach

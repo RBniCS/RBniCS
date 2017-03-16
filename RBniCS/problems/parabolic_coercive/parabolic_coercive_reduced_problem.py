@@ -59,7 +59,6 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
         
         # Perform an online solve (internal)
         def _solve(self, N, **kwargs):
-            N += self.N_bc
             # Functions required by the TimeStepping interface
             def residual_eval(t, solution, solution_dot):
                 self.set_time(t)
@@ -88,8 +87,6 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                 else:
                     return None
             # Setup initial condition
-            self._solution = OnlineFunction(N)
-            self._solution_dot = OnlineFunction(N)
             if self.initial_condition is not None:
                 assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                 X_N = self.inner_product[:N, :N][0]
@@ -102,7 +99,6 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
             (_, self._solution_over_time, self._solution_dot_over_time) = solver.solve()
             assign(self._solution, self._solution_over_time[-1])
             assign(self._solution_dot, self._solution_dot_over_time[-1])
-            return self._solution_over_time
             
         #  @}
         ########################### end - ONLINE STAGE - end ########################### 

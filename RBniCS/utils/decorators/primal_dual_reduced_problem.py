@@ -42,9 +42,9 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
 
         # Perform an online solve. Overridden to also solve the dual problem for output correction and error estimation.
         @override
-        def _solve(self, N, **kwargs):
+        def solve(self, N, **kwargs):
             # Solve primal problem
-            primal_solution = ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
+            primal_solution = ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
             # Defer dual problem solve to output() method, since (i) reduced dual problem has not been built yet during the
             # primal offline stage, (ii) in any case dual solution is only required when computing output and its error estimation
             if "dual" in kwargs:
@@ -52,18 +52,18 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             else:
                 self._dual_solve_latest_N = min(N, self.dual_reduced_problem.N)
             self._dual_solve_latest_kwargs = kwargs
-            #
+            # Return primal solution
             return primal_solution
             
         # Perform an online evaluation of the non compliant output. Overridden to add output correction.
         @override
-        def output(self):
+        def compute_output(self):
             # Solve dual problem for output correction and its error estimation
             self.dual_reduced_problem.solve(self._dual_solve_latest_N, **self._dual_solve_latest_kwargs)
             # Compute primal output ...
-            primal_output = ParametrizedReducedDifferentialProblem_DerivedClass.output(self)
+            primal_output = ParametrizedReducedDifferentialProblem_DerivedClass.compute_output(self)
             # ... and also dual output for output correction ...
-            dual_output = self.dual_reduced_problem.output()
+            dual_output = self.dual_reduced_problem.compute_output()
             # ... and sum the results
             self._output = primal_output - dual_output
             return self._output

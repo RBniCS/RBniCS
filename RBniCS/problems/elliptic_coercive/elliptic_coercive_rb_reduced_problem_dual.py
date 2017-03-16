@@ -84,16 +84,14 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem):
         
     # Perform an online evaluation of the output correction
     @override
-    def output(self):
+    def _compute_output(self, dual_N):
         primal_solution = self.primal_reduced_problem._solution
         primal_N = primal_solution.N
         dual_solution = self._solution
-        dual_N = dual_solution.N
         assembled_output_correction_and_estimation_operator = dict()
         assembled_output_correction_and_estimation_operator["a"] = sum(product(self.primal_reduced_problem.compute_theta("a"), self.output_correction_and_estimation["a"][:dual_N, :primal_N]))
         assembled_output_correction_and_estimation_operator["f"] = sum(product(self.primal_reduced_problem.compute_theta("f"), self.output_correction_and_estimation["f"][:dual_N]))
         self._output = transpose(dual_solution)*assembled_output_correction_and_estimation_operator["f"] - transpose(dual_solution)*assembled_output_correction_and_estimation_operator["a"]*primal_solution
-        return self._output
             
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 

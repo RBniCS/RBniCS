@@ -36,11 +36,9 @@ class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBReducedProb
     
     # Perform an online evaluation of the non compliant output
     @override
-    def output(self):
-        N = self._solution.N
+    def _compute_output(self, N):
         assembled_output_operator = sum(product(self.compute_theta("s"), self.operator["s"][:N]))
         self._output = transpose(assembled_output_operator)*self._solution
-        return self._output
         
     ## Compute the Riesz representation of term
     @override

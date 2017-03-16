@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems.base import ParametrizedDifferentialProblem
-from RBniCS.backends import AffineExpansionStorage, Function, LinearSolver, product, sum, transpose
+from RBniCS.backends import Function, LinearSolver, product, sum, transpose
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -84,7 +84,7 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
         
     ## Perform a truth solve
     @override
-    def solve(self, **kwargs):
+    def _solve(self, **kwargs):
         assembled_operator = dict()
         for term in self.terms:
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
@@ -110,11 +110,10 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
             assembled_dirichlet_bc
         )
         solver.solve()
-        return self._solution
         
     ## Perform a truth evaluation of the cost functional
     @override
-    def output(self):
+    def _compute_output(self):
         assembled_operator = dict()
         for term in ("m", "n", "g", "h"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
@@ -124,7 +123,6 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
             transpose(assembled_operator["g"])*self._solution + 
             0.5*assembled_operator["h"]
         )
-        return self._output
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

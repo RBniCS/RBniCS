@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.problems.base import ParametrizedDifferentialProblem
-from RBniCS.backends import AffineExpansionStorage, Function, LinearSolver, product, sum, transpose
+from RBniCS.backends import Function, LinearSolver, product, sum, transpose
 from RBniCS.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -68,7 +68,7 @@ class StokesProblem(ParametrizedDifferentialProblem):
         
     ## Perform a truth solve
     @override
-    def solve(self, **kwargs):
+    def _solve(self, **kwargs):
         assembled_operator = dict()
         for term in ("a", "b", "bt", "f", "g"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
@@ -85,7 +85,6 @@ class StokesProblem(ParametrizedDifferentialProblem):
             assembled_dirichlet_bc
         )
         solver.solve()
-        return self._solution
     
     def solve_supremizer(self):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix

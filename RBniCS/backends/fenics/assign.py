@@ -28,6 +28,7 @@ from RBniCS.utils.decorators import backend_for
 
 @backend_for("fenics", inputs=(Function.Type(), Function.Type()))
 def assign(function_to, function_from):
-    dolfin_assign(function_to, function_from)
+    if function_from is not function_to:
+        dolfin_assign(function_to, function_from)
         
         

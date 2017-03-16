@@ -27,6 +27,7 @@ from RBniCS.utils.decorators import backend_for
 
 @backend_for("numpy", inputs=(Function.Type(), Function.Type()))
 def assign(function_to, function_from):
-    assert function_to.vector().N == function_from.vector().N
-    function_to.vector()[:] = function_from.vector()
+    if function_from is not function_to:
+        assert function_to.vector().N == function_from.vector().N
+        function_to.vector()[:] = function_from.vector()
         

@@ -25,7 +25,7 @@
 from abc import ABCMeta, abstractmethod
 import types
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
-from RBniCS.backends import AffineExpansionStorage, export, Function
+from RBniCS.backends import AffineExpansionStorage, copy, export, Function
 from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromSolutionToProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -63,6 +63,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         self.dirichlet_bc_are_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
         # Solution
         self._solution = Function(self.V)
+        self._solution_cache = dict() # of Functions
         self._output = 0
         
     #  @}
@@ -148,16 +149,44 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             else:
                 self.dirichlet_bc = dirichlet_bc
                 self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous
-                    
+    
     ## Perform a truth solve
     @abstractmethod
     def solve(self, **kwargs):
-        raise NotImplementedError("The method solve() is problem-specific and needs to be overridden.")
+        cache_key = self._cache_key_from_kwargs(**kwargs)
+        if cache_key in self._solution_cache:
+            assign(self._solution, self._solution_cache[cache_key])
+        else:
+            assert not hasattr(self, "_is_solving")
+            self._is_solving = True
+            self._solve(**kwargs)
+            delattr(self, "_is_solving")
+            self._solution_cache[cache_key] = copy(self._solution)
+        return self._solution
+    
+    ## Perform a truth solve. Internal method.
+    @abstractmethod
+    def _solve(self, **kwargs):
+        raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
         
     ## Perform a truth evaluation of the output
-    def output(self):
-        self._output = NotImplemented
+    def compute_output(self):
+        self._compute_output()
         return self._output
+        
+    ## Perform a truth evaluation of the output. Internal method.
+    def _compute_output(self):
+        self._output = NotImplemented
+        
+    def _cache_key_from_kwargs(self, **kwargs):
+        for blacklist in ("components", "inner_product"):
+            if blacklist in kwargs:
+                del kwargs[blacklist]
+        if isinstance(N, dict):
+            return (self.mu, tuple(sorted(kwargs.items())))
+        else:
+            assert isinstance(N, int)
+            return (self.mu, tuple(sorted(kwargs.items())))
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

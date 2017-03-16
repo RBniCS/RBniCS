@@ -105,7 +105,7 @@ class EllipticCoerciveProblem(ParametrizedDifferentialProblem):
     
     ## Perform a truth solve
     @override
-    def solve(self, **kwargs):
+    def _solve(self, **kwargs):
         assembled_operator = dict()
         assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"]))
         assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"]))
@@ -115,14 +115,12 @@ class EllipticCoerciveProblem(ParametrizedDifferentialProblem):
             assembled_dirichlet_bc = None
         solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"], assembled_dirichlet_bc)
         solver.solve()
-        return self._solution
-        
+                
     ## Perform a truth evaluation of the (compliant) output
     @override
-    def output(self):
+    def _compute_output(self):
         assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"]))
         self._output = transpose(assembled_output_operator)*self._solution
-        return self._output
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

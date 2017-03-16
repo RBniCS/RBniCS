@@ -54,7 +54,7 @@ class NonlinearEllipticProblem(EllipticCoerciveProblem):
             
     ## Perform a truth solve.
     @override
-    def solve(self, **kwargs):
+    def _solve(self, **kwargs):
         # Functions required by the NonlinearSolver interface
         def residual_eval(solution):
             self._store_solution(solution)
@@ -75,7 +75,6 @@ class NonlinearEllipticProblem(EllipticCoerciveProblem):
         solver = NonlinearSolver(jacobian_eval, self._solution, residual_eval, bc_eval())
         solver.set_parameters(self._nonlinear_solver_parameters)
         solver.solve()
-        return self._solution
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

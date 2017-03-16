@@ -38,11 +38,11 @@ def _problem_is_noncompliant(truth_problem, **kwargs):
         truth_problem.terms.append("s")
         truth_problem.terms_order["s"] = 1
         # Change the computation of the output to use "s"
-        def output(self_):
+        def _compute_output(self_):
             assembled_output_operator = sum(product(self_.compute_theta("s"), self_.operator["s"]))
             self_._output = transpose(assembled_output_operator)*self_._solution
             return self_._output
-        truth_problem.output = types.MethodType(output, truth_problem)
+        truth_problem._compute_output = types.MethodType(_compute_output, truth_problem)
         #
         return True
 

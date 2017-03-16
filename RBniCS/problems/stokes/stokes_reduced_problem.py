@@ -64,7 +64,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
             
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
-        N += self.N_bc
         assembled_operator = dict()
         for term in ("a", "b", "bt", "f", "g"):
             assert self.terms_order[term] in (1, 2)
@@ -80,7 +79,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
                 theta_bc[component] = self.compute_theta("dirichlet_bc_" + component)
         if len(theta_bc) == 0:
             theta_bc = None
-        self._solution = OnlineFunction(N)
         solver = LinearSolver(
             assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"],
             self._solution,
@@ -88,7 +86,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
             theta_bc
         )
         solver.solve()
-        return self._solution
         
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 

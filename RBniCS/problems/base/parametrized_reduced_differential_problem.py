@@ -31,7 +31,7 @@ from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.backends import BasisFunctionsMatrix, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.sampling import ParameterSpaceSubset
-from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
+from RBniCS.utils.decorators import copy, Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
 from RBniCS.utils.mpi import print
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -226,15 +226,17 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     @override
     def solve(self, N=None, **kwargs):
         N, kwargs = self._online_size_from_kwargs(N, **kwargs)
+        N += self.N_bc
         cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
+        self._solution = OnlineFunction(N)
         if cache_key in self._solution_cache:
-            self._solution = self._solution_cache[cache_key]
+            assign(self._solution, self._solution_cache[cache_key])
         else:
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             self._solve(N, **kwargs)
             delattr(self, "_is_solving")
-            self._solution_cache[cache_key] = self._solution
+            self._solution_cache[cache_key] = copy(self._solution)
         return self._solution
         
     # Perform an online solve. Internal method
@@ -243,9 +245,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
     
     # Perform an online evaluation of the output
-    def output(self):
-        self._output = NotImplemented
+    def compute_output(self):
+        N = self._solution.N
+        self._compute_output(N)
         return self._output
+        
+    # Perform an online evaluation of the output. Internal method
+    def _compute_output(self, N):
+        self._output = NotImplemented
         
     def _online_size_from_kwargs(self, N, **kwargs):
         class OnlineSizeDict(dict):
@@ -320,6 +327,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         return N, kwargs
         
     def _cache_key_from_N_and_kwargs(self, N, **kwargs):
+        for blacklist in ("components", "inner_product"):
+            if blacklist in kwargs:
+                del kwargs[blacklist]
         if isinstance(N, dict):
             return (self.mu, tuple(sorted(N.items())), tuple(sorted(kwargs.items())))
         else:
@@ -385,7 +395,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def compute_error(self, N=None, **kwargs):
         if self._compute_error__previous_mu != self.mu:
             self.truth_problem.solve(**kwargs)
-            self.truth_problem.output()
+            self.truth_problem.compute_output()
             # Do not carry out truth solves anymore for the same parameter
             self._compute_error__previous_mu = self.mu
         # Compute the error on the solution
@@ -471,12 +481,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             # Do not carry out truth solves anymore for the same parameter
             self._compute_error__previous_mu = self.mu
         if self._compute_error_output__previous_mu != self.mu:
-            self.truth_problem.output()
+            self.truth_problem.compute_output()
             # Do not carry out truth solves anymore for the same parameter
             self._compute_error_output__previous_mu = self.mu
         # Compute the error on the output
         self.solve(N, **kwargs)
-        self.output()
+        self.compute_output()
         return self._compute_error_output(**kwargs)
                 
     # Internal method for output error computation
@@ -627,6 +637,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                     for i in range(Q_dirichlet_bcs):
                         def modified_compute_theta(self, term_):
                             if term_ == term:
+                                theta_bc = standard_compute_theta(term_)
                                 modified_theta_bc = list()
                                 for j in range(Q_dirichlet_bcs):
                                     if j != i:

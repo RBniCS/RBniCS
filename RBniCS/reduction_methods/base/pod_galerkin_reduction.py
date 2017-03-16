@@ -252,7 +252,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 elapsed_truth_solve = truth_timer.stop()
                 
                 truth_timer.start()
-                self.truth_problem.output()
+                self.truth_problem.compute_output()
                 elapsed_truth_output = truth_timer.stop()
                 
                 for n in range(1, N + 1): # n = 1, ... N
@@ -261,7 +261,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     elapsed_reduced_solve = reduced_timer.stop()
                     
                     reduced_timer.start()
-                    self.reduced_problem.output()
+                    self.reduced_problem.compute_output()
                     elapsed_reduced_output = reduced_timer.stop()
                     
                     speedup_analysis_table["speedup_solve", n, run] = elapsed_truth_solve/elapsed_reduced_solve
