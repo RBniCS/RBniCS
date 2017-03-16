@@ -43,6 +43,7 @@ from RBniCS.utils.decorators.reduction_method_for import ReductionMethodFor
 from RBniCS.utils.decorators.regenerate_reduced_problem_from_exact_reduced_problem import regenerate_reduced_problem_from_exact_reduced_problem
 from RBniCS.utils.decorators.store_map_from_problem_name_to_problem import add_to_map_from_problem_name_to_problem, get_problem_from_problem_name, StoreMapFromProblemNameToProblem
 from RBniCS.utils.decorators.store_map_from_problem_to_reduced_problem import add_to_map_from_problem_to_reduced_problem, get_reduced_problem_from_problem, StoreMapFromProblemToReducedProblem
+from RBniCS.utils.decorators.store_map_from_problem_to_training_status import is_training_finished, set_map_from_problem_to_training_status_on, set_map_from_problem_to_training_status_off, StoreMapFromProblemToTrainingStatus
 from RBniCS.utils.decorators.store_map_from_solution_to_problem import add_to_map_from_solution_to_problem, get_problem_from_solution, is_problem_solution, StoreMapFromSolutionToProblem
 from RBniCS.utils.decorators.sync_setters import sync_setters
 
@@ -71,6 +72,7 @@ __all__ = [
     'get_problem_from_solution',
     'get_reduced_problem_from_problem',
     'is_problem_solution',
+    'is_training_finished',
     'list_of',
     'MultiLevelReducedProblem',
     'MultiLevelReductionMethod',
@@ -88,8 +90,11 @@ __all__ = [
     'regenerate_reduced_problem_from_exact_reduced_problem',
     'SameBackendFor',
     'same_backend_for',
+    'set_map_from_problem_to_training_status_on',
+    'set_map_from_problem_to_training_status_off',
     'StoreMapFromProblemNameToProblem',
     'StoreMapFromProblemToReducedProblem',
+    'StoreMapFromProblemToTrainingStatus',
     'StoreMapFromSolutionToProblem',
     'sync_setters',
     'ThetaType',

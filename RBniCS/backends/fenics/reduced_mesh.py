@@ -32,7 +32,7 @@ from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_proble
 from RBniCS.utils.io import ExportableList, Folders
 from RBniCS.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
-from RBniCS.backends.fenics.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, evaluate_basis_functions_matrix_at_dofs, mesh_dofs_to_submesh_dofs
+from RBniCS.backends.fenics.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, evaluate_basis_functions_matrix_at_dofs, evaluate_sparse_function_at_dofs, mesh_dofs_to_submesh_dofs
 
 @Extends(AbstractReducedMesh)
 @BackendFor("fenics", inputs=(FunctionSpace, ))
@@ -116,6 +116,10 @@ class ReducedMesh(AbstractReducedMesh):
         self._auxiliary_basis_functions_matrix = dict() # from (problem, N) to BasisFunctionsMatrix
         if copy_from is not None:
             self._auxiliary_basis_functions_matrix = copy_from._auxiliary_basis_functions_matrix
+        # Auxiliary function interpolator
+        self._auxiliary_function_interpolator = dict() # from (problem, N) to function
+        if copy_from is not None:
+            self._auxiliary_function_interpolator = copy_from._auxiliary_function_interpolator
         # Prepare storage for helper mapping needed for I/O
         self._auxiliary_dofs__dof_map_writer_mapping = dict() # from problem
         self._auxiliary_dofs__dof_map_reader_mapping = dict() # from problem
@@ -594,6 +598,17 @@ class ReducedMesh(AbstractReducedMesh):
             # Save to file
             self._save_auxiliary_basis_functions_matrix(key)
         return self._auxiliary_basis_functions_matrix[key]
+        
+    def get_auxiliary_function_interpolator(self, auxiliary_problem, index=None):
+        index = self._get_dict_index(index)
+        key = (auxiliary_problem, index)
+        if not key in self._auxiliary_function_interpolator:
+            auxiliary_reduced_V = self.get_auxiliary_reduced_function_space(auxiliary_problem, index)
+            self._auxiliary_function_interpolator = lambda fun: evaluate_sparse_function_at_dofs(
+                fun, self._auxiliary_dofs_to_reduced_dofs[key].keys(), 
+                auxiliary_reduced_V, self._auxiliary_dofs_to_reduced_dofs[key].values()
+            )
+        return self._auxiliary_function_interpolator[key]
         
     def _get_dict_index(self, index):
         self._assert_dict_lengths()

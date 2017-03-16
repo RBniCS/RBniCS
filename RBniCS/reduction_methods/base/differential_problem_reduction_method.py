@@ -24,7 +24,7 @@
 
 from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
 from RBniCS.utils.io import Folders
-from RBniCS.utils.decorators import Extends, override
+from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemToTrainingStatus
 from RBniCS.utils.factories import ReducedProblemFactory
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -33,6 +33,7 @@ from RBniCS.utils.factories import ReducedProblemFactory
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 @Extends(ReductionMethod) # needs to be first in order to override for last the methods.
+@StoreMapFromProblemToTrainingStatus
 class DifferentialProblemReductionMethod(ReductionMethod):
     
     ###########################     CONSTRUCTORS     ########################### 

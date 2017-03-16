@@ -28,7 +28,7 @@ from ufl.corealg.traversal import traverse_unique_terminals
 from ufl.geometry import GeometricQuantity
 from dolfin import Argument, assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
-from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution
+from RBniCS.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, is_training_finished
 from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
 def form_on_reduced_function_space(form_wrapper, at):
@@ -39,6 +39,8 @@ def form_on_reduced_function_space(form_wrapper, at):
     
     if (form, reduced_V) not in form_on_reduced_function_space__form_cache:
         replacements = dict()
+        truth_problem_to_reduced_mesh_solution = dict()
+        truth_problem_to_reduced_mesh_interpolator = dict()
         reduced_problem_to_reduced_mesh_solution = dict()
         reduced_problem_to_reduced_Z = dict()
         
@@ -55,14 +57,23 @@ def form_on_reduced_function_space(form_wrapper, at):
                     # ... problem solutions related to nonlinear terms
                     elif isinstance(node, Function) and is_problem_solution(node):
                         truth_problem = get_problem_from_solution(node)
-                        reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                        # Get the function space corresponding to node on the reduced mesh
-                        auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem)
-                        # Define a replacement
-                        replacements[node] = Function(auxiliary_reduced_V)
-                        reduced_problem_to_reduced_mesh_solution[reduced_problem] = replacements[node]
-                        # Get reduced problem basis functions on reduced mesh
-                        reduced_problem_to_reduced_Z[reduced_problem] = at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem)
+                        if is_training_finished(truth_problem):
+                            reduced_problem = get_reduced_problem_from_problem(truth_problem)
+                            # Get the function space corresponding to node on the reduced mesh
+                            auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem)
+                            # Define a replacement
+                            replacements[node] = Function(auxiliary_reduced_V)
+                            reduced_problem_to_reduced_mesh_solution[reduced_problem] = replacements[node]
+                            # Get reduced problem basis functions on reduced mesh
+                            reduced_problem_to_reduced_Z[reduced_problem] = at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem)
+                        else:
+                            exact_truth_problem = exact_problem(truth_problem, preserve_class_name=True)
+                            exact_truth_problem.init()
+                            # Define a replacement
+                            replacements[node] = Function(auxiliary_reduced_V)
+                            truth_problem_to_reduced_mesh_solution[exact_truth_problem] = replacements[node]
+                            # Get interpolator on reduced mesh
+                            truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = at.get_auxiliary_function_interpolator(exact_truth_problem)
                     # ... geometric quantities
                     elif isinstance(node, GeometricQuantity):
                         if len(reduced_V) == 2:
@@ -94,15 +105,29 @@ def form_on_reduced_function_space(form_wrapper, at):
         
         # Cache the resulting dicts
         form_on_reduced_function_space__form_cache[(form, reduced_V)] = replaced_form_with_replaced_measures
+        form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache[(form, reduced_V)] = truth_problem_to_reduced_mesh_solution
+        form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache[(form, reduced_V)] = truth_problem_to_reduced_mesh_interpolator
         form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache[(form, reduced_V)] = reduced_problem_to_reduced_mesh_solution
         form_on_reduced_function_space__reduced_problem_to_reduced_Z_cache[(form, reduced_V)] = reduced_problem_to_reduced_Z
         
     # Extract from cache
     replaced_form_with_replaced_measures = form_on_reduced_function_space__form_cache[(form, reduced_V)]
+    truth_problem_to_reduced_mesh_solution = form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache[(form, reduced_V)]
+    truth_problem_to_reduced_mesh_interpolator = form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache[(form, reduced_V)]
     reduced_problem_to_reduced_mesh_solution = form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache[(form, reduced_V)]
     reduced_problem_to_reduced_Z = form_on_reduced_function_space__reduced_problem_to_reduced_Z_cache[(form, reduced_V)]
     
-    # Solve reduced problem associated to nonlinear terms
+    # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
+    for (truth_problem, reduced_mesh_solution) in reduced_problem_to_reduced_mesh_solution.iteritems():
+        truth_problem.set_mu(EIM_approximation.mu)
+        if not hasattr(truth_problem, "_is_solving"):
+            truth_solution = truth_problem.solve()
+        else:
+            truth_solution = truth_problem._solution
+        reduced_mesh_interpolator = truth_problem_to_reduced_mesh_interpolator[truth_problem]
+        assign(reduced_mesh_solution, reduced_mesh_interpolator(truth_solution))
+    
+    # Solve reduced problems associated to nonlinear terms
     for (reduced_problem, reduced_mesh_solution) in reduced_problem_to_reduced_mesh_solution.iteritems():
         reduced_problem.set_mu(EIM_approximation.mu)
         if not hasattr(reduced_problem, "_is_solving"):
@@ -115,5 +140,7 @@ def form_on_reduced_function_space(form_wrapper, at):
     return replaced_form_with_replaced_measures
     
 form_on_reduced_function_space__form_cache = dict()
+form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache = dict()
+form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache = dict()
 form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache = dict()
 form_on_reduced_function_space__reduced_problem_to_reduced_Z_cache = dict()

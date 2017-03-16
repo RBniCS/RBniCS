@@ -26,7 +26,7 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
-from RBniCS.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution
+from RBniCS.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, is_training_finished
 from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
 def form_on_truth_function_space(form_wrapper):
@@ -35,7 +35,8 @@ def form_on_truth_function_space(form_wrapper):
     
     if form not in form_on_truth_function_space__reduced_problem_to_truth_solution_cache:
         visited = list()
-        reduced_problem_to_truth_solution = dict()
+        truth_problem_to_truth_solution = dict() # from truth problem to solution
+        reduced_problem_to_truth_solution = dict() # from reduced problem to solution
         
         # Look for terminals on truth mesh
         for integral in form.integrals():
@@ -47,17 +48,30 @@ def form_on_truth_function_space(form_wrapper):
                     # ... problem solutions related to nonlinear terms
                     elif isinstance(node, Function) and is_problem_solution(node):
                         truth_problem = get_problem_from_solution(node)
-                        reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                        reduced_problem_to_truth_solution[reduced_problem] = node
+                        if is_training_finished(truth_problem):
+                            reduced_problem = get_reduced_problem_from_problem(truth_problem)
+                            reduced_problem_to_truth_solution[reduced_problem] = node
+                        else:
+                            exact_truth_problem = exact_problem(truth_problem, preserve_class_name=True)
+                            exact_truth_problem.init()
+                            truth_problem_to_truth_solution[exact_truth_problem] = node
                         visited.append(node)
         
         # Cache the resulting dicts
+        form_on_truth_function_space__truth_problem_to_truth_solution_cache[form] = truth_problem_to_truth_solution
         form_on_truth_function_space__reduced_problem_to_truth_solution_cache[form] = reduced_problem_to_truth_solution
         
     # Extract from cache
+    truth_problem_to_truth_solution = form_on_truth_function_space__truth_problem_to_truth_solution_cache[form]
     reduced_problem_to_truth_solution = form_on_truth_function_space__reduced_problem_to_truth_solution_cache[form]
-        
-    # Solve reduced problem associated to nonlinear terms
+    
+    # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
+    for (truth_problem, truth_solution) in truth_problem_to_truth_solution.iteritems():
+        truth_problem.set_mu(EIM_approximation.mu)
+        assert not hasattr(truth_problem, "_is_solving")
+        truth_problem.solve()
+    
+    # Solve reduced problems associated to nonlinear terms
     for (reduced_problem, truth_solution) in reduced_problem_to_truth_solution.iteritems():
         reduced_problem.set_mu(EIM_approximation.mu)
         assert not hasattr(reduced_problem, "_is_solving")
@@ -66,4 +80,5 @@ def form_on_truth_function_space(form_wrapper):
     
     return form
     
+form_on_truth_function_space__truth_problem_to_truth_solution_cache = dict()
 form_on_truth_function_space__reduced_problem_to_truth_solution_cache = dict()
