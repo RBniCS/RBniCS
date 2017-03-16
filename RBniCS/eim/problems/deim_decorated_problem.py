@@ -30,6 +30,7 @@ from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEI
 
 def DEIMDecoratedProblem(
     basis_generation="POD",
+    train_first="DEIM",
     **decorator_kwargs
 ):
     from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
@@ -52,6 +53,8 @@ def DEIMDecoratedProblem(
                 
                 # Store value of N_DEIM passed to solve
                 self._N_DEIM = None
+                # Store value passed to decorator
+                self._train_first = train_first
                 
                 # Avoid useless assignments
                 self._update_N_DEIM__previous_kwargs = None
@@ -69,7 +72,7 @@ def DEIMDecoratedProblem(
                     self.DEIM_approximations[term] = dict()
                     self.non_DEIM_forms[term] = dict()
                     for (q, form_q) in enumerate(forms):
-                        factory_form_q = ParametrizedTensorFactory(self, form_q)
+                        factory_form_q = ParametrizedTensorFactory(form_q)
                         if factory_form_q.is_parametrized():
                             if factory_form_q.is_time_dependent():
                                 DEIMApproximationType = TimeDependentDEIMApproximation

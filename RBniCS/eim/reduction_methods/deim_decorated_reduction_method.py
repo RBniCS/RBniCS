@@ -51,6 +51,10 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                     else:
                         DEIMApproximationReductionMethodType = DEIMApproximationReductionMethod
                     self.DEIM_reductions[term][q] = DEIMApproximationReductionMethodType(DEIM_approximations_term_q)
+                    
+            # Retrieve value passed to decorator
+            self._train_first = truth_problem._train_first
+            del truth_problem._train_first
             
         ###########################     SETTERS     ########################### 
         ## @defgroup Setters Set properties of the reduced order approximation
@@ -120,17 +124,11 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         ## @defgroup OfflineStage Methods related to the offline stage
         #  @{
         
-        def _is_nonlinear(self):
-            is_nonlinear = False
-            for (term, DEIM_approximations_term) in self.truth_problem.DEIM_approximations.iteritems():
-                for (_, DEIM_approximation_term_q) in DEIM_approximations_term.iteritems():
-                    is_nonlinear = is_nonlinear or DEIM_approximation_term_q.parametrized_expression.is_nonlinear()
-            return is_nonlinear
-        
         ## Perform the offline phase of the reduced order model
         @override
         def offline(self):
-            if not self._is_nonlinear():
+            assert self._train_first in ("DEIM", "Problem")
+            if self._train_first == "DEIM":
                 # Perform first the DEIM offline phase, ...
                 bak_first_mu = tuple(list(self.truth_problem.mu))
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():

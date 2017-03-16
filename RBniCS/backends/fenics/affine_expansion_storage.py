@@ -53,7 +53,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 all_is_Tensor.append(self._is_Tensor(args[i]))
                 assert all_is_Form[i] or all_is_Tensor[i]
                 if all_is_Form[i]:
-                    all_is_parametrized.append(ParametrizedTensorFactory(None, args[i]).is_parametrized())
+                    all_is_parametrized.append(ParametrizedTensorFactory(args[i]).is_parametrized())
                 else:
                     all_is_parametrized.append(False)
             elif is_DirichletBC:

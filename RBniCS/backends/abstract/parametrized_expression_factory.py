@@ -26,7 +26,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ParametrizedExpressionFactory(object):
-    def __init__(self, truth_problem, expression):
+    def __init__(self, expression):
         pass
     
     @abstractmethod
@@ -58,10 +58,6 @@ class ParametrizedExpressionFactory(object):
     
     @abstractmethod
     def is_parametrized(self):
-        pass
-        
-    @abstractmethod
-    def is_nonlinear(self):
         pass
         
     @abstractmethod

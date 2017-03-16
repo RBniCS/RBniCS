@@ -49,6 +49,10 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 else:
                     EIMApproximationReductionMethodType = EIMApproximationReductionMethod
                 self.EIM_reductions[coeff] = EIMApproximationReductionMethod(EIM_approximation_coeff)
+                
+            # Retrieve value passed to decorator
+            self._train_first = truth_problem._train_first
+            del truth_problem._train_first
             
         ###########################     SETTERS     ########################### 
         ## @defgroup Setters Set properties of the reduced order approximation
@@ -120,17 +124,12 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         ###########################     OFFLINE STAGE     ########################### 
         ## @defgroup OfflineStage Methods related to the offline stage
         #  @{
-        
-        def _is_nonlinear(self):
-            is_nonlinear = False
-            for (coeff, EIM_approximation_coeff) in self.truth_problem.EIM_approximations.iteritems():
-                is_nonlinear = is_nonlinear or EIM_approximation_coeff.parametrized_expression.is_nonlinear()
-            return is_nonlinear
             
         ## Perform the offline phase of the reduced order model
         @override
         def offline(self):
-            if not self._is_nonlinear():
+            assert self._train_first in ("EIM", "Problem")
+            if self._train_first == "EIM":
                 # Perform first the EIM offline phase, ...
                 bak_first_mu = tuple(list(self.truth_problem.mu))
                 for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():

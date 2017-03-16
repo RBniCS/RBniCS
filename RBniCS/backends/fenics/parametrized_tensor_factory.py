@@ -42,11 +42,10 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     _all_forms = dict()
     _all_forms_assembled_containers = dict()
     
-    def __init__(self, truth_problem, form):
-        AbstractParametrizedTensorFactory.__init__(self, truth_problem, form)
+    def __init__(self, form):
+        AbstractParametrizedTensorFactory.__init__(self, form)
         # Store input
         form = expand_derivatives(form)
-        self._truth_problem = truth_problem
         self._form = form
         # Compute name
         self._name = get_form_name(form)
@@ -119,25 +118,6 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
                         truth_problem = get_problem_from_solution(node)
                         return True
         return False
-        
-    @override
-    def is_nonlinear(self):
-        visited = list()
-        all_truth_problems = list()
-        
-        for integral in self._form.integrals():
-            for expression in iter_expressions(integral):
-                for node in traverse_unique_terminals(expression):
-                    node = function_from_subfunction_if_any(node)
-                    if node in visited:
-                        continue
-                    # ... problem solutions related to nonlinear terms
-                    elif isinstance(node, Function) and is_problem_solution(node):
-                        truth_problem = get_problem_from_solution(node)
-                        all_truth_problems.append(truth_problem)
-                        visited.append(node)
-                        
-        return self._truth_problem in all_truth_problems
         
     @override
     def is_time_dependent(self):

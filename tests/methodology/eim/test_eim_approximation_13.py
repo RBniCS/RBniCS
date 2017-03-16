@@ -59,18 +59,18 @@ class ParametrizedFunctionApproximation(TimeDependentEIMApproximation):
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedExpressionFactory(self.mock_time_dependent_problem, f), "test_eim_approximation_13_function.output_dir", basis_generation)
+            TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedExpressionFactory(f), "test_eim_approximation_13_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(V)
             form = f*v*dx
             # Call Parent constructor
-            TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedTensorFactory(self.mock_time_dependent_problem, form), "test_eim_approximation_13_vector.output_dir", basis_generation)
+            TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedTensorFactory(form), "test_eim_approximation_13_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(V)
             v = TestFunction(V)
             form = f*u*v*dx
             # Call Parent constructor
-            TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedTensorFactory(self.mock_time_dependent_problem, form), "test_eim_approximation_13_matrix.output_dir", basis_generation)
+            TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedTensorFactory(form), "test_eim_approximation_13_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 

@@ -31,6 +31,7 @@ from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEI
 
 def EIMDecoratedProblem(
     basis_generation="Greedy",
+    train_first="EIM",
     **decorator_kwargs
 ):
     from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
@@ -53,6 +54,8 @@ def EIMDecoratedProblem(
                 
                 # Store value of N_EIM passed to solve
                 self._N_EIM = None
+                # Store value passed to decorator
+                self._train_first = train_first
                             
                 # Avoid useless assignments
                 self._update_N_EIM__previous_kwargs = None
@@ -76,7 +79,7 @@ def EIMDecoratedProblem(
                         for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
                             for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
                                 if factor not in self.EIM_approximations:
-                                    factory_factor = ParametrizedExpressionFactory(self, factor)
+                                    factory_factor = ParametrizedExpressionFactory(factor)
                                     if factory_factor.is_time_dependent():
                                         EIMApproximationType = TimeDependentEIMApproximation
                                     else:

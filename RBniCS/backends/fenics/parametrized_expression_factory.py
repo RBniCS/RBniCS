@@ -39,9 +39,8 @@ from RBniCS.utils.mpi import parallel_max
 @Extends(AbstractParametrizedExpressionFactory)
 @BackendFor("fenics", inputs=((object, None), (Expression, Function, Operator))) # object will actually be a ParametrizedDifferentialProblem
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
-    def __init__(self, truth_problem, expression):
-        AbstractParametrizedExpressionFactory.__init__(self, truth_problem, expression)
-        self._truth_problem = truth_problem
+    def __init__(self, expression):
+        AbstractParametrizedExpressionFactory.__init__(self, expression)
         self._expression = expression
         self._name = get_expression_name(expression)
         assert isinstance(expression, (Expression, Function, Operator))
@@ -97,24 +96,6 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
                     truth_problem = get_problem_from_solution(node)
                     return True
         return False
-        
-    @override
-    def is_nonlinear(self):
-        visited = list()
-        all_truth_problems = list()
-        
-        for subexpression in iter_expressions(self._expression):
-            for node in traverse_unique_terminals(subexpression):
-                node = function_from_subfunction_if_any(node)
-                if node in visited:
-                    continue
-                # ... problem solutions related to nonlinear terms
-                elif isinstance(node, Function) and is_problem_solution(node):
-                    truth_problem = get_problem_from_solution(node)
-                    all_truth_problems.append(truth_problem)
-                    visited.append(node)
-                    
-        return self._truth_problem in all_truth_problems
         
     @override
     def is_time_dependent(self):
