@@ -28,9 +28,9 @@ from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 import RBniCS.backends.fenics.wrapping
-from RBniCS.utils.decorators import backend_for
+from RBniCS.utils.decorators import backend_for, list_of
 
-@backend_for("fenics", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), ))
+@backend_for("fenics", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), ))
 def copy(arg):
     return basic_copy(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
     

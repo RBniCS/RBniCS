@@ -246,14 +246,18 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         
         ## Export solution to file
         @override
-        def export_solution(self, folder, filename, solution_over_time=None, component=None):
+        def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
+            if solution_dot_over_time is None:
+                solution_dot_over_time = self._solution_dot_over_time
             solution_over_time_as_truth_function = list()
-            for (k, solution) in enumerate(solution_over_time):
+            solution_dot_over_time_as_truth_function = list()
+            for (k, (solution, solution_dot)) in enumerate(zip(solution_over_time, solution_dot_over_time)):
                 N = solution.N
                 solution_over_time_as_truth_function.append(self.Z[:N]*solution)
-            self.truth_problem.export_solution(folder, filename, solution_over_time_as_truth_function, component)
+                solution_dot_over_time_as_truth_function.append(self.Z[:N]*solution_dot)
+            self.truth_problem.export_solution(folder, filename, solution_over_time_as_truth_function, solution_dot_over_time_as_truth_function, component, suffix)
             
         @override
         def solve(self, N=None, **kwargs):

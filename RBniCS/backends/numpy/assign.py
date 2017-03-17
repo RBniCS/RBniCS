@@ -33,7 +33,7 @@ def assign(object_to, object_from):
         assert (
             (isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()))
                 or
-            (isinstance(object_to, list) and isinstance(object_to[0], Function.Type()) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()))
+            (isinstance(object_to, list) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()))
                 or
             (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))
                 or
@@ -42,8 +42,8 @@ def assign(object_to, object_from):
         if isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()):
             assert object_to.vector().N == object_from.vector().N
             object_to.vector()[:] = object_from.vector()
-        elif isinstance(object_to, list) and isinstance(object_to[0], Function.Type()) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()):
-            object_to.clear()
+        elif isinstance(object_to, list) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()):
+            del object_to[:]
             object_to.extend(object_from)
         elif (
             (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))

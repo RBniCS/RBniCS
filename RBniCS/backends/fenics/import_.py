@@ -32,7 +32,7 @@ from RBniCS.utils.decorators import backend_for
 from RBniCS.utils.io import Folders
 
 # Export a solution to file
-@backend_for("fenics", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str))
+@backend_for("fenics", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None)))
 def import_(solution, directory, filename, suffix=None):
     return basic_import_(solution, directory, filename, suffix, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
     

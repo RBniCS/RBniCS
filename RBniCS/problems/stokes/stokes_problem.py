@@ -113,10 +113,10 @@ class StokesProblem(ParametrizedDifferentialProblem):
         
     ## Export solution to file
     @override
-    def export_solution(self, folder, filename, solution=None, component=None):
+    def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
-        ParametrizedDifferentialProblem.export_solution(self, folder, filename, solution=solution, component=component)
+        ParametrizedDifferentialProblem.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
             
     #  @}
     ########################### end - I/O - end ########################### 

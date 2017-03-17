@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import AffineExpansionStorage, copy, Function
+from RBniCS.backends import AffineExpansionStorage, assign, copy, Function
 from RBniCS.utils.decorators import Extends, override
 from RBniCS.utils.mpi import log, PROGRESS
 
@@ -78,18 +78,19 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             
         ## Export solution to file
         @override
-        def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None):
+        def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
             if solution_dot_over_time is None:
                 solution_dot_over_time = self._solution_dot_over_time
+            assert suffix is None
             for (k, (solution, solution_dot)) in enumerate(zip(solution_over_time, solution_dot_over_time)):
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/solution", filename, solution, component)
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/solution_dot", filename, solution_dot, component)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution", solution, component=component, suffix=k)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution_dot", solution_dot, component=component, suffix=k)
                 
         ## Import solution from file
         @override
-        def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None):
+        def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, suffix=None):
             if solution_over_time is None:
                 solution = self._solution
                 solution_over_time = self._solution_over_time
@@ -100,22 +101,28 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solution_dot_over_time = self._solution_dot_over_time
             else:
                 solution_dot = Function(self.V)
+            assert suffix is None
+            k = 0
             self.t = 0
-            solution_over_time.clear()
-            solution_dot_over_time.clear()
+            self._time_stepping_parameters["initial_time"] = 0.
+            del solution_over_time[:]
+            del solution_dot_over_time[:]
             while self.t <= self.T:
-                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/solution", filename, solution)
-                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/solution_dot", filename, solution_dot)
+                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution", solution, suffix=k)
+                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution_dot", solution_dot, suffix=k)
                 import_solution_and_solution_dot = import_solution and import_solution_dot
                 if import_solution_and_solution_dot:
                     solution_over_time.append(copy(self._solution))
                     solution_dot_over_time.append(copy(self._solution_dot))
+                    k += 1
                     self.t += self.dt
                 else:
-                    assert len(solution_over_time) == len(solution_dot_over_time)
-                    if len(solution_over_time) > 0:
-                        assign(solution, solution_over_time[-1])
-                        assign(solution_dot, solution_dot_over_time[-1])
+                    if k > 0:
+                        k -= 1
+                        self.t -= self.dt
+                        assign(solution, solution_over_time[k])
+                        assign(solution_dot, solution_dot_over_time[k])
+                        self._time_stepping_parameters["initial_time"] = self.t
                     return False
             return True
                 

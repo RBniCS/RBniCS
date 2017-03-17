@@ -34,14 +34,16 @@ def assign(object_to, object_from):
         assert (
             (isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()))
                 or
+            (isinstance(object_to, list) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()))
+                or
             (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))
                 or
             (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type()))
         )
         if isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()):
             dolfin_assign(object_to, object_from)
-        elif isinstance(object_to, list) and isinstance(object_to[0], Function.Type()) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()):
-            object_to.clear()
+        elif isinstance(object_to, list) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()):
+            del object_to[:]
             object_to.extend(object_from)
         elif (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type())):
             as_backend_type(object_from).mat().copy(as_backend_type(object_to).mat(), as_backend_type(object_to).mat().Structure.SAME_NONZERO_PATTERN)

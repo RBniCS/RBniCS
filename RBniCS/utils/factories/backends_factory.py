@@ -248,9 +248,7 @@ def logging_online_backends_module(module):
 def are_subclass(input_types, backend_input_types):
     assert isinstance(input_types, tuple)
     assert isinstance(backend_input_types, tuple)
-    backend_input_types = list(backend_input_types)
-    if None in backend_input_types:
-        backend_input_types.remove(None) # strip default None argument from backend input types
+    backend_input_types = [t for t in backend_input_types if t is not None] # strip default None argument from backend input types
     if len(input_types) != len(backend_input_types):
         return False
     else:

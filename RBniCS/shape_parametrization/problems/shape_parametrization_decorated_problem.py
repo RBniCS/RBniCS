@@ -80,9 +80,9 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                 
             ## Deform the mesh as a function of the geometrical parameters and then export solution to file
             @override
-            def export_solution(self, folder, filename, solution=None, component=None):
+            def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
                 self.mesh_motion.move_mesh()
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component, suffix)
                 self.mesh_motion.reset_reference()
                 
             #  @}

@@ -203,28 +203,28 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     #  @{
     
     ## Export solution to file
-    def export_solution(self, folder, filename, solution=None, component=None):
+    def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if solution is None:
             solution = self._solution
         assert component is None or isinstance(component, (str, list))
         if component is None and len(self.components) > 1:
             component = self.components
         if component is None:
-            export(solution, folder, filename)
+            export(solution, folder, filename, suffix=suffix)
         elif isinstance(component, str):
-            export(solution, folder, filename, component=component)
+            export(solution, folder, filename, component=component, suffix=suffix)
         elif isinstance(component, list):
             for c in component:
                 assert isinstance(c, str)
-                export(solution, folder, filename + "_" + c, component=c)
+                export(solution, folder, filename + "_" + c, component=c, suffix=suffix)
         else:
             raise AssertionError("Invalid component in export_solution()")
             
     ## Import solution from file
-    def import_solution(self, folder, filename, solution=None):
+    def import_solution(self, folder, filename, solution=None, suffix=None):
         if solution is None:
             solution = self._solution
-        return import_(solution, folder, filename)
+        return import_(solution, folder, filename, suffix=suffix)
         
     #  @}
     ########################### end - I/O - end ########################### 
