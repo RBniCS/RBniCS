@@ -35,6 +35,7 @@ from RBniCS.backends.numpy.function import Function
 from RBniCS.backends.numpy.functions_list import FunctionsList
 from RBniCS.backends.numpy.gram_schmidt import GramSchmidt
 from RBniCS.backends.numpy.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from RBniCS.backends.numpy.import_ import import_
 from RBniCS.backends.numpy.linear_solver import LinearSolver
 from RBniCS.backends.numpy.matrix import Matrix
 from RBniCS.backends.numpy.max import max
@@ -70,6 +71,7 @@ __all__ = [
     'FunctionsList',
     'GramSchmidt',
     'HighOrderProperOrthogonalDecomposition',
+    'import_',
     'LinearSolver',
     'Matrix',
     'max',

@@ -35,6 +35,7 @@ from RBniCS.backends.abstract.function import Function
 from RBniCS.backends.abstract.functions_list import FunctionsList
 from RBniCS.backends.abstract.gram_schmidt import GramSchmidt
 from RBniCS.backends.abstract.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from RBniCS.backends.abstract.import_ import import_
 from RBniCS.backends.abstract.linear_program_solver import LinearProgramSolver
 from RBniCS.backends.abstract.linear_solver import LinearSolver
 from RBniCS.backends.abstract.matrix import Matrix
@@ -71,6 +72,7 @@ __all__ = [
     'FunctionsList',
     'GramSchmidt',
     'HighOrderProperOrthogonalDecomposition',
+    'import_',
     'LinearProgramSolver',
     'LinearSolver',
     'Matrix',

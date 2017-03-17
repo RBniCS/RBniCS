@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import File
+from RBniCS.utils.decorators import abstract_backend
 
-def function_load(fun, directory, filename, suffix=None):
-    if suffix is not None:
-        filename = filename + "." + str(suffix)
-    full_filename = str(directory) + "/" + filename + ".xml"
-    file = File(full_filename)
-    file >> fun
+# Import a solution from file
+@abstract_backend
+def import_(solution, directory, filename, suffix=None):
+    pass
+    

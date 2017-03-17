@@ -33,8 +33,9 @@ from RBniCS.utils.mpi import is_io_process
 @Extends(AbstractTensorsList)
 class TensorsList(AbstractTensorsList):
     @override
-    def __init__(self, V_or_Z, backend, wrapping, online_backend):
+    def __init__(self, V_or_Z, empty_tensor, backend, wrapping, online_backend):
         self.V_or_Z = V_or_Z
+        self.empty_tensor = empty_tensor
         self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
         self.backend = backend
         self.wrapping = wrapping
@@ -67,8 +68,8 @@ class TensorsList(AbstractTensorsList):
     @override
     def save(self, directory, filename):
         self._save_Nmax(directory, filename)
-        for (index, fun) in enumerate(self._list):
-            self.wrapping.tensor_save(fun, directory, filename + "_" + str(index))
+        for (index, tensor) in enumerate(self._list):
+            self.wrapping.tensor_save(tensor, directory, filename + "_" + str(index))
                 
     def _save_Nmax(self, directory, filename):
         if is_io_process(self.mpi_comm):
@@ -81,7 +82,9 @@ class TensorsList(AbstractTensorsList):
             return False
         Nmax = self._load_Nmax(directory, filename)
         for index in range(Nmax):
-            self.enrich(self.wrapping.tensor_load(directory, filename + "_" + str(index), self.V_or_Z))
+            tensor = backend.copy(self.empty_tensor)
+            self.wrapping.tensor_load(tensor, directory, filename + "_" + str(index))
+            self.enrich(tensor)
         return True
         
     def _load_Nmax(self, directory, filename):

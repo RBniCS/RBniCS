@@ -15,18 +15,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
+## @file product.py
+#  @brief product function to assemble truth/reduced affine expansions.
 #
 #  @author Francesco Ballarin <francesco.ballarin@sissa.it>
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import File
+from RBniCS.backends.basic import import_ as basic_import_
+import RBniCS.backends.fenics
+from RBniCS.backends.fenics.function import Function
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
+import RBniCS.backends.fenics.wrapping
+from RBniCS.utils.decorators import backend_for
+from RBniCS.utils.io import Folders
 
-def function_load(fun, directory, filename, suffix=None):
-    if suffix is not None:
-        filename = filename + "." + str(suffix)
-    full_filename = str(directory) + "/" + filename + ".xml"
-    file = File(full_filename)
-    file >> fun
+# Export a solution to file
+@backend_for("fenics", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str))
+def import_(solution, directory, filename, suffix=None):
+    return basic_import_(solution, directory, filename, suffix, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
+    

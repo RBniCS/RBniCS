@@ -38,10 +38,6 @@ from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_soluti
 @Extends(AbstractParametrizedTensorFactory)
 @BackendFor("fenics", inputs=((object, None), Form)) # object will actually be a ParametrizedDifferentialProblem
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
-    # This are needed for proper I/O in tensor_load/tensor_save
-    _all_forms = dict()
-    _all_forms_assembled_containers = dict()
-    
     def __init__(self, form):
         AbstractParametrizedTensorFactory.__init__(self, form)
         # Store input
@@ -63,10 +59,10 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
             )
         self._spaces = spaces
         # Store for I/O
-        assembled_form = assemble(form)
-        assembled_form.generator = form
-        ParametrizedTensorFactory._all_forms[self._name] = form
-        ParametrizedTensorFactory._all_forms_assembled_containers[self._name] = assembled_form
+        empty_snapshot = assemble(form)
+        empty_snapshot.zero()
+        empty_snapshot.generator = form
+        self._empty_snapshot = empty_snapshot
     
     @override
     def create_interpolation_locations_container(self):
@@ -84,11 +80,16 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
         
     @override
     def create_snapshots_container(self):
-        return TensorSnapshotsList(self._spaces)
+        return TensorSnapshotsList(self._spaces, self._empty_snapshot)
+        
+    @override
+    def create_empty_snapshot(self):
+        snapshot = copy(self._empty_snapshot)
+        return snapshot
         
     @override
     def create_basis_container(self):
-        return TensorBasisList(self._spaces)
+        return TensorBasisList(self._spaces, self._empty_snapshot)
         
     @override
     def create_POD_container(self):

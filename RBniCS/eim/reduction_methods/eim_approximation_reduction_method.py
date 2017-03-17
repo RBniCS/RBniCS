@@ -118,8 +118,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.set_mu(mu)
             
             print("evaluate parametrized expression at mu =", mu)
-            self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
-            self.EIM_approximation.export_solution(self.folder["snapshots"], "truth_" + str(run), self.EIM_approximation.snapshot)
+            self.EIM_approximation.evaluate_parametrized_expression()
+            self.EIM_approximation.export_solution(self.folder["snapshots"], "truth_" + str(run))
             
             print("add to snapshots")
             self.add_to_snapshots(self.EIM_approximation.snapshot)
@@ -303,7 +303,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.set_mu(mu)
             
             # Evaluate the exact function on the truth grid
-            self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
+            self.EIM_approximation.evaluate_parametrized_expression()
             
             for n in range(1, N + 1): # n = 1, ... N
                 self.EIM_approximation.solve(n)
@@ -356,7 +356,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             # Evaluate the exact function on the truth grid
             evaluate_timer.start()
-            self.EIM_approximation.snapshot = evaluate(self.EIM_approximation.parametrized_expression)
+            self.EIM_approximation.evaluate_parametrized_expression()
             elapsed_evaluate = evaluate_timer.stop()
             
             for n in range(1, N + 1): # n = 1, ... N

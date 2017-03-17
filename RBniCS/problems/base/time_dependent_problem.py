@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import AffineExpansionStorage, export, Function
+from RBniCS.backends import AffineExpansionStorage, copy, Function
 from RBniCS.utils.decorators import copy, Extends, override
 
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
@@ -77,11 +77,46 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             
         ## Export solution to file
         @override
-        def export_solution(self, folder, filename, solution_over_time=None, component=None):
+        def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
-            for (k, solution) in enumerate(solution_over_time):
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component)
+            if solution_dot_over_time is None:
+                solution_dot_over_time = self._solution_dot_over_time
+            for (k, (solution, solution_dot)) in enumerate(zip(solution_over_time, solution_dot_over_time)):
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/solution", filename, solution, component)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/solution_dot", filename, solution_dot, component)
+                
+        ## Import solution from file
+        @override
+        def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None):
+            if solution_over_time is None:
+                solution = self._solution
+                solution_over_time = self._solution_over_time
+            else:
+                solution = Function(self.V)
+            if solution_dot_over_time is None:
+                solution_dot = self._solution_dot
+                solution_dot_over_time = self._solution_dot_over_time
+            else:
+                solution_dot = Function(self.V)
+            self.t = 0
+            solution_over_time.clear()
+            solution_dot_over_time.clear()
+            while self.t <= self.T:
+                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/solution", filename, solution)
+                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/solution_dot", filename, solution_dot)
+                import_solution_and_solution_dot = import_solution and import_solution_dot
+                if import_solution_and_solution_dot:
+                    solution_over_time.append(copy(self._solution))
+                    solution_dot_over_time.append(copy(self._solution_dot))
+                    self.t += self.dt
+                else:
+                    assert len(solution_over_time) == len(solution_dot_over_time)
+                    if len(solution_over_time) > 0:
+                        assign(solution, solution_over_time[-1])
+                        assign(solution_dot, solution_dot_over_time[-1])
+                    return False
+            return True
                 
         ## Initialize data structures required for the offline phase
         @override
@@ -123,7 +158,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
         
         @override
         def solve(self, **kwargs):
-            cache_key = self._cache_key_from_kwargs(**kwargs)
+            (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
             if cache_key in self._solution_cache:
                 assert cache_key in self._solution_dot_cache
                 assert cache_key in self._solution_over_time_cache
@@ -132,6 +167,11 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assign(self._solution_dot, self._solution_dot_cache[cache_key])
                 assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
                 assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
+            elif self.import_solution(self.folder["cache"], cache_file):
+                self._solution_cache[cache_key] = copy(self._solution)
+                self._solution_dot_cache[cache_key] = copy(self._solution_dot)
+                self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
+                self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
             else:
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True

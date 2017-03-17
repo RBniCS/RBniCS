@@ -43,6 +43,7 @@ from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.gram_schmidt import GramSchmidt
 from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from RBniCS.backends.fenics.import_ import import_
 from RBniCS.backends.fenics.linear_solver import LinearSolver
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.max import max
@@ -78,6 +79,7 @@ __all__ = [
     'FunctionsList',
     'GramSchmidt',
     'HighOrderProperOrthogonalDecomposition',
+    'import_',
     'LinearSolver',
     'Matrix',
     'max',

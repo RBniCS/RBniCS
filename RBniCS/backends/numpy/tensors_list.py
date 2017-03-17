@@ -32,6 +32,6 @@ from RBniCS.utils.decorators import BackendFor, Extends, override
 @BackendFor("numpy", online_backend="numpy", inputs=(AbstractTensorsList, ))
 class TensorsList(BasicTensorsList):
     @override
-    def __init__(self, Z):
-        BasicTensorsList.__init__(self, Z, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
+    def __init__(self, Z, empty_tensor):
+        BasicTensorsList.__init__(self, Z, empty_tensor, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
         

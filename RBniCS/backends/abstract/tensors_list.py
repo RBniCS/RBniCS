@@ -30,7 +30,7 @@ from RBniCS.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class TensorsList(object):
-    def __init__(self, V_or_Z):
+    def __init__(self, V_or_Z, empty_tensor):
         pass
     
     @abstractmethod

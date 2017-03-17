@@ -27,6 +27,7 @@ from RBniCS.backends.basic.copy import copy
 from RBniCS.backends.basic.export import export
 from RBniCS.backends.basic.functions_list import FunctionsList
 from RBniCS.backends.basic.gram_schmidt import GramSchmidt
+from RBniCS.backends.basic.import_ import import_
 from RBniCS.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
 from RBniCS.backends.basic.tensors_list import TensorsList
 from RBniCS.backends.basic.transpose import transpose
@@ -37,6 +38,7 @@ __all__ = [
     'export',
     'FunctionsList',
     'GramSchmidt',
+    'import_',
     'ProperOrthogonalDecompositionBase',
     'TensorsList',
     'transpose'

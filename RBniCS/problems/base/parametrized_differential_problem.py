@@ -24,8 +24,9 @@
 
 from abc import ABCMeta, abstractmethod
 import types
+import hashlib
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
-from RBniCS.backends import AffineExpansionStorage, copy, export, Function
+from RBniCS.backends import AffineExpansionStorage, copy, export, Function, import_
 from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromSolutionToProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -65,6 +66,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         self._solution = Function(self.V)
         self._solution_cache = dict() # of Functions
         self._output = 0
+        # I/O
+        self.folder["cache"] = self.folder_prefix + "/" + "cache"
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -153,9 +156,11 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     ## Perform a truth solve
     @abstractmethod
     def solve(self, **kwargs):
-        cache_key = self._cache_key_from_kwargs(**kwargs)
+        (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
         if cache_key in self._solution_cache:
             assign(self._solution, self._solution_cache[cache_key])
+        elif self.import_solution(self.folder["cache"], cache_file):
+            self._solution_cache[cache_key] = copy(self._solution)
         else:
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
@@ -178,15 +183,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     def _compute_output(self):
         self._output = NotImplemented
         
-    def _cache_key_from_kwargs(self, **kwargs):
+    def _cache_key_and_file_from_kwargs(self, **kwargs):
         for blacklist in ("components", "inner_product"):
             if blacklist in kwargs:
                 del kwargs[blacklist]
-        if isinstance(N, dict):
-            return (self.mu, tuple(sorted(kwargs.items())))
-        else:
-            assert isinstance(N, int)
-            return (self.mu, tuple(sorted(kwargs.items())))
+        cache_key = (self.mu, tuple(sorted(kwargs.items())))
+        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
+        return (cache_key, cache_file)
     
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 
@@ -212,6 +215,12 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
                 export(solution, folder, filename + "_" + c, component=c)
         else:
             raise AssertionError("Invalid component in export_solution()")
+            
+    ## Import solution from file
+    def import_solution(self, folder, filename, solution=None):
+        if solution is None:
+            solution = self._solution
+        return import_(solution, folder, filename)
         
     #  @}
     ########################### end - I/O - end ########################### 

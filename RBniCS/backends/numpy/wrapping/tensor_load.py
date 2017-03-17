@@ -24,5 +24,6 @@
 
 from RBniCS.utils.io import NumpyIO
 
-def tensor_load(directory, filename, Z_unused):
-    return NumpyIO.load_file(directory, filename)
+def tensor_load(tensor, directory, filename):
+    loaded = NumpyIO.load_file(directory, filename)
+    tensor[:] = loaded

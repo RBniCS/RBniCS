@@ -27,11 +27,10 @@ from petsc4py import PETSc
 import RBniCS.backends # avoid circular imports when importing fenics backend
 from RBniCS.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_reader_mapping
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
-from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
 from RBniCS.utils.mpi import is_io_process
 from RBniCS.utils.io import PickleIO
 
-def tensor_load(directory, filename, V):
+def tensor_load(tensor, directory, filename):
     mpi_comm = get_mpi_comm(V)
     # Read in generator
     full_filename_generator = str(directory) + "/" + filename + ".generator"
@@ -40,10 +39,6 @@ def tensor_load(directory, filename, V):
         with open(full_filename_generator, "r") as generator_file:
             generator_string = generator_file.readline()
     generator_string = mpi_comm.bcast(generator_string, root=is_io_process.root)
-    # Generate container based on generator
-    form = RBniCS.backends.fenics.ParametrizedTensorFactory._all_forms[generator_string]
-    tensor = tensor_copy(RBniCS.backends.fenics.ParametrizedTensorFactory._all_forms_assembled_containers[generator_string])
-    tensor.zero()
     # Read in generator mpi size
     full_filename_generator_mpi_size = str(directory) + "/" + filename + ".generator_mpi_size"
     generator_mpi_size_string = None

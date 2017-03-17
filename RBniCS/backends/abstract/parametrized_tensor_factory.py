@@ -38,6 +38,10 @@ class ParametrizedTensorFactory(object):
         pass
         
     @abstractmethod
+    def create_empty_snapshot(self):
+        pass
+        
+    @abstractmethod
     def create_basis_container(self):
         pass
         

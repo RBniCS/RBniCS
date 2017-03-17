@@ -94,8 +94,8 @@ class FunctionsList(AbstractFunctionsList):
     @override
     def save(self, directory, filename):
         self._save_Nmax(directory, filename)
-        for (index, fun) in enumerate(self._list):
-            self.wrapping.function_save(fun, directory, filename + "_" + str(index))
+        for (index, function) in enumerate(self._list):
+            self.wrapping.function_save(function, directory, filename + "_" + str(index))
                 
     def _save_Nmax(self, directory, filename):
         if is_io_process(self.mpi_comm):
@@ -108,7 +108,9 @@ class FunctionsList(AbstractFunctionsList):
             return False
         Nmax = self._load_Nmax(directory, filename)
         for index in range(Nmax):
-            self.enrich(self.wrapping.function_load(directory, filename + "_" + str(index), self.V_or_Z))
+            function = backend.Function(self.V_or_Z)
+            self.wrapping.function_load(function, directory, filename + "_" + str(index))
+            self.enrich(function)
         return True
         
     def _load_Nmax(self, directory, filename):

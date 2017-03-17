@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import hashlib
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.backends import abs, copy, evaluate, export, max
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
@@ -64,12 +65,12 @@ class EIMApproximation(ParametrizedProblem):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         self.snapshot = None # will be filled in by Function, Vector or Matrix as appropriate in the EIM preprocessing
+        self.snapshot_cache = dict() # of Function, Vector or Matrix
         # Basis functions container
         self.Z = parametrized_expression.create_basis_container()
-        # I/O. Since we are decorating the parametrized problem we do not want to change the name of the
-        # basis function/reduced operator folder, but rather add a new one. For this reason we use
-        # the __eim suffix in the variable name.
+        # I/O
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
+        self.folder["cache"] = self.folder_prefix + "/" + "cache"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         
     #  @}
@@ -94,6 +95,21 @@ class EIMApproximation(ParametrizedProblem):
         else:
             raise AssertionError("Invalid stage in init().")
 
+    def evaluate_parametrized_expression(self):
+        (cache_key, cache_file) = self._cache_key_and_file()
+        if cache_key in self.snapshot_cache:
+            self.snapshot = self.snapshot_cache[cache_key]
+        elif self.import_solution(self.folder["cache"], cache_file):
+            self.snapshot_cache[cache_key] = copy(self.snapshot)
+        else:
+            self.snapshot = evaluate(self.parametrized_expression)
+            self.snapshot_cache[cache_key] = copy(self.snapshot)
+        
+    def _cache_key_and_file(self):
+        cache_key = self.mu
+        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
+        return (cache_key, cache_file)
+        
     # Perform an online solve.
     def solve(self, N=None, for_rhs=None):
         if N is None:
@@ -162,8 +178,17 @@ class EIMApproximation(ParametrizedProblem):
 
     ## Export solution to file
     def export_solution(self, folder, filename, solution=None):
-        assert solution is not None
+        if solution is None:
+            solution = self.snapshot
         export(solution, folder, filename)
+        
+    ## Import solution from file
+    def import_solution(self, folder, filename, solution=None):
+        if solution is None:
+            if self.snapshot is None:
+                self.snapshot = self.parametrized_expression.create_empty_snapshot()
+            solution = self.snapshot
+        import_(solution, folder, filename)
         
     #  @}
     ########################### end - I/O - end ########################### 

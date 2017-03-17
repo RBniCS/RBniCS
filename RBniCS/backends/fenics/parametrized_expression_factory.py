@@ -62,6 +62,10 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
         return SnapshotsMatrix(self._space)
         
     @override
+    def create_empty_snapshot(self):
+        return Function(self._space)
+        
+    @override
     def create_basis_container(self):
         # We use FunctionsList instead of BasisFunctionsMatrix since we are not interested in storing multiple components
         return FunctionsList(self._space)
