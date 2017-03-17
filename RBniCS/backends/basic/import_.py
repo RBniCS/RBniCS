@@ -22,24 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import os # for path
-from RBniCS.utils.mpi import is_io_process
-
 # Returns True if it was possible to import the file, False otherwise
 def import_(solution, directory, filename, suffix, backend, wrapping):
-    return_value = False
-    if is_io_process() and os.path.exists(directory + "/" + filename):
-        return_value = True
-    return_value = is_io_process.mpi_comm.bcast(return_value, root=is_io_process.root)
-    
-    if return_value:
-        assert isinstance(solution, (backend.Function.Type(), backend.Matrix.Type(), backend.Vector.Type()))
-        if isinstance(solution, backend.Function.Type()):
-            wrapping.function_load(solution, directory, filename, suffix=suffix)
-        elif isinstance(solution, (backend.Matrix.Type(), backend.Vector.Type())):
-            assert suffix is None
-            wrapping.tensor_load(solution, directory, filename)
-        else: # impossible to arrive here anyway, thanks to the assert
-            raise AssertionError("Invalid arguments in export.")
-        
-    return return_value
+    assert isinstance(solution, (backend.Function.Type(), backend.Matrix.Type(), backend.Vector.Type()))
+    if isinstance(solution, backend.Function.Type()):
+        return wrapping.function_load(solution, directory, filename, suffix=suffix)
+    elif isinstance(solution, (backend.Matrix.Type(), backend.Vector.Type())):
+        assert suffix is None
+        return wrapping.tensor_load(solution, directory, filename)
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in export.")

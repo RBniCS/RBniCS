@@ -28,8 +28,9 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import Argument, assemble, Expression, Function, FunctionSpace
 from RBniCS.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
-from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
+from RBniCS.backends.fenics.copy import copy
 from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
 from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
 from RBniCS.backends.fenics.wrapping import function_from_subfunction_if_any, get_form_argument, get_form_description, get_form_name
@@ -61,7 +62,7 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
         # Store for I/O
         empty_snapshot = assemble(form)
         empty_snapshot.zero()
-        empty_snapshot.generator = form
+        empty_snapshot.generator = self
         self._empty_snapshot = empty_snapshot
     
     @override
@@ -93,7 +94,7 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
         
     @override
     def create_POD_container(self):
-        return HighOrderProperOrthogonalDecomposition(self._spaces)
+        return HighOrderProperOrthogonalDecomposition(self._spaces, self._empty_snapshot)
         
     @override
     def name(self):

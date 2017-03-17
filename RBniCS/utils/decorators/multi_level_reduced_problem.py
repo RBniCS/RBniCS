@@ -127,9 +127,6 @@ def override_error_computation(error_computation_method):
             # Make sure that truth output is recomputed if truth problem is different from the previous one
             if truth_problem_has_changed:
                 self._compute_error_output__previous_mu = None # of Parent class
-            # Make sure to update mu in the truth_problem (sync is only guaranteed with the original truth problem)
-            if self.truth_problem.mu != self.mu:
-                self.truth_problem.set_mu(self.mu)
             # Call Parent
             error = error_computation_method(self, N, **kwargs)
             # Restore backup

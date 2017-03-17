@@ -22,11 +22,20 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import os # for path
 from dolfin import File
+from RBniCS.utils.mpi import is_io_process
 
 def function_load(fun, directory, filename, suffix=None):
     if suffix is not None:
         filename = filename + "." + str(suffix)
     full_filename = str(directory) + "/" + filename + ".xml"
-    file = File(full_filename)
-    file >> fun
+    file_exists = False
+    if is_io_process() and os.path.exists(full_filename):
+        file_exists = True
+    file_exists = is_io_process.mpi_comm.bcast(file_exists, root=is_io_process.root)
+    if file_exists:
+        file = File(full_filename)
+        file >> fun
+    return file_exists
+    

@@ -152,4 +152,4 @@ reduced_basis_method.error_analysis(with_respect_to=exact_gaussian_problem, DEIM
 
 # 13. Perform a speedup analysis with respect to the exact problem, but
 #     employing a smaller number of DEIM basis functions
-reduced_basis_method.speedup_analysis(with_respect_to=exact_graetz_problem, DEIM=11)
+reduced_basis_method.speedup_analysis(with_respect_to=exact_gaussian_problem, DEIM=11)

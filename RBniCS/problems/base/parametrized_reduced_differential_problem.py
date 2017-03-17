@@ -28,10 +28,10 @@ import types
 from math import sqrt
 from numpy import isclose
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
-from RBniCS.backends import BasisFunctionsMatrix, transpose
+from RBniCS.backends import assign, BasisFunctionsMatrix, copy, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.sampling import ParameterSpaceSubset
-from RBniCS.utils.decorators import copy, Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
+from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
 from RBniCS.utils.mpi import print
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 

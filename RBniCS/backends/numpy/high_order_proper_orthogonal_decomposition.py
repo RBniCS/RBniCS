@@ -35,8 +35,8 @@ HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecom
 @BackendFor("numpy", inputs=(AbstractFunctionsList, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
     @override
-    def __init__(self, Z):
-        HighOrderProperOrthogonalDecompositionBase.__init__(self, Z, None, None, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.TensorSnapshotsList, RBniCS.backends.numpy.TensorBasisList)
+    def __init__(self, Z, empty_tensor):
+        HighOrderProperOrthogonalDecompositionBase.__init__(self, Z, None, empty_tensor, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.TensorSnapshotsList, RBniCS.backends.numpy.TensorBasisList)
         
     @override
     def store_snapshot(self, snapshot):

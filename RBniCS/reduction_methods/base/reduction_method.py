@@ -145,11 +145,11 @@ class ReductionMethod(object):
     def speedup_analysis(self, N=None, **kwargs):
         raise NotImplementedError("Please implement the speedup analysis of the reduced order model.")
         
-    ## Initialize data structures required for the error analysis phase
+    ## Initialize data structures required for the speedup analysis phase
     def _init_speedup_analysis(self, **kwargs):
         pass
         
-    ## Finalize data structures required after the error analysis phase
+    ## Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
         pass
         

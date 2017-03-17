@@ -42,16 +42,17 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
 
         # Perform an online solve. Overridden to also solve the dual problem for output correction and error estimation.
         @override
-        def solve(self, N, **kwargs):
+        def solve(self, N=None, **kwargs):
             # Solve primal problem
             primal_solution = ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
             # Defer dual problem solve to output() method, since (i) reduced dual problem has not been built yet during the
             # primal offline stage, (ii) in any case dual solution is only required when computing output and its error estimation
-            if "dual" in kwargs:
-                self._dual_solve_latest_N = kwargs["dual"]
-            else:
-                self._dual_solve_latest_N = min(N, self.dual_reduced_problem.N)
-            self._dual_solve_latest_kwargs = kwargs
+            if self.dual_reduced_problem is not None:
+                if "dual" in kwargs:
+                    self._dual_solve_latest_N = kwargs["dual"]
+                else:
+                    self._dual_solve_latest_N = min(N, self.dual_reduced_problem.N)
+                self._dual_solve_latest_kwargs = kwargs
             # Return primal solution
             return primal_solution
             

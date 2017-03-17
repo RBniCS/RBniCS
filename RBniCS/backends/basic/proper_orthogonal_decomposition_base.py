@@ -36,19 +36,19 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
     class ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
 
         @override
-        def __init__(self, V_or_Z, X, component, backend, wrapping, SnapshotsContainerType, BasisContainerType):
+        def __init__(self, V_or_Z, X, container_type_second_argument, backend, wrapping, SnapshotsContainerType, BasisContainerType):
             self.X = X
             self.backend = backend
             self.BasisContainerType = BasisContainerType
             self.V_or_Z = V_or_Z
-            self.component = component
+            self.container_type_second_argument = container_type_second_argument
             self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
             
             # Declare a matrix to store the snapshots
-            if self.component is None:
+            if self.container_type_second_argument is None:
                 self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z)
             else:
-                self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z, component)
+                self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z, self.container_type_second_argument)
             # Declare a list to store eigenvalues
             self.eigenvalues = zeros(0) # correct size will be assigned later
             # Store inner product
@@ -74,10 +74,10 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             else:
                 correlation = transpose(snapshots_matrix)*snapshots_matrix
             
-            if self.component is None:
+            if self.container_type_second_argument is None:
                 Z = self.BasisContainerType(self.V_or_Z)
             else:
-                Z = self.BasisContainerType(self.V_or_Z, self.component)
+                Z = self.BasisContainerType(self.V_or_Z, self.container_type_second_argument)
                             
             eigensolver = OnlineEigenSolver(Z, correlation) 
             parameters = {

@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends import AffineExpansionStorage, copy, Function
-from RBniCS.utils.decorators import copy, Extends, override
+from RBniCS.utils.decorators import Extends, override
 
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
@@ -181,6 +181,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 self._solution_dot_cache[cache_key] = copy(self._solution_dot)
                 self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
                 self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
+                self.export_solution(self.folder["cache"], cache_file)
             return self._solution_over_time
         
         ## Perform a truth evaluation of the output

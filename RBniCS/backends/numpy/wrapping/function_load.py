@@ -22,11 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import os # for path
 from RBniCS.utils.io import NumpyIO
+from RBniCS.utils.mpi import is_io_process
 
 def function_load(fun, directory, filename, suffix=None):
     if suffix is not None:
         filename = filename + "." + str(suffix)
-    vec = NumpyIO.load_file(directory, filename)
-    fun.vector()[:] = vec
+    file_exists = NumpyIO.exists_file(directory, filename)
+    if file_exists:
+        vec = NumpyIO.load_file(directory, filename)
+        fun.vector()[:] = vec
+    return file_exists
 

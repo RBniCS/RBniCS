@@ -26,7 +26,7 @@ from abc import ABCMeta, abstractmethod
 import types
 import hashlib
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
-from RBniCS.backends import AffineExpansionStorage, copy, export, Function, import_
+from RBniCS.backends import AffineExpansionStorage, assign, copy, export, Function, import_
 from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromSolutionToProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -154,7 +154,6 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
                 self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous
     
     ## Perform a truth solve
-    @abstractmethod
     def solve(self, **kwargs):
         (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
         if cache_key in self._solution_cache:
@@ -167,6 +166,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             self._solve(**kwargs)
             delattr(self, "_is_solving")
             self._solution_cache[cache_key] = copy(self._solution)
+            self.export_solution(self.folder["cache"], cache_file)
         return self._solution
     
     ## Perform a truth solve. Internal method.

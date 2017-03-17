@@ -25,5 +25,9 @@
 from RBniCS.utils.io import NumpyIO
 
 def tensor_load(tensor, directory, filename):
-    loaded = NumpyIO.load_file(directory, filename)
-    tensor[:] = loaded
+    if NumpyIO.exists_file(directory, filename):
+        loaded = NumpyIO.load_file(directory, filename)
+        tensor[:] = loaded
+        return True
+    else:
+        return False

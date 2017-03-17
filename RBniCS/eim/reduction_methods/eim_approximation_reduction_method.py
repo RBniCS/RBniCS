@@ -23,6 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
+import types
 from RBniCS.reduction_methods.base import ReductionMethod
 from RBniCS.backends import evaluate
 from RBniCS.backends.online import OnlineMatrix
@@ -377,6 +378,25 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("")
         
         self._finalize_speedup_analysis(**kwargs)
+        
+    ## Initialize data structures required for the speedup analysis phase
+    @override
+    def _init_speedup_analysis(self, **kwargs): 
+        # Make sure to clean up snapshot cache to ensure that parametrized
+        # expression evaluation is actually carried out
+        self.EIM_approximation.snapshot_cache.clear()
+        # ... and also disable the capability of importing truth solutions
+        self._speedup_analysis__original_import_solution = self.EIM_approximation.import_solution
+        def disabled_import_solution(self_, folder, filename, solution=None):
+            return False
+        self.EIM_approximation.import_solution = types.MethodType(disabled_import_solution, self.EIM_approximation)
+        
+    ## Finalize data structures required after the speedup analysis phase
+    @override
+    def _finalize_speedup_analysis(self, **kwargs):
+        # Restore the capability to import truth solutions
+        self.EIM_approximation.import_solution = self._speedup_analysis__original_import_solution
+        del self._speedup_analysis__original_import_solution
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ###########################

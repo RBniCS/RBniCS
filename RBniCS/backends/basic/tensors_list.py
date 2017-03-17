@@ -82,8 +82,9 @@ class TensorsList(AbstractTensorsList):
             return False
         Nmax = self._load_Nmax(directory, filename)
         for index in range(Nmax):
-            tensor = backend.copy(self.empty_tensor)
-            self.wrapping.tensor_load(tensor, directory, filename + "_" + str(index))
+            tensor = self.backend.copy(self.empty_tensor)
+            loaded = self.wrapping.tensor_load(tensor, directory, filename + "_" + str(index))
+            assert loaded
             self.enrich(tensor)
         return True
         
@@ -114,7 +115,7 @@ class TensorsList(AbstractTensorsList):
             if key.stop in self._precomputed_slices:
                 return self._precomputed_slices[key.stop]
             else:
-                output = self.backend.TensorsList(self.V_or_Z)
+                output = self.backend.TensorsList(self.V_or_Z, self.empty_tensor)
                 output._list = self._list[key]
                 self._precomputed_slices[key.stop] = output
                 return output

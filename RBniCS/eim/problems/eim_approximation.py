@@ -24,7 +24,7 @@
 
 import hashlib
 from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import abs, copy, evaluate, export, max
+from RBniCS.backends import abs, copy, evaluate, export, import_, max
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from RBniCS.utils.decorators import Extends, override, sync_setters
 from RBniCS.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMApproximation
@@ -104,6 +104,7 @@ class EIMApproximation(ParametrizedProblem):
         else:
             self.snapshot = evaluate(self.parametrized_expression)
             self.snapshot_cache[cache_key] = copy(self.snapshot)
+            self.export_solution(self.folder["cache"], cache_file)
         
     def _cache_key_and_file(self):
         cache_key = self.mu
@@ -188,7 +189,7 @@ class EIMApproximation(ParametrizedProblem):
             if self.snapshot is None:
                 self.snapshot = self.parametrized_expression.create_empty_snapshot()
             solution = self.snapshot
-        import_(solution, folder, filename)
+        return import_(solution, folder, filename)
         
     #  @}
     ########################### end - I/O - end ########################### 

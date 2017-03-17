@@ -108,8 +108,9 @@ class FunctionsList(AbstractFunctionsList):
             return False
         Nmax = self._load_Nmax(directory, filename)
         for index in range(Nmax):
-            function = backend.Function(self.V_or_Z)
-            self.wrapping.function_load(function, directory, filename + "_" + str(index))
+            function = self.backend.Function(self.V_or_Z)
+            loaded = self.wrapping.function_load(function, directory, filename + "_" + str(index))
+            assert loaded
             self.enrich(function)
         return True
         

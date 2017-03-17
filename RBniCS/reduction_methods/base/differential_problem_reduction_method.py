@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import types
 from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
 from RBniCS.utils.io import Folders
 from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemToTrainingStatus
@@ -114,9 +115,23 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem.init("online")
         
-        # Make sure to clean up reduced problem solution cache to ensure that
-        # reduced solution are actually computed
+        # Make sure to clean up problem and reduced problem solution cache to ensure that
+        # solution and reduced solution are actually computed
+        self.truth_problem._solution_cache.clear()
         self.reduced_problem._solution_cache.clear()
+        # ... and also disable the capability of importing truth solutions
+        self._speedup_analysis__original_import_solution = self.truth_problem.import_solution
+        def disabled_import_solution(self_, folder, filename, solution=None):
+            return False
+        self.truth_problem.import_solution = types.MethodType(disabled_import_solution, self.truth_problem)
+        
+    ## Finalize data structures required after the speedup analysis phase
+    @override
+    def _finalize_speedup_analysis(self, **kwargs):
+        # Restore the capability to import truth solutions
+        self.truth_problem.import_solution = self._speedup_analysis__original_import_solution
+        del self._speedup_analysis__original_import_solution
+        
         
     #  @}
     ########################### end - ERROR ANALYSIS - end ########################### 

@@ -41,7 +41,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             #     the correct problem is called for what concerns DEIM computations
             
         @override
-        def solve(self, N, **kwargs):
+        def solve(self, N=None, **kwargs):
             self._update_N_DEIM(**kwargs)
             return ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
             

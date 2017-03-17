@@ -65,16 +65,7 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
                     assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
                                                                  # otherwise how should we know to which level in the 
                                                                  # hierarchy is this truth problem supposed to be?
-                    self._error_analysis__bak_truth_problem = self.truth_problem
-                    self.truth_problem = kwargs["with_respect_to"]
-                    
-                    # Make sure that stability factors computations at the reduced order level
-                    # call the correct problem
-                    self._error_analysis__get_stability_factor__original = self.reduced_problem.get_stability_factor
-                    def get_stability_factor__with_respect_to(self):
-                        return kwargs["with_respect_to"].get_stability_factor()
-                    self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
-                    
+                    self._replace_truth_problem(kwargs["with_respect_to"])
                 elif "with_respect_to_level" in kwargs:
                     pass # TODO
                 else:
@@ -84,25 +75,19 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
                 
         @override
         def _finalize_error_analysis(self, **kwargs):
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
+            
             if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
                 if "with_respect_to" in kwargs:
                     assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
                                                                  # otherwise how should we know to which level in the 
                                                                  # hierarchy is this truth problem supposed to be?
-                    self.truth_problem = self._error_analysis__bak_truth_problem
-                    del self._error_analysis__bak_truth_problem
-                    
-                    # Make sure that stability factors computations at the reduced order level
-                    # are reset to the standard method
-                    self.reduced_problem.get_stability_factor = self._error_analysis__get_stability_factor__original
-                    del self._error_analysis__get_stability_factor__original
-
+                    self._undo_replace_truth_problem()
                 elif "with_respect_to_level" in kwargs:
                     pass # TODO
                 else:
                     raise ValueError("Invalid value for kwargs")
-            # Call Parent
-            DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
             
         @override
         def _init_speedup_analysis(self, **kwargs):
@@ -111,16 +96,7 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
                     assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
                                                                  # otherwise how should we know to which level in the 
                                                                  # hierarchy is this truth problem supposed to be?
-                    self._speedup_analysis__bak_truth_problem = self.truth_problem
-                    self.truth_problem = kwargs["with_respect_to"]
-                    
-                    # Make sure that stability factors computations at the reduced order level
-                    # call the correct problem
-                    self._speedup_analysis__get_stability_factor__original = self.reduced_problem.get_stability_factor
-                    def get_stability_factor__with_respect_to(self):
-                        return kwargs["with_respect_to"].get_stability_factor()
-                    self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
-                    
+                    self._replace_truth_problem(kwargs["with_respect_to"])
                 elif "with_respect_to_level" in kwargs:
                     pass # TODO
                 else:
@@ -130,25 +106,63 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             
         @override
         def _finalize_speedup_analysis(self, **kwargs):
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)
+            
             if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
                 if "with_respect_to" in kwargs:
                     assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
                                                                  # otherwise how should we know to which level in the 
                                                                  # hierarchy is this truth problem supposed to be?
-                    self.truth_problem = self._speedup_analysis__bak_truth_problem
-                    del self._speedup_analysis__bak_truth_problem
-                    
-                    # Make sure that stability factors computations at the reduced order level
-                    # are reset to the standard method
-                    self.reduced_problem.get_stability_factor = self._speedup_analysis__get_stability_factor__original
-                    del self._speedup_analysis__get_stability_factor__original
-
+                    self._undo_replace_truth_problem()
                 elif "with_respect_to_level" in kwargs:
                     pass # TODO
                 else:
                     raise ValueError("Invalid value for kwargs")
-            # Call Parent
-            DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)
+                 
+        def _replace_truth_problem(self, other_truth_problem):
+            # Make sure that mu is in sync, for both the other truth problem ...
+            self._replace_truth_problem__other_truth_set_mu__original = other_truth_problem.set_mu
+            def other_truth_set_mu(self_, mu):
+                self._replace_truth_problem__other_truth_set_mu__original(mu)
+                if self.reduced_problem.mu != mu:
+                    self.reduced_problem.set_mu(mu)
+            other_truth_problem.set_mu = types.MethodType(other_truth_set_mu, other_truth_problem)
+            # ... and the reduced problem
+            self._replace_truth_problem__reduced_set_mu__original = self.reduced_problem.set_mu
+            def reduced_set_mu(self_, mu):
+                self._replace_truth_problem__reduced_set_mu__original(mu)
+                if other_truth_problem.mu != mu:
+                    other_truth_problem.set_mu(mu)
+            self.reduced_problem.set_mu = types.MethodType(reduced_set_mu, self.reduced_problem)
+            
+            # Make sure that stability factors computations at the reduced order level
+            # call the correct problem
+            self._replace_truth_problem__get_stability_factor__original = self.reduced_problem.get_stability_factor
+            def get_stability_factor__with_respect_to(self_):
+                return other_truth_problem.get_stability_factor()
+            self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
+            
+            # Change truth problem
+            self._replace_truth_problem__bak_truth_problem = self.truth_problem
+            self.truth_problem = other_truth_problem
+            
+        def _undo_replace_truth_problem(self):
+            # Restore the original mu sync, for both the other truth problem (currently stored in self.truth_problem)...
+            self.truth_problem.set_mu = self._replace_truth_problem__other_truth_set_mu__original
+            del self._replace_truth_problem__other_truth_set_mu__original
+            # ... and the reduced problem
+            self.reduced_problem.set_mu = self._replace_truth_problem__reduced_set_mu__original
+            del self._replace_truth_problem__reduced_set_mu__original
+            
+            # Make sure that stability factors computations at the reduced order level
+            # are reset to the standard method
+            self.reduced_problem.get_stability_factor = self._replace_truth_problem__get_stability_factor__original
+            del self._replace_truth_problem__get_stability_factor__original
+            
+            # Reset truth problem
+            self.truth_problem = self._replace_truth_problem__bak_truth_problem
+            del self._replace_truth_problem__bak_truth_problem
             
     # return value (a class) for the decorator
     return MultiLevelReductionMethod_Class

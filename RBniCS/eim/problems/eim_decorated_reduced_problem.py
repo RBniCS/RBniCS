@@ -41,7 +41,7 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
             #     the correct problem is called for what concerns EIM computations
             
         @override
-        def solve(self, N, **kwargs):
+        def solve(self, N=None, **kwargs):
             self._update_N_EIM(**kwargs)
             return ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
             

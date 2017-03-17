@@ -22,37 +22,49 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import os # for path
 from dolfin import as_backend_type
 from petsc4py import PETSc
 import RBniCS.backends # avoid circular imports when importing fenics backend
 from RBniCS.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_reader_mapping
-from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
+from RBniCS.backends.fenics.wrapping.get_form_argument import get_form_argument
 from RBniCS.utils.mpi import is_io_process
 from RBniCS.utils.io import PickleIO
 
 def tensor_load(tensor, directory, filename):
-    mpi_comm = get_mpi_comm(V)
+    mpi_comm = tensor.mpi_comm().tompi4py()
+    form = tensor.generator._form
     # Read in generator
     full_filename_generator = str(directory) + "/" + filename + ".generator"
     generator_string = None
     if is_io_process(mpi_comm):
-        with open(full_filename_generator, "r") as generator_file:
-            generator_string = generator_file.readline()
+        if os.path.exists(full_filename_generator):
+            with open(full_filename_generator, "r") as generator_file:
+                generator_string = generator_file.readline()
+        else:
+            return False
     generator_string = mpi_comm.bcast(generator_string, root=is_io_process.root)
     # Read in generator mpi size
     full_filename_generator_mpi_size = str(directory) + "/" + filename + ".generator_mpi_size"
     generator_mpi_size_string = None
     if is_io_process(mpi_comm):
-        with open(full_filename_generator_mpi_size, "r") as generator_mpi_size_file:
-            generator_mpi_size_string = generator_mpi_size_file.readline()
+        if os.path.exists(full_filename_generator_mpi_size):
+            with open(full_filename_generator_mpi_size, "r") as generator_mpi_size_file:
+                generator_mpi_size_string = generator_mpi_size_file.readline()
+        else:
+            return False
     generator_mpi_size_string = mpi_comm.bcast(generator_mpi_size_string, root=is_io_process.root)
     # Read in generator mapping from processor dependent indices (at the time of saving) to processor independent (global_cell_index, cell_dof) tuple
-    permutation = permutation_load(V, tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
+    (permutation, loaded) = permutation_load(tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
+    if not loaded:
+        return False
     # Read in content
     assert isinstance(tensor, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
     if isinstance(tensor, RBniCS.backends.fenics.Matrix.Type()):
         (matrix_row_permutation, matrix_col_permutation) = permutation
-        writer_mat = matrix_load(directory, filename)
+        (writer_mat, loaded) = matrix_load(directory, filename)
+        if not loaded:
+            return False
         mat = as_backend_type(tensor).mat()
         writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
         for writer_row in range(writer_row_start, writer_row_end):
@@ -65,7 +77,9 @@ def tensor_load(tensor, directory, filename):
         mat.assemble()
     elif isinstance(tensor, RBniCS.backends.fenics.Vector.Type()):
         vector_permutation = permutation
-        writer_vec = vector_load(directory, filename)
+        (writer_vec, loaded) = vector_load(directory, filename)
+        if not loaded:
+            return False
         vec = as_backend_type(tensor).vec()
         writer_row_start, writer_row_end = writer_vec.getOwnershipRange()
         for writer_row in range(writer_row_start, writer_row_end):
@@ -74,19 +88,25 @@ def tensor_load(tensor, directory, filename):
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in tensor_load.")
     # Return
-    return tensor
+    return True
     
-def permutation_load(V, tensor, directory, filename, form, form_name, mpi_comm):
+def permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
     if not form_name in _permutation_storage:
+        if not PickleIO.exists_file(directory, "." + form_name):
+            return (None, False)
+            
         assert isinstance(tensor, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
         if isinstance(tensor, RBniCS.backends.fenics.Matrix.Type()):
-            assert len(V) == 2
-            V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V[0])
-            V_1__dof_map_reader_mapping = build_dof_map_reader_mapping(V[1])
+            V_0 = get_form_argument(form, 0).function_space()
+            V_1 = get_form_argument(form, 1).function_space()
+            V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
+            V_1__dof_map_reader_mapping = build_dof_map_reader_mapping(V_1)
             (V_0__dof_map_writer_mapping, V_1__dof_map_writer_mapping) = PickleIO.load_file(directory, "." + form_name)
             matrix_row_permutation = dict() # from row index at time of saving to current row index
             matrix_col_permutation = dict() # from col index at time of saving to current col index
-            writer_mat = matrix_load(directory, filename)
+            (writer_mat, loaded) = matrix_load(directory, filename)
+            if not loaded:
+                return (None, False)
             writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
             for writer_row in range(writer_row_start, writer_row_end):
                 (global_cell_index, cell_dof) = V_0__dof_map_writer_mapping[writer_row]
@@ -98,11 +118,13 @@ def permutation_load(V, tensor, directory, filename, form, form_name, mpi_comm):
                         matrix_col_permutation[writer_col] = V_1__dof_map_reader_mapping[global_cell_index][cell_dof]
             _permutation_storage[form_name] = (matrix_row_permutation, matrix_col_permutation)
         elif isinstance(tensor, RBniCS.backends.fenics.Vector.Type()):
-            assert len(V) == 1
-            V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V[0])
+            V_0 = get_form_argument(form, 0).function_space()
+            V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
             V_0__dof_map_writer_mapping = PickleIO.load_file(directory, "." + form_name)
             vector_permutation = dict() # from index at time of saving to current index
-            writer_vec = vector_load(directory, filename)
+            (writer_vec, loaded) = vector_load(directory, filename)
+            if not loaded:
+                return (None, False)
             writer_row_start, writer_row_end = writer_vec.getOwnershipRange()
             for writer_row in range(writer_row_start, writer_row_end):
                 (global_cell_index, cell_dof) = V_0__dof_map_writer_mapping[writer_row]
@@ -111,15 +133,28 @@ def permutation_load(V, tensor, directory, filename, form, form_name, mpi_comm):
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in permutation_load.")
             
-    return _permutation_storage[form_name]
+    return (_permutation_storage[form_name], True)
     
 def matrix_load(directory, filename):
-    viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "r")
-    return PETSc.Mat().load(viewer)
+    if _file_exists(directory, filename + ".dat"):
+        viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "r")
+        return (PETSc.Mat().load(viewer), True)
+    else:
+        return (None, False)
     
 def vector_load(directory, filename):
-    viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "r")
-    return PETSc.Vec().load(viewer)
+    if _file_exists(directory, filename + ".dat"):
+        viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "r")
+        return (PETSc.Vec().load(viewer), True)
+    else:
+        return (None, False)
+    
+def _file_exists(directory, filename):
+    file_exists = False
+    if is_io_process() and os.path.exists(str(directory) + "/" + filename):
+        file_exists = True
+    file_exists = is_io_process.mpi_comm.bcast(file_exists, root=is_io_process.root)
+    return file_exists
     
 _permutation_storage = dict()
 
