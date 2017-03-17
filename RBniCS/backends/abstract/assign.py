@@ -26,6 +26,6 @@ from RBniCS.utils.decorators import abstract_backend
 
 # assign function_from to function_to storage
 @abstract_backend
-def assign(function_to, function_from):
+def assign(object_to, object_from):
     pass
     

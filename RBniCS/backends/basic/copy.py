@@ -23,9 +23,18 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 def copy(arg, backend, wrapping):
-    assert isinstance(arg, (backend.Function.Type(), backend.Vector.Type(), backend.Matrix.Type()))
+    assert (
+        isinstance(arg, (backend.Function.Type(), backend.Vector.Type(), backend.Matrix.Type()))
+            or
+        (isinstance(arg, list) and isinstance(arg[0], backend.Function.Type()))
+    )
     if isinstance(arg, backend.Function.Type()):
         return wrapping.function_copy(arg)
+    elif isinstance(arg, list) and isinstance(arg[0], backend.Function.Type()):
+        output = list()
+        for fun in arg:
+            output.append(wrapping.function_copy(fun))
+        return output
     elif isinstance(arg, (backend.Matrix.Type(), backend.Vector.Type())):
         return wrapping.tensor_copy(arg)
     else: # impossible to arrive here anyway, thanks to the assert

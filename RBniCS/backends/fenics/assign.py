@@ -24,11 +24,29 @@
 
 from dolfin import assign as dolfin_assign
 from RBniCS.backends.fenics.function import Function
-from RBniCS.utils.decorators import backend_for
+from RBniCS.backends.fenics.matrix import Matrix
+from RBniCS.backends.fenics.vector import Vector
+from RBniCS.utils.decorators import backend_for, list_of
 
-@backend_for("fenics", inputs=(Function.Type(), Function.Type()))
-def assign(function_to, function_from):
-    if function_from is not function_to:
-        dolfin_assign(function_to, function_from)
-        
-        
+@backend_for("fenics", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), (Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type())))
+def assign(object_to, object_from):
+    if object_from is not object_to:
+        assert (
+            (isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()))
+                or
+            (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))
+                or
+            (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type()))
+        )
+        if isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()):
+            dolfin_assign(object_to, object_from)
+        elif isinstance(object_to, list) and isinstance(object_to[0], Function.Type()) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()):
+            object_to.clear()
+            object_to.extend(object_from)
+        elif (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type())):
+            as_backend_type(object_from).mat().copy(as_backend_type(object_to).mat(), as_backend_type(object_to).mat().Structure.SAME_NONZERO_PATTERN)
+        elif (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type())):
+            as_backend_type(object_from).vec().copy(as_backend_type(object_to).vec())
+        else:
+            raise AssertionError("Invalid arguments to assign")
+            

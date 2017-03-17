@@ -23,11 +23,34 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from RBniCS.backends.numpy.function import Function
-from RBniCS.utils.decorators import backend_for
+from RBniCS.backends.numpy.matrix import Matrix
+from RBniCS.backends.numpy.vector import Vector
+from RBniCS.utils.decorators import backend_for, list_of
 
-@backend_for("numpy", inputs=(Function.Type(), Function.Type()))
-def assign(function_to, function_from):
-    if function_from is not function_to:
-        assert function_to.vector().N == function_from.vector().N
-        function_to.vector()[:] = function_from.vector()
-        
+@backend_for("numpy", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), (Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type())))
+def assign(object_to, object_from):
+    if object_from is not object_to:
+        assert (
+            (isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()))
+                or
+            (isinstance(object_to, list) and isinstance(object_to[0], Function.Type()) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()))
+                or
+            (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))
+                or
+            (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type()))
+        )
+        if isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()):
+            assert object_to.vector().N == object_from.vector().N
+            object_to.vector()[:] = object_from.vector()
+        elif isinstance(object_to, list) and isinstance(object_to[0], Function.Type()) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()):
+            object_to.clear()
+            object_to.extend(object_from)
+        elif (
+            (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))
+                or
+            (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type()))
+        ):
+            object_to[:] = object_from
+        else:
+            raise AssertionError("Invalid arguments to assign")
+            
