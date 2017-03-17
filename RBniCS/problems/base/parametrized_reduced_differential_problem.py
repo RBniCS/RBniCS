@@ -32,7 +32,7 @@ from RBniCS.backends import assign, BasisFunctionsMatrix, copy, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.sampling import ParameterSpaceSubset
 from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
-from RBniCS.utils.mpi import print
+from RBniCS.utils.mpi import log, print, PROGRESS
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase
@@ -230,8 +230,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
         self._solution = OnlineFunction(N)
         if cache_key in self._solution_cache:
+            log(PROGRESS, "Loading reduced solution from cache")
             assign(self._solution, self._solution_cache[cache_key])
         else:
+            log(PROGRESS, "Solving reduced problem")
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             self._solve(N, **kwargs)

@@ -28,6 +28,7 @@ import hashlib
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.backends import AffineExpansionStorage, assign, copy, export, Function, import_
 from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromSolutionToProblem
+from RBniCS.utils.mpi import log, PROGRESS
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem
@@ -157,10 +158,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     def solve(self, **kwargs):
         (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
         if cache_key in self._solution_cache:
+            log(PROGRESS, "Loading truth solution from cache")
             assign(self._solution, self._solution_cache[cache_key])
         elif self.import_solution(self.folder["cache"], cache_file):
+            log(PROGRESS, "Loading truth solution from file")
             self._solution_cache[cache_key] = copy(self._solution)
         else:
+            log(PROGRESS, "Solving truth problem")
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             self._solve(**kwargs)

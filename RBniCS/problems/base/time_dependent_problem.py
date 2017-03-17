@@ -24,6 +24,7 @@
 
 from RBniCS.backends import AffineExpansionStorage, copy, Function
 from RBniCS.utils.decorators import Extends, override
+from RBniCS.utils.mpi import log, PROGRESS
 
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
@@ -160,6 +161,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
         def solve(self, **kwargs):
             (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
             if cache_key in self._solution_cache:
+                log(PROGRESS, "Loading truth solution from cache")
                 assert cache_key in self._solution_dot_cache
                 assert cache_key in self._solution_over_time_cache
                 assert cache_key in self._solution_dot_over_time_cache
@@ -168,11 +170,13 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
                 assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
             elif self.import_solution(self.folder["cache"], cache_file):
+                log(PROGRESS, "Loading truth solution from file")
                 self._solution_cache[cache_key] = copy(self._solution)
                 self._solution_dot_cache[cache_key] = copy(self._solution_dot)
                 self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
                 self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
             else:
+                log(PROGRESS, "Solving truth problem")
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
                 self._solve(**kwargs)

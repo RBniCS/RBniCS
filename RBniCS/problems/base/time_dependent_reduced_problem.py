@@ -26,6 +26,7 @@ from math import sqrt
 from RBniCS.backends import assign, copy, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.utils.decorators import Extends, override, sync_setters
+from RBniCS.utils.mpi import log, PROGRESS
 
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
@@ -262,6 +263,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._solution = OnlineFunction(N)
             self._solution_dot = OnlineFunction(N)
             if cache_key in self._solution_cache:
+                log(PROGRESS, "Loading reduced solution from cache")
                 assert cache_key in self._solution_dot_cache
                 assert cache_key in self._solution_over_time_cache
                 assert cache_key in self._solution_dot_over_time_cache
@@ -270,6 +272,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
                 assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
             else:
+                log(PROGRESS, "Solving reduced problem")
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
                 self._solve(N, **kwargs)
