@@ -67,7 +67,7 @@ def form_on_reduced_function_space(form_wrapper, at):
                             # Get reduced problem basis functions on reduced mesh
                             reduced_problem_to_reduced_Z[reduced_problem] = at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem)
                         else:
-                            exact_truth_problem = exact_problem(truth_problem, preserve_class_name=True)
+                            exact_truth_problem = exact_problem(truth_problem)
                             exact_truth_problem.init()
                             # Define a replacement
                             replacements[node] = Function(auxiliary_reduced_V)

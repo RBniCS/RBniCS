@@ -24,7 +24,7 @@
 
 from RBniCS.utils.decorators.extends import Extends
 
-def exact_problem(decorated_problem, preserve_class_name=False):
+def exact_problem(decorated_problem, preserve_class_name=True):
     DecoratedProblem = type(decorated_problem)
     if hasattr(DecoratedProblem, "ProblemDecorators"):
         assert hasattr(DecoratedProblem, "UndecoratedProblemClass")

@@ -139,7 +139,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 return DifferentialProblemReductionMethod_DerivedClass.offline(self)
             else:
                 bak_truth_problem = self.truth_problem
-                self.truth_problem = exact_problem(bak_truth_problem, preserve_class_name=True)
+                self.truth_problem = exact_problem(bak_truth_problem)
                 # Perform first parent offline phase (with exact operators)
                 bak_first_mu = tuple(list(self.truth_problem.mu))
                 exact_reduced_problem = DifferentialProblemReductionMethod_DerivedClass.offline(self)

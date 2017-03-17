@@ -52,7 +52,7 @@ def form_on_truth_function_space(form_wrapper):
                             reduced_problem = get_reduced_problem_from_problem(truth_problem)
                             reduced_problem_to_truth_solution[reduced_problem] = node
                         else:
-                            exact_truth_problem = exact_problem(truth_problem, preserve_class_name=True)
+                            exact_truth_problem = exact_problem(truth_problem)
                             exact_truth_problem.init()
                             truth_problem_to_truth_solution[exact_truth_problem] = node
                         visited.append(node)
