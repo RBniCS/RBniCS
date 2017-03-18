@@ -198,7 +198,10 @@ class ReducedVertices(AbstractReducedVertices):
         
     def get_auxiliary_reduced_function_space(self, auxiliary_problem, index=None):
         return self._reduced_mesh.get_auxiliary_reduced_function_space(auxiliary_problem, index)
-                
+        
     def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, auxiliary_reduced_problem, index=None):
         return self._reduced_mesh.get_auxiliary_basis_functions_matrix(auxiliary_problem, auxiliary_reduced_problem, index)
+        
+    def get_auxiliary_function_interpolator(self, auxiliary_problem, index=None):
+        return self._reduced_mesh.get_auxiliary_function_interpolator(auxiliary_problem, index)
         

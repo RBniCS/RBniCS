@@ -31,8 +31,8 @@ from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
 class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
-    def __init__(self, truth_problem, expression, mesh):
-        ParametrizedExpressionFactory_Base.__init__(self, truth_problem, expression)
+    def __init__(self, expression, mesh):
+        ParametrizedExpressionFactory_Base.__init__(self, expression)
         # Use a ridiculously high finite element space to have an accuracy comparable to the one of test 1,
         # where exact evaluation is carried out
         self._space = FunctionSpace(mesh, "CG", 10)

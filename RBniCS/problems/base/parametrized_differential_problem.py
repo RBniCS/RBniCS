@@ -27,7 +27,7 @@ import types
 import hashlib
 from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.backends import AffineExpansionStorage, assign, copy, export, Function, import_
-from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromSolutionToProblem
+from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from RBniCS.utils.mpi import log, PROGRESS
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -36,6 +36,7 @@ from RBniCS.utils.mpi import log, PROGRESS
 # Base class containing the definition of elliptic coercive problems
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 @StoreMapFromProblemNameToProblem
+@StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem
 class ParametrizedDifferentialProblem(ParametrizedProblem):
     __metaclass__ = ABCMeta

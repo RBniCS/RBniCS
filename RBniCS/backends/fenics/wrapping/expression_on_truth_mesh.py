@@ -27,6 +27,7 @@ from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from RBniCS.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, is_training_finished
+from RBniCS.utils.mpi import log, PROGRESS
 from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
 def expression_on_truth_mesh(expression_wrapper):
@@ -51,9 +52,12 @@ def expression_on_truth_mesh(expression_wrapper):
                         reduced_problem = get_reduced_problem_from_problem(truth_problem)
                         reduced_problem_to_truth_solution[reduced_problem] = node
                     else:
-                        exact_truth_problem = exact_problem(truth_problem)
-                        exact_truth_problem.init()
-                        truth_problem_to_truth_solution[exact_truth_problem] = node
+                        if not hasattr(truth_problem, "_is_solving"):
+                            exact_truth_problem = exact_problem(truth_problem)
+                            exact_truth_problem.init()
+                            truth_problem_to_truth_solution[exact_truth_problem] = node
+                        else:
+                            truth_problem_to_truth_solution[truth_problem] = node
                     visited.append(node)
         
         # Cache the resulting dicts
@@ -67,13 +71,18 @@ def expression_on_truth_mesh(expression_wrapper):
     # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
     for (truth_problem, truth_solution) in truth_problem_to_truth_solution.iteritems():
         truth_problem.set_mu(EIM_approximation.mu)
-        assert not hasattr(truth_problem, "_is_solving")
-        assign(truth_solution, truth_problem.solve())
+        if not hasattr(truth_problem, "_is_solving"):
+            log(PROGRESS, "In expression_on_truth_mesh, requiring truth problem solve for problem " + str(truth_problem))
+            assign(truth_solution, truth_problem.solve())
+        else:
+            log(PROGRESS, "In expression_on_truth_mesh, loading truth problem solution for problem " + str(truth_problem))
+            assign(truth_solution, truth_problem._solution)
         
     # Solve reduced problems associated to nonlinear terms
     for (reduced_problem, truth_solution) in reduced_problem_to_truth_solution.iteritems():
         reduced_problem.set_mu(EIM_approximation.mu)
         assert not hasattr(reduced_problem, "_is_solving")
+        log(PROGRESS, "In expression_on_truth_mesh, requiring reduced problem solve for problem " + str(reduced_problem))
         reduced_solution = reduced_problem.solve()
         assign(truth_solution, reduced_problem.Z[:reduced_solution.N]*reduced_solution)
     

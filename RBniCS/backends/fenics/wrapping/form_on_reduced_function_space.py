@@ -29,6 +29,7 @@ from ufl.geometry import GeometricQuantity
 from dolfin import Argument, assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from RBniCS.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, is_training_finished
+from RBniCS.utils.mpi import log, PROGRESS
 from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
 def form_on_reduced_function_space(form_wrapper, at):
@@ -57,23 +58,29 @@ def form_on_reduced_function_space(form_wrapper, at):
                     # ... problem solutions related to nonlinear terms
                     elif isinstance(node, Function) and is_problem_solution(node):
                         truth_problem = get_problem_from_solution(node)
+                        # Get the function space corresponding to node on the reduced mesh
+                        auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem)
+                        # Define a replacement
+                        replacements[node] = Function(auxiliary_reduced_V)
                         if is_training_finished(truth_problem):
                             reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                            # Get the function space corresponding to node on the reduced mesh
-                            auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem)
-                            # Define a replacement
-                            replacements[node] = Function(auxiliary_reduced_V)
+                            # Store the replacement
                             reduced_problem_to_reduced_mesh_solution[reduced_problem] = replacements[node]
                             # Get reduced problem basis functions on reduced mesh
                             reduced_problem_to_reduced_Z[reduced_problem] = at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem)
                         else:
-                            exact_truth_problem = exact_problem(truth_problem)
-                            exact_truth_problem.init()
-                            # Define a replacement
-                            replacements[node] = Function(auxiliary_reduced_V)
-                            truth_problem_to_reduced_mesh_solution[exact_truth_problem] = replacements[node]
-                            # Get interpolator on reduced mesh
-                            truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = at.get_auxiliary_function_interpolator(exact_truth_problem)
+                            if not hasattr(truth_problem, "_is_solving"):
+                                exact_truth_problem = exact_problem(truth_problem)
+                                exact_truth_problem.init()
+                                # Store the replacement
+                                truth_problem_to_reduced_mesh_solution[exact_truth_problem] = replacements[node]
+                                # Get interpolator on reduced mesh
+                                truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = at.get_auxiliary_function_interpolator(exact_truth_problem)
+                            else:
+                                # Store the replacement
+                                truth_problem_to_reduced_mesh_solution[truth_problem] = replacements[node]
+                                # Get interpolator on reduced mesh
+                                truth_problem_to_reduced_mesh_interpolator[truth_problem] = at.get_auxiliary_function_interpolator(truth_problem)
                     # ... geometric quantities
                     elif isinstance(node, GeometricQuantity):
                         if len(reduced_V) == 2:
@@ -118,11 +125,13 @@ def form_on_reduced_function_space(form_wrapper, at):
     reduced_problem_to_reduced_Z = form_on_reduced_function_space__reduced_problem_to_reduced_Z_cache[(form, reduced_V)]
     
     # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
-    for (truth_problem, reduced_mesh_solution) in reduced_problem_to_reduced_mesh_solution.iteritems():
+    for (truth_problem, reduced_mesh_solution) in truth_problem_to_reduced_mesh_solution.iteritems():
         truth_problem.set_mu(EIM_approximation.mu)
         if not hasattr(truth_problem, "_is_solving"):
+            log(PROGRESS, "In form_on_reduced_function_space, requiring truth problem solve for problem " + str(truth_problem))
             truth_solution = truth_problem.solve()
         else:
+            log(PROGRESS, "In form_on_reduced_function_space, loading truth problem solution for problem " + str(truth_problem))
             truth_solution = truth_problem._solution
         reduced_mesh_interpolator = truth_problem_to_reduced_mesh_interpolator[truth_problem]
         assign(reduced_mesh_solution, reduced_mesh_interpolator(truth_solution))
@@ -131,8 +140,10 @@ def form_on_reduced_function_space(form_wrapper, at):
     for (reduced_problem, reduced_mesh_solution) in reduced_problem_to_reduced_mesh_solution.iteritems():
         reduced_problem.set_mu(EIM_approximation.mu)
         if not hasattr(reduced_problem, "_is_solving"):
+            log(PROGRESS, "In form_on_reduced_function_space, requiring reduced problem solve for problem " + str(reduced_problem))
             reduced_solution = reduced_problem.solve()
         else:
+            log(PROGRESS, "In form_on_reduced_function_space, loading reduced problem solution for problem " + str(reduced_problem))
             reduced_solution = reduced_problem._solution
         reduced_Z = reduced_problem_to_reduced_Z[reduced_problem]
         assign(reduced_mesh_solution, reduced_Z[:reduced_solution.N]*reduced_solution)

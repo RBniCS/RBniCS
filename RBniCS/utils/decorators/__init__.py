@@ -43,7 +43,7 @@ from RBniCS.utils.decorators.reduction_method_for import ReductionMethodFor
 from RBniCS.utils.decorators.regenerate_reduced_problem_from_exact_reduced_problem import regenerate_reduced_problem_from_exact_reduced_problem
 from RBniCS.utils.decorators.store_map_from_problem_name_to_problem import add_to_map_from_problem_name_to_problem, get_problem_from_problem_name, StoreMapFromProblemNameToProblem
 from RBniCS.utils.decorators.store_map_from_problem_to_reduced_problem import add_to_map_from_problem_to_reduced_problem, get_reduced_problem_from_problem, StoreMapFromProblemToReducedProblem
-from RBniCS.utils.decorators.store_map_from_problem_to_training_status import is_training_finished, set_map_from_problem_to_training_status_on, set_map_from_problem_to_training_status_off, StoreMapFromProblemToTrainingStatus
+from RBniCS.utils.decorators.store_and_update_map_from_problem_to_training_status import is_training_finished, set_map_from_problem_to_training_status_on, set_map_from_problem_to_training_status_off, StoreMapFromProblemToTrainingStatus, UpdateMapFromProblemToTrainingStatus
 from RBniCS.utils.decorators.store_map_from_solution_to_problem import add_to_map_from_solution_to_problem, get_problem_from_solution, is_problem_solution, StoreMapFromSolutionToProblem
 from RBniCS.utils.decorators.sync_setters import sync_setters
 
@@ -98,5 +98,6 @@ __all__ = [
     'StoreMapFromSolutionToProblem',
     'sync_setters',
     'ThetaType',
-    'tuple_of'
+    'tuple_of',
+    'UpdateMapFromProblemToTrainingStatus'
 ]

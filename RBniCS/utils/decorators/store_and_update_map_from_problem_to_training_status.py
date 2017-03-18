@@ -25,18 +25,31 @@
 from RBniCS.utils.decorators.extends import Extends
 from RBniCS.utils.decorators.override import override
 
-def StoreMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_DerivedClass):
+def StoreMapFromProblemToTrainingStatus(ParametrizedDifferentialProblem_DerivedClass):
+            
+    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class StoreMapFromProblemToTrainingStatus_Class(ParametrizedDifferentialProblem_DerivedClass):
+        
+        @override
+        def __init__(self, V, **kwargs):
+            # Call the parent initialization
+            ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
+            
+            # Populate problem to training status
+            set_map_from_problem_to_training_status_off(self)
+            
+    # return value (a class) for the decorator
+    return StoreMapFromProblemToTrainingStatus_Class
+
+def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_DerivedClass):
             
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
-    class StoreMapFromProblemToTrainingStatus_Class(DifferentialProblemReductionMethod_DerivedClass):
+    class UpdateMapFromProblemToTrainingStatus_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
-            # Populate reduced problem to training status
-            set_map_from_problem_to_training_status_off(self.truth_problem)
             
         @override
         def _finalize_offline(self):
@@ -44,7 +57,7 @@ def StoreMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_Deriv
             set_map_from_problem_to_training_status_on(self.truth_problem)
             
     # return value (a class) for the decorator
-    return StoreMapFromProblemToTrainingStatus_Class
+    return UpdateMapFromProblemToTrainingStatus_Class
     
 def set_map_from_problem_to_training_status_on(problem):
     assert problem in _problem_to_training_status

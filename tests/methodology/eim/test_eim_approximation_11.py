@@ -32,11 +32,12 @@ from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from RBniCS.problems.base import ParametrizedProblem
 from RBniCS.reduction_methods.base import ReductionMethod
-from RBniCS.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromSolutionToProblem, sync_setters
+from RBniCS.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
 from RBniCS.utils.io import Folders
 from RBniCS.utils.mpi import print
 
 @StoreMapFromProblemNameToProblem
+@StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem
 class MockProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):
@@ -49,24 +50,20 @@ class MockProblem(ParametrizedProblem):
         # Parametrized function to be interpolated
         x = SpatialCoordinate(V.mesh())
         mu = ParametrizedConstant(self, "mu[0]", mu=(1., ))
-        self.f00 = (1-x[0])*cos(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
-        self.f01 = (1-x[0])*sin(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
+        self.f = (1-x[0])*cos(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
         # Inner product
         f = TrialFunction(self.V)
         g = TestFunction(self.V)
-        self.X = assemble(inner(f, g)*dx)
-        # Collapsed vector and space
-        self.V0 = V.sub(0).collapse()
-        self.V00 = V.sub(0).sub(0).collapse()
-        self.V1 = V.sub(1).collapse()
+        self.X = assemble(f*g*dx)
         
     def solve(self):
-        f00 = project(self.f00, self.V00)
-        f01 = project(self.f01, self.V00)
-        assign(self._solution.sub(0).sub(0), f00)
-        assign(self._solution.sub(0).sub(1), f01)
+        assert not hasattr(self, "_is_solving")
+        self._is_solving = True
+        project(self.f, self.V, function=self._solution)
+        delattr(self, "_is_solving")
         return self._solution
 
+@UpdateMapFromProblemToTrainingStatus
 class MockReductionMethod(ReductionMethod):
     def __init__(self, truth_problem, **kwargs):
         # Call parent
@@ -91,6 +88,7 @@ class MockReductionMethod(ReductionMethod):
             self.reduced_problem.Z.save(self.folder["basis"], "basis")
         else:
             self.reduced_problem.Z.load(self.folder["basis"], "basis")
+        self._finalize_offline()
         return self.reduced_problem
         
     def error_analysis(self, N=None, **kwargs):
@@ -114,30 +112,32 @@ class MockReducedProblem(ParametrizedProblem):
         
     def solve(self):
         print("solving mock reduced problem at mu =", self.mu)
+        assert not hasattr(self, "_is_solving")
+        self._is_solving = True
         f = self.truth_problem.solve()
         f_N = transpose(self.Z)*self.truth_problem.X*f
         # Return the reduced solution
         self._solution = OnlineFunction(f_N)
+        delattr(self, "_is_solving")
         return self._solution
         
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, truth_problem, expression_type, basis_generation):
-        self.V = truth_problem.V1
-        (f0, _) = split(truth_problem._solution)
+        self.V = truth_problem.V
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f0), "test_eim_approximation_11_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(truth_problem._solution), "test_eim_approximation_11_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(self.V)
-            form = f0[0]*v*dx + f0[1]*v.dx(0)*dx
+            form = truth_problem._solution*v*dx
             # Call Parent constructor
             EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_11_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(self.V)
             v = TestFunction(self.V)
-            form = f0[0]*u*v*dx + f0[1]*u.dx(0)*v*dx
+            form = truth_problem._solution*u*v*dx
             # Call Parent constructor
             EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_11_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
@@ -147,10 +147,7 @@ class ParametrizedFunctionApproximation(EIMApproximation):
 mesh = IntervalMesh(100, -1., 1.)
 
 # 2. Create Finite Element space (Lagrange P1)
-element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2, dim=2)
-element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-element   = MixedElement(element_0, element_1)
-V = FunctionSpace(mesh, element)
+V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Create a parametrized problem
 problem = MockProblem(V)

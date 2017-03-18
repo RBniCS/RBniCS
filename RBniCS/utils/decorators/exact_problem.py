@@ -25,33 +25,39 @@
 from RBniCS.utils.decorators.extends import Extends
 
 def exact_problem(decorated_problem, preserve_class_name=True):
-    DecoratedProblem = type(decorated_problem)
-    if hasattr(DecoratedProblem, "ProblemDecorators"):
-        assert hasattr(DecoratedProblem, "UndecoratedProblemClass")
-        @Extends(DecoratedProblem.UndecoratedProblemClass, preserve_class_name=True)
-        class ExactProblem_Class(DecoratedProblem.UndecoratedProblemClass):
-            pass
+    if (decorated_problem, preserve_class_name) not in _all_exact_problems:
+        DecoratedProblem = type(decorated_problem)
+        if hasattr(DecoratedProblem, "ProblemDecorators"):
+            assert hasattr(DecoratedProblem, "UndecoratedProblemClass")
+            @Extends(DecoratedProblem.UndecoratedProblemClass, preserve_class_name=True)
+            class ExactProblem_Class(DecoratedProblem.UndecoratedProblemClass):
+                pass
+            
+            if not preserve_class_name:
+                setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
+            setattr(ExactProblem_Class, "__is_exact__", True)
+            setattr(ExactProblem_Class, "__DecoratedProblem__", DecoratedProblem)
+            
+            # Re-apply decorators, replacing e.g. EIM with ExactParametrizedFunctions:
+            for (Decorator, ExactDecorator, kwargs) in zip(DecoratedProblem.ProblemDecorators, DecoratedProblem.ProblemExactDecorators, DecoratedProblem.ProblemDecoratorsKwargs):
+                if ExactDecorator is not None:
+                    ExactProblem_Class = ExactDecorator(**kwargs)(ExactProblem_Class)
+                else:
+                    ExactProblem_Class = Decorator(**kwargs)(ExactProblem_Class)
+            
+            # Create a new instance of ExactProblem_Class
+            exact_problem = ExactProblem_Class(decorated_problem.V, **decorated_problem.problem_kwargs)
+            exact_problem.set_mu_range(decorated_problem.mu_range)
+            exact_problem.set_mu(decorated_problem.mu)
+            setattr(exact_problem, "__decorated_problem__", decorated_problem)
+            
+            # Save
+            _all_exact_problems[(decorated_problem, preserve_class_name)] = exact_problem
+        else:
+            _all_exact_problems[(decorated_problem, preserve_class_name)] = decorated_problem
+            
+    # Return
+    return _all_exact_problems[(decorated_problem, preserve_class_name)]
         
-        if not preserve_class_name:
-            setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
-        setattr(ExactProblem_Class, "__is_exact__", True)
-        setattr(ExactProblem_Class, "__DecoratedProblem__", DecoratedProblem)
-        
-        # Re-apply decorators, replacing e.g. EIM with ExactParametrizedFunctions:
-        for (Decorator, ExactDecorator, kwargs) in zip(DecoratedProblem.ProblemDecorators, DecoratedProblem.ProblemExactDecorators, DecoratedProblem.ProblemDecoratorsKwargs):
-            if ExactDecorator is not None:
-                ExactProblem_Class = ExactDecorator(**kwargs)(ExactProblem_Class)
-            else:
-                ExactProblem_Class = Decorator(**kwargs)(ExactProblem_Class)
-        
-        # Create a new instance of ExactProblem_Class
-        exact_problem = ExactProblem_Class(decorated_problem.V, **decorated_problem.problem_kwargs)
-        exact_problem.set_mu_range(decorated_problem.mu_range)
-        exact_problem.set_mu(decorated_problem.mu)
-        setattr(exact_problem, "__decorated_problem__", decorated_problem)
-        
-        # Return
-        return exact_problem
-    else:
-        return decorated_problem
-        
+_all_exact_problems = dict()
+

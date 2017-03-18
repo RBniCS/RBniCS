@@ -40,7 +40,7 @@ from RBniCS.utils.mpi import print
 class MockProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):
         # Call parent
-        ParametrizedProblem.__init__(self, "test_eim_approximation_12_mock_problem.output_dir")
+        ParametrizedProblem.__init__(self, "test_eim_approximation_14_mock_problem.output_dir")
         # Minimal subset of a ParametrizedDifferentialProblem
         self.V = V
         self._solution = Function(V)
@@ -48,11 +48,16 @@ class MockProblem(ParametrizedProblem):
         # Parametrized function to be interpolated
         x = SpatialCoordinate(V.mesh())
         mu = ParametrizedConstant(self, "mu[0]", mu=(1., ))
-        self.f = (1-x[0])*cos(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
+        self.f00 = (1-x[0])*cos(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
+        self.f01 = (1-x[0])*sin(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
         # Inner product
         f = TrialFunction(self.V)
         g = TestFunction(self.V)
-        self.X = assemble(f*g*dx)
+        self.X = assemble(inner(f, g)*dx)
+        # Collapsed vector and space
+        self.V0 = V.sub(0).collapse()
+        self.V00 = V.sub(0).sub(0).collapse()
+        self.V1 = V.sub(1).collapse()
         
     def init(self):
         pass
@@ -61,29 +66,33 @@ class MockProblem(ParametrizedProblem):
         print("solving mock problem at mu =", self.mu)
         assert not hasattr(self, "_is_solving")
         self._is_solving = True
-        project(self.f, self.V, function=self._solution)
+        f00 = project(self.f00, self.V00)
+        f01 = project(self.f01, self.V00)
+        assign(self._solution.sub(0).sub(0), f00)
+        assign(self._solution.sub(0).sub(1), f01)
         delattr(self, "_is_solving")
         return self._solution
         
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, truth_problem, expression_type, basis_generation):
-        self.V = truth_problem.V
+        self.V = truth_problem.V1
+        (f0, _) = split(truth_problem._solution)
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(truth_problem._solution), "test_eim_approximation_12_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f0), "test_eim_approximation_14_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(self.V)
-            form = truth_problem._solution*v*dx
+            form = f0[0]*v*dx + f0[1]*v.dx(0)*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_12_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_14_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(self.V)
             v = TestFunction(self.V)
-            form = truth_problem._solution*u*v*dx
+            form = f0[0]*u*v*dx + f0[1]*u.dx(0)*v*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_12_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_14_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 
@@ -91,7 +100,10 @@ class ParametrizedFunctionApproximation(EIMApproximation):
 mesh = IntervalMesh(100, -1., 1.)
 
 # 2. Create Finite Element space (Lagrange P1)
-V = FunctionSpace(mesh, "Lagrange", 1)
+element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2, dim=2)
+element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+element   = MixedElement(element_0, element_1)
+V = FunctionSpace(mesh, element)
 
 # 3. Create a parametrized problem
 problem = MockProblem(V)
