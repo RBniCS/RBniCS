@@ -122,7 +122,7 @@ class MockReducedProblem(ParametrizedProblem):
         return self._solution
         
 class ParametrizedFunctionApproximation(EIMApproximation):
-    def __init__(self, truth_problem, expression_type, basis_generation):
+    def __init__(self, truth_problem, expression_type, basis_generation, function):
         self.V = truth_problem.V
         #
         assert expression_type in ("Function", "Vector", "Matrix")
@@ -163,7 +163,8 @@ reduced_problem = reduction_method.offline()
 # 5. Allocate an object of the ParametrizedFunctionApproximation class
 expression_type = "Function" # Function or Vector or Matrix
 basis_generation = "Greedy" # Greedy or POD
-parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation)
+function = lambda u: exp(u)
+parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation, function)
 parametrized_function_approximation.set_mu_range(mu_range)
 
 # 6. Prepare reduction with EIM

@@ -30,7 +30,7 @@ from dolfin import as_backend_type, Point, vertices
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
 from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
+from RBniCS.backends.fenics.wrapping import assert_lagrange_1, function_from_ufl_operators, get_global_dof_coordinates, get_global_dof_component
 from RBniCS.utils.decorators import backend_for
 from RBniCS.utils.mpi import parallel_max
 
@@ -78,42 +78,18 @@ def abs(expression):
         return AbsOutput(global_value_max, global_i_max)
     elif isinstance(expression, (Function.Type(), Operator)):
         function = function_from_ufl_operators(expression)
-        mesh = function.function_space().mesh()
-        point_max = None
-        value_max = None
-        value_max_norm = None
-        value_max_component = None
-        for vertex in vertices(mesh):
-            point = mesh.coordinates()[vertex.index()]
-            value = function(point)
-            assert isinstance(value, (float, VectorMatrixType))
-            if isinstance(value, float):
-                value_norm = scalar_fabs(value)
-                value_component = -1
-            elif isinstance(value, VectorMatrixType):
-                value_component = vector_matrix_argmax(vector_matrix_fabs(value))
-                value = value[value_component]
-                value_norm = scalar_fabs(value)
-            else: # impossible to arrive here anyway thanks to the assert
-                raise AssertionError("Invalid argument to abs")
-            if value_max is None or value_norm > value_max_norm:
-                point_max = point
-                value_max = value
-                value_max_norm = value_norm
-                value_max_component = value_component
-        assert point_max is not None
-        assert value_max is not None
-        assert value_max_norm is not None
-        assert value_max_component is not None
-        assert isinstance(value_max, float)
-        assert isinstance(value_max_norm, float)
-        assert isinstance(value_max_component, int)
-        # Global communication of the result
-        mpi_comm = mesh.mpi_comm().tompi4py()
-        (global_value_max, global_point_max_component_max) = parallel_max(mpi_comm, value_max, (point_max, value_max_component), fabs)
+        space = function.function_space()
+        assert_lagrange_1(space)
+        abs_output = abs(function.vector())
+        value_max = abs_output.max_abs_return_value
+        global_dof_max = abs_output.max_abs_return_location
+        assert len(global_dof_max) == 1
+        global_dof_max = global_dof_max[0]
+        coordinates_max = get_global_dof_coordinates(global_dof_max, space)
+        component_max = get_global_dof_component(global_dof_max, space)
         # Prettify print
-        global_point_max_component_max = PrettyTuple(*global_point_max_component_max)
-        return AbsOutput(global_value_max, global_point_max_component_max)
+        coordinates_max_component_max_dof_max = PrettyTuple(coordinates_max, component_max, global_dof_max)
+        return AbsOutput(value_max, coordinates_max_component_max_dof_max)
     else: # impossible to arrive here anyway thanks to the assert
         raise AssertionError("Invalid argument to abs")
     
@@ -124,8 +100,8 @@ class AbsOutput(object):
         self.max_abs_return_location = max_abs_return_location
         
 class PrettyTuple(tuple):
-    def __new__(cls, arg0, arg1):
-        return tuple.__new__(cls, (arg0, arg1))
+    def __new__(cls, arg0, arg1, arg2):
+        return tuple.__new__(cls, (arg0, arg1, arg2))
 
     def __str__(self):
         output = str(self[0])

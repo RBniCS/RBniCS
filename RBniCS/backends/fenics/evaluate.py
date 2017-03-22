@@ -23,8 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from mpi4py.MPI import MAX
-from numpy import zeros as array, ndarray as VectorMatrixType
-from dolfin import Argument, assemble, project
+from numpy import ndarray as VectorMatrixType, isscalar
+from ufl.core.operator import Operator
+from dolfin import Argument, assemble, Expression
 from RBniCS.backends.fenics.function import Function
 from RBniCS.backends.fenics.functions_list import FunctionsList
 from RBniCS.backends.fenics.matrix import Matrix
@@ -34,7 +35,7 @@ from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
 from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
 from RBniCS.backends.fenics.tensors_list import TensorsList
 from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_vector_at_dofs, expression_on_reduced_mesh, expression_on_truth_mesh, form_on_reduced_function_space, form_on_truth_function_space
+from RBniCS.backends.fenics.wrapping import assert_lagrange_1, evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_vector_at_dofs, expression_on_reduced_mesh, expression_on_truth_mesh, form_on_reduced_function_space, form_on_truth_function_space, ufl_lagrange_interpolation
 from RBniCS.backends.online import OnlineMatrix, OnlineVector
 from RBniCS.utils.decorators import backend_for
 
@@ -46,47 +47,13 @@ def evaluate(expression_, at=None):
     if isinstance(expression_, (Function.Type(), FunctionsList, ParametrizedExpressionFactory)):
         assert at is None or isinstance(at, ReducedVertices)
         if isinstance(expression_, Function.Type()):
-            function = expression_
             assert at is not None
-            reduced_vertices = at._vertex_list
-            reduced_components = at._component_list
-            assert len(reduced_vertices) == len(reduced_components)
-            out_size = len(reduced_vertices)
-            out = OnlineVector(out_size)
-            mpi_comm = function.ufl_function_space().mesh().mpi_comm().tompi4py()
-            for (index, (vertex, component)) in enumerate(zip(reduced_vertices, reduced_components)):
-                out_index = None
-                out_index_type = None
-                out_index_processor = -1
-                if at.is_mesh_local(index):
-                    out_index = function(vertex)
-                    out_index_processor = mpi_comm.rank
-                    assert isinstance(out_index, (float, VectorMatrixType))
-                    if isinstance(out_index, float):
-                        out_index_type = "scalar"
-                    elif isinstance(out_index, VectorMatrixType):
-                        out_index_type = "vector_matrix"
-                    else: # impossible to arrive here anyway thanks to the assert
-                        raise AssertionError("Invalid argument to evaluate")
-                out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)
-                assert out_index_processor >= 0
-                out_index_type = mpi_comm.bcast(out_index_type, root=out_index_processor)
-                assert out_index_type in ("scalar", "vector_matrix")
-                if out_index_type == "scalar":
-                    out[index] = mpi_comm.bcast(out_index, root=out_index_processor)
-                elif out_index_type == "vector_matrix":
-                    if out_index is not None: # on out_index_processor
-                        out[index] = mpi_comm.bcast(out_index[component], root=out_index_processor)
-                    else: # on other processors
-                        out[index] = mpi_comm.bcast(None, root=out_index_processor)
-                else: # impossible to arrive here anyway thanks to the assert
-                    raise AssertionError("Invalid argument to evaluate")
-            return out
+            assert_lagrange_1(expression_.function_space())
+            return evaluate_sparse_vector_at_dofs(expression_.vector(), at.get_dofs_list())
         elif isinstance(expression_, FunctionsList):
             functions_list = expression_
             assert at is not None
-            assert len(at._vertex_list) == len(at._component_list)
-            out_size = len(at._vertex_list)
+            out_size = len(at.get_dofs_list())
             out = OnlineMatrix(out_size, out_size)
             for (j, fun_j) in enumerate(functions_list):
                 evaluate_fun_j = evaluate(fun_j, at)
@@ -97,25 +64,17 @@ def evaluate(expression_, at=None):
             if at is None:
                 expression = expression_on_truth_mesh(expression_)
                 space = expression_._space
-                return project(expression, space)
+                assert_lagrange_1(space)
+                interpolated_expression = Function(space)
+                ufl_lagrange_interpolation(interpolated_expression, expression)
+                return interpolated_expression
             else:
                 expression = expression_on_reduced_mesh(expression_, at)
-                reduced_vertices = at._vertex_list
-                reduced_components = at._component_list
-                assert len(reduced_vertices) == len(reduced_components)
-                out_size = len(reduced_vertices)
-                out = OnlineVector(out_size)
-                mpi_comm = expression_._space.mesh().mpi_comm().tompi4py()
-                for (index, (vertex, component)) in enumerate(zip(reduced_vertices, reduced_components)):
-                    out_index = array(expression.value_size())
-                    out_index_processor = -1
-                    if at.is_reduced_mesh_local(index):
-                        expression.eval(out_index, vertex)
-                        out_index_processor = mpi_comm.rank
-                    out_index_processor = mpi_comm.allreduce(out_index_processor, op=MAX)
-                    assert out_index_processor >= 0
-                    out[index] = mpi_comm.bcast(out_index[component], root=out_index_processor)
-                return out
+                reduced_space = at.get_reduced_function_space()
+                assert_lagrange_1(reduced_space)
+                interpolated_expression = Function(reduced_space)
+                ufl_lagrange_interpolation(interpolated_expression, expression)
+                return evaluate_sparse_vector_at_dofs(interpolated_expression.vector(), at.get_reduced_dofs_list())
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to evaluate")
     elif isinstance(expression_, (Matrix.Type(), Vector.Type(), TensorsList, ParametrizedTensorFactory)):

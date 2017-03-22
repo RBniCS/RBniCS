@@ -25,30 +25,27 @@
 from dolfin import *
 from RBniCS import EquispacedDistribution
 from RBniCS.backends import ParametrizedTensorFactory
-from RBniCS.backends.fenics import ParametrizedExpressionFactory as ParametrizedExpressionFactory_Base
+from RBniCS.backends.fenics import ParametrizedExpressionFactory
 from RBniCS.backends.fenics.wrapping import ParametrizedConstant
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
-class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
-    def __init__(self, expression, mesh):
-        ParametrizedExpressionFactory_Base.__init__(self, expression)
-        # Use a ridiculously high finite element space to have an accuracy comparable to the one of test 1,
-        # where exact evaluation is carried out
-        self._space = FunctionSpace(mesh, "CG", 10)
-        
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V
         # Parametrized function to be interpolated
-        x = SpatialCoordinate(V.mesh())
         mu = ParametrizedConstant(self, "mu[0]", mu=(1., ))
+        if expression_type == "Function":
+            x = project(Expression("x[0]", element=V.ufl_element()), V) # SpatialCoordinate is not supported by FEniCS dP measure
+            x = (x, )
+        else:
+            x = SpatialCoordinate(V.mesh())
         f = (1-x[0])*cos(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f, V.mesh()), "test_eim_approximation_09_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f), "test_eim_approximation_09_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(V)
             form = f*v*dx

@@ -43,6 +43,4 @@ def get_expression_description(expression):
                 coefficients_repr[n] = str(vals[0])
             else:
                 coefficients_repr[n] = str(vals.reshape(n.ufl_shape))
-        else:
-            assert not str(n).startswith("f_")
     return coefficients_repr

@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import hashlib
 from RBniCS.eim.problems.eim_approximation import EIMApproximation
 from RBniCS.utils.decorators import Extends, override, sync_setters
 
@@ -72,6 +73,11 @@ class TimeDependentEIMApproximation(EIMApproximation):
             assert "t" in mu
             assert isinstance(mu["t"], float)
             self.set_time(mu["t"])
+            
+    def _cache_key_and_file(self):
+        cache_key = (self.mu, self.t)
+        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
+        return (cache_key, cache_file)
 
 class EnlargedMu(dict):
     def __str__(self):

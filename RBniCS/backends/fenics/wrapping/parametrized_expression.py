@@ -71,10 +71,15 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     
     expression = Expression(parametrized_expression_code, *args, **kwargs)
     expression.mu = mu # to avoid repeated assignments
+    
+    # Store ufl_domain
     if "domain" in kwargs:
-        expression.mesh = kwargs["domain"]
+        expression._mesh = kwargs["domain"]
     else:
-        expression.mesh = truth_problem.V.mesh()
+        expression._mesh = truth_problem.V.mesh()
+    def ufl_domain(self):
+        return expression._mesh.ufl_domain()
+    expression.ufl_domain = types.MethodType(ufl_domain, expression)
     
     # Keep mu in sync
     standard_set_mu = truth_problem.set_mu

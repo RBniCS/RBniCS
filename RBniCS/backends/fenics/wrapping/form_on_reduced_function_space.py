@@ -28,6 +28,7 @@ from ufl.corealg.traversal import traverse_unique_terminals
 from ufl.geometry import GeometricQuantity
 from dolfin import Argument, assign, Function
 from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
+from RBniCS.backends.fenics.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
 from RBniCS.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, is_training_finished
 from RBniCS.utils.mpi import log, PROGRESS
 from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
@@ -56,31 +57,40 @@ def form_on_reduced_function_space(form_wrapper, at):
                     elif isinstance(node, Argument):
                         replacements[node] = Argument(reduced_V[node.number()], node.number(), node.part())
                     # ... problem solutions related to nonlinear terms
-                    elif isinstance(node, Function) and is_problem_solution(node):
-                        truth_problem = get_problem_from_solution(node)
-                        # Get the function space corresponding to node on the reduced mesh
-                        auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem)
-                        # Define a replacement
-                        replacements[node] = Function(auxiliary_reduced_V)
-                        if is_training_finished(truth_problem):
-                            reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                            # Store the replacement
-                            reduced_problem_to_reduced_mesh_solution[reduced_problem] = replacements[node]
-                            # Get reduced problem basis functions on reduced mesh
-                            reduced_problem_to_reduced_Z[reduced_problem] = at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem)
-                        else:
-                            if not hasattr(truth_problem, "_is_solving"):
-                                exact_truth_problem = exact_problem(truth_problem)
-                                exact_truth_problem.init()
+                    elif isinstance(node, Function):
+                        if is_problem_solution(node):
+                            truth_problem = get_problem_from_solution(node)
+                            # Get the function space corresponding to node on the reduced mesh
+                            auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem)
+                            # Define a replacement
+                            replacements[node] = Function(auxiliary_reduced_V)
+                            if is_training_finished(truth_problem):
+                                reduced_problem = get_reduced_problem_from_problem(truth_problem)
                                 # Store the replacement
-                                truth_problem_to_reduced_mesh_solution[exact_truth_problem] = replacements[node]
-                                # Get interpolator on reduced mesh
-                                truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = at.get_auxiliary_function_interpolator(exact_truth_problem)
+                                reduced_problem_to_reduced_mesh_solution[reduced_problem] = replacements[node]
+                                # Get reduced problem basis functions on reduced mesh
+                                reduced_problem_to_reduced_Z[reduced_problem] = at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem)
                             else:
-                                # Store the replacement
-                                truth_problem_to_reduced_mesh_solution[truth_problem] = replacements[node]
-                                # Get interpolator on reduced mesh
-                                truth_problem_to_reduced_mesh_interpolator[truth_problem] = at.get_auxiliary_function_interpolator(truth_problem)
+                                if not hasattr(truth_problem, "_is_solving"):
+                                    exact_truth_problem = exact_problem(truth_problem)
+                                    exact_truth_problem.init()
+                                    # Store the replacement
+                                    truth_problem_to_reduced_mesh_solution[exact_truth_problem] = replacements[node]
+                                    # Get interpolator on reduced mesh
+                                    truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = at.get_auxiliary_function_interpolator(exact_truth_problem)
+                                else:
+                                    # Store the replacement
+                                    truth_problem_to_reduced_mesh_solution[truth_problem] = replacements[node]
+                                    # Get interpolator on reduced mesh
+                                    truth_problem_to_reduced_mesh_interpolator[truth_problem] = at.get_auxiliary_function_interpolator(truth_problem)
+                        else:
+                            auxiliary_problem = get_auxiliary_problem_for_non_parametrized_function(node)
+                            # Get the function space corresponding to node on the reduced mesh
+                            auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(auxiliary_problem)
+                            # Get interpolator on reduced mesh
+                            auxiliary_truth_problem_to_reduced_mesh_interpolator = at.get_auxiliary_function_interpolator(auxiliary_problem)
+                            # Define and store the replacement
+                            replacements[node] = auxiliary_truth_problem_to_reduced_mesh_interpolator(node)
                     # ... geometric quantities
                     elif isinstance(node, GeometricQuantity):
                         if len(reduced_V) == 2:

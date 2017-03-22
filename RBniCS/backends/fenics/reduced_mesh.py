@@ -493,7 +493,7 @@ class ReducedMesh(AbstractReducedMesh):
         importable_auxiliary_reduced_dofs = ExportableList("pickle")
         full_directory_plus_key__dofs = Folders.Folder(full_directory + "/auxiliary_dofs/" + type(key[0]).__name__ + "/" + str(key[1]))
         full_directory_plus_key__reduced_dofs = Folders.Folder(full_directory + "/auxiliary_reduced_dofs/" + type(key[0]).__name__ + "/" + str(key[1]))
-        if full_directory_plus_key__dofs.create() and full_directory_plus_key__reduced_dofs.create():
+        if not full_directory_plus_key__dofs.create() and not full_directory_plus_key__reduced_dofs.create():
             importable_auxiliary_dofs.load(full_directory_plus_key__dofs, "auxiliary_dofs")
             importable_auxiliary_reduced_dofs.load(full_directory_plus_key__reduced_dofs, "auxiliary_reduced_dofs")
             auxiliary_dofs_to_reduced_dofs = dict()
@@ -512,7 +512,7 @@ class ReducedMesh(AbstractReducedMesh):
         full_directory.create()
         # Load auxiliary basis functions matrix
         full_directory_plus_key = Folders.Folder(full_directory + "/auxiliary_basis_functions/" + type(key[0]).__name__ + "/" + str(key[1]))
-        if full_directory_plus_key.create():
+        if not full_directory_plus_key.create():
             auxiliary_basis_functions_matrix = BasisFunctionsMatrix(auxiliary_reduced_V)
             auxiliary_basis_functions_matrix.init(key[0].components)
             auxiliary_basis_functions_matrix.load(full_directory_plus_key, "auxiliary_basis")

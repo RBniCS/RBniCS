@@ -22,6 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+import types
+import re
+from dolfin import Expression
 from RBniCS.backends.fenics.wrapping.parametrized_expression import ParametrizedExpression
 
 def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, **kwargs):
@@ -32,10 +35,41 @@ def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, 
         kwargs["element"] = element
     return ParametrizedExpression(truth_problem, parametrized_constant_code, *args, **kwargs)
     
+def is_parametrized_constant(expr):
+    return isinstance(expr, Expression) and bool(is_parametrized_constant.regex.match(expr.cppcode))
+is_parametrized_constant.regex = re.compile("^mu_[0-9]+$")
+
+def parametrized_constant_to_float(expr):
+    point = expr.mesh.coordinates()[0]
+    return expr(point)
+    
+def expression_float(self):
+    if is_parametrized_constant(self):
+        return parametrized_constant_to_float(self)
+    else:
+        return NotImplemented
+Expression.__float__ = expression_float
+
+class ParametrizedConstantTuple(tuple):
+    def __new__(cls, truth_problem, mu):
+        return tuple.__new__(cls, [ParametrizedConstant(truth_problem, "mu[" + str(idx) + "]", mu=mu) for (idx, _) in enumerate(mu)])
+        
+    def __str__(self):
+        if len(self) == 0:
+            return "()"
+        elif len(self) == 1:
+            return "(" + str(float(self[0])) + ",)"
+        else:
+            output = "("
+            for mu_p in self:
+                output += str(float(mu_p)) + ", "
+            output = output[:-2]
+            output += ")"
+            return output
+    
 import types
-from dolfin import Constant
 import RBniCS.utils.decorators
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor as ProblemDecoratorFor_Base
+from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor as ProblemDecoratorFor_Base, ReducedProblemDecoratorFor as ReducedProblemDecoratorFor_Base
 
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
     from RBniCS.eim.problems import DEIM, EIM, ExactParametrizedFunctions
@@ -56,7 +90,7 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
                         original_set_mu = self.set_mu
                         def modified_set_mu(self, mu):
                             if hasattr(self, "_mu_ParametrizedConstant_override"):
-                                self.mu = [ParametrizedConstant(self, "mu[" + str(idx) + "]", mu=mu) for (idx, _) in enumerate(mu)]
+                                self.mu = ParametrizedConstantTuple(self, mu)
                                 self._mu_ParametrizedConstant_override = mu
                             else:
                                 original_set_mu(mu)
@@ -73,7 +107,7 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
         return ProblemDecoratorFor_Decorator
     elif Algorithm is ExactParametrizedFunctions:
         # Change ProblemDecoratorFor to override ExactParametrizedFunctionsDecoratedProblem.set_mu_range so that querying self.mu
-        # actually returns a Constant(float) rather than a float
+        # actually returns a ParametrizedConstant rather than a float
         def ProblemDecoratorFor_Decorator(ProblemDecorator):
             def ProblemDecoratorFor_DecoratedProblemGenerator(Problem):
                 DecoratedProblem_Base = ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)(ProblemDecorator)(Problem)
@@ -82,13 +116,15 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
                     @override
                     def assemble_operator(self, term):
                         # Storage for backup of parameter assigned while calling set_mu
-                        self._mu_Constant_override = self.mu
+                        self._mu_ParametrizedConstant_override = self.mu
                         # Temporarily replace float by a parametrized constant
-                        self.mu = [ParametrizedConstant(self, "mu[" + str(idx) + "]", mu=self.mu) for (idx, _) in enumerate(self.mu)]
+                        self.mu = ParametrizedConstantTuple(self, self.mu)
                         # Call parent
                         output = DecoratedProblem_Base.assemble_operator(self, term)
                         # Restore self.mu
-                        self.mu = self._mu_Constant_override
+                        assert self._mu_ParametrizedConstant_override is not None
+                        self.mu = self._mu_ParametrizedConstant_override
+                        del self._mu_ParametrizedConstant_override
                         # Return
                         return output
                                         
@@ -100,3 +136,4 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
         return ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)
     
 RBniCS.utils.decorators.ProblemDecoratorFor = ProblemDecoratorFor
+

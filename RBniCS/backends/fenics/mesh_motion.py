@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, LagrangeInterpolator, log, MeshFunctionSizet, VectorFunctionSpace
+from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, log, MeshFunctionSizet, VectorFunctionSpace
 from RBniCS.backends.abstract import MeshMotion as AbstractMeshMotion
-from RBniCS.backends.fenics.wrapping import ParametrizedExpression
+from RBniCS.backends.fenics.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
 from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
 from mpi4py.MPI import MAX, MIN
 
@@ -86,7 +86,7 @@ class MeshMotion(AbstractMeshMotion):
                 ParametrizedExpression(
                     problem,
                     tuple(displacement_expression_on_subdomain),
-                    mu=problem.mu,
+                    mu=tuple([r[0] for r in problem.mu_range]),
                     element=self.deformation_V.ufl_element(),
                     domain=self.mesh
                 )
@@ -105,11 +105,10 @@ class MeshMotion(AbstractMeshMotion):
         
     ## Auxiliary method to deform the domain
     def compute_displacement(self):
-        interpolator = LagrangeInterpolator()
         displacement = Function(self.deformation_V)
         for (subdomain, displacement_expression_on_subdomain) in enumerate(self.displacement_expression):
             displacement_function_on_subdomain = Function(self.deformation_V)
-            interpolator.interpolate(displacement_function_on_subdomain, displacement_expression_on_subdomain)
+            ufl_lagrange_interpolation(displacement_function_on_subdomain, displacement_expression_on_subdomain)
             subdomain_dofs = self.subdomain_id_to_deformation_dofs[subdomain]
             displacement.vector()[subdomain_dofs] = displacement_function_on_subdomain.vector()[subdomain_dofs]
         return displacement

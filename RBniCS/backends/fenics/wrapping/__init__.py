@@ -40,8 +40,8 @@ from RBniCS.backends.fenics.wrapping.function_from_ufl_operators import function
 from RBniCS.backends.fenics.wrapping.function_load import function_load
 from RBniCS.backends.fenics.wrapping.function_save import function_save
 from RBniCS.backends.fenics.wrapping.function_space import FunctionSpace
-from RBniCS.backends.fenics.wrapping.function_space_for_expression_projection import function_space_for_expression_projection
 from RBniCS.backends.fenics.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
+from RBniCS.backends.fenics.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
 from RBniCS.backends.fenics.wrapping.get_expression_description import get_expression_description
 from RBniCS.backends.fenics.wrapping.get_expression_name import get_expression_name
 from RBniCS.backends.fenics.wrapping.get_form_argument import get_form_argument
@@ -51,16 +51,18 @@ from RBniCS.backends.fenics.wrapping.get_function_subspace import get_function_s
 from RBniCS.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
 from RBniCS.backends.fenics.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from RBniCS.backends.fenics.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
-from RBniCS.backends.fenics.wrapping.parametrized_constant import ParametrizedConstant
+from RBniCS.backends.fenics.wrapping.parametrized_constant import is_parametrized_constant, ParametrizedConstant, parametrized_constant_to_float
 from RBniCS.backends.fenics.wrapping.parametrized_expression import ParametrizedExpression
 from RBniCS.backends.fenics.wrapping.plot import plot
 from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
 from RBniCS.backends.fenics.wrapping.tensor_load import tensor_load
 from RBniCS.backends.fenics.wrapping.tensor_save import tensor_save
 from RBniCS.backends.fenics.wrapping.tensors_list_mul import tensors_list_mul_online_function
+from RBniCS.backends.fenics.wrapping.ufl_lagrange_interpolation import assert_lagrange_1, get_global_dof_coordinates, get_global_dof_component, ufl_lagrange_interpolation
 from RBniCS.backends.fenics.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
+    'assert_lagrange_1',
     'build_dof_map_reader_mapping',
     'build_dof_map_writer_mapping',
     'create_submesh',
@@ -81,10 +83,10 @@ __all__ = [
     'function_load',
     'function_save',
     'FunctionSpace',
-    'function_space_for_expression_projection',
     'functions_list_basis_functions_matrix_mul_online_function',
     'functions_list_basis_functions_matrix_mul_online_matrix',
     'functions_list_basis_functions_matrix_mul_online_vector',
+    'get_auxiliary_problem_for_non_parametrized_function',
     'get_expression_description',
     'get_expression_name',
     'get_form_argument',
@@ -93,9 +95,11 @@ __all__ = [
     'get_function_subspace',
     'get_mpi_comm',
     'gram_schmidt_projection_step',
+    'is_parametrized_constant',
     'matrix_mul_vector',
     'mesh_dofs_to_submesh_dofs',
     'ParametrizedConstant',
+    'parametrized_constant_to_float',
     'ParametrizedExpression',
     'plot',
     'submesh_dofs_to_mesh_dofs'
@@ -103,6 +107,7 @@ __all__ = [
     'tensor_load',
     'tensor_save',
     'tensors_list_mul_online_function',
+    'ufl_lagrange_interpolation',
     'vector_mul_vector',
     'vectorized_matrix_inner_vectorized_matrix'
 ]

@@ -27,6 +27,7 @@ from numpy.linalg import norm
 from dolfin import Cell, Mesh, Point
 from RBniCS.backends.abstract import ReducedVertices as AbstractReducedVertices
 from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
+from RBniCS.backends.fenics.wrapping import assert_lagrange_1
 from RBniCS.utils.decorators import BackendFor, Extends, override
 from RBniCS.utils.io import ExportableList, Folders
 
@@ -35,9 +36,8 @@ from RBniCS.utils.io import ExportableList, Folders
 class ReducedVertices(AbstractReducedVertices):
     def __init__(self, V, **kwargs):
         AbstractReducedVertices.__init__(self, V)
+        assert_lagrange_1(V)
         self._V = V
-        self._mesh = V.mesh()
-        self._mpi_comm = self._mesh.mpi_comm().tompi4py()
         
         # Detect if **kwargs are provided by the copy constructor in __getitem__
         if "copy_from" in kwargs:
@@ -51,118 +51,37 @@ class ReducedVertices(AbstractReducedVertices):
             key_as_slice = None
             key_as_int = None
             
-        # Vertex storage
-        if copy_from is None:
-            self._vertex_list = ExportableList("pickle") # list of vertices
-            self._component_list = ExportableList("pickle") # list of function components
-        else:
-            self._vertex_list = copy_from._vertex_list[key_as_slice]
-            self._component_list = copy_from._component_list[key_as_slice]
-        # Additional storage to detect local vertices
-        self._bounding_box_tree = self._mesh.bounding_box_tree()
-        self._mpi_comm = self._mesh.mpi_comm().tompi4py()
-        if copy_from is None:
-            self._is_mesh_local = list() # list of bool
-        else:
-            self._is_mesh_local = copy_from._is_mesh_local[key_as_slice]
-        self._is_reduced_mesh_local = dict() # from N to list of bool
-        if copy_from is not None:
-            self._is_reduced_mesh_local[key_as_int] = copy_from._is_reduced_mesh_local[key_as_int]
-        # Additional storage for reduced mesh
+        # Storage for reduced mesh
         if copy_from is None:
             self._reduced_mesh = ReducedMesh((V, ))
         else:
             self._reduced_mesh = ReducedMesh((V, ), copy_from=copy_from._reduced_mesh, key_as_slice=key_as_slice, key_as_int=key_as_int)
-        self._local_dof_to_coordinates = V.tabulate_dof_coordinates().reshape((-1, self._mesh.ufl_cell().topological_dimension()))
         
     @override
-    def append(self, vertex_and_component):
-        assert isinstance(vertex_and_component, tuple)
-        assert len(vertex_and_component) == 2
-        assert isinstance(vertex_and_component[0], array)
-        assert isinstance(vertex_and_component[1], int)
-        vertex = vertex_and_component[0]
-        component = vertex_and_component[1]
-        self._vertex_list.append(vertex)
-        self._component_list.append(component)
-        # Update _is_mesh_local map using mesh partitioning
-        vertex_as_point = Point(vertex)
-        self._is_mesh_local.append(self._bounding_box_tree.collides_entity(vertex_as_point))
+    def append(self, vertex_and_component_and_dof):
+        assert isinstance(vertex_and_component_and_dof, tuple)
+        assert len(vertex_and_component_and_dof) == 3
+        assert isinstance(vertex_and_component_and_dof[0], array)
+        assert isinstance(vertex_and_component_and_dof[1], int)
+        assert isinstance(vertex_and_component_and_dof[2], int)
+        global_dof = vertex_and_component_and_dof[2]
         # Update reduced mesh
-        self._reduced_mesh._init_for_append_if_needed()
-        global_dof_min = None
-        distance_min = None
-        if self._is_mesh_local[-1]:
-            cell_id = self._bounding_box_tree.compute_first_entity_collision(vertex_as_point)
-            cell = Cell(self._mesh, cell_id)
-            self._reduced_mesh.reduced_mesh_cells_marker[cell] = 1
-            global_dof_ownership_range = self._V.dofmap().ownership_range()
-            for local_dof in self._V.dofmap().cell_dofs(cell_id):
-                global_dof = self._V.dofmap().local_to_global_index(local_dof)
-                if global_dof >= global_dof_ownership_range[0] and global_dof < global_dof_ownership_range[1]:
-                    distance = norm(self._local_dof_to_coordinates[local_dof] - vertex)
-                    if distance_min is None or distance < distance_min:
-                        global_dof_min = global_dof
-                        distance_min = distance
-        all_global_dof_min = self._mpi_comm.allgather(global_dof_min)
-        all_distance_min = self._mpi_comm.allgather(distance_min)
-        global_dof_min_over_processors = None
-        distance_min_over_processors = None
-        for (global_dof, distance) in zip(all_global_dof_min, all_distance_min):
-            assert (
-                (global_dof is None and distance is None)
-                    or
-                (global_dof is not None and distance is not None)
-            )
-            if distance is not None:
-                if distance_min_over_processors is None or distance < distance_min_over_processors:
-                    global_dof_min_over_processors = global_dof
-                    distance_min_over_processors = distance
-        assert global_dof_min_over_processors is not None
-        assert distance_min_over_processors is not None
-        self._reduced_mesh.reduced_mesh_dofs_list.append((global_dof_min_over_processors, ))
-        self._reduced_mesh._update()
-        # Update _is_reduced_mesh_local map using reduced mesh partitiong
-        key_as_int = len(self._vertex_list) - 1
-        reduced_bounding_box_tree = self._reduced_mesh.reduced_mesh[key_as_int].bounding_box_tree()
-        self._is_reduced_mesh_local[key_as_int] = list()
-        for other_vertex in self._vertex_list:
-            other_vertex_as_point = Point(other_vertex)
-            self._is_reduced_mesh_local[key_as_int].append(reduced_bounding_box_tree.collides_entity(other_vertex_as_point))
+        self._reduced_mesh.append((global_dof, ))
         
     @override
     def save(self, directory, filename):
         # Get full directory name
         full_directory = Folders.Folder(directory + "/" + filename)
         full_directory.create()
-        # Vertex and component lists
-        self._vertex_list.save(full_directory, "vertices")
-        self._component_list.save(full_directory, "components")
         # Save reduced mesh
         self._reduced_mesh.save(directory, filename)
-        # Note that is local cannot be saved, since partitioning may change due to 
-        # different number of MPI processes
         
     @override
     def load(self, directory, filename):
         # Get full directory name
         full_directory = directory + "/" + filename
-        # Vertex and component lists
-        vertex_import_successful = self._vertex_list.load(full_directory, "vertices")
-        component_import_successful = self._component_list.load(full_directory, "components")
-        assert vertex_import_successful == component_import_successful
         # Load reduced mesh
-        self._reduced_mesh.load(directory, filename)
-        # Recompute is_reduced_mesh_local map
-        for (index, reduced_mesh) in self._reduced_mesh.reduced_mesh.iteritems():
-            reduced_bounding_box_tree = reduced_mesh.bounding_box_tree()
-            self._is_reduced_mesh_local[index] = list()
-            for vertex in self._vertex_list[:(index+1)]:
-                vertex_as_point = Point(vertex)
-                self._is_reduced_mesh_local[index].append(reduced_bounding_box_tree.collides_entity(vertex_as_point))
-        # is_mesh_local map is not used in the online stage
-        # Return
-        return vertex_import_successful and component_import_successful
+        return self._reduced_mesh.load(directory, filename)
         
     @override
     def __getitem__(self, key):
@@ -170,13 +89,6 @@ class ReducedVertices(AbstractReducedVertices):
         assert key.start is None 
         assert key.step is None
         return ReducedVertices(self._V, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
-        
-    def is_mesh_local(self, vertex_index):
-        return self._is_mesh_local[vertex_index]
-        
-    def is_reduced_mesh_local(self, vertex_index, index=None):
-        index = self._reduced_mesh._get_dict_index(index)
-        return self._is_reduced_mesh_local[index][vertex_index]
         
     def get_reduced_mesh(self, index=None):
         return self._reduced_mesh.get_reduced_mesh(index)
