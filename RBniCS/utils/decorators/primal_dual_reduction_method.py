@@ -65,7 +65,14 @@ def PrimalDualReductionMethod(DualProblem):
                 # Set Nmax of dual reduction
                 assert "dual" in kwargs
                 self.dual_reduction_method.set_Nmax(kwargs["dual"], **kwargs)
-
+                
+            ## OFFLINE: set tolerance (stopping criterion)
+            @override
+            def set_tolerance(self, tol, **kwargs):
+                DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
+                # Set tolerance of dual reduction
+                assert "dual" in kwargs
+                self.dual_reduction_method.set_tolerance(kwargs["dual"], **kwargs)
                 
             ## OFFLINE: set the elements in the training set.
             @override

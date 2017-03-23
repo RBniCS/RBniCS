@@ -95,7 +95,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
             
             run = 0
-            while self.reduced_problem.N < self.Nmax:
+            relative_error_estimator_max = 2.*self.tol
+            while self.reduced_problem.N < self.Nmax and relative_error_estimator_max >= self.tol:
                 print("############################## N =", self.reduced_problem.N, "######################################")
                 
                 print("truth solve for mu =", self.truth_problem.mu)
@@ -116,12 +117,10 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 print("build operators for error estimation")
                 self.reduced_problem.build_error_estimation_operators()
                 
-                if self.reduced_problem.N < self.Nmax:
-                    print("find next mu")
-                
-                # we do a greedy even if N == Nmax in order to have in
-                # output the maximum error estimator
-                self.greedy()
+                print("find next mu")
+                (error_estimator_max, relative_error_estimator_max) = self.greedy()
+                print("maximum error estimator =", error_estimator_max)
+                print("maximum relative error estimator =", relative_error_estimator_max)
 
                 print("")
                 
@@ -151,12 +150,12 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
         ## of the result (in particular, set greedily selected parameter and save to file)
         def greedy(self):
             (error_estimator_max, error_estimator_argmax) = self._greedy()
-            print("maximum error estimator =", error_estimator_max)
             self.reduced_problem.set_mu(self.training_set[error_estimator_argmax])
             self.greedy_selected_parameters.append(self.training_set[error_estimator_argmax])
             self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
             self.greedy_error_estimators.append(error_estimator_max)
             self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
+            return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
             
         ## Choose the next parameter in the offline stage in a greedy fashion
         @abstractmethod

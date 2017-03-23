@@ -147,6 +147,7 @@ graetz_problem.set_mu_range(mu_range)
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
 reduced_basis_method.set_Nmax(20, dual=20, SCM=15)
+reduced_basis_method.set_tolerance(1e-5, dual=1e-5, SCM=1e-2)
 
 # 5. Perform the offline phase
 first_mu = (1.0, 1.0, 1.0, 1.0)

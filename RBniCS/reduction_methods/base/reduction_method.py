@@ -46,6 +46,8 @@ class ReductionMethod(object):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Maximum reduced order space dimension to be used for the stopping criterion in the basis selection
         self.Nmax = 0
+        # Tolerance to be used for the stopping criterion in the basis selection
+        self.tol = 0.
         # Training set
         self.training_set = ParameterSpaceSubset(mu_range)
         # I/O
@@ -67,6 +69,10 @@ class ReductionMethod(object):
     ## OFFLINE: set maximum reduced space dimension (stopping criterion)
     def set_Nmax(self, Nmax, **kwargs):
         self.Nmax = Nmax
+        
+    ## OFFLINE: set tolerance (stopping criterion)
+    def set_tolerance(self, tol, **kwargs):
+        self.tol = tol
 
     ## OFFLINE: set the elements in the training set.
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):

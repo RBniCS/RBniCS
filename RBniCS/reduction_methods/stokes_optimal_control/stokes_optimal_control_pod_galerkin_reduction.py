@@ -90,26 +90,26 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
     def compute_basis_functions(self):
         # Carry out POD
         Z = dict()
+        N = dict()
         for component in self.truth_problem.components:
             print("# POD for component", component)
             POD = self.POD[component]
-            (_, Z[component], N) = POD.apply(self.Nmax)
-            assert N == self.Nmax
-            POD.print_eigenvalues(N)
+            (_, Z[component], N[component]) = POD.apply(self.Nmax, self.tol)
+            POD.print_eigenvalues(N[component])
             POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
             POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
         
         # Store POD modes related to control as usual
         self.reduced_problem.Z.enrich(Z["u"], component="u")
-        self.reduced_problem.N["u"] += self.Nmax
+        self.reduced_problem.N["u"] += N["u"]
         
         # Aggregate POD modes related to state and adjoint
         for pair in (("v", "w"), ("s", "r"), ("p", "q")):
             for component_to in pair:
-                for i in range(self.Nmax):
-                    for component_from in pair:
+                for component_from in pair:
+                    for i in range(N[component_from]):
                         self.reduced_problem.Z.enrich(Z[component_from][i], component={component_from: component_to})
-                self.reduced_problem.N[component_to] += 2*self.Nmax
+                    self.reduced_problem.N[component_to] += N[component_from]
         
         # Save
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")

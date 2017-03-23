@@ -44,10 +44,10 @@ class HighOrderProperOrthogonalDecomposition(object):
             
     ## Perform POD on the snapshots previously computed, and store the first
     #  POD modes in the basis functions matrix.
-    #  Input arguments are: Nmax
-    #  Output arguments are: POD modes, number of POD modes
+    #  Input arguments are: Nmax, tol
+    #  Output arguments are: POD eigenvalues, POD modes, number of POD modes
     @abstractmethod
-    def apply(self, Nmax):
+    def apply(self, Nmax, tol):
         pass
 
     @abstractmethod

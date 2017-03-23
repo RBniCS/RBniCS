@@ -219,6 +219,7 @@ stokes_problem.set_mu_range(mu_range)
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(stokes_problem)
 pod_galerkin_method.set_Nmax(25, DEIM={"a": 9, "b": 7, "bt": 7, "bt_restricted": 7, "f": 4, "g": 4})
+pod_galerkin_method.set_tolerance(1e-6, DEIM=1e-15)
 
 # 5. Perform the offline phase
 pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM={"a": 10, "b": 8, "bt": 8, "bt_restricted": 8, "f": 5, "g": 5})

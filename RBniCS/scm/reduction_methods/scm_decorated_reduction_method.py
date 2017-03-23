@@ -55,6 +55,14 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             assert isinstance(Nmax_SCM, int)
             self.SCM_reduction.set_Nmax(Nmax_SCM) # kwargs are not needed
 
+        ## OFFLINE: set tolerance (stopping criterion)
+        @override
+        def set_tolerance(self, tol, **kwargs):
+            DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
+            assert "SCM" in kwargs
+            tol_SCM = kwargs["SCM"]
+            assert isinstance(tol_SCM, float)
+            self.SCM_reduction.set_tolerance(tol_SCM) # kwargs are not needed
             
         ## OFFLINE: set the elements in the training set.
         @override

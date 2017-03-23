@@ -233,6 +233,7 @@ stokes_problem.set_mu_range(mu_range)
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(stokes_problem)
 pod_galerkin_method.set_Nmax(25)
+pod_galerkin_method.set_tolerance(1e-6)
 
 # 5. Perform the offline phase
 lifting_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)

@@ -60,6 +60,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.greedy_errors = GreedyErrorEstimatorsList()
         #
         self._offline__mu_index = 0
+        # By default set a tolerance slightly larger than zero, in order to 
+        # stop greedy iterations in trivial cases by default
+        self.tol = 1e-15
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
@@ -127,10 +130,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
 
             print("")
             
-        # If basis generation is POD, compute the first Nmax POD modes of the snapshots
+        # If basis generation is POD, compute the first POD modes of the snapshots
         if self.EIM_approximation.basis_generation == "POD":
             print("compute basis")
-            self.compute_basis_POD()
+            N_POD = self.compute_basis_POD()
             print("")
         
         print("==============================================================")
@@ -149,11 +152,13 @@ class EIMApproximationReductionMethod(ReductionMethod):
         if self.EIM_approximation.basis_generation == "Greedy":
             self.EIM_approximation.set_mu(self.training_set[0])
             self._offline__mu_index = 0
-        # Resize the interpolation matrix
-        while self.EIM_approximation.N < self.Nmax:
-            print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
             
-            if self.EIM_approximation.basis_generation == "Greedy":
+        # Carry out greedy selection
+        if self.EIM_approximation.basis_generation == "Greedy":
+            relative_error_max = 2.*self.tol
+            while self.EIM_approximation.N < self.Nmax and relative_error_max >= self.tol:
+                print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
+            
                 mu_index = self._offline__mu_index
                 print("solve interpolation for mu =", self.training_set[mu_index])
                 self.EIM_approximation.solve()
@@ -171,12 +176,17 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 print("update interpolation matrix")
                 self.update_interpolation_matrix()
                 
-                if self.EIM_approximation.N < self.Nmax:
-                    print("find next mu")
-                    
-                self.greedy()
+                print("find next mu")
+                (error_max, relative_error_max) = self.greedy()
+                print("maximum interpolation error =", error_max)
+                print("maximum interpolation relative error =", relative_error_max)
                 
-            else:
+                print("")
+                
+        else:
+            while self.EIM_approximation.N < N_POD:
+                print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
+            
                 print("solve interpolation for basis number", self.EIM_approximation.N)
                 self.EIM_approximation._solve(self.EIM_approximation.Z[self.EIM_approximation.N])
                 
@@ -192,7 +202,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 print("update interpolation matrix")
                 self.update_interpolation_matrix()
                 
-            print("")
+                print("")
             
         print("==============================================================")
         print("=" + "{:^60}".format(interpolation_method_name + " offline phase ends for") + "=")
@@ -221,13 +231,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def compute_basis_POD(self):
         POD = self.EIM_approximation.parametrized_expression.create_POD_container()
         POD.store_snapshot(self.snapshots_container)
-        (_, Z, N) = POD.apply(self.Nmax)
+        (_, Z, N) = POD.apply(self.Nmax, self.tol)
         self.EIM_approximation.Z.enrich(Z)
         self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
         # do not increment self.EIM_approximation.N
         POD.print_eigenvalues(N)
         POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
         POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
+        return N
         
     def update_interpolation_locations(self, maximum_location):
         self.EIM_approximation.interpolation_locations.append(maximum_location)
@@ -260,13 +271,18 @@ class EIMApproximationReductionMethod(ReductionMethod):
             return err
             
         (error_max, error_argmax) = self.training_set.max(solve_and_computer_error, abs)
-        print("maximum interpolation error =", abs(error_max))
         self.EIM_approximation.set_mu(self.training_set[error_argmax])
         self._offline__mu_index = error_argmax
         self.greedy_selected_parameters.append(self.training_set[error_argmax])
         self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
         self.greedy_errors.append(error_max)
         self.greedy_errors.save(self.folder["post_processing"], "error_max")
+        if abs(self.greedy_errors[0]) > 0.:
+            return (abs(error_max), abs(error_max/self.greedy_errors[0]))
+        else:
+            # Trivial case, greedy will stop at the first iteration
+            assert len(self.greedy_errors) == 1
+            return (0., 0.)
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

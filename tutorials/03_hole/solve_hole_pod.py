@@ -161,6 +161,7 @@ hole_problem.set_mu_range(mu_range)
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(hole_problem)
 pod_galerkin_method.set_Nmax(20)
+pod_galerkin_method.set_tolerance(1e-6)
 
 # 5. Perform the offline phase
 pod_galerkin_method.initialize_training_set(500)

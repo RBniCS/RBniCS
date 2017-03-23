@@ -67,8 +67,16 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Set Nmax of EIM reductions
             def setter(EIM_reduction, Nmax_EIM):
                 EIM_reduction.set_Nmax(max(EIM_reduction.Nmax, Nmax_EIM)) # kwargs are not needed
-            self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
-
+            self._propagate_setter_from_kwargs_to_EIM_reductions(setter, int, **kwargs)
+            
+        ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+        @override
+        def set_tolerance(self, tol, **kwargs):
+            DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
+            # Set tolerance of EIM reductions
+            def setter(EIM_reduction, tol_EIM):
+                EIM_reduction.set_tolerance(max(EIM_reduction.tol, tol_EIM)) # kwargs are not needed
+            self._propagate_setter_from_kwargs_to_EIM_reductions(setter, float, **kwargs)
             
         ## OFFLINE: set the elements in the training set.
         @override
@@ -79,7 +87,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Initialize training set of EIM reductions
             def setter(EIM_reduction, ntrain_EIM):
                 return EIM_reduction.initialize_training_set(ntrain_EIM, enable_import, sampling) # kwargs are not needed
-            import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
+            import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_EIM
             
         ## ERROR ANALYSIS: set the elements in the testing set.
@@ -89,10 +97,10 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Initialize testing set of EIM reductions
             def setter(EIM_reduction, ntest_EIM):
                 return EIM_reduction.initialize_testing_set(ntest_EIM, enable_import, sampling) # kwargs are not needed
-            import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, **kwargs)
+            import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_EIM
             
-        def _propagate_setter_from_kwargs_to_EIM_reductions(self, setter, **kwargs):
+        def _propagate_setter_from_kwargs_to_EIM_reductions(self, setter, Type, **kwargs):
             assert "EIM" in kwargs
             kwarg_EIM = kwargs["EIM"]
             return_value = True # will be either a bool or None
@@ -109,10 +117,11 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                             for addend in form.coefficients:
                                 for factor in addend:
                                     assert factor in self.EIM_reductions
+                                    assert isinstance(kwarg_EIM_form, Type)
                                     current_return_value = setter(self.EIM_reductions[factor], kwarg_EIM_form)
                                     return_value = current_return_value and return_value
             else:
-                assert isinstance(kwarg_EIM, int)
+                assert isinstance(kwarg_EIM, Type)
                 for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
                     current_return_value = setter(EIM_reduction_coeff, kwarg_EIM)
                     return_value = current_return_value and return_value

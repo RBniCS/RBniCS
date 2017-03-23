@@ -50,12 +50,52 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
             self.label = "POD-Galerkin"
             
+            # Since we use a POD for each component, it makes sense to possibly have
+            # different tolerances for each component.
+            if len(self.truth_problem.components) > 1:
+                self.tol = {component:0. for component in self.truth_problem.components}
+            else:
+                self.tol = 0.
+            
         #  @}
         ########################### end - CONSTRUCTORS - end ########################### 
         
         ###########################     OFFLINE STAGE     ########################### 
         ## @defgroup OfflineStage Methods related to the offline stage
         #  @{
+        
+        ## OFFLINE: set tolerance (stopping criterion).
+        def set_tolerance(self, tol, **kwargs):
+            if len(self.truth_problem.components) > 1:
+                if tol is None:
+                    all_components_in_kwargs = self.truth_problem.components[0] in kwargs
+                    for component in self.truth_problem.components:
+                        if all_components_in_kwargs:
+                            assert component in kwargs, "You need to specify the tolerance of all components in kwargs" 
+                        else:
+                            assert component not in kwargs, "You need to specify the tolerance of all components in kwargs"
+                    assert all_components_in_kwargs
+                    tol = dict()
+                    for component in self.truth_problem.components:
+                        tol[component] = kwargs[component]
+                        del kwargs[component]
+                else:
+                    assert isinstance(tol, float)
+                    tol_float = tol
+                    tol = dict()
+                    for component in self.truth_problem.components:
+                        tol[component] = tol_float
+                        assert component not in kwargs, "You cannot provide both a float and kwargs for components"
+            else:
+                if tol is None:
+                    assert len(self.truth_problem.components) == 1
+                    component_0 = self.truth_problem.components[0]
+                    assert component_0 in kwargs
+                    tol = kwargs[component_0]
+                else:
+                    assert isinstance(tol, float)
+            
+            self.tol = tol
         
         ## Initialize data structures required for the offline phase
         @override
@@ -136,7 +176,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 for component in self.truth_problem.components:
                     print("# POD for component", component)
                     POD = self.POD[component]
-                    (_, Z, N) = POD.apply(self.Nmax)
+                    (_, Z, N) = POD.apply(self.Nmax, self.tol[component])
                     self.reduced_problem.Z.enrich(Z, component=component)
                     self.reduced_problem.N[component] += N
                     POD.print_eigenvalues(N)
@@ -144,7 +184,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
                 self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
             else:
-                (_, Z, N) = self.POD.apply(self.Nmax)
+                (_, Z, N) = self.POD.apply(self.Nmax, self.tol)
                 self.reduced_problem.Z.enrich(Z)
                 self.reduced_problem.N += N
                 self.POD.print_eigenvalues(N)

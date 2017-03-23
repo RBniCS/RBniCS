@@ -60,6 +60,9 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
         # POD-Greedy size
         self.N1 = 0
         self.N2 = 0
+        # POD-Greedy tolerances
+        self.tol1 = 0.
+        self.tol2 = 0.
         
     ## OFFLINE: set maximum reduced space dimension (stopping criterion)
     @override
@@ -73,6 +76,19 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
             self.N2 = kwargs["POD_Greedy"][1]
         elif self.POD_greedy_basis_extension == "orthogonal":
             self.N1 = kwargs["POD_Greedy"]
+            
+    ## OFFLINE: set tolerance (stopping criterion)
+    @override
+    def set_tolerance(self, tol, **kwargs):
+        ParabolicCoerciveRBReduction_Base.set_tolerance(self, tol, **kwargs)
+        # Set POD-Greedy sizes
+        assert "POD_Greedy" in kwargs
+        if self.POD_greedy_basis_extension == "POD":
+            assert len(kwargs["POD_Greedy"]) == 2
+            self.tol1 = kwargs["POD_Greedy"][0]
+            self.tol2 = kwargs["POD_Greedy"][1]
+        elif self.POD_greedy_basis_extension == "orthogonal":
+            self.tol1 = kwargs["POD_Greedy"]
         
     ## Initialize data structures required for the offline phase
     @override
@@ -109,15 +125,16 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
             # First, compress the time trajectory stored in snapshot
             self.POD_time_trajectory.clear()
             self.POD_time_trajectory.store_snapshot(snapshot)
-            (eigs1, Z1, N1) = self.POD_time_trajectory.apply(self.N1)
+            (eigs1, Z1, N1) = self.POD_time_trajectory.apply(self.N1, self.tol1)
             self.POD_time_trajectory.print_eigenvalues(N1)
             
             # Then, compress parameter dependence (thus, we do not clear the POD object)
             self.POD_basis.store_snapshot(Z1, weight=[sqrt(e) for e in eigs1])
-            (_, Z2, _) = self.POD_basis.apply(self.reduced_problem.N + self.N2)
+            (_, Z2, N_plus_N2) = self.POD_basis.apply(self.reduced_problem.N + self.N2, self.tol2)
             self.reduced_problem.Z.clear()
             self.reduced_problem.Z.enrich(Z2)
-            self.reduced_problem.N += self.N2
+            assert self.reduced_problem.N == 0
+            self.reduced_problem.N += N_plus_N2
             self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
             self.POD_basis.print_eigenvalues(self.reduced_problem.N)
             self.POD_basis.save_eigenvalues_file(self.folder["post_processing"], "eigs")
@@ -154,7 +171,7 @@ class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
             # Compress it using a POD
             self.POD_time_trajectory.clear()
             self.POD_time_trajectory.store_snapshot(orthogonal_snapshot)
-            (eigs1, Z1, N1) = self.POD_time_trajectory.apply(self.N1)
+            (eigs1, Z1, N1) = self.POD_time_trajectory.apply(self.N1, self.tol1)
             self.POD_time_trajectory.print_eigenvalues(N1)
             self.POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs")
             self.POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy")

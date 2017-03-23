@@ -69,7 +69,16 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             # Set Nmax of DEIM reductions
             def setter(DEIM_reduction, Nmax_DEIM):
                 DEIM_reduction.set_Nmax(max(DEIM_reduction.Nmax, Nmax_DEIM)) # kwargs are not needed
-            self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, **kwargs)
+            self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
+            
+        ## OFFLINE: set tolerance (stopping criterion)
+        @override
+        def set_tolerance(self, tol, **kwargs):
+            DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
+            # Set tolerance of DEIM reductions
+            def setter(DEIM_reduction, tol_DEIM):
+                DEIM_reduction.set_tolerance(max(DEIM_reduction.tol, tol_DEIM)) # kwargs are not needed
+            self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, float, **kwargs)
             
         ## OFFLINE: set the elements in the training set.
         @override
@@ -80,7 +89,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             # Initialize training set of DEIM reductions
             def setter(DEIM_reduction, ntrain_DEIM):
                 return DEIM_reduction.initialize_training_set(ntrain_DEIM, enable_import, sampling) # kwargs are not needed
-            import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, **kwargs)
+            import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_DEIM
             
         ## ERROR ANALYSIS: set the elements in the testing set.
@@ -90,10 +99,10 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             # Initialize testing set of DEIM reductions
             def setter(DEIM_reduction, ntest_DEIM):
                 return DEIM_reduction.initialize_testing_set(ntest_DEIM, enable_import, sampling) # kwargs are not needed
-            import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, **kwargs)
+            import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_DEIM
             
-        def _propagate_setter_from_kwargs_to_DEIM_reductions(self, setter, **kwargs):
+        def _propagate_setter_from_kwargs_to_DEIM_reductions(self, setter, Type, **kwargs):
             assert "DEIM" in kwargs
             kwarg_DEIM = kwargs["DEIM"]
             return_value = True # will be either a bool or None
@@ -107,10 +116,11 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                         else:
                             assert max(self.DEIM_reductions[term].keys()) == len(kwarg_DEIM[term]) - 1
                         for (q, DEIM_reductions_term_q) in self.DEIM_reductions[term].iteritems():
+                            assert isinstance(kwarg_DEIM[term][q], Type)
                             current_return_value = setter(DEIM_reductions_term_q, kwarg_DEIM[term][q])
                             return_value = current_return_value and return_value
             else:
-                assert isinstance(kwarg_DEIM, int)
+                assert isinstance(kwarg_DEIM, Type)
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
                         current_return_value = setter(DEIM_reduction_term_q, kwarg_DEIM)

@@ -127,8 +127,9 @@ class SCMApproximationReductionMethod(ReductionMethod):
         # Arbitrarily start from the first parameter in the training set
         self.SCM_approximation.set_mu(self.training_set[0])
         self._offline__mu_index = 0
+        relative_error_estimator_max = 2.*self.tol
         
-        while self.SCM_approximation.N < self.Nmax:
+        while self.SCM_approximation.N < self.Nmax and relative_error_estimator_max >= self.tol:
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM N =", self.SCM_approximation.N, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             
             # Store the greedy parameter
@@ -144,12 +145,12 @@ class SCMApproximationReductionMethod(ReductionMethod):
             self.update_eigenvector_J(eigenvector)
             UB_vector = self.compute_UB_vector(eigenvector)
             self.update_UB_vectors_J(UB_vector)
-                            
+            
             # Prepare for next iteration
-            if self.SCM_approximation.N < self.Nmax:
-                print("find next mu")
-                
-            self.greedy()
+            print("find next mu")
+            (error_estimator_max, relative_error_estimator_max) = self.greedy()
+            print("maximum SCM error estimator =", error_estimator_max)
+            print("maximum SCM relative error estimator =", relative_error_estimator_max)
             
             print("")
         
@@ -244,7 +245,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
             return error_estimator
             
         (error_estimator_max, error_estimator_argmax) = self.training_set.max(solve_and_estimate_error)
-        print("maximum SCM error estimator =", error_estimator_max)
         self.SCM_approximation.set_mu(self.training_set[error_estimator_argmax])
         self._offline__mu_index = error_estimator_argmax
         self.greedy_selected_parameters.append(self.training_set[error_estimator_argmax])
@@ -252,6 +252,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.greedy_error_estimators.append(error_estimator_max)
         self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
         self.SCM_approximation.alpha_LB_on_training_set.save(self.SCM_approximation.folder["reduced_operators"], "alpha_LB_on_training_set")
+        return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
         
     #  @}
     ########################### end - OFFLINE STAGE - end ########################### 

@@ -163,6 +163,7 @@ elastic_block_problem.set_mu_range(mu_range)
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(elastic_block_problem)
 pod_galerkin_method.set_Nmax(20)
+pod_galerkin_method.set_tolerance(2e-4)
 
 # 5. Perform the offline phase
 pod_galerkin_method.initialize_training_set(500)
