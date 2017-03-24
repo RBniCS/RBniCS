@@ -34,9 +34,9 @@ class DirichletBC(object):
                 self.bcs_base_index = None
             elif isinstance(self.bcs, dict):
                 # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
-                assert rhs._basis_component_index_to_component_name == lhs._basis_component_index_to_component_name[0]
-                assert rhs._component_name_to_basis_component_index == lhs._component_name_to_basis_component_index[0]
-                assert rhs._component_name_to_basis_component_length == lhs._component_name_to_basis_component_length[0]
+                assert rhs._basis_component_index_to_component_name == lhs._basis_component_index_to_component_name[1]
+                assert rhs._component_name_to_basis_component_index == lhs._component_name_to_basis_component_index[1]
+                assert rhs._component_name_to_basis_component_length == lhs._component_name_to_basis_component_length[1]
                 assert rhs.N == lhs.N
                 # Fill in storage
                 bcs_base_index = dict() # from component name to first index

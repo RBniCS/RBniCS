@@ -85,14 +85,13 @@ class _NonlinearProblem(NonlinearProblem):
         if isinstance(residual_form_or_vector, Form):
             assemble(residual_form_or_vector, tensor=residual_vector)
         elif isinstance(residual_form_or_vector, GenericVector):
-            as_backend_type(residual_form_or_vector).vec().copy(as_backend_type(residual_vector).vec())
+            as_backend_type(residual_form_or_vector).vec().swap(as_backend_type(residual_vector).vec())
         else:
             raise AssertionError("Invalid case in _NonlinearProblem.residual_vector_assemble.")
         
     def J(self, jacobian_matrix, solution):
         # Assemble the jacobian
         self.jacobian_matrix_assemble(jacobian_matrix, self.solution)
-        # Apply boundary conditions
         # Apply boundary conditions
         assert isinstance(self.bcs, (dict, list))
         if isinstance(self.bcs, list):
@@ -104,14 +103,15 @@ class _NonlinearProblem(NonlinearProblem):
                     bc.apply(jacobian_matrix)
         else:
             raise AssertionError("Invalid type for bcs.")
-            
+        
     def jacobian_matrix_assemble(self, jacobian_matrix, solution):
         jacobian_form_or_matrix = self.jacobian_eval(solution)
         assert isinstance(jacobian_form_or_matrix, (Form, GenericMatrix))
         if isinstance(jacobian_form_or_matrix, Form):
             assemble(jacobian_form_or_matrix, tensor=jacobian_matrix)
         elif isinstance(jacobian_form_or_matrix, GenericMatrix):
-            as_backend_type(jacobian_form_or_matrix).mat().copy(as_backend_type(jacobian_matrix).mat())
+            jacobian_matrix.zero()
+            jacobian_matrix += jacobian_form_or_matrix
         else:
             raise AssertionError("Invalid case in _NonlinearProblem.jacobian_matrix_assemble.")
         

@@ -57,7 +57,7 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
             
     def __abs__(self, other):
         output = MatrixBaseType.__abs__(self)
-        self._arithmetic_operations_preserve_attributes(None, output, other_is_matrix=False)
+        self._arithmetic_operations_preserve_attributes(None, output, other_order=0)
         return output
         
     def __add__(self, other):
@@ -81,33 +81,28 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
         else:
             output = MatrixBaseType.__mul__(self, other)
         if isinstance(other, float):
-            self._arithmetic_operations_preserve_attributes(other, output, other_is_matrix=False)
+            self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
+        elif isinstance(other, Function.Type()):
+            self._arithmetic_operations_preserve_attributes(other.vector(), output, other_order=1)
+        elif isinstance(other, Vector.Type()):
+            self._arithmetic_operations_preserve_attributes(other, output, other_order=1)
         return output
         
     def __rmul__(self, other):
         output = MatrixBaseType.__rmul__(self, other)
         if isinstance(other, float):
-            self._arithmetic_operations_preserve_attributes(other, output, other_is_matrix=False)
+            self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
         return output
         
     def __neg__(self):
         output = MatrixBaseType.__neg__(self)
-        self._arithmetic_operations_preserve_attributes(None, output, other_is_matrix=False)
+        self._arithmetic_operations_preserve_attributes(None, output, other_order=0)
         return output
         
-    def _arithmetic_operations_preserve_attributes(self, other, output, other_is_matrix=True):
+    def _arithmetic_operations_preserve_attributes(self, other, output, other_order=2):
         # Preserve M and N
-        if other_is_matrix:
-            assert isinstance(self.M, (int, dict))
+        if other_order in (1, 2):
             assert isinstance(self.N, (int, dict))
-            if isinstance(self.M, int) and isinstance(other.M, dict):
-                assert len(other.M) == 1
-                assert other.M.values()[0] == self.M
-            elif isinstance(self.M, dict) and isinstance(other.M, int):
-                assert len(self.M) == 1
-                assert self.M.values()[0] == other.M
-            else:
-                assert self.M == other.M
             if isinstance(self.N, int) and isinstance(other.N, dict):
                 assert len(other.N) == 1
                 assert other.N.values()[0] == self.N
@@ -116,23 +111,44 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
                 assert self.N.values()[0] == other.N
             else:
                 assert self.N == other.N
+        if other_order is 2:
+            assert isinstance(self.M, (int, dict))
+            if isinstance(self.M, int) and isinstance(other.M, dict):
+                assert len(other.M) == 1
+                assert other.M.values()[0] == self.M
+            elif isinstance(self.M, dict) and isinstance(other.M, int):
+                assert len(self.M) == 1
+                assert self.M.values()[0] == other.M
+            else:
+                assert self.M == other.M
         output.M = self.M
         output.N = self.N
         # Preserve auxiliary attributes related to basis functions matrix
         assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
         assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")
         if hasattr(self, "_basis_component_index_to_component_name"):
-            if other_is_matrix:
+            if other_order is 2:
                 if hasattr(other, "_basis_component_index_to_component_name"):
                     assert self._basis_component_index_to_component_name == other._basis_component_index_to_component_name
                 if hasattr(other, "_component_name_to_basis_component_index"):
                     assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 if hasattr(other, "_component_name_to_basis_component_length"):
                     assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
-            output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
-            output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-            output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
-        
+            elif other_order is 1:
+                if hasattr(other, "_basis_component_index_to_component_name"):
+                    assert self._basis_component_index_to_component_name[1] == other._basis_component_index_to_component_name
+                if hasattr(other, "_component_name_to_basis_component_index"):
+                    assert self._component_name_to_basis_component_index[1] == other._component_name_to_basis_component_index
+                if hasattr(other, "_component_name_to_basis_component_length"):
+                    assert self._component_name_to_basis_component_length[1] == other._component_name_to_basis_component_length
+            if other_order is 0 or other_order is 2:
+                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
+                output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
+                output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+            elif other_order is 1:
+                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name[1]
+                output._component_name_to_basis_component_index = self._component_name_to_basis_component_index[1]
+                output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[1]
     
 from numpy import zeros as _MatrixContent_Base
 from RBniCS.utils.decorators import backend_for, OnlineSizeType

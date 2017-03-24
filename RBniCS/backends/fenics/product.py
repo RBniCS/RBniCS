@@ -23,7 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from ufl import Form
-from dolfin import assemble, Constant, DirichletBC, project
+from ufl.algebra import Division, Product, Sum
+from ufl.core.operator import Operator
+from dolfin import assemble, Constant, DirichletBC, Expression, project
 from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from RBniCS.backends.fenics.matrix import Matrix
 from RBniCS.backends.fenics.vector import Vector
@@ -32,8 +34,8 @@ from RBniCS.backends.fenics.wrapping import function_copy, tensor_copy
 from RBniCS.utils.decorators import backend_for, ComputeThetaType
 from RBniCS.utils.mpi import log, PROGRESS
 
-# Need to customize ThetaType in order to also include FEniCS' Constant, which is a side effect of DEIM decorator
-ThetaType = ComputeThetaType((Constant, ))
+# Need to customize ThetaType in order to also include FEniCS' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator
+ThetaType = ComputeThetaType((Expression, Operator))
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
@@ -75,7 +77,9 @@ def product(thetas, operators, thetas2=None):
         for (key, item) in combined.iteritems():
             value = 0
             for addend in item:
-                value += Constant(thetas[ addend[1] ]) * addend[0]
+                theta = float(thetas[ addend[1] ])
+                fun = addend[0]
+                value += Constant(theta)*fun
             try:
                 dirichlet_bc = DirichletBC(key[0], value, key[1], key[2])
             except RuntimeError: # key[0] was a subspace, and DirichletBC does not handle collapsing
@@ -89,6 +93,7 @@ def product(thetas, operators, thetas2=None):
         assert isinstance(operators[0], Form)
         output = 0
         for (theta, operator) in zip(thetas, operators):
+            theta = float(theta)
             output += Constant(theta)*operator
         # keep_diagonal is enabled because it is needed to constrain DirichletBC eigenvalues in SCM
         output = assemble(output, keep_diagonal=True)
@@ -108,4 +113,4 @@ def product(thetas, operators, thetas2=None):
 class ProductOutput(object):
     def __init__(self, sum_product_return_value):
         self.sum_product_return_value = sum_product_return_value
-    
+        

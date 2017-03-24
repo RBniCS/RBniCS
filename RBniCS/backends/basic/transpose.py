@@ -22,6 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
+from RBniCS.utils.mpi import log, PROGRESS
 from RBniCS.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
 
 def transpose(arg, backend, wrapping, online_backend, AdditionalFunctionTypes=None, AdditionalIsVector=None, AdditionalIsMatrix=None):
@@ -67,7 +68,10 @@ class Vector_Transpose(object):
         if isinstance(matrix_or_vector, self.backend.Matrix.Type()) or self.AdditionalIsMatrix(matrix_or_vector):
             return Vector_Transpose__times__Matrix(self.vector, matrix_or_vector, self.backend, self.wrapping, self.FunctionTypes, self.AdditionalIsVector, self.AdditionalIsMatrix)
         elif isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(matrix_or_vector):
-            return self.wrapping.vector_mul_vector(self.vector, matrix_or_vector)
+            log(PROGRESS, "Begin v^T w")
+            output = self.wrapping.vector_mul_vector(self.vector, matrix_or_vector)
+            log(PROGRESS, "End v^T w")
+            return output
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in Vector_Transpose.__mul__.")
             
@@ -86,7 +90,10 @@ class Vector_Transpose__times__Matrix(object):
         
     def __mul__(self, other_vector):
         assert isinstance(other_vector, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(other_vector)
-        return self.wrapping.vector_mul_vector(self.vector, self.wrapping.matrix_mul_vector(self.matrix, other_vector))
+        log(PROGRESS, "Begin v^T A w")
+        output = self.wrapping.vector_mul_vector(self.vector, self.wrapping.matrix_mul_vector(self.matrix, other_vector))
+        log(PROGRESS, "End v^T A w")
+        return output
         
 # Auxiliary class: transpose of a FunctionsList or a BasisFunctionsMatrix
 class _FunctionsList_BasisFunctionsMatrix_Transpose(object):
@@ -105,9 +112,11 @@ class _FunctionsList_BasisFunctionsMatrix_Transpose(object):
         if isinstance(matrix_or_vector, self.backend.Matrix.Type()) or self.AdditionalIsMatrix(matrix_or_vector):
             return self.Functions_Transpose__times__Matrix(self.functions_list, self.functions_list_dim, matrix_or_vector, self.backend, self.wrapping, self.online_backend, self.FunctionTypes, self.AdditionalIsVector, self.AdditionalIsMatrix)
         elif isinstance(matrix_or_vector, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(matrix_or_vector):
+            log(PROGRESS, "Begin Z^T w")
             online_vector = self.online_backend.Vector(self.functions_list_dim)
             for (i, fun_i) in enumerate(self.functions_list):
                 online_vector[i] = self.wrapping.vector_mul_vector(fun_i, matrix_or_vector)
+            log(PROGRESS, "End Z^T w")
             return online_vector
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in _FunctionsList_BasisFunctionsMatrix_Transpose.__mul__.")
@@ -152,19 +161,23 @@ class _FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix(object):
     def __mul__(self, other_functions_list__or__function):
         assert isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.BasisFunctionsMatrix, self.backend.FunctionsList, self.backend.Vector.Type())) or self.AdditionalIsVector(other_functions_list__or__function)
         if isinstance(other_functions_list__or__function, (self.backend.BasisFunctionsMatrix, self.backend.FunctionsList)):
+            log(PROGRESS, "Begin Z^T*A*Z")
             (other_functions_list, other_functions_list_dim) = functions_list_basis_functions_matrix_adapter(other_functions_list__or__function, self.backend)
             online_matrix = self.online_backend.Matrix(self.functions_list_dim, other_functions_list_dim)
             for (j, fun_j) in enumerate(other_functions_list):
                 matrix_times_fun_j = self.wrapping.matrix_mul_vector(self.matrix, fun_j)
                 for (i, fun_i) in enumerate(self.functions_list):
                     online_matrix[i, j] = self.wrapping.vector_mul_vector(fun_i, matrix_times_fun_j)
+            log(PROGRESS, "End Z^T*A*Z")
             return online_matrix
         elif isinstance(other_functions_list__or__function, self.FunctionTypes + (self.backend.Vector.Type(), )) or self.AdditionalIsVector(other_functions_list__or__function):
+            log(PROGRESS, "Begin Z^T*A*v")
             function = other_functions_list__or__function
             online_vector = self.online_backend.Vector(self.functions_list_dim)
             matrix_times_function = self.wrapping.matrix_mul_vector(self.matrix, function)
             for (i, fun_i) in enumerate(self.functions_list):
                 online_vector[i] = self.wrapping.vector_mul_vector(fun_i, matrix_times_function)
+            log(PROGRESS, "End Z^T*A*v")
             return online_vector
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in _FunctionsList_BasisFunctionsMatrix_Transpose__times__Matrix.__mul__.")
@@ -201,7 +214,10 @@ class VectorizedMatrix_Transpose(object):
             
     def __mul__(self, other_matrix):
         assert isinstance(other_matrix, self.backend.Matrix.Type()) or self.AdditionalIsMatrix(other_matrix)
-        return self.wrapping.vectorized_matrix_inner_vectorized_matrix(self.matrix, other_matrix)
+        log(PROGRESS, "Begin A : B")
+        output = self.wrapping.vectorized_matrix_inner_vectorized_matrix(self.matrix, other_matrix)
+        log(PROGRESS, "End A : B")
+        return output
         
 # Auxiliary class: transpose of a TensorsList
 class TensorsList_Transpose(object):
@@ -213,6 +229,7 @@ class TensorsList_Transpose(object):
         self.online_backend = online_backend
     
     def __mul__(self, other_tensors_list):
+        log(PROGRESS, "Begin T^T S")
         assert isinstance(other_tensors_list, self.backend.TensorsList)
         assert len(self.tensors_list) == len(other_tensors_list)
         dim = len(self.tensors_list)
@@ -220,5 +237,6 @@ class TensorsList_Transpose(object):
         for i in range(dim):
             for j in range(dim):
                 online_matrix[i, j] = transpose(self.tensors_list[i], self.backend, self.wrapping, self.online_backend)*other_tensors_list[j]
+        log(PROGRESS, "End T^T S")
         return online_matrix
         
