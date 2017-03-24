@@ -35,6 +35,7 @@ __all__ = []
 from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
 from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
 from RBniCS.problems.elliptic_optimal_control import EllipticOptimalControlProblem
+from RBniCS.problems.navier_stokes import NavierStokesProblem
 from RBniCS.problems.nonlinear_elliptic import NonlinearEllipticProblem
 from RBniCS.problems.parabolic_coercive import ParabolicCoerciveProblem
 from RBniCS.problems.stokes import StokesProblem
@@ -53,6 +54,7 @@ __all__ += [
     # RBniCS.problems
     'EllipticCoerciveProblem',
     'EllipticOptimalControlProblem',
+    'NavierStokesProblem',
     'NonlinearEllipticProblem',
     'ParabolicCoerciveProblem',
     'StokesProblem',
