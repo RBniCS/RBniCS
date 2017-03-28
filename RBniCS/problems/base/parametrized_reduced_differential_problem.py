@@ -31,6 +31,7 @@ from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
 from RBniCS.backends import assign, BasisFunctionsMatrix, copy, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from RBniCS.sampling import ParameterSpaceSubset
+from RBniCS.utils.io import OnlineSizeDict
 from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
 from RBniCS.utils.mpi import log, print, PROGRESS
 
@@ -188,8 +189,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                     self.N = N.values()[0]
                     self.N_bc = N_bc.values()[0]
                 else:
-                    self.N = N
-                    self.N_bc = N_bc
+                    self.N = OnlineSizeDict(N)
+                    self.N_bc = OnlineSizeDict(N_bc)
         elif current_stage == "offline":
             # Store the lifting functions in self.Z
             for component in self.components:
@@ -208,8 +209,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 for component in self.components:
                     N[component] = 0
                     N_bc[component] = len(self.Z[component])
-                self.N = N
-                self.N_bc = N_bc
+                self.N = OnlineSizeDict(N)
+                self.N_bc = OnlineSizeDict(N_bc)
                 total_N_bc = sum(N_bc.values())
             # Note that, however, self.N is not increased, so it will actually contain the number
             # of basis functions without the lifting ones.
@@ -257,42 +258,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         self._output = NotImplemented
         
     def _online_size_from_kwargs(self, N, **kwargs):
-        class OnlineSizeDict(dict):
-            __slots__ = ()
-            
-            def __init__(self_, *args_, **kwargs_):
-                super(OnlineSizeDict, self_).__init__(*args_, **kwargs_)
-                
-            def __getitem__(self_, k):
-                return super(OnlineSizeDict, self_).__getitem__(k)
-                
-            def __setitem__(self_, k, v):
-                return super(OnlineSizeDict, self_).__setitem__(k, v)
-                
-            def __delitem__(self_, k):
-                return super(OnlineSizeDict, self_).__delitem__(k)
-                
-            def get(self_, k, default=None):
-                return super(OnlineSizeDict, self_).get(k, default)
-                
-            def setdefault(self_, k, default=None):
-                return super(OnlineSizeDict, self_).setdefault(k, default)
-                
-            def pop(self_, k):
-                return super(OnlineSizeDict, self_).pop(k)
-                
-            def update(self_, **kwargs_):
-                super(OnlineSizeDict, self_).update(**kwargs_)
-                
-            def __contains__(self_, k):
-                return super(OnlineSizeDict, self_).__contains__(k)
-                
-            # Override N += N_bc so that it is possible to increment online size due to boundary conditions
-            def __iadd__(self_, other_):
-                for component in self.components:
-                    self_[component] += other_[component]
-                return self_
-        
         if len(self.components) > 1:
             if N is None:
                 all_components_in_kwargs = self.components[0] in kwargs

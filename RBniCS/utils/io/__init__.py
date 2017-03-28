@@ -29,6 +29,7 @@ from RBniCS.utils.io.greedy_error_estimators_list import GreedyErrorEstimatorsLi
 from RBniCS.utils.io.greedy_selected_parameters_list import GreedySelectedParametersList
 from RBniCS.utils.io.numpy_io import NumpyIO
 #from RBniCS.utils.io.performance_table import PerformanceTable # not needed, only used internally inside this module
+from RBniCS.utils.io.online_size_dict import OnlineSizeDict
 from RBniCS.utils.io.pickle_io import PickleIO
 from RBniCS.utils.io.speedup_analysis_table import SpeedupAnalysisTable
 from RBniCS.utils.io.text_io import TextIO
@@ -41,6 +42,7 @@ __all__ = [
     'GreedyErrorEstimatorsList',
     'GreedySelectedParametersList',
     'NumpyIO',
+    'OnlineSizeDict',
     'PickleIO',
     'SpeedupAnalysisTable',
     'TextIO',
