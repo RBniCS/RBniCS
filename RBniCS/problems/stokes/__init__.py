@@ -24,13 +24,13 @@
 
 from RBniCS.problems.stokes.stokes_pod_galerkin_reduced_problem import StokesPODGalerkinReducedProblem
 from RBniCS.problems.stokes.stokes_problem import StokesProblem
-#from RBniCS.problems.stokes.stokes_rb_reduced_problem import StokesRBReducedProblem
+from RBniCS.problems.stokes.stokes_rb_reduced_problem import StokesRBReducedProblem
 from RBniCS.problems.stokes.stokes_reduced_problem import StokesReducedProblem
 
 
 __all__ = [
     'StokesPODGalerkinReducedProblem',
     'StokesProblem',
-#    'StokesRBReducedProblem',
+    'StokesRBReducedProblem',
     'StokesReducedProblem'
 ]

@@ -49,3 +49,19 @@ class StokesReductionMethod(DifferentialProblemReductionMethod):
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
     
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the testing set
+    @override
+    def error_analysis(self, N=None, **kwargs):
+        components = ["u", "p"] # but not "s"
+        kwargs["components"] = components
+        
+        StokesPODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
+    
