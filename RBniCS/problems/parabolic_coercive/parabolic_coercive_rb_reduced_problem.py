@@ -51,6 +51,9 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
         # Call to parent
         ParabolicCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
         
+        # Skip useless Riesz products
+        self.riesz_product_terms.extend([("m", "f"), ("m", "a"), ("m", "m")])
+        
     ## Return an error bound for the current solution
     def estimate_error(self):
         eps2_over_time = self.get_residual_norm_squared()
@@ -120,101 +123,12 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
                 theta_f = self.compute_theta("f")
                 residual_norm_squared_over_time.append(
                       elliptic_residual_norm_squared
-                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["mf"][:N], theta_f)))
-                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["ma"][:N, :N], theta_a))*self._solution)
-                    + transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["mm"][:N, :N], theta_m))*self._solution_dot
+                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["m", "f"][:N], theta_f)))
+                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["m", "a"][:N, :N], theta_a))*self._solution)
+                    + transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["m", "m"][:N, :N], theta_m))*self._solution_dot
                 )
             else:
                 # Error estimator on initial condition does not use the residual
                 residual_norm_squared_over_time.append(0.)
         return residual_norm_squared_over_time
-        
-    ## Compute the Riesz representation of term
-    def compute_riesz(self, term):
-        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-        inner_product = self.truth_problem.inner_product[0]
-        if term == "m":
-            for qm in range(self.Q["m"]):
-                for n in range(len(self.riesz["m"][qm]), self.N + self.N_bc):
-                    if self.truth_problem.dirichlet_bc is not None:
-                        theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
-                        homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
-                    else:
-                        homogeneous_dirichlet_bc = None
-                    solver = LinearSolver(inner_product, self._riesz_solve_storage, -1.*self.truth_problem.operator["m"][qm]*self.Z[n], homogeneous_dirichlet_bc)
-                    solver.solve()
-                    self.riesz["m"][qm].enrich(self._riesz_solve_storage)
-        else:
-            return ParabolicCoerciveRBReducedProblem_Base.compute_riesz(self, term)
-                
-    ## Assemble operators for error estimation
-    @override
-    def assemble_error_estimation_operators(self, term, current_stage="online"):
-        assert current_stage in ("online", "offline")
-        if current_stage == "online": # load from file
-            assert term.startswith("riesz_product_") or term == "initial_condition_product"
-            if term.startswith("riesz_product_"):
-                short_term = term.replace("riesz_product_", "")
-                if not short_term in self.riesz_product:
-                    self.riesz_product[short_term] = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
-                if term == "riesz_product_mm":
-                    self.riesz_product["mm"].load(self.folder["error_estimation"], "riesz_product_mm")
-                elif term == "riesz_product_ma":
-                    self.riesz_product["ma"].load(self.folder["error_estimation"], "riesz_product_ma")
-                elif term == "riesz_product_mf":
-                    self.riesz_product["mf"].load(self.folder["error_estimation"], "riesz_product_mf")
-                else:
-                    return ParabolicCoerciveRBReducedProblem_Base.assemble_error_estimation_operators(self, term, current_stage)
-                return self.riesz_product[short_term]
-            elif term == "initial_condition_product":
-                if self.initial_condition_product is None:
-                    self.initial_condition_product = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
-                self.initial_condition_product.load(self.folder["error_estimation"], "initial_condition_product")
-                return self.initial_condition_product
-            else:
-                raise AssertionError("Invalid term in assemble_error_estimation_operators().")
-        elif current_stage == "offline":
-            assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-            inner_product = self.truth_problem.inner_product[0]
-            assert term.startswith("riesz_product_") or term == "initial_condition_product"
-            if term.startswith("riesz_product_"):
-                short_term = term.replace("riesz_product_", "")
-                if term == "riesz_product_mm":
-                    for qm in range(self.Q["m"]):
-                        assert len(self.riesz["m"][qm]) == self.N + self.N_bc
-                        for qmp in range(qm, self.Q["m"]):
-                            assert len(self.riesz["m"][qmp]) == self.N + self.N_bc
-                            self.riesz_product["mm"][qm, qmp] = transpose(self.riesz["m"][qm])*inner_product*self.riesz["m"][qmp]
-                            if qm != qmp:
-                                self.riesz_product["mm"][qmp, qm] = self.riesz_product["mm"][qm, qmp]
-                    self.riesz_product["mm"].save(self.folder["error_estimation"], "riesz_product_mm")
-                elif term == "riesz_product_ma":
-                    for qm in range(self.Q["m"]):
-                        assert len(self.riesz["m"][qm]) == self.N + self.N_bc
-                        for qa in range(0, self.Q["a"]):
-                            assert len(self.riesz["a"][qa]) == self.N + self.N_bc
-                            self.riesz_product["ma"][qm, qa] = transpose(self.riesz["m"][qm])*inner_product*self.riesz["a"][qa]
-                    self.riesz_product["ma"].save(self.folder["error_estimation"], "riesz_product_ma")
-                elif term == "riesz_product_mf":
-                    for qm in range(self.Q["m"]):
-                        assert len(self.riesz["m"][qm]) == self.N + self.N_bc
-                        for qf in range(0, self.Q["f"]):
-                            assert len(self.riesz["f"][qf]) == 1
-                            self.riesz_product["mf"][qm, qf] = transpose(self.riesz["m"][qm])*inner_product*self.riesz["f"][qf][0]
-                    self.riesz_product["mf"].save(self.folder["error_estimation"], "riesz_product_mf")
-                else:
-                    return ParabolicCoerciveRBReducedProblem_Base.assemble_error_estimation_operators(self, term, current_stage)
-                return self.riesz_product[short_term]
-            elif term == "initial_condition_product":
-                for q in range(self.Q_ic):
-                    for qp in range(q, self.Q_ic):
-                        self.initial_condition_product[q, qp] = transpose(self.truth_problem.initial_condition[q])*inner_product*self.truth_problem.initial_condition[qp]
-                        if q != qp:
-                            self.initial_condition_product[qp, q] = self.initial_condition_product[q, qp]
-                self.initial_condition_product.save(self.folder["error_estimation"], "initial_condition_product")
-                return self.initial_condition_product
-            else:
-                raise AssertionError("Invalid term in assemble_error_estimation_operators().")
-        else:
-            raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
         

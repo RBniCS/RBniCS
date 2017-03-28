@@ -30,9 +30,16 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class TimeDependentRBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
-        ###########################     ERROR ANALYSIS     ########################### 
-        ## @defgroup ErrorAnalysis Error analysis
-        #  @{
+        ## Choose the next parameter in the offline stage in a greedy fashion
+        def _greedy(self):
+            def solve_and_estimate_error(mu, index):
+                self.reduced_problem.set_mu(mu)
+                self.reduced_problem.solve()
+                error_estimator_over_time = self.reduced_problem.estimate_error()
+                error_estimator_squared_over_time = [v**2 for v in error_estimator_over_time]
+                return sqrt(self.time_quadrature.integrate(error_estimator_squared_over_time))
+                
+            return self.training_set.max(solve_and_estimate_error)
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
@@ -60,9 +67,6 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
             ErrorAnalysisTable.clear_setitem_preprocessing()
-        
-        #  @}
-        ########################### end - ERROR ANALYSIS - end ########################### 
         
     # return value (a class) for the decorator
     return TimeDependentRBReduction_Class

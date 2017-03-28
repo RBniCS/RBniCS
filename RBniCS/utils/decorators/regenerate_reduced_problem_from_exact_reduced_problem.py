@@ -48,7 +48,7 @@ def regenerate_reduced_problem_from_exact_reduced_problem(truth_problem, reducti
     if "error_estimation" in reduced_problem.folder:
         if reduced_problem.folder["error_estimation"].create(): # precomputation should be carried out now
            reduced_problem._init_error_estimation_operators("offline")
-           reduced_problem.build_error_estimation_operators
+           reduced_problem.build_error_estimation_operators()
         else: # load from file
            reduced_problem._init_error_estimation_operators("online")
     return reduced_problem

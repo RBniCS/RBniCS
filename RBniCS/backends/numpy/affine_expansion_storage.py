@@ -25,7 +25,7 @@
 from numpy import empty as AffineExpansionStorageContent_Base
 from numpy import nditer as AffineExpansionStorageContent_Iterator
 from numpy import asmatrix as AffineExpansionStorageContent_AsMatrix
-from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, FunctionsList as AbstractFunctionsList
+from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
 from RBniCS.backends.numpy.vector import Vector as OnlineVector
 from RBniCS.backends.numpy.wrapping import slice_to_array, slice_to_size
@@ -231,15 +231,16 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._content[key] = item
         # Also store component_name_to_basis_component_* for __getitem__ slicing
         assert isinstance(item, (
-            OnlineMatrix.Type(),  # output e.g. of Z^T*A*Z
-            OnlineVector.Type(),  # output e.g. of Z^T*F
-            float,                # output of Riesz_F^T*X*Riesz_F
-            AbstractFunctionsList # auxiliary storage of Riesz representors
+            OnlineMatrix.Type(),            # output e.g. of Z^T*A*Z
+            OnlineVector.Type(),            # output e.g. of Z^T*F
+            float,                          # output of Riesz_F^T*X*Riesz_F
+            AbstractFunctionsList,          # auxiliary storage of Riesz representors
+            AbstractBasisFunctionsMatrix    # auxiliary storage of Riesz representors
         ))
         assert hasattr(item, "_basis_component_index_to_component_name") == hasattr(item, "_component_name_to_basis_component_index")
         assert hasattr(item, "_component_name_to_basis_component_index") == hasattr(item, "_component_name_to_basis_component_length")
-        if hasattr(item, "_component_name_to_basis_component_index"): # temporarily added by transpose() method
-            assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type()))
+        if hasattr(item, "_component_name_to_basis_component_index"): 
+            assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), AbstractBasisFunctionsMatrix))
             assert (self._basis_component_index_to_component_name is None) == (self._component_name_to_basis_component_index is None)
             assert (self._component_name_to_basis_component_index is None) == (self._component_name_to_basis_component_length is None)
             if self._basis_component_index_to_component_name is None:
@@ -250,9 +251,10 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 assert self._basis_component_index_to_component_name == item._basis_component_index_to_component_name
                 assert self._component_name_to_basis_component_index == item._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length == item._component_name_to_basis_component_length
-            del item._basis_component_index_to_component_name # cleanup temporary addition
-            del item._component_name_to_basis_component_index # cleanup temporary addition
-            del item._component_name_to_basis_component_length # cleanup temporary addition
+            if isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type())): # attributes where temporarily added by transpose() method
+                del item._basis_component_index_to_component_name # cleanup temporary addition
+                del item._component_name_to_basis_component_index # cleanup temporary addition
+                del item._component_name_to_basis_component_length # cleanup temporary addition
         else:
             assert self._basis_component_index_to_component_name is None
             assert self._component_name_to_basis_component_index is None

@@ -63,9 +63,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     # Thus, for any value of current_stage, we initialize error estimation
                     # operators of the reduced problem as if we were offline
                     ReducedParametrizedProblem_DecoratedClass._init_error_estimation_operators(self, "offline")
-                    for (index1, term1) in enumerate(self.terms):
-                        for (index2, term2) in enumerate(self.terms[index1:], start=index1):
-                            self._disable_load_and_save_for_online_storage(self.riesz_product[term1 + term2])
+                    for term in self.riesz_product_terms:
+                        self._disable_load_and_save_for_online_storage(self.riesz_product[term])
                                                     
                 ## Return the error estimator for the current solution
                 @override
@@ -116,7 +115,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 def build_error_estimation_operators(self, current_stage="offline"):
                     if current_stage == "online":
                         log(PROGRESS, "build operators for error estimation (due to inefficient evaluation)")
-                        for term in self.terms:
+                        for term in self.riesz_terms:
                             for q in range(self.truth_problem.Q[term]):
                                 self.riesz[term][q].clear()
                         self.build_error_estimation_operators__initialized = False

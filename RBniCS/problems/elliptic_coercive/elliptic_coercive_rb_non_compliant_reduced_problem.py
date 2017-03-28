@@ -51,7 +51,7 @@ class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBReducedProb
     ## Assemble operators for error estimation
     @override
     def assemble_error_estimation_operators(self, term, current_stage="online"):
-        if term in ("riesz_product_as", "riesz_product_fs", "riesz_product_ss"):
+        if term in (("a", "s"), ("f", "s"), ("s", "s")):
             pass
         else:
             return EllipticCoerciveRBReducedProblem.assemble_error_estimation_operators(self, term, current_stage)

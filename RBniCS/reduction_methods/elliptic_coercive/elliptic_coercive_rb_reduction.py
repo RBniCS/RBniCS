@@ -91,20 +91,4 @@ class EllipticCoerciveRBReduction(EllipticCoerciveRBReduction_Base):
         
     #  @}
     ########################### end - CONSTRUCTORS - end ###########################
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
-        
-    ## Choose the next parameter in the offline stage in a greedy fashion
-    def _greedy(self):
-        def solve_and_estimate_error(mu, index):
-            self.reduced_problem.set_mu(mu)
-            self.reduced_problem.solve(self.reduced_problem.N)
-            return self.reduced_problem.estimate_error()
-            
-        return self.training_set.max(solve_and_estimate_error)
-
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
         

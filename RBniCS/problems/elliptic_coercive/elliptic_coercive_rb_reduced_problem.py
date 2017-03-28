@@ -25,7 +25,7 @@
 from math import sqrt
 from numpy import isclose
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from RBniCS.backends import product, transpose, LinearSolver, sum
+from RBniCS.backends import product, sum, transpose
 from RBniCS.backends.online import OnlineAffineExpansionStorage
 from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
 from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
@@ -53,6 +53,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         EllipticCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
+        
+        # Skip useless Riesz products
+        self.riesz_product_terms = [("f", "f"), ("a", "f"), ("a", "a")]
         
     #  @}
     ########################### end - CONSTRUCTORS - end ########################### 
@@ -91,104 +94,11 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         theta_a = self.compute_theta("a")
         theta_f = self.compute_theta("f")
         return (
-              sum(product(theta_f, self.riesz_product["ff"], theta_f))
-            + 2.0*(transpose(self._solution)*sum(product(theta_a, self.riesz_product["af"][:N], theta_f)))
-            + transpose(self._solution)*sum(product(theta_a, self.riesz_product["aa"][:N, :N], theta_a))*self._solution
+              sum(product(theta_f, self.riesz_product["f", "f"], theta_f))
+            + 2.0*(transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "f"][:N], theta_f)))
+            + transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "a"][:N, :N], theta_a))*self._solution
         )
             
     #  @}
     ########################### end - ONLINE STAGE - end ########################### 
     
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
-                
-    ## Compute the Riesz representation of term
-    @override
-    def compute_riesz(self, term):
-        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-        inner_product = self.truth_problem.inner_product[0]
-        if term == "a":
-            for qa in range(self.Q["a"]):
-                for n in range(len(self.riesz["a"][qa]), self.N + self.N_bc):
-                    if self.truth_problem.dirichlet_bc is not None:
-                        theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
-                        homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
-                    else:
-                        homogeneous_dirichlet_bc = None
-                    solver = LinearSolver(inner_product, self._riesz_solve_storage, -1.*self.truth_problem.operator["a"][qa]*self.Z[n], homogeneous_dirichlet_bc)
-                    solver.solve()
-                    self.riesz["a"][qa].enrich(self._riesz_solve_storage)
-        elif term == "f":
-            for qf in range(self.Q["f"]):
-                if self.truth_problem.dirichlet_bc is not None:
-                    theta_bc = (0.,)*len(self.truth_problem.dirichlet_bc)
-                    homogeneous_dirichlet_bc = sum(product(theta_bc, self.truth_problem.dirichlet_bc))
-                else:
-                    homogeneous_dirichlet_bc = None
-                solver = LinearSolver(inner_product, self._riesz_solve_storage, self.truth_problem.operator["f"][qf], homogeneous_dirichlet_bc)
-                solver.solve()
-                self.riesz["f"][qf].enrich(self._riesz_solve_storage)
-        else:
-            raise ValueError("Invalid term for compute_riesz().")
-            
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
-    ## Assemble operators for error estimation
-    @override
-    def assemble_error_estimation_operators(self, term, current_stage="online"):
-        assert current_stage in ("online", "offline")
-        short_term = term.replace("riesz_product_", "")
-        if current_stage == "online": # load from file
-            if not short_term in self.riesz_product:
-                self.riesz_product[short_term] = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
-            if term == "riesz_product_aa":
-                self.riesz_product["aa"].load(self.folder["error_estimation"], "riesz_product_aa")
-            elif term == "riesz_product_af":
-                self.riesz_product["af"].load(self.folder["error_estimation"], "riesz_product_af")
-            elif term == "riesz_product_ff":
-                self.riesz_product["ff"].load(self.folder["error_estimation"], "riesz_product_ff")
-            else:
-                raise ValueError("Invalid term for assemble_error_estimation_operators().")
-            return self.riesz_product[short_term]
-        elif current_stage == "offline":
-            assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-            inner_product = self.truth_problem.inner_product[0]
-            if term == "riesz_product_aa":
-                for qa in range(self.Q["a"]):
-                    assert len(self.riesz["a"][qa]) == self.N + self.N_bc
-                    for qap in range(qa, self.Q["a"]):
-                        assert len(self.riesz["a"][qap]) == self.N + self.N_bc
-                        self.riesz_product["aa"][qa, qap] = transpose(self.riesz["a"][qa])*inner_product*self.riesz["a"][qap]
-                        if qa != qap:
-                            self.riesz_product["aa"][qap, qa] = self.riesz_product["aa"][qa, qap]
-                self.riesz_product["aa"].save(self.folder["error_estimation"], "riesz_product_aa")
-            elif term == "riesz_product_af":
-                for qa in range(self.Q["a"]):
-                    assert len(self.riesz["a"][qa]) == self.N + self.N_bc
-                    for qf in range(0, self.Q["f"]):
-                        assert len(self.riesz["f"][qf]) == 1
-                        self.riesz_product["af"][qa, qf] = transpose(self.riesz["a"][qa])*inner_product*self.riesz["f"][qf][0]
-                self.riesz_product["af"].save(self.folder["error_estimation"], "riesz_product_af")
-            elif term == "riesz_product_ff":
-                for qf in range(self.Q["f"]):
-                    assert len(self.riesz["f"][qf]) == 1
-                    for qfp in range(qf, self.Q["f"]):
-                        assert len(self.riesz["f"][qfp]) == 1
-                        self.riesz_product["ff"][qf, qfp] = transpose(self.riesz["f"][qf][0])*inner_product*self.riesz["f"][qfp][0]
-                        if qf != qfp:
-                            self.riesz_product["ff"][qfp, qf] = self.riesz_product["ff"][qf, qfp]
-                self.riesz_product["ff"].save(self.folder["error_estimation"], "riesz_product_ff")
-            else:
-                raise ValueError("Invalid term for assemble_error_estimation_operators().")
-            return self.riesz_product[short_term]
-        else:
-            raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
-            
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 

@@ -55,7 +55,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
             if not self.initial_condition_is_homogeneous:
                 assert current_stage in ("online", "offline")
                 if current_stage == "online":
-                    self.initial_condition_product = self.assemble_error_estimation_operators("initial_condition_product", "online")
+                    self.initial_condition_product = self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "online")
                 elif current_stage == "offline":
                     self.initial_condition_product = OnlineAffineExpansionStorage(self.Q_ic, self.Q_ic)
                 else:
@@ -63,6 +63,29 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                                 
         #  @}
         ########################### end - ONLINE STAGE - end ########################### 
+        
+        ## Assemble operators for error estimation
+        @override
+        def assemble_error_estimation_operators(self, term, current_stage="online"):
+            if term[0] == "initial_condition" and term[1] == "initial_condition":
+                assert current_stage in ("online", "offline")
+                if current_stage == "online": # load from file
+                    if self.initial_condition_product is None:
+                        self.initial_condition_product = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
+                    self.initial_condition_product.load(self.folder["error_estimation"], "initial_condition_product")
+                    return self.initial_condition_product
+                elif current_stage == "offline":
+                    for q in range(self.Q_ic):
+                        for qp in range(q, self.Q_ic):
+                            self.initial_condition_product[q, qp] = transpose(self.truth_problem.initial_condition[q])*self._riesz_solve_inner_product*self.truth_problem.initial_condition[qp]
+                            if q != qp:
+                                self.initial_condition_product[qp, q] = self.initial_condition_product[q, qp]
+                    self.initial_condition_product.save(self.folder["error_estimation"], "initial_condition_product")
+                    return self.initial_condition_product
+                else:
+                    raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
+            else:
+                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_error_estimation_operators(self, term, current_stage)
                 
     # return value (a class) for the decorator
     return TimeDependentRBReducedProblem_Class

@@ -112,7 +112,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.reduced_problem.build_reduced_operators()
                 
                 print("reduced order solve")
-                self.reduced_problem.solve(self.reduced_problem.N)
+                self.reduced_problem.solve()
                 
                 print("build operators for error estimation")
                 self.reduced_problem.build_error_estimation_operators()
@@ -158,9 +158,13 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
             
         ## Choose the next parameter in the offline stage in a greedy fashion
-        @abstractmethod
         def _greedy(self):
-            raise NotImplementedError("The method _greedy() is problem-specific and needs to be overridden.")
+            def solve_and_estimate_error(mu, index):
+                self.reduced_problem.set_mu(mu)
+                self.reduced_problem.solve()
+                return self.reduced_problem.estimate_error()
+                
+            return self.training_set.max(solve_and_estimate_error)
             
         #  @}
         ########################### end - OFFLINE STAGE - end ########################### 
