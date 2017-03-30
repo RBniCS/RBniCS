@@ -15,16 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file sum.py
-#  @brief sum function to assemble truth/reduced affine expansions.
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-###########################     OFFLINE AND ONLINE COMMON INTERFACES     ########################### 
-## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
-#  @{
 
 from rbnics.utils.decorators import abstract_backend
 
@@ -32,6 +22,4 @@ from rbnics.utils.decorators import abstract_backend
 @abstract_backend
 def sum(product_output):
     pass
-
-#  @}
-########################### end - OFFLINE AND ONLINE COMMON INTERFACES - end ########################### 
+    

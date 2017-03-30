@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from abc import ABCMeta, abstractmethod
@@ -35,19 +29,12 @@ from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
 from rbnics.utils.mpi import log, print, PROGRESS
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveReducedOrderModelBase
-#
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 @StoreMapFromProblemToReducedProblem
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     __metaclass__ = ABCMeta
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members.
     @override
@@ -87,13 +74,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         # I/O
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
     
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
@@ -302,13 +282,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         else:
             assert isinstance(N, int)
             return (self.mu, N, tuple(sorted(kwargs.items())))
-            
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
-
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
         
     ## Assemble the reduced order affine expansion.
     def build_reduced_operators(self):
@@ -349,13 +322,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 return snapshot - self.Z[:self.N_bc]*theta_bc
             else:
                 return snapshot
-        
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # for the current value of mu
@@ -488,13 +454,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             else:
                 return absolute_error_output/truth_output
         
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
-    
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-        
     ## Export solution to file
     @override
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
@@ -502,13 +461,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             solution = self._solution
         N = solution.N
         self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution, component, suffix)
-            
-    #  @}
-    ########################### end - I/O - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
 
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
@@ -635,7 +587,4 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     ## Return a lower bound for the coercivity constant
     def get_stability_factor(self):
         return self.truth_problem.get_stability_factor()
-                    
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
     

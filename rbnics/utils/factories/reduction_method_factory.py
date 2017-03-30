@@ -15,14 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file reduced_method_factory.py
-#  @brief Factory to generate a reduction method corresponding to a category (e.g. RB or POD) and a given truth problem
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCTION METHOD FACTORY CLASSES     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
 from rbnics.utils.decorators import CustomizeReductionMethodFor, ReductionMethodFor, ReductionMethodDecoratorFor
 from rbnics.utils.factories.factory_helper import FactoryGenerateTypes

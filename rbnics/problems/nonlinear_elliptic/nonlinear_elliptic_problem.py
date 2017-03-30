@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parabolic_coercive_problem.py
-#  @brief Base class for parabolic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
@@ -31,10 +25,6 @@ from rbnics.utils.decorators import Extends, override
 @NonlinearProblem
 class NonlinearEllipticProblem(EllipticCoerciveProblem):
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the elliptic problem
-    #  @{
-    
     ## Default initialization of members
     @override
     def __init__(self, V, **kwargs):
@@ -44,13 +34,6 @@ class NonlinearEllipticProblem(EllipticCoerciveProblem):
         # Form names for nonlinear problems
         self.terms = ["a", "da", "f"]
         self.terms_order = {"a": 1, "da": 2, "f": 1}
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
             
     ## Perform a truth solve.
     @override
@@ -75,7 +58,4 @@ class NonlinearEllipticProblem(EllipticCoerciveProblem):
         solver = NonlinearSolver(jacobian_eval, self._solution, residual_eval, bc_eval())
         solver.set_parameters(self._nonlinear_solver_parameters)
         solver.solve()
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
     

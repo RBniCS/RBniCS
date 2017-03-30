@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parabolic_coercive_rb_galerkin_reduction.py
-#  @brief Implementation of a RB ROM for parabolic coercive problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
@@ -30,10 +24,6 @@ from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReducti
 from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
 from rbnics.backends import LinearSolver, ProperOrthogonalDecomposition, SnapshotsMatrix, transpose
 from rbnics.backends.online import OnlineFunction
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ParabolicCoerciveRBReduction
-#
 
 ParabolicCoerciveRBReduction_Base = ParabolicCoerciveReductionMethod(TimeDependentRBReduction(EllipticCoerciveRBReduction))
 

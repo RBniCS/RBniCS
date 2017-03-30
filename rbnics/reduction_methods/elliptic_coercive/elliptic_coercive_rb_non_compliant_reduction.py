@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_rb_non_compliant.py
-#  @brief Implementation of the reduced basis method for non compliant elliptic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
 from rbnics.backends import product, sum, transpose
@@ -47,9 +41,6 @@ def _problem_is_noncompliant(truth_problem, **kwargs):
         return True
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB NON COMPLIANT BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveRBNonCompliant
-#
 # Base class containing the interface of the RB method
 # for non compliant elliptic coercive problems
 @Extends(EllipticCoerciveRBReduction) # needs to be first in order to override for last the methods

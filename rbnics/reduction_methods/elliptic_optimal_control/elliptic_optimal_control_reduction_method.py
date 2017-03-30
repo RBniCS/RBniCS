@@ -15,20 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduction_method.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveReductionMethodBase
-#
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
 @Extends(DifferentialProblemReductionMethod) # needs to be first in order to override for last the methods.
@@ -36,16 +27,9 @@ from rbnics.utils.decorators import Extends, override, ReductionMethodFor, Multi
 @MultiLevelReductionMethod
 class EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod):
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
-    
     ## Default initialization of members
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         DifferentialProblemReductionMethod.__init__(self, truth_problem, **kwargs)
-            
-    #  @}
-    ########################### end - CONSTRUCTORS - end ###########################
     

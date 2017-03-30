@@ -15,22 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file solve_elast.py
-#  @brief Example 2: elastic block test case
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
 from rbnics import *
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 2: ELASTIC BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class ElasticBlock(EllipticCoerciveProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members
     def __init__(self, V, **kwargs):
@@ -51,13 +40,6 @@ class ElasticBlock(EllipticCoerciveProblem):
         self.lambda_1 = self.E*self.nu / ((1.0 + self.nu)*(1.0 - 2.0*self.nu))
         self.lambda_2 = self.E / (2.0*(1.0 + self.nu))
         
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -130,11 +112,6 @@ class ElasticBlock(EllipticCoerciveProblem):
         lambda_2 = self.lambda_2
         return 2.0*lambda_2*inner(sym(grad(u)),sym(grad(v))) + lambda_1*tr(sym(grad(u)))*tr(sym(grad(v)))
         
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 2: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-
 # 1. Read the mesh for this problem
 mesh = Mesh("data/elastic.xml")
 subdomains = MeshFunction("size_t", mesh, "data/elastic_physical_region.xml")

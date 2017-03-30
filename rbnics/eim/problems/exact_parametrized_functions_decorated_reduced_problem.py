@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file eim.py
-#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 import types
@@ -50,10 +44,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     # Precomputation of error estimation operators is disabled
                     self.folder.pop("error_estimation")
                     
-                ###########################     ONLINE STAGE     ########################### 
-                ## @defgroup OnlineStage Methods related to the online stage
-                #  @{
-            
                 ## Initialize data structures required for the online phase
                 @override
                 def init(self, current_stage="online"):
@@ -103,13 +93,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         # Note that we use the the same cache in all error estimators, since (at least part of)
                         # error estimation operators is used by both methods
                         
-                #  @}
-                ########################### end - ONLINE STAGE - end ########################### 
-                
-                ###########################     OFFLINE STAGE     ########################### 
-                ## @defgroup OfflineStage Methods related to the offline stage
-                #  @{
-                    
                 ## Build operators for error estimation
                 @override
                 def build_error_estimation_operators(self, current_stage="offline"):
@@ -124,13 +107,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         # The offline/online separation does not hold anymore, so we cannot precompute 
                         # reduced operators.
                         print("... skipped due to inefficient evaluation")
-                    
-                #  @}
-                ########################### end - OFFLINE STAGE - end ########################### 
-                
-                ###########################     PROBLEM SPECIFIC     ########################### 
-                ## @defgroup ProblemSpecific Problem specific methods
-                #  @{
                     
                 ## Assemble operators for error estimation
                 @override
@@ -147,9 +123,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         # Call parent method
                         return ReducedParametrizedProblem_DecoratedClass.assemble_error_estimation_operators(self, term, current_stage)
                                 
-                #  @}
-                ########################### end - PROBLEM SPECIFIC - end ########################### 
-                    
             return _AlsoDecorateErrorEstimationOperators_Class
         else:
             return ReducedParametrizedProblem_DecoratedClass
@@ -196,10 +169,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             # Precomputation of operators is disabled
             self.folder.pop("reduced_operators")
         
-        ###########################     ONLINE STAGE     ########################### 
-        ## @defgroup OnlineStage Methods related to the online stage
-        #  @{
-    
         ## Initialize data structures required for the online phase
         @override
         def init(self, current_stage="online"):
@@ -219,7 +188,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             for term in self.terms:
                 self._disable_load_and_save_for_online_storage(self.operator[term])
 
-        
         def _disable_load_and_save_for_online_storage(self, online_storage):
             # Make sure to disable the save() method of the operator, which is 
             # called internally by assemble_operator() since it is not possible
@@ -247,13 +215,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 self._solve__previous_self_N = self.N
             return ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
     
-        #  @}
-        ########################### end - ONLINE STAGE - end ########################### 
-        
-        ###########################     OFFLINE STAGE     ########################### 
-        ## @defgroup OfflineStage Methods related to the offline stage
-        #  @{
-            
         ## Assemble the reduced order affine expansion.
         @override
         def build_reduced_operators(self, current_stage="offline"):
@@ -264,13 +225,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 # The offline/online separation does not hold anymore, so we cannot precompute 
                 # reduced operators.
                 print("... skipped due to inefficient evaluation")
-            
-        #  @}
-        ########################### end - OFFLINE STAGE - end ########################### 
-        
-        ###########################     PROBLEM SPECIFIC     ########################### 
-        ## @defgroup ProblemSpecific Problem specific methods
-        #  @{
             
         ## Assemble the reduced order affine expansion
         @override
@@ -286,8 +240,5 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 # Call parent method
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
                 
-        #  @}
-        ########################### end - PROBLEM SPECIFIC - end ########################### 
-        
     # return value (a class) for the decorator
     return ExactParametrizedFunctionsDecoratedReducedProblem_Class

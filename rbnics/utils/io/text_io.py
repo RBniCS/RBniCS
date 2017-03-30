@@ -15,16 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file numpy_io.py
-#  @brief I/O helper functions
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-###########################     I/O     ########################### 
-## @defgroup IO Input/output methods
-#  @{
 
 import os # for path
 import numpy
@@ -49,7 +39,4 @@ class TextIO(object):
     @staticmethod
     def exists_file(directory, filename):
         raise NotImplementedError("There is no need to check if files exists, since file loading is not implemented yet for text files")
-
-#  @}
-########################### end - I/O - end ########################### 
 

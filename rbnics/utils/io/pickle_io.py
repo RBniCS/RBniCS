@@ -15,16 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file pickle_io.py
-#  @brief I/O helper functions
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-###########################     I/O     ########################### 
-## @defgroup IO Input/output methods
-#  @{
 
 try:
    import cPickle as pickle
@@ -57,6 +47,3 @@ class PickleIO(object):
         exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists
         
-#  @}
-########################### end - I/O - end ########################### 
-

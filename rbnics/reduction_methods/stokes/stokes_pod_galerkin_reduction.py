@@ -15,22 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file stokes_pod_galerkin_reduction.py
-#  @brief Implementation of a POD-Galerkin ROM for elliptic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.reduction_methods.base import PODGalerkinReduction
 from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class StokesPODGalerkinReduction
-#
 
 StokesPODGalerkinReduction_Base = PODGalerkinReduction(StokesReductionMethod)
 
@@ -39,23 +29,13 @@ StokesPODGalerkinReduction_Base = PODGalerkinReduction(StokesReductionMethod)
 @Extends(StokesPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(StokesProblem, "PODGalerkin")
 class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
-    #  @{
-    
+
     ## Default initialization of members
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
         StokesPODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
-    
+
     ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
     @override
     def _init_offline(self):
@@ -87,14 +67,7 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
             self.POD[component].store_snapshot(snapshot, component=component)
         for component in ("s", ):
             self.POD[component].store_snapshot(supremizer)
-        
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
-    
+
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set.
     # Note that we cannot move this method to the parent class because error analysis is defined
@@ -106,6 +79,3 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
         
         StokesPODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
         
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
-    

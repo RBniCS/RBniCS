@@ -15,21 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_rb.py
-#  @brief Implementation of the reduced basis method for (compliant) elliptic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.reduction_methods.base import RBReduction
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveRB
-#
 
 EllipticCoerciveRBReduction_Base = RBReduction(EllipticCoerciveReductionMethod)
 
@@ -79,16 +69,9 @@ class EllipticCoerciveRBReduction(EllipticCoerciveRBReduction_Base):
 
     """
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced basis object
-    #  @{
-    
     ## Default initialization of members
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
         EllipticCoerciveRBReduction_Base.__init__(self, truth_problem, **kwargs)
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ###########################
         

@@ -15,16 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file print.py
-#  @brief Override print method in parallel
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-###########################     I/O     ########################### 
-## @defgroup IO Input/output methods
-#  @{
 
 from __future__ import print_function
 import __builtin__
@@ -35,6 +25,3 @@ def print(*args, **kwargs):
     if is_io_process():
         return __builtin__.print(*args, **kwargs)
         
-#  @}
-########################### end - I/O - end ########################### 
-

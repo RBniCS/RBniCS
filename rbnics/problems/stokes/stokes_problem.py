@@ -15,27 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_problem.py
-#  @brief Base class for elliptic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.problems.base import ParametrizedDifferentialProblem
 from rbnics.backends import Function, LinearSolver, product, sum, transpose
 from rbnics.utils.decorators import Extends, override
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveProblem
-#
 # Base class containing the definition of saddle point problems
 @Extends(ParametrizedDifferentialProblem)
 class StokesProblem(ParametrizedDifferentialProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the elliptic problem
-    #  @{
     
     ## Default initialization of members
     @override
@@ -58,13 +45,6 @@ class StokesProblem(ParametrizedDifferentialProblem):
         
         # Auxiliary storage for supremizer enrichment, using a subspace of V
         self._supremizer = Function(V, "s")
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
         
     ## Perform a truth solve
     @override
@@ -103,13 +83,6 @@ class StokesProblem(ParametrizedDifferentialProblem):
         )
         solver.solve()
         return self._supremizer
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
         
     ## Export solution to file
     @override
@@ -117,7 +90,4 @@ class StokesProblem(ParametrizedDifferentialProblem):
         if component is None:
             component = ["u", "p"] # but not "s"
         ParametrizedDifferentialProblem.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
-            
-    #  @}
-    ########################### end - I/O - end ########################### 
     

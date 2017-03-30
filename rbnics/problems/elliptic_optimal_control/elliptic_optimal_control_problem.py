@@ -15,20 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_problem.py
-#  @brief Base class for elliptic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.problems.base import ParametrizedDifferentialProblem
 from rbnics.backends import Function, LinearSolver, product, sum, transpose
 from rbnics.utils.decorators import Extends, override
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveProblem
-#
 # Base class containing the definition of saddle point problems
 @Extends(ParametrizedDifferentialProblem)
 class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
@@ -54,10 +45,6 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
         h = m(y_d, y_d)
     """
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the elliptic problem
-    #  @{
-    
     ## Default initialization of members
     @override
     def __init__(self, V, **kwargs):
@@ -74,13 +61,6 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
             "h": 0
         }
         self.components = ["y", "u", "p"]
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
         
     ## Perform a truth solve
     @override
@@ -123,7 +103,4 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
             transpose(assembled_operator["g"])*self._solution + 
             0.5*assembled_operator["h"]
         )
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
     

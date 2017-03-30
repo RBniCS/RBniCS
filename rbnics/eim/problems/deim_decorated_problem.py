@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file eim.py
-#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from itertools import product as cartesian_product
 from rbnics.backends import ParametrizedTensorFactory, SeparatedParametrizedForm
@@ -106,10 +100,6 @@ def DEIMDecoratedProblem(
                     self._update_N_DEIM__previous_kwargs = kwargs
                 
                 
-            ###########################     PROBLEM SPECIFIC     ########################### 
-            ## @defgroup ProblemSpecific Problem specific methods
-            #  @{
-            
             @override
             def assemble_operator(self, term):
                 if term in self.terms:
@@ -146,8 +136,6 @@ def DEIMDecoratedProblem(
                     return tuple(deim_thetas)
                 else:
                     return original_thetas
-            #  @}
-            ########################### end - PROBLEM SPECIFIC - end ########################### 
             
         # return value (a class) for the decorator
         return DEIMDecoratedProblem_Class

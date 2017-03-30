@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
 from numpy import isclose
@@ -31,10 +25,6 @@ from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.problems.base import RBReducedProblem
 from rbnics.reduction_methods.stokes import StokesRBReduction
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class StokesReducedOrderModelBase
-#
-
 StokesRBReducedProblem_Base = RBReducedProblem(StokesReducedProblem)
 
 # Base class containing the interface of a projection based ROM
@@ -42,10 +32,7 @@ StokesRBReducedProblem_Base = RBReducedProblem(StokesReducedProblem)
 @Extends(StokesRBReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(StokesProblem, StokesRBReduction)
 class StokesRBReducedProblem(StokesRBReducedProblem_Base):
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
-    
+
     ## Default initialization of members.
     @override
     def __init__(self, truth_problem, **kwargs):
@@ -55,13 +42,6 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         # Skip useless Riesz products
         self.riesz_terms = ["a", "b", "bt", "f", "g"]
         self.riesz_product_terms = [("f", "f"), ("g", "g"), ("a", "f"), ("bt", "f"), ("b", "g"), ("a", "a"), ("a", "bt"), ("bt", "bt"), ("b", "b")]
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
     
     ## Return an error bound for the current solution
     @override
@@ -126,7 +106,4 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         StokesRBReducedProblem_Base._init_riesz_solve_homogeneous_dirichlet_bc(self)
         # Restore
         self.components = components_bak
-        
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
         

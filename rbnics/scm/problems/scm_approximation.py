@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file scm.py
-#  @brief Implementation of the successive constraints method for the approximation of the coercivity constant
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 import operator # to find closest parameters
@@ -33,16 +27,9 @@ from rbnics.utils.mpi import print
 from rbnics.scm.utils.io import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
 from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class SCM
-#
 # Successive constraint method for the approximation of the coercivity constant
 @Extends(ParametrizedProblem)
 class SCMApproximation(ParametrizedProblem):
-
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the SCM object
-    #  @{
 
     ## Default initialization of members
     @override
@@ -86,13 +73,6 @@ class SCMApproximation(ParametrizedProblem):
         self._get_stability_factor_lower_bound__previous_alpha_LB = None
         self._get_stability_factor_upper_bound__previous_mu = None
         self._get_stability_factor_upper_bound__previous_alpha_UB = None
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ###########################
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
     
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
@@ -301,18 +281,8 @@ class SCMApproximation(ParametrizedProblem):
             distance += (mu1[c] - mu2[c])*(mu1[c] - mu2[c])
         return sqrt(distance)
 
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
-
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-
     ## Export solution to file
     def export_solution(self, folder, filename, solution=None):
         assert solution is not None
         export(solution, folder, filename)
         
-    #  @}
-    ########################### end - I/O - end ###########################
-    

@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_problem.py
-#  @brief Base class for elliptic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from abc import ABCMeta, abstractmethod
 import types
@@ -30,9 +24,6 @@ from rbnics.backends import AffineExpansionStorage, assign, copy, export, Functi
 from rbnics.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import log, PROGRESS
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveProblem
-#
 # Base class containing the definition of elliptic coercive problems
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 @StoreMapFromProblemNameToProblem
@@ -40,10 +31,6 @@ from rbnics.utils.mpi import log, PROGRESS
 @StoreMapFromSolutionToProblem
 class ParametrizedDifferentialProblem(ParametrizedProblem):
     __metaclass__ = ABCMeta
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the elliptic problem
-    #  @{
     
     ## Default initialization of members
     @override
@@ -70,13 +57,6 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         self._output = 0
         # I/O
         self.folder["cache"] = self.folder_prefix + "/" + "cache"
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Initialize data structures required for the offline phase
     def init(self):
@@ -196,13 +176,6 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
         return (cache_key, cache_file)
     
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-    
     ## Export solution to file
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if solution is None:
@@ -226,13 +199,6 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         if solution is None:
             solution = self._solution
         return import_(solution, folder, filename, suffix=suffix)
-        
-    #  @}
-    ########################### end - I/O - end ########################### 
-
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
 
     ## Return theta multiplicative terms of the affine expansion of the problem.
     # Example of implementation:
@@ -283,7 +249,4 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     # for which it is not marked as @abstractmethod
     def get_stability_factor(self):
         raise NotImplementedError("The method get_stability_factor() is problem-specific and needs to be overridden.")
-    
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-
+            

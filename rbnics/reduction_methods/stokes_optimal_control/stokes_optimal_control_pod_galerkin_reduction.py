@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file
-#  @brief
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from rbnics.backends import FunctionsList, ProperOrthogonalDecomposition
@@ -35,22 +29,12 @@ StokesOptimalControlPODGalerkinReduction_Base = PODGalerkinReduction(StokesOptim
 @Extends(StokesOptimalControlPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(StokesOptimalControlProblem, "PODGalerkin")
 class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
-    #  @{
     
     ## Default initialization of members
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
         StokesOptimalControlPODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
     @override
@@ -113,13 +97,6 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         
         # Save
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
-        
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
@@ -129,7 +106,4 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         kwargs["components"] = components
                 
         StokesOptimalControlPODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
     

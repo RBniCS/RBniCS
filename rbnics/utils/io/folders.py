@@ -15,16 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file folders.py
-#  @brief Auxiliary folders class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-###########################     I/O     ########################### 
-## @defgroup IO Input/output methods
-#  @{
 
 import os # for path and makedir
 from rbnics.utils.mpi import is_io_process
@@ -96,6 +86,4 @@ class Folders(dict): # dict from string to string
             return_value = self[key].create()
             global_return_value = global_return_value or return_value
         return global_return_value
-#  @}
-########################### end - I/O - end ########################### 
-
+        

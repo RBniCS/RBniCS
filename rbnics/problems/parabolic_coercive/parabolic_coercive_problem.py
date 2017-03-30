@@ -15,29 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parabolic_coercive_problem.py
-#  @brief Base class for parabolic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.problems.base import TimeDependentProblem
 from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
 from rbnics.backends import assign, Function, product, sum, TimeStepping
 from rbnics.utils.decorators import Extends, override
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveProblem
-#
 # Base class containing the definition of parabolic coercive problems
 @Extends(EllipticCoerciveProblem)
 @TimeDependentProblem
 class ParabolicCoerciveProblem(EllipticCoerciveProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the elliptic problem
-    #  @{
     
     ## Default initialization of members
     @override
@@ -48,13 +35,6 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
         # Form names for parabolic problems
         self.terms = ["m", "a", "f"]
         self.terms_order = {"m": 2, "a": 2, "f": 1}
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Perform a truth solve
     @override
@@ -97,7 +77,4 @@ class ParabolicCoerciveProblem(EllipticCoerciveProblem):
         (_, self._solution_over_time, self._solution_dot_over_time) = solver.solve()
         assign(self._solution, self._solution_over_time[-1])
         assign(self._solution_dot, self._solution_dot_over_time[-1])
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
     

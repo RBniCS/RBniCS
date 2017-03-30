@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file scm.py
-#  @brief Implementation of the successive constraints method for the approximation of the coercivity constant
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import isclose
 from rbnics.problems.base import ParametrizedProblem
@@ -29,9 +23,6 @@ from rbnics.utils.decorators import sync_setters, Extends, override
 
 @Extends(ParametrizedProblem)
 class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the EIM object
-    #  @{
 
     ## Default initialization of members
     @override
@@ -60,9 +51,6 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         self._solve__previous_mu = None
         self._solve__previous_eigenvalue = None
         self._solve__previous_eigenvector = None
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ###########################
     
     def init(self):
         # Store the symmetric part of the required term

@@ -15,25 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file solve_graetz.py
-#  @brief Example 4: Graetz test case
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
 from rbnics import *
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 18: OPTIMAL CONTROL CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @ShapeParametrization(
     ("x[0]", "mu[0]*x[1]"), # subdomain 1
 )
 class StokesOptimalControl(StokesOptimalControlProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members
     def __init__(self, V, **kwargs):
@@ -57,14 +46,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         self.nu = 0.1
         # Desired velocity
         self.vx_d = Expression("x[1]", degree=1)
-                
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
         
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -239,12 +221,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
     
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 18: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-
 # 1. Read the mesh for this problem
 mesh = Mesh("data/mesh1.xml")
 subdomains = MeshFunction("size_t", mesh, "data/mesh1_physical_region.xml")

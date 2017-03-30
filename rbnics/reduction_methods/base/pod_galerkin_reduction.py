@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduction_method.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from rbnics.backends import ProperOrthogonalDecomposition
@@ -31,11 +25,7 @@ from rbnics.utils.mpi import print
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class PODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
-        
-        ###########################     CONSTRUCTORS     ########################### 
-        ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
-        #  @{
-        
+
         ## Default initialization of members
         @override
         def __init__(self, truth_problem, **kwargs):
@@ -56,14 +46,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.tol = {component:0. for component in self.truth_problem.components}
             else:
                 self.tol = 0.
-            
-        #  @}
-        ########################### end - CONSTRUCTORS - end ########################### 
-        
-        ###########################     OFFLINE STAGE     ########################### 
-        ## @defgroup OfflineStage Methods related to the offline stage
-        #  @{
-        
+                
         ## OFFLINE: set tolerance (stopping criterion).
         def set_tolerance(self, tol, **kwargs):
             if len(self.truth_problem.components) > 1:
@@ -192,13 +175,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
                 self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
             
-        #  @}
-        ########################### end - OFFLINE STAGE - end ########################### 
-        
-        ###########################     ERROR ANALYSIS     ########################### 
-        ## @defgroup ErrorAnalysis Error analysis
-        #  @{
-            
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
         @override
@@ -318,9 +294,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
             
             self._finalize_speedup_analysis(**kwargs)
-        
-        #  @}
-        ########################### end - ERROR ANALYSIS - end ########################### 
         
     # return value (a class) for the decorator
     return PODGalerkinReduction_Class

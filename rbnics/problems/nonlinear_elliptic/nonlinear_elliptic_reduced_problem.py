@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file 
-#  @brief 
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.problems.base import ParametrizedReducedDifferentialProblem
@@ -36,22 +30,11 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
     @NonlinearReducedProblem
     class NonlinearEllipticReducedProblem_Class(EllipticCoerciveReducedProblem_DerivedClass):
         
-        ###########################     CONSTRUCTORS     ########################### 
-        ## @defgroup Constructors Methods related to the construction of the reduced order model object
-        #  @{
-        
         ## Default initialization of members.
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             EllipticCoerciveReducedProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
-        #  @}
-        ########################### end - CONSTRUCTORS - end ########################### 
-        
-        ###########################     ONLINE STAGE     ########################### 
-        ## @defgroup OnlineStage Methods related to the online stage
-        #  @{
         
         # Perform an online solve (internal)
         def _solve(self, N, **kwargs):
@@ -74,13 +57,6 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
             solver = NonlinearSolver(jacobian_eval, self._solution, residual_eval, bc_eval())
             solver.set_parameters(self._nonlinear_solver_parameters)
             solver.solve()
-            
-        #  @}
-        ########################### end - ONLINE STAGE - end ########################### 
-        
-        ###########################     ERROR ANALYSIS     ########################### 
-        ## @defgroup ErrorAnalysis Error analysis
-        #  @{
         
         # Internal method for error computation. Unlike the linear case, do not use the energy norm.
         @override

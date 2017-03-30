@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file
-#  @brief
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
 from rbnics.backends import assign, copy, transpose
@@ -32,6 +26,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
 
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class TimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+        
         ## Default initialization of members
         @override
         @sync_setters("truth_problem", "set_time", "t")
@@ -185,10 +180,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             else:
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
                 
-        ###########################     ERROR ANALYSIS     ########################### 
-        ## @defgroup ErrorAnalysis Error analysis
-        #  @{
-            
         # Internal method for error computation
         @override
         def _compute_error(self, **kwargs):
@@ -240,9 +231,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 else:
                     relative_error_output_over_time.append(0.0)
             return relative_error_output_over_time
-            
-        #  @}
-        ########################### end - ERROR ANALYSIS - end ###########################
         
         ## Export solution to file
         @override

@@ -15,22 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file solve_tblock.py
-#  @brief Example 1: thermal block test case
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
 from rbnics import *
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: THERMAL BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class ThermalBlock(EllipticCoerciveProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members
     def __init__(self, V, **kwargs):
@@ -44,13 +33,6 @@ class ThermalBlock(EllipticCoerciveProblem):
         self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
-    
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
     
     ## Return the alpha_lower bound.
     def get_stability_factor(self):
@@ -93,11 +75,6 @@ class ThermalBlock(EllipticCoerciveProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
         
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 1: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-
 # 1. Read the mesh for this problem
 mesh = Mesh("data/tblock.xml")
 subdomains = MeshFunction("size_t", mesh, "data/tblock_physical_region.xml")

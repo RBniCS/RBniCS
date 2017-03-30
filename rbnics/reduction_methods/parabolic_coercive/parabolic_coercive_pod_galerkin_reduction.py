@@ -15,22 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parabolic_coercive_pod_galerkin_reduction.py
-#  @brief Implementation of a POD-Galerkin ROM for parabolic coercive problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.base import TimeDependentPODGalerkinReduction
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
 from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ParabolicCoercivePODGalerkinReduction
-#
 
 ParabolicCoercivePODGalerkinReduction_Base = ParabolicCoerciveReductionMethod(TimeDependentPODGalerkinReduction(EllipticCoercivePODGalerkinReduction))
 
@@ -40,16 +30,9 @@ ParabolicCoercivePODGalerkinReduction_Base = ParabolicCoerciveReductionMethod(Ti
 @ReductionMethodFor(ParabolicCoerciveProblem, "PODGalerkin")
 class ParabolicCoercivePODGalerkinReduction(ParabolicCoercivePODGalerkinReduction_Base):
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
-    #  @{
-    
     ## Default initialization of members
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
         ParabolicCoercivePODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
     

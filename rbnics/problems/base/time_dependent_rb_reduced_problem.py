@@ -15,23 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.utils.decorators import Extends, override
 
 def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class TimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-                
-        ###########################     CONSTRUCTORS     ########################### 
-        ## @defgroup Constructors Methods related to the construction of the reduced order model object
-        #  @{
-        
+    
         ## Default initialization of members.
         @override
         def __init__(self, truth_problem, **kwargs):
@@ -40,14 +30,6 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
             
             # Storage related to error estimation for initial condition
             self.initial_condition_product = None # will be of class OnlineAffineExpansionStorage
-
-            
-        #  @}
-        ########################### end - CONSTRUCTORS - end ########################### 
-        
-        ###########################     ONLINE STAGE     ########################### 
-        ## @defgroup OnlineStage Methods related to the online stage
-        #  @{
         
         def _init_error_estimation_operators(self, current_stage="online"):
             ParametrizedReducedDifferentialProblem_DerivedClass._init_error_estimation_operators(self, current_stage)
@@ -60,9 +42,6 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     self.initial_condition_product = OnlineAffineExpansionStorage(self.Q_ic, self.Q_ic)
                 else:
                     raise AssertionError("Invalid stage in _init_error_estimation_operators().")
-                                
-        #  @}
-        ########################### end - ONLINE STAGE - end ########################### 
         
         ## Assemble operators for error estimation
         @override

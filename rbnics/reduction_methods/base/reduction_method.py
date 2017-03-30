@@ -15,27 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file reduction_method.py
-#  @brief Implementation of a class containing an offline/online decomposition for ROM for parametrized problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from abc import ABCMeta, abstractmethod
 from rbnics.sampling import ParameterSpaceSubset
 from rbnics.utils.io import Folders
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ReductionMethod
-#
 # Implementation of a class containing an offline/online decomposition of ROM for parametrized problems
 class ReductionMethod(object):
     __metaclass__ = ABCMeta
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members
     def __init__(self, folder_prefix, mu_range):
@@ -58,13 +45,6 @@ class ReductionMethod(object):
         self.testing_set = ParameterSpaceSubset(mu_range)
         # I/O
         self.folder["testing_set" ] = self.folder_prefix + "/" + "testing_set"
-    
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
     
     ## OFFLINE: set maximum reduced space dimension (stopping criterion)
     def set_Nmax(self, Nmax, **kwargs):
@@ -103,13 +83,6 @@ class ReductionMethod(object):
             # Export 
             self.testing_set.save(self.folder["testing_set"], "testing_set")
         return import_successful
-            
-    #  @}
-    ########################### end - SETTERS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Perform the offline phase of the reduced order model
     @abstractmethod
@@ -123,13 +96,6 @@ class ReductionMethod(object):
     ## Finalize data structures required after the offline phase
     def _finalize_offline(self):
         pass
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-        
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
@@ -158,8 +124,4 @@ class ReductionMethod(object):
     ## Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
         pass
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
-    
         

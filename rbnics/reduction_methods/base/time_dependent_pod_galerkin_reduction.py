@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduction_method.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
 from rbnics.utils.decorators import Extends, override
@@ -29,10 +23,6 @@ from rbnics.utils.io import ErrorAnalysisTable
 def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class TimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
-        
-        ###########################     ERROR ANALYSIS     ########################### 
-        ## @defgroup ErrorAnalysis Error analysis
-        #  @{
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
@@ -62,9 +52,6 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
             ErrorAnalysisTable.clear_setitem_preprocessing()
-        
-        #  @}
-        ########################### end - ERROR ANALYSIS - end ########################### 
         
     # return value (a class) for the decorator
     return TimeDependentPODGalerkinReduction_Class

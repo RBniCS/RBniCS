@@ -15,18 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parametrized_problem.py
-#  @brief Implementation of a class containing basic definitions of parametrized problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.utils.io import Folders
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     PARAMETRIZED PROBLEM BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ParametrizedProblem
-#
 # Implementation of a class containing basic definitions of parametrized problems
 class ParametrizedProblem(object):
     """This is the base class, which is inherited by all other
@@ -46,10 +37,6 @@ class ParametrizedProblem(object):
 
     """
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
-    
     ## Default initialization of members
     def __init__(self, folder_prefix):
         # Current parameters value
@@ -59,13 +46,6 @@ class ParametrizedProblem(object):
         #
         self.folder_prefix = folder_prefix
         self.folder = Folders()
-    
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
     
     ## OFFLINE: set the range of the parameters
     def set_mu_range(self, mu_range):
@@ -77,8 +57,4 @@ class ParametrizedProblem(object):
     def set_mu(self, mu):
         assert len(mu) == len(self.mu_range), "mu and mu_range must have the same length"
         self.mu = mu
-    
-    #  @}
-    ########################### end - SETTERS - end ########################### 
-    
-
+        

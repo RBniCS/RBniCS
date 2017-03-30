@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file __init__.py
-#  @brief Init file for auxiliary I/O module
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.eim.utils.decorators.store_map_from_eim_approximation_to_parametrized_expression import add_to_map_from_parametrized_expression_to_EIM_approximation, get_EIM_approximation_from_parametrized_expression, StoreMapFromParametrizedExpressionToEIMApproximation
 

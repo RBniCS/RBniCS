@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file eim.py
-#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 import types
@@ -31,16 +25,9 @@ from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParameter
 from rbnics.utils.mpi import print
 from rbnics.utils.decorators import Extends, override
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EIM
-#
 # Empirical interpolation method for the interpolation of parametrized functions
 @Extends(ReductionMethod)
 class EIMApproximationReductionMethod(ReductionMethod):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the EIM object
-    #  @{
     
     ## Default initialization of members
     @override
@@ -63,9 +50,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # By default set a tolerance slightly larger than zero, in order to 
         # stop greedy iterations in trivial cases by default
         self.tol = 1e-15
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ###########################
     
     @override
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
@@ -73,10 +57,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # Since exact evaluation is required, we cannot use a distributed training set
         self.training_set.distributed_max = False
         return import_successful
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Initialize data structures required for the offline phase
     @override
@@ -283,13 +263,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
             # Trivial case, greedy will stop at the first iteration
             assert len(self.greedy_errors) == 1
             return (0., 0.)
-        
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
     
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the testing set
@@ -413,7 +386,4 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # Restore the capability to import truth solutions
         self.EIM_approximation.import_solution = self._speedup_analysis__original_import_solution
         del self._speedup_analysis__original_import_solution
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ###########################
     

@@ -15,14 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file distribution.py
-#  @brief Type for distribution
-#
-#  @author Luca      Venturi  <luca.venturi@sissa.it>
-#  @author Davide    Torlo    <davide.torlo@sissa.it>
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.sampling.distributions.distribution import Distribution
 from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution

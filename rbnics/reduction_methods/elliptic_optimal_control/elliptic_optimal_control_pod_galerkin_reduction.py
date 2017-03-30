@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_optimal_control_pod_galerkin_reduction.py
-#  @brief Implementation of a POD-Galerkin ROM for elliptic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from rbnics.backends import FunctionsList
@@ -30,33 +24,19 @@ from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem i
 from rbnics.reduction_methods.base import PODGalerkinReduction
 from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_reduction_method import EllipticOptimalControlReductionMethod
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticOptimalControlPODGalerkinReduction
-#
-
 EllipticOptimalControlPODGalerkinReduction_Base = PODGalerkinReduction(EllipticOptimalControlReductionMethod)
 
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
 @Extends(EllipticOptimalControlPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(EllipticOptimalControlProblem, "PODGalerkin")
-class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerkinReduction_Base):    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
-    #  @{
+class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerkinReduction_Base):
     
     ## Default initialization of members
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
         EllipticOptimalControlPODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Compute basis functions performing POD: overridden to handle aggregated spaces
     def compute_basis_functions(self):
@@ -84,7 +64,4 @@ class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerk
         
         # Save
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
-        
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
     

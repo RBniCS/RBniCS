@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
 from numpy import isclose
@@ -32,10 +26,6 @@ from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import Elliptic
 from rbnics.problems.base import RBReducedProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveReducedOrderModelBase
-#
-
 EllipticCoerciveRBReducedProblem_Base = RBReducedProblem(EllipticCoerciveReducedProblem)
 
 # Base class containing the interface of a projection based ROM
@@ -43,10 +33,6 @@ EllipticCoerciveRBReducedProblem_Base = RBReducedProblem(EllipticCoerciveReduced
 @Extends(EllipticCoerciveReducedProblem) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction)
 class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members.
     @override
@@ -56,13 +42,6 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         
         # Skip useless Riesz products
         self.riesz_product_terms = [("f", "f"), ("a", "f"), ("a", "a")]
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
     
     ## Return an error bound for the current solution
     @override
@@ -98,7 +77,4 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
             + 2.0*(transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "f"][:N], theta_f)))
             + transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "a"][:N, :N], theta_a))*self._solution
         )
-            
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
     

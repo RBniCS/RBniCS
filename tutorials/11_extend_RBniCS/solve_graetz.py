@@ -15,28 +15,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file solve_graetz.py
-#  @brief Example 4: Graetz test case
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
 from rbnics import *
 from elliptic_coercive_rb_reduction_with_greedy_on_output import EllipticCoerciveRBReductionWithGreedyOnOutput
 from elliptic_coercive_rb_non_compliant_non_dual_reduced_problem import EllipticCoerciveRBNonCompliantNonDualReducedProblem
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: GRAETZ CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class Graetz(EllipticCoerciveProblem):
     
     # TODO try and find a simpler/different problem. If it is not possible, then add back again SCM and ShapeParametrization
     
     # TODO this file is not in sync with tutorial 4, which has been update to use new dirichlet bc storage in basis
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members
     def __init__(self, V, **kwargs):
@@ -57,13 +46,6 @@ class Graetz(EllipticCoerciveProblem):
          # TODO Do not attach it to truth problem, rather use kwargs to ReducedBasis
         self.use_dual = False
                 
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-        
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
     ## Return the alpha_lower bound.
     def get_stability_factor(self):
         return 1. # TODO try and find a simpler/different problem. If it is not possible, then add back again SCM
@@ -148,24 +130,12 @@ class Graetz(EllipticCoerciveProblem):
         lifting = Function(V)
         solve(lifting_A, lifting.vector(), lifting_F)
         return lifting
-        
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-    
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
     
     ## Preprocess the solution before export to add a lifting
     def export_solution(self, solution, folder, filename):
         solution_with_lifting = Function(self.V)
         solution_with_lifting.vector()[:] = solution.vector()[:] + self.lifting.vector()[:]
         EllipticCoerciveProblem.export_solution(self, solution_with_lifting, folder, filename)
-        
-    #  @}
-    ########################### end - I/O - end ########################### 
-    
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 4: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/graetz.xml")

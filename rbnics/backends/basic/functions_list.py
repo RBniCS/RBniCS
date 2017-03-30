@@ -15,20 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file functions_list.py
-#  @brief Type for storing a list of FE functions.
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import is_io_process
-
-###########################     OFFLINE STAGE     ########################### 
-## @defgroup OfflineStage Methods related to the offline stage
-#  @{
 
 # Type for storing a list of functions. From the user point of view this is
 # the same as a matrix. Indeed, given a Matrix A, a Vector F 

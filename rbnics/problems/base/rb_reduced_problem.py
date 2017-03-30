@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from abc import ABCMeta, abstractmethod
 from rbnics.backends import AffineExpansionStorage, BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, product, sum, transpose
@@ -31,10 +25,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class RBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         __metaclass__ = ABCMeta
-        
-        ###########################     CONSTRUCTORS     ########################### 
-        ## @defgroup Constructors Methods related to the construction of the reduced order model object
-        #  @{
         
         ## Default initialization of members.
         @override
@@ -61,13 +51,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # Provide a default value for Riesz terms and Riesz product terms
             self.riesz_terms = [term for term in self.terms]
             self.riesz_product_terms = [(term1, term2) for term1 in self.terms for term2 in self.terms if self.terms_order[term1] >= self.terms_order[term2]]
-            
-        #  @}
-        ########################### end - CONSTRUCTORS - end ########################### 
-        
-        ###########################     ONLINE STAGE     ########################### 
-        ## @defgroup OnlineStage Methods related to the online stage
-        #  @{
         
         ## Initialize data structures required for the online phase
         @override
@@ -153,13 +136,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## output computation.
         def estimate_relative_error_output(self):
             return NotImplemented
-            
-        #  @}
-        ########################### end - ONLINE STAGE - end ########################### 
-        
-        ###########################     OFFLINE STAGE     ########################### 
-        ## @defgroup OfflineStage Methods related to the offline stage
-        #  @{
         
         ## Build operators for error estimation
         def build_error_estimation_operators(self):
@@ -221,13 +197,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                             self.riesz[term][q].enrich(self._riesz_solve_storage)
             else:
                 raise AssertionError("Invalid value for order of term " + term)
-            
-        #  @}
-        ########################### end - OFFLINE STAGE - end ########################### 
-        
-        ###########################     PROBLEM SPECIFIC     ########################### 
-        ## @defgroup ProblemSpecific Problem specific methods
-        #  @{
         
         ## Assemble operators for error estimation
         def assemble_error_estimation_operators(self, term, current_stage="online"):
@@ -265,9 +234,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 return self.riesz_product[term]
             else:
                 raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
-                
-        #  @}
-        ########################### end - PROBLEM SPECIFIC - end ########################### 
         
     # return value (a class) for the decorator
     return RBReducedProblem_Class

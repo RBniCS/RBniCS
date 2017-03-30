@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduction_method.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from abc import ABCMeta, abstractmethod
@@ -34,10 +28,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         __metaclass__ = ABCMeta
-        
-        ###########################     CONSTRUCTORS     ########################### 
-        ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
-        #  @{
         
         ## Default initialization of members
         @override
@@ -55,13 +45,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.greedy_error_estimators = GreedyErrorEstimatorsList()
             self.label = "RB"
             
-        #  @}
-        ########################### end - CONSTRUCTORS - end ########################### 
-        
-        ###########################     OFFLINE STAGE     ########################### 
-        ## @defgroup OfflineStage Methods related to the offline stage
-        #  @{
-        
         ## Initialize data structures required for the offline phase
         @override
         def _init_offline(self):
@@ -166,13 +149,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 return self.reduced_problem.estimate_error()
                 
             return self.training_set.max(solve_and_estimate_error)
-            
-        #  @}
-        ########################### end - OFFLINE STAGE - end ########################### 
-        
-        ###########################     ERROR ANALYSIS     ########################### 
-        ## @defgroup ErrorAnalysis Error analysis
-        #  @{
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
@@ -340,9 +316,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
             
             self._finalize_speedup_analysis(**kwargs)
-        
-        #  @}
-        ########################### end - ERROR ANALYSIS - end ########################### 
         
     # return value (a class) for the decorator
     return RBReduction_Class

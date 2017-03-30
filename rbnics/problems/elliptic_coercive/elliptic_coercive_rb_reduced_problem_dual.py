@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.backends import product, transpose, sum
 from rbnics.backends.online import OnlineAffineExpansionStorage
@@ -30,19 +24,12 @@ from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import Ell
 from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveReducedOrderModelBase
-#
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 @Extends(EllipticCoerciveRBReducedProblem) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem_Dual, EllipticCoerciveRBReduction)
 @DualReducedProblem
 class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members.
     @override
@@ -54,13 +41,6 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem):
         # Residual terms
         self.output_correction_and_estimation = dict() # from string to OnlineAffineExpansionStorage
         
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
-    
     ## Initialize data structures required for the online phase
     @override
     def init(self, current_stage="online"):
@@ -92,25 +72,11 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem):
         assembled_output_correction_and_estimation_operator["a"] = sum(product(self.primal_reduced_problem.compute_theta("a"), self.output_correction_and_estimation["a"][:dual_N, :primal_N]))
         assembled_output_correction_and_estimation_operator["f"] = sum(product(self.primal_reduced_problem.compute_theta("f"), self.output_correction_and_estimation["f"][:dual_N]))
         self._output = transpose(dual_solution)*assembled_output_correction_and_estimation_operator["f"] - transpose(dual_solution)*assembled_output_correction_and_estimation_operator["a"]*primal_solution
-            
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Build operators for output correction and error estimation
     def build_output_correction_and_estimation_operators(self):
         self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_a", "offline")
         self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_f", "offline")
-            
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
     
     ## Assemble operators for output correction and error estimation
     def assemble_output_correction_and_estimation_operators(self, term, current_stage="online"):
@@ -142,7 +108,4 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem):
             return self.output_correction_and_estimation[short_term]
         else:
             raise AssertionError("Invalid stage in assemble_output_correction_and_estimation_operators().")
-            
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
     

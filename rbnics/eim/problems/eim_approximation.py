@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file eim.py
-#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import hashlib
 from rbnics.problems.base import ParametrizedProblem
@@ -29,17 +23,10 @@ from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineLinearSol
 from rbnics.utils.decorators import Extends, override, sync_setters
 from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMApproximation
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EIM
-#
 # Empirical interpolation method for the interpolation of parametrized functions
 @Extends(ParametrizedProblem)
 @StoreMapFromParametrizedExpressionToEIMApproximation
 class EIMApproximation(ParametrizedProblem):
-
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the EIM object
-    #  @{
 
     ## Default initialization of members
     @override
@@ -73,13 +60,6 @@ class EIMApproximation(ParametrizedProblem):
         self.folder["cache"] = self.folder_prefix + "/" + "cache"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         
-    #  @}
-    ########################### end - CONSTRUCTORS - end ###########################
-
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
-
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
         assert current_stage in ("online", "offline")
@@ -139,7 +119,6 @@ class EIMApproximation(ParametrizedProblem):
         solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
         solver.solve()
         
-        
     ## Call online_solve and then convert the result of online solve from OnlineVector to a tuple
     def compute_interpolated_theta(self, N=None):
         interpolated_theta = self.solve(N)
@@ -153,9 +132,6 @@ class EIMApproximation(ParametrizedProblem):
                 interpolated_theta_list.append(0.0)
         return tuple(interpolated_theta_list)
 
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
-    
     # Compute the interpolation error and/or its maximum location
     def compute_maximum_interpolation_error(self, N=None):
         if N is None:
@@ -173,10 +149,6 @@ class EIMApproximation(ParametrizedProblem):
         # Return
         return (error, maximum_error, maximum_location)
 
-    ###########################     I/O     ########################### 
-    ## @defgroup IO Input/output methods
-    #  @{
-
     ## Export solution to file
     def export_solution(self, folder, filename, solution=None):
         if solution is None:
@@ -191,6 +163,3 @@ class EIMApproximation(ParametrizedProblem):
             solution = self.snapshot
         return import_(solution, folder, filename)
         
-    #  @}
-    ########################### end - I/O - end ########################### 
-    

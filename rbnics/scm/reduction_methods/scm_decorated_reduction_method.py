@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file scm.py
-#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.backends.common.linear_program_solver import LinearProgramSolver
 from rbnics.utils.decorators import Extends, override, ReductionMethodDecoratorFor
@@ -40,12 +34,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Storage for SCM reduction method
             self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, type(self.truth_problem).__name__ + "/scm")
             
-        ###########################     SETTERS     ########################### 
-        ## @defgroup Setters Set properties of the reduced order approximation
-        #  @{
-    
-        # Propagate the values of all setters also to the SCM object
-        
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
         @override
         def set_Nmax(self, Nmax, **kwargs):
@@ -91,13 +79,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Return
             return import_successful and import_successful_SCM
             
-        #  @}
-        ########################### end - SETTERS - end ########################### 
-        
-        ###########################     OFFLINE STAGE     ########################### 
-        ## @defgroup OfflineStage Methods related to the offline stage
-        #  @{
-    
         ## Perform the offline phase of the reduced order model
         @override
         def offline(self):
@@ -107,14 +88,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # ..., and then call the parent method.
             self.truth_problem.set_mu(bak_first_mu)
             return DifferentialProblemReductionMethod_DerivedClass.offline(self)
-    
-        #  @}
-        ########################### end - OFFLINE STAGE - end ###########################
-    
-        ###########################     ERROR ANALYSIS     ########################### 
-        ## @defgroup ErrorAnalysis Error analysis
-        #  @{
-    
+            
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
         @override
@@ -148,9 +122,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 self.SCM_reduction.speedup_analysis(N)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
-            
-        #  @}
-        ########################### end - ERROR ANALYSIS - end ########################### 
         
     # return value (a class) for the decorator
     return SCMDecoratedReductionMethod_Class

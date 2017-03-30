@@ -15,22 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file stokes_pod_galerkin_reduction.py
-#  @brief Implementation of a POD-Galerkin ROM for elliptic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.backends import GramSchmidt
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.reduction_methods.base import RBReduction
 from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class StokesRBReduction
-#
 
 StokesRBReduction_Base = RBReduction(StokesReductionMethod)
 
@@ -39,18 +29,12 @@ StokesRBReduction_Base = RBReduction(StokesReductionMethod)
 @Extends(StokesRBReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(StokesProblem, "ReducedBasis")
 class StokesRBReduction(StokesRBReduction_Base):    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the POD-Galerkin ROM object
-    #  @{
     
     ## Default initialization of members
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call the parent initialization
         StokesRBReduction_Base.__init__(self, truth_problem, **kwargs)
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
     
     ## Initialize data structures required for the offline phase: overridden version because supremizer GS is different from a standard component
     @override
@@ -87,13 +71,6 @@ class StokesRBReduction(StokesRBReduction_Base):
             self.GS[component].apply(self.reduced_problem.Z[component], self.reduced_problem.N_bc[component])
             self.reduced_problem.N[component] += 1
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
-            
-    #  @}
-    ########################### end - OFFLINE STAGE - end ###########################     
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set.
@@ -105,7 +82,4 @@ class StokesRBReduction(StokesRBReduction_Base):
         kwargs["components"] = components
         
         StokesRBReduction_Base.error_analysis(self, N, **kwargs)
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
     

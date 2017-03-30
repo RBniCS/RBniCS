@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from rbnics.problems.base import ParametrizedReducedDifferentialProblem
@@ -31,19 +25,12 @@ from rbnics.utils.decorators import Extends, override, ReducedProblemFor, MultiL
 from rbnics.reduction_methods.stokes import StokesReductionMethod
 from rbnics.utils.mpi import print
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveReducedOrderModelBase
-#
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
 @Extends(ParametrizedReducedDifferentialProblem) # needs to be first in order to override for last the methods.
 @ReducedProblemFor(StokesProblem, StokesReductionMethod)
 @MultiLevelReducedProblem
 class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members.
     @override
@@ -54,13 +41,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # I/O
         self.folder["supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
             
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
@@ -86,13 +66,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
             theta_bc
         )
         solver.solve()
-        
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
     
     # Internal method for error computation
     @override
@@ -114,13 +87,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
             assert kwargs["components"] == components
         return ParametrizedReducedDifferentialProblem._compute_relative_error(self, absolute_error, **kwargs)
         
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ###########################
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-        
     ## Assemble the reduced order affine expansion
     def assemble_operator(self, term, current_stage="online"):
         if term == "bt_restricted":
@@ -131,10 +97,7 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
             return self.inner_product["s"]
         else:
             return ParametrizedReducedDifferentialProblem.assemble_operator(self, term, current_stage)
-                                
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-    
+            
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
     def postprocess_snapshot(self, snapshot, snapshot_index):
         # Compute supremizer

@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem, EllipticCoerciveRBReducedProblem, EllipticCoerciveRBNonCompliantReducedProblem
 from rbnics.utils.decorators import Extends, override, ReducedProblemFor
@@ -33,10 +27,6 @@ def _do_not_use_dual(truth_problem, **kwargs):
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReductionWithGreedyOnOutput, replaces=EllipticCoerciveRBNonCompliantReducedProblem, replaces_if=_do_not_use_dual)
 class EllipticCoerciveRBNonCompliantNonDualReducedProblem(EllipticCoerciveRBReducedProblem):
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
-    
     ## Default initialization of members.
     @override
     def __init__(self, truth_problem):
@@ -45,7 +35,3 @@ class EllipticCoerciveRBNonCompliantNonDualReducedProblem(EllipticCoerciveRBRedu
         
         raise NotImplementedError("Tutorial 11 not implemented yet.") # TODO
 
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    

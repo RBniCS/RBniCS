@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file scm.py
-#  @brief Implementation of the empirical interpolation method for the interpolation of parametrized functions
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from numpy import isclose
@@ -32,16 +26,9 @@ from rbnics.utils.mpi import print
 from rbnics.utils.decorators import Extends, override
 from rbnics.scm.problems import ParametrizedCoercivityConstantEigenProblem
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class SCM
-#
 # Empirical interpolation method for the interpolation of parametrized functions
 @Extends(ReductionMethod)
 class SCMApproximationReductionMethod(ReductionMethod):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the SCM object
-    #  @{
     
     ## Default initialization of members
     @override
@@ -64,13 +51,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.bounding_box_minimum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_minimum_eigensolver_parameters"]
         self.bounding_box_maximum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"]
         del self.SCM_approximation._input_storage_for_SCM_reduction
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ###########################
-    
-    ###########################     SETTERS     ########################### 
-    ## @defgroup Setters Set properties of the reduced order approximation
-    #  @{
 
     ## OFFLINE: set the elements in the training set.
     @override
@@ -79,13 +59,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
         self.SCM_approximation.training_set = self.training_set
         return import_successful
-        
-    #  @}
-    ########################### end - SETTERS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Initialize data structures required for the offline phase
     @override
@@ -254,13 +227,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.SCM_approximation.alpha_LB_on_training_set.save(self.SCM_approximation.folder["reduced_operators"], "alpha_LB_on_training_set")
         return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
         
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
-    
     ## Initialize data structures required for the error analysis phase
     @override
     def _init_error_analysis(self, **kwargs):
@@ -372,6 +338,3 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         self._finalize_speedup_analysis(**kwargs)
         
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
-    

@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parabolic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
 from numpy import isclose
@@ -32,10 +26,6 @@ from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import Parabo
 from rbnics.reduction_methods.parabolic_coercive import ParabolicCoerciveRBReduction
 from rbnics.backends import Function, FunctionsList, LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class ParabolicCoerciveReducedOrderModelBase
-#
 
 ParabolicCoerciveRBReducedProblem_Base = ParabolicCoerciveReducedProblem(TimeDependentRBReducedProblem(EllipticCoerciveRBReducedProblem))
 

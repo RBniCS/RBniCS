@@ -15,16 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file mpi.py
-#  @brief Basic mpi configuration
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-###########################     I/O     ########################### 
-## @defgroup IO Input/output methods
-#  @{
 
 from mpi4py import MPI
 from mpi4py.MPI import MAX
@@ -67,7 +57,3 @@ def parallel_max(mpi_comm, local_value_max, local_args=None, postprocessor=None)
     else:
         return global_value_max
         
-        
-#  @}
-########################### end - I/O - end ########################### 
-

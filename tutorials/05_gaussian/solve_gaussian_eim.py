@@ -15,23 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file solve_gaussian.py
-#  @brief Example 5: gaussian EIM test case
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
 from rbnics import *
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: GAUSSIAN EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @EIM()
 class Gaussian(EllipticCoerciveProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members
     def __init__(self, V, **kwargs):
@@ -47,13 +36,6 @@ class Gaussian(EllipticCoerciveProblem):
         self.f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
         # note that we cannot use self.mu in the initialization of self.f, because self.mu has not been initialized yet
         
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
     ## Return the alpha_lower bound.
     def get_stability_factor(self):
         return 1.
@@ -91,11 +73,6 @@ class Gaussian(EllipticCoerciveProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
             
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-    
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 5: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-
 # 1. Read the mesh for this problem
 mesh = Mesh("data/gaussian.xml")
 subdomains = MeshFunction("size_t", mesh, "data/gaussian_physical_region.xml")

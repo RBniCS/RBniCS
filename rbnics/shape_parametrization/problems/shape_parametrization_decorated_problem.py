@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file scm.py
-#  @brief Implementation of the successive constraints method for the approximation of the coercivity constant
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.backends import MeshMotion
 from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
@@ -30,17 +24,11 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
         shape_parametrization_expression=shape_parametrization_expression
     )
     def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-        #~~~~~~~~~~~~~~~~~~~~~~~~~     SHAPE PARAMETRIZATION CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-        ## @class ShapeParametrizationDecoratedProblem
-        #
+        
         # A decorator class that allows to overload methods related to shape parametrization and mesh motion
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
         class ShapeParametrizationDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         
-            ###########################     CONSTRUCTORS     ########################### 
-            ## @defgroup Constructors Methods related to the construction of the SCM object
-            #  @{
-            
             ## Default initialization of members
             # The shape parametrization expression is a list of tuples. The i-th list element
             # corresponds to shape parametrization of the i-th subdomain, the j-th tuple element
@@ -56,13 +44,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                     shape_parametrization_expression__from_decorator = shape_parametrization_expression
                 assert "subdomains" in kwargs
                 self.mesh_motion = MeshMotion(V, kwargs["subdomains"], shape_parametrization_expression__from_decorator)
-                 
-            #  @}
-            ########################### end - CONSTRUCTORS - end ###########################
-            
-            ###########################     OFFLINE STAGE     ########################### 
-            ## @defgroup OfflineStage Methods related to the offline stage
-            #  @{
             
             ## Initialize data structures required for the offline phase
             @override
@@ -70,13 +51,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Also init mesh motion object
                 self.mesh_motion.init(self)
-            
-            #  @}
-            ########################### end - OFFLINE STAGE - end ########################### 
-            
-            ###########################     I/O     ########################### 
-            ## @defgroup IO Input/output methods
-            #  @{
                 
             ## Deform the mesh as a function of the geometrical parameters and then export solution to file
             @override
@@ -84,9 +58,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                 self.mesh_motion.move_mesh()
                 ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component, suffix)
                 self.mesh_motion.reset_reference()
-                
-            #  @}
-            ########################### end - I/O - end ########################### 
         
         # return value (a class) for the decorator
         return ShapeParametrizationDecoratedProblem_Class

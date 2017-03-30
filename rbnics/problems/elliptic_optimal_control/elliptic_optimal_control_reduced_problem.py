@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduced_problem.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from rbnics.problems.base import ParametrizedReducedDifferentialProblem
@@ -31,9 +25,6 @@ from rbnics.utils.decorators import Extends, override, ReducedProblemFor, MultiL
 from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlReductionMethod
 from rbnics.utils.mpi import print
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveReducedOrderModelBase
-#
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
 @Extends(ParametrizedReducedDifferentialProblem) # needs to be first in order to override for last the methods.
@@ -41,22 +32,11 @@ from rbnics.utils.mpi import print
 @MultiLevelReducedProblem
 class EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem):
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
-    
     ## Default initialization of members.
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         ParametrizedReducedDifferentialProblem.__init__(self, truth_problem, **kwargs)
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
         
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
@@ -132,7 +112,4 @@ class EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProble
             for component in ("y", "p"):
                 N[component] *= 2
             return N, kwargs
-        
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
         

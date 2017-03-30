@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file elliptic_coercive_reduction_method.py
-#  @brief Implementation of projection based reduced order models for elliptic coervice problems: base class
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
 from rbnics.reduction_methods.base.reduction_method import ReductionMethod
@@ -28,18 +22,11 @@ from rbnics.utils.io import Folders
 from rbnics.utils.decorators import Extends, override, UpdateMapFromProblemToTrainingStatus
 from rbnics.utils.factories import ReducedProblemFactory
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
-## @class EllipticCoerciveReductionMethodBase
-#
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 @Extends(ReductionMethod) # needs to be first in order to override for last the methods.
 @UpdateMapFromProblemToTrainingStatus
 class DifferentialProblemReductionMethod(ReductionMethod):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members
     @override
@@ -55,13 +42,6 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
         self.truth_problem = truth_problem
-            
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
     
     ## Initialize data structures required for the offline phase
     @override
@@ -89,13 +69,6 @@ class DifferentialProblemReductionMethod(ReductionMethod):
     @override
     def _finalize_offline(self):
         self.reduced_problem.init("online")
-        
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
     
     ## Initialize data structures required for the error analysis phase
     @override
@@ -131,8 +104,4 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Restore the capability to import truth solutions
         self.truth_problem.import_solution = self._speedup_analysis__original_import_solution
         del self._speedup_analysis__original_import_solution
-        
-        
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ########################### 
     

@@ -15,23 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file solve_tblock.py
-#  @brief Example 7: nonlinear elliptic problem
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
 from rbnics import *
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 7: NONLINEAR PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @ExactParametrizedFunctions()
 class NonlinearElliptic(NonlinearEllipticProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
     
     ## Default initialization of members
     def __init__(self, V, **kwargs):
@@ -56,13 +45,6 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             "error_on_nonconvergence": True
         }
         
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-    
     ## Return the alpha_lower bound.
     def get_stability_factor(self):
         return 1.
@@ -108,9 +90,6 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
         
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
-
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NonlinearEllipticProblem)
 def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
@@ -121,8 +100,6 @@ def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
             self._nonlinear_solver_parameters["line_search"] = False
             
     return ReducedNonlinearElliptic
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 7: MAIN PROGRAM     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/square.xml")

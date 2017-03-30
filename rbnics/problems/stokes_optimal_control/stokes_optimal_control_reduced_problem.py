@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file 
-#  @brief 
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
 from rbnics.problems.base import ParametrizedReducedDifferentialProblem
@@ -36,10 +30,6 @@ from rbnics.utils.mpi import print
 @MultiLevelReducedProblem
 class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem):
     
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of the reduced order model object
-    #  @{
-    
     ## Default initialization of members.
     @override
     def __init__(self, truth_problem, **kwargs):
@@ -50,13 +40,6 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
         # I/O
         self.folder["state_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["adjoint_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     ONLINE STAGE     ########################### 
-    ## @defgroup OnlineStage Methods related to the online stage
-    #  @{
         
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
@@ -134,13 +117,6 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
             for component in ("v", "s", "p", "w", "r", "q"):
                 N[component] *= 2
             return N, kwargs
-        
-    #  @}
-    ########################### end - ONLINE STAGE - end ########################### 
-    
-    ###########################     ERROR ANALYSIS     ########################### 
-    ## @defgroup ErrorAnalysis Error analysis
-    #  @{
     
     # Internal method for error computation
     @override
@@ -162,13 +138,6 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
             assert kwargs["components"] == components
         return ParametrizedReducedDifferentialProblem._compute_relative_error(self, absolute_error, **kwargs)
         
-    #  @}
-    ########################### end - ERROR ANALYSIS - end ###########################
-    
-    ###########################     PROBLEM SPECIFIC     ########################### 
-    ## @defgroup ProblemSpecific Problem specific methods
-    #  @{
-        
     ## Assemble the reduced order affine expansion
     def assemble_operator(self, term, current_stage="online"):
         if term == "bt_restricted":
@@ -185,9 +154,6 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
             return self.inner_product["r"]
         else:
             return ParametrizedReducedDifferentialProblem.assemble_operator(self, term, current_stage)
-                                
-    #  @}
-    ########################### end - PROBLEM SPECIFIC - end ########################### 
     
     ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problems
     def postprocess_snapshot(self, snapshot, snapshot_index):

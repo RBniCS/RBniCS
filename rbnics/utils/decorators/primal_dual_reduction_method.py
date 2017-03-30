@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file 
-#  @brief 
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.utils.io import ErrorAnalysisTable
 from rbnics.utils.decorators.extends import Extends
@@ -52,10 +46,6 @@ def PrimalDualReductionMethod(DualProblem):
                 # Change the label in dual reduction method
                 self.dual_reduction_method.label = "Dual " + self.dual_reduction_method.label
                 
-            ###########################     SETTERS     ########################### 
-            ## @defgroup Setters Set properties of the reduced order approximation
-            #  @{
-
             # Propagate the values of all setters also to the dual object
             
             ## OFFLINE: set maximum reduced space dimension (stopping criterion)
@@ -91,9 +81,6 @@ def PrimalDualReductionMethod(DualProblem):
                 assert "dual" in kwargs
                 import_successful_dual = self.dual_reduction_method.initialize_testing_set(kwargs["dual"], enable_import, sampling, **kwargs)
                 return import_successful and import_successful_dual
-                
-            #  @}
-            ########################### end - SETTERS - end ########################### 
                 
             ## Perform the offline phase of the reduced order model
             @override

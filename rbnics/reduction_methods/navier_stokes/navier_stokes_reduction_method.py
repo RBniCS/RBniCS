@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file 
-#  @brief 
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
 from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
@@ -32,19 +26,12 @@ def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
     @MultiLevelReductionMethod
     @NonlinearReductionMethod
     class NavierStokesReductionMethod_Class(StokesReductionMethod_DerivedClass):
-        
-        ###########################     CONSTRUCTORS     ########################### 
-        ## @defgroup Constructors Methods related to the construction of the reduced order model object
-        #  @{
-        
+    
         ## Default initialization of members
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             StokesReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
-                
-        #  @}
-        ########################### end - CONSTRUCTORS - end ###########################
         
     # return value (a class) for the decorator
     return NavierStokesReductionMethod_Class

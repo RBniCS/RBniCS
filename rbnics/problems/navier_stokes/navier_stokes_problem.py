@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parabolic_coercive_problem.py
-#  @brief Base class for parabolic coervice problems
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.stokes import StokesProblem
@@ -30,10 +24,6 @@ from rbnics.utils.decorators import Extends, override
 @Extends(StokesProblem)
 @NonlinearProblem
 class NavierStokesProblem(StokesProblem):
-    
-    ###########################     CONSTRUCTORS     ########################### 
-    ## @defgroup Constructors Methods related to the construction of Navier Stokes problem
-    #  @{
     
     ## Default initialization of members
     @override
@@ -54,13 +44,6 @@ class NavierStokesProblem(StokesProblem):
             # Auxiliary terms for supremizer enrichment
             "bt_restricted": 2
         }
-        
-    #  @}
-    ########################### end - CONSTRUCTORS - end ########################### 
-    
-    ###########################     OFFLINE STAGE     ########################### 
-    ## @defgroup OfflineStage Methods related to the offline stage
-    #  @{
             
     ## Perform a truth solve.
     @override
@@ -115,7 +98,4 @@ class NavierStokesProblem(StokesProblem):
         )
         solver.solve()
         return self._supremizer
-    
-    #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
     

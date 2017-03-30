@@ -15,16 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-## @file parameter_space_subset.py
-#  @brief Type for parameter space subsets
-#
-#  @author Francesco Ballarin <francesco.ballarin@sissa.it>
-#  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
-#  @author Alberto   Sartori  <alberto.sartori@sissa.it>
-
-###########################     OFFLINE STAGE     ########################### 
-## @defgroup OfflineStage Methods related to the offline stage
-#  @{
 
 # Parameter space subsets
 from rbnics.sampling.distributions import CompositeDistribution, UniformDistribution
@@ -103,6 +93,3 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             global_value_max = values[global_i_max]
         return (global_value_max, global_i_max)
         
-#  @}
-########################### end - OFFLINE STAGE - end ########################### 
-
