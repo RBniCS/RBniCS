@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_pod_galerkin_reduction import NonlinearEllipticPODGalerkinReduction
-#from RBniCS.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_rb_reduction import NonlinearEllipticRBReduction
-from RBniCS.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_reduction_method import NonlinearEllipticReductionMethod
+from rbnics.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_pod_galerkin_reduction import NonlinearEllipticPODGalerkinReduction
+#from rbnics.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_rb_reduction import NonlinearEllipticRBReduction
+from rbnics.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_reduction_method import NonlinearEllipticReductionMethod
 
 __all__ = [
     'NonlinearEllipticPODGalerkinReduction',

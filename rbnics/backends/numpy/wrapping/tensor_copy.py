@@ -22,16 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import RBniCS.backends # avoid circular imports when importing numpy backend
+import rbnics.backends # avoid circular imports when importing numpy backend
 
 def tensor_copy(tensor):
-    assert isinstance(tensor, (RBniCS.backends.numpy.Matrix.Type(), RBniCS.backends.numpy.Vector.Type())
-    if isinstance(tensor, RBniCS.backends.numpy.Matrix.Type()):
-        m = RBniCS.backends.numpy.Matrix(*tensor.shape)
+    assert isinstance(tensor, (rbnics.backends.numpy.Matrix.Type(), rbnics.backends.numpy.Vector.Type())
+    if isinstance(tensor, rbnics.backends.numpy.Matrix.Type()):
+        m = rbnics.backends.numpy.Matrix(*tensor.shape)
         m[:] = tensor
         return m
-    elif isinstance(tensor, RBniCS.backends.numpy.Vector.Type()):
-        V = RBniCS.backends.numpy.Vector(tensor.size)
+    elif isinstance(tensor, rbnics.backends.numpy.Vector.Type()):
+        V = rbnics.backends.numpy.Vector(tensor.size)
         v[:] = tensor
         return v
     else: # impossible to arrive here anyway, thanks to the assert

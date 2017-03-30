@@ -25,11 +25,11 @@
 import os # for path
 from dolfin import as_backend_type
 from petsc4py import PETSc
-import RBniCS.backends # avoid circular imports when importing fenics backend
-from RBniCS.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_reader_mapping
-from RBniCS.backends.fenics.wrapping.get_form_argument import get_form_argument
-from RBniCS.utils.mpi import is_io_process
-from RBniCS.utils.io import PickleIO
+import rbnics.backends # avoid circular imports when importing fenics backend
+from rbnics.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_reader_mapping
+from rbnics.backends.fenics.wrapping.get_form_argument import get_form_argument
+from rbnics.utils.mpi import is_io_process
+from rbnics.utils.io import PickleIO
 
 def tensor_load(tensor, directory, filename):
     mpi_comm = tensor.mpi_comm().tompi4py()
@@ -59,8 +59,8 @@ def tensor_load(tensor, directory, filename):
     if not loaded:
         return False
     # Read in content
-    assert isinstance(tensor, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
-    if isinstance(tensor, RBniCS.backends.fenics.Matrix.Type()):
+    assert isinstance(tensor, (rbnics.backends.fenics.Matrix.Type(), rbnics.backends.fenics.Vector.Type()))
+    if isinstance(tensor, rbnics.backends.fenics.Matrix.Type()):
         (matrix_row_permutation, matrix_col_permutation) = permutation
         (writer_mat, loaded) = matrix_load(directory, filename)
         if not loaded:
@@ -75,7 +75,7 @@ def tensor_load(tensor, directory, filename):
                 cols.append( matrix_col_permutation[writer_col] )
             mat.setValues(row, cols, vals, addv=PETSc.InsertMode.INSERT)
         mat.assemble()
-    elif isinstance(tensor, RBniCS.backends.fenics.Vector.Type()):
+    elif isinstance(tensor, rbnics.backends.fenics.Vector.Type()):
         vector_permutation = permutation
         (writer_vec, loaded) = vector_load(directory, filename)
         if not loaded:
@@ -95,8 +95,8 @@ def permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
         if not PickleIO.exists_file(directory, "." + form_name):
             return (None, False)
             
-        assert isinstance(tensor, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
-        if isinstance(tensor, RBniCS.backends.fenics.Matrix.Type()):
+        assert isinstance(tensor, (rbnics.backends.fenics.Matrix.Type(), rbnics.backends.fenics.Vector.Type()))
+        if isinstance(tensor, rbnics.backends.fenics.Matrix.Type()):
             V_0 = get_form_argument(form, 0).function_space()
             V_1 = get_form_argument(form, 1).function_space()
             V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
@@ -117,7 +117,7 @@ def permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
                         (global_cell_index, cell_dof) = V_1__dof_map_writer_mapping[writer_col]
                         matrix_col_permutation[writer_col] = V_1__dof_map_reader_mapping[global_cell_index][cell_dof]
             _permutation_storage[form_name] = (matrix_row_permutation, matrix_col_permutation)
-        elif isinstance(tensor, RBniCS.backends.fenics.Vector.Type()):
+        elif isinstance(tensor, rbnics.backends.fenics.Vector.Type()):
             V_0 = get_form_argument(form, 0).function_space()
             V_0__dof_map_reader_mapping = build_dof_map_reader_mapping(V_0)
             V_0__dof_map_writer_mapping = PickleIO.load_file(directory, "." + form_name)

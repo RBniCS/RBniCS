@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import assign, File
-from RBniCS.backends.fenics.wrapping.function_extend_or_restrict import function_extend_or_restrict
-from RBniCS.backends.fenics.wrapping.get_function_subspace import get_function_subspace
+from rbnics.backends.fenics.wrapping.function_extend_or_restrict import function_extend_or_restrict
+from rbnics.backends.fenics.wrapping.get_function_subspace import get_function_subspace
 
 def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()

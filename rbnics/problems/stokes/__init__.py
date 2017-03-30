@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.stokes.stokes_pod_galerkin_reduced_problem import StokesPODGalerkinReducedProblem
-from RBniCS.problems.stokes.stokes_problem import StokesProblem
-from RBniCS.problems.stokes.stokes_rb_reduced_problem import StokesRBReducedProblem
-from RBniCS.problems.stokes.stokes_reduced_problem import StokesReducedProblem
+from rbnics.problems.stokes.stokes_pod_galerkin_reduced_problem import StokesPODGalerkinReducedProblem
+from rbnics.problems.stokes.stokes_problem import StokesProblem
+from rbnics.problems.stokes.stokes_rb_reduced_problem import StokesRBReducedProblem
+from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
 
 
 __all__ = [

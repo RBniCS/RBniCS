@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.fenics.product import ProductOutput
-from RBniCS.utils.decorators import backend_for
+from rbnics.backends.fenics.product import ProductOutput
+from rbnics.utils.decorators import backend_for
 
 @backend_for("fenics", inputs=(ProductOutput, ))
 def sum(product_output):

@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.tensors_list import TensorsList
-from RBniCS.utils.decorators import AbstractBackend, Extends
+from rbnics.backends.abstract.tensors_list import TensorsList
+from rbnics.utils.decorators import AbstractBackend, Extends
 
 @AbstractBackend
 @Extends(TensorsList)

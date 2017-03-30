@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
-from RBniCS.scm.problems import ExactCoercivityConstant, SCM
+from rbnics.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from rbnics.scm.problems import ExactCoercivityConstant, SCM
 
 @ReductionMethodDecoratorFor(ExactCoercivityConstant, replaces=SCM)
 def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):

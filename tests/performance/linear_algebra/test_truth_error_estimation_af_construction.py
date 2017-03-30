@@ -25,8 +25,8 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.backends import BasisFunctionsMatrix, transpose
-from RBniCS.backends.online import OnlineVector
+from rbnics.backends import BasisFunctionsMatrix, transpose
+from rbnics.backends.online import OnlineVector
 from numpy.linalg import norm
 
 class Test(TestBase):

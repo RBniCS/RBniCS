@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.io import NumpyIO
+from rbnics.utils.io import NumpyIO
 
 def function_save(fun, directory, filename, suffix=None):
     if suffix is not None:

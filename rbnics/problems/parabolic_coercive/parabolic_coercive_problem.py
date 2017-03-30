@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import TimeDependentProblem
-from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
-from RBniCS.backends import assign, Function, product, sum, TimeStepping
-from RBniCS.utils.decorators import Extends, override
+from rbnics.problems.base import TimeDependentProblem
+from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
+from rbnics.backends import assign, Function, product, sum, TimeStepping
+from rbnics.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem

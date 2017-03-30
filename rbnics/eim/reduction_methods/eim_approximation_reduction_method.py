@@ -24,12 +24,12 @@
 
 from __future__ import print_function
 import types
-from RBniCS.reduction_methods.base import ReductionMethod
-from RBniCS.backends import evaluate
-from RBniCS.backends.online import OnlineMatrix
-from RBniCS.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from RBniCS.utils.mpi import print
-from RBniCS.utils.decorators import Extends, override
+from rbnics.reduction_methods.base import ReductionMethod
+from rbnics.backends import evaluate
+from rbnics.backends.online import OnlineMatrix
+from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
+from rbnics.utils.mpi import print
+from rbnics.utils.decorators import Extends, override
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EIM

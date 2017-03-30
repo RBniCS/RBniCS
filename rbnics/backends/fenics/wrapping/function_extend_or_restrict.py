@@ -24,7 +24,7 @@
 
 from collections import OrderedDict
 from dolfin import assign
-import RBniCS.backends # avoid circular imports when importing fenics backend
+import rbnics.backends # avoid circular imports when importing fenics backend
 
 def function_extend_or_restrict(function, function_components, V, V_components, weight, copy):
     function_V = function.function_space()
@@ -63,7 +63,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
             assert weight is None, "It is not possible to weigh components without copying the vector"
             return function
         else:
-            output = RBniCS.backends.fenics.Function(V) # zero by default
+            output = rbnics.backends.fenics.Function(V) # zero by default
             assign(_sub_from_tuple(output, V_index), _sub_from_tuple(function, function_V_index))
             if weight is not None:
                 output.vector()[:] *= weight
@@ -74,7 +74,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         # V is the mixed (velocity, pressure) space, and you are interested in storing a extended function
         # (i.e. extended to zero on pressure DOFs) when defining basis functions for enriched velocity space
         assert copy is True, "It is not possible to extend functions without copying the vector"
-        extended_function = RBniCS.backends.fenics.Function(V) # zero by default
+        extended_function = rbnics.backends.fenics.Function(V) # zero by default
         for (index_V_as_tuple, index_function_V_as_tuple) in V_to_function_V_mapping.iteritems():
             assign(_sub_from_tuple(extended_function, index_V_as_tuple), _sub_from_tuple(function, index_function_V_as_tuple))
         if weight is not None:
@@ -86,7 +86,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         # V is the collapsed state (== adjoint) solution space, and you are
         # interested in storing snapshots of y or p components because of an aggregrated approach
         assert copy is True, "It is not possible to restrict functions without copying the vector"
-        restricted_function = RBniCS.backends.fenics.Function(V) # zero by default
+        restricted_function = rbnics.backends.fenics.Function(V) # zero by default
         for (index_function_V_as_tuple, index_V_as_tuple) in function_V_to_V_mapping.iteritems():
             assign(_sub_from_tuple(restricted_function, index_V_as_tuple), _sub_from_tuple(function, index_function_V_as_tuple))
         if weight is not None:

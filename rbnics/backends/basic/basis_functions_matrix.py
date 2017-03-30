@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
-from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.mpi import is_io_process
+from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
+from rbnics.utils.decorators import Extends, override
+from rbnics.utils.mpi import is_io_process
 
 ###########################     OFFLINE STAGE     ########################### 
 ## @defgroup OfflineStage Methods related to the offline stage

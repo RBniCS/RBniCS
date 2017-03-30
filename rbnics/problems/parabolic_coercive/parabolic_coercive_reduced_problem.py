@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import TimeDependentReducedProblem
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from RBniCS.backends import assign, LinearSolver, product, sum, TimeStepping
-from RBniCS.backends.online import OnlineFunction
-from RBniCS.utils.decorators import Extends, override, MultiLevelReducedProblem
+from rbnics.problems.base import TimeDependentReducedProblem
+from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
+from rbnics.backends import assign, LinearSolver, product, sum, TimeStepping
+from rbnics.backends.online import OnlineFunction
+from rbnics.utils.decorators import Extends, override, MultiLevelReducedProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoerciveReducedOrderModelBase

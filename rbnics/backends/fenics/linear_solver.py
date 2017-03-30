@@ -23,11 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import DirichletBC, PETScLUSolver
-from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.function import Function
-from RBniCS.utils.decorators import BackendFor, dict_of, Extends, list_of, override
+from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.vector import Vector
+from rbnics.backends.fenics.function import Function
+from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
 
 @Extends(AbstractLinearSolver)
 @BackendFor("fenics", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (list_of(DirichletBC), dict_of(str, list_of(DirichletBC)), None)))

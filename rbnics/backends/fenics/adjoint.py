@@ -24,7 +24,7 @@
 
 from ufl import Form
 from dolfin import adjoint as dolfin_adjoint
-from RBniCS.utils.decorators import backend_for, tuple_of
+from rbnics.utils.decorators import backend_for, tuple_of
 
 @backend_for("fenics", inputs=((Form, tuple_of(Form)), ))
 def adjoint(arg):

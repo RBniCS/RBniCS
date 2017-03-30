@@ -24,7 +24,7 @@
 
 from dolfin import *
 set_log_level(PROGRESS)
-from RBniCS import *
+from rbnics import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 21: NAVIER STOKES CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @ExactParametrizedFunctions()

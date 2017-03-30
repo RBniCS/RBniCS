@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.scm.problems import SCM, ExactCoercivityConstant
+from rbnics.scm.problems import SCM, ExactCoercivityConstant
 
 __all__ = [
-    # RBniCS.scm.problems
+    # rbnics.scm.problems
     'SCM',
     'ExactCoercivityConstant'
 ]
@@ -35,6 +35,6 @@ __all__ = [
 # decorators that fill in algorithm factories are called, but do not 
 # add them to __all__ since they are not class that should be explicitely
 # used in the tutorials
-from RBniCS.scm.problems import SCMDecoratedReducedProblem, ExactCoercivityConstantDecoratedReducedProblem
-from RBniCS.scm.reduction_methods import SCMDecoratedReductionMethod, ExactCoercivityConstantDecoratedReductionMethod
+from rbnics.scm.problems import SCMDecoratedReducedProblem, ExactCoercivityConstantDecoratedReducedProblem
+from rbnics.scm.reduction_methods import SCMDecoratedReductionMethod, ExactCoercivityConstantDecoratedReductionMethod
 

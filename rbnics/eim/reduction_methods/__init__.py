@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.eim.reduction_methods.deim_decorated_reduction_method import DEIMDecoratedReductionMethod
-#from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod # not needed
-from RBniCS.eim.reduction_methods.eim_decorated_reduction_method import EIMDecoratedReductionMethod
-from RBniCS.eim.reduction_methods.exact_parametrized_functions_decorated_reduction_method import ExactParametrizedFunctionsDecoratedReductionMethod
-#from RBniCS.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod # not needed
+from rbnics.eim.reduction_methods.deim_decorated_reduction_method import DEIMDecoratedReductionMethod
+#from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod # not needed
+from rbnics.eim.reduction_methods.eim_decorated_reduction_method import EIMDecoratedReductionMethod
+from rbnics.eim.reduction_methods.exact_parametrized_functions_decorated_reduction_method import ExactParametrizedFunctionsDecoratedReductionMethod
+#from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod # not needed
 
 __all__ = [
     'DEIMDecoratedReductionMethod',

@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
-from RBniCS.backends import assign, copy, transpose
-from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from RBniCS.utils.decorators import Extends, override, sync_setters
-from RBniCS.utils.mpi import log, PROGRESS
+from rbnics.backends import assign, copy, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
+from rbnics.utils.decorators import Extends, override, sync_setters
+from rbnics.utils.mpi import log, PROGRESS
 
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

@@ -26,8 +26,8 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 import inspect
 from functools import wraps
-from RBniCS.utils.decorators.backend_for import BackendFor, backend_for
-from RBniCS.utils.decorators.extends import Extends
+from rbnics.utils.decorators.backend_for import BackendFor, backend_for
+from rbnics.utils.decorators.extends import Extends
 
 def AbstractBackend(Class):
     assert inspect.isclass(Class)

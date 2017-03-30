@@ -23,11 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from RBniCS import EquispacedDistribution, ParametrizedExpression
-from RBniCS.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
-from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
-from RBniCS.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
+from rbnics import EquispacedDistribution, ParametrizedExpression
+from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
+from rbnics.problems.base import ParametrizedProblem
+from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
+from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
 
 class MockTimeDependentProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):

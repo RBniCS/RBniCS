@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.base import DifferentialProblemReductionMethod
-from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
+from rbnics.reduction_methods.base import DifferentialProblemReductionMethod
+from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
+from rbnics.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
 
 @Extends(DifferentialProblemReductionMethod) # needs to be first in order to override for last the methods.
 @ReductionMethodFor(StokesOptimalControlProblem, "Abstract")

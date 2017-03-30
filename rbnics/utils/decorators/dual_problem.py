@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators.extends import Extends
-from RBniCS.utils.decorators.override import override
-from RBniCS.utils.decorators.sync_setters import sync_setters
+from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators.override import override
+from rbnics.utils.decorators.sync_setters import sync_setters
 
 def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
             

@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, log, MeshFunctionSizet, VectorFunctionSpace
-from RBniCS.backends.abstract import MeshMotion as AbstractMeshMotion
-from RBniCS.backends.fenics.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
-from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
+from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
+from rbnics.backends.fenics.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
+from rbnics.utils.decorators import BackendFor, Extends, override, tuple_of
 from mpi4py.MPI import MAX, MIN
 
 @Extends(AbstractMeshMotion)

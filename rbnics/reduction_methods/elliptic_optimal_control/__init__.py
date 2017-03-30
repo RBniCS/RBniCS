@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_pod_galerkin_reduction import EllipticOptimalControlPODGalerkinReduction
-#from RBniCS.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_rb_reduction import EllipticOptimalControlRBReduction
-from RBniCS.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_reduction_method import EllipticOptimalControlReductionMethod
+from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_pod_galerkin_reduction import EllipticOptimalControlPODGalerkinReduction
+#from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_rb_reduction import EllipticOptimalControlRBReduction
+from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_reduction_method import EllipticOptimalControlReductionMethod
 
 __all__ = [
     'EllipticOptimalControlPODGalerkinReduction',

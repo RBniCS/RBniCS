@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
-from RBniCS.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization
+from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization
 
 @ReducedProblemDecoratorFor(ShapeParametrization)
 def ShapeParametrizationDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):

@@ -30,40 +30,40 @@ assert parameters.linear_algebra_backend == "PETSc"
 assert has_slepc()
 
 # Import modules
-from RBniCS.backends.fenics.abs import abs
-from RBniCS.backends.fenics.adjoint import adjoint
-from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.fenics.assign import assign
-from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.fenics.copy import copy
-from RBniCS.backends.fenics.eigen_solver import EigenSolver
-from RBniCS.backends.fenics.evaluate import evaluate
-from RBniCS.backends.fenics.export import export
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.functions_list import FunctionsList
-from RBniCS.backends.fenics.gram_schmidt import GramSchmidt
-from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
-from RBniCS.backends.fenics.import_ import import_
-from RBniCS.backends.fenics.linear_solver import LinearSolver
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.max import max
-from RBniCS.backends.fenics.mesh_motion import MeshMotion
-from RBniCS.backends.fenics.nonlinear_solver import NonlinearSolver
-from RBniCS.backends.fenics.parametrized_expression_factory import ParametrizedExpressionFactory
-from RBniCS.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
-from RBniCS.backends.fenics.product import product
-from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
-from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
-from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
-from RBniCS.backends.fenics.separated_parametrized_form import SeparatedParametrizedForm
-from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
-from RBniCS.backends.fenics.sum import sum
-from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
-from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
-from RBniCS.backends.fenics.tensors_list import TensorsList
-from RBniCS.backends.fenics.time_stepping import TimeStepping
-from RBniCS.backends.fenics.transpose import transpose
-from RBniCS.backends.fenics.vector import Vector
+from rbnics.backends.fenics.abs import abs
+from rbnics.backends.fenics.adjoint import adjoint
+from rbnics.backends.fenics.affine_expansion_storage import AffineExpansionStorage
+from rbnics.backends.fenics.assign import assign
+from rbnics.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
+from rbnics.backends.fenics.copy import copy
+from rbnics.backends.fenics.eigen_solver import EigenSolver
+from rbnics.backends.fenics.evaluate import evaluate
+from rbnics.backends.fenics.export import export
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.functions_list import FunctionsList
+from rbnics.backends.fenics.gram_schmidt import GramSchmidt
+from rbnics.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from rbnics.backends.fenics.import_ import import_
+from rbnics.backends.fenics.linear_solver import LinearSolver
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.max import max
+from rbnics.backends.fenics.mesh_motion import MeshMotion
+from rbnics.backends.fenics.nonlinear_solver import NonlinearSolver
+from rbnics.backends.fenics.parametrized_expression_factory import ParametrizedExpressionFactory
+from rbnics.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
+from rbnics.backends.fenics.product import product
+from rbnics.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from rbnics.backends.fenics.reduced_mesh import ReducedMesh
+from rbnics.backends.fenics.reduced_vertices import ReducedVertices
+from rbnics.backends.fenics.separated_parametrized_form import SeparatedParametrizedForm
+from rbnics.backends.fenics.snapshots_matrix import SnapshotsMatrix
+from rbnics.backends.fenics.sum import sum
+from rbnics.backends.fenics.tensor_basis_list import TensorBasisList
+from rbnics.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
+from rbnics.backends.fenics.tensors_list import TensorsList
+from rbnics.backends.fenics.time_stepping import TimeStepping
+from rbnics.backends.fenics.transpose import transpose
+from rbnics.backends.fenics.vector import Vector
 
 __all__ = [
     'abs',

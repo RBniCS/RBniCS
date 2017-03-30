@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.backends import LinearSolver, product, sum, transpose
-from RBniCS.backends.online import OnlineFunction
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
-from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
+from rbnics.problems.base import ParametrizedReducedDifferentialProblem
+from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.backends import LinearSolver, product, sum, transpose
+from rbnics.backends.online import OnlineFunction
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
+from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase

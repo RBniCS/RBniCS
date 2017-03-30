@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
-from RBniCS.eim.problems.eim import EIM
+from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.eim.problems.eim import EIM
 
 @ReducedProblemDecoratorFor(EIM)
 def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):

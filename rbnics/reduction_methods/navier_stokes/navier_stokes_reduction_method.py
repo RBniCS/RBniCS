@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.base import NonlinearReductionMethod
-from RBniCS.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
-from RBniCS.utils.decorators import Extends, override, MultiLevelReductionMethod
+from rbnics.reduction_methods.base import NonlinearReductionMethod
+from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
+from rbnics.utils.decorators import Extends, override, MultiLevelReductionMethod
 
 def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
     @Extends(StokesReductionMethod_DerivedClass) # needs to be first in order to override for last the methods.

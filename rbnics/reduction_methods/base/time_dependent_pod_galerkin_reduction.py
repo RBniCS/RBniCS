@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
-from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.io import ErrorAnalysisTable
+from rbnics.utils.decorators import Extends, override
+from rbnics.utils.io import ErrorAnalysisTable
 
 def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)

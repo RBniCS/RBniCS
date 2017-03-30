@@ -28,10 +28,10 @@ from numpy import isclose
 from petsc4py import PETSc
 from ufl import Form
 from dolfin import as_backend_type, assemble, Function as PETScFunction, GenericMatrix, GenericVector, PETScMatrix, PETScVector
-from RBniCS.backends.abstract import TimeStepping as AbstractTimeStepping
-from RBniCS.backends.fenics.function import Function
-from RBniCS.utils.mpi import print
-from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
+from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping
+from rbnics.backends.fenics.function import Function
+from rbnics.utils.mpi import print
+from rbnics.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractTimeStepping)
 @BackendFor("fenics", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))

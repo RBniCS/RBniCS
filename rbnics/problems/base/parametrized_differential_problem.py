@@ -25,10 +25,10 @@
 from abc import ABCMeta, abstractmethod
 import types
 import hashlib
-from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
-from RBniCS.backends import AffineExpansionStorage, assign, copy, export, Function, import_
-from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
-from RBniCS.utils.mpi import log, PROGRESS
+from rbnics.problems.base.parametrized_problem import ParametrizedProblem
+from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_
+from rbnics.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
+from rbnics.utils.mpi import log, PROGRESS
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveProblem

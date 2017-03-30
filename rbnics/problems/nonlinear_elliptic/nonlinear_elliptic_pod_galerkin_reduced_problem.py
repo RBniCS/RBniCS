@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.elliptic_coercive import EllipticCoercivePODGalerkinReducedProblem
-from RBniCS.problems.nonlinear_elliptic.nonlinear_elliptic_reduced_problem import NonlinearEllipticReducedProblem
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
-from RBniCS.problems.base import NonlinearPODGalerkinReducedProblem
-from RBniCS.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
-from RBniCS.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGalerkinReduction
+from rbnics.problems.elliptic_coercive import EllipticCoercivePODGalerkinReducedProblem
+from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_reduced_problem import NonlinearEllipticReducedProblem
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.problems.base import NonlinearPODGalerkinReducedProblem
+from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
+from rbnics.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGalerkinReduction
 
 NonlinearEllipticPODGalerkinReducedProblem_Base = NonlinearEllipticReducedProblem(NonlinearPODGalerkinReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
 

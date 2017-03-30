@@ -25,8 +25,8 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.backends import product, sum
-from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineMatrix
+from rbnics.backends import product, sum
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineMatrix
 from numpy.linalg import norm
 
 OnlineMatrix_Type = OnlineMatrix.Type()

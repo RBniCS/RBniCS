@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.navier_stokes.navier_stokes_pod_galerkin_reduction import NavierStokesPODGalerkinReduction
-#from RBniCS.reduction_methods.navier_stokes.navier_stokes_rb_reduction import NavierStokesRBReduction
-from RBniCS.reduction_methods.navier_stokes.navier_stokes_reduction_method import NavierStokesReductionMethod
+from rbnics.reduction_methods.navier_stokes.navier_stokes_pod_galerkin_reduction import NavierStokesPODGalerkinReduction
+#from rbnics.reduction_methods.navier_stokes.navier_stokes_rb_reduction import NavierStokesRBReduction
+from rbnics.reduction_methods.navier_stokes.navier_stokes_reduction_method import NavierStokesReductionMethod
 
 __all__ = [
     'NavierStokesPODGalerkinReduction',

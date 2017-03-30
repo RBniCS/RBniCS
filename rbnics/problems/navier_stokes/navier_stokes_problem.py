@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import NonlinearProblem
-from RBniCS.problems.stokes import StokesProblem
-from RBniCS.backends import assign, Function, LinearSolver, NonlinearSolver, product, sum
-from RBniCS.utils.decorators import Extends, override
+from rbnics.problems.base import NonlinearProblem
+from rbnics.problems.stokes import StokesProblem
+from rbnics.backends import assign, Function, LinearSolver, NonlinearSolver, product, sum
+from rbnics.utils.decorators import Extends, override
 
 @Extends(StokesProblem)
 @NonlinearProblem

@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import RBniCS.backends # avoid circular imports when importing fenics backend
+import rbnics.backends # avoid circular imports when importing fenics backend
 
 def tensor_copy(tensor):
-    assert isinstance(tensor, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
+    assert isinstance(tensor, (rbnics.backends.fenics.Matrix.Type(), rbnics.backends.fenics.Vector.Type()))
     output = tensor.copy()
     # Preserve generator for I/O
     if hasattr(tensor, "generator"):

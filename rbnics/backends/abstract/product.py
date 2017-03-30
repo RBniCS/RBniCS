@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import abstract_backend
+from rbnics.utils.decorators import abstract_backend
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum.
 @abstract_backend

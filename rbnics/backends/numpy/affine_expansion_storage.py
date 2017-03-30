@@ -25,12 +25,12 @@
 from numpy import empty as AffineExpansionStorageContent_Base
 from numpy import nditer as AffineExpansionStorageContent_Iterator
 from numpy import asmatrix as AffineExpansionStorageContent_AsMatrix
-from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
-from RBniCS.backends.numpy.matrix import Matrix as OnlineMatrix
-from RBniCS.backends.numpy.vector import Vector as OnlineVector
-from RBniCS.backends.numpy.wrapping import slice_to_array, slice_to_size
-from RBniCS.utils.io import NumpyIO as AffineExpansionStorageContent_IO, Folders, PickleIO as ContentSizeIO, PickleIO as ContentTypeIO, PickleIO as DictIO
-from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
+from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
+from rbnics.backends.numpy.matrix import Matrix as OnlineMatrix
+from rbnics.backends.numpy.vector import Vector as OnlineVector
+from rbnics.backends.numpy.wrapping import slice_to_array, slice_to_size
+from rbnics.utils.io import NumpyIO as AffineExpansionStorageContent_IO, Folders, PickleIO as ContentSizeIO, PickleIO as ContentTypeIO, PickleIO as DictIO
+from rbnics.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractAffineExpansionStorage)
 @BackendFor("numpy", inputs=((int, AbstractAffineExpansionStorage), (int, None)))

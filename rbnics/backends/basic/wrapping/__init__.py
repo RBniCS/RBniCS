@@ -22,21 +22,21 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic.wrapping.function_copy import function_copy
-from RBniCS.backends.basic.wrapping.function_extend_or_restrict import function_extend_or_restrict
-from RBniCS.backends.basic.wrapping.function_load import function_load
-from RBniCS.backends.basic.wrapping.function_save import function_save
-from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_adapter import functions_list_basis_functions_matrix_adapter
-from RBniCS.backends.basic.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
-from RBniCS.backends.basic.wrapping.get_function_subspace import get_function_subspace
-from RBniCS.backends.basic.wrapping.get_mpi_comm import get_mpi_comm
-from RBniCS.backends.basic.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
-from RBniCS.backends.basic.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
-from RBniCS.backends.basic.wrapping.tensor_copy import tensor_copy
-from RBniCS.backends.basic.wrapping.tensor_load import tensor_load
-from RBniCS.backends.basic.wrapping.tensor_save import tensor_save
-from RBniCS.backends.basic.wrapping.tensors_list_mul import tensors_list_mul_online_function
-from RBniCS.backends.basic.wrapping.vector_mul import vector_mul_vector
+from rbnics.backends.basic.wrapping.function_copy import function_copy
+from rbnics.backends.basic.wrapping.function_extend_or_restrict import function_extend_or_restrict
+from rbnics.backends.basic.wrapping.function_load import function_load
+from rbnics.backends.basic.wrapping.function_save import function_save
+from rbnics.backends.basic.wrapping.functions_list_basis_functions_matrix_adapter import functions_list_basis_functions_matrix_adapter
+from rbnics.backends.basic.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
+from rbnics.backends.basic.wrapping.get_function_subspace import get_function_subspace
+from rbnics.backends.basic.wrapping.get_mpi_comm import get_mpi_comm
+from rbnics.backends.basic.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
+from rbnics.backends.basic.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
+from rbnics.backends.basic.wrapping.tensor_copy import tensor_copy
+from rbnics.backends.basic.wrapping.tensor_load import tensor_load
+from rbnics.backends.basic.wrapping.tensor_save import tensor_save
+from rbnics.backends.basic.wrapping.tensors_list_mul import tensors_list_mul_online_function
+from rbnics.backends.basic.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
     'function_copy',

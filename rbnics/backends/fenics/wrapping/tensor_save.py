@@ -25,12 +25,12 @@
 from petsc4py import PETSc
 from dolfin import as_backend_type
 from mpi4py.MPI import Op
-import RBniCS.backends # avoid circular imports when importing fenics backend
-from RBniCS.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_writer_mapping
-from RBniCS.backends.fenics.wrapping.get_form_name import get_form_name
-from RBniCS.backends.fenics.wrapping.get_form_argument import get_form_argument
-from RBniCS.utils.mpi import is_io_process
-from RBniCS.utils.io import PickleIO
+import rbnics.backends # avoid circular imports when importing fenics backend
+from rbnics.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_writer_mapping
+from rbnics.backends.fenics.wrapping.get_form_name import get_form_name
+from rbnics.backends.fenics.wrapping.get_form_argument import get_form_argument
+from rbnics.utils.mpi import is_io_process
+from rbnics.utils.io import PickleIO
 
 def tensor_save(tensor, directory, filename):
     mpi_comm = tensor.mpi_comm().tompi4py()
@@ -50,18 +50,18 @@ def tensor_save(tensor, directory, filename):
     # Write out generator mapping from processor dependent indices to processor independent (global_cell_index, cell_dof) tuple
     permutation_save(tensor, directory, form, form_name + "_" + str(mpi_comm.size), mpi_comm)
     # Write out content
-    assert isinstance(tensor, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
-    if isinstance(tensor, RBniCS.backends.fenics.Matrix.Type()):
+    assert isinstance(tensor, (rbnics.backends.fenics.Matrix.Type(), rbnics.backends.fenics.Vector.Type()))
+    if isinstance(tensor, rbnics.backends.fenics.Matrix.Type()):
         matrix_save(tensor, directory, filename)
-    elif isinstance(tensor, RBniCS.backends.fenics.Vector.Type()):
+    elif isinstance(tensor, rbnics.backends.fenics.Vector.Type()):
         vector_save(tensor, directory, filename)
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in tensor_save.")
         
 def permutation_save(tensor, directory, form, form_name, mpi_comm):
     if not PickleIO.exists_file(directory, "." + form_name):
-        assert isinstance(tensor, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
-        if isinstance(tensor, RBniCS.backends.fenics.Matrix.Type()):
+        assert isinstance(tensor, (rbnics.backends.fenics.Matrix.Type(), rbnics.backends.fenics.Vector.Type()))
+        if isinstance(tensor, rbnics.backends.fenics.Matrix.Type()):
             V_0 = get_form_argument(form, 0).function_space()
             V_1 = get_form_argument(form, 1).function_space()
             V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
@@ -80,7 +80,7 @@ def permutation_save(tensor, directory, form, form_name, mpi_comm):
             gathered_matrix_col_mapping = mpi_comm.reduce(matrix_col_mapping, root=is_io_process.root, op=dict_update_op)
             gathered_matrix_mapping = (gathered_matrix_row_mapping, gathered_matrix_col_mapping)
             PickleIO.save_file(gathered_matrix_mapping, directory, "." + form_name)
-        elif isinstance(tensor, RBniCS.backends.fenics.Vector.Type()):
+        elif isinstance(tensor, rbnics.backends.fenics.Vector.Type()):
             V_0 = get_form_argument(form, 0).function_space()
             V_0__dof_map_writer_mapping = build_dof_map_writer_mapping(V_0)
             vector_mapping = dict() # from processor dependent indices to processor independent tuple

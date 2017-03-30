@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
-from RBniCS.backends import product, sum, transpose
-from RBniCS.utils.decorators import Extends, PrimalDualReductionMethod, ReductionMethodFor
-from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem, EllipticCoerciveProblem_Dual
-from RBniCS.reduction_methods.elliptic_coercive.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
+from rbnics.backends import product, sum, transpose
+from rbnics.utils.decorators import Extends, PrimalDualReductionMethod, ReductionMethodFor
+from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem, EllipticCoerciveProblem_Dual
+from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
 
 def _problem_is_noncompliant(truth_problem, **kwargs):
     try:

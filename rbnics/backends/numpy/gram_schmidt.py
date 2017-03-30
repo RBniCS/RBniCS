@@ -22,16 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic import GramSchmidt as BasicGramSchmidt
-import RBniCS.backends.numpy
-from RBniCS.backends.numpy.matrix import Matrix
-import RBniCS.backends.numpy.wrapping
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
+import rbnics.backends.numpy
+from rbnics.backends.numpy.matrix import Matrix
+import rbnics.backends.numpy.wrapping
+from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicGramSchmidt)
 @BackendFor("numpy", inputs=(Matrix.Type(), ))
 class GramSchmidt(BasicGramSchmidt):
     @override
     def __init__(self, X):
-        BasicGramSchmidt.__init__(self, X, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping)
+        BasicGramSchmidt.__init__(self, X, rbnics.backends.numpy, rbnics.backends.numpy.wrapping)
         

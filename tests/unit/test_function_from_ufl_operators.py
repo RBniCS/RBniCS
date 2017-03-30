@@ -24,8 +24,8 @@
 
 from numpy import isclose
 from dolfin import *
-from RBniCS.backends.fenics import transpose
-from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
+from rbnics.backends.fenics import transpose
+from rbnics.backends.fenics.wrapping import function_from_ufl_operators
 
 def conversion_test(V, isclose):
     z1 = Function(V)

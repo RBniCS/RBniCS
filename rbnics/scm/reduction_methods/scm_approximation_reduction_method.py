@@ -24,13 +24,13 @@
 
 from __future__ import print_function
 from numpy import isclose
-from RBniCS.backends import transpose
-from RBniCS.backends.online import OnlineVector
-from RBniCS.reduction_methods.base import ReductionMethod
-from RBniCS.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from RBniCS.utils.mpi import print
-from RBniCS.utils.decorators import Extends, override
-from RBniCS.scm.problems import ParametrizedCoercivityConstantEigenProblem
+from rbnics.backends import transpose
+from rbnics.backends.online import OnlineVector
+from rbnics.reduction_methods.base import ReductionMethod
+from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
+from rbnics.utils.mpi import print
+from rbnics.utils.decorators import Extends, override
+from rbnics.scm.problems import ParametrizedCoercivityConstantEigenProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class SCM

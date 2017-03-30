@@ -26,9 +26,9 @@
 ## @class ReducedProblemFactory
 #
 
-from RBniCS.utils.decorators import CustomizeReducedProblemFor, ReducedProblemFor, ReducedProblemDecoratorFor
-from RBniCS.utils.factories.factory_helper import FactoryGenerateTypes
-from RBniCS.utils.mpi import log, DEBUG
+from rbnics.utils.decorators import CustomizeReducedProblemFor, ReducedProblemFor, ReducedProblemDecoratorFor
+from rbnics.utils.factories.factory_helper import FactoryGenerateTypes
+from rbnics.utils.mpi import log, DEBUG
 
 # Factory to generate a reduced problem corresponding to a given reduction method and truth problem
 def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):

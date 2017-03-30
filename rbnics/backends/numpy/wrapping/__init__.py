@@ -22,23 +22,23 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.wrapping.DirichletBC import DirichletBC
-from RBniCS.backends.numpy.wrapping.function_copy import function_copy
-from RBniCS.backends.numpy.wrapping.function_extend_or_restrict import function_extend_or_restrict
-from RBniCS.backends.numpy.wrapping.function_load import function_load
-from RBniCS.backends.numpy.wrapping.function_save import function_save
-from RBniCS.backends.numpy.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
-from RBniCS.backends.numpy.wrapping.get_function_subspace import get_function_subspace
-from RBniCS.backends.numpy.wrapping.get_mpi_comm import get_mpi_comm
-from RBniCS.backends.numpy.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
-from RBniCS.backends.numpy.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
-from RBniCS.backends.numpy.wrapping.slice_to_array import slice_to_array
-from RBniCS.backends.numpy.wrapping.slice_to_size import slice_to_size
-from RBniCS.backends.basic.wrapping.tensor_copy import tensor_copy
-from RBniCS.backends.basic.wrapping.tensor_load import tensor_load
-from RBniCS.backends.basic.wrapping.tensor_save import tensor_save
-from RBniCS.backends.basic.wrapping.tensors_list_mul import tensors_list_mul_online_function
-from RBniCS.backends.numpy.wrapping.vector_mul import vector_mul_vector
+from rbnics.backends.numpy.wrapping.DirichletBC import DirichletBC
+from rbnics.backends.numpy.wrapping.function_copy import function_copy
+from rbnics.backends.numpy.wrapping.function_extend_or_restrict import function_extend_or_restrict
+from rbnics.backends.numpy.wrapping.function_load import function_load
+from rbnics.backends.numpy.wrapping.function_save import function_save
+from rbnics.backends.numpy.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
+from rbnics.backends.numpy.wrapping.get_function_subspace import get_function_subspace
+from rbnics.backends.numpy.wrapping.get_mpi_comm import get_mpi_comm
+from rbnics.backends.numpy.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
+from rbnics.backends.numpy.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
+from rbnics.backends.numpy.wrapping.slice_to_array import slice_to_array
+from rbnics.backends.numpy.wrapping.slice_to_size import slice_to_size
+from rbnics.backends.basic.wrapping.tensor_copy import tensor_copy
+from rbnics.backends.basic.wrapping.tensor_load import tensor_load
+from rbnics.backends.basic.wrapping.tensor_save import tensor_save
+from rbnics.backends.basic.wrapping.tensors_list_mul import tensors_list_mul_online_function
+from rbnics.backends.numpy.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
     'DirichletBC',

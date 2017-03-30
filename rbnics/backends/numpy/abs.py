@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.backends.numpy.vector import Vector
-from RBniCS.utils.decorators import backend_for
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.backends.numpy.vector import Vector
+from rbnics.utils.decorators import backend_for
 from numpy import argmax, abs as numpy_abs, unravel_index
 
 # abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max,

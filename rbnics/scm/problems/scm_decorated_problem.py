@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
-from RBniCS.scm.problems.scm_approximation import SCMApproximation
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.scm.problems.scm_approximation import SCMApproximation
 
 def SCMDecoratedProblem(
     M_e = -1,
@@ -40,8 +40,8 @@ def SCMDecoratedProblem(
     if coercivity_eigensolver_parameters is None:
         coercivity_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
     
-    from RBniCS.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
-    from RBniCS.scm.problems.scm import SCM
+    from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
+    from rbnics.scm.problems.scm import SCM
     
     @ProblemDecoratorFor(SCM, ExactAlgorithm=ExactCoercivityConstant,
         M_e = M_e,

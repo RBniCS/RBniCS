@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from RBniCS.utils.mpi.log import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG
-from RBniCS.utils.mpi.mpi import is_io_process, parallel_max
-from RBniCS.utils.mpi.print import print
+from rbnics.utils.mpi.log import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG
+from rbnics.utils.mpi.mpi import is_io_process, parallel_max
+from rbnics.utils.mpi.print import print
 
 __all__ = [
     'log', 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'PROGRESS', 'TRACE', 'DEBUG',

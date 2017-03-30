@@ -22,13 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
-from RBniCS.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
-import RBniCS.backends.numpy
-import RBniCS.backends.numpy.wrapping
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
+from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
+from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
+import rbnics.backends.numpy
+import rbnics.backends.numpy.wrapping
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.utils.decorators import BackendFor, Extends, override
 
 ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
 
@@ -37,7 +37,7 @@ ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractP
 class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
     @override
     def __init__(self, Z, X, component=None):
-        ProperOrthogonalDecompositionBase.__init__(self, Z, X, component, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy.SnapshotsMatrix, RBniCS.backends.numpy.FunctionsList)
+        ProperOrthogonalDecompositionBase.__init__(self, Z, X, component, rbnics.backends.numpy, rbnics.backends.numpy.wrapping, rbnics.backends.numpy.SnapshotsMatrix, rbnics.backends.numpy.FunctionsList)
         
     @override
     def store_snapshot(self, snapshot, component=None, weight=None):

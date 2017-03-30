@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base.time_dependent_rb_reduced_problem import TimeDependentRBReducedProblem
-from RBniCS.utils.decorators import Extends
+from rbnics.problems.base.time_dependent_rb_reduced_problem import TimeDependentRBReducedProblem
+from rbnics.utils.decorators import Extends
 
 def NonlinearTimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)

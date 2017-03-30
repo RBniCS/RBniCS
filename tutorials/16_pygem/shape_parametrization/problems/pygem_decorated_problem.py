@@ -26,7 +26,7 @@ from numpy import hstack, zeros
 from pygem.freeform import FFD
 from pygem.radial import RBF
 from pygem.params import FFDParameters, RBFParameters
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 
 def PyGeMDecoratedProblem(pygem_morphing_type, pygem_parameters_filename, pygem_index_and_component_to_mu_index_map, **decorator_kwargs):
     assert pygem_morphing_type in ("FFD", "RBF")

@@ -24,7 +24,7 @@
 
 from dolfin import __version__ as dolfin_version
 import hashlib
-from RBniCS.backends.fenics.wrapping.get_expression_name import get_expression_name
+from rbnics.backends.fenics.wrapping.get_expression_name import get_expression_name
 
 def get_form_name(form):
     str_repr = ""

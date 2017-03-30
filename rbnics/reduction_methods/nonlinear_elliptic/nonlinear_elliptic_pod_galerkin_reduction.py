@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.reduction_methods.base import NonlinearPODGalerkinReduction
-from RBniCS.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
-from RBniCS.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
-from RBniCS.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_reduction_method import NonlinearEllipticReductionMethod
+from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.reduction_methods.base import NonlinearPODGalerkinReduction
+from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
+from rbnics.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
+from rbnics.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_reduction_method import NonlinearEllipticReductionMethod
 
 NonlinearEllipticPODGalerkinReduction_Base = NonlinearEllipticReductionMethod(NonlinearPODGalerkinReduction(EllipticCoercivePODGalerkinReduction))
 

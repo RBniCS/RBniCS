@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_pod_galerkin_reduced_problem import ParabolicCoercivePODGalerkinReducedProblem
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-#from RBniCS.problems.parabolic_coercive.parabolic_coercive_rb_non_compliant_reduced_problem import ParabolicCoerciveRBNonCompliantReducedProblem
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_rb_reduced_problem import ParabolicCoerciveRBReducedProblem
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
+from rbnics.problems.parabolic_coercive.parabolic_coercive_pod_galerkin_reduced_problem import ParabolicCoercivePODGalerkinReducedProblem
+from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
+#from rbnics.problems.parabolic_coercive.parabolic_coercive_rb_non_compliant_reduced_problem import ParabolicCoerciveRBNonCompliantReducedProblem
+from rbnics.problems.parabolic_coercive.parabolic_coercive_rb_reduced_problem import ParabolicCoerciveRBReducedProblem
+from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
 
 
 __all__ = [

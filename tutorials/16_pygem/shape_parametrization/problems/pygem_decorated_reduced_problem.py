@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
 from shape_parametrization.problems.pygem_decorated_problem import PyGeM
 
 @ReducedProblemDecoratorFor(PyGeM)

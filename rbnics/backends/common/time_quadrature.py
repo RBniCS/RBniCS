@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from scipy.integrate import simps
-from RBniCS.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
-from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
+from rbnics.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
+from rbnics.utils.decorators import BackendFor, Extends, override, tuple_of
 
 @Extends(AbstractTimeQuadrature)
 @BackendFor("common", inputs=(tuple_of(float), float))

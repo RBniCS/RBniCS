@@ -26,13 +26,13 @@ from ufl import Form
 from ufl.algebra import Division, Product, Sum
 from ufl.core.operator import Operator
 from dolfin import assemble, Constant, DirichletBC, Expression, project
-from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.wrapping import function_copy, tensor_copy
-from RBniCS.utils.decorators import backend_for, ComputeThetaType
-from RBniCS.utils.mpi import log, PROGRESS
+from rbnics.backends.fenics.affine_expansion_storage import AffineExpansionStorage
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.vector import Vector
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.wrapping import function_copy, tensor_copy
+from rbnics.utils.decorators import backend_for, ComputeThetaType
+from rbnics.utils.mpi import log, PROGRESS
 
 # Need to customize ThetaType in order to also include FEniCS' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator
 ThetaType = ComputeThetaType((Expression, Operator))

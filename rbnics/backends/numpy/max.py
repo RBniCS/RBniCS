@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.abs import AbsOutput
-from RBniCS.utils.decorators import backend_for
+from rbnics.backends.numpy.abs import AbsOutput
+from rbnics.utils.decorators import backend_for
 
 # max function to compute the maximum absolute value of entries in EIM. To be used in combination with abs,
 # even though abs actually carries out both the max and the abs!

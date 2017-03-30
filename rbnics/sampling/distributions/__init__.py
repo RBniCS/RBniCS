@@ -22,13 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.sampling.distributions.composite_distribution import CompositeDistribution
-from RBniCS.sampling.distributions.discrete_distribution import DiscreteDistribution
-from RBniCS.sampling.distributions.distribution import Distribution
-from RBniCS.sampling.distributions.draw_from import DrawFrom
-from RBniCS.sampling.distributions.equispaced_distribution import EquispacedDistribution
-from RBniCS.sampling.distributions.log_uniform_distribution import LogUniformDistribution
-from RBniCS.sampling.distributions.uniform_distribution import UniformDistribution
+from rbnics.sampling.distributions.composite_distribution import CompositeDistribution
+from rbnics.sampling.distributions.discrete_distribution import DiscreteDistribution
+from rbnics.sampling.distributions.distribution import Distribution
+from rbnics.sampling.distributions.draw_from import DrawFrom
+from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution
+from rbnics.sampling.distributions.log_uniform_distribution import LogUniformDistribution
+from rbnics.sampling.distributions.uniform_distribution import UniformDistribution
 
 __all__ = [
     'CompositeDistribution',

@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.base import DifferentialProblemReductionMethod
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
+from rbnics.reduction_methods.base import DifferentialProblemReductionMethod
+from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase

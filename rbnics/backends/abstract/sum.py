@@ -26,7 +26,7 @@
 ## @defgroup OfflineOnlineInterfaces Common interfaces for offline and online
 #  @{
 
-from RBniCS.utils.decorators import abstract_backend
+from rbnics.utils.decorators import abstract_backend
 
 # sum function to assemble truth/reduced affine expansions. To be used in combination with the product method.
 @abstract_backend

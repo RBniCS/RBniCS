@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_reduced_problem import StokesOptimalControlReducedProblem
-from RBniCS.utils.decorators import Extends, ReducedProblemFor
-from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from RBniCS.problems.base import PODGalerkinReducedProblem
-from RBniCS.reduction_methods.stokes_optimal_control import StokesOptimalControlPODGalerkinReduction
+from rbnics.problems.stokes_optimal_control.stokes_optimal_control_reduced_problem import StokesOptimalControlReducedProblem
+from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
+from rbnics.problems.base import PODGalerkinReducedProblem
+from rbnics.reduction_methods.stokes_optimal_control import StokesOptimalControlPODGalerkinReduction
 
 StokesOptimalControlPODGalerkinReducedProblem_Base = PODGalerkinReducedProblem(StokesOptimalControlReducedProblem)
 

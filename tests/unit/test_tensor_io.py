@@ -25,8 +25,8 @@
 import os
 from numpy import isclose
 from dolfin import *
-from RBniCS.backends.fenics import evaluate, ParametrizedTensorFactory
-from RBniCS.backends.fenics.wrapping import tensor_load, tensor_save
+from rbnics.backends.fenics import evaluate, ParametrizedTensorFactory
+from rbnics.backends.fenics.wrapping import tensor_load, tensor_save
 
 # Possibly disable saving to file. This bool can be used to 
 # check loading with a number of processors different from

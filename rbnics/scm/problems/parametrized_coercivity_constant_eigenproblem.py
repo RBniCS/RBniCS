@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import isclose
-from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import adjoint, AffineExpansionStorage, EigenSolver, sum, product
-from RBniCS.utils.decorators import sync_setters, Extends, override
+from rbnics.problems.base import ParametrizedProblem
+from rbnics.backends import adjoint, AffineExpansionStorage, EigenSolver, sum, product
+from rbnics.utils.decorators import sync_setters, Extends, override
 
 @Extends(ParametrizedProblem)
 class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):

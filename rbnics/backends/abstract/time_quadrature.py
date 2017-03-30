@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import AbstractBackend
+from rbnics.utils.decorators import AbstractBackend
 
 @AbstractBackend
 class TimeQuadrature(object):

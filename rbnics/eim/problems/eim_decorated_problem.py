@@ -23,19 +23,19 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from itertools import product as cartesian_product
-from RBniCS.backends import ParametrizedExpressionFactory, SeparatedParametrizedForm
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
-from RBniCS.eim.utils.io import AffineExpansionSeparatedFormsStorage
-from RBniCS.eim.problems.eim_approximation import EIMApproximation
-from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
+from rbnics.backends import ParametrizedExpressionFactory, SeparatedParametrizedForm
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.eim.utils.io import AffineExpansionSeparatedFormsStorage
+from rbnics.eim.problems.eim_approximation import EIMApproximation
+from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 
 def EIMDecoratedProblem(
     basis_generation="Greedy",
     train_first="EIM",
     **decorator_kwargs
 ):
-    from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
-    from RBniCS.eim.problems.eim import EIM
+    from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    from rbnics.eim.problems.eim import EIM
     
     @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactParametrizedFunctions)
     def EIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):

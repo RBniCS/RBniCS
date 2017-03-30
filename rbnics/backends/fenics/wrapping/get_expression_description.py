@@ -25,7 +25,7 @@
 from numpy import zeros
 from dolfin import Constant, Function
 from ufl.corealg.traversal import traverse_unique_terminals
-from RBniCS.utils.decorators import get_problem_from_solution, is_problem_solution
+from rbnics.utils.decorators import get_problem_from_solution, is_problem_solution
 
 def get_expression_description(expression):
     coefficients_repr = {}

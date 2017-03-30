@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.mpi import log, PROGRESS
-from RBniCS.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
+from rbnics.utils.mpi import log, PROGRESS
+from rbnics.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
 
 def transpose(arg, backend, wrapping, online_backend, AdditionalFunctionTypes=None, AdditionalIsVector=None, AdditionalIsMatrix=None):
     if AdditionalFunctionTypes is None:

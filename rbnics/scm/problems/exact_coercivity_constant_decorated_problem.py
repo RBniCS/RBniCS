@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
-from RBniCS.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
+from rbnics.problems.base import ParametrizedProblem
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
 def ExactCoercivityConstantDecoratedProblem(
     eigensolver_parameters = None,
@@ -33,8 +33,8 @@ def ExactCoercivityConstantDecoratedProblem(
     if eigensolver_parameters is None:
         eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
         
-    from RBniCS.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
-    from RBniCS.scm.problems.scm import SCM
+    from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
+    from rbnics.scm.problems.scm import SCM
     
     @ProblemDecoratorFor(ExactCoercivityConstant, replaces=SCM,
         eigensolver_parameters = eigensolver_parameters

@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, PrimalDualReducedProblem, ReducedProblemFor
-from RBniCS.backends import product, sum, transpose
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
-from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
-from RBniCS.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant_reduction import _problem_is_noncompliant
+from rbnics.utils.decorators import Extends, override, PrimalDualReducedProblem, ReducedProblemFor
+from rbnics.backends import product, sum, transpose
+from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
+from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
+from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant_reduction import _problem_is_noncompliant
 
 @Extends(EllipticCoerciveRBReducedProblem) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction, replaces=EllipticCoerciveRBReducedProblem, replaces_if=_problem_is_noncompliant)

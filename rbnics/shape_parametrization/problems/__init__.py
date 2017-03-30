@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization #, ShapeParametrizationDecoratedProblem # not needed
-from RBniCS.shape_parametrization.problems.shape_parametrization_decorated_reduced_problem import ShapeParametrizationDecoratedReducedProblem
+from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization #, ShapeParametrizationDecoratedProblem # not needed
+from rbnics.shape_parametrization.problems.shape_parametrization_decorated_reduced_problem import ShapeParametrizationDecoratedReducedProblem
 
 __all__ = [
     'ShapeParametrization',

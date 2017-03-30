@@ -24,7 +24,7 @@
 
 import os
 from dolfin import *
-from RBniCS.backends.fenics.wrapping import create_submesh
+from rbnics.backends.fenics.wrapping import create_submesh
 
 # Make output directory, if necessary
 try: 

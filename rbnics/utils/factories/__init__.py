@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.factories.backends_factory import backends_factory, disable_backend, enable_backend, set_online_backend, online_backend_factory
-from RBniCS.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from RBniCS.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
+from rbnics.utils.factories.backends_factory import backends_factory, disable_backend, enable_backend, set_online_backend, online_backend_factory
+from rbnics.utils.factories.reduced_problem_factory import ReducedProblemFactory
+from rbnics.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
 
 __all__ = [
     'backends_factory',

@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import assign
-from RBniCS.utils.decorators import Extends, override
+from rbnics.backends import assign
+from rbnics.utils.decorators import Extends, override
 
 def NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

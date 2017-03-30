@@ -25,7 +25,7 @@
 from dolfin import *
 set_log_level(PROGRESS)
 from fenicstools import DofMapPlotter
-from RBniCS.backends.fenics.wrapping import create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs
+from rbnics.backends.fenics.wrapping import create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs
 
 mesh = UnitSquareMesh(3, 3)
 assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4)

@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import AbstractBackend, abstractmethod
+from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class TimeStepping(object):

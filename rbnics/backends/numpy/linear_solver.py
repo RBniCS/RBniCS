@@ -23,12 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy.linalg import solve
-from RBniCS.backends.abstract import LinearSolver as AbstractLinearSolver
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.backends.numpy.vector import Vector
-from RBniCS.backends.numpy.function import Function
-from RBniCS.backends.numpy.wrapping import DirichletBC
-from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
+from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.backends.numpy.vector import Vector
+from rbnics.backends.numpy.function import Function
+from rbnics.backends.numpy.wrapping import DirichletBC
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractLinearSolver)
 @BackendFor("numpy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), ThetaType + DictOfThetaType + (None,)))

@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import FunctionSpace
-from RBniCS.backends.fenics.functions_list import FunctionsList
-from RBniCS.utils.decorators import BackendFor, Extends
+from rbnics.backends.fenics.functions_list import FunctionsList
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(FunctionsList)
 @BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, (str, None)))

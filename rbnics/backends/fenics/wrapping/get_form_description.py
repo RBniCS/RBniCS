@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.fenics.wrapping.get_expression_description import get_expression_description
+from rbnics.backends.fenics.wrapping.get_expression_description import get_expression_description
 
 def get_form_description(form):
     coefficients_repr = {}

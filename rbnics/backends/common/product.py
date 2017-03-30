@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.common.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.utils.decorators import backend_for, ThetaType
+from rbnics.backends.common.affine_expansion_storage import AffineExpansionStorage
+from rbnics.utils.decorators import backend_for, ThetaType
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!

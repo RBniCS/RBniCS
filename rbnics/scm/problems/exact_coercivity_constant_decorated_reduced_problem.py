@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
-from RBniCS.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
-from RBniCS.scm.problems.scm import SCM
+from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
+from rbnics.scm.problems.scm import SCM
 
 @ReducedProblemDecoratorFor(ExactCoercivityConstant, replaces=SCM)
 def ExactCoercivityConstantDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):

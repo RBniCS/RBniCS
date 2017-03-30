@@ -29,8 +29,8 @@ except ImportError:
     from scipy.optimize import linprog
 else:
     has_glpk = True
-from RBniCS.backends.abstract import LinearProgramSolver as AbstractLinearProgramSolver
-from RBniCS.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
+from rbnics.backends.abstract import LinearProgramSolver as AbstractLinearProgramSolver
+from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 # Helper classes for linear pogram
 from numpy import matrix as numpy_matrix, ndarray as numpy_vector, zeros

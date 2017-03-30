@@ -23,13 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
-from RBniCS.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
-from RBniCS.backends import LinearSolver, product, sum, transpose
-from RBniCS.backends.online import OnlineFunction
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
-from RBniCS.reduction_methods.elliptic_optimal_control import EllipticOptimalControlReductionMethod
-from RBniCS.utils.mpi import print
+from rbnics.problems.base import ParametrizedReducedDifferentialProblem
+from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
+from rbnics.backends import LinearSolver, product, sum, transpose
+from rbnics.backends.online import OnlineFunction
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
+from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlReductionMethod
+from rbnics.utils.mpi import print
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase

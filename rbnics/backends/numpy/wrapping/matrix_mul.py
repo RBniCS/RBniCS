@@ -22,15 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import RBniCS.backends # avoid circular imports when importing numpy backend
+import rbnics.backends # avoid circular imports when importing numpy backend
 
 def matrix_mul_vector(matrix, vector):
-    if isinstance(vector, RBniCS.backends.numpy.Function.Type()):
+    if isinstance(vector, rbnics.backends.numpy.Function.Type()):
         vector = vector.vector()
     return matrix*vector
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    assert isinstance(matrix, RBniCS.backends.numpy.Matrix.Type())
-    assert isinstance(other_matrix, RBniCS.backends.numpy.Matrix.Type())
+    assert isinstance(matrix, rbnics.backends.numpy.Matrix.Type())
+    assert isinstance(other_matrix, rbnics.backends.numpy.Matrix.Type())
     return (matrix*other_matrix).sum()
     

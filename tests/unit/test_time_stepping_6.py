@@ -25,7 +25,7 @@
 import sys
 from numpy import asarray, isclose
 from dolfin import *
-from RBniCS.backends.fenics import TimeStepping as SparseTimeStepping
+from rbnics.backends.fenics import TimeStepping as SparseTimeStepping
 
 """
 Solve

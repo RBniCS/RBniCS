@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import hashlib
-from RBniCS.eim.problems.eim_approximation import EIMApproximation
-from RBniCS.utils.decorators import Extends, override, sync_setters
+from rbnics.eim.problems.eim_approximation import EIMApproximation
+from rbnics.utils.decorators import Extends, override, sync_setters
 
 @Extends(EIMApproximation)
 class TimeDependentEIMApproximation(EIMApproximation):

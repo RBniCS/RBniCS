@@ -22,16 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import TensorsList as AbstractTensorsList
-from RBniCS.backends.basic import TensorsList as BasicTensorsList
-import RBniCS.backends.numpy
-import RBniCS.backends.numpy.wrapping
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from rbnics.backends.abstract import TensorsList as AbstractTensorsList
+from rbnics.backends.basic import TensorsList as BasicTensorsList
+import rbnics.backends.numpy
+import rbnics.backends.numpy.wrapping
+from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicTensorsList)
 @BackendFor("numpy", online_backend="numpy", inputs=(AbstractTensorsList, ))
 class TensorsList(BasicTensorsList):
     @override
     def __init__(self, Z, empty_tensor):
-        BasicTensorsList.__init__(self, Z, empty_tensor, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
+        BasicTensorsList.__init__(self, Z, empty_tensor, rbnics.backends.numpy, rbnics.backends.numpy.wrapping, rbnics.backends.numpy)
         

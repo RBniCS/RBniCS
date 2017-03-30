@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctionsDecoratedProblem
+from rbnics.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctionsDecoratedProblem
 
 # For the sake of the user, since this is the only class that he/she needs to use, rename the decorated problem to an easier name
 ExactParametrizedFunctions = ExactParametrizedFunctionsDecoratedProblem

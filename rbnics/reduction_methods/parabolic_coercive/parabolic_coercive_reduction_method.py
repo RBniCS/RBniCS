@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.base import TimeDependentReductionMethod
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from RBniCS.utils.decorators import Extends, override, MultiLevelReductionMethod
+from rbnics.reduction_methods.base import TimeDependentReductionMethod
+from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
+from rbnics.utils.decorators import Extends, override, MultiLevelReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoerciveReductionMethodBase

@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from RBniCS.utils.decorators import Extends, override
+from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
+from rbnics.utils.decorators import Extends, override
 
 def NonlinearTimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)

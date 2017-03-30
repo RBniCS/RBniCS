@@ -25,10 +25,10 @@
 from __future__ import print_function
 from math import sqrt
 from numpy import isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
-from RBniCS.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
-from RBniCS.backends.online import OnlineEigenSolver
-from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.mpi import is_io_process, print
+from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
+from rbnics.backends.online import OnlineEigenSolver
+from rbnics.utils.decorators import Extends, override
+from rbnics.utils.mpi import is_io_process, print
 
 # Class containing the implementation of the POD
 def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):

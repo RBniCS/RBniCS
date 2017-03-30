@@ -22,16 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic import transpose as basic_transpose
-import RBniCS.backends.numpy
-from RBniCS.backends.numpy.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.numpy.function import Function
-from RBniCS.backends.numpy.functions_list import FunctionsList
-from RBniCS.backends.numpy.vector import Vector
-import RBniCS.backends.numpy.wrapping
-from RBniCS.utils.decorators import backend_for
+from rbnics.backends.basic import transpose as basic_transpose
+import rbnics.backends.numpy
+from rbnics.backends.numpy.basis_functions_matrix import BasisFunctionsMatrix
+from rbnics.backends.numpy.function import Function
+from rbnics.backends.numpy.functions_list import FunctionsList
+from rbnics.backends.numpy.vector import Vector
+import rbnics.backends.numpy.wrapping
+from rbnics.utils.decorators import backend_for
 
 @backend_for("numpy", online_backend="numpy", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Vector.Type()), ))
 def transpose(arg):
-    return basic_transpose(arg, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping, RBniCS.backends.numpy)
+    return basic_transpose(arg, rbnics.backends.numpy, rbnics.backends.numpy.wrapping, rbnics.backends.numpy)
     

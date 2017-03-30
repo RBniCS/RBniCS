@@ -24,13 +24,13 @@
 
 from __future__ import print_function
 import types
-import RBniCS.backends
-from RBniCS.backends import assign, copy
-from RBniCS.utils.mpi import log, print, PROGRESS
-from RBniCS.utils.decorators import Extends, override, ReducedProblemDecoratorFor
-from RBniCS.eim.problems.eim import EIM
-from RBniCS.eim.problems.deim import DEIM
-from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+import rbnics.backends
+from rbnics.backends import assign, copy
+from rbnics.utils.mpi import log, print, PROGRESS
+from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.eim.problems.eim import EIM
+from rbnics.eim.problems.deim import DEIM
+from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
 
 @ReducedProblemDecoratorFor(ExactParametrizedFunctions, replaces=(DEIM, EIM))
 def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):

@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from RBniCS import *
+from rbnics import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 7: NONLINEAR PROBLEM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 @ExactParametrizedFunctions()

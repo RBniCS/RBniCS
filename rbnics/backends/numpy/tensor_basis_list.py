@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import TensorsList as AbstractTensorsList
-from RBniCS.backends.numpy.tensors_list import TensorsList
-from RBniCS.utils.decorators import BackendFor, Extends
+from rbnics.backends.abstract import TensorsList as AbstractTensorsList
+from rbnics.backends.numpy.tensors_list import TensorsList
+from rbnics.utils.decorators import BackendFor, Extends
 
 @BackendFor("numpy", online_backend="numpy", inputs=(AbstractTensorsList, ))
 @Extends(TensorsList)

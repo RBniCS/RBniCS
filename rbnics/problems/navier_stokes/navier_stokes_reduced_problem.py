@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import NonlinearReducedProblem
-from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
-from RBniCS.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
-from RBniCS.backends import assign, NonlinearSolver, product, sum
-from RBniCS.backends.online import OnlineFunction
-from RBniCS.utils.decorators import Extends, override, MultiLevelReducedProblem
+from rbnics.problems.base import NonlinearReducedProblem
+from rbnics.problems.base import ParametrizedReducedDifferentialProblem
+from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
+from rbnics.backends import assign, NonlinearSolver, product, sum
+from rbnics.backends.online import OnlineFunction
+from rbnics.utils.decorators import Extends, override, MultiLevelReducedProblem
 
 def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
     @Extends(StokesReducedProblem_DerivedClass) # needs to be first in order to override for last the methods.

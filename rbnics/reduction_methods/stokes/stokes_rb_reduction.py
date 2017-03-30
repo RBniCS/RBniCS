@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import GramSchmidt
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.problems.stokes.stokes_problem import StokesProblem
-from RBniCS.reduction_methods.base import RBReduction
-from RBniCS.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
+from rbnics.backends import GramSchmidt
+from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.problems.stokes.stokes_problem import StokesProblem
+from rbnics.reduction_methods.base import RBReduction
+from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE POD BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class StokesRBReduction

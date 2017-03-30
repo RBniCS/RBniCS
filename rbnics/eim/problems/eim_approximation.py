@@ -23,11 +23,11 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import hashlib
-from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.backends import abs, copy, evaluate, export, import_, max
-from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
-from RBniCS.utils.decorators import Extends, override, sync_setters
-from RBniCS.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMApproximation
+from rbnics.problems.base import ParametrizedProblem
+from rbnics.backends import abs, copy, evaluate, export, import_, max
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
+from rbnics.utils.decorators import Extends, override, sync_setters
+from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMApproximation
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EIM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EIM

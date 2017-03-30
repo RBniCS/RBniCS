@@ -26,10 +26,10 @@ from __future__ import print_function
 import types
 from ufl import Form
 from dolfin import as_backend_type, assemble, DirichletBC, GenericMatrix, GenericVector, NonlinearProblem, PETScSNESSolver
-from RBniCS.backends.abstract import NonlinearSolver as AbstractNonlinearSolver
-from RBniCS.backends.fenics.function import Function
-from RBniCS.utils.decorators import BackendFor, dict_of, Extends, list_of, override
-from RBniCS.utils.mpi import print
+from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver
+from rbnics.backends.fenics.function import Function
+from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
+from rbnics.utils.mpi import print
 
 @Extends(AbstractNonlinearSolver)
 @BackendFor("fenics", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (list_of(DirichletBC), dict_of(str, list_of(DirichletBC)), None)))

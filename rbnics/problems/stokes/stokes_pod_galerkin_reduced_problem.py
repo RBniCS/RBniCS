@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.stokes.stokes_reduced_problem import StokesReducedProblem
-from RBniCS.utils.decorators import Extends, ReducedProblemFor
-from RBniCS.problems.stokes.stokes_problem import StokesProblem
-from RBniCS.problems.base import PODGalerkinReducedProblem
-from RBniCS.reduction_methods.stokes import StokesPODGalerkinReduction
+from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
+from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.problems.stokes.stokes_problem import StokesProblem
+from rbnics.problems.base import PODGalerkinReducedProblem
+from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class StokesReducedOrderModelBase

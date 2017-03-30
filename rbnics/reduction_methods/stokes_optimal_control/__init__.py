@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.stokes_optimal_control.stokes_optimal_control_pod_galerkin_reduction import StokesOptimalControlPODGalerkinReduction
-#from RBniCS.reduction_methods.stokes_optimal_control.stokes_optimal_control_rb_reduction import StokesOptimalControlRBReduction
-from RBniCS.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
+from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_pod_galerkin_reduction import StokesOptimalControlPODGalerkinReduction
+#from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_rb_reduction import StokesOptimalControlRBReduction
+from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
 
 __all__ = [
     'StokesOptimalControlPODGalerkinReduction',

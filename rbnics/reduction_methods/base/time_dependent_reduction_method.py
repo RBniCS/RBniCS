@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
-from RBniCS.backends import TimeQuadrature
-from RBniCS.utils.decorators import Extends, override
+from rbnics.backends import TimeQuadrature
+from rbnics.utils.decorators import Extends, override
 
 def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)

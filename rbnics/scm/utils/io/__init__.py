@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.scm.utils.io.bounding_box_side_list import BoundingBoxSideList
-from RBniCS.scm.utils.io.coercivity_constants_list import CoercivityConstantsList
-from RBniCS.scm.utils.io.eigen_vectors_list import EigenVectorsList
-from RBniCS.scm.utils.io.training_set_indices import TrainingSetIndices
-from RBniCS.scm.utils.io.upper_bounds_list import UpperBoundsList
+from rbnics.scm.utils.io.bounding_box_side_list import BoundingBoxSideList
+from rbnics.scm.utils.io.coercivity_constants_list import CoercivityConstantsList
+from rbnics.scm.utils.io.eigen_vectors_list import EigenVectorsList
+from rbnics.scm.utils.io.training_set_indices import TrainingSetIndices
+from rbnics.scm.utils.io.upper_bounds_list import UpperBoundsList
 
 __all__ = [
     'BoundingBoxSideList',

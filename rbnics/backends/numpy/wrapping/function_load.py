@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import os # for path
-from RBniCS.utils.io import NumpyIO
-from RBniCS.utils.mpi import is_io_process
+from rbnics.utils.io import NumpyIO
+from rbnics.utils.mpi import is_io_process
 
 def function_load(fun, directory, filename, suffix=None):
     if suffix is not None:

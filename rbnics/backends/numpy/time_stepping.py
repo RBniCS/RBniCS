@@ -33,15 +33,15 @@ except ImportError:
     has_IDA = False
 else:
     has_IDA = True
-from RBniCS.backends.abstract import TimeStepping as AbstractTimeStepping
-from RBniCS.backends.numpy.function import Function
-from RBniCS.backends.numpy.linear_solver import LinearSolver
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.backends.numpy.nonlinear_solver import NonlinearSolver
-from RBniCS.backends.numpy.vector import Vector
-from RBniCS.backends.numpy.wrapping import DirichletBC, function_copy
-from RBniCS.utils.decorators import BackendFor, Extends, override
-from RBniCS.utils.mpi import print
+from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping
+from rbnics.backends.numpy.function import Function
+from rbnics.backends.numpy.linear_solver import LinearSolver
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.backends.numpy.nonlinear_solver import NonlinearSolver
+from rbnics.backends.numpy.vector import Vector
+from rbnics.backends.numpy.wrapping import DirichletBC, function_copy
+from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.mpi import print
 
 @Extends(AbstractTimeStepping)
 @BackendFor("numpy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))

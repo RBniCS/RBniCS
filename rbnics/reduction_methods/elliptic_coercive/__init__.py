@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.elliptic_coercive.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
-#from RBniCS.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant import # TODO enable
-from RBniCS.reduction_methods.elliptic_coercive.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
-from RBniCS.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
+from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
+#from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant import # TODO enable
+from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
+from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 
 __all__ = [
     'EllipticCoercivePODGalerkinReduction',

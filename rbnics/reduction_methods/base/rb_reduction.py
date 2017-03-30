@@ -25,10 +25,10 @@
 from __future__ import print_function
 from abc import ABCMeta, abstractmethod
 from math import sqrt
-from RBniCS.backends import GramSchmidt
-from RBniCS.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.mpi import print
+from rbnics.backends import GramSchmidt
+from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
+from rbnics.utils.decorators import Extends, override
+from rbnics.utils.mpi import print
 
 def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)

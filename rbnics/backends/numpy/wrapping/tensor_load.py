@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.io import NumpyIO
+from rbnics.utils.io import NumpyIO
 
 def tensor_load(tensor, directory, filename):
     if NumpyIO.exists_file(directory, filename):

@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import assign as dolfin_assign
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
-from RBniCS.utils.decorators import backend_for, list_of
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.vector import Vector
+from rbnics.utils.decorators import backend_for, list_of
 
 @backend_for("fenics", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), (Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type())))
 def assign(object_to, object_from):

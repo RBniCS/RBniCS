@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
-from RBniCS.utils.decorators import BackendFor, Extends, override, tuple_of
+from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
+from rbnics.utils.decorators import BackendFor, Extends, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
 @BackendFor("common", inputs=(tuple_of(float),))

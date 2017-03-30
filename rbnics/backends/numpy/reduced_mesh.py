@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import ReducedMesh as AbstractReducedMesh
-from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
+from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
+from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractReducedMesh)
 @BackendFor("numpy", inputs=(AbstractFunctionsList, ))

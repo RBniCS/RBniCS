@@ -25,7 +25,7 @@
 import sys
 from numpy import asarray, isclose
 from dolfin import *
-from RBniCS.backends.fenics import TimeStepping as SparseTimeStepping
+from rbnics.backends.fenics import TimeStepping as SparseTimeStepping
 
 # Additional command line options for PETSc TS
 args = "--petsc.ts_bdf_order 3 --petsc.ts_bdf_adapt true"

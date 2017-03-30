@@ -25,7 +25,7 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.backends import AffineExpansionStorage, product, sum
+from rbnics.backends import AffineExpansionStorage, product, sum
 
 class Test(TestBase):
     def __init__(self, Nh, Q):

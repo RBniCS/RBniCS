@@ -24,12 +24,12 @@
 
 from math import sqrt
 from numpy import isclose
-from RBniCS.problems.stokes.stokes_reduced_problem import StokesReducedProblem
-from RBniCS.backends import product, sum, transpose
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
-from RBniCS.problems.stokes.stokes_problem import StokesProblem
-from RBniCS.problems.base import RBReducedProblem
-from RBniCS.reduction_methods.stokes import StokesRBReduction
+from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
+from rbnics.backends import product, sum, transpose
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.problems.stokes.stokes_problem import StokesProblem
+from rbnics.problems.base import RBReducedProblem
+from rbnics.reduction_methods.stokes import StokesRBReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class StokesReducedOrderModelBase

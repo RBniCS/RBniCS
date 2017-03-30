@@ -24,11 +24,11 @@
 
 from numpy import real, imag, matrix
 from scipy.linalg import eig, eigh
-from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.backends.abstract import EigenSolver as AbstractEigenSolver
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.backends.numpy.function import Function
-from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
+from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
+from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.backends.numpy.function import Function
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractEigenSolver)
 @BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))

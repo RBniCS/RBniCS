@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from RBniCS import *
+from rbnics import *
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     EXAMPLE 6: UNSTEADY THERMAL BLOCK CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 class UnsteadyThermalBlock(ParabolicCoerciveProblem):

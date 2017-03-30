@@ -37,13 +37,13 @@ available_backends.remove("common")
 available_backends.remove("online")
 
 # Make sure to import all available backends, so that they are added to the factory storage
-import RBniCS.backends.abstract
-import RBniCS.backends.common
+import rbnics.backends.abstract
+import rbnics.backends.common
 for backend in available_backends:
-    importlib.import_module("RBniCS.backends." + backend)
+    importlib.import_module("rbnics.backends." + backend)
 
 # Combine all enabled backends available in the factory and store them in this module
-from RBniCS.utils.factories import backends_factory, enable_backend
+from rbnics.utils.factories import backends_factory, enable_backend
 enable_backend("common")
 for backend in available_backends:
     enable_backend(backend)
@@ -51,12 +51,12 @@ backends_factory(current_module)
 
 # Extend parent module __all__ variable with backends wrapping
 for backend in available_backends:
-    importlib.import_module("RBniCS.backends." + backend + ".wrapping")
-    wrapping_overridden = sys.modules["RBniCS.backends." + backend + ".wrapping"].__overridden__
+    importlib.import_module("rbnics.backends." + backend + ".wrapping")
+    wrapping_overridden = sys.modules["rbnics.backends." + backend + ".wrapping"].__overridden__
     for class_or_function in wrapping_overridden:
-        assert not hasattr(sys.modules["RBniCS"], class_or_function)
-        setattr(sys.modules["RBniCS"], class_or_function, getattr(sys.modules["RBniCS.backends." + backend + ".wrapping"], class_or_function))
-        sys.modules["RBniCS"].__all__ += [class_or_function]
+        assert not hasattr(sys.modules["rbnics"], class_or_function)
+        setattr(sys.modules["rbnics"], class_or_function, getattr(sys.modules["rbnics.backends." + backend + ".wrapping"], class_or_function))
+        sys.modules["rbnics"].__all__ += [class_or_function]
 
 # Clean up
 del current_module

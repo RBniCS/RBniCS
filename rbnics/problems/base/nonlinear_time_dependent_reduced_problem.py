@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import assign
-from RBniCS.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
-from RBniCS.utils.decorators import Extends, override
+from rbnics.backends import assign
+from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
+from rbnics.utils.decorators import Extends, override
 
 def NonlinearTimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)

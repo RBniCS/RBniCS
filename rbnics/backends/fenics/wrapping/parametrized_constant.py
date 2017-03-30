@@ -25,7 +25,7 @@
 import types
 import re
 from dolfin import Expression
-from RBniCS.backends.fenics.wrapping.parametrized_expression import ParametrizedExpression
+from rbnics.backends.fenics.wrapping.parametrized_expression import ParametrizedExpression
 
 def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, **kwargs):
     if "element" not in kwargs:
@@ -68,11 +68,11 @@ class ParametrizedConstantTuple(tuple):
             return output
     
 import types
-import RBniCS.utils.decorators
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor as ProblemDecoratorFor_Base, ReducedProblemDecoratorFor as ReducedProblemDecoratorFor_Base
+import rbnics.utils.decorators
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor as ProblemDecoratorFor_Base, ReducedProblemDecoratorFor as ReducedProblemDecoratorFor_Base
 
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
-    from RBniCS.eim.problems import DEIM, EIM, ExactParametrizedFunctions
+    from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
     if Algorithm in (DEIM, EIM):
         # Change ProblemDecoratorFor to override DEIMDecoratedProblem.set_mu_range so that querying self.mu
         # actually returns a ParametrizedConstant rather than a float
@@ -135,5 +135,5 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
     else:
         return ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)
     
-RBniCS.utils.decorators.ProblemDecoratorFor = ProblemDecoratorFor
+rbnics.utils.decorators.ProblemDecoratorFor = ProblemDecoratorFor
 

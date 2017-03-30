@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
-from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
+from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
+from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
 def _has_use_dual_flag(truth_problem, **kwargs):
     return hasattr(truth_problem, "use_dual") # TODO Do not attach it to truth problem, rather use kwargs

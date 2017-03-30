@@ -23,13 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
-from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from RBniCS.backends import LinearSolver, product, sum, transpose
-from RBniCS.backends.online import OnlineFunction
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
-from RBniCS.reduction_methods.stokes_optimal_control import StokesOptimalControlReductionMethod
-from RBniCS.utils.mpi import print
+from rbnics.problems.base import ParametrizedReducedDifferentialProblem
+from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
+from rbnics.backends import LinearSolver, product, sum, transpose
+from rbnics.backends.online import OnlineFunction
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
+from rbnics.reduction_methods.stokes_optimal_control import StokesOptimalControlReductionMethod
+from rbnics.utils.mpi import print
 
 @Extends(ParametrizedReducedDifferentialProblem) # needs to be first in order to override for last the methods.
 @ReducedProblemFor(StokesOptimalControlProblem, StokesOptimalControlReductionMethod)

@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.stokes.stokes_pod_galerkin_reduction import StokesPODGalerkinReduction
-from RBniCS.reduction_methods.stokes.stokes_rb_reduction import StokesRBReduction
-from RBniCS.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
+from rbnics.reduction_methods.stokes.stokes_pod_galerkin_reduction import StokesPODGalerkinReduction
+from rbnics.reduction_methods.stokes.stokes_rb_reduction import StokesRBReduction
+from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
 
 __all__ = [
     'StokesPODGalerkinReduction',

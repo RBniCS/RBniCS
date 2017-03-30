@@ -24,13 +24,13 @@
 
 from math import sqrt
 from numpy import isclose
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from RBniCS.backends import product, sum, transpose
-from RBniCS.backends.online import OnlineAffineExpansionStorage
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.problems.base import RBReducedProblem
-from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
+from rbnics.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
+from rbnics.backends import product, sum, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.problems.base import RBReducedProblem
+from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase

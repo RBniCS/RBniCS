@@ -26,7 +26,7 @@ from math import ceil, exp, log
 from numpy import linspace, random
 import scipy.stats as stats
 import matplotlib.pyplot as plt
-from RBniCS.sampling import *
+from rbnics.sampling import *
 
 def plot(p, box, set_, bins, generator=None, *args, **kwargs):
     sub_box_p = box[p]

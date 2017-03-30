@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import adjoint, Function
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.utils.decorators import DualProblem, Extends, override
+from rbnics.backends import adjoint, Function
+from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.utils.decorators import DualProblem, Extends, override
 
 @Extends(EllipticCoerciveProblem)
 @DualProblem

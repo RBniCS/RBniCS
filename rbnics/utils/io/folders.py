@@ -27,7 +27,7 @@
 #  @{
 
 import os # for path and makedir
-from RBniCS.utils.mpi import is_io_process
+from rbnics.utils.mpi import is_io_process
 
 class Folders(dict): # dict from string to string
     

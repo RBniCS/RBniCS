@@ -25,14 +25,14 @@
 from dolfin import CellFunction, cells, DEBUG, File, FunctionSpace, has_hdf5, log, Mesh, MeshFunction
 if has_hdf5():
     from dolfin import HDF5File
-from RBniCS.backends.abstract import ReducedMesh as AbstractReducedMesh
-from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.fenics.wrapping import FunctionSpace as FunctionSpaceWithComponents
-from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_problem_name, override
-from RBniCS.utils.io import ExportableList, Folders
-from RBniCS.utils.mpi import is_io_process
+from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
+from rbnics.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
+from rbnics.backends.fenics.wrapping import FunctionSpace as FunctionSpaceWithComponents
+from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_problem_name, override
+from rbnics.utils.io import ExportableList, Folders
+from rbnics.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
-from RBniCS.backends.fenics.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, evaluate_basis_functions_matrix_at_dofs, evaluate_sparse_function_at_dofs, mesh_dofs_to_submesh_dofs
+from rbnics.backends.fenics.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, evaluate_basis_functions_matrix_at_dofs, evaluate_sparse_function_at_dofs, mesh_dofs_to_submesh_dofs
 
 @Extends(AbstractReducedMesh)
 @BackendFor("fenics", inputs=(FunctionSpace, ))

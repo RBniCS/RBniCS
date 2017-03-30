@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.backends.numpy.functions_list import FunctionsList
-from RBniCS.utils.decorators import BackendFor, Extends
+from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
+from rbnics.backends.numpy.functions_list import FunctionsList
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(FunctionsList)
 @BackendFor("numpy", online_backend="numpy", inputs=(AbstractFunctionsList, (str, None)))

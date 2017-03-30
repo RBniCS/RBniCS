@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import MeshMotion
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.backends import MeshMotion
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs):
     @ProblemDecoratorFor(ShapeParametrization,

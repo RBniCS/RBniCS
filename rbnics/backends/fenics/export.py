@@ -22,17 +22,17 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic import export as basic_export
-import RBniCS.backends.fenics
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
-import RBniCS.backends.fenics.wrapping
-from RBniCS.utils.decorators import backend_for
-from RBniCS.utils.io import Folders
+from rbnics.backends.basic import export as basic_export
+import rbnics.backends.fenics
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.vector import Vector
+import rbnics.backends.fenics.wrapping
+from rbnics.utils.decorators import backend_for
+from rbnics.utils.io import Folders
 
 # Export a solution to file
 @backend_for("fenics", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
 def export(solution, directory, filename, suffix=None, component=None):
-    basic_export(solution, directory, filename, suffix, component, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
+    basic_export(solution, directory, filename, suffix, component, rbnics.backends.fenics, rbnics.backends.fenics.wrapping)
     

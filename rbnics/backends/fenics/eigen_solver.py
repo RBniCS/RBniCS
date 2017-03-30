@@ -24,10 +24,10 @@
 
 from numpy import isclose
 from dolfin import as_backend_type, Function, FunctionSpace, SLEPcEigenSolver
-from RBniCS.backends.fenics.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.abstract import EigenSolver as AbstractEigenSolver
-from RBniCS.utils.decorators import BackendFor, Extends, list_of, override
+from rbnics.backends.fenics.affine_expansion_storage import AffineExpansionStorage
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
+from rbnics.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractEigenSolver)
 @BackendFor("fenics", inputs=(FunctionSpace, Matrix.Type(), (Matrix.Type(), None), (AffineExpansionStorage, None)))

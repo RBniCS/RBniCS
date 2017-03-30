@@ -22,13 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import product, transpose, sum
-from RBniCS.backends.online import OnlineAffineExpansionStorage
-from RBniCS.utils.decorators import DualReducedProblem, Extends, override, ReducedProblemFor
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
-from RBniCS.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
-from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
+from rbnics.backends import product, transpose, sum
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from rbnics.utils.decorators import DualReducedProblem, Extends, override, ReducedProblemFor
+from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
+from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
+from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase

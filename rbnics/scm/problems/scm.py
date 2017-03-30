@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.scm.problems.scm_decorated_problem import SCMDecoratedProblem
+from rbnics.scm.problems.scm_decorated_problem import SCMDecoratedProblem
 
 # For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
 SCM = SCMDecoratedProblem

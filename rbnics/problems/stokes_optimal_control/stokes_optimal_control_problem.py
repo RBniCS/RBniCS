@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import ParametrizedDifferentialProblem
-from RBniCS.backends import Function, LinearSolver, product, sum, transpose
-from RBniCS.utils.decorators import Extends, override
+from rbnics.problems.base import ParametrizedDifferentialProblem
+from rbnics.backends import Function, LinearSolver, product, sum, transpose
+from rbnics.utils.decorators import Extends, override
 
 @Extends(ParametrizedDifferentialProblem)
 class StokesOptimalControlProblem(ParametrizedDifferentialProblem):

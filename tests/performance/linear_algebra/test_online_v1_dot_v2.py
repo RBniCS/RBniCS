@@ -24,8 +24,8 @@
 
 from __future__ import print_function
 from test_main import TestBase
-from RBniCS.backends.online import OnlineVector
-from RBniCS.backends import transpose
+from rbnics.backends.online import OnlineVector
+from rbnics.backends import transpose
 
 OnlineVector_Type = OnlineVector.Type()
 

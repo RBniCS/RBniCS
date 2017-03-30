@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators.store_map_from_problem_to_reduced_problem import _problem_to_reduced_problem_map
-from RBniCS.utils.factories import ReducedProblemFactory
+from rbnics.utils.decorators.store_map_from_problem_to_reduced_problem import _problem_to_reduced_problem_map
+from rbnics.utils.factories import ReducedProblemFactory
 
 def regenerate_reduced_problem_from_exact_reduced_problem(truth_problem, reduction_method, exact_reduced_problem):
     # Initialize the affine expansion in the truth problem

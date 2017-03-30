@@ -28,9 +28,9 @@
 
 import inspect
 from numpy import ndarray as array
-from RBniCS.utils.decorators import array_of, BackendFor, backend_for, dict_of, list_of, tuple_of
-from RBniCS.utils.decorators.backend_for import _array_of, _dict_of, _list_of, _tuple_of
-from RBniCS.utils.mpi import log, DEBUG
+from rbnics.utils.decorators import array_of, BackendFor, backend_for, dict_of, list_of, tuple_of
+from rbnics.utils.decorators.backend_for import _array_of, _dict_of, _list_of, _tuple_of
+from rbnics.utils.mpi import log, DEBUG
 
 # Factory to combine all available backends
 def backends_factory(backends_module):

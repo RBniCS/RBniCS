@@ -24,9 +24,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.sampling.distributions.distribution import Distribution
-from RBniCS.sampling.distributions.equispaced_distribution import EquispacedDistribution
-from RBniCS.utils.decorators import Extends, override
+from rbnics.sampling.distributions.distribution import Distribution
+from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution
+from rbnics.utils.decorators import Extends, override
 
 @Extends(Distribution)
 class CompositeDistribution(Distribution):

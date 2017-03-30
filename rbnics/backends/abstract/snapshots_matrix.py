@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract.functions_list import FunctionsList
-from RBniCS.utils.decorators import AbstractBackend, Extends
+from rbnics.backends.abstract.functions_list import FunctionsList
+from rbnics.utils.decorators import AbstractBackend, Extends
 
 @AbstractBackend
 @Extends(FunctionsList)

@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from abc import ABCMeta, abstractmethod
-from RBniCS.backends import AffineExpansionStorage, BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, product, sum, transpose
-from RBniCS.backends.online import OnlineAffineExpansionStorage
-from RBniCS.utils.decorators import Extends, override
+from rbnics.backends import AffineExpansionStorage, BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, product, sum, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from rbnics.utils.decorators import Extends, override
 
 def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)

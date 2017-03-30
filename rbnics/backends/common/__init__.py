@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.common.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.common.linear_program_solver import LinearProgramSolver
-from RBniCS.backends.common.product import product
-from RBniCS.backends.common.separated_parametrized_form import SeparatedParametrizedForm
-from RBniCS.backends.common.sum import sum
-from RBniCS.backends.common.time_quadrature import TimeQuadrature
+from rbnics.backends.common.affine_expansion_storage import AffineExpansionStorage
+from rbnics.backends.common.linear_program_solver import LinearProgramSolver
+from rbnics.backends.common.product import product
+from rbnics.backends.common.separated_parametrized_form import SeparatedParametrizedForm
+from rbnics.backends.common.sum import sum
+from rbnics.backends.common.time_quadrature import TimeQuadrature
 
 __all__ = [
     'AffineExpansionStorage',

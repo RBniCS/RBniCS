@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.io import ErrorAnalysisTable
-from RBniCS.utils.decorators.extends import Extends
-from RBniCS.utils.decorators.override import override
+from rbnics.utils.io import ErrorAnalysisTable
+from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators.override import override
 
 def PrimalDualReductionMethod(DualProblem):
     def PrimalDualReductionMethod_Decorator(DifferentialProblemReductionMethod_DerivedClass):

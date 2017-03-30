@@ -26,18 +26,18 @@ from mpi4py.MPI import MAX
 from numpy import ndarray as VectorMatrixType, isscalar
 from ufl.core.operator import Operator
 from dolfin import Argument, assemble, Expression
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.functions_list import FunctionsList
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.parametrized_expression_factory import ParametrizedExpressionFactory
-from RBniCS.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
-from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
-from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
-from RBniCS.backends.fenics.tensors_list import TensorsList
-from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.wrapping import assert_lagrange_1, evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_vector_at_dofs, expression_on_reduced_mesh, expression_on_truth_mesh, form_on_reduced_function_space, form_on_truth_function_space, ufl_lagrange_interpolation
-from RBniCS.backends.online import OnlineMatrix, OnlineVector
-from RBniCS.utils.decorators import backend_for
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.functions_list import FunctionsList
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.parametrized_expression_factory import ParametrizedExpressionFactory
+from rbnics.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
+from rbnics.backends.fenics.reduced_mesh import ReducedMesh
+from rbnics.backends.fenics.reduced_vertices import ReducedVertices
+from rbnics.backends.fenics.tensors_list import TensorsList
+from rbnics.backends.fenics.vector import Vector
+from rbnics.backends.fenics.wrapping import assert_lagrange_1, evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_vector_at_dofs, expression_on_reduced_mesh, expression_on_truth_mesh, form_on_reduced_function_space, form_on_truth_function_space, ufl_lagrange_interpolation
+from rbnics.backends.online import OnlineMatrix, OnlineVector
+from rbnics.utils.decorators import backend_for
 
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("fenics", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory), (ReducedMesh, ReducedVertices, None)))

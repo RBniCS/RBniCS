@@ -25,13 +25,13 @@
 from __future__ import print_function
 import operator # to find closest parameters
 from math import sqrt
-from RBniCS.backends import export, LinearProgramSolver
-from RBniCS.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
-from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.utils.decorators import sync_setters, Extends, override
-from RBniCS.utils.mpi import print
-from RBniCS.scm.utils.io import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
-from RBniCS.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
+from rbnics.backends import export, LinearProgramSolver
+from rbnics.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
+from rbnics.problems.base import ParametrizedProblem
+from rbnics.utils.decorators import sync_setters, Extends, override
+from rbnics.utils.mpi import print
+from rbnics.scm.utils.io import BoundingBoxSideList, CoercivityConstantsList, EigenVectorsList, TrainingSetIndices, UpperBoundsList
+from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     SCM CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class SCM

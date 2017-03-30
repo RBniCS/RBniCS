@@ -26,10 +26,10 @@ import types
 from numpy import asarray, dot
 from numpy.linalg import solve
 from scipy.optimize.nonlin import Jacobian, nonlin_solve
-from RBniCS.backends.abstract import NonlinearSolver as AbstractNonlinearSolver
-from RBniCS.backends.numpy.function import Function
-from RBniCS.backends.numpy.wrapping import DirichletBC
-from RBniCS.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
+from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver
+from rbnics.backends.numpy.function import Function
+from rbnics.backends.numpy.wrapping import DirichletBC
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractNonlinearSolver)
 @BackendFor("numpy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, ThetaType + DictOfThetaType + (None,)))

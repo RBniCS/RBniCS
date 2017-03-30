@@ -23,13 +23,13 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from RBniCS.reduction_methods.base import TimeDependentRBReduction
-from RBniCS.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
-from RBniCS.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
-from RBniCS.backends import LinearSolver, ProperOrthogonalDecomposition, SnapshotsMatrix, transpose
-from RBniCS.backends.online import OnlineFunction
+from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
+from rbnics.reduction_methods.base import TimeDependentRBReduction
+from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
+from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
+from rbnics.backends import LinearSolver, ProperOrthogonalDecomposition, SnapshotsMatrix, transpose
+from rbnics.backends.online import OnlineFunction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     PARABOLIC COERCIVE RB BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoerciveRBReduction

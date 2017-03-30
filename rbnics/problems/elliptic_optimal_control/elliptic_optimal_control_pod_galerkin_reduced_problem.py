@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.elliptic_optimal_control.elliptic_optimal_control_reduced_problem import EllipticOptimalControlReducedProblem
-from RBniCS.utils.decorators import Extends, ReducedProblemFor
-from RBniCS.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
-from RBniCS.problems.base import PODGalerkinReducedProblem
-from RBniCS.reduction_methods.elliptic_optimal_control import EllipticOptimalControlPODGalerkinReduction
+from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_reduced_problem import EllipticOptimalControlReducedProblem
+from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
+from rbnics.problems.base import PODGalerkinReducedProblem
+from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlPODGalerkinReduction
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticOptimalControlReducedOrderModelBase

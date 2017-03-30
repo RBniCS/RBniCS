@@ -25,16 +25,16 @@
 from ufl import Form
 from ufl.core.operator import Operator
 from dolfin import assemble
-import RBniCS.backends # avoid circular imports when importing fenics backend
-from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
+import rbnics.backends # avoid circular imports when importing fenics backend
+from rbnics.backends.fenics.wrapping import function_from_ufl_operators
 
 def vector_mul_vector(vector1, vector2):
-    if isinstance(vector1, (RBniCS.backends.fenics.Function.Type(), Operator)):
+    if isinstance(vector1, (rbnics.backends.fenics.Function.Type(), Operator)):
         vector1 = function_from_ufl_operators(vector1).vector()
     elif isinstance(vector1, Form):
         assert len(vector1.arguments()) is 1
         vector1 = assemble(vector1)
-    if isinstance(vector2, (RBniCS.backends.fenics.Function.Type(), Operator)):
+    if isinstance(vector2, (rbnics.backends.fenics.Function.Type(), Operator)):
         vector2 = function_from_ufl_operators(vector2).vector()
     elif isinstance(vector2, Form):
         assert len(vector2.arguments()) is 1

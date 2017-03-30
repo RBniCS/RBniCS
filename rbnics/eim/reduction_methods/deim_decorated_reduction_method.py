@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor, regenerate_reduced_problem_from_exact_reduced_problem
-from RBniCS.eim.problems import DEIM
-from RBniCS.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
-from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
-from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
-from RBniCS.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod as TimeDependentDEIMApproximationReductionMethod
+from rbnics.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor, regenerate_reduced_problem_from_exact_reduced_problem
+from rbnics.eim.problems import DEIM
+from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
+from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
+from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
+from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod as TimeDependentDEIMApproximationReductionMethod
 
 @ReductionMethodDecoratorFor(DEIM)
 def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):

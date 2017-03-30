@@ -25,8 +25,8 @@
 from numpy import isclose
 from dolfin import *
 import time
-from RBniCS.backends.fenics import transpose
-from RBniCS.backends.fenics.wrapping import ufl_lagrange_interpolation
+from rbnics.backends.fenics import transpose
+from rbnics.backends.fenics.wrapping import ufl_lagrange_interpolation
 
 mesh = UnitSquareMesh(2, 2)
 interpolator = LagrangeInterpolator()

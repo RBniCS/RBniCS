@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstantDecoratedProblem
+from rbnics.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstantDecoratedProblem
 
 # For the sake of the user, since this is the only class that he/she needs to use, rename the decorated problem to an easier name
 ExactCoercivityConstant = ExactCoercivityConstantDecoratedProblem    

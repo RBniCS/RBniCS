@@ -26,15 +26,15 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.core.operator import Operator
 from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import assemble, dx, Expression, Function, FunctionSpace, inner, TensorFunctionSpace, TestFunction, TrialFunction, VectorFunctionSpace
-from RBniCS.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
-from RBniCS.backends.fenics.functions_list import FunctionsList
-from RBniCS.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
-from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
-from RBniCS.backends.fenics.reduced_vertices import ReducedVertices
-from RBniCS.backends.fenics.snapshots_matrix import SnapshotsMatrix
-from RBniCS.backends.fenics.wrapping import function_from_subfunction_if_any, get_expression_description, get_expression_name
-from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, override
-from RBniCS.utils.mpi import parallel_max
+from rbnics.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
+from rbnics.backends.fenics.functions_list import FunctionsList
+from rbnics.backends.fenics.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from rbnics.backends.fenics.reduced_mesh import ReducedMesh
+from rbnics.backends.fenics.reduced_vertices import ReducedVertices
+from rbnics.backends.fenics.snapshots_matrix import SnapshotsMatrix
+from rbnics.backends.fenics.wrapping import function_from_subfunction_if_any, get_expression_description, get_expression_name
+from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, override
+from rbnics.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
 @BackendFor("fenics", inputs=((object, None), (Expression, Function, Operator))) # object will actually be a ParametrizedDifferentialProblem

@@ -24,8 +24,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.sampling.distributions.distribution import Distribution
-from RBniCS.utils.decorators import Extends, override
+from rbnics.sampling.distributions.distribution import Distribution
+from rbnics.utils.decorators import Extends, override
 
 @Extends(Distribution)
 class DiscreteDistribution(Distribution):

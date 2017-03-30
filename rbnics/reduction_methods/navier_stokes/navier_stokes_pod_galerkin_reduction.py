@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.reduction_methods.base import NonlinearPODGalerkinReduction
-from RBniCS.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
-from RBniCS.reduction_methods.stokes import StokesPODGalerkinReduction
-from RBniCS.reduction_methods.navier_stokes.navier_stokes_reduction_method import NavierStokesReductionMethod
+from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.reduction_methods.base import NonlinearPODGalerkinReduction
+from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
+from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
+from rbnics.reduction_methods.navier_stokes.navier_stokes_reduction_method import NavierStokesReductionMethod
 
 NavierStokesPODGalerkinReduction_Base = NavierStokesReductionMethod(NonlinearPODGalerkinReduction(StokesPODGalerkinReduction))
 

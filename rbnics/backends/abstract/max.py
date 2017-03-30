@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import abstract_backend
+from rbnics.utils.decorators import abstract_backend
 
 # max function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with abs
 @abstract_backend

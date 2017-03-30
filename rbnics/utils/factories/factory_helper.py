@@ -27,7 +27,7 @@
 #
 
 import inspect
-from RBniCS.utils.mpi import log, DEBUG
+from rbnics.utils.mpi import log, DEBUG
 
 def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_valid_candidate, condition_for_candidate_replacement):
     

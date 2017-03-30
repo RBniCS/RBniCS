@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import NonlinearProblem
-from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
-from RBniCS.backends import assign, Function, NonlinearSolver, product, sum
-from RBniCS.utils.decorators import Extends, override
+from rbnics.problems.base import NonlinearProblem
+from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
+from rbnics.backends import assign, Function, NonlinearSolver, product, sum
+from rbnics.utils.decorators import Extends, override
 
 @Extends(EllipticCoerciveProblem)
 @NonlinearProblem

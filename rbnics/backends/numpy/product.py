@@ -22,11 +22,11 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.affine_expansion_storage import AffineExpansionStorage
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.backends.numpy.vector import Vector
-from RBniCS.backends.numpy.function import Function
-from RBniCS.utils.decorators import backend_for, ThetaType
+from rbnics.backends.numpy.affine_expansion_storage import AffineExpansionStorage
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.backends.numpy.vector import Vector
+from rbnics.backends.numpy.function import Function
+from rbnics.utils.decorators import backend_for, ThetaType
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!

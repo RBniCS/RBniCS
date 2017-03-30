@@ -22,20 +22,20 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.fenics.wrapping.tensor_copy import tensor_copy
-import RBniCS.backends # avoid circular imports when importing fenics and numpy backends
+from rbnics.backends.fenics.wrapping.tensor_copy import tensor_copy
+import rbnics.backends # avoid circular imports when importing fenics and numpy backends
 
 def tensors_list_mul_online_function(tensors_list, online_function):
-    assert isinstance(online_function, RBniCS.backends.numpy.Function.Type())
+    assert isinstance(online_function, rbnics.backends.numpy.Function.Type())
     online_vector = online_function.vector()
     
     output = tensor_copy(tensors_list._list[0])
     output.zero()
-    assert isinstance(output, (RBniCS.backends.fenics.Matrix.Type(), RBniCS.backends.fenics.Vector.Type()))
-    if isinstance(output, RBniCS.backends.fenics.Matrix.Type()):
+    assert isinstance(output, (rbnics.backends.fenics.Matrix.Type(), rbnics.backends.fenics.Vector.Type()))
+    if isinstance(output, rbnics.backends.fenics.Matrix.Type()):
         for (i, matrix_i) in enumerate(tensors_list._list):
             output += matrix_i*online_vector.item(i)
-    elif isinstance(output, RBniCS.backends.fenics.Vector.Type()):
+    elif isinstance(output, rbnics.backends.fenics.Vector.Type()):
         for (i, vector_i) in enumerate(tensors_list._list):
             output.add_local(vector_i.array()*online_vector.item(i))
         output.apply("add")

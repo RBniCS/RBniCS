@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.shape_parametrization.problems import ShapeParametrization
+from rbnics.shape_parametrization.problems import ShapeParametrization
 
 __all__ = [
-    # RBniCS.shape_parametrization.problems
+    # rbnics.shape_parametrization.problems
     'ShapeParametrization',
 ]
 
@@ -34,6 +34,6 @@ __all__ = [
 # decorators that fill in algorithm factories are called, but do not 
 # add them to __all__ since they are not class that should be explicitely
 # used in the tutorials
-from RBniCS.shape_parametrization.problems import ShapeParametrizationDecoratedReducedProblem
-from RBniCS.shape_parametrization.reduction_methods import ShapeParametrizationDecoratedReductionMethod
+from rbnics.shape_parametrization.problems import ShapeParametrizationDecoratedReducedProblem
+from rbnics.shape_parametrization.reduction_methods import ShapeParametrizationDecoratedReductionMethod
 

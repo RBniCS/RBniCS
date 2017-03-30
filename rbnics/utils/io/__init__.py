@@ -22,18 +22,18 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.io.error_analysis_table import ErrorAnalysisTable
-from RBniCS.utils.io.exportable_list import ExportableList
-from RBniCS.utils.io.folders import Folders
-from RBniCS.utils.io.greedy_error_estimators_list import GreedyErrorEstimatorsList
-from RBniCS.utils.io.greedy_selected_parameters_list import GreedySelectedParametersList
-from RBniCS.utils.io.numpy_io import NumpyIO
-#from RBniCS.utils.io.performance_table import PerformanceTable # not needed, only used internally inside this module
-from RBniCS.utils.io.online_size_dict import OnlineSizeDict
-from RBniCS.utils.io.pickle_io import PickleIO
-from RBniCS.utils.io.speedup_analysis_table import SpeedupAnalysisTable
-from RBniCS.utils.io.text_io import TextIO
-from RBniCS.utils.io.timer import Timer
+from rbnics.utils.io.error_analysis_table import ErrorAnalysisTable
+from rbnics.utils.io.exportable_list import ExportableList
+from rbnics.utils.io.folders import Folders
+from rbnics.utils.io.greedy_error_estimators_list import GreedyErrorEstimatorsList
+from rbnics.utils.io.greedy_selected_parameters_list import GreedySelectedParametersList
+from rbnics.utils.io.numpy_io import NumpyIO
+#from rbnics.utils.io.performance_table import PerformanceTable # not needed, only used internally inside this module
+from rbnics.utils.io.online_size_dict import OnlineSizeDict
+from rbnics.utils.io.pickle_io import PickleIO
+from rbnics.utils.io.speedup_analysis_table import SpeedupAnalysisTable
+from rbnics.utils.io.text_io import TextIO
+from rbnics.utils.io.timer import Timer
 
 __all__ = [
     'ErrorAnalysisTable',

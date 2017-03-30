@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from abc import ABCMeta, abstractmethod
-from RBniCS.sampling import ParameterSpaceSubset
-from RBniCS.utils.io import Folders
+from rbnics.sampling import ParameterSpaceSubset
+from rbnics.utils.io import Folders
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ReductionMethod

@@ -22,15 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic import copy as basic_copy
-import RBniCS.backends.numpy
-from RBniCS.backends.numpy.function import Function
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.backends.numpy.vector import Vector
-import RBniCS.backends.numpy.wrapping
-from RBniCS.utils.decorators import backend_for, list_of
+from rbnics.backends.basic import copy as basic_copy
+import rbnics.backends.numpy
+from rbnics.backends.numpy.function import Function
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.backends.numpy.vector import Vector
+import rbnics.backends.numpy.wrapping
+from rbnics.utils.decorators import backend_for, list_of
 
 @backend_for("numpy", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), ))
 def copy(arg):
-    return basic_copy(arg, RBniCS.backends.numpy, RBniCS.backends.numpy.wrapping)
+    return basic_copy(arg, rbnics.backends.numpy, rbnics.backends.numpy.wrapping)
     

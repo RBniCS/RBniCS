@@ -23,18 +23,18 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from itertools import product as cartesian_product
-from RBniCS.backends import ParametrizedTensorFactory, SeparatedParametrizedForm
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
-from RBniCS.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
-from RBniCS.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
+from rbnics.backends import ParametrizedTensorFactory, SeparatedParametrizedForm
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
+from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 
 def DEIMDecoratedProblem(
     basis_generation="POD",
     train_first="DEIM",
     **decorator_kwargs
 ):
-    from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
-    from RBniCS.eim.problems.deim import DEIM
+    from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    from rbnics.eim.problems.deim import DEIM
     
     @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactParametrizedFunctions)
     def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):

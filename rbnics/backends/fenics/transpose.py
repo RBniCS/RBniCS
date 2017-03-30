@@ -25,15 +25,15 @@
 from ufl import Form
 from ufl.core.operator import Operator
 from dolfin import assemble
-from RBniCS.backends.basic import transpose as basic_transpose
-import RBniCS.backends.fenics
-from RBniCS.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.functions_list import FunctionsList
-from RBniCS.backends.fenics.vector import Vector
-import RBniCS.backends.fenics.wrapping
-import RBniCS.backends.numpy
-from RBniCS.utils.decorators import backend_for
+from rbnics.backends.basic import transpose as basic_transpose
+import rbnics.backends.fenics
+from rbnics.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.functions_list import FunctionsList
+from rbnics.backends.fenics.vector import Vector
+import rbnics.backends.fenics.wrapping
+import rbnics.backends.numpy
+from rbnics.utils.decorators import backend_for
 
 @backend_for("fenics", online_backend="numpy", inputs=((BasisFunctionsMatrix, Form, Function.Type(), FunctionsList, Operator, Vector.Type()), ))
 def transpose(arg):
@@ -41,6 +41,6 @@ def transpose(arg):
         return isinstance(arg, Form) and len(arg.arguments()) is 1
     def AdditionalIsMatrix(arg):
         return isinstance(arg, Form) and len(arg.arguments()) is 2
-    return basic_transpose(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ), AdditionalIsVector=AdditionalIsVector, AdditionalIsMatrix=AdditionalIsMatrix)
+    return basic_transpose(arg, rbnics.backends.fenics, rbnics.backends.fenics.wrapping, rbnics.backends.numpy, AdditionalFunctionTypes=(Operator, ), AdditionalIsVector=AdditionalIsVector, AdditionalIsMatrix=AdditionalIsMatrix)
     
         

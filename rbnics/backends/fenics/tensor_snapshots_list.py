@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import FunctionSpace
-from RBniCS.backends.fenics.tensors_list import TensorsList
-from RBniCS.utils.decorators import BackendFor, Extends
+from rbnics.backends.fenics.tensors_list import TensorsList
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(TensorsList)
 @BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, ))

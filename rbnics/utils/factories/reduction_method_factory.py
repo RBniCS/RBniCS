@@ -24,9 +24,9 @@
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     REDUCTION METHOD FACTORY CLASSES     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
-from RBniCS.utils.decorators import CustomizeReductionMethodFor, ReductionMethodFor, ReductionMethodDecoratorFor
-from RBniCS.utils.factories.factory_helper import FactoryGenerateTypes
-from RBniCS.utils.mpi import log, DEBUG
+from rbnics.utils.decorators import CustomizeReductionMethodFor, ReductionMethodFor, ReductionMethodDecoratorFor
+from rbnics.utils.factories.factory_helper import FactoryGenerateTypes
+from rbnics.utils.mpi import log, DEBUG
 
 # Factory to generate a reduction method corresponding to a category (e.g. RB or POD) and a given truth problem
 def ReductionMethodFactory(truth_problem, category, **kwargs):

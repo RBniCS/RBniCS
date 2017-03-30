@@ -24,15 +24,15 @@
 
 from __future__ import print_function
 from dolfin import *
-from RBniCS import EquispacedDistribution
-from RBniCS.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, transpose
-from RBniCS.backends.fenics.wrapping import ParametrizedConstant
-from RBniCS.backends.online import OnlineFunction
-from RBniCS.eim.problems.eim_approximation import EIMApproximation
-from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
-from RBniCS.problems.base import ParametrizedProblem
-from RBniCS.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
-from RBniCS.utils.mpi import print
+from rbnics import EquispacedDistribution
+from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, transpose
+from rbnics.backends.fenics.wrapping import ParametrizedConstant
+from rbnics.backends.online import OnlineFunction
+from rbnics.eim.problems.eim_approximation import EIMApproximation
+from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
+from rbnics.problems.base import ParametrizedProblem
+from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
+from rbnics.utils.mpi import print
 
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus

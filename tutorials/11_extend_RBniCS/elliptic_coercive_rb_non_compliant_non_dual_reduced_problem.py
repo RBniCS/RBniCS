@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem, EllipticCoerciveRBReducedProblem, EllipticCoerciveRBNonCompliantReducedProblem
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem, EllipticCoerciveRBReducedProblem, EllipticCoerciveRBNonCompliantReducedProblem
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor
 from elliptic_coercive_rb_reduction_with_greedy_on_output import EllipticCoerciveRBReductionWithGreedyOnOutput
 
 def _do_not_use_dual(truth_problem, **kwargs):

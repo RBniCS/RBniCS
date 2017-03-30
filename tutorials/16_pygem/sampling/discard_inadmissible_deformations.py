@@ -17,8 +17,8 @@
 #
 
 from numpy import array_equal
-from RBniCS.sampling.distributions import Distribution, EquispacedDistribution
-from RBniCS.utils.decorators import Extends, override
+from rbnics.sampling.distributions import Distribution, EquispacedDistribution
+from rbnics.utils.decorators import Extends, override
 
 def DiscardInadmissibleDeformations(Distribution_DerivedClass):
     assert not issubclass(Distribution_DerivedClass, EquispacedDistribution) # we would have no way to replace inadmissible parameters

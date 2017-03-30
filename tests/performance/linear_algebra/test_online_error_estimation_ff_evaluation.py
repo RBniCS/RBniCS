@@ -25,8 +25,8 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.backends import product, sum
-from RBniCS.backends.online import OnlineAffineExpansionStorage
+from rbnics.backends import product, sum
+from rbnics.backends.online import OnlineAffineExpansionStorage
 from numpy import zeros as legacy_tensor
 from numpy.linalg import norm
 

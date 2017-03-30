@@ -24,19 +24,19 @@
 
 from ufl.core.operator import Operator
 from dolfin import FunctionSpace
-from RBniCS.backends.basic import FunctionsList as BasicFunctionsList
-import RBniCS.backends.fenics
-import RBniCS.backends.fenics.wrapping
-from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
-import RBniCS.backends.numpy
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from rbnics.backends.basic import FunctionsList as BasicFunctionsList
+import rbnics.backends.fenics
+import rbnics.backends.fenics.wrapping
+from rbnics.backends.fenics.wrapping import function_from_ufl_operators
+import rbnics.backends.numpy
+from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicFunctionsList)
 @BackendFor("fenics", online_backend="numpy", inputs=(FunctionSpace, (str, None)))
 class FunctionsList(BasicFunctionsList):
     @override
     def __init__(self, V, component=None):
-        BasicFunctionsList.__init__(self, V, component, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.numpy, AdditionalFunctionTypes=(Operator, ))
+        BasicFunctionsList.__init__(self, V, component, rbnics.backends.fenics, rbnics.backends.fenics.wrapping, rbnics.backends.numpy, AdditionalFunctionTypes=(Operator, ))
         
     @override
     def _enrich(self, function, component=None, weight=None, copy=True):

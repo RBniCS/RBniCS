@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from RBniCS import *
+from rbnics import *
 from elliptic_coercive_rb_reduction_with_greedy_on_output import EllipticCoerciveRBReductionWithGreedyOnOutput
 from elliptic_coercive_rb_non_compliant_non_dual_reduced_problem import EllipticCoerciveRBNonCompliantNonDualReducedProblem
 

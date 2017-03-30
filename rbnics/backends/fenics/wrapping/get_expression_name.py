@@ -28,7 +28,7 @@ from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 from ufl.indexed import Indexed
 import hashlib
-from RBniCS.utils.decorators import get_problem_from_solution, is_problem_solution
+from rbnics.utils.decorators import get_problem_from_solution, is_problem_solution
 
 def get_expression_name(expression):
     str_repr = ""

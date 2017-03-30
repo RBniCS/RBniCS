@@ -26,8 +26,8 @@
 ## @defgroup OfflineStage Methods related to the offline stage
 #  @{
 
-from RBniCS.utils.io import ExportableList
-from RBniCS.utils.decorators import Extends, override
+from rbnics.utils.io import ExportableList
+from rbnics.utils.decorators import Extends, override
 
 @Extends(ExportableList)
 class CoercivityConstantsList(ExportableList):

@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.base import NonlinearReducedProblem
-from RBniCS.problems.base import ParametrizedReducedDifferentialProblem
-from RBniCS.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
-from RBniCS.backends import assign, NonlinearSolver, product, sum
-from RBniCS.backends.online import OnlineFunction
-from RBniCS.utils.decorators import Extends, override, MultiLevelReducedProblem
+from rbnics.problems.base import NonlinearReducedProblem
+from rbnics.problems.base import ParametrizedReducedDifferentialProblem
+from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
+from rbnics.backends import assign, NonlinearSolver, product, sum
+from rbnics.backends.online import OnlineFunction
+from rbnics.utils.decorators import Extends, override, MultiLevelReducedProblem
 
 def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
     @Extends(EllipticCoerciveReducedProblem_DerivedClass) # needs to be first in order to override for last the methods.

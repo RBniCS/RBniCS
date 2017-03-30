@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from RBniCS.backends import ProperOrthogonalDecomposition
-from RBniCS.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
-from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.mpi import print
+from rbnics.backends import ProperOrthogonalDecomposition
+from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
+from rbnics.utils.decorators import Extends, override
+from rbnics.utils.mpi import print
 
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)

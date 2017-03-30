@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from math import sqrt
-from RBniCS.backends.abstract import GramSchmidt as AbstractGramSchmidt
-from RBniCS.utils.decorators import Extends, override
+from rbnics.backends.abstract import GramSchmidt as AbstractGramSchmidt
+from rbnics.utils.decorators import Extends, override
 
 @Extends(AbstractGramSchmidt)
 class GramSchmidt(AbstractGramSchmidt):

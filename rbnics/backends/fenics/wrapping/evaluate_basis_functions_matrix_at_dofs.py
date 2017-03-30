@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import RBniCS.backends # avoid circular imports when importing fenics backend
-from RBniCS.backends.fenics.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
+import rbnics.backends # avoid circular imports when importing fenics backend
+from rbnics.backends.fenics.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
 
 def evaluate_basis_functions_matrix_at_dofs(input_basis_functions_matrix, dofs_list, reduced_V, reduced_dofs_list):
     components = input_basis_functions_matrix._components_name
-    output_basis_functions_matrix = RBniCS.backends.fenics.BasisFunctionsMatrix(reduced_V)
+    output_basis_functions_matrix = rbnics.backends.fenics.BasisFunctionsMatrix(reduced_V)
     output_basis_functions_matrix.init(components)
     if len(components) > 1:
         for component in components:

@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.sampling.distributions import UniformDistribution
-from RBniCS.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from rbnics.sampling.distributions import UniformDistribution
+from rbnics.utils.decorators import Extends, override, ReductionMethodDecoratorFor
 from sampling import DiscardInadmissibleDeformations
 from shape_parametrization.problems import PyGeM
 

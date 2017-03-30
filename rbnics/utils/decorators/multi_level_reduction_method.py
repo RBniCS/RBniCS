@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
-from RBniCS.utils.decorators.extends import Extends
-from RBniCS.utils.decorators.override import override
+from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators.override import override
 
 def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             

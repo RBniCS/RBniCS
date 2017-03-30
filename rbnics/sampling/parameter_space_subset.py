@@ -27,10 +27,10 @@
 #  @{
 
 # Parameter space subsets
-from RBniCS.sampling.distributions import CompositeDistribution, UniformDistribution
-from RBniCS.utils.io import ExportableList
-from RBniCS.utils.mpi import is_io_process, parallel_max
-from RBniCS.utils.decorators import Extends, override
+from rbnics.sampling.distributions import CompositeDistribution, UniformDistribution
+from rbnics.utils.io import ExportableList
+from rbnics.utils.mpi import is_io_process, parallel_max
+from rbnics.utils.decorators import Extends, override
 from numpy import zeros as array
 from numpy import argmax
 

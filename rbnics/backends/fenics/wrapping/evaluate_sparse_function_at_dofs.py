@@ -25,12 +25,12 @@
 from mpi4py.MPI import MAX
 from petsc4py import PETSc
 from dolfin import as_backend_type
-import RBniCS.backends # avoid circular imports when importing fenics backend
+import rbnics.backends # avoid circular imports when importing fenics backend
 
 def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V, reduced_dofs_list):
     vec = as_backend_type(input_function.vector()).vec()
     vec_row_start, vec_row_end = vec.getOwnershipRange()
-    output_function = RBniCS.backends.fenics.Function(output_V)
+    output_function = rbnics.backends.fenics.Function(output_V)
     out = as_backend_type(output_function.vector()).vec()
     out_row_start, out_row_end = out.getOwnershipRange()
     mpi_comm = vec.comm.tompi4py()

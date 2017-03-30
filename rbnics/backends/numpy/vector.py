@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import ix_ as Slicer, matrix as VectorBaseType
-from RBniCS.backends.numpy.wrapping import slice_to_array, slice_to_size
+from rbnics.backends.numpy.wrapping import slice_to_array, slice_to_size
 
 class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vectors correspond to two different types
     def __getitem__(self, key):
@@ -116,7 +116,7 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
             output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
 
 from numpy import zeros as _VectorContent_Base
-from RBniCS.utils.decorators import backend_for, OnlineSizeType
+from rbnics.utils.decorators import backend_for, OnlineSizeType
 
 @backend_for("numpy", inputs=(OnlineSizeType, ), output=_Vector_Type)
 def Vector(N):

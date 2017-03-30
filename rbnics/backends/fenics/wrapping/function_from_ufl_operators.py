@@ -26,7 +26,7 @@ from ufl.algebra import Division, Product, Sum
 from ufl.constantvalue import ScalarValue
 from ufl.tensors import as_tensor, ComponentTensor
 from dolfin import Function, GenericVector
-from RBniCS.backends.fenics.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
+from rbnics.backends.fenics.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
 
 def function_from_ufl_operators(input_function):
     assert isinstance(input_function, (Function, Sum, Product, Division, ComponentTensor))

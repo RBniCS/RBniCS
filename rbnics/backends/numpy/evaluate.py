@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.backends.numpy.vector import Vector
-from RBniCS.utils.decorators import backend_for, tuple_of
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.backends.numpy.vector import Vector
+from rbnics.utils.decorators import backend_for, tuple_of
 
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("numpy", inputs=((Matrix.Type(), Vector.Type()), (tuple_of((tuple_of(int), int)), None)))

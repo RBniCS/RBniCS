@@ -23,12 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import FunctionSpace
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
-from RBniCS.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
-import RBniCS.backends.fenics
-import RBniCS.backends.fenics.wrapping
-from RBniCS.utils.decorators import BackendFor, Extends, override
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
+from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
+import rbnics.backends.fenics
+import rbnics.backends.fenics.wrapping
+from rbnics.utils.decorators import BackendFor, Extends, override
 
 ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
 
@@ -37,7 +37,7 @@ ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractP
 class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
     @override
     def __init__(self, V, X, component=None):
-        ProperOrthogonalDecompositionBase.__init__(self, V, X, component, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping, RBniCS.backends.fenics.SnapshotsMatrix, RBniCS.backends.fenics.FunctionsList)
+        ProperOrthogonalDecompositionBase.__init__(self, V, X, component, rbnics.backends.fenics, rbnics.backends.fenics.wrapping, rbnics.backends.fenics.SnapshotsMatrix, rbnics.backends.fenics.FunctionsList)
         
     @override
     def store_snapshot(self, snapshot, component=None, weight=None):

@@ -23,10 +23,10 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
-from RBniCS.reduction_methods.base.reduction_method import ReductionMethod
-from RBniCS.utils.io import Folders
-from RBniCS.utils.decorators import Extends, override, UpdateMapFromProblemToTrainingStatus
-from RBniCS.utils.factories import ReducedProblemFactory
+from rbnics.reduction_methods.base.reduction_method import ReductionMethod
+from rbnics.utils.io import Folders
+from rbnics.utils.decorators import Extends, override, UpdateMapFromProblemToTrainingStatus
+from rbnics.utils.factories import ReducedProblemFactory
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReductionMethodBase

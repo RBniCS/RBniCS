@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends import AffineExpansionStorage, assign, copy, Function
-from RBniCS.utils.decorators import Extends, override
-from RBniCS.utils.mpi import log, PROGRESS
+from rbnics.backends import AffineExpansionStorage, assign, copy, Function
+from rbnics.utils.decorators import Extends, override
+from rbnics.utils.mpi import log, PROGRESS
 
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     

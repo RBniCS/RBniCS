@@ -27,13 +27,13 @@ from abc import ABCMeta, abstractmethod
 import types
 from math import sqrt
 from numpy import isclose
-from RBniCS.problems.base.parametrized_problem import ParametrizedProblem
-from RBniCS.backends import assign, BasisFunctionsMatrix, copy, transpose
-from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from RBniCS.sampling import ParameterSpaceSubset
-from RBniCS.utils.io import OnlineSizeDict
-from RBniCS.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
-from RBniCS.utils.mpi import log, print, PROGRESS
+from rbnics.problems.base.parametrized_problem import ParametrizedProblem
+from rbnics.backends import assign, BasisFunctionsMatrix, copy, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
+from rbnics.sampling import ParameterSpaceSubset
+from rbnics.utils.io import OnlineSizeDict
+from rbnics.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
+from rbnics.utils.mpi import log, print, PROGRESS
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class EllipticCoerciveReducedOrderModelBase

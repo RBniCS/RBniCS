@@ -24,14 +24,14 @@
 
 from math import sqrt
 from numpy import isclose
-from RBniCS.problems.elliptic_coercive import EllipticCoerciveRBReducedProblem
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
-from RBniCS.utils.decorators import Extends, override, ReducedProblemFor
-from RBniCS.problems.base import TimeDependentRBReducedProblem
-from RBniCS.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from RBniCS.reduction_methods.parabolic_coercive import ParabolicCoerciveRBReduction
-from RBniCS.backends import Function, FunctionsList, LinearSolver, product, sum, transpose
-from RBniCS.backends.online import OnlineAffineExpansionStorage
+from rbnics.problems.elliptic_coercive import EllipticCoerciveRBReducedProblem
+from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.problems.base import TimeDependentRBReducedProblem
+from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
+from rbnics.reduction_methods.parabolic_coercive import ParabolicCoerciveRBReduction
+from rbnics.backends import Function, FunctionsList, LinearSolver, product, sum, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~     ELLIPTIC COERCIVE REDUCED ORDER MODEL BASE CLASS     ~~~~~~~~~~~~~~~~~~~~~~~~~# 
 ## @class ParabolicCoerciveReducedOrderModelBase

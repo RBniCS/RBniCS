@@ -22,16 +22,16 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.abstract import FunctionsList as AbstractFunctionsList
-from RBniCS.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
-from RBniCS.backends.numpy.wrapping.function_copy import function_copy
-import RBniCS.backends # avoid circular imports when importing numpy backend
+from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
+from rbnics.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
+from rbnics.backends.numpy.wrapping.function_copy import function_copy
+import rbnics.backends # avoid circular imports when importing numpy backend
 
 def functions_list_basis_functions_matrix_mul_online_matrix(functions_list_basis_functions_matrix, online_matrix, FunctionsListType, backend):
     Z = functions_list_basis_functions_matrix.V_or_Z
     (functions, _) = functions_list_basis_functions_matrix_adapter(functions_list_basis_functions_matrix, backend)
     assert isinstance(Z, AbstractFunctionsList)
-    assert isinstance(online_matrix, RBniCS.backends.numpy.Matrix.Type())
+    assert isinstance(online_matrix, rbnics.backends.numpy.Matrix.Type())
     
     output = FunctionsListType(Z)
     dim = online_matrix.shape[1]
@@ -46,11 +46,11 @@ def functions_list_basis_functions_matrix_mul_online_matrix(functions_list_basis
 
 def functions_list_basis_functions_matrix_mul_online_vector(functions_list_basis_functions_matrix, online_vector, backend):
     (functions, _) = functions_list_basis_functions_matrix_adapter(functions_list_basis_functions_matrix, backend)
-    assert isinstance(online_vector, (RBniCS.backends.numpy.Vector.Type(), tuple))
+    assert isinstance(online_vector, (rbnics.backends.numpy.Vector.Type(), tuple))
     
     output = function_copy(functions[0])
     output.vector()[:] = 0.
-    if isinstance(online_vector, RBniCS.backends.numpy.Vector.Type()):
+    if isinstance(online_vector, rbnics.backends.numpy.Vector.Type()):
         for (i, fun_i) in enumerate(functions):
             output.vector()[:] += fun_i.vector()*online_vector.item(i)
     elif isinstance(online_vector, tuple):
@@ -62,7 +62,7 @@ def functions_list_basis_functions_matrix_mul_online_vector(functions_list_basis
     return output
     
 def functions_list_basis_functions_matrix_mul_online_function(functions_list_basis_functions_matrix, online_function, backend):
-    assert isinstance(online_function, RBniCS.backends.numpy.Function.Type())
+    assert isinstance(online_function, rbnics.backends.numpy.Function.Type())
     
     return functions_list_basis_functions_matrix_mul_online_vector(functions_list_basis_functions_matrix, online_function.vector(), backend)
     

@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import abstract_backend
+from rbnics.utils.decorators import abstract_backend
 
 # Export a solution to file
 @abstract_backend

@@ -23,8 +23,8 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import Function, FunctionSpace
-from RBniCS.utils.decorators import backend_for
-from RBniCS.backends.fenics.wrapping.function_space import _convert_component_to_int, _enable_string_components
+from rbnics.utils.decorators import backend_for
+from rbnics.backends.fenics.wrapping.function_space import _convert_component_to_int, _enable_string_components
 
 _Function_Type = Function
 

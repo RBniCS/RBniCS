@@ -22,13 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.sampling.parameter_space_subset import ParameterSpaceSubset
-from RBniCS.sampling.distributions import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
+from rbnics.sampling.parameter_space_subset import ParameterSpaceSubset
+from rbnics.sampling.distributions import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
 
 __all__ = [
-    # RBniCS.sampling
+    # rbnics.sampling
     'ParameterSpaceSubset',
-    # RBniCS.sampling.distributions
+    # rbnics.sampling.distributions
     'DrawFrom',
     'EquispacedDistribution',
     'LogUniformDistribution',

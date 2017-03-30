@@ -27,11 +27,11 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
 from ufl.geometry import GeometricQuantity
 from dolfin import assign, Function
-from RBniCS.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
-from RBniCS.backends.fenics.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
-from RBniCS.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, is_training_finished
-from RBniCS.utils.mpi import log, PROGRESS
-from RBniCS.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
+from rbnics.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
+from rbnics.backends.fenics.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
+from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, is_training_finished
+from rbnics.utils.mpi import log, PROGRESS
+from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
 def expression_on_reduced_mesh(expression_wrapper, at):
     expression = expression_wrapper._expression

@@ -23,12 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import *
-from RBniCS import EquispacedDistribution
-from RBniCS.backends import ParametrizedTensorFactory
-from RBniCS.backends.fenics import ParametrizedExpressionFactory
-from RBniCS.backends.fenics.wrapping import ParametrizedConstant
-from RBniCS.eim.problems.eim_approximation import EIMApproximation
-from RBniCS.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
+from rbnics import EquispacedDistribution
+from rbnics.backends import ParametrizedTensorFactory
+from rbnics.backends.fenics import ParametrizedExpressionFactory
+from rbnics.backends.fenics.wrapping import ParametrizedConstant
+from rbnics.eim.problems.eim_approximation import EIMApproximation
+from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):

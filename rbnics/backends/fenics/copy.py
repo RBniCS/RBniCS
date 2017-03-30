@@ -22,15 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic import copy as basic_copy
-import RBniCS.backends.fenics
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
-import RBniCS.backends.fenics.wrapping
-from RBniCS.utils.decorators import backend_for, list_of
+from rbnics.backends.basic import copy as basic_copy
+import rbnics.backends.fenics
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.vector import Vector
+import rbnics.backends.fenics.wrapping
+from rbnics.utils.decorators import backend_for, list_of
 
 @backend_for("fenics", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), ))
 def copy(arg):
-    return basic_copy(arg, RBniCS.backends.fenics, RBniCS.backends.fenics.wrapping)
+    return basic_copy(arg, rbnics.backends.fenics, rbnics.backends.fenics.wrapping)
     

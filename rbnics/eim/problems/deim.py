@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.eim.problems.deim_decorated_problem import DEIMDecoratedProblem
+from rbnics.eim.problems.deim_decorated_problem import DEIMDecoratedProblem
 
 # For the sake of the user, since this is the only class that he/she needs to use, rename the decorated problem to an easier name
 DEIM = DEIMDecoratedProblem

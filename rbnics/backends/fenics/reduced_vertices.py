@@ -25,11 +25,11 @@
 from numpy import ndarray as array
 from numpy.linalg import norm
 from dolfin import Cell, Mesh, Point
-from RBniCS.backends.abstract import ReducedVertices as AbstractReducedVertices
-from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
-from RBniCS.backends.fenics.wrapping import assert_lagrange_1
-from RBniCS.utils.decorators import BackendFor, Extends, override
-from RBniCS.utils.io import ExportableList, Folders
+from rbnics.backends.abstract import ReducedVertices as AbstractReducedVertices
+from rbnics.backends.fenics.reduced_mesh import ReducedMesh
+from rbnics.backends.fenics.wrapping import assert_lagrange_1
+from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.io import ExportableList, Folders
 
 @Extends(AbstractReducedVertices)
 @BackendFor("fenics", inputs=(Mesh, ))

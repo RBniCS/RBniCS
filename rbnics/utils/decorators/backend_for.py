@@ -28,7 +28,7 @@ import inspect
 import itertools
 from functools import wraps
 from numpy import ndarray as array, float64
-from RBniCS.utils.mpi import log, DEBUG
+from rbnics.utils.mpi import log, DEBUG
 
 def BackendFor(library, online_backend=None, inputs=None):
     def BackendFor_Decorator(Class):

@@ -22,12 +22,12 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import RBniCS.backends # avoid circular imports when importing numpy backend
+import rbnics.backends # avoid circular imports when importing numpy backend
 
 def vector_mul_vector(vector1, vector2):
-    if isinstance(vector1, RBniCS.backends.numpy.Function.Type()):
+    if isinstance(vector1, rbnics.backends.numpy.Function.Type()):
         vector1 = vector1.vector()
-    if isinstance(vector2, RBniCS.backends.numpy.Function.Type()):
+    if isinstance(vector2, rbnics.backends.numpy.Function.Type()):
         vector2 = vector2.vector()
     output = vector1.T*vector2
     assert output.shape == (1, 1)

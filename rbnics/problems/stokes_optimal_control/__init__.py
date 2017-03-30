@@ -22,10 +22,10 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_pod_galerkin_reduced_problem import StokesOptimalControlPODGalerkinReducedProblem
-from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-#from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_rb_reduced_problem import StokesOptimalControlRBReducedProblem
-from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_reduced_problem import StokesOptimalControlReducedProblem
+from rbnics.problems.stokes_optimal_control.stokes_optimal_control_pod_galerkin_reduced_problem import StokesOptimalControlPODGalerkinReducedProblem
+from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
+#from rbnics.problems.stokes_optimal_control.stokes_optimal_control_rb_reduced_problem import StokesOptimalControlRBReducedProblem
+from rbnics.problems.stokes_optimal_control.stokes_optimal_control_reduced_problem import StokesOptimalControlReducedProblem
 
 
 __all__ = [

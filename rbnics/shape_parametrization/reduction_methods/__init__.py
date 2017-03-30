@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.shape_parametrization.reduction_methods.shape_parametrization_decorated_reduction_method import ShapeParametrizationDecoratedReductionMethod
+from rbnics.shape_parametrization.reduction_methods.shape_parametrization_decorated_reduction_method import ShapeParametrizationDecoratedReductionMethod
 
 __all__ = [
     'ShapeParametrizationDecoratedReductionMethod'

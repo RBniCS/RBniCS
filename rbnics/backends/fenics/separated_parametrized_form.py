@@ -31,10 +31,10 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.core.multiindex import MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
-from RBniCS.utils.io import ExportableList
-from RBniCS.utils.decorators import BackendFor, Extends, override
-from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from RBniCS.backends.fenics.wrapping import get_expression_name
+from rbnics.utils.io import ExportableList
+from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
+from rbnics.backends.fenics.wrapping import get_expression_name
 
 @Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("fenics", inputs=(Form, ))

@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-import RBniCS.backends # avoid circular imports when importing numpy backend
+import rbnics.backends # avoid circular imports when importing numpy backend
 
 def function_extend_or_restrict(function, function_components, Z, Z_components, weight, copy):
     pass # TODO

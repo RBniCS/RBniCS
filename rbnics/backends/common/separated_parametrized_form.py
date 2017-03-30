@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import BackendFor, Extends, override
-from RBniCS.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
+from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 
 @Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("common", inputs=((float, int), ))

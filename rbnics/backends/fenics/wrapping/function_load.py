@@ -24,7 +24,7 @@
 
 import os # for path
 from dolfin import File
-from RBniCS.utils.mpi import is_io_process
+from rbnics.utils.mpi import is_io_process
 
 def function_load(fun, directory, filename, suffix=None):
     if suffix is not None:

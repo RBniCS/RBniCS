@@ -24,12 +24,12 @@
 
 from ufl import Form
 from dolfin import assemble, DirichletBC
-from RBniCS.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
-from RBniCS.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
+from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.vector import Vector
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.parametrized_tensor_factory import ParametrizedTensorFactory
+from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
 @BackendFor("fenics", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type()), tuple_of((Form, Matrix.Type())), tuple_of((Form, Vector.Type()))), ))

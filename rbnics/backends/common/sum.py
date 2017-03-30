@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.common.product import ProductOutput
-from RBniCS.utils.decorators import backend_for
+from rbnics.backends.common.product import ProductOutput
+from rbnics.utils.decorators import backend_for
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with product,
 # even though product actually carries out both the sum and the product!

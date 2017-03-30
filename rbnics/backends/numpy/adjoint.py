@@ -22,8 +22,8 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.numpy.matrix import Matrix
-from RBniCS.utils.decorators import backend_for, tuple_of
+from rbnics.backends.numpy.matrix import Matrix
+from rbnics.utils.decorators import backend_for, tuple_of
 
 @backend_for("numpy", inputs=((Matrix.Type(), tuple_of(Matrix.Type())), ))
 def adjoint(arg):

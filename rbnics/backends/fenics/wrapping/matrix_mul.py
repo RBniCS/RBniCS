@@ -26,11 +26,11 @@ from petsc4py import PETSc
 from ufl import Form
 from ufl.core.operator import Operator
 from dolfin import as_backend_type, assemble
-import RBniCS.backends # avoid circular imports when importing fenics backend
-from RBniCS.backends.fenics.wrapping import function_from_ufl_operators
+import rbnics.backends # avoid circular imports when importing fenics backend
+from rbnics.backends.fenics.wrapping import function_from_ufl_operators
 
 def matrix_mul_vector(matrix, vector):
-    if isinstance(vector, (RBniCS.backends.fenics.Function.Type(), Operator)):
+    if isinstance(vector, (rbnics.backends.fenics.Function.Type(), Operator)):
         vector = function_from_ufl_operators(vector).vector()
     elif isinstance(vector, Form):
         assert len(vector.arguments()) is 1
@@ -41,8 +41,8 @@ def matrix_mul_vector(matrix, vector):
     return matrix*vector
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    assert isinstance(matrix, RBniCS.backends.fenics.Matrix.Type()) or (isinstance(matrix, Form) and len(matrix.arguments()) is 2)
-    assert isinstance(other_matrix, RBniCS.backends.fenics.Matrix.Type()) or (isinstance(other_matrix, Form) and len(other_matrix.arguments()) is 2)
+    assert isinstance(matrix, rbnics.backends.fenics.Matrix.Type()) or (isinstance(matrix, Form) and len(matrix.arguments()) is 2)
+    assert isinstance(other_matrix, rbnics.backends.fenics.Matrix.Type()) or (isinstance(other_matrix, Form) and len(other_matrix.arguments()) is 2)
     if isinstance(matrix, Form) and len(matrix.arguments()) is 2:
         matrix = assemble(matrix)
     if isinstance(other_matrix, Form) and len(other_matrix.arguments()) is 2:

@@ -22,13 +22,13 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 
 def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
 
-    from RBniCS.eim.problems.deim import DEIM
-    from RBniCS.eim.problems.eim import EIM
-    from RBniCS.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    from rbnics.eim.problems.deim import DEIM
+    from rbnics.eim.problems.eim import EIM
+    from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     
     @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(DEIM, EIM))
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):

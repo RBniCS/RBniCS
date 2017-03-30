@@ -27,14 +27,14 @@ from ufl.algorithms import expand_derivatives
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import Argument, assemble, Expression, Function, FunctionSpace
-from RBniCS.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
-from RBniCS.backends.fenics.copy import copy
-from RBniCS.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
-from RBniCS.backends.fenics.reduced_mesh import ReducedMesh
-from RBniCS.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
-from RBniCS.backends.fenics.tensor_basis_list import TensorBasisList
-from RBniCS.backends.fenics.wrapping import function_from_subfunction_if_any, get_form_argument, get_form_description, get_form_name
-from RBniCS.utils.decorators import BackendFor, Extends, get_problem_from_solution, is_problem_solution, override, tuple_of
+from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
+from rbnics.backends.fenics.copy import copy
+from rbnics.backends.fenics.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from rbnics.backends.fenics.reduced_mesh import ReducedMesh
+from rbnics.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
+from rbnics.backends.fenics.tensor_basis_list import TensorBasisList
+from rbnics.backends.fenics.wrapping import function_from_subfunction_if_any, get_form_argument, get_form_description, get_form_name
+from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_solution, is_problem_solution, override, tuple_of
 
 @Extends(AbstractParametrizedTensorFactory)
 @BackendFor("fenics", inputs=((object, None), Form)) # object will actually be a ParametrizedDifferentialProblem

@@ -32,26 +32,26 @@ __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sart
 __all__ = []
 
 # Import the minimum subset of RBniCS required to run tutorials
-from RBniCS.eim import DEIM, EIM, ExactParametrizedFunctions
-from RBniCS.problems.elliptic_coercive import EllipticCoerciveProblem
-from RBniCS.problems.elliptic_optimal_control import EllipticOptimalControlProblem
-from RBniCS.problems.navier_stokes import NavierStokesProblem
-from RBniCS.problems.nonlinear_elliptic import NonlinearEllipticProblem
-from RBniCS.problems.parabolic_coercive import ParabolicCoerciveProblem
-from RBniCS.problems.stokes import StokesProblem
-from RBniCS.problems.stokes_optimal_control import StokesOptimalControlProblem
-from RBniCS.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
-from RBniCS.scm import SCM, ExactCoercivityConstant
-from RBniCS.shape_parametrization import ShapeParametrization
-from RBniCS.utils.decorators import CustomizeReducedProblemFor, CustomizeReductionMethodFor, exact_problem
-from RBniCS.utils.factories import ReducedBasis, PODGalerkin
+from rbnics.eim import DEIM, EIM, ExactParametrizedFunctions
+from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
+from rbnics.problems.elliptic_optimal_control import EllipticOptimalControlProblem
+from rbnics.problems.navier_stokes import NavierStokesProblem
+from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
+from rbnics.problems.parabolic_coercive import ParabolicCoerciveProblem
+from rbnics.problems.stokes import StokesProblem
+from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
+from rbnics.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
+from rbnics.scm import SCM, ExactCoercivityConstant
+from rbnics.shape_parametrization import ShapeParametrization
+from rbnics.utils.decorators import CustomizeReducedProblemFor, CustomizeReductionMethodFor, exact_problem
+from rbnics.utils.factories import ReducedBasis, PODGalerkin
 
 __all__ += [
-    # RBniCS.eim
+    # rbnics.eim
     'DEIM',
     'EIM',
     'ExactParametrizedFunctions',
-    # RBniCS.problems
+    # rbnics.problems
     'EllipticCoerciveProblem',
     'EllipticOptimalControlProblem',
     'NavierStokesProblem',
@@ -59,21 +59,21 @@ __all__ += [
     'ParabolicCoerciveProblem',
     'StokesProblem',
     'StokesOptimalControlProblem',
-    # RBniCS.sampling
+    # rbnics.sampling
     'DrawFrom',
     'EquispacedDistribution',
     'LogUniformDistribution',
     'UniformDistribution',
-    # RBniCS.scm
+    # rbnics.scm
     'SCM',
     'ExactCoercivityConstant',
-    # RBniCS.shape_parametrization
+    # rbnics.shape_parametrization
     'ShapeParametrization',
-    # RBniCS.utils.decorators
+    # rbnics.utils.decorators
     'CustomizeReducedProblemFor',
     'CustomizeReductionMethodFor',
     'exact_problem',
-    # RBniCS.utils.factories
+    # rbnics.utils.factories
     'ReducedBasis',
     'PODGalerkin',
 ]

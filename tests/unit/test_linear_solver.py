@@ -24,8 +24,8 @@
 
 from numpy import isclose
 from dolfin import *
-from RBniCS.backends.fenics import LinearSolver as SparseLinearSolver
-from RBniCS.backends.numpy import Function as DenseFunction, LinearSolver as DenseLinearSolver, Matrix as DenseMatrix, Vector as DenseVector
+from rbnics.backends.fenics import LinearSolver as SparseLinearSolver
+from rbnics.backends.numpy import Function as DenseFunction, LinearSolver as DenseLinearSolver, Matrix as DenseMatrix, Vector as DenseVector
 
 """
 Solve

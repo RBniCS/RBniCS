@@ -24,8 +24,8 @@
 
 from itertools import imap
 from numpy import matrix
-from RBniCS.utils.decorators import backend_for, OnlineSizeType
-from RBniCS.backends.numpy.vector import Vector
+from rbnics.utils.decorators import backend_for, OnlineSizeType
+from rbnics.backends.numpy.vector import Vector
 
 class _Function_Type(object):
     def __init__(self, arg):

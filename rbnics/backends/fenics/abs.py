@@ -27,12 +27,12 @@ from numpy import ndarray as VectorMatrixType, fabs as vector_matrix_fabs, argma
 from numpy.linalg import norm as vector_matrix_norm
 from ufl.core.operator import Operator
 from dolfin import as_backend_type, Point, vertices
-from RBniCS.backends.fenics.matrix import Matrix
-from RBniCS.backends.fenics.vector import Vector
-from RBniCS.backends.fenics.function import Function
-from RBniCS.backends.fenics.wrapping import assert_lagrange_1, function_from_ufl_operators, get_global_dof_coordinates, get_global_dof_component
-from RBniCS.utils.decorators import backend_for
-from RBniCS.utils.mpi import parallel_max
+from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.vector import Vector
+from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.wrapping import assert_lagrange_1, function_from_ufl_operators, get_global_dof_coordinates, get_global_dof_component
+from rbnics.utils.decorators import backend_for
+from rbnics.utils.mpi import parallel_max
 
 # abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max
 # even though here we actually carry out both the max and the abs!

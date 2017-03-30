@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.decorators.extends import Extends
+from rbnics.utils.decorators.extends import Extends
 
 def exact_problem(decorated_problem, preserve_class_name=True):
     if (decorated_problem, preserve_class_name) not in _all_exact_problems:

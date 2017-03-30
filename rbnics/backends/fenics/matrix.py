@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from dolfin import GenericMatrix
-from RBniCS.backends.fenics.function import Function
+from rbnics.backends.fenics.function import Function
 
 def Matrix():
     raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")

@@ -22,15 +22,15 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.backends.basic.basis_functions_matrix import BasisFunctionsMatrix
-from RBniCS.backends.basic.copy import copy
-from RBniCS.backends.basic.export import export
-from RBniCS.backends.basic.functions_list import FunctionsList
-from RBniCS.backends.basic.gram_schmidt import GramSchmidt
-from RBniCS.backends.basic.import_ import import_
-from RBniCS.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
-from RBniCS.backends.basic.tensors_list import TensorsList
-from RBniCS.backends.basic.transpose import transpose
+from rbnics.backends.basic.basis_functions_matrix import BasisFunctionsMatrix
+from rbnics.backends.basic.copy import copy
+from rbnics.backends.basic.export import export
+from rbnics.backends.basic.functions_list import FunctionsList
+from rbnics.backends.basic.gram_schmidt import GramSchmidt
+from rbnics.backends.basic.import_ import import_
+from rbnics.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
+from rbnics.backends.basic.tensors_list import TensorsList
+from rbnics.backends.basic.transpose import transpose
 
 __all__ = [
     'BasisFunctionsMatrix',

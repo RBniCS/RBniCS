@@ -22,7 +22,7 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.utils.mpi import log, DEBUG
+from rbnics.utils.mpi import log, DEBUG
 
 def ForDecoratorsStore(Key, storage, data, go_to_next_level):
     # We store the data organized by levels. This serves as additional values

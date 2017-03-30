@@ -22,9 +22,9 @@
 #  @author Gianluigi Rozza    <gianluigi.rozza@sissa.it>
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
-from RBniCS.reduction_methods.base import NonlinearReductionMethod
-from RBniCS.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
-from RBniCS.utils.decorators import Extends, override, MultiLevelReductionMethod
+from rbnics.reduction_methods.base import NonlinearReductionMethod
+from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
+from rbnics.utils.decorators import Extends, override, MultiLevelReductionMethod
 
 def NonlinearEllipticReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
     @Extends(EllipticCoerciveReductionMethod_DerivedClass) # needs to be first in order to override for last the methods.

@@ -25,8 +25,8 @@
 from __future__ import print_function
 from test_main import TestBase
 from dolfin import *
-from RBniCS.backends import product, sum
-from RBniCS.backends.online import OnlineAffineExpansionStorage, OnlineVector
+from rbnics.backends import product, sum
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineVector
 from numpy.linalg import norm
 from numpy.random import randint
 

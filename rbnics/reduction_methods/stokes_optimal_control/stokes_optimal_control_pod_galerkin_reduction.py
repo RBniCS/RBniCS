@@ -23,12 +23,12 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from __future__ import print_function
-from RBniCS.backends import FunctionsList, ProperOrthogonalDecomposition
-from RBniCS.utils.mpi import print
-from RBniCS.utils.decorators import Extends, override, ReductionMethodFor
-from RBniCS.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from RBniCS.reduction_methods.base import PODGalerkinReduction
-from RBniCS.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
+from rbnics.backends import FunctionsList, ProperOrthogonalDecomposition
+from rbnics.utils.mpi import print
+from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
+from rbnics.reduction_methods.base import PODGalerkinReduction
+from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
 
 StokesOptimalControlPODGalerkinReduction_Base = PODGalerkinReduction(StokesOptimalControlReductionMethod)
 

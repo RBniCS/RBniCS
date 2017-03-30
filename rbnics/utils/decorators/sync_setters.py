@@ -23,7 +23,7 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 import types
-from RBniCS.utils.decorators.override import override
+from rbnics.utils.decorators.override import override
 
 def sync_setters__internal(other_object__name, method__name, private_attribute__name, method__decorator=None):
     def sync_setters_decorator(__init__):

@@ -23,9 +23,9 @@
 #  @author Alberto   Sartori  <alberto.sartori@sissa.it>
 
 from numpy import ix_ as Slicer, ndarray as SlicerInnerType, matrix as MatrixBaseType
-from RBniCS.backends.numpy.function import Function
-from RBniCS.backends.numpy.vector import Vector
-from RBniCS.backends.numpy.wrapping import slice_to_array, slice_to_size
+from rbnics.backends.numpy.function import Function
+from rbnics.backends.numpy.vector import Vector
+from rbnics.backends.numpy.wrapping import slice_to_array, slice_to_size
 
 class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vectors correspond to two different types
     def __getitem__(self, key):
@@ -151,7 +151,7 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
                 output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[1]
     
 from numpy import zeros as _MatrixContent_Base
-from RBniCS.utils.decorators import backend_for, OnlineSizeType
+from rbnics.utils.decorators import backend_for, OnlineSizeType
 
 @backend_for("numpy", inputs=(OnlineSizeType, OnlineSizeType), output=_Matrix_Type)
 def Matrix(M, N):
