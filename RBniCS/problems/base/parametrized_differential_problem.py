@@ -211,13 +211,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         if component is None and len(self.components) > 1:
             component = self.components
         if component is None:
-            export(solution, folder, filename, suffix=suffix)
+            export(solution, folder, filename, suffix)
         elif isinstance(component, str):
-            export(solution, folder, filename, component=component, suffix=suffix)
+            export(solution, folder, filename, suffix, component)
         elif isinstance(component, list):
             for c in component:
                 assert isinstance(c, str)
-                export(solution, folder, filename + "_" + c, component=c, suffix=suffix)
+                export(solution, folder, filename + "_" + c, suffix, c)
         else:
             raise AssertionError("Invalid component in export_solution()")
             

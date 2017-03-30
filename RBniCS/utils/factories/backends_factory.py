@@ -57,6 +57,7 @@ def backends_factory(backends_module):
         def backend_selector(*args, **kwargs):
             inputs = list()
             inputs.extend([arg for arg in args])
+            assert len(kwargs) < 2, "Backends do not handle more than one keyword argument, because ordering might be lost"
             inputs.extend([kwargs[key] for key in kwargs])
             if len(inputs) > 0:
                 input_types = get_input_types(inputs)
