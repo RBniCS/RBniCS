@@ -86,7 +86,26 @@ class StokesRBReduction(StokesRBReduction_Base):
                 self.reduced_problem.Z.enrich(snapshot, component=component)
             self.GS[component].apply(self.reduced_problem.Z[component], self.reduced_problem.N_bc[component])
             self.reduced_problem.N[component] += 1
+        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
             
     #  @}
-    ########################### end - OFFLINE STAGE - end ########################### 
+    ########################### end - OFFLINE STAGE - end ###########################     
+    
+    ###########################     ERROR ANALYSIS     ########################### 
+    ## @defgroup ErrorAnalysis Error analysis
+    #  @{
+    
+    # Compute the error of the reduced order approximation with respect to the full order one
+    # over the testing set.
+    # Note that we cannot move this method to the parent class because error analysis is defined
+    # by the RBReduction decorator
+    @override
+    def error_analysis(self, N=None, **kwargs):
+        components = ["u", "p"] # but not "s"
+        kwargs["components"] = components
+        
+        StokesRBReduction_Base.error_analysis(self, N, **kwargs)
+        
+    #  @}
+    ########################### end - ERROR ANALYSIS - end ########################### 
     

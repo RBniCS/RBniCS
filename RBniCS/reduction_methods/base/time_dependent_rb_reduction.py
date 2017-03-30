@@ -49,18 +49,27 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 components = kwargs["components"]
             else:
                 components = self.truth_problem.components
-                
-            for component in components:
-                def solution_preprocess_setitem(component):
-                    def solution_preprocess_setitem__function(list_over_time):
-                        list_squared_over_time = [v**2 for v in list_over_time]
-                        return sqrt(self.time_quadrature.integrate(list_squared_over_time))
-                    return solution_preprocess_setitem__function
-                for column_prefix in ("error_", "error_estimator_", "relative_error_", "relative_error_estimator_"):
-                    ErrorAnalysisTable.preprocess_setitem(column_prefix + component, solution_preprocess_setitem(component))
+            
+            def solution_preprocess_setitem(list_over_time):
+                list_squared_over_time = [v**2 for v in list_over_time]
+                return sqrt(self.time_quadrature.integrate(list_squared_over_time))
                 
             def output_preprocess_setitem(list_over_time):
                 return self.time_quadrature.integrate(list_over_time)
+            
+            if len(components) > 1:
+                all_components_string = ""
+                for component in components:
+                    all_components_string += component
+                    for column_prefix in ("error_", "relative_error_"):
+                        ErrorAnalysisTable.preprocess_setitem(column_prefix + component, solution_preprocess_setitem)
+                for column_prefix in ("error_", "error_estimator_", "relative_error_", "relative_error_estimator_"):
+                    ErrorAnalysisTable.preprocess_setitem(column_prefix + all_components_string, solution_preprocess_setitem)
+            else:
+                component = components[0]
+                for column_prefix in ("error_", "error_estimator_", "relative_error_", "relative_error_estimator_"):
+                    ErrorAnalysisTable.preprocess_setitem(column_prefix + component, solution_preprocess_setitem)
+                
             for column in ("error_output", "error_estimator_output", "relative_error_output", "relative_error_estimator_output"):
                 ErrorAnalysisTable.preprocess_setitem(column, solution_preprocess_setitem)
             

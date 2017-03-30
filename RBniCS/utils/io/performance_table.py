@@ -50,6 +50,7 @@ class PerformanceTable(object):
     def add_column(self, column_name, group_name, operations):
         assert self._Nmax > 0
         assert self._Nmax >= self._Nmin
+        assert column_name not in self._columns and column_name not in self._columns_operations
         self._columns[column_name] = Content((self._Nmax - self._Nmin + 1, self._len_testing_set))
         self._columns_not_implemented[column_name] = None # will be set to a bool
         if group_name not in self._groups:

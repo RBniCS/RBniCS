@@ -24,6 +24,7 @@
 
 from __future__ import print_function
 from abc import ABCMeta, abstractmethod
+from math import sqrt
 from RBniCS.backends import GramSchmidt
 from RBniCS.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from RBniCS.utils.decorators import Extends, override
@@ -195,7 +196,20 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
             error_analysis_table.set_Nmax(N)
-            for component in components:
+            if len(components) > 1:
+                all_components_string = ""
+                for component in components:
+                    all_components_string += component
+                    error_analysis_table.add_column("error_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
+                    error_analysis_table.add_column("relative_error_" + component, group_name="solution_" + component + "_relative_error", operations=("mean", "max"))
+                error_analysis_table.add_column("error_" + all_components_string, group_name="solution_" + all_components_string + "_error", operations=("mean", "max"))
+                error_analysis_table.add_column("error_estimator_" + all_components_string, group_name="solution_" + all_components_string + "_error", operations=("mean", "max"))
+                error_analysis_table.add_column("effectivity_" + all_components_string, group_name="solution_" + all_components_string + "_error", operations=("min", "mean", "max"))
+                error_analysis_table.add_column("relative_error_" + all_components_string, group_name="solution_" + all_components_string + "_relative_error", operations=("mean", "max"))
+                error_analysis_table.add_column("relative_error_estimator_" + all_components_string, group_name="solution_" + all_components_string + "_relative_error", operations=("mean", "max"))
+                error_analysis_table.add_column("relative_effectivity_" + all_components_string, group_name="solution_" + all_components_string + "_relative_error", operations=("min", "mean", "max"))
+            else:
+                component = components[0]
                 error_analysis_table.add_column("error_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
                 error_analysis_table.add_column("error_estimator_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
                 error_analysis_table.add_column("effectivity_" + component, group_name="solution_" + component + "_error", operations=("min", "mean", "max"))
@@ -222,13 +236,15 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     if len(components) > 1:
                         for component in components:
                             error_analysis_table["error_" + component, n, run] = error[component]
-                            error_analysis_table["error_estimator_" + component, n, run] = error_estimator[component]
-                            error_analysis_table["effectivity_" + component, n, run] = \
-                                error_analysis_table["error_estimator_" + component, n, run]/error_analysis_table["error_" + component, n, run]
                             error_analysis_table["relative_error_" + component, n, run] = relative_error[component]
-                            error_analysis_table["relative_error_estimator_" + component, n, run] = relative_error_estimator[component]
-                            error_analysis_table["relative_effectivity_" + component, n, run] = \
-                                error_analysis_table["relative_error_estimator_" + component, n, run]/error_analysis_table["relative_error_" + component, n, run]
+                        error_analysis_table["error_" + all_components_string, n, run] = sqrt(sum([error[component]**2 for component in components]))
+                        error_analysis_table["error_estimator_" + all_components_string, n, run] = error_estimator
+                        error_analysis_table["effectivity_" + all_components_string, n, run] = \
+                            error_analysis_table["error_estimator_" + all_components_string, n, run]/error_analysis_table["error_" + all_components_string, n, run]
+                        error_analysis_table["relative_error_" + all_components_string, n, run] = sqrt(sum([relative_error[component]**2 for component in components]))
+                        error_analysis_table["relative_error_estimator_" + all_components_string, n, run] = relative_error_estimator
+                        error_analysis_table["relative_effectivity_" + all_components_string, n, run] = \
+                            error_analysis_table["relative_error_estimator_" + all_components_string, n, run]/error_analysis_table["relative_error_" + all_components_string, n, run]
                     else:
                         component = components[0]
                         error_analysis_table["error_" + component, n, run] = error
