@@ -208,7 +208,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                                     self._riesz_solve_homogeneous_dirichlet_bc
                                 )
                                 solver.solve()
-                                self.riesz[term][q].enrich(self._riesz_solve_storage, component=component)
+                                self.riesz[term][q].enrich(self._riesz_solve_storage, component={None: component})
                     else:
                         for n in range(len(self.riesz[term][q]), self.N + self.N_bc):
                             solver = LinearSolver(

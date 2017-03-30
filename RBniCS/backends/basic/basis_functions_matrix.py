@@ -82,10 +82,16 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
                 self._components[component].enrich(functions, component=component, weights=weights)
                 self._component_name_to_basis_component_length[component] = len(self._components[component])
             else:
+                assert len(component.keys()) == 1
+                component_from = component.keys()[0]
+                assert component_from is None or component_from in self._components
                 assert len(component.values()) == 1
                 component_to = component.values()[0]
                 assert component_to in self._components
-                self._components[component_to].enrich(functions, component=component, weights=weights)
+                if component_from is None:
+                    self._components[component_to].enrich(functions, weights=weights)
+                else:
+                    self._components[component_to].enrich(functions, component=component, weights=weights)
                 self._component_name_to_basis_component_length[component_to] = len(self._components[component_to])
         # Reset and prepare precomputed slices
         self._prepare_trivial_precomputed_slice()
