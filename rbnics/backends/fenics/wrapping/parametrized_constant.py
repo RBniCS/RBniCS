@@ -63,7 +63,7 @@ class ParametrizedConstantTuple(tuple):
     
 import types
 import rbnics.utils.decorators
-from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor as ProblemDecoratorFor_Base, ReducedProblemDecoratorFor as ReducedProblemDecoratorFor_Base
+from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor as ProblemDecoratorFor_Base, ReducedProblemDecoratorFor as ReducedProblemDecoratorFor_Base, StoreProblemDecoratorsForFactories
 
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
     from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
@@ -73,7 +73,9 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
         def ProblemDecoratorFor_Decorator(ProblemDecorator):
             def ProblemDecoratorFor_DecoratedProblemGenerator(Problem):
                 DecoratedProblem_Base = ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)(ProblemDecorator)(Problem)
+                
                 @Extends(DecoratedProblem_Base, preserve_class_name=True)
+                @StoreProblemDecoratorsForFactories(DecoratedProblem_Base, Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)
                 class DecoratedProblem(DecoratedProblem_Base):
                     @override
                     def set_mu_range(self, mu_range):
@@ -105,7 +107,9 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
         def ProblemDecoratorFor_Decorator(ProblemDecorator):
             def ProblemDecoratorFor_DecoratedProblemGenerator(Problem):
                 DecoratedProblem_Base = ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)(ProblemDecorator)(Problem)
+                
                 @Extends(DecoratedProblem_Base, preserve_class_name=True)
+                @StoreProblemDecoratorsForFactories(DecoratedProblem_Base, Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)
                 class DecoratedProblem(DecoratedProblem_Base):
                     @override
                     def assemble_operator(self, term):
