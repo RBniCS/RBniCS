@@ -31,7 +31,7 @@ from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_soluti
 from rbnics.utils.mpi import parallel_max
 
 @Extends(AbstractParametrizedExpressionFactory)
-@BackendFor("fenics", inputs=((object, None), (Expression, Function, Operator))) # object will actually be a ParametrizedDifferentialProblem
+@BackendFor("fenics", inputs=((Expression, Function, Operator), ))
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
     def __init__(self, expression):
         AbstractParametrizedExpressionFactory.__init__(self, expression)

@@ -31,7 +31,7 @@ from rbnics.backends.fenics.wrapping import function_from_subfunction_if_any, ge
 from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_solution, is_problem_solution, override, tuple_of
 
 @Extends(AbstractParametrizedTensorFactory)
-@BackendFor("fenics", inputs=((object, None), Form)) # object will actually be a ParametrizedDifferentialProblem
+@BackendFor("fenics", inputs=(Form, ))
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     def __init__(self, form):
         AbstractParametrizedTensorFactory.__init__(self, form)
