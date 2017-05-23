@@ -18,20 +18,14 @@
 
 from rbnics.utils.io import Folders
 
-# Implementation of a class containing basic definitions of parametrized problems
 class ParametrizedProblem(object):
     """This is the base class, which is inherited by all other
     classes. It defines the base interface with variables and
     functions that the derived classes have to set and/or
-    overwrite. The end user should not care about the implementation
-    of this very class but he/she should derive one of the Elliptic or
-    Parabolic class for solving an actual problem.
+    overwrite.
 
-    The following functions are implemented:
+    ..Functions implemented::
 
-    ## Set properties of the reduced order approximation
-    - set_Nmax()
-    - settol()
     - set_mu_range()
     - set_mu()
 
@@ -55,6 +49,6 @@ class ParametrizedProblem(object):
     
     ## OFFLINE/ONLINE: set the current value of the parameter
     def set_mu(self, mu):
-        assert len(mu) == len(self.mu_range), "mu and mu_range must have the same length"
+        assert len(mu) == len(self.mu_range), # mu and mu_range must have the same length
         self.mu = mu
         
