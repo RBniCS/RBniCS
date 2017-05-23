@@ -26,13 +26,15 @@ class ParametrizedProblem(object):
 
     ..Functions implemented::
 
-    - set_mu_range()
-    - set_mu()
+    - :func: 'set_mu_range()'
+    - :func: 'set_mu()'
 
     """
     
-    ## Default initialization of members
     def __init__(self, folder_prefix):
+        """
+        Initialization of current parameter mu and its range
+        """
         # Current parameters value
         self.mu = tuple() # tuple of real numbers
         # Parameter ranges
@@ -41,14 +43,24 @@ class ParametrizedProblem(object):
         self.folder_prefix = folder_prefix
         self.folder = Folders()
     
-    ## OFFLINE: set the range of the parameters
     def set_mu_range(self, mu_range):
+        """
+        OFFLINE PHASE
+        Set the range of the parameters.
+        :param mu_range: the range into which the parameter changes.
+        :type mu_range: list of (min, max) pairs, such that len(self.mu) == len(self.mu_range)
+        """
         self.mu_range = mu_range
         # Initialize mu so that it has the correct length
         self.set_mu(tuple([r[0] for r in self.mu_range]))
     
-    ## OFFLINE/ONLINE: set the current value of the parameter
     def set_mu(self, mu):
+        """
+        OFFLINE/ONLINE PHASE
+        Set the current value of the parameter
+        :param mu: the value of the current parameter.
+        :tye mu: tuple of real numbers
+        """
         assert len(mu) == len(self.mu_range), # mu and mu_range must have the same length
         self.mu = mu
         

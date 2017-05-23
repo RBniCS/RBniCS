@@ -30,11 +30,28 @@ from rbnics.utils.mpi import log, PROGRESS
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem
 class ParametrizedDifferentialProblem(ParametrizedProblem):
-    __metaclass__ = ABCMeta
+    __metaclass__ = ABCMeta # Abstract class
     
-    ## Default initialization of members
+    """
+    Abstract class describing a parametrized differential problem.
+    ..Functions implemented::
+    - :func: init
+    - :func: solve
+    - :func: compute_output
+    - :func: export_solution
+    - :func: import_solution
+    - :func: compute_theta
+    - :func: assemble_operator
+    - :func: get_stability_factor
+    
+    """
+    
     @override
     def __init__(self, V, **kwargs):
+    
+        """
+        Inizialization of the solution space V, forms terms and their order, number of terms in the affine expansion Q, inner products and boundary conditions, truth solution.
+        """
         # Call to parent
         ParametrizedProblem.__init__(self, type(self).__name__)
         
@@ -58,8 +75,10 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         # I/O
         self.folder["cache"] = self.folder_prefix + "/" + "cache"
     
-    ## Initialize data structures required for the offline phase
     def init(self):
+        """
+        Initialize data structures required for the offline phase
+        """
         self._init_operators()
         self._init_dirichlet_bc()
         
@@ -135,16 +154,18 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
                 self.dirichlet_bc = dirichlet_bc
                 self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous
     
-    ## Perform a truth solve
     def solve(self, **kwargs):
+        """
+        Perform a truth solve in case no precomputed solution is imported.
+        """
         (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
-        if cache_key in self._solution_cache:
+        if cache_key in self._solution_cache: 
             log(PROGRESS, "Loading truth solution from cache")
             assign(self._solution, self._solution_cache[cache_key])
         elif self.import_solution(self.folder["cache"], cache_file):
             log(PROGRESS, "Loading truth solution from file")
             self._solution_cache[cache_key] = copy(self._solution)
-        else:
+        else: # No precomputed solution available. Truth solve is performed.
             log(PROGRESS, "Solving truth problem")
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
@@ -154,17 +175,18 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             self.export_solution(self.folder["cache"], cache_file)
         return self._solution
     
-    ## Perform a truth solve. Internal method.
     @abstractmethod
     def _solve(self, **kwargs):
         raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
         
-    ## Perform a truth evaluation of the output
     def compute_output(self):
+        """
+        Perform a truth evaluation of the output.
+        :return: output evaluation.
+        """
         self._compute_output()
         return self._output
         
-    ## Perform a truth evaluation of the output. Internal method.
     def _compute_output(self):
         self._output = NotImplemented
         
@@ -176,8 +198,10 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
         return (cache_key, cache_file)
     
-    ## Export solution to file
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+        """
+        Export solution to file.
+        """
         if solution is None:
             solution = self._solution
         assert component is None or isinstance(component, (str, list))
@@ -194,59 +218,65 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         else:
             raise AssertionError("Invalid component in export_solution()")
             
-    ## Import solution from file
     def import_solution(self, folder, filename, solution=None, suffix=None):
+        """
+        Import solution from file
+        """
         if solution is None:
             solution = self._solution
         return import_(solution, folder, filename, suffix=suffix)
 
-    ## Return theta multiplicative terms of the affine expansion of the problem.
-    # Example of implementation:
-    #   m1 = self.mu[0]
-    #   m2 = self.mu[1]
-    #   m3 = self.mu[2]
-    #   if term == "a":
-    #       theta_a0 = m1
-    #       theta_a1 = m2
-    #       theta_a2 = m1*m2+m3/7.0
-    #       return (theta_a0, theta_a1, theta_a2)
-    #   elif term == "f":
-    #       theta_f0 = m1*m3
-    #       return (theta_f0,)
-    #   elif term == "dirichlet_bc":
-    #       theta_bc0 = 1.
-    #       return (theta_f0,)
-    #   else:
-    #       raise ValueError("Invalid term for compute_theta().")
+    
     @abstractmethod
     def compute_theta(self, term):
+        """Return theta multiplicative terms of the affine expansion of the problem.
+        Example of implementation for Poisson problem:
+           m1 = self.mu[0]
+           m2 = self.mu[1]
+           m3 = self.mu[2]
+           if term == "a":
+               theta_a0 = m1
+               theta_a1 = m2
+               theta_a2 = m1*m2+m3/7.0
+               return (theta_a0, theta_a1, theta_a2)
+           elif term == "f":
+               theta_f0 = m1*m3
+               return (theta_f0,)
+           elif term == "dirichlet_bc":
+               theta_bc0 = 1.
+               return (theta_f0,)
+           else:
+               raise ValueError("Invalid term for compute_theta().")
+        """
         raise NotImplementedError("The method compute_theta() is problem-specific and needs to be overridden.")
         
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
-    # Example of implementation:
-    #   if term == "a":
-    #       a0 = inner(grad(u),grad(v))*dx
-    #       return (a0,)
-    #   elif term == "f":
-    #       f0 = v*ds(1)
-    #       return (f0,)
-    #   elif term == "dirichlet_bc":
-    #       bc0 = [(V, Constant(0.0), boundaries, 3)]
-    #       return (bc0,)
-    #   elif term == "inner_product":
-    #       x0 = u*v*dx + inner(grad(u),grad(v))*dx
-    #       return (x0,)
-    #   else:
-    #       raise ValueError("Invalid term for assemble_operator().")
+    
     @abstractmethod
     def assemble_operator(self, term):
+        """ Return forms resulting from the discretization of the affine expansion of the problem operators.
+         Example of implementation for Poisson problem:
+           if term == "a":
+               a0 = inner(grad(u),grad(v))*dx
+               return (a0,)
+           elif term == "f":
+               f0 = v*ds(1)
+               return (f0,)
+           elif term == "dirichlet_bc":
+               bc0 = [(V, Constant(0.0), boundaries, 3)]
+               return (bc0,)
+           elif term == "inner_product":
+               x0 = u*v*dx + inner(grad(u),grad(v))*dx
+               return (x0,)
+           else:
+               raise ValueError("Invalid term for assemble_operator().")
+        """
         raise NotImplementedError("The method assemble_operator() is problem-specific and needs to be overridden.")
         
-    ## Return a lower bound for the coercivity constant
-    # Example of implementation:
-    #    return 1.0
-    # Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason
-    # for which it is not marked as @abstractmethod
     def get_stability_factor(self):
+        """Return a lower bound for the coercivity constant
+         Example of implementation:
+            return 1.0
+         Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason for which it is not marked as @abstractmethod
+        """
         raise NotImplementedError("The method get_stability_factor() is problem-specific and needs to be overridden.")
             
