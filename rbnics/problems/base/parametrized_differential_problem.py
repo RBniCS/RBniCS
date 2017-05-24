@@ -34,24 +34,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     
     """
     Abstract class describing a parametrized differential problem.
-    ..Functions implemented::
-    - :func: init
-    - :func: solve
-    - :func: compute_output
-    - :func: export_solution
-    - :func: import_solution
-    - :func: compute_theta
-    - :func: assemble_operator
-    - :func: get_stability_factor
+    Inizialization of the solution space V, forms terms and their order, number of terms in the affine expansion Q, inner products and boundary conditions, truth solution.
     
+    :param V: functional solution space.
     """
     
     @override
     def __init__(self, V, **kwargs):
     
-        """
-        Inizialization of the solution space V, forms terms and their order, number of terms in the affine expansion Q, inner products and boundary conditions, truth solution.
-        """
         # Call to parent
         ParametrizedProblem.__init__(self, type(self).__name__)
         
@@ -77,12 +67,15 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     
     def init(self):
         """
-        Initialize data structures required for the offline phase
+        Calls _init_operators() and _init_dirichlet_bc(). Internal method.
         """
         self._init_operators()
         self._init_dirichlet_bc()
         
     def _init_operators(self):
+        """
+        Initialize operators required for the offline phase.
+        """
         # Get helper strings depending on the number of basis components
         n_components = len(self.components)
         assert n_components > 0
@@ -105,6 +98,9 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             self.Q[term] = len(self.operator[term])
             
     def _init_dirichlet_bc(self):
+        """
+        Initialize boundary conditions required for the offline phase. Internal method.
+        """
         # Get helper strings depending on the number of basis components
         n_components = len(self.components)
         assert n_components > 0
@@ -177,20 +173,30 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     
     @abstractmethod
     def _solve(self, **kwargs):
+        """
+        Abstract method problem specific. Internal method.
+        """
         raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
         
     def compute_output(self):
         """
-        Perform a truth evaluation of the output.
+        Calls _compute_outut().
+        
         :return: output evaluation.
         """
         self._compute_output()
         return self._output
         
     def _compute_output(self):
+        """
+        Perform a truth evaluation of the output. Internal method.
+        """
         self._output = NotImplemented
         
     def _cache_key_and_file_from_kwargs(self, **kwargs):
+        """
+        
+        """
         for blacklist in ("components", "inner_product"):
             if blacklist in kwargs:
                 del kwargs[blacklist]
@@ -220,7 +226,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             
     def import_solution(self, folder, filename, solution=None, suffix=None):
         """
-        Import solution from file
+        Import solution from file.
         """
         if solution is None:
             solution = self._solution

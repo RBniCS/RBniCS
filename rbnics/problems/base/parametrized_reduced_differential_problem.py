@@ -35,22 +35,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     
     """
     Base class containing the interface of a projection based ROM for elliptic coercive problems.
+    Initialization of dimension of reduced problem N, boundary conditions, terms and their order, number of terms in the affine expansion Q, reduced operators and inner products, reduced solution, reduced basis functions matrix.
     
-    ..Functions implemented::
-    -:func: init()
-    -:func: solve()
-    -:func: compute_output()
-    -:func: build_reduced_operator()
-    -:func: postprocess_snapshot()
-    -:func: compute_error()
-    -:func: compute_relative_error()
-    -:func: compute_error_output()
-    -:func: compute_relative_error_output()
-    -:func: export_solution()
-    -:func: compute_theta()
-    -:func: assemble_operator()
-    -:func: get_stability_factor()
-    
+    :param truth_problem: class of the truth problem to be solved. 
     """
     
     @override
@@ -58,9 +45,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, **kwargs):
     
-        """
-        Initialization of dimension of reduced problem N, boundary conditions, terms and their order, number of terms in the affine expansion Q, reduced operators and inner products, reduced solution, reduced basis functions matrix.
-        """
         # Call to parent
         ParametrizedProblem.__init__(self, type(truth_problem).__name__)
         
@@ -98,13 +82,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     
     def init(self, current_stage="online"):
         """
-        Initialize data structures required for the online phase
+        Calls _init_operators() and _init_basis_functions().
         """
         self._init_operators(current_stage)
         self._init_basis_functions(current_stage)
         self._init_projection_truth_inner_product()
             
     def _init_operators(self, current_stage="online"):
+        """
+        Initialize data structures required for the online phase. Internal method.
+        """
         assert current_stage in ("online", "offline")
         if current_stage == "online":
             # Inner products
@@ -137,6 +124,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             raise AssertionError("Invalid stage in _init_operators().")
         
     def _init_basis_functions(self, current_stage="online"):
+        """
+        Basis functions are initialized. Internal method.
+        """
         assert current_stage in ("online", "offline")
         # Initialize basis functions mappings
         self.Z.init(self.components)
@@ -239,6 +229,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def solve(self, N=None, **kwargs):
         """
         Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
+        
         :param N : Dimension of the reduced problem
         :type N : integer
         :return: reduced solution 
@@ -261,6 +252,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     @abstractmethod
     def _solve(self, N, **kwargs):
+        """
+        Abstract method problem specific. Internal method.
+        """
         raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
         
     def project(self, snapshot, N=None, **kwargs):
@@ -296,7 +290,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     
     def compute_output(self):
         """
-        Perform an online evaluation of the output
+        Calls _compute_output().
+        
         :return: reduced output
         """
         N = self._solution.N
@@ -304,9 +299,15 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         return self._output
         
     def _compute_output(self, N):
+        """
+        Perform an online evaluation of the output.
+        """
         self._output = NotImplemented
         
     def _online_size_from_kwargs(self, N, **kwargs):
+        """
+        
+        """
         if len(self.components) > 1:
             if N is None:
                 all_components_in_kwargs = self.components[0] in kwargs
@@ -343,6 +344,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         return N, kwargs
         
     def _cache_key_from_N_and_kwargs(self, N, **kwargs):
+        """
+        Internal method.
+        
+        :param N: dimension of reduced problem.
+        """
         for blacklist in ("components", "inner_product"):
             if blacklist in kwargs:
                 del kwargs[blacklist]
@@ -371,6 +377,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def postprocess_snapshot(self, snapshot, snapshot_index):
         """
         Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing non-homogeneous Dirichlet boundary conditions.
+        
         :param snapshot: truth offline solution.
         :param snapshot_index: truth offline solution index.
         """
@@ -399,7 +406,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     
     def compute_error(self, N=None, **kwargs):
         """
-        Compute the error of the reduced order approximation with respect to the full order one for the current value of mu
+        Returns the function _compute_error() evaluated for the desired parameter.
+        
         :param N: dimension of reduced problem
         :return: error between online and offline solutions.
         """
@@ -413,6 +421,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         return self._compute_error(**kwargs)
         
     def _compute_error(self, **kwargs):
+        """
+        Compute the error of the reduced order approximation with respect to the full order one for the current value of mu.
+        """
         (components, inner_product) = self._preprocess_compute_error_and_relative_error_kwargs(**kwargs)
         # Storage
         error = dict()
@@ -434,7 +445,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def compute_relative_error(self, N=None, **kwargs):
         """
-        Compute the relative error of the reduced order approximation with respect to the full order one for the current value of mu
+        Returns the function _compute_relative_error() evaluated for the desired parameter.
+        
         :param N: dimension of reduced problem
         :return: relative error.
         """
@@ -442,6 +454,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         return self._compute_relative_error(absolute_error, **kwargs)
         
     def _compute_relative_error(self, absolute_error, **kwargs):
+        """
+        Compute the relative error of the reduced order approximation with respect to the full order one for the current value of mu.
+        """
         (components, inner_product) = self._preprocess_compute_error_and_relative_error_kwargs(**kwargs)
         # Handle trivial case from compute_error
         if len(components) == 1:
@@ -464,6 +479,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         return relative_error
                 
     def _preprocess_compute_error_and_relative_error_kwargs(self, **kwargs):
+        """
+        This function returns the components and the inner products, picking them up from the kwargs or choosing default ones in case they are not defined yet. Internal method.
+        
+        :return: components and inner_product.
+        """
         # Set default components, if needed
         if "components" not in kwargs:
             kwargs["components"] = self.components
@@ -487,6 +507,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     # Compute the error of the reduced order output with respect to the full order one
     # for the current value of mu
     def compute_error_output(self, N=None, **kwargs):
+        """
+        Returns the function _compute_error_output() evaluated for the desired parameter.
+        
+        :param N: dimension of reduced problem
+        :return: output error.
+        """
         if self._compute_error__previous_mu != self.mu:
             self.truth_problem.solve(**kwargs)
             # Do not carry out truth solves anymore for the same parameter
@@ -502,6 +528,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 
     # Internal method for output error computation
     def _compute_error_output(self, **kwargs):
+        """
+        Compute the output error of the reduced order approximation with respect to the full order one for the current value of mu.
+        """
         # Skip if no output defined
         if self._output is NotImplemented:
             assert self.truth_problem._output is NotImplemented
@@ -515,11 +544,20 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     # Compute the relative error of the reduced order approximation with respect to the full order one
     # for the current value of mu
     def compute_relative_error_output(self, N=None, **kwargs):
+        """
+        Returns the function _compute_relative_error_output() evaluated for the desired parameter.
+        
+        :param N: dimension of reduced problem
+        :return: relative output error.
+        """
         absolute_error_output = self.compute_error_output(N, **kwargs)
         return self._compute_relative_error_output(absolute_error_output, **kwargs)
         
     # Internal method for output error computation
     def _compute_relative_error_output(self, absolute_error_output, **kwargs):
+        """
+        Compute the realtive output error of the reduced order approximation with respect to the full order one for the current value of mu.
+        """
         # Skip if no output defined
         if self._output is NotImplemented:
             assert self.truth_problem._output is NotImplemented
@@ -532,20 +570,39 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             else:
                 return absolute_error_output/truth_output
         
-    ## Export solution to file
     @override
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+        """
+        Export reduced solution to file.
+        
+        :param folder: the folder into which we want to save the solution.
+        :param filename: the name of the file to be saved.
+        :param solution: the solution to be saved.
+        :param component: the component of the of the solution to be saved.
+        :param suffix: suffix to add to the name.
+        """
         if solution is None:
             solution = self._solution
         N = solution.N
         self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution, component, suffix)
 
-    ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
+        """
+        Return theta multiplicative terms of the affine expansion of the problem.
+        
+        :param term: the forms of the class of the problem.
+        :return: computed thetas.
+        """
         return self.truth_problem.compute_theta(term)
         
     ## Assemble the reduced order affine expansion
     def assemble_operator(self, term, current_stage="online"):
+        """
+        Terms and respective thetas are assembled.
+        
+        :param term: the forms of the class of the problem.
+        :param current_stage: online or offline stage.
+        """
         assert current_stage in ("online", "offline")
         if current_stage == "online": # load from file
             if term in self.terms and not term in self.operator:
@@ -665,7 +722,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         lifting /= self.compute_theta(term)[i]
         return lifting
     
-    ## Return a lower bound for the coercivity constant
     def get_stability_factor(self):
+        """
+        Return a lower bound for the coercivity constant.
+        """
         return self.truth_problem.get_stability_factor()
     

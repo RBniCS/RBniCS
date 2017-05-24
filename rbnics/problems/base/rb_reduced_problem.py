@@ -26,6 +26,12 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     class RBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         __metaclass__ = ABCMeta
         
+        """
+        Abstract class. All the terms for error estimator are initialized.
+        
+        :param truth_problem: class of the truth problem to be solved.
+        """
+        
         ## Default initialization of members.
         @override
         def __init__(self, truth_problem, **kwargs):
@@ -52,14 +58,18 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             self.riesz_terms = [term for term in self.terms]
             self.riesz_product_terms = [(term1, term2) for term1 in self.terms for term2 in self.terms if self.terms_order[term1] >= self.terms_order[term2]]
         
-        ## Initialize data structures required for the online phase
         @override
         def init(self, current_stage="online"):
+            """
+            Initialize data structures required for the online phase.
+            """
             ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
             self._init_error_estimation_operators(current_stage)
             
         def _init_error_estimation_operators(self, current_stage="online"):
-            # Also initialize data structures related to error estimation
+            """
+            Initialize data structures related to error estimation.
+            """
             assert current_stage in ("online", "offline")
             if current_stage == "online":
                 for term in self.riesz_product_terms:
@@ -106,14 +116,18 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             else:
                 self._riesz_solve_homogeneous_dirichlet_bc = None
         
-        ## Return an error bound for the current solution
         @abstractmethod
         def estimate_error(self):
+            """
+            Return an error bound for the current solution.
+            """
             raise NotImplementedError("The method estimate_error() is problem-specific and needs to be overridden.")
             
-        ## Return a relative error bound for the current solution
         @abstractmethod
         def estimate_relative_error(self):
+            """
+            Return a relative error bound for the current solution.
+            """
             raise NotImplementedError("The method estimate_relative_error() is problem-specific and needs to be overridden.")
         
         ## Return an error bound for the current output. Provides a default implementation which is consistent with the default
