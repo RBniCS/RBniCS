@@ -23,6 +23,12 @@ class ParametrizedProblem(object):
     classes. It defines the base interface with variables and
     functions that the derived classes have to set and/or
     overwrite.
+
+    ..Functions implemented::
+
+    - :func: 'set_mu_range()'
+    - :func: 'set_mu()'
+
     """
     
     def __init__(self, folder_prefix):
@@ -39,8 +45,8 @@ class ParametrizedProblem(object):
     
     def set_mu_range(self, mu_range):
         """
+        OFFLINE PHASE
         Set the range of the parameters.
-        
         :param mu_range: the range into which the parameter changes.
         :type mu_range: list of (min, max) pairs, such that len(self.mu) == len(self.mu_range)
         """
@@ -50,11 +56,11 @@ class ParametrizedProblem(object):
     
     def set_mu(self, mu):
         """
+        OFFLINE/ONLINE PHASE
         Set the current value of the parameter
-        
         :param mu: the value of the current parameter.
-        :type mu: tuple of real numbers
+        :tye mu: tuple of real numbers
         """
-        assert len(mu) == len(self.mu_range), "mu and mu_range must have the same length"
+        assert len(mu) == len(self.mu_range), # mu and mu_range must have the same length
         self.mu = mu
         
