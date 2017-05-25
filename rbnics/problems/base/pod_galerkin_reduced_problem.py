@@ -19,6 +19,9 @@
 from rbnics.utils.decorators import Extends
 
 def PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+    """
+    It extends the ParametrizedReducedDifferentialProblem_DerivedClass class.
+    """
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class PODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass

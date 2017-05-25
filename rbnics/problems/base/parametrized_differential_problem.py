@@ -67,14 +67,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     
     def init(self):
         """
-        Calls _init_operators() and _init_dirichlet_bc(). Internal method.
+        Calls _init_operators() and _init_dirichlet_bc(). 
         """
         self._init_operators()
         self._init_dirichlet_bc()
         
     def _init_operators(self):
         """
-        Initialize operators required for the offline phase.
+        Initialize operators required for the offline phase. Internal method.
         """
         # Get helper strings depending on the number of basis components
         n_components = len(self.components)

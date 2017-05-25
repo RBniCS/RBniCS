@@ -25,17 +25,26 @@ from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import print
 
 def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
+    """
+    It extends the DifferentialProblemReductionMethod_DerivedClas class.
+    """
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         __metaclass__ = ABCMeta
         
-        ## Default initialization of members
+        """
+        Abstract class. The folders used to store the snapshots and for the post processing data, the parameters for the greedy algorithm and the error estimator evaluations are initialized.
+        
+        :param truth_problem: class of the truth problem to be solved.
+        :return: reduced RB class.
+       
+        """
+        
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
                     
-            # $$ OFFLINE DATA STRUCTURES $$ #
             # Declare a GS object
             self.GS = None # GramSchmidt (for problems with one component) or dict of GramSchmidt (for problem with several components)
             # I/O
@@ -45,7 +54,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.greedy_error_estimators = GreedyErrorEstimatorsList()
             self.label = "RB"
             
-        ## Initialize data structures required for the offline phase
         @override
         def _init_offline(self):
             # Call parent to initialize inner product and reduced problem
@@ -91,9 +99,13 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Return
             return output
             
-        ## Perform the offline phase of the reduced order model
         @override
         def offline(self):
+            """
+            It performs the offline phase of the reduced order model.
+            
+            :return: reduced_problem where all offline data are stored.
+            """
             need_to_do_offline_stage = self._init_offline()
             if not need_to_do_offline_stage:
                 return self.reduced_problem
@@ -141,8 +153,12 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._finalize_offline()
             return self.reduced_problem
             
-        ## Update basis matrix
         def update_basis_matrix(self, snapshot):
+            """
+            It updates basis matrix.
+            
+            :param snapshot: last offline solution calculated. 
+            """
             if len(self.truth_problem.components) > 1:
                 for component in self.truth_problem.components:
                     self.reduced_problem.Z.enrich(snapshot, component=component)
@@ -155,9 +171,12 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.reduced_problem.N += 1
                 self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
                 
-        ## Choose the next parameter in the offline stage in a greedy fashion: wrapper with post processing
-        ## of the result (in particular, set greedily selected parameter and save to file)
         def greedy(self):
+            """
+            It chooses the next parameter in the offline stage in a greedy fashion: wrapper with post processing of the result (in particular, set greedily selected parameter and save to file)
+            
+            :return: max error estimator and the comparison with the first one calculated.
+            """
             (error_estimator_max, error_estimator_argmax) = self._greedy()
             self.truth_problem.set_mu(self.training_set[error_estimator_argmax])
             self.greedy_selected_parameters.append(self.training_set[error_estimator_argmax])
@@ -166,8 +185,13 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
             return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
             
-        ## Choose the next parameter in the offline stage in a greedy fashion
+        
         def _greedy(self):
+            """
+            It chooses the next parameter in the offline stage in a greedy fashion. Internal method.
+            
+            :return: max error estimator and the respective parameter.
+            """
             def solve_and_estimate_error(mu, index):
                 self.reduced_problem.set_mu(mu)
                 self.reduced_problem.solve()
@@ -175,10 +199,13 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 
             return self.training_set.max(solve_and_estimate_error)
             
-        # Compute the error of the reduced order approximation with respect to the full order one
-        # over the testing set
         @override
         def error_analysis(self, N=None, **kwargs):
+            """
+            It computes the error of the reduced order approximation with respect to the full order one over the testing set.
+            
+            :param N: dimension of reduced problem.
+            """
             N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
             if isinstance(N, dict):
                 N = min(N.values())
@@ -278,10 +305,13 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             self._finalize_error_analysis(**kwargs)
             
-        # Compute the speedup of the reduced order approximation with respect to the full order one
-        # over the testing set
         @override
         def speedup_analysis(self, N=None, **kwargs):
+            """
+            It computes the speedup of the reduced order approximation with respect to the full order one over the testing set.
+            
+            :param N: dimension of the reduced problem.
+            """
             N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
             if isinstance(N, dict):
                 N = min(N.values())
