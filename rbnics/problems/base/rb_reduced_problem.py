@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2017 by the RBniCS authors
+r# Copyright (C) 2015-2017 by the RBniCS authors
 #
 # This file is part of RBniCS.
 #
@@ -125,34 +125,34 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         @abstractmethod
         def estimate_error(self):
             """
-            Return an error bound for the current solution.
+            Returns an error bound for the current solution.
             """
             raise NotImplementedError("The method estimate_error() is problem-specific and needs to be overridden.")
             
         @abstractmethod
         def estimate_relative_error(self):
             """
-            Return a relative error bound for the current solution.
+            It returns a relative error bound for the current solution.
             """
             raise NotImplementedError("The method estimate_relative_error() is problem-specific and needs to be overridden.")
         
         
         def estimate_error_output(self):
 			"""
-			Return an error bound for the current output.
+			It returns an error bound for the current output.
 			"""
             return NotImplemented
             
         
         def estimate_relative_error_output(self):
 			"""
-			Return an relative error bound for the current output.
+			It returns an relative error bound for the current output.
 			"""
             return NotImplemented
    
         def build_error_estimation_operators(self):
 			"""
-			Build operators for error estimation.
+			It builds operators for error estimation.
 			"""
             if not self.build_error_estimation_operators__initialized: # this part does not depend on N, so we compute it only once
                 for term in self.riesz_terms:
@@ -176,7 +176,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         def compute_riesz(self, term):
 			"""
-			Compute the Riesz representation of term.
+			It computes the Riesz representation of term.
 			
 			:param term: the forms of the truth problem.
 			"""
@@ -220,7 +220,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         def assemble_error_estimation_operators(self, term, current_stage="online"):
 			"""
-			Assemble operators for error estimation
+			It assembles operators for error estimation.
 			"""
             assert current_stage in ("online", "offline")
             assert isinstance(term, tuple)

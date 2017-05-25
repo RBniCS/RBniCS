@@ -360,7 +360,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def build_reduced_operators(self):
         """
-        Assemble the reduced order affine expansion.
+        It sssembles the reduced order affine expansion.
         """
         # Terms
         for term in self.terms:
@@ -376,7 +376,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def postprocess_snapshot(self, snapshot, snapshot_index):
         """
-        Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing non-homogeneous Dirichlet boundary conditions.
+        Postprocessing a snapshot before adding it to the basis/snapshot matrix, for instance removing non-homogeneous Dirichlet boundary conditions.
         
         :param snapshot: truth offline solution.
         :param snapshot_index: truth offline solution index.
@@ -422,7 +422,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def _compute_error(self, **kwargs):
         """
-        Compute the error of the reduced order approximation with respect to the full order one for the current value of mu.
+        It computes the error of the reduced order approximation with respect to the full order one for the current value of mu.
         """
         (components, inner_product) = self._preprocess_compute_error_and_relative_error_kwargs(**kwargs)
         # Storage
@@ -445,7 +445,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def compute_relative_error(self, N=None, **kwargs):
         """
-        Returns the function _compute_relative_error() evaluated for the desired parameter.
+        It returns the function _compute_relative_error() evaluated for the desired parameter.
         
         :param N: dimension of reduced problem
         :return: relative error.
@@ -455,7 +455,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         
     def _compute_relative_error(self, absolute_error, **kwargs):
         """
-        Compute the relative error of the reduced order approximation with respect to the full order one for the current value of mu.
+        It computes the relative error of the reduced order approximation with respect to the full order one for the current value of mu.
         """
         (components, inner_product) = self._preprocess_compute_error_and_relative_error_kwargs(**kwargs)
         # Handle trivial case from compute_error
@@ -508,9 +508,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     # for the current value of mu
     def compute_error_output(self, N=None, **kwargs):
         """
-        Returns the function _compute_error_output() evaluated for the desired parameter.
+        It returns the function _compute_error_output() evaluated for the desired parameter.
         
-        :param N: dimension of reduced problem
+        :param N: dimension of reduced problem.
         :return: output error.
         """
         if self._compute_error__previous_mu != self.mu:
@@ -529,7 +529,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     # Internal method for output error computation
     def _compute_error_output(self, **kwargs):
         """
-        Compute the output error of the reduced order approximation with respect to the full order one for the current value of mu.
+        It computes the output error of the reduced order approximation with respect to the full order one for the current value of mu.
         """
         # Skip if no output defined
         if self._output is NotImplemented:
@@ -545,7 +545,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     # for the current value of mu
     def compute_relative_error_output(self, N=None, **kwargs):
         """
-        Returns the function _compute_relative_error_output() evaluated for the desired parameter.
+        It returns the function _compute_relative_error_output() evaluated for the desired parameter.
         
         :param N: dimension of reduced problem
         :return: relative output error.
@@ -556,7 +556,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     # Internal method for output error computation
     def _compute_relative_error_output(self, absolute_error_output, **kwargs):
         """
-        Compute the realtive output error of the reduced order approximation with respect to the full order one for the current value of mu.
+        It computes the realtive output error of the reduced order approximation with respect to the full order one for the current value of mu.
         """
         # Skip if no output defined
         if self._output is NotImplemented:
@@ -573,7 +573,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     @override
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         """
-        Export reduced solution to file.
+        It exports reduced solution to file.
         
         :param folder: the folder into which we want to save the solution.
         :param filename: the name of the file to be saved.
