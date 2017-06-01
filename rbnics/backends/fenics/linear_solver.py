@@ -16,7 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import DirichletBC, PETScLUSolver
+from ufl import Form
+from dolfin import assemble, DirichletBC, PETScLUSolver
 from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
 from rbnics.backends.fenics.matrix import Matrix
 from rbnics.backends.fenics.vector import Vector
@@ -24,17 +25,40 @@ from rbnics.backends.fenics.function import Function
 from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
 
 @Extends(AbstractLinearSolver)
-@BackendFor("fenics", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), (list_of(DirichletBC), dict_of(str, list_of(DirichletBC)), None)))
+@BackendFor("fenics", inputs=((Matrix.Type(), Form), Function.Type(), (Vector.Type(), Form), (list_of(DirichletBC), dict_of(str, list_of(DirichletBC)), None)))
 class LinearSolver(AbstractLinearSolver):
     @override
     def __init__(self, lhs, solution, rhs, bcs=None):
         self.solution = solution
+        # Store lhs
+        assert isinstance(lhs, (Matrix.Type(), Form))
+        if isinstance(lhs, Matrix.Type()):
+            if bcs is not None:
+                # Create a copy of lhs, in order not to change
+                # the original references when applying bcs
+                self.lhs = lhs.copy()
+            else:
+                self.lhs = lhs
+        elif isinstance(lhs, Form):
+            self.lhs = assemble(lhs)
+        else:
+            raise AssertionError("Invalid lhs provided to FEniCS LinearSolver")
+        # Store rhs
+        assert isinstance(rhs, (Vector.Type(), Form))
+        if isinstance(rhs, Vector.Type()):
+            if bcs is not None:
+                # Create a copy of rhs, in order not to change
+                # the original references when applying bcs
+                self.rhs = rhs.copy()
+            else:
+                self.rhs = rhs
+        elif isinstance(rhs, Form):
+            self.rhs = assemble(rhs)
+        else:
+            raise AssertionError("Invalid rhs provided to FEniCS LinearSolver")
+        # Store and apply BCs
+        self.bcs = bcs
         if bcs is not None:
-            # Create a copy of lhs and rhs, in order not to 
-            # change the original references when applying bcs
-            self.lhs = lhs.copy()
-            self.rhs = rhs.copy()
-            self.bcs = bcs
             # Apply BCs
             assert isinstance(self.bcs, (dict, list))
             if isinstance(self.bcs, list):
@@ -48,10 +72,6 @@ class LinearSolver(AbstractLinearSolver):
                         bc.apply(self.lhs, self.rhs)
             else:
                 raise AssertionError("Invalid type for bcs.")
-        else:
-            self.lhs = lhs
-            self.rhs = rhs
-            self.bcs = None
             
     @override
     def set_parameters(self, parameters):

@@ -41,8 +41,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     # Avoid useless assemblies
                     self._estimate_error__previous_mu = None
                     self._estimate_error__previous_self_N = None
-                    # Precomputation of error estimation operators is disabled
-                    self.folder.pop("error_estimation")
                     
                 ## Initialize data structures required for the online phase
                 @override
@@ -193,7 +191,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             # called internally by assemble_operator() since it is not possible
             # to precompute operators, and thus they should not be saved
             def disabled_save(self, folder, filename):
-                raise AttributeError("Cannot save to file due to inefficient evaluation")
+                pass
             online_storage.save = types.MethodType(disabled_save, online_storage)
             # Make sure to raise an error if the load() method of the operator,
             # since we have not saved anything and it should never be called

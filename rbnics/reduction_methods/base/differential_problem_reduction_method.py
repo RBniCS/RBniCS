@@ -53,17 +53,21 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.reduced_problem = ReducedProblemFactory(self.truth_problem, self, **self._init_kwargs)
         
         # Prepare folders and init reduced problem
-        all_folders = Folders()
-        all_folders.update(self.folder)
-        all_folders.update(self.reduced_problem.folder)
-        all_folders.pop("testing_set") # this is required only in the error analysis
-        at_least_one_folder_created = all_folders.create()
+        at_least_one_folder_created = self._create_folders()
         if not at_least_one_folder_created:
             self.reduced_problem.init("online")
             return False # offline construction should be skipped, since data are already available
         else:
             self.reduced_problem.init("offline")
             return True # offline construction should be carried out
+            
+    def _create_folders(self):
+        all_folders = Folders()
+        all_folders.update(self.folder)
+        assert self.reduced_problem is not None
+        all_folders.update(self.reduced_problem.folder)
+        all_folders.pop("testing_set") # this is required only in the error analysis
+        return all_folders.create()
             
     ## Finalize data structures required after the offline phase
     @override

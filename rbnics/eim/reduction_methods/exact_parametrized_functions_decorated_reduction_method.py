@@ -36,6 +36,20 @@ def ExactParametrizedFunctionsDecoratedReductionMethod(DifferentialProblemReduct
             self.training_set.distributed_max = False
             return import_successful
         
+        @override
+        def _create_folders(self):
+            # Precomputation of error estimation operators is disabled, so there is no need
+            # to create the error estimation folder.
+            error_estimation_folder = self.reduced_problem.folder.pop("error_estimation")
+            # Call Parent
+            output = DifferentialProblemReductionMethod_DerivedClass._create_folders(self)
+            # Restore the "error_estimation" estimation key. We still need it in the dictionary
+            # because it is an input argument to load/save methods of error estimation operators.
+            # These methods, however, have been patched so that they don't save anything to disk.
+            self.reduced_problem.folder["error_estimation"] = error_estimation_folder
+            # Return
+            return output
+            
     # return value (a class) for the decorator
     return ExactParametrizedFunctionsDecoratedReductionMethod_Class
     
