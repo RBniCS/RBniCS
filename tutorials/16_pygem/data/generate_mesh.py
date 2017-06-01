@@ -18,27 +18,46 @@
 
 from dolfin import *
 from mshr import *
+from naca import naca # available from https://github.com/dgorissen/naca
+import numpy as np
 
 # Create mesh
 rectangle = Rectangle(Point(-1., -2.5), Point(3, 2.5))
-NACA0012_n_points = 64
-NACA0012_points = list()
-for n in range(2*NACA0012_n_points):
-    if n < NACA0012_n_points:
-        x = n*1./NACA0012_n_points
-        sign = + 1.
-    else:
-        x = 1. + (NACA0012_n_points - n)*1./NACA0012_n_points
-        sign = - 1.
-    y = 5*0.12*(0.2969*sqrt(x) - 0.1260*x - 0.3516*x**2 + 0.2843*x**3 - 0.1036*x**4)
-    theta = -5*pi/180
-    rot_x = cos(theta)*x - sin(theta)*sign*y
-    rot_y = sin(theta)*x + cos(theta)*sign*y
-    NACA0012_points.append( Point(rot_x, rot_y) )
-NACA0012_points = NACA0012_points[::-1] # counter clockwise order
-NACA0012 = Polygon(NACA0012_points)
-domain = rectangle - NACA0012
+naca_type = "0012"
+naca_n_points = 200
+naca_angle = - 5.0
+naca_x, naca_y = naca(naca_type, naca_n_points)
+naca_x = np.array(naca_x)
+naca_y = np.array(naca_y)
+naca_x_center = np.average(naca_x)
+naca_y_center = np.average(naca_y)
+naca_x -= naca_x_center
+naca_x -= naca_y_center
+naca_x_rot = naca_x*np.cos(naca_angle*pi/180) - naca_y*np.sin(naca_angle*pi/180)
+naca_y_rot = naca_x*np.sin(naca_angle*pi/180) + naca_y*np.cos(naca_angle*pi/180)
+naca_x_rot += naca_x_center + (naca_x.max() - naca_x.min())/2
+naca_x_rot += naca_y_center + (naca_y.max() - naca_y.min())/2
+naca_points = [Point(x, y) for (x, y) in zip(naca_x_rot, naca_y_rot)]
+naca = Polygon(naca_points)
+domain = rectangle - naca
 mesh = generate_mesh(domain, 46)
+
+# Refine the mesh around the airfoil
+refinement_box = [(0., 2.), (-1., 1.)]
+for refinements in range(1):
+	cell_markers = CellFunction("bool", mesh)
+	cell_markers.set_all(False)
+	for cell in cells(mesh):
+		p = cell.midpoint()
+		if (
+		    (refinement_box[0][0] < p[0] < refinement_box[0][1]) 
+		        and
+			(refinement_box[1][0] < p[1] < refinement_box[1][1])
+		):
+			cell_markers[cell] = True
+	mesh = refine(mesh, cell_markers)
+
+# Plot mesh
 plot(mesh)
 interactive()
 

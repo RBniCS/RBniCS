@@ -16,9 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from sampling.discard_inadmissible_deformations import DiscardInadmissibleDeformations
+from shape_parametrization.utils.pygem_wrapper import PyGeMWrapper
 
 __all__ = [
-    'DiscardInadmissibleDeformations'
+    'PyGeMWrapper'
 ]
-        

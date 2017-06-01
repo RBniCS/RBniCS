@@ -16,9 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 from numpy import array_equal
+from dolfin import cells
 from rbnics.sampling.distributions import Distribution, EquispacedDistribution
 from rbnics.utils.decorators import Extends, override
+from rbnics.utils.mpi import print
 
 def DiscardInadmissibleDeformations(Distribution_DerivedClass):
     assert not issubclass(Distribution_DerivedClass, EquispacedDistribution) # we would have no way to replace inadmissible parameters
@@ -27,10 +30,12 @@ def DiscardInadmissibleDeformations(Distribution_DerivedClass):
     class DiscardInadmissibleDeformations_Class(Distribution_DerivedClass):
         def __init__(self, truth_problem):
             self.truth_problem = truth_problem
-            self.cells_orientation = [c.orientation() for c in cells(self.truth_problem.mesh)]
+            self.mesh = self.truth_problem.V.mesh()
+            self.cells_orientation = [c.orientation() for c in cells(self.mesh)]
             
         @override
         def sample(self, box, n):
+            print("Generating parameter space subset discarding inadmissible deformations.")
             # Backup truth problem mu
             mu_bak = tuple(list(self.truth_problem.mu))
             # Generate the parameter space subset
@@ -41,12 +46,15 @@ def DiscardInadmissibleDeformations(Distribution_DerivedClass):
                     set_i = Distribution_DerivedClass.sample(self, box, 1)
                     # Check if the deformation is admissible
                     self.truth_problem.set_mu(set_i[0])
-                    deformed_cells_orientation = [c.orientation() for c in cells(self.truth_problem.mesh)]
+                    deformed_cells_orientation = [c.orientation() for c in cells(self.mesh)]
                     deformation_admissible = array_equal(deformed_cells_orientation, self.cells_orientation)
+                    if not deformation_admissible:
+                        print("Inadmissible deformation corresponding to mu =", self.truth_problem.mu, "has been discarded.")
                 set_.append(self.truth_problem.mu)
             # Restore original truth problem mu
             self.truth_problem.set_mu(mu_bak)
             # Return
+            print("Parameter space subset generation completed.")
             return set_
             
     return DiscardInadmissibleDeformations_Class

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.eim.problems import DEIM, ExactParametrizedFunctions
 from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
 from shape_parametrization.problems.pygem_decorated_problem import PyGeM
 

@@ -16,11 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import hstack, zeros
-from pygem.freeform import FFD
-from pygem.radial import RBF
-from pygem.params import FFDParameters, RBFParameters
+from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from shape_parametrization.utils import PyGeMWrapper
 
 def PyGeMDecoratedProblem(pygem_morphing_type, pygem_parameters_filename, pygem_index_and_component_to_mu_index_map, **decorator_kwargs):
     assert pygem_morphing_type in ("FFD", "RBF")
@@ -31,86 +29,92 @@ def PyGeMDecoratedProblem(pygem_morphing_type, pygem_parameters_filename, pygem_
         pygem_index_and_component_to_mu_index_map=pygem_index_and_component_to_mu_index_map
     )
     def PyGeMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
+        assert (
+            hasattr(ParametrizedDifferentialProblem_DerivedClass, "ProblemDecorators")
+        ), \
+        """DEIM or ExactParametrizedFunctions are required when using PyGeM for mesh motion, while apparently your problem does not have any decorator!
+Please make sure that you decorate your problem as
+    @PyGeM(...)
+    @DEIM(...)
+rather than
+    @DEIM(...)
+    @PyGeM(...)
+because DEIM (or ExactParametrizedFunctions) have to be applied first."""
+        
+        assert EIM not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators, "EIM is not supported for mesh motion by PyGeM"
+        
+        assert (
+            DEIM in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators
+                or
+            ExactParametrizedFunctions in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators
+        ), \
+        """DEIM or ExactParametrizedFunctions are required when using PyGeM for mesh motion. 
+Please make sure that you decorate your problem as
+    @PyGeM(...)
+    @DEIM(...)
+rather than
+    @DEIM(...)
+    @PyGeM(...)
+because DEIM (or ExactParametrizedFunctions) have to be applied first."""
+        
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
-        class PyGeMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
+        class PyGeMDecoratedProblem_BaseClass(ParametrizedDifferentialProblem_DerivedClass):
         
             @override
             def __init__(self, V, **kwargs):
                 # Call the standard initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
-                # Initialize pygem deformation
-                self.mesh = V.mesh()
-                self.dim = self.mesh.ufl_cell().geometric_dimension()
-                self.reference_mesh_points = self.mesh.coordinates().copy()
-                if pygem_morphing_type == "FFD":
-                    ParametersType = FFDParameters
-                    MorphingType = FFD
-                elif pygem_morphing_type == "RBF":
-                    ParametersType = RBFParameters
-                    MorphingType = RBF
-                else:
-                    raise RuntimeError("Invalid morphing.")
-                self.params = ParametersType()
-                self.params.read_parameters(filename=pygem_parameters_filename)
-                self.mesh_motion = MorphingType(self.params, self._to_3d(self.reference_mesh_points))
-                
-            @override
-            def set_mu(self, mu):
-                ParametrizedDifferentialProblem_DerivedClass.set_mu(self, mu)
-                # Update pygem parameters and data structures
-                if pygem_morphing_type == "FFD":
-                    for (pygem_index_and_component, mu_index) in pygem_index_and_component_to_mu_index_map.iteritems():
-                        assert len(pygem_index_and_component) == 2
-                        pygem_index = pygem_index_and_component[0]
-                        assert len(pygem_index) == 3
-                        pygem_component = pygem_index_and_component[1]
-                        assert pygem_component in ("x", "y", "z")
-                        if pygem_component == "x":
-                            self.params.array_mu_x[pygem_index[0]][pygem_index[1]][pygem_index[2]] = self.mu[mu_index]
-                        elif pygem_component == "y":
-                            self.params.array_mu_y[pygem_index[0]][pygem_index[1]][pygem_index[2]] = self.mu[mu_index]
-                        elif pygem_component == "z":
-                            self.params.array_mu_z[pygem_index[0]][pygem_index[1]][pygem_index[2]] = self.mu[mu_index]
-                        else:
-                            raise AssertionError("Invalid component.")
-                elif pygem_morphing_type == "RBF":
-                    control_points_displacements = zeros((self.params.n_control_points, 3))
-                    for (pygem_index_and_component, mu_index) in pygem_index_and_component_to_mu_index_map.iteritems():
-                        assert len(pygem_index_and_component) == 2
-                        pygem_index = pygem_index_and_component[0]
-                        assert isinstance(pygem_index, int)
-                        pygem_component = pygem_index_and_component[1]
-                        assert pygem_component in ("x", "y", "z")
-                        control_points_displacements[pygem_index] = self.mu[mu_index]
-                    self.params.deformed_control_points = control_points_displacements + self.params.original_control_points
-                    self.mesh_motion.weights = self._get_weights(self.params.original_control_points, self.params.deformed_control_points)
-                else:
-                    raise RuntimeError("Invalid morphing.")
-                # Deform the mesh
-                self.mesh_motion.perform()
-                self.mesh.coordinates()[:] = self._from_3d(self.mesh_motion.modified_mesh_points)
-                 
+                # Initialize a PyGeM wrapper
+                self.pygem_wrapper = PyGeMWrapper(
+                    pygem_morphing_type=pygem_morphing_type,
+                    pygem_parameters_filename=pygem_parameters_filename,
+                    pygem_index_and_component_to_mu_index_map=pygem_index_and_component_to_mu_index_map
+                )
+                self.pygem_wrapper.init(V.mesh())
+
             ## Initialize data structures required for the offline phase
             @override
             def init(self):
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Check consistency between self.mu and parameters related to deformation.
                 # Cannot do that in the initialization becase self.mu is not available yet.
-                assert len(pygem_index_to_mu_index_map) <= len(self.mu)
-                assert min(pygem_index_to_mu_index_map.values()) >= 0
-                assert max(pygem_index_to_mu_index_map.values()) < len(self.mu)
-                
-            def _to_3d(self, coordinates):
-                for _ in range(self.dim, 3):
-                    coordinates = np.hstack((coordinates, np.zeros((coordinates.shape[0], 1), dtype=coordinates.dtype)))
-                return coordinates
-                
-            def _from_3d(self, coordinates):
-                return coordinates[:, :self.dim]
-        
-        # return value (a class) for the decorator
-        return PyGeMDecoratedProblem_Class
-    
+                assert len(pygem_index_and_component_to_mu_index_map) <= len(self.mu)
+                assert min(pygem_index_and_component_to_mu_index_map.values()) >= 0
+                assert max(pygem_index_and_component_to_mu_index_map.values()) < len(self.mu)
+                                
+            @override
+            def set_mu(self, mu):
+                ParametrizedDifferentialProblem_DerivedClass.set_mu(self, mu)
+                # Update pygem parameters and data structures
+                self.pygem_wrapper.update(mu)
+                 
+        if ExactParametrizedFunctions in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators:
+            @Extends(PyGeMDecoratedProblem_BaseClass, preserve_class_name=True)
+            class PyGeMDecoratedProblem_ExactParametrizedFunctionsClass(PyGeMDecoratedProblem_BaseClass):
+                @override
+                def set_mu(self, mu):
+                    PyGeMDecoratedProblem_BaseClass.set_mu(self, mu)
+                    # Deform mesh
+                    self.pygem_wrapper.move_mesh()
+                    
+            # return value (a class) for the decorator
+            return PyGeMDecoratedProblem_ExactParametrizedFunctionsClass
+            
+        elif DEIM in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators:
+            @Extends(PyGeMDecoratedProblem_BaseClass, preserve_class_name=True)
+            class PyGeMDecoratedProblem_DEIMClass(PyGeMDecoratedProblem_BaseClass):
+                ## Deform the mesh as a function of the geometrical parameters and then export solution to file
+                @override
+                def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+                    self.pygem_wrapper.move_mesh()
+                    PyGeMDecoratedProblem_BaseClass.export_solution(self, folder, filename, solution, component, suffix)
+                    self.pygem_wrapper.reset_reference()
+                    
+            # return value (a class) for the decorator
+            return PyGeMDecoratedProblem_DEIMClass
+        else:
+            raise AssertionError("DEIM or ExactParametrizedFunctions are required when using PyGeM for mesh motion.")
+
     # return the decorator itself
     return PyGeMDecoratedProblem_Decorator
     

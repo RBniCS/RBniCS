@@ -34,13 +34,13 @@ def PyGeMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClas
         @override
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             if sampling is None:
-                sampling = DiscardInadmissibleDeformations(UniformDistribution)()
+                sampling = DiscardInadmissibleDeformations(UniformDistribution)(self.truth_problem)
             return DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
             
         @override
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             if sampling is None:
-                sampling = DiscardInadmissibleDeformations(UniformDistribution)()
+                sampling = DiscardInadmissibleDeformations(UniformDistribution)(self.truth_problem)
             return DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
             
     # return value (a class) for the decorator
