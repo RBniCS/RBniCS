@@ -288,7 +288,7 @@ if has_IDA:
                 elif key == "final_time":
                     self._final_time = value
                 elif key == "initial_time":
-                    assert value == 0
+                    self._initial_time = value
                 elif key == "integrator_type":
                     assert value == "ida"
                 elif key == "max_time_steps":

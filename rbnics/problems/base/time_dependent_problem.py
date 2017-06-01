@@ -32,11 +32,12 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
             # Store quantities related to the time discretization
             self.t = 0.
+            self.t0 = 0.
             self.dt = None
             self.T  = None
             # Additional options for time stepping may be stored in the following dict
             self._time_stepping_parameters = dict()
-            self._time_stepping_parameters["initial_time"] = 0.
+            self._time_stepping_parameters["initial_time"] = self.t0
             # Matrices/vectors resulting from the truth discretization
             self.initial_condition = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components)
             self.initial_condition_is_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
@@ -55,6 +56,13 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             assert isinstance(t, (float, int))
             t = float(t)
             self.t = t
+            
+        ## Set initial time
+        def set_initial_time(self, t0):
+            assert isinstance(t0, (float, int))
+            t0 = float(t0)
+            self.t0 = t0
+            self._time_stepping_parameters["initial_time"] = t0
                     
         ## Set time step size
         def set_time_step_size(self, dt):

@@ -30,6 +30,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         ## Default initialization of members
         @override
         @sync_setters("truth_problem", "set_time", "t")
+        @sync_setters("truth_problem", "set_initial_time", "t0")
         @sync_setters("truth_problem", "set_time_step_size", "dt")
         @sync_setters("truth_problem", "set_final_time", "T")
         def __init__(self, truth_problem, **kwargs):
@@ -38,12 +39,14 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             # Store quantities related to the time discretization
             assert truth_problem.t == 0.
             self.t = 0.
+            self.t0  = truth_problem.t0
             assert truth_problem.dt is not None
             self.dt = truth_problem.dt
             assert truth_problem.T is not None
             self.T  = truth_problem.T
             # Additional options for time stepping may be stored in the following dict
             self._time_stepping_parameters = dict()
+            self._time_stepping_parameters["initial_time"] = self.t0
             self._time_stepping_parameters["time_step_size"] = self.dt
             self._time_stepping_parameters["final_time"] = self.T
             # Online reduced space dimension
@@ -64,6 +67,13 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         ## Set current time
         def set_time(self, t):
             self.t = t
+            
+        ## Set initial time
+        def set_initial_time(self, t0):
+            assert isinstance(t0, (float, int))
+            t0 = float(t0)
+            self.t0 = t0
+            self._time_stepping_parameters["initial_time"] = t0
             
         ## Set time step size
         def set_time_step_size(self, dt):

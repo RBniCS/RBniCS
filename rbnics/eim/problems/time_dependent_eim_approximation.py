@@ -25,6 +25,7 @@ class TimeDependentEIMApproximation(EIMApproximation):
     
     @override
     @sync_setters("truth_problem", "set_time", "t")
+    @sync_setters("truth_problem", "set_initial_time", "t0")
     @sync_setters("truth_problem", "set_time_step_size", "dt")
     @sync_setters("truth_problem", "set_final_time", "T")
     def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):
