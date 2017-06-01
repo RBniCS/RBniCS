@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends import transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.utils.decorators import Extends, override
 
 def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -42,6 +44,13 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     self.initial_condition_product = OnlineAffineExpansionStorage(self.Q_ic, self.Q_ic)
                 else:
                     raise AssertionError("Invalid stage in _init_error_estimation_operators().")
+                    
+        ## Build operators for error estimation
+        def build_error_estimation_operators(self):
+            # Call Parent
+            ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self)
+            # Assemble initial condition product error estimation operator
+            self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "offline") 
         
         ## Assemble operators for error estimation
         @override
