@@ -90,11 +90,11 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             if len(self.truth_problem.components) > 1:
                 self.POD = dict()
                 for component in self.truth_problem.components:
-                    assert len(self.truth_problem.inner_product[component]) == 1
+                    assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     inner_product = self.truth_problem.inner_product[component][0]
                     self.POD[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
             else:
-                assert len(self.truth_problem.inner_product) == 1
+                assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                 inner_product = self.truth_problem.inner_product[0]
                 self.POD = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
                 

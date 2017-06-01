@@ -22,8 +22,8 @@ import types
 from math import sqrt
 from numpy import isclose
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
-from rbnics.backends import assign, BasisFunctionsMatrix, copy, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
+from rbnics.backends import AffineExpansionStorage, assign, BasisFunctionsMatrix, copy, sum, product, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
 from rbnics.utils.mpi import log, print, PROGRESS
@@ -58,6 +58,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         # Reduced order operators
         self.operator = dict() # from string to OnlineAffineExpansionStorage
         self.inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        self._projection_truth_inner_product = None # setup by init()
         # Solution
         self._solution = OnlineFunction()
         self._solution_cache = dict() # of Functions
@@ -78,6 +79,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def init(self, current_stage="online"):
         self._init_operators(current_stage)
         self._init_basis_functions(current_stage)
+        self._init_projection_truth_inner_product()
             
     def _init_operators(self, current_stage="online"):
         assert current_stage in ("online", "offline")
@@ -196,6 +198,20 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         else:
             raise AssertionError("Invalid stage in _init_basis_functions().")
             
+    def _init_projection_truth_inner_product(self):
+        if len(self.components) > 1:
+            all_truth_inner_products = list()
+            for component in self.components:
+                assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                all_truth_inner_products.append(self.truth_problem.inner_product[component][0])
+            all_truth_inner_products = tuple(all_truth_inner_products)
+        else:
+            assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            all_truth_inner_products = (self.truth_problem.inner_product[0], )
+        all_truth_inner_products = AffineExpansionStorage(all_truth_inner_products)
+        all_truth_inner_products_thetas = (1.,)*len(all_truth_inner_products)
+        self._projection_truth_inner_product = sum(product(all_truth_inner_products_thetas, all_truth_inner_products))
+            
     # Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
     @override
     def solve(self, N=None, **kwargs):
@@ -219,6 +235,37 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     @abstractmethod
     def _solve(self, N, **kwargs):
         raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
+        
+    def project(self, snapshot, N=None, **kwargs):
+        N, kwargs = self._online_size_from_kwargs(N, **kwargs)
+        N += self.N_bc
+        
+        # Get truth inner product matrix for orthogonalization
+        X = self._projection_truth_inner_product
+        
+        # Get reduced inner product matrix for orthogonalization
+        if len(self.components) > 1:
+            all_reduced_inner_products = OnlineAffineExpansionStorage(len(self.components))
+            for (index, component) in enumerate(self.components):
+                assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                all_reduced_inner_products[index] = self.inner_product[component][0]
+            all_reduced_inner_products = tuple(all_reduced_inner_products)
+            all_reduced_inner_products_thetas = (1.,)*len(all_reduced_inner_products)
+            X_N = sum(product(all_reduced_inner_products_thetas, all_reduced_inner_products[:N, :N]))
+        else:
+            assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            X_N = self.inner_product[:N, :N][0]
+                
+        # Get basis
+        Z = self.Z[:N]
+        
+        # Define storage for projected solution
+        projected_snapshot_N = OnlineFunction(N)
+        
+        # Project on reduced basis
+        solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(Z)*X*snapshot)
+        solver.solve()
+        return projected_snapshot_N
     
     # Perform an online evaluation of the output
     def compute_output(self):

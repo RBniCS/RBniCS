@@ -85,18 +85,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 raise AssertionError("Invalid stage in _init_error_estimation_operators().")
                 
         def _init_riesz_solve_inner_product(self):
-            if len(self.components) > 1:
-                all_inner_products = list()
-                for component in self.components:
-                    assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
-                    all_inner_products.append(self.truth_problem.inner_product[component][0])
-                all_inner_products = tuple(all_inner_products)
-            else:
-                assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                all_inner_products = (self.truth_problem.inner_product[0], )
-            all_inner_products = AffineExpansionStorage(all_inner_products)
-            all_inner_products_thetas = (1.,)*len(all_inner_products)
-            self._riesz_solve_inner_product = sum(product(all_inner_products_thetas, all_inner_products))
+            self._riesz_solve_inner_product = self._projection_truth_inner_product
         
         def _init_riesz_solve_homogeneous_dirichlet_bc(self):
             if len(self.components) > 1:

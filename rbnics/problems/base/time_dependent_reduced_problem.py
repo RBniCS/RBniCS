@@ -297,6 +297,13 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def _compute_output(self, N):
             self._output_over_time = [NotImplemented]*len(self._solution_over_time)
             self._output = NotImplemented
+            
+        def project(self, snapshot_over_time, N=None, **kwargs):
+            projected_snapshot_N_over_time = list()
+            for snapshot in snapshot_over_time:
+                projected_snapshot_N = ParametrizedReducedDifferentialProblem_DerivedClass.project(self, snapshot, N, **kwargs)
+                projected_snapshot_N_over_time.append(projected_snapshot_N)
+            return projected_snapshot_N_over_time
         
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class
