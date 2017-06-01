@@ -89,7 +89,7 @@ gaussian_problem.set_mu_range(mu_range)
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(gaussian_problem)
 reduced_basis_method.set_Nmax(20, EIM=21)
-reduced_basis_method.set_tolerance(1e-4, EIM=1e-1)
+reduced_basis_method.set_tolerance(1e-4, EIM=1e-3)
 
 # 5. Perform the offline phase
 first_mu = (0.5,1.0)
