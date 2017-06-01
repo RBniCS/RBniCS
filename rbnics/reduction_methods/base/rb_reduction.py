@@ -51,7 +51,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Call parent to initialize inner product and reduced problem
             output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
             
-            # Declare a new POD for each basis component
+            # Declare a new GS for each basis component
             if len(self.truth_problem.components) > 1:
                 self.GS = dict()
                 for component in self.truth_problem.components:
@@ -61,8 +61,33 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             else:
                 assert len(self.truth_problem.inner_product) == 1
                 inner_product = self.truth_problem.inner_product[0]
-                self.GS = GramSchmidt(inner_product)                
+                self.GS = GramSchmidt(inner_product)
                 
+            # The current value of mu may have been already used when computing lifting functions.
+            # If so, we do not want to use that value again at the first greedy iteration, because
+            # for steady linear problems with only one paremtrized BC the resulting first snapshot 
+            # would have been already stored in the basis, being exactly equal to the lifting.
+            # To this end, we arbitrarily change the current value of mu to the first parameter
+            # in the training set.
+            if output: # do not bother changing current mu if offline stage has been already completed
+                need_to_change_mu = False
+                if len(self.truth_problem.components) > 1:
+                    for component in self.truth_problem.components:
+                        if self.reduced_problem.dirichlet_bc[component] and not self.reduced_problem.dirichlet_bc_are_homogeneous[component]:
+                            need_to_change_mu = True
+                            break
+                else:
+                    if self.reduced_problem.dirichlet_bc and not self.reduced_problem.dirichlet_bc_are_homogeneous:
+                        need_to_change_mu = True
+                if (
+                    need_to_change_mu
+                        and
+                    len(self.truth_problem.mu) > 0 # there is not much we can change in the trivial case without any parameter!
+                ):
+                    new_mu = self.training_set[0]
+                    assert self.truth_problem.mu != new_mu
+                    self.truth_problem.set_mu(new_mu)
+                    
             # Return
             return output
             
@@ -134,7 +159,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
         ## of the result (in particular, set greedily selected parameter and save to file)
         def greedy(self):
             (error_estimator_max, error_estimator_argmax) = self._greedy()
-            self.reduced_problem.set_mu(self.training_set[error_estimator_argmax])
+            self.truth_problem.set_mu(self.training_set[error_estimator_argmax])
             self.greedy_selected_parameters.append(self.training_set[error_estimator_argmax])
             self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
             self.greedy_error_estimators.append(error_estimator_max)

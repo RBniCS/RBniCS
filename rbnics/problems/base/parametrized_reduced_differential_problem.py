@@ -24,7 +24,6 @@ from numpy import isclose
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import assign, BasisFunctionsMatrix, copy, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from rbnics.sampling import ParameterSpaceSubset
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
 from rbnics.utils.mpi import log, print, PROGRESS
@@ -194,12 +193,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 total_N_bc = sum(N_bc.values())
             # Note that, however, self.N is not increased, so it will actually contain the number
             # of basis functions without the lifting ones.
-            if total_N_bc > 0:
-                # Finally, since the solution for the current value of mu is already in the basis (at least for linear problems),
-                # we arbitrarily generate a new value of mu to the minimum of the range
-                new_mu = tuple([r[0] for r in self.mu_range])
-                assert self.mu != new_mu
-                self.set_mu(new_mu)
         else:
             raise AssertionError("Invalid stage in _init_basis_functions().")
             
