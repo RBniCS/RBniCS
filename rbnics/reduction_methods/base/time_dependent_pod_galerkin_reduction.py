@@ -23,6 +23,11 @@ from rbnics.utils.io import ErrorAnalysisTable
 def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class TimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
+    
+        ## Update the snapshots matrix
+        def update_snapshots_matrix(self, snapshot):
+            snapshot = snapshot[self.reduction_first_index:self.reduction_last_index:self.reduction_delta_index]
+            DifferentialProblemReductionMethod_DerivedClass.update_snapshots_matrix(self, snapshot)
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
