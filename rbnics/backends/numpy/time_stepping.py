@@ -130,25 +130,19 @@ class _ScipyImplicitEuler(object):
             class _LinearSolver(LinearSolver):
                 def __init__(self_, t):
                     zero = Function(self.solution.vector().N) # equal to zero
-                    lhs = self.jacobian_eval(t, self.solution, zero, 1./self._time_step_size)
-                    rhs = self.residual_eval(t, self.solution, zero)
+                    minus_solution_previous_over_dt = Function(self.solution.vector().N)
+                    minus_solution_previous_over_dt.vector()[:] = - self.solution_previous.vector()/self._time_step_size
+                    lhs = self.jacobian_eval(t, zero, zero, 1./self._time_step_size)
+                    rhs = - self.residual_eval(t, zero, minus_solution_previous_over_dt)
                     bcs_t = DirichletBC(lhs, rhs, self.bc_eval(t))
-                    bcs_t_previous = DirichletBC(lhs, rhs, self.bc_eval(t - self._time_step_size))
-                    bcs_increment = bcs_t - bcs_t_previous
-                    solution_increment = Function(self.solution.vector().N) # equal to zero
-                    LinearSolver.__init__(self_, lhs, solution_increment, - rhs, bcs_increment.bcs)
-                    
-                def solve(self_):
-                    solution_increment = LinearSolver.solve(self_)
-                    self.solution.vector()[:] += solution_increment.vector()
-                    return self.solution
+                    LinearSolver.__init__(self_, lhs, self.solution, rhs, bcs_t.bcs)
                 
             self.solver_generator = _LinearSolver
         elif problem_type == "nonlinear":
             class _NonlinearSolver(NonlinearSolver):
                 def __init__(self_, t):
-                    self_.solution = Function(self.solution.vector().N) # equal to zero
-                    self_.solution_dot = Function(self.solution.vector().N) # equal to zero
+                    self_.solution = Function(self.solution.vector().N)
+                    self_.solution_dot = Function(self.solution.vector().N)
                     def _store_solution_and_solution_dot(solution):
                         self_.solution.vector()[:] = solution
                         self_.solution_dot.vector()[:] = (solution - self.solution_previous.vector())/self._time_step_size
@@ -212,13 +206,13 @@ class _ScipyImplicitEuler(object):
         all_solutions.append(function_copy(self.solution))
         all_solutions_dot = list()
         all_solutions_dot.append(Function(self.solution.N))
+        self.solution_previous.vector()[:] = self.solution.vector()
         for t in all_t:
             if self._report is not None:
                 self._report(t)
             solver = self.solver_generator(t)
             if self.problem_type == "nonlinear":
                 solver.set_parameters(self._nonlinear_solver_parameters)
-            self.solution_previous.vector()[:] = self.solution.vector()
             solution = solver.solve()
             if self._monitor is not None:
                 self._monitor(t, solution)
@@ -226,6 +220,7 @@ class _ScipyImplicitEuler(object):
             solution_dot = Function(self.solution.vector().N)
             solution_dot.vector()[:] = (all_solutions[-1].vector() - all_solutions[-2].vector())/self._time_step_size
             all_solutions_dot.append(solution_dot)
+            self.solution_previous.vector()[:] = self.solution.vector()
         
         return all_t, all_solutions, all_solutions_dot
         
