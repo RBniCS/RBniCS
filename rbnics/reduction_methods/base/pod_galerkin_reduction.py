@@ -23,17 +23,17 @@ from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import print
 
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
-	"""
-	It extends the DifferentialProblemReductionMethod_DerivedClass class.
-	"""
+    """
+    It extends the DifferentialProblemReductionMethod_DerivedClass class.
+    """
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class PODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
-		"""
-		Abstract class. The folders used to store the snapshots and for the post processing data, the data stracture for the POD algorithm are initialized.
-		
-		:param truth_problem: the class of the truth problem to be solved.
-		:return: PODGalerkinReduction_Class where all the offline data are stored.
-		"""
+        """
+        Abstract class. The folders used to store the snapshots and for the post processing data, the data stracture for the POD algorithm are initialized.
+        
+        :param truth_problem: the class of the truth problem to be solved.
+        :return: PODGalerkinReduction_Class where all the offline data are stored.
+        """
 
         
         @override
@@ -58,11 +58,11 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 
         
         def set_tolerance(self, tol, **kwargs):
-			"""
-			It sets tolerance to be used as stopping criterion.
-			
-			:param tol: the tolerance to be used.
-			"""
+            """
+            It sets tolerance to be used as stopping criterion.
+            
+            :param tol: the tolerance to be used.
+            """
             if len(self.truth_problem.components) > 1:
                 if tol is None:
                     all_components_in_kwargs = self.truth_problem.components[0] in kwargs
@@ -117,11 +117,11 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             
         @override
         def offline(self):
-			"""
-			It performs the offline phase of the reduced order model.
-			
-			:return: reduced_problem where all offline data are stored.
-			"""
+            """
+            It performs the offline phase of the reduced order model.
+            
+            :return: reduced_problem where all offline data are stored.
+            """
             need_to_do_offline_stage = self._init_offline()
             if not need_to_do_offline_stage:
                 return self.reduced_problem
@@ -165,11 +165,11 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
 
         
         def update_snapshots_matrix(self, snapshot):
-			"""
-			It updates the snapshots matrix.
-			
-			:param snapshot: last offline solution computed.
-			"""
+            """
+            It updates the snapshots matrix.
+            
+            :param snapshot: last offline solution computed.
+            """
             if len(self.truth_problem.components) > 1:
                 for component in self.truth_problem.components:
                     self.POD[component].store_snapshot(snapshot, component=component)
@@ -178,9 +178,9 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             
         
         def compute_basis_functions(self):
-			"""
-			It computes basis functions performing POD solving an eigenvalue problem.
-			"""
+            """
+            It computes basis functions performing POD solving an eigenvalue problem.
+            """
             if len(self.truth_problem.components) > 1:
                 for component in self.truth_problem.components:
                     print("# POD for component", component)
@@ -204,12 +204,12 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
        
         @override
         def error_analysis(self, N=None, **kwargs):
-			"""
-			It computes the error of the reduced order approximation with respect to the full order one
-			over the testing set
-			
-			:param N: dimension of the reduced problem.
-			"""
+            """
+            It computes the error of the reduced order approximation with respect to the full order one
+            over the testing set
+            
+            :param N: dimension of the reduced problem.
+            """
             N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
             if isinstance(N, dict):
                 N = min(N.values())
@@ -269,12 +269,12 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
         
         @override
         def speedup_analysis(self, N=None, **kwargs):
-			"""
-			It computes the speedup of the reduced order approximation with respect to the full order one
-			over the testing set
-			
-			:param N: 
-			"""
+            """
+            It computes the speedup of the reduced order approximation with respect to the full order one
+            over the testing set
+            
+            :param N: 
+            """
             N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
             if isinstance(N, dict):
                 N = min(N.values())

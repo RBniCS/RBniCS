@@ -95,15 +95,15 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 raise AssertionError("Invalid stage in _init_error_estimation_operators().")
                 
         def _init_riesz_solve_inner_product(self):
-			"""
-			Inizialization of the inner product needed in order to compute the Riesz representations. Internal method.
-			"""
+            """
+            Inizialization of the inner product needed in order to compute the Riesz representations. Internal method.
+            """
             self._riesz_solve_inner_product = self._projection_truth_inner_product
         
         def _init_riesz_solve_homogeneous_dirichlet_bc(self):
-			"""
-			Inizialization of the boundary conditions needed in order to compute the Riesz representations. Internal method.
-			"""
+            """
+            Inizialization of the boundary conditions needed in order to compute the Riesz representations. Internal method.
+            """
             if len(self.components) > 1:
                 all_truth_dirichlet_bcs = list()
                 for component in self.components:
@@ -138,22 +138,22 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         
         def estimate_error_output(self):
-			"""
-			It returns an error bound for the current output.
-			"""
+            """
+            It returns an error bound for the current output.
+            """
             return NotImplemented
             
         
         def estimate_relative_error_output(self):
-			"""
-			It returns an relative error bound for the current output.
-			"""
+            """
+            It returns an relative error bound for the current output.
+            """
             return NotImplemented
    
         def build_error_estimation_operators(self):
-			"""
-			It builds operators for error estimation.
-			"""
+            """
+            It builds operators for error estimation.
+            """
             if not self.build_error_estimation_operators__initialized: # this part does not depend on N, so we compute it only once
                 for term in self.riesz_terms:
                     if self.terms_order[term] == 1:
@@ -175,11 +175,11 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 
         
         def compute_riesz(self, term):
-			"""
-			It computes the Riesz representation of term.
-			
-			:param term: the forms of the truth problem.
-			"""
+            """
+            It computes the Riesz representation of term.
+            
+            :param term: the forms of the truth problem.
+            """
             # Compute the Riesz representor
             assert self.terms_order[term] in (1, 2)
             if self.terms_order[term] == 1:
@@ -219,9 +219,9 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 raise AssertionError("Invalid value for order of term " + term)
         
         def assemble_error_estimation_operators(self, term, current_stage="online"):
-			"""
-			It assembles operators for error estimation.
-			"""
+            """
+            It assembles operators for error estimation.
+            """
             assert current_stage in ("online", "offline")
             assert isinstance(term, tuple)
             assert len(term) == 2

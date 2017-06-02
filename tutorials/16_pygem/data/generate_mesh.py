@@ -45,17 +45,17 @@ mesh = generate_mesh(domain, 46)
 # Refine the mesh around the airfoil
 refinement_box = [(0., 2.), (-1., 1.)]
 for refinements in range(1):
-	cell_markers = CellFunction("bool", mesh)
-	cell_markers.set_all(False)
-	for cell in cells(mesh):
-		p = cell.midpoint()
-		if (
-		    (refinement_box[0][0] < p[0] < refinement_box[0][1]) 
-		        and
-			(refinement_box[1][0] < p[1] < refinement_box[1][1])
-		):
-			cell_markers[cell] = True
-	mesh = refine(mesh, cell_markers)
+    cell_markers = CellFunction("bool", mesh)
+    cell_markers.set_all(False)
+    for cell in cells(mesh):
+        p = cell.midpoint()
+        if (
+            (refinement_box[0][0] < p[0] < refinement_box[0][1]) 
+                and
+            (refinement_box[1][0] < p[1] < refinement_box[1][1])
+        ):
+            cell_markers[cell] = True
+    mesh = refine(mesh, cell_markers)
 
 # Plot mesh
 plot(mesh)
