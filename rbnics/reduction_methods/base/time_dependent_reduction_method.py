@@ -56,6 +56,14 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             T = float(T)
             assert T <= self.truth_problem.T
             self.reduction_last_index = int(T/self.truth_problem.dt)
+            
+        def postprocess_snapshot(self, snapshot_over_time, snapshot_index):
+            postprocessed_snapshot = list()
+            for (k, snapshot_k) in enumerate(snapshot_over_time):
+                self.reduced_problem.set_time(k*self.reduced_problem.dt)
+                postprocessed_snapshot_k = DifferentialProblemReductionMethod_DerivedClass.postprocess_snapshot(self, snapshot_k, snapshot_index)
+                postprocessed_snapshot.append(postprocessed_snapshot_k)
+            return postprocessed_snapshot
         
         ## Initialize data structures required for the speedup analysis phase
         @override
