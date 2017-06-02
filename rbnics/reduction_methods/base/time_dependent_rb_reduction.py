@@ -17,7 +17,7 @@
 #
 
 from math import sqrt
-from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, transpose
+from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature, transpose
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.io import ErrorAnalysisTable
 
@@ -257,7 +257,8 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.reduced_problem.solve()
                 error_estimator_over_time = self.reduced_problem.estimate_error()
                 error_estimator_squared_over_time = [v**2 for v in error_estimator_over_time]
-                return sqrt(self.time_quadrature.integrate(error_estimator_squared_over_time))
+                time_quadrature = TimeQuadrature((0., self.truth_problem.T), error_estimator_squared_over_time)
+                return sqrt(time_quadrature.integrate())
                 
             return self.training_set.max(solve_and_estimate_error)
             
@@ -272,10 +273,12 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             def solution_preprocess_setitem(list_over_time):
                 list_squared_over_time = [v**2 for v in list_over_time]
-                return sqrt(self.time_quadrature.integrate(list_squared_over_time))
+                time_quadrature = TimeQuadrature((0., self.truth_problem.T), list_squared_over_time)
+                return sqrt(time_quadrature.integrate())
                 
             def output_preprocess_setitem(list_over_time):
-                return self.time_quadrature.integrate(list_over_time)
+                time_quadrature = TimeQuadrature((0., self.truth_problem.T), list_over_time)
+                return time_quadrature.integrate()
             
             if len(components) > 1:
                 all_components_string = ""

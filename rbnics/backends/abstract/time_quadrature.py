@@ -20,9 +20,9 @@ from rbnics.utils.decorators import AbstractBackend
 
 @AbstractBackend
 class TimeQuadrature(object):
-    def __init__(self, time_interval, time_step_size):
+    def __init__(self, time_interval, function_over_time):
         pass
         
-    def integrate(self, function):
+    def integrate(self):
         pass
         

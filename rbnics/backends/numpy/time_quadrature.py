@@ -18,10 +18,11 @@
 
 from scipy.integrate import simps
 from rbnics.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
+from rbnics.backends.numpy.function import Function
 from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractTimeQuadrature)
-@BackendFor("common", inputs=(tuple_of(float), list_of(float)))
+@BackendFor("numpy", inputs=(tuple_of(float), list_of(Function.Type())))
 class TimeQuadrature(AbstractTimeQuadrature):
     def __init__(self, time_interval, function_over_time):
         assert len(function_over_time) > 1
@@ -29,5 +30,13 @@ class TimeQuadrature(AbstractTimeQuadrature):
         self._function_over_time = function_over_time
         
     def integrate(self):
-        return simps(self._function_over_time, dx=self._time_step_size)
+        vector_over_time = list()
+        N = self._function_over_time[0].N
+        for function in self._function_over_time:
+            assert function.N == N
+            vector_over_time.append(function.vector())
+        integrated_vector = simps(vector_over_time, dx=self._time_step_size, axis=0)
+        integrated_function = Function(N)
+        integrated_function.vector()[:] = integrated_vector
+        return integrated_function
         

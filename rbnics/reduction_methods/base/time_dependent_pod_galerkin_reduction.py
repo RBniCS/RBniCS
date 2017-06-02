@@ -17,6 +17,7 @@
 #
 
 from math import sqrt
+from rbnics.backends import TimeQuadrature
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.io import ErrorAnalysisTable
 
@@ -38,19 +39,19 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             else:
                 components = self.truth_problem.components
                 
-            time_quadrature = TimeQuadrature((0., self.truth_problem.T), self.truth_problem.dt)
-                
             for component in components:
                 def solution_preprocess_setitem(component):
                     def solution_preprocess_setitem__function(list_over_time):
                         list_squared_over_time = [v**2 for v in list_over_time]
-                        return sqrt(self.time_quadrature.integrate(list_squared_over_time))
+                        time_quadrature = TimeQuadrature((0., self.truth_problem.T), list_squared_over_time)
+                        return sqrt(time_quadrature.integrate())
                     return solution_preprocess_setitem__function
                 for column_prefix in ("error_", "relative_error_"):
                     ErrorAnalysisTable.preprocess_setitem(column_prefix + component, solution_preprocess_setitem(component))
                 
             def output_preprocess_setitem(list_over_time):
-                return self.time_quadrature.integrate(list_over_time)
+                time_quadrature = TimeQuadrature((0., self.truth_problem.T), list_over_time)
+                return time_quadrature.integrate()
             for column in ("error_output", "relative_error_output"):
                 ErrorAnalysisTable.preprocess_setitem(column, solution_preprocess_setitem)
                 

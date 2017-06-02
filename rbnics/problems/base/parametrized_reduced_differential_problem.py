@@ -588,8 +588,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                     has_non_homogeneous_dirichlet_bc = self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
                 if has_non_homogeneous_dirichlet_bc:
                     # Compute lifting functions for the value of mu possibly provided by the user
-                    theta_bc = self.compute_theta(term)
-                    Q_dirichlet_bcs = len(theta_bc)
+                    Q_dirichlet_bcs = len(self.compute_theta(term))
                     # Temporarily override compute_theta method to return only one nonzero 
                     # theta term related to boundary conditions
                     standard_compute_theta = self.truth_problem.compute_theta
@@ -614,8 +613,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                             solve_message += " for component " + component
                         solve_message += " (obtained for mu = " + str(self.mu) + ") in the basis matrix"
                         print(solve_message)
-                        lifting = self.truth_problem.solve()
-                        lifting /= theta_bc[i]
+                        lifting = self._lifting_truth_solve(term, i)
                         self.Z.enrich(lifting, component=component)
                     # Restore the standard compute_theta method
                     self.truth_problem.compute_theta = standard_compute_theta
@@ -623,6 +621,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 raise ValueError("Invalid term for assemble_operator().")
         else:
             raise AssertionError("Invalid stage in assemble_operator().")
+    
+    def _lifting_truth_solve(self, term, i):
+        lifting = self.truth_problem.solve()
+        lifting /= self.compute_theta(term)[i]
+        return lifting
     
     ## Return a lower bound for the coercivity constant
     def get_stability_factor(self):

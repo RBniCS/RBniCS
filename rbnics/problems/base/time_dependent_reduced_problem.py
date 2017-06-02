@@ -17,7 +17,7 @@
 #
 
 from math import sqrt
-from rbnics.backends import assign, copy, transpose
+from rbnics.backends import assign, copy, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from rbnics.utils.decorators import Extends, override, sync_setters
 from rbnics.utils.mpi import log, PROGRESS
@@ -297,6 +297,19 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def _compute_output(self, N):
             self._output_over_time = [NotImplemented]*len(self._solution_over_time)
             self._output = NotImplemented
+            
+        @override
+        def _lifting_truth_solve(self, term, i):
+            lifting_over_time = self.truth_problem.solve()
+            theta_over_time = list()
+            for k in range(len(lifting_over_time)):
+                self.set_time(k*self.dt)
+                theta_over_time.append(self.compute_theta(term)[i])
+            lifting_quadrature = TimeQuadrature((0., self.truth_problem.T), lifting_over_time)
+            theta_quadrature = TimeQuadrature((0., self.truth_problem.T), theta_over_time)
+            lifting = lifting_quadrature.integrate()
+            lifting /= theta_quadrature.integrate()
+            return lifting
             
         def project(self, snapshot_over_time, N=None, **kwargs):
             projected_snapshot_N_over_time = list()
