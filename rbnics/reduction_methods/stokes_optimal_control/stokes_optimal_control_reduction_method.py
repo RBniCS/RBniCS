@@ -30,4 +30,21 @@ class StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod):
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         DifferentialProblemReductionMethod.__init__(self, truth_problem, **kwargs)
-            
+        # I/O
+        self.folder["state_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
+        self.folder["adjoint_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
+        
+    ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problems
+    def postprocess_snapshot(self, snapshot, snapshot_index):
+        # Compute supremizers
+        print("state supremizer solve for mu =", self.truth_problem.mu)
+        state_supremizer = self.truth_problem.solve_state_supremizer()
+        self.truth_problem.export_solution(self.folder["state_supremizer_snapshots"], "truth_" + str(snapshot_index) + "_s", state_supremizer, component="s")
+        print("adjoint supremizer solve for mu =", self.truth_problem.mu)
+        adjoint_supremizer = self.truth_problem.solve_adjoint_supremizer()
+        self.truth_problem.export_solution(self.folder["adjoint_supremizer_snapshots"], "truth_" + str(snapshot_index) + "_r", adjoint_supremizer, component="r")
+        # Call parent
+        snapshot = DifferentialProblemReductionMethod.postprocess_snapshot(self, snapshot, snapshot_index)
+        # Return a tuple
+        return (snapshot, state_supremizer, adjoint_supremizer)
+        

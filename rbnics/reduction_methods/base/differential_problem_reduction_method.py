@@ -68,6 +68,36 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         all_folders.update(self.reduced_problem.folder)
         all_folders.pop("testing_set") # this is required only in the error analysis
         return all_folders.create()
+        
+    def postprocess_snapshot(self, snapshot, snapshot_index):
+        """
+        Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing non-homogeneous Dirichlet boundary conditions.
+        
+        :param snapshot: truth offline solution.
+        :param snapshot_index: truth offline solution index.
+        """
+        n_components = len(self.reduced_problem.components)
+        # Get helper strings and functions depending on the number of basis components
+        if n_components > 1:
+            dirichlet_bc_string = "dirichlet_bc_{c}"
+            def has_non_homogeneous_dirichlet_bc(component):
+                return self.reduced_problem.dirichlet_bc[component] and not self.reduced_problem.dirichlet_bc_are_homogeneous[component]
+            def assert_lengths(component, theta_bc):
+                assert self.reduced_problem.N_bc[component] == len(theta_bc)
+        else:
+            dirichlet_bc_string = "dirichlet_bc"
+            def has_non_homogeneous_dirichlet_bc(component):
+                return self.reduced_problem.dirichlet_bc and not self.reduced_problem.dirichlet_bc_are_homogeneous
+            def assert_lengths(component, theta_bc):
+                assert self.reduced_problem.N_bc == len(theta_bc)
+        # Carry out postprocessing
+        for component in self.reduced_problem.components:
+            if has_non_homogeneous_dirichlet_bc(component):
+                theta_bc = self.reduced_problem.compute_theta(dirichlet_bc_string.format(c=component))
+                assert_lengths(component, theta_bc)
+                return snapshot - self.reduced_problem.Z[:self.reduced_problem.N_bc]*theta_bc
+            else:
+                return snapshot
             
     ## Finalize data structures required after the offline phase
     @override

@@ -38,10 +38,6 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
         # Call to parent
         ParametrizedReducedDifferentialProblem.__init__(self, truth_problem, **kwargs)
         
-        # $$ OFFLINE DATA STRUCTURES $$ #
-        # I/O
-        self.folder["supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
-            
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
         assembled_operator = dict()
@@ -97,15 +93,4 @@ class StokesReducedProblem(ParametrizedReducedDifferentialProblem):
             return self.inner_product["s"]
         else:
             return ParametrizedReducedDifferentialProblem.assemble_operator(self, term, current_stage)
-            
-    ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
-    def postprocess_snapshot(self, snapshot, snapshot_index):
-        # Compute supremizer
-        print("supremizer solve for mu =", self.truth_problem.mu)
-        supremizer = self.truth_problem.solve_supremizer()
-        self.truth_problem.export_solution(self.folder["supremizer_snapshots"], "truth_" + str(snapshot_index) + "_s", supremizer, component="s")
-        # Call parent
-        snapshot = ParametrizedReducedDifferentialProblem.postprocess_snapshot(self, snapshot, snapshot_index)
-        # Return a tuple
-        return (snapshot, supremizer)
-        
+                        

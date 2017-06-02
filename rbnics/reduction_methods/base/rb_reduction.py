@@ -123,7 +123,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 print("truth solve for mu =", self.truth_problem.mu)
                 snapshot = self.truth_problem.solve()
                 self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(run), snapshot)
-                snapshot = self.reduced_problem.postprocess_snapshot(snapshot, run)
+                snapshot = self.postprocess_snapshot(snapshot, run)
                 
                 print("update basis matrix")
                 self.update_basis_matrix(snapshot)

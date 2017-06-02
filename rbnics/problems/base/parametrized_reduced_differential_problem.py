@@ -373,36 +373,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), "offline")
         else:
             self.inner_product = self.assemble_operator("inner_product", "offline")
-        
-    def postprocess_snapshot(self, snapshot, snapshot_index):
-        """
-        Postprocessing a snapshot before adding it to the basis/snapshot matrix, for instance removing non-homogeneous Dirichlet boundary conditions.
-        
-        :param snapshot: truth offline solution.
-        :param snapshot_index: truth offline solution index.
-        """
-        n_components = len(self.components)
-        # Get helper strings and functions depending on the number of basis components
-        if n_components > 1:
-            dirichlet_bc_string = "dirichlet_bc_{c}"
-            def has_non_homogeneous_dirichlet_bc(component):
-                return self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]
-            def assert_lengths(component):
-                assert self.N_bc[component] == len(theta_bc)
-        else:
-            dirichlet_bc_string = "dirichlet_bc"
-            def has_non_homogeneous_dirichlet_bc(component):
-                return self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
-            def assert_lengths(component):
-                assert self.N_bc == len(theta_bc)
-        # Carry out postprocessing
-        for component in self.components:
-            if has_non_homogeneous_dirichlet_bc(component):
-                theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
-                assert_lengths(component)
-                return snapshot - self.Z[:self.N_bc]*theta_bc
-            else:
-                return snapshot
     
     def compute_error(self, N=None, **kwargs):
         """
