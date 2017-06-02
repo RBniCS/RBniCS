@@ -128,7 +128,9 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             # Declare new POD object(s)
             if len(self.truth_problem.components) > 1:
-                self.POD = dict()
+                self.POD_time_trajectory = dict()
+                if self.POD_greedy_basis_extension == "POD":
+                    self.POD_basis = dict()
                 for component in self.truth_problem.components:
                     assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     inner_product = self.truth_problem.inner_product[component][0]
