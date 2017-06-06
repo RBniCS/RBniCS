@@ -688,7 +688,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             raise AssertionError("Invalid stage in assemble_operator().")
     
     def _lifting_truth_solve(self, term, i):
-        lifting = self.truth_problem.solve()
+        # Since lifting solves for different values of i are associated to the same parameter 
+        # but with a patched call to compute_theta(), which returns the i-th component, we set
+        # a custom cache_key so that they are properly differentiated when reading from cache.
+        lifting = self.truth_problem.solve(cache_key="lifting_" + str(i))
         lifting /= self.compute_theta(term)[i]
         return lifting
     

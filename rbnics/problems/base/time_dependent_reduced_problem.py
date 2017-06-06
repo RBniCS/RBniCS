@@ -300,7 +300,10 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         @override
         def _lifting_truth_solve(self, term, i):
-            lifting_over_time = self.truth_problem.solve()
+            # Since lifting solves for different values of i are associated to the same parameter 
+            # but with a patched call to compute_theta(), which returns the i-th component, we set
+            # a custom cache_key so that they are properly differentiated when reading from cache.
+            lifting_over_time = self.truth_problem.solve(cache_key="lifting_" + str(i))
             theta_over_time = list()
             for k in range(len(lifting_over_time)):
                 self.set_time(k*self.dt)
