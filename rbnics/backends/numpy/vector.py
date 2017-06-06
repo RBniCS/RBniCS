@@ -82,13 +82,13 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
         
     def __mul__(self, other):
         output = VectorBaseType.__mul__(self, other)
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self._arithmetic_operations_preserve_attributes(other, output, other_is_vector=False)
         return output
         
     def __rmul__(self, other):
         output = VectorBaseType.__rmul__(self, other)
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self._arithmetic_operations_preserve_attributes(other, output, other_is_vector=False)
         return output
         

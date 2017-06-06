@@ -89,7 +89,7 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
             output[:] = output_as_matrix[:]
         else:
             output = MatrixBaseType.__mul__(self, other)
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
         elif isinstance(other, Function.Type()):
             self._arithmetic_operations_preserve_attributes(other.vector(), output, other_order=1)
@@ -99,7 +99,7 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
         
     def __rmul__(self, other):
         output = MatrixBaseType.__rmul__(self, other)
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
         return output
         

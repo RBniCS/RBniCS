@@ -22,6 +22,7 @@ from numpy import asmatrix as AffineExpansionStorageContent_AsMatrix
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.numpy.matrix import Matrix as OnlineMatrix
 from rbnics.backends.numpy.vector import Vector as OnlineVector
+from rbnics.backends.numpy.function import Function as OnlineFunction
 from rbnics.backends.numpy.wrapping import slice_to_array, slice_to_size
 from rbnics.utils.io import NumpyIO as AffineExpansionStorageContent_IO, Folders, PickleIO as ContentSizeIO, PickleIO as ContentTypeIO, PickleIO as DictIO
 from rbnics.utils.decorators import BackendFor, Extends, list_of, override
@@ -80,12 +81,15 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         # Save size
         it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
         item = self._content[it.multi_index]
-        assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), float)) or item is None # these are the only types which we are interested in saving
+        assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), OnlineFunction.Type(), float)) or item is None # these are the only types which we are interested in saving
         if isinstance(item, OnlineMatrix.Type()):
             ContentTypeIO.save_file("matrix", full_directory, "content_type")
             ContentSizeIO.save_file((item.M, item.N), full_directory, "content_size")
         elif isinstance(item, OnlineVector.Type()):
             ContentTypeIO.save_file("vector", full_directory, "content_type")
+            ContentSizeIO.save_file(item.N, full_directory, "content_size")
+        elif isinstance(item, OnlineFunction.Type()):
+            ContentTypeIO.save_file("function", full_directory, "content_type")
             ContentSizeIO.save_file(item.N, full_directory, "content_size")
         elif isinstance(item, float):
             ContentTypeIO.save_file("scalar", full_directory, "content_type")
@@ -122,7 +126,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         assert ContentTypeIO.exists_file(full_directory, "content_type")
         content_type = ContentTypeIO.load_file(full_directory, "content_type")
         assert ContentSizeIO.exists_file(full_directory, "content_size")
-        assert content_type in ("matrix", "vector", "scalar", "empty")
+        assert content_type in ("matrix", "vector", "function", "scalar", "empty")
         if content_type == "matrix":
             (M, N) = ContentSizeIO.load_file(full_directory, "content_size")
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
@@ -130,7 +134,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 self._content[it.multi_index].M = M
                 self._content[it.multi_index].N = N
                 it.iternext()
-        elif content_type == "vector":
+        elif content_type == "vector" or content_type == "function":
             N = ContentSizeIO.load_file(full_directory, "content_size")
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             while not it.finished:
@@ -188,8 +192,13 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                     item = self._content[it.multi_index]
                     
                     # Slice content
-                    assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type()))
-                    sliced_item = item[slices]
+                    assert isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type(), OnlineFunction.Type()))
+                    if isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type())):
+                        sliced_item = item[slices]
+                    elif isinstance(item, OnlineFunction.Type()):
+                        sliced_item = item.vector()[slices]
+                    else: # impossible to arrive here anyway thanks to the assert
+                        raise AssertionError("Invalid item in slicing.")
                         
                     # Copy dicts
                     sliced_item._basis_component_index_to_component_name = self._basis_component_index_to_component_name
@@ -201,14 +210,19 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                         assert len(output_content_size) == 2
                         sliced_item.M = output_content_size[0]
                         sliced_item.N = output_content_size[1]
-                    elif isinstance(item, OnlineVector.Type()):
+                    elif isinstance(item, (OnlineVector.Type(), OnlineFunction.Type())):
                         assert len(output_content_size) == 1
                         sliced_item.N = output_content_size[0]
                     else: # impossible to arrive here anyway thanks to the assert
                         raise AssertionError("Invalid item in slicing.")
                     
                     # Assign
-                    output[it.multi_index] = sliced_item
+                    if isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type())):
+                        output[it.multi_index] = sliced_item
+                    elif isinstance(item, OnlineFunction.Type()):
+                        output[it.multi_index] = OnlineFunction(sliced_item)
+                    else: # impossible to arrive here anyway thanks to the assert
+                        raise AssertionError("Invalid item in slicing.")
                     
                     # Increment
                     it.iternext()
@@ -227,10 +241,13 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         assert isinstance(item, (
             OnlineMatrix.Type(),            # output e.g. of Z^T*A*Z
             OnlineVector.Type(),            # output e.g. of Z^T*F
+            OnlineFunction.Type(),          # for initial conditions of unsteady problems
             float,                          # output of Riesz_F^T*X*Riesz_F
             AbstractFunctionsList,          # auxiliary storage of Riesz representors
             AbstractBasisFunctionsMatrix    # auxiliary storage of Riesz representors
         ))
+        if isinstance(item, OnlineFunction.Type()):
+            item = item.vector()
         assert hasattr(item, "_basis_component_index_to_component_name") == hasattr(item, "_component_name_to_basis_component_index")
         assert hasattr(item, "_component_name_to_basis_component_index") == hasattr(item, "_component_name_to_basis_component_length")
         if hasattr(item, "_component_name_to_basis_component_index"): 

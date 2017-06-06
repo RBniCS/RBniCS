@@ -43,6 +43,30 @@ class _Function_Type(object):
         
     def __iter__(self):
         return imap(float, self._v.flat)
+        
+    def __abs__(self):
+        return Function(self._v.__abs__())
+        
+    def __add__(self, other):
+        return Function(self._v.__add__(other._v))
+        
+    def __sub__(self, other):
+        return Function(self._v.__sub__(other._v))
+        
+    def __mul__(self, other):
+        if isinstance(other, (float, int)):
+            return Function(self._v.__mul__(other))
+        else:
+            return NotImplemented
+        
+    def __rmul__(self, other):
+        if isinstance(other, (float, int)):
+            return Function(self._v.__rmul__(other))
+        else:
+            return NotImplemented
+        
+    def __neg__(self):
+        return Function(self._v.neg())
 
         
 @backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)

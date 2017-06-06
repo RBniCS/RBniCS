@@ -35,9 +35,11 @@ def product(thetas, operators, thetas2=None):
         assert thetas2 is None
         assert len(thetas) == len(operators)
         # Single for loop version:
-        output = 0
-        for (theta, operator) in zip(thetas, operators):
-            output += theta*operator
+        for (index, (theta, operator)) in enumerate(zip(thetas, operators)):
+            if index == 0:
+                output = theta*operator
+            else:
+                output += theta*operator
         '''
         # Vectorized version:
         # Profiling has reveleaded that the following vectorized (over q) version
@@ -87,7 +89,7 @@ def product(thetas, operators, thetas2=None):
     elif isinstance(first_operator, float):
         pass # nothing to be done
     elif isinstance(first_operator, Function.Type()):
-        raise NotImplementedError("product(): the case of Function operand has not been implemented yet.")
+        output.vector().N = first_operator.vector().N
     else:
         raise AssertionError("product(): invalid operands.")
     # Store dicts also in the product output
