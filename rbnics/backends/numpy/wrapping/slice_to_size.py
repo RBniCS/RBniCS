@@ -16,20 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def slice_to_size(key, length_dict=None):
-    if isinstance(key, slice):
-        key = (key,)
-    assert isinstance(key, tuple)
-    assert isinstance(key[0], slice)
-    
-    if length_dict is None:
-        length_dict = (None, )*len(key)
-    elif isinstance(length_dict, dict):
-        length_dict = (length_dict, )
-    assert isinstance(length_dict, tuple)
-    assert isinstance(length_dict[0], dict) or length_dict[0] is None
-    
-    assert len(key) == len(length_dict)
+from rbnics.backends.numpy.wrapping.slice_to_array import _check_key, _check_length_dict
+
+def slice_to_size(obj, key, length_dict=None):
+    key = _check_key(obj, key)
+    length_dict = _check_length_dict(key, length_dict)
     
     size = list()
     for (slice_index, slice_) in enumerate(key):

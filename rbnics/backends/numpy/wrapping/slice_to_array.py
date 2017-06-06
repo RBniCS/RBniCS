@@ -16,35 +16,18 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import sys
 from numpy import cumsum
 
-def slice_to_array(key, length_dict=None, index_dict=None):
-    if isinstance(key, slice):
-        key = (key,)
-    assert isinstance(key, tuple)
-    assert isinstance(key[0], slice)
-    
-    if length_dict is None:
-        length_dict = (None, )*len(key)
-    elif isinstance(length_dict, dict):
-        length_dict = (length_dict, )
-    assert isinstance(length_dict, tuple)
-    assert isinstance(length_dict[0], dict) or length_dict[0] is None
-    
-    if index_dict is None:
-        index_dict = (None, )*len(key)
-    elif isinstance(index_dict, dict):
-        index_dict = (index_dict, )
-    assert isinstance(index_dict, tuple)
-    assert isinstance(index_dict[0], dict) or index_dict[0] is None
-    
-    assert len(key) == len(length_dict)
-    assert len(key) == len(index_dict)
+def slice_to_array(obj, key, length_dict=None, index_dict=None):
+    key = _check_key(obj, key)
+    length_dict = _check_length_dict(key, length_dict)
+    index_dict = _check_index_dict(key, index_dict)
     
     slices_start = list()
     slices_stop = list()
     for (slice_index, slice_) in enumerate(key):
-        assert slice_.start is None 
+        assert slice_.start is None
         assert slice_.step is None
         assert isinstance(slice_.stop, (int, dict))
         if isinstance(slice_.stop, int):
@@ -79,4 +62,47 @@ def slice_to_array(key, length_dict=None, index_dict=None):
     slices = tuple(slices)
     
     return slices
+    
+def _check_key(obj, key):
+    if isinstance(key, slice):
+        key = (key,)
+    assert isinstance(key, tuple)
+    assert isinstance(key[0], slice)
+    converted_key = list()
+    for (slice_index, slice_) in enumerate(key):
+        assert slice_.start is None or slice_.start == 0
+        if slice_.start == 0:
+            start = None
+        else:
+            start = slice_.start
+        assert slice_.step is None
+        step = slice_.step
+        assert isinstance(slice_.stop, (int, dict))
+        if isinstance(slice_.stop, int) and slice_.stop == sys.maxsize:
+            stop = obj.shape[slice_index]
+        else:
+            stop = slice_.stop
+        converted_slice = slice(start, stop, step)
+        converted_key.append(converted_slice)
+    return converted_key
+    
+def _check_length_dict(key, length_dict):
+    if length_dict is None:
+        length_dict = (None, )*len(key)
+    elif isinstance(length_dict, dict):
+        length_dict = (length_dict, )
+    assert isinstance(length_dict, tuple)
+    assert isinstance(length_dict[0], dict) or length_dict[0] is None
+    assert len(key) == len(length_dict)
+    return length_dict
+    
+def _check_index_dict(key, index_dict):
+    if index_dict is None:
+        index_dict = (None, )*len(key)
+    elif isinstance(index_dict, dict):
+        index_dict = (index_dict, )
+    assert isinstance(index_dict, tuple)
+    assert isinstance(index_dict[0], dict) or index_dict[0] is None
+    assert len(key) == len(index_dict)
+    return index_dict
     

@@ -176,13 +176,13 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             ( isinstance(key, tuple) and isinstance(key[0], slice) )
         ): # return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
             
-            slices = slice_to_array(key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            slices = slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
             
             if slices in self._precomputed_slices:
                 return self._precomputed_slices[slices]
             else:
                 output = AffineExpansionStorage(*self._content.shape)
-                output_content_size = slice_to_size(key, self._component_name_to_basis_component_length)
+                output_content_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
                 it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
                 while not it.finished:
                     item = self._content[it.multi_index]

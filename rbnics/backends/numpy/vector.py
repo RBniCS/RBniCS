@@ -29,11 +29,11 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
             if isinstance(key, slice): # direct call of vector[:5]
                 # Prepare output
                 if hasattr(self, "_component_name_to_basis_component_length"):
-                    output = VectorBaseType.__getitem__(self, Slicer(*slice_to_array(key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
-                    output_size = slice_to_size(key, self._component_name_to_basis_component_length)
+                    output = VectorBaseType.__getitem__(self, Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
+                    output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
                 else:
-                    output = VectorBaseType.__getitem__(self, Slicer(*slice_to_array(key)))
-                    output_size = slice_to_size(key)
+                    output = VectorBaseType.__getitem__(self, Slicer(*slice_to_array(self, key)))
+                    output_size = slice_to_size(self, key)
                 # Preserve N
                 assert len(output_size) == 1
                 output.N = output_size[0]
@@ -50,6 +50,21 @@ class _Vector_Type(VectorBaseType): # inherit to make sure that matrices and vec
         else:
             return VectorBaseType.__getitem__(self, key)
             
+    def __setitem__(self, key, value):
+        if (
+            isinstance(key, slice)  # direct call of vector[:5]
+        ):
+            # Convert slices
+            if hasattr(self, "_component_name_to_basis_component_length"):
+                converted_key = Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
+            else:
+                converted_key = Slicer(*slice_to_array(self, key))
+            # Set item
+            VectorBaseType.__setitem__(self, converted_key, value)
+        else:
+            VectorBaseType.__setitem__(self, key, value)
+            
+    
     def __abs__(self):
         output = VectorBaseType.__abs__(self)
         self._arithmetic_operations_preserve_attributes(None, output, other_is_vector=False)

@@ -32,11 +32,11 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
             if isinstance(key[0], slice): # direct call of matrix[:5, :5]
                 # Prepare output
                 if hasattr(self, "_component_name_to_basis_component_length"):
-                    output = MatrixBaseType.__getitem__(self, Slicer(*slice_to_array(key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
-                    output_size = slice_to_size(key, self._component_name_to_basis_component_length)
+                    output = MatrixBaseType.__getitem__(self, Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
+                    output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
                 else:
-                    output = MatrixBaseType.__getitem__(self, Slicer(*slice_to_array(key)))
-                    output_size = slice_to_size(key)
+                    output = MatrixBaseType.__getitem__(self, Slicer(*slice_to_array(self, key)))
+                    output_size = slice_to_size(self, key)
                 # Preserve M and N
                 assert len(output_size) == 2
                 output.M = output_size[0]
@@ -48,6 +48,21 @@ class _Matrix_Type(MatrixBaseType): # inherit to make sure that matrices and vec
                 # Do not preserve M and N, it will be done in AffineExpansionStorage
         else:
             return MatrixBaseType.__getitem__(self, key)
+            
+    def __setitem__(self, key, value):
+        if (
+            (isinstance(key, tuple) and isinstance(key[0], slice)) # direct call of matrix[:5, :5]
+        ):
+            assert len(key) == 2
+            # Convert slices
+            if hasattr(self, "_component_name_to_basis_component_length"):
+                converted_key = Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
+            else:
+                converted_key = Slicer(*slice_to_array(self, key))
+            # Set item
+            MatrixBaseType.__setitem__(self, converted_key, value)
+        else:
+            MatrixBaseType.__setitem__(self, key, value)
             
     def __abs__(self, other):
         output = MatrixBaseType.__abs__(self)
