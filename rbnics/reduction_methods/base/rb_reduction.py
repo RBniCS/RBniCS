@@ -22,7 +22,7 @@ from math import sqrt
 from rbnics.backends import GramSchmidt
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from rbnics.utils.decorators import Extends, override
-from rbnics.utils.mpi import print
+from rbnics.utils.mpi import log, DEBUG, print
 
 def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
     """
@@ -138,10 +138,9 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 print("build operators for error estimation")
                 self.reduced_problem.build_error_estimation_operators()
                 
-                print("find next mu")
-                (error_estimator_max, relative_error_estimator_max) = self.greedy()
-                print("maximum error estimator =", error_estimator_max)
-                print("maximum relative error estimator =", relative_error_estimator_max)
+                (absolute_error_estimator_max, relative_error_estimator_max) = self.greedy()
+                print("maximum absolute error estimator over training set =", absolute_error_estimator_max)
+                print("maximum relative error estimator over training set =", relative_error_estimator_max)
 
                 print("")
                 
@@ -192,11 +191,20 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             :return: max error estimator and the respective parameter.
             """
+            
+            # Print some additional information if logging of level PROGRESS is enabled
+            print("absolute error for current mu =", self.reduced_problem.compute_error())
+            print("absolute error estimator for current mu =", self.reduced_problem.estimate_error())
+            
+            # Carry out the actual greedy search
             def solve_and_estimate_error(mu, index):
                 self.reduced_problem.set_mu(mu)
                 self.reduced_problem.solve()
-                return self.reduced_problem.estimate_error()
-                
+                error_estimator = self.reduced_problem.estimate_error()
+                log(DEBUG, "Error estimator for mu = " + str(mu) + " is " + str(error_estimator))
+                return error_estimator
+            
+            print("find next mu")
             return self.training_set.max(solve_and_estimate_error)
             
         @override

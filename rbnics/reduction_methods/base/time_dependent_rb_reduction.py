@@ -16,10 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 from math import sqrt
 from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature, transpose
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.io import ErrorAnalysisTable
+from rbnics.utils.mpi import log, DEBUG, print
 
 def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
@@ -254,14 +256,31 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
         ## Choose the next parameter in the offline stage in a greedy fashion
         @override
         def _greedy(self):
+            
+            # Print some additional information related to the current value of the parameter
+            error_over_time = self.reduced_problem.compute_error()
+            error_squared_over_time = [v**2 for v in error_over_time]
+            error_time_quadrature = TimeQuadrature((0., self.truth_problem.T), error_squared_over_time)
+            error = sqrt(error_time_quadrature.integrate())
+            print("absolute error for current mu =", error)
+            error_estimator_over_time = self.reduced_problem.estimate_error()
+            error_estimator_squared_over_time = [v**2 for v in error_estimator_over_time]
+            error_estimator_time_quadrature = TimeQuadrature((0., self.truth_problem.T), error_estimator_squared_over_time)
+            error_estimator = sqrt(error_estimator_time_quadrature.integrate())
+            print("absolute error estimator for current mu =", error_estimator)
+            
+            # Carry out the actual greedy search
             def solve_and_estimate_error(mu, index):
                 self.reduced_problem.set_mu(mu)
                 self.reduced_problem.solve()
                 error_estimator_over_time = self.reduced_problem.estimate_error()
                 error_estimator_squared_over_time = [v**2 for v in error_estimator_over_time]
                 time_quadrature = TimeQuadrature((0., self.truth_problem.T), error_estimator_squared_over_time)
-                return sqrt(time_quadrature.integrate())
+                error_estimator = sqrt(time_quadrature.integrate())
+                log(DEBUG, "Error estimator for mu = " + str(mu) + " is " + str(error_estimator))
+                return error_estimator
                 
+            print("find next mu")
             return self.training_set.max(solve_and_estimate_error)
             
         # Compute the error of the reduced order approximation with respect to the full order one
