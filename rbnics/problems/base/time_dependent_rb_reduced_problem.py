@@ -50,7 +50,8 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
             # Call Parent
             ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self)
             # Assemble initial condition product error estimation operator
-            self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "offline") 
+            if not self.initial_condition_is_homogeneous:
+                self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "offline") 
         
         ## Assemble operators for error estimation
         @override
