@@ -16,11 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class TimeStepping(object):
-    def __init__(self, jacobian, solution, residual, bcs=None, time_order=1):
+    def __init__(self, problem_wrapper, solution, solution_dot=None):
         pass
         
     @abstractmethod
@@ -30,3 +31,43 @@ class TimeStepping(object):
     @abstractmethod
     def solve(self):
         pass
+
+class TimeDependentProblemWrapper(object):
+    __metaclass__ = ABCMeta
+    
+    @abstractmethod
+    def time_order(self):
+        pass
+    
+    @abstractmethod
+    def bc_eval(self, t):
+        pass
+        
+    @abstractmethod
+    def ic_eval(self):
+        pass
+
+class TimeDependentProblem1Wrapper(TimeDependentProblemWrapper):
+    def time_order(self):
+        return 1
+        
+    @abstractmethod
+    def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
+        pass
+        
+    @abstractmethod
+    def residual_eval(self, t, solution, solution_dot):
+        pass
+
+class TimeDependentProblem2Wrapper(TimeDependentProblemWrapper):
+    def time_order(self):
+        return 2
+        
+    @abstractmethod
+    def jacobian_eval(self, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient):
+        pass
+        
+    @abstractmethod
+    def residual_eval(self, t, solution, solution_dot, solution_dot_dot):
+        pass
+        

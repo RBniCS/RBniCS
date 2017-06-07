@@ -19,6 +19,7 @@
 import sys
 from numpy import asarray, isclose
 from dolfin import *
+from rbnics.backends.abstract import TimeDependentProblem1Wrapper
 from rbnics.backends.fenics import TimeStepping as SparseTimeStepping
 
 # Additional command line options for PETSc TS
@@ -73,35 +74,41 @@ r_u_dot = inner(u_dot, v)*dx
 j_u_dot = derivative(r_u_dot, u_dot, du_dot)
 r = r_u_dot + r_u  - g*v*dx
 x = inner(du, v)*dx
+bc = [DirichletBC(V, exact_solution_expression, boundary)]
 
 # Assemble inner product matrix
 X = assemble(x)
 
 # ~~~ Sparse case ~~~ #
-# Residual and jacobian functions
-def sparse_residual_eval(t, solution, solution_dot):
-    g.t = t
-    return assemble(replace(r, {u: solution, u_dot: solution_dot}))
-def sparse_jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):
-    return (
-        assemble(replace(j_u_dot, {u_dot: solution_dot}))*solution_dot_coefficient
-        + assemble(replace(j_u, {u: solution}))
-    )
-    
-# Define boundary condition
-bc = [DirichletBC(V, exact_solution_expression, boundary)]
-def sparse_bc_eval(t):
-    exact_solution_expression.t = t
-    return bc
-    
-# Define custom monitor to plot the solution
-def sparse_monitor(t, solution):
-    plot(solution, key="u", title="t = " + str(t))
+class SparseProblemWrapper(TimeDependentProblem1Wrapper):
+    # Residual and jacobian functions
+    def residual_eval(self, t, solution, solution_dot):
+        g.t = t
+        return assemble(replace(r, {u: solution, u_dot: solution_dot}))
+    def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
+        return (
+            assemble(replace(j_u_dot, {u_dot: solution_dot}))*solution_dot_coefficient
+            + assemble(replace(j_u, {u: solution}))
+        )
+        
+    # Define boundary condition
+    def bc_eval(self, t):
+        exact_solution_expression.t = t
+        return bc
+        
+    # Define initial condition
+    def ic_eval(self):
+        exact_solution_expression.t = 0.
+        return project(exact_solution_expression, V)
+        
+    # Define custom monitor to plot the solution
+    def monitor(self, t, solution):
+        plot(solution, key="u", title="t = " + str(t))
 
 # Solve the time dependent problem
-exact_solution_expression.t = 0.
-sparse_solution = project(exact_solution_expression, V)
-sparse_solver = SparseTimeStepping(sparse_jacobian_eval, sparse_solution, sparse_residual_eval, sparse_bc_eval)
+sparse_problem_wrapper = SparseProblemWrapper()
+sparse_solution = Function(V)
+sparse_solver = SparseTimeStepping(sparse_problem_wrapper, sparse_solution)
 sparse_solver.set_parameters({
     "initial_time": 0.0,
     "time_step_size": dt,
@@ -110,7 +117,7 @@ sparse_solver.set_parameters({
     "integrator_type": "bdf",
     "problem_type": "linear",
     "linear_solver": "mumps",
-    "monitor": sparse_monitor,
+    "monitor": sparse_problem_wrapper.monitor,
     "report": True
 })
 all_sparse_solutions_time, all_sparse_solutions, all_sparse_solutions_dot = sparse_solver.solve()

@@ -19,6 +19,7 @@
 import sys
 from numpy import asarray, isclose
 from dolfin import *
+from rbnics.backends.abstract import TimeDependentProblem1Wrapper
 from rbnics.backends.fenics import TimeStepping as SparseTimeStepping
 from rbnics.backends.numpy import Function as DenseFunction, Matrix as DenseMatrix, TimeStepping as DenseTimeStepping, Vector as DenseVector
 
@@ -71,35 +72,41 @@ r_u_dot = inner(u_dot, v)*dx
 j_u_dot = derivative(r_u_dot, u_dot, du_dot)
 r = r_u_dot + r_u  - g*v*dx
 x = inner(du, v)*dx
+bc = [DirichletBC(V, exact_solution_expression, boundary)]
 
 # Assemble inner product matrix
 X = assemble(x)
 
 # ~~~ Sparse case ~~~ #
-# Residual and jacobian functions
-def sparse_residual_eval(t, solution, solution_dot):
-    g.t = t
-    return replace(r, {u: solution, u_dot: solution_dot})
-def sparse_jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):
-    return (
-        Constant(solution_dot_coefficient)*replace(j_u_dot, {u_dot: solution_dot}) +
-        replace(j_u, {u: solution})
-    )
-    
-# Define boundary condition
-bc = [DirichletBC(V, exact_solution_expression, boundary)]
-def sparse_bc_eval(t):
-    exact_solution_expression.t = t
-    return bc
-    
-# Define custom monitor to plot the solution
-def sparse_monitor(t, solution):
-    plot(solution, key="u", title="t = " + str(t))
+class SparseProblemWrapper(TimeDependentProblem1Wrapper):
+    # Residual and jacobian functions
+    def residual_eval(self, t, solution, solution_dot):
+        g.t = t
+        return replace(r, {u: solution, u_dot: solution_dot})
+    def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
+        return (
+            Constant(solution_dot_coefficient)*replace(j_u_dot, {u_dot: solution_dot}) +
+            replace(j_u, {u: solution})
+        )
+        
+    # Define boundary condition
+    def bc_eval(self, t):
+        exact_solution_expression.t = t
+        return bc
+        
+    # Define initial condition
+    def ic_eval(self):
+        exact_solution_expression.t = 0.
+        return project(exact_solution_expression, V)
+        
+    # Define custom monitor to plot the solution
+    def monitor(self, t, solution):
+        plot(solution, key="u", title="t = " + str(t))
 
 # Solve the time dependent problem
-exact_solution_expression.t = 0.
-sparse_solution = project(exact_solution_expression, V)
-sparse_solver = SparseTimeStepping(sparse_jacobian_eval, sparse_solution, sparse_residual_eval, sparse_bc_eval)
+sparse_problem_wrapper = SparseProblemWrapper()
+sparse_solution = Function(V)
+sparse_solver = SparseTimeStepping(sparse_problem_wrapper, sparse_solution)
 sparse_solver.set_parameters({
     "initial_time": 0.0,
     "time_step_size": dt,
@@ -112,7 +119,7 @@ sparse_solver.set_parameters({
         "maximum_iterations": 20,
         "report": True
     },
-    "monitor": sparse_monitor,
+    "monitor": sparse_problem_wrapper.monitor,
     "report": True
 })
 all_sparse_solutions_time, all_sparse_solutions, all_sparse_solutions_dot = sparse_solver.solve()
@@ -137,61 +144,69 @@ assert isclose(sparse_error_dot_norm, 0., atol=1.e-4)
 
 # ~~~ Dense case ~~~ #
 if mesh.mpi_comm().size == 1: # dense solver is not partitioned
-    # Define boundary condition
     x_to_dof = dict(zip(V.tabulate_dof_coordinates(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
     dof_2pi = x_to_dof[2*pi]
     min_dof_0_2pi = min(dof_0, dof_2pi)
     max_dof_0_2pi = max(dof_0, dof_2pi)
-    def dense_bc_eval(t):
-        return (sin(t), sin(t))
-                
-    # Residual and jacobian functions, reordering resulting matrix and vector
-    # such that dof_0 and dof_2pi are in the first two rows/cols,
-    # because the dense time stepping solver has implicitly this assumption
-    def dense_residual_eval(t, solution, solution_dot):
-        solution_from_dense_to_sparse(solution, u)
-        solution_from_dense_to_sparse(solution_dot, u_dot)
-        g.t = t
-        sparse_residual = assemble(r)
-        dense_residual_array = sparse_residual.array()
-        dense_residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-        dense_residual = DenseVector(*dense_residual_array.shape)
-        dense_residual[:] = dense_residual_array.reshape((-1, 1))
-        return dense_residual
+    
+    class DenseProblemWrapper(TimeDependentProblem1Wrapper):
+        # Residual and jacobian functions, reordering resulting matrix and vector
+        # such that dof_0 and dof_2pi are in the first two rows/cols,
+        # because the dense time stepping solver has implicitly this assumption
+        def residual_eval(self, t, solution, solution_dot):
+            self._solution_from_dense_to_sparse(solution, u)
+            self._solution_from_dense_to_sparse(solution_dot, u_dot)
+            g.t = t
+            sparse_residual = assemble(r)
+            dense_residual_array = sparse_residual.array()
+            dense_residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            dense_residual = DenseVector(*dense_residual_array.shape)
+            dense_residual[:] = dense_residual_array.reshape((-1, 1))
+            return dense_residual
+            
+        def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
+            self._solution_from_dense_to_sparse(solution, u)
+            self._solution_from_dense_to_sparse(solution_dot, u_dot)
+            sparse_jacobian = assemble(Constant(solution_dot_coefficient)*j_u_dot + j_u)
+            dense_jacobian_array = sparse_jacobian.array()
+            dense_jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = dense_jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
+            dense_jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            dense_jacobian = DenseMatrix(*dense_jacobian_array.shape)
+            dense_jacobian[:] = dense_jacobian_array
+            return dense_jacobian
         
-    def dense_jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):
-        solution_from_dense_to_sparse(solution, u)
-        solution_from_dense_to_sparse(solution_dot, u_dot)
-        sparse_jacobian = assemble(Constant(solution_dot_coefficient)*j_u_dot + j_u)
-        dense_jacobian_array = sparse_jacobian.array()
-        dense_jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = dense_jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
-        dense_jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-        dense_jacobian = DenseMatrix(*dense_jacobian_array.shape)
-        dense_jacobian[:] = dense_jacobian_array
-        return dense_jacobian
+        # Define boundary condition
+        def bc_eval(self, t):
+            return (sin(t), sin(t))
+            
+        # Define initial condition
+        def ic_eval(self):
+            exact_solution_expression.t = 0.
+            sparse_initial_solution = project(exact_solution_expression, V)
+            dense_solution = DenseFunction(*sparse_initial_solution.vector().array().shape)
+            dense_solution.vector()[:] = sparse_initial_solution.vector().array().reshape((-1, 1))
+            dense_solution_array = dense_solution.vector()
+            dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            return dense_solution
         
-    def solution_from_dense_to_sparse(solution, u):
-        solution_array = asarray(solution.vector()).reshape(-1)
-        solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
-        u.vector().zero()
-        u.vector().add_local(solution_array)
-        u.vector().apply("")
-        solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-        
-    # Define custom monitor to plot the solution
-    def dense_monitor(t, solution):
-        solution_from_dense_to_sparse(solution, u)
-        plot(u, key="u", title="t = " + str(t))
+        # Define custom monitor to plot the solution
+        def monitor(self, t, solution):
+            self._solution_from_dense_to_sparse(solution, u)
+            plot(u, key="u", title="t = " + str(t))
+            
+        def _solution_from_dense_to_sparse(self, solution, u):
+            solution_array = asarray(solution.vector()).reshape(-1)
+            solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+            u.vector().zero()
+            u.vector().add_local(solution_array)
+            u.vector().apply("")
+            solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
         
     # Solve the time dependent problem
-    exact_solution_expression.t = 0.
-    sparse_initial_solution = project(exact_solution_expression, V)
-    dense_solution = DenseFunction(*sparse_initial_solution.vector().array().shape)
-    dense_solution.vector()[:] = sparse_initial_solution.vector().array().reshape((-1, 1))
-    dense_solution_array = dense_solution.vector()
-    dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-    dense_solver = DenseTimeStepping(dense_jacobian_eval, dense_solution, dense_residual_eval, dense_bc_eval)
+    dense_problem_wrapper = DenseProblemWrapper()
+    dense_solution = DenseFunction(*sparse_solution.vector().array().shape)
+    dense_solver = DenseTimeStepping(dense_problem_wrapper, dense_solution)
     dense_solver.set_parameters({
         "initial_time": 0.0,
         "time_step_size": dt,
@@ -202,7 +217,7 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
         #    "maximum_iterations": 20,
         #    "report": True
         #},
-        "monitor": dense_monitor,
+        "monitor": dense_problem_wrapper.monitor,
         "report": True
     })
     all_dense_solutions_time, all_dense_solutions, all_dense_solutions_dot = dense_solver.solve()

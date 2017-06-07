@@ -17,55 +17,46 @@
 #
 
 from __future__ import print_function
-import types
 from numpy import isclose
 from petsc4py import PETSc
 from ufl import Form
 from dolfin import as_backend_type, assemble, Function as PETScFunction, GenericMatrix, GenericVector, PETScMatrix, PETScVector
-from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping
+from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
+from rbnics.backends.fenics.assign import assign
 from rbnics.backends.fenics.function import Function
 from rbnics.utils.mpi import print
 from rbnics.utils.decorators import BackendFor, Extends, list_of, override
 
 @Extends(AbstractTimeStepping)
-@BackendFor("fenics", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (types.FunctionType, None)))
+@BackendFor("fenics", inputs=(TimeDependentProblemWrapper, Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
     @override
-    def __init__(self, jacobian_eval, solution, residual_eval, bcs_eval=None, time_order=1, solution_dot=None):
-        """
-            Signatures:
-                if time_order == 1:
-                    def jacobian_eval(t, solution, solution_dot, solution_dot_coefficient):
-                        return Constant(solution_dot_coefficient)*(u*v)*dx + inner(grad(u), grad(v))*dx
-                        
-                    def residual_eval(t, solution, solution_dot):
-                        return solution_dot*v*dx + inner(grad(solution), grad(v))*dx  - f*v*dx
-                elif time_order == 2:
-                    def jacobian_eval(t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient):
-                        return Constant(solution_dot_dot_coefficient)*(u*v)*dx + inner(grad(u), grad(v))*dx
-                        
-                    def residual_eval(t, solution, solution_dot, solution_dot_dot):
-                        return solution_dot_dot*v*dx + inner(grad(solution), grad(v))*dx  - f*v*dx  
-                
-                def bcs_eval(t):
-                    return [DirichletBC(V, Constant(0.), boundary)]
-        """
-        assert time_order in (1, 2)
-        if time_order == 1:
+    def __init__(self, problem_wrapper, solution, solution_dot=None):
+        assert problem_wrapper.time_order() in (1, 2)
+        if problem_wrapper.time_order() == 1:
             assert solution_dot is None
-            self.problem = _TimeDependentProblem1(residual_eval, solution, bcs_eval, jacobian_eval)
+            ic = problem_wrapper.ic_eval()
+            if ic is not None:
+                assign(solution, ic)
+            self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
             self.solver  = _PETScTSIntegrator(self.problem)
-        elif time_order == 2:
+        elif problem_wrapper.time_order() == 2:
             if solution_dot is None:
                 solution_dot = Function(solution.function_space()) # equal to zero
-            self.problem = _TimeDependentProblem2(residual_eval, solution, solution_dot, bcs_eval, jacobian_eval)
+            ic_eval_output = problem_wrapper.ic_eval()
+            assert isinstance(ic_eval_output, tuple) or ic_eval_output is None
+            if ic_eval_output is not None:
+                assert len(ic_eval_output) == 2
+                assign(solution, ic_eval_output[0])
+                assign(solution_dot, ic_eval_output[1])
+            self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
             self.solver  = _PETScTSIntegrator(self.problem)
         else:
             raise AssertionError("Invalid time order in TimeStepping.__init__().")
         # Store solution input
         self.solution = solution
         # Store time order input
-        self.time_order = time_order
+        self.time_order = problem_wrapper.time_order()
             
     @override
     def set_parameters(self, parameters):
