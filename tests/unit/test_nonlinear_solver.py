@@ -18,6 +18,7 @@
 
 from numpy import asarray, isclose
 from dolfin import *
+from rbnics.backends.abstract import NonlinearProblemWrapper
 from rbnics.backends.fenics import NonlinearSolver as SparseNonlinearSolver
 from rbnics.backends.numpy import Function as DenseFunction, NonlinearSolver as DenseNonlinearSolver, Matrix as DenseMatrix, Vector as DenseVector
 
@@ -57,7 +58,7 @@ X = assemble(x)
 bc = [DirichletBC(V, exact_solution_expression, boundary)]
 
 # Define initial guess
-def initial_guess():
+def sparse_initial_guess():
     initial_guess_expression = Expression("0.1 + 0.9*x[0]", element=V.ufl_element())
     # The Dense solver modifies the guess to that BCs are fulfilled. Do it also here
     # to have the same convergence history
@@ -66,15 +67,21 @@ def initial_guess():
     return initial_guess
 
 # ::: Callbacks return forms :: #
-# Residual and jacobian functions
-def sparse_form_residual_eval(solution):
-    return replace(r, {u: solution})
-def sparse_form_jacobian_eval(solution):
-    return replace(j, {u: solution})
+class SparseFormProblemWrapper(NonlinearProblemWrapper):
+    # Residual and jacobian functions
+    def residual_eval(self, solution):
+        return replace(r, {u: solution})
+    def jacobian_eval(self, solution):
+        return replace(j, {u: solution})
+        
+    # Define boundary condition
+    def bc_eval(self):
+        return bc
     
 # Solve the nonlinear problem
-sparse_form_solution = initial_guess()
-sparse_form_solver = SparseNonlinearSolver(sparse_form_jacobian_eval, sparse_form_solution, sparse_form_residual_eval, bc)
+sparse_form_problem_wrapper = SparseFormProblemWrapper()
+sparse_form_solution = sparse_initial_guess()
+sparse_form_solver = SparseNonlinearSolver(sparse_form_problem_wrapper, sparse_form_solution)
 sparse_form_solver.set_parameters({
     "linear_solver": "mumps",
     "maximum_iterations": 20,
@@ -93,15 +100,21 @@ print "SparseNonlinearSolver error (form callbacks):", sparse_form_error_norm
 assert isclose(sparse_form_error_norm, 0., atol=1.e-5)
 
 # ::: Callbacks return tensors :: #
-# Residual and jacobian functions
-def sparse_tensor_residual_eval(solution):
-    return assemble(replace(r, {u: solution}))
-def sparse_tensor_jacobian_eval(solution):
-    return assemble(replace(j, {u: solution}))
+class SparseTensorProblemWrapper(NonlinearProblemWrapper):
+    # Residual and jacobian functions
+    def residual_eval(self, solution):
+        return assemble(replace(r, {u: solution}))
+    def jacobian_eval(self, solution):
+        return assemble(replace(j, {u: solution}))
+        
+    # Define boundary condition
+    def bc_eval(self):
+        return bc
     
 # Solve the nonlinear problem
-sparse_tensor_solution = initial_guess()
-sparse_tensor_solver = SparseNonlinearSolver(sparse_tensor_jacobian_eval, sparse_tensor_solution, sparse_tensor_residual_eval, bc)
+sparse_tensor_problem_wrapper = SparseTensorProblemWrapper()
+sparse_tensor_solution = sparse_initial_guess()
+sparse_tensor_solver = SparseNonlinearSolver(sparse_tensor_problem_wrapper, sparse_tensor_solution)
 sparse_tensor_solver.set_parameters({
     "linear_solver": "mumps",
     "maximum_iterations": 20,
@@ -128,48 +141,56 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
     dof_2pi = x_to_dof[2*pi]
     min_dof_0_2pi = min(dof_0, dof_2pi)
     max_dof_0_2pi = max(dof_0, dof_2pi)
-    if min_dof_0_2pi == dof_0:
-        dense_bc = (0., 2*pi)
-    else:
-        dense_bc = (2*pi, 0.)
-                
-    # Residual and jacobian functions, reordering resulting matrix and vector
-    # such that dof_0 and dof_2pi are in the first two rows/cols,
-    # because the dense nonlinear solver has implicitly this assumption
-    def dense_residual_eval(solution):
-        solution_from_dense_to_sparse(solution)
-        sparse_residual = assemble(r)
-        dense_residual_array = sparse_residual.array()
-        dense_residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-        dense_residual = DenseVector(*dense_residual_array.shape)
-        dense_residual[:] = dense_residual_array.reshape((-1, 1))
-        return dense_residual
-        
-    def dense_jacobian_eval(solution):
-        solution_from_dense_to_sparse(solution)
-        sparse_jacobian = assemble(j)
-        dense_jacobian_array = sparse_jacobian.array()
-        dense_jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = dense_jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
-        dense_jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-        dense_jacobian = DenseMatrix(*dense_jacobian_array.shape)
-        dense_jacobian[:] = dense_jacobian_array
-        return dense_jacobian
-        
-    def solution_from_dense_to_sparse(solution):
-        solution_array = asarray(solution).reshape(-1)
-        solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
-        u.vector().zero()
-        u.vector().add_local(solution_array)
-        u.vector().apply("")
-        solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+    
+    def dense_initial_guess():
+        sparse_function = sparse_initial_guess()
+        dense_solution = DenseFunction(*sparse_function.vector().array().shape)
+        dense_solution.vector()[:] = sparse_function.vector().array().reshape((-1, 1))
+        dense_solution_array = dense_solution.vector()
+        dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+        return dense_solution
+    
+    class DenseProblemWrapper(NonlinearProblemWrapper):
+        # Residual and jacobian functions, reordering resulting matrix and vector
+        # such that dof_0 and dof_2pi are in the first two rows/cols,
+        # because the dense nonlinear solver has implicitly this assumption
+        def residual_eval(self, solution):
+            self._solution_from_dense_to_sparse(solution)
+            sparse_residual = assemble(r)
+            dense_residual_array = sparse_residual.array()
+            dense_residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            dense_residual = DenseVector(*dense_residual_array.shape)
+            dense_residual[:] = dense_residual_array.reshape((-1, 1))
+            return dense_residual
+            
+        def jacobian_eval(self, solution):
+            self._solution_from_dense_to_sparse(solution)
+            sparse_jacobian = assemble(j)
+            dense_jacobian_array = sparse_jacobian.array()
+            dense_jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = dense_jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
+            dense_jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            dense_jacobian = DenseMatrix(*dense_jacobian_array.shape)
+            dense_jacobian[:] = dense_jacobian_array
+            return dense_jacobian
+            
+        def bc_eval(self):
+            if min_dof_0_2pi == dof_0:
+                return (0., 2*pi)
+            else:
+                return (2*pi, 0.)
+            
+        def _solution_from_dense_to_sparse(self, solution):
+            solution_array = asarray(solution.vector()).reshape(-1)
+            solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+            u.vector().zero()
+            u.vector().add_local(solution_array)
+            u.vector().apply("")
+            solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
         
     # Solve the nonlinear problem
-    sparse_initial_guess = initial_guess()
-    dense_solution = DenseFunction(*sparse_initial_guess.vector().array().shape)
-    dense_solution.vector()[:] = sparse_initial_guess.vector().array().reshape((-1, 1))
-    dense_solution_array = dense_solution.vector()
-    dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-    dense_solver = DenseNonlinearSolver(dense_jacobian_eval, dense_solution, dense_residual_eval, dense_bc)
+    dense_problem_wrapper = DenseProblemWrapper()
+    dense_solution = dense_initial_guess()
+    dense_solver = DenseNonlinearSolver(dense_problem_wrapper, dense_solution)
     dense_solver.set_parameters({
         "maximum_iterations": 20,
         "report": True

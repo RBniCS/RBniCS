@@ -45,7 +45,7 @@ backends_factory(current_module)
 
 # Store some additional classes, defined in the abstract module, which are base classes but not backends, 
 # and thus have not been processed by the enabled_backend function above
-from rbnics.backends.abstract import TimeDependentProblemWrapper, TimeDependentProblem1Wrapper, TimeDependentProblem2Wrapper
+from rbnics.backends.abstract import NonlinearProblemWrapper, TimeDependentProblemWrapper, TimeDependentProblem1Wrapper, TimeDependentProblem2Wrapper
 
 # Extend parent module __all__ variable with backends wrapping
 for backend in available_backends:

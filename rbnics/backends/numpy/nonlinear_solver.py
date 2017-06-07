@@ -20,25 +20,17 @@ import types
 from numpy import asarray, dot
 from numpy.linalg import solve
 from scipy.optimize.nonlin import Jacobian, nonlin_solve
-from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver
+from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.numpy.function import Function
 from rbnics.backends.numpy.wrapping import DirichletBC
 from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractNonlinearSolver)
-@BackendFor("numpy", inputs=(types.FunctionType, Function.Type(), types.FunctionType, ThetaType + DictOfThetaType + (None,)))
+@BackendFor("numpy", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     @override
-    def __init__(self, jacobian_eval, solution, residual_eval, bcs=None):
-        """
-            Signatures:
-                def jacobian_eval(solution):
-                    return matrix
-                
-                def residual_eval(solution):
-                    return vector
-        """
-        self.problem = _NonlinearProblem(residual_eval, solution, bcs, jacobian_eval)
+    def __init__(self, problem_wrapper, solution):
+        self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
         # Additional storage which will be setup by set_parameters
         self._absolute_tolerance = None
         self._line_search = True

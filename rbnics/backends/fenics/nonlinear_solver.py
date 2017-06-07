@@ -20,25 +20,17 @@ from __future__ import print_function
 import types
 from ufl import Form
 from dolfin import as_backend_type, assemble, DirichletBC, GenericMatrix, GenericVector, NonlinearProblem, PETScSNESSolver
-from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver
+from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.fenics.function import Function
 from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
 from rbnics.utils.mpi import print
 
 @Extends(AbstractNonlinearSolver)
-@BackendFor("fenics", inputs=(types.FunctionType, Function.Type(), types.FunctionType, (list_of(DirichletBC), dict_of(str, list_of(DirichletBC)), None)))
+@BackendFor("fenics", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     @override
-    def __init__(self, jacobian_eval, solution, residual_eval, bcs=None):
-        """
-            Signatures:
-                def jacobian_eval(solution):
-                    return grad(u)*grad(v)
-                
-                def residual_eval(solution):
-                    return grad(solution)*grad(v)*dx - f*v*dx
-        """
-        problem = _NonlinearProblem(residual_eval, solution, bcs, jacobian_eval)
+    def __init__(self, problem_wrapper, solution):
+        problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
         self.solver  = _PETScSNESSolver(problem)
             
     @override

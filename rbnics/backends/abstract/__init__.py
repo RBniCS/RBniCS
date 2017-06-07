@@ -35,7 +35,7 @@ from rbnics.backends.abstract.linear_solver import LinearSolver
 from rbnics.backends.abstract.matrix import Matrix
 from rbnics.backends.abstract.max import max
 from rbnics.backends.abstract.mesh_motion import MeshMotion
-from rbnics.backends.abstract.nonlinear_solver import NonlinearSolver
+from rbnics.backends.abstract.nonlinear_solver import NonlinearProblemWrapper, NonlinearSolver
 from rbnics.backends.abstract.parametrized_expression_factory import ParametrizedExpressionFactory
 from rbnics.backends.abstract.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.abstract.product import product
@@ -72,6 +72,7 @@ __all__ = [
     'Matrix',
     'max',
     'MeshMotion',
+    'NonlinearProblemWrapper',
     'NonlinearSolver',
     'ParametrizedExpressionFactory',
     'ParametrizedTensorFactory',
