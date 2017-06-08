@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
@@ -29,4 +30,19 @@ class LinearSolver(object):
         
     @abstractmethod
     def solve(self):
+        pass
+        
+class LinearProblemWrapper(object):
+    __metaclass__ = ABCMeta
+    
+    @abstractmethod
+    def matrix_eval(self):
+        pass
+        
+    @abstractmethod
+    def vector_eval(self):
+        pass
+    
+    @abstractmethod
+    def bc_eval(self):
         pass

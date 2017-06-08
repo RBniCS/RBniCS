@@ -31,7 +31,7 @@ from rbnics.backends.abstract.gram_schmidt import GramSchmidt
 from rbnics.backends.abstract.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
 from rbnics.backends.abstract.import_ import import_
 from rbnics.backends.abstract.linear_program_solver import LinearProgramSolver
-from rbnics.backends.abstract.linear_solver import LinearSolver
+from rbnics.backends.abstract.linear_solver import LinearProblemWrapper, LinearSolver
 from rbnics.backends.abstract.matrix import Matrix
 from rbnics.backends.abstract.max import max
 from rbnics.backends.abstract.mesh_motion import MeshMotion
@@ -67,6 +67,7 @@ __all__ = [
     'GramSchmidt',
     'HighOrderProperOrthogonalDecomposition',
     'import_',
+    'LinearProblemWrapper',
     'LinearProgramSolver',
     'LinearSolver',
     'Matrix',
