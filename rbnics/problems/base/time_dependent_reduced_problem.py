@@ -66,6 +66,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._solution_over_time_cache = dict() # of list of Functions
             self._solution_dot_over_time_cache = dict() # of list of Functions
             self._output_over_time = list() # of floats
+            self._output_over_time_cache = dict() # of list of floats
             
         ## Set current time
         def set_time(self, t):
@@ -275,6 +276,56 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assign(problem._solution, problem._solution_over_time[-1])
                 assign(problem._solution_dot, problem._solution_dot_over_time[-1])
                 
+        # Perform an online evaluation of the output
+        @override
+        def compute_output(self):
+            cache_key = self._output_cache__current_cache_key
+            assert (
+                (cache_key in self._output_cache)
+                    ==
+                (cache_key in self._output_over_time_cache)
+            )
+            if cache_key in self._output_cache:
+                log(PROGRESS, "Loading reduced output from cache")
+                self._output = self._output_cache[cache_key]
+                self._output_over_time = self._output_over_time_cache[cache_key]
+            else: # No precomputed output available. Truth output is performed.
+                log(PROGRESS, "Computing reduced output")
+                N = self._solution.N
+                self._compute_output(N)
+                self._output_cache[cache_key] = self._output
+                self._output_over_time_cache[cache_key] = self._output_over_time
+            return self._output_over_time
+            
+        # Perform an online evaluation of the output. Internal method
+        @override
+        def _compute_output(self, N):
+            self._output_over_time = [NotImplemented]*len(self._solution_over_time)
+            self._output = NotImplemented
+            
+        @override
+        def _lifting_truth_solve(self, term, i):
+            # Since lifting solves for different values of i are associated to the same parameter 
+            # but with a patched call to compute_theta(), which returns the i-th component, we set
+            # a custom cache_key so that they are properly differentiated when reading from cache.
+            lifting_over_time = self.truth_problem.solve(cache_key="lifting_" + str(i))
+            theta_over_time = list()
+            for k in range(len(lifting_over_time)):
+                self.set_time(k*self.dt)
+                theta_over_time.append(self.compute_theta(term)[i])
+            lifting_quadrature = TimeQuadrature((0., self.truth_problem.T), lifting_over_time)
+            theta_quadrature = TimeQuadrature((0., self.truth_problem.T), theta_over_time)
+            lifting = lifting_quadrature.integrate()
+            lifting /= theta_quadrature.integrate()
+            return lifting
+            
+        def project(self, snapshot_over_time, N=None, **kwargs):
+            projected_snapshot_N_over_time = list()
+            for snapshot in snapshot_over_time:
+                projected_snapshot_N = TimeDependentReducedProblem_Base.project(self, snapshot, N, **kwargs)
+                projected_snapshot_N_over_time.append(projected_snapshot_N)
+            return projected_snapshot_N_over_time
+            
         # Internal method for error computation
         @override
         def _compute_error(self, **kwargs):

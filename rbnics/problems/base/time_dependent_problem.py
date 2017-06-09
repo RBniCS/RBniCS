@@ -52,6 +52,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._solution_over_time_cache = dict() # of list of Functions
             self._solution_dot_over_time_cache = dict() # of list of Functions
             self._output_over_time = list() # of floats
+            self._output_over_time_cache = dict() # of list of floats
 
         ## Set current time
         def set_time(self, t):
@@ -253,7 +254,25 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
         ## Perform a truth evaluation of the output
         @override
         def compute_output(self):
-            self._compute_output()
+            """
+            
+            :return: output evaluation.
+            """
+            cache_key = self._output_cache__current_cache_key
+            assert (
+                (cache_key in self._output_cache)
+                    ==
+                (cache_key in self._output_over_time_cache)
+            )
+            if cache_key in self._output_cache:
+                log(PROGRESS, "Loading truth output from cache")
+                self._output = self._output_cache[cache_key]
+                self._output_over_time = self._output_over_time_cache[cache_key]
+            else: # No precomputed output available. Truth output is performed.
+                log(PROGRESS, "Computing truth output")
+                self._compute_output()
+                self._output_cache[cache_key] = self._output
+                self._output_over_time_cache[cache_key] = self._output_over_time
             return self._output_over_time
             
         ## Perform a truth evaluation of the output

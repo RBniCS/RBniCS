@@ -70,8 +70,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         self._solution = OnlineFunction()
         self._solution_cache = dict() # of Functions
         self._output = 0
-        self._compute_error__previous_mu = None
-        self._compute_error_output__previous_mu = None
+        self._output_cache = dict() # of floats
+        self._output_cache__current_cache_key = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -336,12 +336,18 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     
     def compute_output(self):
         """
-        Calls _compute_output().
         
         :return: reduced output
         """
-        N = self._solution.N
-        self._compute_output(N)
+        cache_key = self._output_cache__current_cache_key
+        if cache_key in self._output_cache:
+            log(PROGRESS, "Loading reduced output from cache")
+            self._output = self._output_cache[cache_key]
+        else:
+            log(PROGRESS, "Computing reduced output")
+            N = self._solution.N
+            self._compute_output(N)
+            self._output_cache[cache_key] = self._output
         return self._output
         
     def _compute_output(self, N):
@@ -399,10 +405,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             if blacklist in kwargs:
                 del kwargs[blacklist]
         if isinstance(N, dict):
-            return (self.mu, tuple(sorted(N.items())), tuple(sorted(kwargs.items())))
+            cache_key = (self.mu, tuple(sorted(N.items())), tuple(sorted(kwargs.items())))
         else:
             assert isinstance(N, int)
-            return (self.mu, N, tuple(sorted(kwargs.items())))
+            cache_key = (self.mu, N, tuple(sorted(kwargs.items())))
+        # Store current cache_key to be used when computing output
+        self._output_cache__current_cache_key = cache_key
+        # Return
+        return cache_key
         
     def build_reduced_operators(self):
         """

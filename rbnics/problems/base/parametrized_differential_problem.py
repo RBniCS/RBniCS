@@ -66,6 +66,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         self._solution = Function(self.V)
         self._solution_cache = dict() # of Functions
         self._output = 0
+        self._output_cache = dict() # of floats
+        self._output_cache__current_cache_key = None
         # I/O
         self.folder["cache"] = self.folder_prefix + "/" + "cache"
     
@@ -290,11 +292,17 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         
     def compute_output(self):
         """
-        Calls _compute_outut().
         
         :return: output evaluation.
         """
-        self._compute_output()
+        cache_key = self._output_cache__current_cache_key
+        if cache_key in self._output_cache:
+            log(PROGRESS, "Loading truth output from cache")
+            self._output = self._output_cache[cache_key]
+        else: # No precomputed output available. Truth output is performed.
+            log(PROGRESS, "Computing truth output")
+            self._compute_output()
+            self._output_cache[cache_key] = self._output
         return self._output
         
     def _compute_output(self):
@@ -312,6 +320,9 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
                 del kwargs[blacklist]
         cache_key = (self.mu, tuple(sorted(kwargs.items())))
         cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
+        # Store current cache_key to be used when computing output
+        self._output_cache__current_cache_key = cache_key
+        # Return
         return (cache_key, cache_file)
     
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
