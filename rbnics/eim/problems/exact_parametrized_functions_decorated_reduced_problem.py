@@ -38,9 +38,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 def __init__(self, truth_problem, **kwargs):
                     # Call the parent initialization
                     ReducedParametrizedProblem_DecoratedClass.__init__(self, truth_problem, **kwargs)
-                    # Avoid useless assemblies
-                    self._estimate_error__previous_mu = None
-                    self._estimate_error__previous_self_N = None
+                    # Precomputation of error estimation operators is disabled
+                    self.folder.pop("error_estimation")
                     
                 ## Initialize data structures required for the online phase
                 @override
@@ -82,14 +81,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     # The offline/online separation does not hold anymore, so, similarly to what we did in
                     # the truth problem, also at the reduced-order level we need to re-assemble operators,
                     # because the assemble_operator() *may* return parameter dependent operators.
-                    assert(self._solve__previous_mu == self.mu) # estimate_error is always called after _solve
-                    if self._estimate_error__previous_mu != self.mu or self._estimate_error__previous_self_N != self.N:
-                        self.build_error_estimation_operators("online")
-                        # Avoid useless assemblies
-                        self._estimate_error__previous_mu = self.mu
-                        self._estimate_error__previous_self_N = self.N
-                        # Note that we use the the same cache in all error estimators, since (at least part of)
-                        # error estimation operators is used by both methods
+                    self.build_error_estimation_operators("online")
                         
                 ## Build operators for error estimation
                 @override
@@ -228,7 +220,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             # called internally by assemble_operator() since it is not possible
             # to precompute operators, and thus they should not be saved
             def disabled_save(self, folder, filename):
-                pass
+                raise AttributeError("Cannot save to file due to inefficient evaluation")
             online_storage.save = types.MethodType(disabled_save, online_storage)
             # Make sure to raise an error if the load() method of the operator,
             # since we have not saved anything and it should never be called
@@ -238,17 +230,13 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             
         # Perform an online solve (internal)
         @override
-        def solve(self, N=None, **kwargs):
+        def _solve(self, N, **kwargs):
             # The offline/online separation does not hold anymore, so at the reduced-order level 
             # we need to re-assemble operators, because the assemble_operator() *may* return 
             # parameter dependent operators.
-            if self._solve__previous_mu != self.mu or self._solve__previous_self_N != self.N:
-                # Re-assemble operators
-                self.build_reduced_operators("online")
-                # Avoid useless assemblies
-                self._solve__previous_mu = self.mu
-                self._solve__previous_self_N = self.N
-            return ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
+            self.build_reduced_operators("online")
+            # Then call Parent solve
+            ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
     
         ## Assemble the reduced order affine expansion.
         @override

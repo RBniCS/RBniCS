@@ -205,6 +205,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             if current_stage == "online": # load from file
                 if not term in self.riesz_product:
                     self.riesz_product[term] = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
+                assert "error_estimation" in self.folder
                 self.riesz_product[term].load(self.folder["error_estimation"], "riesz_product_" + term[0] + "_" + term[1])
                 return self.riesz_product[term]
             elif current_stage == "offline":
@@ -228,7 +229,8 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                             self.riesz_product[term][q0, q1] = transpose(self.riesz[term[0]][q0][0])*self._riesz_solve_inner_product*self.riesz[term[1]][q1][0]
                 else:
                     raise ValueError("Invalid term order for assemble_error_estimation_operators().")
-                self.riesz_product[term].save(self.folder["error_estimation"], "riesz_product_" + term[0] + "_" + term[1])
+                if "error_estimation" in self.folder:
+                    self.riesz_product[term].save(self.folder["error_estimation"], "riesz_product_" + term[0] + "_" + term[1])
                 return self.riesz_product[term]
             else:
                 raise AssertionError("Invalid stage in assemble_error_estimation_operators().")

@@ -81,9 +81,9 @@ def EIMDecoratedProblem(
                                     self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, type(self).__name__ + "/eim/" + factor_name, basis_generation)
                 
             @override
-            def solve(self, **kwargs):
+            def _solve(self, **kwargs):
                 self._update_N_EIM(**kwargs)
-                return ParametrizedDifferentialProblem_DerivedClass.solve(self, **kwargs)
+                ParametrizedDifferentialProblem_DerivedClass._solve(self, **kwargs)
             
             def _update_N_EIM(self, **kwargs):
                 if kwargs != self._update_N_EIM__previous_kwargs:

@@ -53,21 +53,18 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.reduced_problem = ReducedProblemFactory(self.truth_problem, self, **self._init_kwargs)
         
         # Prepare folders and init reduced problem
-        at_least_one_folder_created = self._create_folders()
+        all_folders = Folders()
+        all_folders.update(self.folder)
+        assert self.reduced_problem is not None
+        all_folders.update(self.reduced_problem.folder)
+        all_folders.pop("testing_set") # this is required only in the error analysis
+        at_least_one_folder_created = all_folders.create()
         if not at_least_one_folder_created:
             self.reduced_problem.init("online")
             return False # offline construction should be skipped, since data are already available
         else:
             self.reduced_problem.init("offline")
             return True # offline construction should be carried out
-            
-    def _create_folders(self):
-        all_folders = Folders()
-        all_folders.update(self.folder)
-        assert self.reduced_problem is not None
-        all_folders.update(self.reduced_problem.folder)
-        all_folders.pop("testing_set") # this is required only in the error analysis
-        return all_folders.create()
         
     def postprocess_snapshot(self, snapshot, snapshot_index):
         """
@@ -126,16 +123,24 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # solution and reduced solution are actually computed
         self.truth_problem._solution_cache.clear()
         self.reduced_problem._solution_cache.clear()
-        # ... and also disable the capability of importing truth solutions
+        self.truth_problem._output_cache.clear()
+        self.reduced_problem._output_cache.clear()
+        # ... and also disable the capability of importing/exporting truth solutions
         self._speedup_analysis__original_import_solution = self.truth_problem.import_solution
         def disabled_import_solution(self_, folder, filename, solution=None):
             return False
         self.truth_problem.import_solution = types.MethodType(disabled_import_solution, self.truth_problem)
+        self._speedup_analysis__original_export_solution = self.truth_problem.export_solution
+        def disabled_export_solution(self_, folder, filename, solution=None):
+            pass
+        self.truth_problem.export_solution = types.MethodType(disabled_export_solution, self.truth_problem)
         
     ## Finalize data structures required after the speedup analysis phase
     @override
     def _finalize_speedup_analysis(self, **kwargs):
-        # Restore the capability to import truth solutions
+        # Restore the capability to import/export truth solutions
         self.truth_problem.import_solution = self._speedup_analysis__original_import_solution
         del self._speedup_analysis__original_import_solution
+        self.truth_problem.export_solution = self._speedup_analysis__original_export_solution
+        del self._speedup_analysis__original_export_solution
     

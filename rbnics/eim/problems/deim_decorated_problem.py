@@ -77,9 +77,9 @@ def DEIMDecoratedProblem(
                             self.non_DEIM_forms[term][q] = form_q
                 
             @override
-            def solve(self, **kwargs):
+            def _solve(self, **kwargs):
                 self._update_N_DEIM(**kwargs)
-                return ParametrizedDifferentialProblem_DerivedClass.solve(self, **kwargs)
+                ParametrizedDifferentialProblem_DerivedClass._solve(self, **kwargs)
             
             def _update_N_DEIM(self, **kwargs):
                 if kwargs != self._update_N_DEIM__previous_kwargs:

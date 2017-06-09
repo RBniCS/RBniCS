@@ -374,16 +374,22 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # Make sure to clean up snapshot cache to ensure that parametrized
         # expression evaluation is actually carried out
         self.EIM_approximation.snapshot_cache.clear()
-        # ... and also disable the capability of importing truth solutions
+        # ... and also disable the capability of importing/exporting truth solutions
         self._speedup_analysis__original_import_solution = self.EIM_approximation.import_solution
         def disabled_import_solution(self_, folder, filename, solution=None):
             return False
         self.EIM_approximation.import_solution = types.MethodType(disabled_import_solution, self.EIM_approximation)
+        self._speedup_analysis__original_export_solution = self.EIM_approximation.export_solution
+        def disabled_export_solution(self_, folder, filename, solution=None):
+            pass
+        self.EIM_approximation.export_solution = types.MethodType(disabled_export_solution, self.EIM_approximation)
         
     ## Finalize data structures required after the speedup analysis phase
     @override
     def _finalize_speedup_analysis(self, **kwargs):
-        # Restore the capability to import truth solutions
+        # Restore the capability to import/export truth solutions
         self.EIM_approximation.import_solution = self._speedup_analysis__original_import_solution
         del self._speedup_analysis__original_import_solution
+        self.EIM_approximation.export_solution = self._speedup_analysis__original_export_solution
+        del self._speedup_analysis__original_export_solution
     

@@ -65,33 +65,44 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             postprocessed_snapshot = list()
             for (k, snapshot_k) in enumerate(snapshot_over_time):
                 self.reduced_problem.set_time(k*self.reduced_problem.dt)
-                postprocessed_snapshot_k = DifferentialProblemReductionMethod_DerivedClass.postprocess_snapshot(self, snapshot_k, snapshot_index)
+                postprocessed_snapshot_k = TimeDependentReductionMethod_Base.postprocess_snapshot(self, snapshot_k, snapshot_index)
                 postprocessed_snapshot.append(postprocessed_snapshot_k)
             return postprocessed_snapshot
         
         ## Initialize data structures required for the speedup analysis phase
         @override
         def _init_speedup_analysis(self, **kwargs):
-            DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
+            TimeDependentReductionMethod_Base._init_speedup_analysis(self, **kwargs)
             
             # Make sure to clean up problem and reduced problem solution cache to ensure that
             # solution and reduced solution are actually computed
+            self.truth_problem._solution_dot_cache.clear()
             self.reduced_problem._solution_dot_cache.clear()
+            self.truth_problem._solution_over_time_cache.clear()
             self.reduced_problem._solution_over_time_cache.clear()
+            self.truth_problem._solution_dot_over_time_cache.clear()
             self.reduced_problem._solution_dot_over_time_cache.clear()
-            # ... and also disable the capability of importing truth solutions
+            self.truth_problem._output_over_time_cache.clear()
+            self.reduced_problem._output_over_time_cache.clear()
+            # ... and also disable the capability of importing/exporting truth solutions
             self._speedup_analysis__original_import_solution = self.truth_problem.import_solution
             def disabled_import_solution(self_, folder, filename, solution_over_time=None, solution_dot_over_time=None):
                 return False
             self.truth_problem.import_solution = types.MethodType(disabled_import_solution, self.truth_problem)
+            self._speedup_analysis__original_export_solution = self.truth_problem.export_solution
+            def disabled_export_solution(self_, folder, filename, solution_over_time=None, solution_dot_over_time=None):
+                pass
+            self.truth_problem.export_solution = types.MethodType(disabled_export_solution, self.truth_problem)
             
         
         ## Finalize data structures required after the speedup analysis phase
         @override
         def _finalize_speedup_analysis(self, **kwargs):
-            # Restore the capability to import truth solutions
+            # Restore the capability to import/export truth solutions
             self.truth_problem.import_solution = self._speedup_analysis__original_import_solution
             del self._speedup_analysis__original_import_solution
+            self.truth_problem.export_solution = self._speedup_analysis__original_export_solution
+            del self._speedup_analysis__original_export_solution
         
     # return value (a class) for the decorator
     return TimeDependentReductionMethod_Class

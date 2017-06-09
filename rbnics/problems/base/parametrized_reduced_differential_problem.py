@@ -436,12 +436,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         :param N: dimension of reduced problem
         :return: error between online and offline solutions.
         """
-        if self._compute_error__previous_mu != self.mu:
-            self.truth_problem.solve(**kwargs)
-            self.truth_problem.compute_output()
-            # Do not carry out truth solves anymore for the same parameter
-            self._compute_error__previous_mu = self.mu
-        # Compute the error on the solution
+        self.truth_problem.solve(**kwargs)
         self.solve(N, **kwargs)
         return self._compute_error(**kwargs)
         
@@ -538,16 +533,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         :param N: dimension of reduced problem.
         :return: output error.
         """
-        if self._compute_error__previous_mu != self.mu:
-            self.truth_problem.solve(**kwargs)
-            # Do not carry out truth solves anymore for the same parameter
-            self._compute_error__previous_mu = self.mu
-        if self._compute_error_output__previous_mu != self.mu:
-            self.truth_problem.compute_output()
-            # Do not carry out truth solves anymore for the same parameter
-            self._compute_error_output__previous_mu = self.mu
-        # Compute the error on the output
+        self.truth_problem.solve(**kwargs)
         self.solve(N, **kwargs)
+        self.truth_problem.compute_output()
         self.compute_output()
         return self._compute_error_output(**kwargs)
                 
