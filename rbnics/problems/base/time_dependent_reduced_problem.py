@@ -17,15 +17,18 @@
 #
 
 from math import sqrt
-from rbnics.backends import assign, copy, TimeQuadrature, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from rbnics.utils.decorators import Extends, override, sync_setters
+from rbnics.backends import assign, copy, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineTimeStepping
+from rbnics.utils.decorators import apply_decorator_only_once, Extends, override, sync_setters
 from rbnics.utils.mpi import log, PROGRESS
 
+@apply_decorator_only_once
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class TimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    
+    TimeDependentReducedProblem_Base = ParametrizedReducedDifferentialProblem_DerivedClass
+    
+    @Extends(TimeDependentReducedProblem_Base, preserve_class_name=True)
+    class TimeDependentReducedProblem_Class(TimeDependentReducedProblem_Base):
         
         ## Default initialization of members
         @override
@@ -35,7 +38,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         @sync_setters("truth_problem", "set_final_time", "T")
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
+            TimeDependentReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             # Store quantities related to the time discretization
             assert truth_problem.t == 0.
             self.t = 0.
@@ -94,7 +97,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             # Initialize first data structures related to initial conditions
             self._init_initial_condition(current_stage)
             # ... since the Parent call may be overridden to need them!
-            ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
+            TimeDependentReducedProblem_Base.init(self, current_stage)
             
         def _init_initial_condition(self, current_stage="online"):
             assert current_stage in ("online", "offline")
@@ -141,7 +144,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 
         ## Assemble the reduced order affine expansion.
         def build_reduced_operators(self):
-            ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self)
+            TimeDependentReducedProblem_Base.build_reduced_operators(self)
             # Initial condition
             n_components = len(self.components)
             if n_components > 1:
@@ -188,7 +191,89 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 # Return
                 return initial_condition
             else:
-                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
+                return TimeDependentReducedProblem_Base.assemble_operator(self, term, current_stage)
+                
+        @override
+        def solve(self, N=None, **kwargs):
+            N, kwargs = self._online_size_from_kwargs(N, **kwargs)
+            N += self.N_bc
+            self._solution = OnlineFunction(N)
+            self._solution_dot = OnlineFunction(N)
+            cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
+            assert (
+                (cache_key in self._solution_cache)
+                    ==
+                (cache_key in self._solution_dot_cache)
+                    ==
+                (cache_key in self._solution_over_time_cache)
+                    ==
+                (cache_key in self._solution_dot_over_time_cache)
+            )
+            if cache_key in self._solution_cache:
+                log(PROGRESS, "Loading reduced solution from cache")
+                assign(self._solution, self._solution_cache[cache_key])
+                assign(self._solution_dot, self._solution_dot_cache[cache_key])
+                assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
+                assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
+            else:
+                log(PROGRESS, "Solving reduced problem")
+                assert not hasattr(self, "_is_solving")
+                self._is_solving = True
+                self._solve(N, **kwargs)
+                delattr(self, "_is_solving")
+                self._solution_cache[cache_key] = copy(self._solution)
+                self._solution_dot_cache[cache_key] = copy(self._solution_dot)
+                self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
+                self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
+            return self._solution_over_time
+            
+        class ProblemSolver(TimeDependentReducedProblem_Base.ProblemSolver, TimeDependentProblem1Wrapper):
+            def bc_eval(self, t):
+                problem = self.problem
+                problem.set_time(t)
+                return TimeDependentReducedProblem_Base.ProblemSolver.bc_eval(self)
+                
+            def ic_eval(self):
+                problem = self.problem
+                N = self.N
+                if len(problem.components) > 1:
+                    all_initial_conditions = list()
+                    all_initial_conditions_thetas = list()
+                    for component in problem.components:
+                        if problem.initial_condition[component] and not problem.initial_condition_is_homogeneous[component]:
+                            all_initial_conditions.extend(problem.initial_condition[component][:N])
+                            all_initial_conditions_thetas.extend(problem.compute_theta("initial_condition_" + component))
+                    if len(all_initial_conditions) > 0:
+                        all_initial_conditions = tuple(all_initial_conditions)
+                        all_initial_conditions = OnlineAffineExpansionStorage(all_initial_conditions)
+                        all_initial_conditions_thetas = tuple(all_initial_conditions_thetas)
+                    else:
+                        all_initial_conditions = None
+                        all_initial_conditions_thetas = None
+                else:
+                    if problem.initial_condition and not problem.initial_condition_is_homogeneous:
+                        all_initial_conditions = problem.initial_condition[:N]
+                        all_initial_conditions_thetas = problem.compute_theta("initial_condition")
+                    else:
+                        all_initial_conditions = None
+                        all_initial_conditions_thetas = None
+                assert (all_initial_conditions is None) == (all_initial_conditions_thetas is None)
+                if all_initial_conditions is not None:
+                    X_N = problem._combined_projection_inner_product[:N, :N]
+                    projected_initial_condition = OnlineFunction(N)
+                    solver = OnlineLinearSolver(X_N, projected_initial_condition, sum(product(all_initial_conditions_thetas, all_initial_conditions)))
+                    solver.solve()
+                    return projected_initial_condition
+                else:
+                    return OnlineFunction(N)
+                    
+            def solve(self):
+                problem = self.problem
+                solver = OnlineTimeStepping(self, problem._solution)
+                solver.set_parameters(problem._time_stepping_parameters)
+                (_, problem._solution_over_time, problem._solution_dot_over_time) = solver.solve()
+                assign(problem._solution, problem._solution_over_time[-1])
+                assign(problem._solution_dot, problem._solution_dot_over_time[-1])
                 
         # Internal method for error computation
         @override
@@ -198,7 +283,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 self.set_time(k*self.dt)
                 assign(self._solution, reduced_solution)
                 assign(self.truth_problem._solution, truth_solution)
-                error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self, **kwargs)
+                error = TimeDependentReducedProblem_Base._compute_error(self, **kwargs)
                 error_over_time.append(error)
             return error_over_time
             
@@ -210,7 +295,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 self.set_time(k*self.dt)
                 assign(self.truth_problem._solution, truth_solution)
                 if absolute_error != 0.0:
-                    relative_error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error(self, absolute_error, **kwargs)
+                    relative_error = TimeDependentReducedProblem_Base._compute_relative_error(self, absolute_error, **kwargs)
                     relative_error_over_time.append(relative_error)
                 else:
                     relative_error_over_time.append(0.0)
@@ -224,7 +309,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 self.set_time(k*self.dt)
                 self._output = reduced_output
                 self.truth_problem._output = truth_output
-                error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error_output(self, **kwargs)
+                error_output = TimeDependentReducedProblem_Base._compute_error_output(self, **kwargs)
                 error_output_over_time.append(error_output)
             return error_output_over_time
             
@@ -236,7 +321,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 self.set_time(k*self.dt)
                 self.truth_problem._output = truth_output
                 if absolute_error_output != 0.0:
-                    relative_error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error_output(self, absolute_error_output, **kwargs)
+                    relative_error_output = TimeDependentReducedProblem_Base._compute_relative_error_output(self, absolute_error_output, **kwargs)
                     relative_error_output_over_time.append(relative_error_output)
                 else:
                     relative_error_output_over_time.append(0.0)
@@ -257,70 +342,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 solution_dot_over_time_as_truth_function.append(self.Z[:N]*solution_dot)
             self.truth_problem.export_solution(folder, filename, solution_over_time_as_truth_function, solution_dot_over_time_as_truth_function, component, suffix)
             
-        @override
-        def solve(self, N=None, **kwargs):
-            N, kwargs = self._online_size_from_kwargs(N, **kwargs)
-            N += self.N_bc
-            cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
-            self._solution = OnlineFunction(N)
-            self._solution_dot = OnlineFunction(N)
-            if cache_key in self._solution_cache:
-                log(PROGRESS, "Loading reduced solution from cache")
-                assert cache_key in self._solution_dot_cache
-                assert cache_key in self._solution_over_time_cache
-                assert cache_key in self._solution_dot_over_time_cache
-                assign(self._solution, self._solution_cache[cache_key])
-                assign(self._solution_dot, self._solution_dot_cache[cache_key])
-                assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
-                assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
-            else:
-                log(PROGRESS, "Solving reduced problem")
-                assert not hasattr(self, "_is_solving")
-                self._is_solving = True
-                self._solve(N, **kwargs)
-                delattr(self, "_is_solving")
-                self._solution_cache[cache_key] = copy(self._solution)
-                self._solution_dot_cache[cache_key] = copy(self._solution_dot)
-                self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
-                self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
-            return self._solution_over_time
-                
-        # Perform an online evaluation of the output
-        @override
-        def compute_output(self):
-            N = self._solution.N
-            self._compute_output(N)
-            return self._output_over_time
-            
-        # Perform an online evaluation of the output. Internal method
-        @override
-        def _compute_output(self, N):
-            self._output_over_time = [NotImplemented]*len(self._solution_over_time)
-            self._output = NotImplemented
-            
-        @override
-        def _lifting_truth_solve(self, term, i):
-            # Since lifting solves for different values of i are associated to the same parameter 
-            # but with a patched call to compute_theta(), which returns the i-th component, we set
-            # a custom cache_key so that they are properly differentiated when reading from cache.
-            lifting_over_time = self.truth_problem.solve(cache_key="lifting_" + str(i))
-            theta_over_time = list()
-            for k in range(len(lifting_over_time)):
-                self.set_time(k*self.dt)
-                theta_over_time.append(self.compute_theta(term)[i])
-            lifting_quadrature = TimeQuadrature((0., self.truth_problem.T), lifting_over_time)
-            theta_quadrature = TimeQuadrature((0., self.truth_problem.T), theta_over_time)
-            lifting = lifting_quadrature.integrate()
-            lifting /= theta_quadrature.integrate()
-            return lifting
-            
-        def project(self, snapshot_over_time, N=None, **kwargs):
-            projected_snapshot_N_over_time = list()
-            for snapshot in snapshot_over_time:
-                projected_snapshot_N = ParametrizedReducedDifferentialProblem_DerivedClass.project(self, snapshot, N, **kwargs)
-                projected_snapshot_N_over_time.append(projected_snapshot_N)
-            return projected_snapshot_N_over_time
-        
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class
     

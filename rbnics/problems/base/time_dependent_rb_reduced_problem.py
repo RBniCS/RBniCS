@@ -18,23 +18,29 @@
 
 from rbnics.backends import transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from rbnics.utils.decorators import Extends, override
+from rbnics.problems.base.rb_reduced_problem import RBReducedProblem
+from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
+from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
 
+@apply_decorator_only_once
 def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class TimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    
+    TimeDependentRBReducedProblem_Base = TimeDependentReducedProblem(RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
+    
+    @Extends(TimeDependentRBReducedProblem_Base, preserve_class_name=True)
+    class TimeDependentRBReducedProblem_Class(TimeDependentRBReducedProblem_Base):
     
         ## Default initialization of members.
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
+            TimeDependentRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             
             # Storage related to error estimation for initial condition
             self.initial_condition_product = None # will be of class OnlineAffineExpansionStorage
         
         def _init_error_estimation_operators(self, current_stage="online"):
-            ParametrizedReducedDifferentialProblem_DerivedClass._init_error_estimation_operators(self, current_stage)
+            TimeDependentRBReducedProblem_Base._init_error_estimation_operators(self, current_stage)
             # Also initialize data structures related to initial condition error estimation
             if not self.initial_condition_is_homogeneous:
                 assert current_stage in ("online", "offline")
@@ -48,7 +54,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
         ## Build operators for error estimation
         def build_error_estimation_operators(self):
             # Call Parent
-            ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self)
+            TimeDependentRBReducedProblem_Base.build_error_estimation_operators(self)
             # Assemble initial condition product error estimation operator
             if not self.initial_condition_is_homogeneous:
                 self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "offline") 
@@ -74,7 +80,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                 else:
                     raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
             else:
-                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_error_estimation_operators(self, term, current_stage)
+                return TimeDependentRBReducedProblem_Base.assemble_error_estimation_operators(self, term, current_stage)
                 
     # return value (a class) for the decorator
     return TimeDependentRBReducedProblem_Class

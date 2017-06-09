@@ -126,31 +126,61 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             return ReducedParametrizedProblem_DecoratedClass
             
     def _AlsoDecorateNonlinearSolutionStorage(ReducedParametrizedProblem_DecoratedClass):
-        if hasattr(ReducedParametrizedProblem_DecoratedClass, "_store_solution"):
+        if hasattr(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, "store_solution"):
             @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
             class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
-                # Override online assign to make sure that the truth solution is updated,
-                # and that operators are re-assembled
-                @override
-                def _store_solution(self, solution):
-                    ParametrizedReducedDifferentialProblem_DerivedClass._store_solution(self, solution)
-                    # Update truth solution
-                    assign(self.truth_problem._solution, self.Z[:solution.N]*solution)
-                    # Re-assemble 
-                    self.build_reduced_operators("online")
+            
+                class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
+                    # Override online assign to make sure that the truth solution is updated,
+                    # and that operators are re-assembled
+                    @override
+                    def store_solution(self, solution):
+                        ReducedParametrizedProblem_DecoratedClass.ProblemSolver.store_solution(self, solution)
+                        # Update truth solution
+                        reduced_problem = self.problem
+                        assign(reduced_problem.truth_problem._solution, reduced_problem.Z[:solution.N]*solution)
+                        # Re-assemble 
+                        reduced_problem.build_reduced_operators("online")
                 
-                # Override to make sure that self.truth_problem._solution is backed up and restore
-                # after the reduced solve
-                @override
-                def solve(self, N=None, **kwargs):
-                    bak_truth_solution = copy(self.truth_problem._solution)
-                    reduced_solution = ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
-                    assign(self.truth_problem._solution, bak_truth_solution)
-                    return reduced_solution
+                    # Override to make sure that truth_problem solution is backed up and restored
+                    # after the reduced solve
+                    @override
+                    def solve(self):
+                        reduced_problem = self.problem
+                        bak_truth_solution = copy(reduced_problem.truth_problem._solution)
+                        ReducedParametrizedProblem_DecoratedClass.ProblemSolver.solve(self)
+                        assign(reduced_problem.truth_problem._solution, bak_truth_solution)
                     
-            return _AlsoDecorateNonlinearSolutionStorage_Class
-        else:
-            return ReducedParametrizedProblem_DecoratedClass
+            ReducedParametrizedProblem_DecoratedClass = _AlsoDecorateNonlinearSolutionStorage_Class
+            
+        if hasattr(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, "store_solution_dot"):
+            @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
+            class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
+            
+                class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
+                    # Override online assign to make sure that the truth solution dot is updated,
+                    # and that operators are re-assembled
+                    @override
+                    def store_solution_dot(self, solution_dot):
+                        ReducedParametrizedProblem_DecoratedClass.ProblemSolver.store_solution_dot(self, solution_dot)
+                        # Update truth solution
+                        reduced_problem = self.problem
+                        assign(reduced_problem.truth_problem._solution_dot, reduced_problem.Z[:solution.N]*solution_dot)
+                        # Re-assemble 
+                        reduced_problem.build_reduced_operators("online")
+                        
+                    # Override to make sure that truth_problem solution_dot is backed up and restored
+                    # after the reduced solve
+                    @override
+                    def solve(self):
+                        reduced_problem = self.problem
+                        bak_truth_solution_dot = copy(reduced_problem.truth_problem._solution_dot)
+                        ReducedParametrizedProblem_DecoratedClass.ProblemSolver.solve(self)
+                        assign(reduced_problem.truth_problem._solution_dot, bak_truth_solution_dot)
+            
+            ReducedParametrizedProblem_DecoratedClass = _AlsoDecorateNonlinearSolutionStorage_Class
+            
+        return ReducedParametrizedProblem_DecoratedClass
            
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     @_AlsoDecorateErrorEstimationOperators

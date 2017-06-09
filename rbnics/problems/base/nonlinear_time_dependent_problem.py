@@ -17,18 +17,22 @@
 #
 
 from rbnics.backends import assign
+from rbnics.problems.base.nonlinear_problem import NonlinearProblem
 from rbnics.problems.base.time_dependent_problem import TimeDependentProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
+@apply_decorator_only_once
 def NonlinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    #@NonlinearProblem # this is usually already applied to parent, since we first create a problem class for the steady case
-    @TimeDependentProblem
-    class NonlinearTimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
+    
+    NonlinearTimeDependentProblem_Base = TimeDependentProblem(NonlinearProblem(ParametrizedDifferentialProblem_DerivedClass))
+    
+    @Extends(NonlinearTimeDependentProblem_Base, preserve_class_name=True)
+    class NonlinearTimeDependentProblem_Class(NonlinearTimeDependentProblem_Base):
         
-        # Store solution dot while solving the nonlinear problem
-        def _store_solution_dot(self, solution_dot):
-            assign(self._solution_dot, solution_dot)
+        class ProblemSolver(NonlinearTimeDependentProblem_Base.ProblemSolver):
+            # Store solution dot while solving the nonlinear problem
+            def store_solution_dot(self, solution_dot):
+                assign(self.problem._solution_dot, solution_dot)
             
     # return value (a class) for the decorator
     return NonlinearTimeDependentProblem_Class

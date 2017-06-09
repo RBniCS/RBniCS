@@ -17,18 +17,22 @@
 #
 
 from rbnics.backends import assign
+from rbnics.problems.base.nonlinear_reduced_problem import NonlinearReducedProblem
 from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
+@apply_decorator_only_once
 def NonlinearTimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    #@NonlinearReducedProblem # this is usually already applied to parent, since we first create a problem class for the steady case
-    @TimeDependentReducedProblem
-    class NonlinearTimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    
+    NonlinearTimeDependentReducedProblem_Base = TimeDependentReducedProblem(NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
+    
+    @Extends(NonlinearTimeDependentReducedProblem_Base, preserve_class_name=True)
+    class NonlinearTimeDependentReducedProblem_Class(NonlinearTimeDependentReducedProblem_Base):
         
-        # Store solution dot while solving the nonlinear problem
-        def _store_solution_dot(self, solution_dot):
-            assign(self._solution_dot, solution_dot)
+        class ProblemSolver(NonlinearTimeDependentReducedProblem_Base.ProblemSolver):
+            # Store solution dot while solving the nonlinear problem
+            def store_solution_dot(self, solution_dot):
+                assign(self.problem._solution_dot, solution_dot)
         
     # return value (a class) for the decorator
     return NonlinearTimeDependentReducedProblem_Class

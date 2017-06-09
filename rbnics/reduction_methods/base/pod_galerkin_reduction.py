@@ -19,15 +19,19 @@
 from __future__ import print_function
 from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
 from rbnics.utils.mpi import print
 
+@apply_decorator_only_once
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     """
     It extends the DifferentialProblemReductionMethod_DerivedClass class.
     """
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
-    class PODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
+    
+    PODGalerkinReduction_Base = DifferentialProblemReductionMethod_DerivedClass
+    
+    @Extends(PODGalerkinReduction_Base, preserve_class_name=True)
+    class PODGalerkinReduction_Class(PODGalerkinReduction_Base):
         """
         Abstract class. The folders used to store the snapshots and for the post processing data, the data stracture for the POD algorithm are initialized.
         
@@ -39,9 +43,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
-                    
-           
+            PODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
+            
             # Declare a POD object
             self.POD = None # ProperOrthogonalDecomposition (for problems with one component) or dict of ProperOrthogonalDecomposition (for problem with several components)
             # I/O
@@ -98,7 +101,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def _init_offline(self):
             # Call parent to initialize inner product and reduced problem
-            output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
+            output = PODGalerkinReduction_Base._init_offline(self)
             
             # Declare a new POD for each basis component
             if len(self.truth_problem.components) > 1:

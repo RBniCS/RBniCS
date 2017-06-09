@@ -16,11 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
+@apply_decorator_only_once
 def NonlinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
-    class NonlinearReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
+    
+    NonlinearReductionMethod_Base = DifferentialProblemReductionMethod_DerivedClass
+    
+    @Extends(NonlinearReductionMethod_Base, preserve_class_name=True)
+    class NonlinearReductionMethod_Class(NonlinearReductionMethod_Base):
         pass
                 
     # return value (a class) for the decorator

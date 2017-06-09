@@ -19,11 +19,13 @@
 from rbnics.reduction_methods.base.time_dependent_pod_galerkin_reduction import TimeDependentPODGalerkinReduction
 from rbnics.utils.decorators import Extends, override
 
-def NonlinearTimeDependentPODGalerkinReduction(DifferentialProblemReduction_DerivedClass):
-    @Extends(DifferentialProblemReduction_DerivedClass, preserve_class_name=True)
-    #@NonlinearPODGalerkinReduction # this is usually already applied to parent, since we first create a problem class for the steady case
-    @TimeDependentPODGalerkinReduction
-    class NonlinearTimeDependentPODGalerkinReduction_Class(DifferentialProblemReduction_DerivedClass):
+@apply_decorator_only_once
+def NonlinearTimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
+    
+    NonlinearTimeDependentPODGalerkinReduction_Base = TimeDependentPODGalerkinReduction(NonlinearPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass))
+    
+    @Extends(NonlinearTimeDependentPODGalerkinReduction_Base, preserve_class_name=True)
+    class NonlinearTimeDependentPODGalerkinReduction_Class(NonlinearTimeDependentPODGalerkinReduction_Base):
         pass
                 
     # return value (a class) for the decorator

@@ -16,20 +16,22 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends import AffineExpansionStorage, assign, copy, Function
-from rbnics.utils.decorators import Extends, override
+from rbnics.backends import AffineExpansionStorage, assign, copy, Function, TimeDependentProblem1Wrapper, TimeStepping
+from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
 from rbnics.utils.mpi import log, PROGRESS
 
+@apply_decorator_only_once
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class TimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
-        
+    TimeDependentProblem_Base = ParametrizedDifferentialProblem_DerivedClass
+    
+    @Extends(TimeDependentProblem_Base, preserve_class_name=True)
+    class TimeDependentProblem_Class(TimeDependentProblem_Base):
         ## Default initialization of members
         @override
         def __init__(self, V, **kwargs):
             # Call the parent initialization
-            ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
+            TimeDependentProblem_Base.__init__(self, V, **kwargs)
             # Store quantities related to the time discretization
             self.t = 0.
             self.t0 = 0.
@@ -87,8 +89,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solution_dot_over_time = self._solution_dot_over_time
             assert suffix is None
             for (k, (solution, solution_dot)) in enumerate(zip(solution_over_time, solution_dot_over_time)):
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution", solution, component=component, suffix=k)
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution_dot", solution_dot, component=component, suffix=k)
+                TimeDependentProblem_Base.export_solution(self, folder + "/" + filename, "solution", solution, component=component, suffix=k)
+                TimeDependentProblem_Base.export_solution(self, folder + "/" + filename, "solution_dot", solution_dot, component=component, suffix=k)
                 
         ## Import solution from file
         @override
@@ -110,8 +112,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             del solution_over_time[:]
             del solution_dot_over_time[:]
             while self.t <= self.T:
-                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution", solution, suffix=k)
-                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution_dot", solution_dot, suffix=k)
+                import_solution = TimeDependentProblem_Base.import_solution(self, folder + "/" + filename, "solution", solution, suffix=k)
+                import_solution_dot = TimeDependentProblem_Base.import_solution(self, folder + "/" + filename, "solution_dot", solution_dot, suffix=k)
                 import_solution_and_solution_dot = import_solution and import_solution_dot
                 if import_solution_and_solution_dot:
                     solution_over_time.append(copy(self._solution))
@@ -131,7 +133,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
         ## Initialize data structures required for the offline phase
         @override
         def init(self):
-            ParametrizedDifferentialProblem_DerivedClass.init(self)
+            TimeDependentProblem_Base.init(self)
             self._init_initial_condition()
             
         def _init_initial_condition(self):
@@ -188,6 +190,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 log(PROGRESS, "Solving truth problem")
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
+                assign(self._solution, Function(self.V))
+                assign(self._solution_dot, Function(self.V))
                 self._solve(**kwargs)
                 delattr(self, "_is_solving")
                 self._solution_cache[cache_key] = copy(self._solution)
@@ -196,6 +200,49 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
                 self.export_solution(self.folder["cache"], cache_file)
             return self._solution_over_time
+            
+        class ProblemSolver(TimeDependentProblem_Base.ProblemSolver, TimeDependentProblem1Wrapper):
+            def bc_eval(self, t):
+                problem = self.problem
+                problem.set_time(t)
+                return TimeDependentProblem_Base.ProblemSolver.bc_eval(self)
+                
+            def ic_eval(self):
+                problem = self.problem
+                if len(problem.components) > 1:
+                    all_initial_conditions = list()
+                    all_initial_conditions_thetas = list()
+                    for component in problem.components:
+                        if problem.initial_condition[component] is not None:
+                            all_initial_conditions.extend(problem.initial_condition[component])
+                            all_initial_conditions_thetas.extend(problem.compute_theta("initial_condition_" + component))
+                    if len(all_initial_conditions) > 0:
+                        all_initial_conditions = tuple(all_initial_conditions)
+                        all_initial_conditions = AffineExpansionStorage(all_initial_conditions)
+                        all_initial_conditions_thetas = tuple(all_initial_conditions_thetas)
+                    else:
+                        all_initial_conditions = None
+                        all_initial_conditions_thetas = None
+                else:
+                    if problem.initial_condition is not None:
+                        all_initial_conditions = problem.initial_condition
+                        all_initial_conditions_thetas = problem.compute_theta("initial_condition")
+                    else:
+                        all_initial_conditions = None
+                        all_initial_conditions_thetas = None
+                assert (all_initial_conditions is None) == (all_initial_conditions_thetas is None)
+                if all_initial_conditions is not None:
+                    return sum(product(all_initial_conditions_thetas, all_initial_conditions))
+                else:
+                    return Function(problem.V)
+                    
+            def solve(self):
+                problem = self.problem
+                solver = TimeStepping(self, problem._solution)
+                solver.set_parameters(problem._time_stepping_parameters)
+                (_, problem._solution_over_time, problem._solution_dot_over_time) = solver.solve()
+                assign(problem._solution, problem._solution_over_time[-1])
+                assign(problem._solution_dot, problem._solution_dot_over_time[-1])
         
         ## Perform a truth evaluation of the output
         @override

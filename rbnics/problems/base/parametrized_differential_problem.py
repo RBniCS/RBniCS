@@ -30,7 +30,7 @@ from rbnics.utils.mpi import log, PROGRESS
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem
 class ParametrizedDifferentialProblem(ParametrizedProblem):
-    __metaclass__ = ABCMeta # Abstract class
+    __metaclass__ = ABCMeta
     
     """
     Abstract class describing a parametrized differential problem.
@@ -236,18 +236,57 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             log(PROGRESS, "Solving truth problem")
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
+            assign(self._solution, Function(self.V))
             self._solve(**kwargs)
             delattr(self, "_is_solving")
             self._solution_cache[cache_key] = copy(self._solution)
             self.export_solution(self.folder["cache"], cache_file)
         return self._solution
     
-    @abstractmethod
+    class ProblemSolver(object):
+        __metaclass__ = ABCMeta
+        
+        def __init__(self, problem):
+            self.problem = problem
+            
+        def bc_eval(self):
+            problem = self.problem
+            if len(problem.components) > 1:
+                all_dirichlet_bcs = list()
+                all_dirichlet_bcs_thetas = list()
+                for component in problem.components:
+                    if problem.dirichlet_bc[component] is not None:
+                        all_dirichlet_bcs.extend(problem.dirichlet_bc[component])
+                        all_dirichlet_bcs_thetas.extend(problem.compute_theta("dirichlet_bc_" + component))
+                if len(all_dirichlet_bcs) > 0:
+                    all_dirichlet_bcs = tuple(all_dirichlet_bcs)
+                    all_dirichlet_bcs = AffineExpansionStorage(all_dirichlet_bcs)
+                    all_dirichlet_bcs_thetas = tuple(all_dirichlet_bcs_thetas)
+                else:
+                    all_dirichlet_bcs = None
+                    all_dirichlet_bcs_thetas = None
+            else:
+                if problem.dirichlet_bc is not None:
+                    all_dirichlet_bcs = problem.dirichlet_bc
+                    all_dirichlet_bcs_thetas = problem.compute_theta("dirichlet_bc")
+                else:
+                    all_dirichlet_bcs = None
+                    all_dirichlet_bcs_thetas = None
+            assert (all_dirichlet_bcs is None) == (all_dirichlet_bcs_thetas is None)
+            if all_dirichlet_bcs is not None:
+                return sum(product(all_dirichlet_bcs_thetas, all_dirichlet_bcs))
+            else:
+                return None
+        
+        @abstractmethod
+        def solve(self):
+            pass
+    
+    ## Perform a truth solve
+    @override
     def _solve(self, **kwargs):
-        """
-        Abstract method problem specific. Internal method.
-        """
-        raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
+        problem_solver = self.ProblemSolver(self)
+        problem_solver.solve()
         
     def compute_output(self):
         """

@@ -19,11 +19,13 @@
 from rbnics.reduction_methods.base.time_dependent_rb_reduction import TimeDependentRBReduction
 from rbnics.utils.decorators import Extends, override
 
-def NonlinearTimeDependentRBReduction(DifferentialProblemReduction_DerivedClass):
-    @Extends(DifferentialProblemReduction_DerivedClass, preserve_class_name=True)
-    #@NonlinearRBReduction # this is usually already applied to parent, since we first create a problem class for the steady case
-    @TimeDependentRBReduction
-    class NonlinearTimeDependentRBReduction_Class(DifferentialProblemReduction_DerivedClass):
+@apply_decorator_only_once
+def NonlinearTimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
+    
+    NonlinearTimeDependentRBReduction_Base = TimeDependentRBReduction(NonlinearRBReduction(DifferentialProblemReductionMethod_DerivedClass))
+    
+    @Extends(NonlinearTimeDependentRBReduction_Base, preserve_class_name=True)
+    class NonlinearTimeDependentRBReduction_Class(NonlinearTimeDependentRBReduction_Base):
         pass
                 
     # return value (a class) for the decorator

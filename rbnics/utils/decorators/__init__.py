@@ -17,6 +17,7 @@
 #
 
 from rbnics.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractmethod, abstractonlinemethod, abstractproperty
+from rbnics.utils.decorators.apply_decorator_only_once import apply_decorator_only_once
 from rbnics.utils.decorators.backend_for import array_of, BackendFor, backend_for, ComputeThetaType, dict_of, DictOfThetaType, list_of, OnlineSizeType, OverrideBackendFor, override_backend_for, SameBackendFor, same_backend_for, ThetaType, tuple_of
 from rbnics.utils.decorators.customize_reduction_method_for import CustomizeReductionMethodFor
 from rbnics.utils.decorators.customize_reduced_problem_for import CustomizeReducedProblemFor
@@ -52,6 +53,7 @@ __all__ = [
     'add_to_map_from_problem_name_to_problem',
     'add_to_map_from_problem_to_reduced_problem',
     'add_to_map_from_solution_to_problem',
+    'apply_decorator_only_once',
     'array_of',
     'BackendFor',
     'backend_for',

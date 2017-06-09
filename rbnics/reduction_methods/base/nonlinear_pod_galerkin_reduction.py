@@ -16,11 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override
+from rbnics.reduction_methods.base.nonlinear_reduction_method import NonlinearReductionMethod
+from rbnics.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
-def NonlinearPODGalerkinReduction(DifferentialProblemReduction_DerivedClass):
-    @Extends(DifferentialProblemReduction_DerivedClass, preserve_class_name=True)
-    class NonlinearPODGalerkinReduction_Class(DifferentialProblemReduction_DerivedClass):
+@apply_decorator_only_once
+def NonlinearPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
+    
+    NonlinearPODGalerkinReduction_Base = PODGalerkinReduction(NonlinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass))
+    
+    @Extends(NonlinearPODGalerkinReduction_Base, preserve_class_name=True)
+    class NonlinearPODGalerkinReduction_Class(NonlinearPODGalerkinReduction_Base):
         pass
                 
     # return value (a class) for the decorator

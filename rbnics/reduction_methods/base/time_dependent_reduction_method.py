@@ -18,17 +18,21 @@
 
 import types
 from numpy import isclose
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
 
+@apply_decorator_only_once
 def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
-    class TimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
+    
+    TimeDependentReductionMethod_Base = DifferentialProblemReductionMethod_DerivedClass
+    
+    @Extends(TimeDependentReductionMethod_Base, preserve_class_name=True)
+    class TimeDependentReductionMethod_Class(TimeDependentReductionMethod_Base):
         
         ## Default initialization of members
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
+            TimeDependentReductionMethod_Base.__init__(self, truth_problem, **kwargs)
             
             # Indices for undersampling snapshots, e.g. after a transient
             self.reduction_first_index = None # keep temporal evolution from the beginning by default

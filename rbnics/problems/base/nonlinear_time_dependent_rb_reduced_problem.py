@@ -16,14 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.problems.base.nonlinear_rb_reduced_problem import NonlinearRBReducedProblem
 from rbnics.problems.base.time_dependent_rb_reduced_problem import TimeDependentRBReducedProblem
-from rbnics.utils.decorators import Extends
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
+@apply_decorator_only_once
 def NonlinearTimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    #@NonlinearRBReducedProblem # this is usually already applied to parent, since we first create a problem class for the steady case
-    @TimeDependentRBReducedProblem
-    class NonlinearTimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    
+    NonlinearTimeDependentRBReducedProblem_Base = TimeDependentRBReducedProblem(NonlinearRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
+    
+    @Extends(NonlinearTimeDependentRBReducedProblem_Base, preserve_class_name=True)
+    class NonlinearTimeDependentRBReducedProblem_Class(NonlinearTimeDependentRBReducedProblem_Base):
         pass
                 
     # return value (a class) for the decorator

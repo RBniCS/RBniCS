@@ -18,18 +18,24 @@
 
 from math import sqrt
 from rbnics.backends import ProperOrthogonalDecomposition, TimeQuadrature
-from rbnics.utils.decorators import Extends, override
+from rbnics.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
+from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
+from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
 from rbnics.utils.io import ErrorAnalysisTable
 
+@apply_decorator_only_once
 def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
-    class TimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
+    
+    TimeDependentPODGalerkinReduction_Base = TimeDependentReductionMethod(PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass))
+    
+    @Extends(TimeDependentPODGalerkinReduction_Base, preserve_class_name=True)
+    class TimeDependentPODGalerkinReduction_Class(TimeDependentPODGalerkinReduction_Base):
         
         ## Default initialization of members
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
+            TimeDependentPODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
             
             # Compress first time trajectory (for each mu) and then parameter dependence
             # at the end of the offline stage, or carry out only one compression at the 
@@ -48,7 +54,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
         @override
         def set_Nmax(self, Nmax, **kwargs):
-            DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
+            TimeDependentPODGalerkinReduction_Base.set_Nmax(self, Nmax, **kwargs)
             # Set nested POD sizes
             if "nested_POD" in kwargs:
                 self.nested_POD = True
@@ -57,7 +63,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
         ## OFFLINE: set tolerance (stopping criterion)
         @override
         def set_tolerance(self, tol, **kwargs):
-            DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
+            TimeDependentPODGalerkinReduction_Base.set_tolerance(self, tol, **kwargs)
             # Set nested POD tolerance
             if "nested_POD" in kwargs:
                 assert self.nested_POD is True
@@ -89,7 +95,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
         @override
         def _init_offline(self):
             # Call parent to initialize inner product
-            output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
+            output = TimeDependentPODGalerkinReduction_Base._init_offline(self)
             
             if self.nested_POD:
                 # Declare new POD object(s)
@@ -120,7 +126,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                     (eigs1, Z1) = self._nested_POD_compress_time_trajectory(snapshot_over_time)
                     self.POD.store_snapshot(Z1, weight=[sqrt(e) for e in eigs1])
             else:
-                DifferentialProblemReductionMethod_DerivedClass.update_snapshots_matrix(self, snapshot_over_time)
+                TimeDependentPODGalerkinReduction_Base.update_snapshots_matrix(self, snapshot_over_time)
                 
         def _nested_POD_compress_time_trajectory(self, snapshot_over_time, component=None):
             N1 = self.N1
@@ -167,7 +173,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             for column in ("error_output", "relative_error_output"):
                 ErrorAnalysisTable.preprocess_setitem(column, solution_preprocess_setitem)
                 
-            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            TimeDependentPODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
             
             ErrorAnalysisTable.clear_setitem_preprocessing()
         

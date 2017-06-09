@@ -31,7 +31,7 @@ from rbnics.utils.mpi import log, print, PROGRESS
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 @StoreMapFromProblemToReducedProblem
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
-    __metaclass__ = ABCMeta # abstract class
+    __metaclass__ = ABCMeta
     
     """
     Base class containing the interface of a projection based ROM for elliptic coercive problems.
@@ -282,12 +282,38 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             self._solution_cache[cache_key] = copy(self._solution)
         return self._solution
         
-    @abstractmethod
+    class ProblemSolver(object):
+        __metaclass__ = ABCMeta
+        
+        def __init__(self, problem, N):
+            self.problem = problem
+            self.N = N
+        
+        def bc_eval(self):
+            problem = self.problem
+            if len(problem.components) > 1:
+                all_dirichlet_bcs_thetas = dict()
+                for component in problem.components:
+                    if problem.dirichlet_bc[component] and not problem.dirichlet_bc_are_homogeneous[component]:
+                        all_dirichlet_bcs_thetas[component] = problem.compute_theta("dirichlet_bc_" + component)
+                if len(all_dirichlet_bcs_thetas) == 0:
+                    all_dirichlet_bcs_thetas = None
+            else:
+                if problem.dirichlet_bc and not problem.dirichlet_bc_are_homogeneous:
+                    all_dirichlet_bcs_thetas = problem.compute_theta("dirichlet_bc")
+                else:
+                    all_dirichlet_bcs_thetas = None
+            return all_dirichlet_bcs_thetas
+            
+        @abstractmethod
+        def solve(self):
+            pass
+        
+    # Perform an online solve (internal)
+    @override
     def _solve(self, N, **kwargs):
-        """
-        Abstract method problem specific. Internal method.
-        """
-        raise NotImplementedError("The method _solve() is problem-specific and needs to be overridden.")
+        problem_solver = self.ProblemSolver(self, N)
+        problem_solver.solve()
         
     def project(self, snapshot, N=None, **kwargs):
         N, kwargs = self._online_size_from_kwargs(N, **kwargs)

@@ -16,14 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.problems.base.nonlinear_pod_galerkin_reduced_problem import NonlinearPODGalerkinReducedProblem
 from rbnics.problems.base.time_dependent_pod_galerkin_reduced_problem import TimeDependentPODGalerkinReducedProblem
-from rbnics.utils.decorators import Extends
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
+@apply_decorator_only_once
 def NonlinearTimeDependentPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    #@NonlinearPODGalerkinReducedProblem # this is usually already applied to parent, since we first create a problem class for the steady case
-    @TimeDependentPODGalerkinReducedProblem
-    class NonlinearTimeDependentPODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    
+    NonlinearTimeDependentPODGalerkinReducedProblem_Base = TimeDependentPODGalerkinReducedProblem(NonlinearPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
+    
+    @Extends(NonlinearTimeDependentPODGalerkinReducedProblem_Base, preserve_class_name=True)
+    class NonlinearTimeDependentPODGalerkinReducedProblem_Class(NonlinearTimeDependentPODGalerkinReducedProblem_Base):
         pass
                 
     # return value (a class) for the decorator

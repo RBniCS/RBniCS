@@ -19,11 +19,15 @@
 from abc import ABCMeta, abstractmethod
 from rbnics.backends import AffineExpansionStorage, BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
 
+@apply_decorator_only_once
 def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class RBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    
+    RBReducedProblem_Base = ParametrizedReducedDifferentialProblem_DerivedClass
+    
+    @Extends(RBReducedProblem_Base, preserve_class_name=True)
+    class RBReducedProblem_Class(RBReducedProblem_Base):
         __metaclass__ = ABCMeta
         
         """
@@ -36,7 +40,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
+            RBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             
             # $$ ONLINE DATA STRUCTURES $$ #
             # Residual terms
@@ -63,7 +67,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             """
             Initialize data structures required for the online phase.
             """
-            ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
+            RBReducedProblem_Base.init(self, current_stage)
             self._init_error_estimation_operators(current_stage)
             
         def _init_error_estimation_operators(self, current_stage="online"):

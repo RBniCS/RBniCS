@@ -16,11 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends
+from rbnics.problems.base.nonlinear_reduced_problem import NonlinearReducedProblem
+from rbnics.problems.base.rb_reduced_problem import RBReducedProblem
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
+@apply_decorator_only_once
 def NonlinearRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class NonlinearRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    
+    NonlinearRBReducedProblem_Base = RBReducedProblem(NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
+    
+    @Extends(NonlinearRBReducedProblem_Base, preserve_class_name=True)
+    class NonlinearRBReducedProblem_Class(NonlinearRBReducedProblem_Base):
         pass
                 
     # return value (a class) for the decorator

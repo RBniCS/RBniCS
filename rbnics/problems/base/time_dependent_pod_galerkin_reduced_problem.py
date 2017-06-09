@@ -16,11 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends
+from rbnics.problems.base.pod_galerkin_reduced_problem import PODGalerkinReducedProblem
+from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
+@apply_decorator_only_once
 def TimeDependentPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class TimeDependentPODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
+    
+    TimeDependentPODGalerkinReducedProblem_Base = TimeDependentReducedProblem(PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
+    
+    @Extends(TimeDependentPODGalerkinReducedProblem_Base, preserve_class_name=True)
+    class TimeDependentPODGalerkinReducedProblem_Class(TimeDependentPODGalerkinReducedProblem_Base):
         pass
                 
     # return value (a class) for the decorator
