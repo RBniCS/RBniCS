@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import types
 from rbnics.backends.common.linear_program_solver import LinearProgramSolver
 from rbnics.utils.decorators import Extends, override, ReductionMethodDecoratorFor
 from rbnics.scm.problems import SCM
@@ -99,12 +100,26 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                                                 # an exact coercivity constant, 
                                                 # so he probably is not interested in the error analysis of SCM
                     and
-                "N_SCM" not in kwargs           # otherwise we assume the user was interested in computing the error for a fixed number of SCM basis
+                "SCM" not in kwargs             # otherwise we assume the user was interested in computing the error for a fixed number of SCM basis
                                                 # functions, thus he has already carried out the error analysis of SCM
             ):
                 self.SCM_reduction.error_analysis(N)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            
+        @override
+        def _init_error_analysis(self, **kwargs):
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
+            # Replace stability factor computation, if needed
+            self._replace_stability_factor_computation(**kwargs)
+            
+        @override
+        def _finalize_error_analysis(self, **kwargs):
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
+            # Undo replacement of stability factor computation, if needed
+            self._undo_replace_stability_factor_computation(**kwargs)
             
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
@@ -116,12 +131,45 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                                                 # an exact coercivity constant, 
                                                 # so he probably is not interested in the speedup analysis of SCM
                     and
-                "N_SCM" not in kwargs           # otherwise we assume the user was interested in computing the speedup for a fixed number of SCM basis
+                "SCM" not in kwargs             # otherwise we assume the user was interested in computing the speedup for a fixed number of SCM basis
                                                 # functions, thus he has already carried out the speedup analysis of SCM
             ):
                 self.SCM_reduction.speedup_analysis(N)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
+            
+        @override
+        def _init_speedup_analysis(self, **kwargs):
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
+            # Replace stability factor computation, if needed
+            self._replace_stability_factor_computation(**kwargs)
+            
+        @override
+        def _finalize_speedup_analysis(self, **kwargs):
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)
+            # Undo replacement of stability factor computation, if needed
+            self._undo_replace_stability_factor_computation(**kwargs)
+            
+        def _replace_stability_factor_computation(self, **kwargs):
+            self._replace_stability_factor_computation__get_stability_factor__original = self.reduced_problem.get_stability_factor
+            if "SCM" not in kwargs:
+                if "with_respect_to" in kwargs:
+                    # Assume that the user wants to disable SCM and use the exact stability factor
+                    def replaced_get_stability_factor(self_):
+                        return kwargs["with_respect_to"].get_stability_factor()
+                    self.reduced_problem.get_stability_factor = types.MethodType(replaced_get_stability_factor, self.reduced_problem)
+            else:
+                assert isinstance(kwargs["SCM"], int)
+                # Assume that the user wants to use SCM with a prescribed number of basis functions
+                def replaced_get_stability_factor(self_):
+                    return self.truth_problem.SCM_approximation.get_stability_factor_lower_bound(kwargs["SCM"])
+                self.reduced_problem.get_stability_factor = types.MethodType(replaced_get_stability_factor, self.reduced_problem)
+            
+        def _undo_replace_stability_factor_computation(self, **kwargs):
+            self.reduced_problem.get_stability_factor = self._replace_stability_factor_computation__get_stability_factor__original
+            del self._replace_stability_factor_computation__get_stability_factor__original
         
     # return value (a class) for the decorator
     return SCMDecoratedReductionMethod_Class

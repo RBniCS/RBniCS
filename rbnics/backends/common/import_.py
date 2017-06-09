@@ -16,6 +16,18 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-class EigenVectorsList(list):
-    pass
+from rbnics.utils.decorators import backend_for, list_of
+from rbnics.utils.io import Folders, PickleIO
+
+@backend_for("common", inputs=((list_of(float), list_of(int)), (Folders.Folder, str), str, None))
+def import_(solution, directory, filename, suffix=None):
+    if PickleIO.exists_file(directory, filename):
+        loaded_solution = PickleIO.load_file(directory, filename)
+        assert len(solution) == len(loaded_solution)
+        for (i, solution_i) in enumerate(loaded_solution):
+            solution[i] = float(solution_i)
+        return True
+    else:
+        return False
+        
     

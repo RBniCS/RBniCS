@@ -20,8 +20,8 @@ from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 from rbnics.scm.problems.scm_approximation import SCMApproximation
 
 def SCMDecoratedProblem(
-    M_e = -1,
-    M_p = -1,
+    M_e = None,
+    M_p = None,
     bounding_box_minimum_eigensolver_parameters = None,
     bounding_box_maximum_eigensolver_parameters = None,
     coercivity_eigensolver_parameters = None,
@@ -66,7 +66,7 @@ def SCMDecoratedProblem(
             ## Return the alpha_lower bound.
             @override
             def get_stability_factor(self):
-                return self.SCM_approximation.get_stability_factor_lower_bound(self.mu)
+                return self.SCM_approximation.get_stability_factor_lower_bound()
 
         # return value (a class) for the decorator
         return SCMDecoratedProblem_Class

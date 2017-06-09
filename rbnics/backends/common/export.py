@@ -16,14 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.io import ExportableList
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import backend_for, list_of
+from rbnics.utils.io import Folders, PickleIO
 
-@Extends(ExportableList)
-class CoercivityConstantsList(ExportableList):
-    @override
-    def __init__(self, size=None):
-        ExportableList.__init__(self, "pickle")
-        if size is not None:
-            self._list.extend([0. for x in range(size)])
-            
+@backend_for("common", inputs=((list_of(float), list_of(int)), (Folders.Folder, str), str, None, None))
+def export(solution, directory, filename, suffix=None, component=None):
+    PickleIO.save_file(solution, directory, filename)
+        

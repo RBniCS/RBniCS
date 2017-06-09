@@ -17,6 +17,8 @@
 #
 
 from rbnics.backends.common.affine_expansion_storage import AffineExpansionStorage
+from rbnics.backends.common.export import export
+from rbnics.backends.common.import_ import import_
 from rbnics.backends.common.linear_program_solver import LinearProgramSolver
 from rbnics.backends.common.product import product
 from rbnics.backends.common.separated_parametrized_form import SeparatedParametrizedForm
@@ -25,6 +27,8 @@ from rbnics.backends.common.time_quadrature import TimeQuadrature
 
 __all__ = [
     'AffineExpansionStorage',
+    'export',
+    'import_',
     'LinearProgramSolver',
     'product',
     'SeparatedParametrizedForm',

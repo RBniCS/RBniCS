@@ -43,7 +43,7 @@ def ExactCoercivityConstantDecoratedProblem(
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 
-                self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(self, "a", True, "smallest", eigensolver_parameters)
+                self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(self, "a", True, "smallest", eigensolver_parameters, type(self).__name__ + "/exact_coercivity_constant")
                 
             ## Initialize data structures required for the online phase
             @override

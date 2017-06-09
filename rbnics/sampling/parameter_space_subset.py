@@ -92,4 +92,11 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             global_i_max = argmax(values_with_postprocessing)
             global_value_max = values[global_i_max]
         return (global_value_max, global_i_max)
+    
+    def diff(self, other_set):
+        output = ParameterSpaceSubset(self.box)
+        output.mpi_comm = self.mpi_comm
+        output.distributed_max = self.distributed_max
+        output._list = [mu for mu in self._list if mu not in other_set]
+        return output
         

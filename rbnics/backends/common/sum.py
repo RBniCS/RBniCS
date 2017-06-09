@@ -17,11 +17,15 @@
 #
 
 from rbnics.backends.common.product import ProductOutput
-from rbnics.utils.decorators import backend_for
+from rbnics.utils.decorators import backend_for, list_of
+python_sum = sum
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with product,
 # even though product actually carries out both the sum and the product!
-@backend_for("common", inputs=(ProductOutput, ))
-def sum(product_output):
-    return product_output.sum_product_return_value
+@backend_for("common", inputs=((list_of(float), ProductOutput), ))
+def sum(args):
+    if isinstance(args, ProductOutput):
+        return args.sum_product_return_value
+    else:
+        return python_sum(args)
         

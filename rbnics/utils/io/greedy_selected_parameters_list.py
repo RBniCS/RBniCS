@@ -23,5 +23,5 @@ from rbnics.utils.decorators import Extends, override
 class GreedySelectedParametersList(ExportableList):
     @override
     def __init__(self):
-        ExportableList.__init__(self, "text")
+        ExportableList.__init__(self, "pickle")
         

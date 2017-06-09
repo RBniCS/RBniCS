@@ -26,17 +26,22 @@ class TextIO(object):
     def save_file(content, directory, filename):
         if is_io_process():
             with open(str(directory) + "/" + filename + ".txt", "w") as outfile:
-                for (i, content_i) in enumerate(content):
-                    outfile.write(str(i) + " " + str(content_i) + "\n")
+                for content_i in content:
+                    outfile.write(str(content_i) + "\n")
         is_io_process.mpi_comm.barrier()
         
     ## Load a variable from file
     @staticmethod
     def load_file(directory, filename):
-        raise NotImplementedError("File loading is not implemented yet for text files")
+        with open(str(directory) + "/" + filename + ".txt", "r") as infile:
+            return [line.rstrip("\n") for line in infile]
             
     ## Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
-        raise NotImplementedError("There is no need to check if files exists, since file loading is not implemented yet for text files")
+        exists = None
+        if is_io_process():
+            exists = os.path.exists(str(directory) + "/" + filename + ".txt")
+        exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
+        return exists
 

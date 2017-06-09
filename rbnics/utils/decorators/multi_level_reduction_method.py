@@ -132,13 +132,6 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
                         other_truth_problem.set_mu(mu)
                 self.reduced_problem.set_mu = types.MethodType(reduced_set_mu, self.reduced_problem)
             
-            # Make sure that stability factors computations at the reduced order level
-            # call the correct problem
-            self._replace_truth_problem__get_stability_factor__original = self.reduced_problem.get_stability_factor
-            def get_stability_factor__with_respect_to(self_):
-                return other_truth_problem.get_stability_factor()
-            self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
-            
             # Change truth problem
             if not hasattr(self, "_replace_truth_problem__bak_truth_problem"):
                 self._replace_truth_problem__bak_truth_problem = self.truth_problem
@@ -155,11 +148,6 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             if hasattr(self, "_replace_truth_problem__reduced_set_mu__original"):
                 self.reduced_problem.set_mu = self._replace_truth_problem__reduced_set_mu__original
                 del self._replace_truth_problem__reduced_set_mu__original
-            
-            # Make sure that stability factors computations at the reduced order level
-            # are reset to the standard method
-            self.reduced_problem.get_stability_factor = self._replace_truth_problem__get_stability_factor__original
-            del self._replace_truth_problem__get_stability_factor__original
             
             # Reset truth problem
             if hasattr(self, "_replace_truth_problem__bak_truth_problem"):
