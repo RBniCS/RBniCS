@@ -16,6 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.problems.base.linear_pod_galerkin_reduced_problem import LinearPODGalerkinReducedProblem
+from rbnics.problems.base.linear_problem import LinearProblem
+from rbnics.problems.base.linear_rb_reduced_problem import LinearRBReducedProblem
+from rbnics.problems.base.linear_reduced_problem import LinearReducedProblem
+from rbnics.problems.base.linear_time_dependent_pod_galerkin_reduced_problem import LinearTimeDependentPODGalerkinReducedProblem
+from rbnics.problems.base.linear_time_dependent_problem import LinearTimeDependentProblem
+from rbnics.problems.base.linear_time_dependent_rb_reduced_problem import LinearTimeDependentRBReducedProblem
+from rbnics.problems.base.linear_time_dependent_reduced_problem import LinearTimeDependentReducedProblem
 from rbnics.problems.base.nonlinear_pod_galerkin_reduced_problem import NonlinearPODGalerkinReducedProblem
 from rbnics.problems.base.nonlinear_problem import NonlinearProblem
 from rbnics.problems.base.nonlinear_rb_reduced_problem import NonlinearRBReducedProblem
@@ -36,6 +44,14 @@ from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentRed
 
 
 __all__ = [
+    'LinearPODGalerkinReducedProblem',
+    'LinearProblem',
+    'LinearRBReducedProblem',
+    'LinearReducedProblem',
+    'LinearTimeDependentPODGalerkinProblem',
+    'LinearTimeDependentProblem',
+    'LinearTimeDependentRBReducedProblem',
+    'LinearTimeDependentReducedProblem',
     'NonlinearPODGalerkinReducedProblem',
     'NonlinearProblem',
     'NonlinearRBReducedProblem',

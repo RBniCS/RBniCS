@@ -17,6 +17,12 @@
 #
 
 from rbnics.reduction_methods.base.differential_problem_reduction_method import DifferentialProblemReductionMethod
+from rbnics.reduction_methods.base.linear_pod_galerkin_reduction import LinearPODGalerkinReduction
+from rbnics.reduction_methods.base.linear_rb_reduction import LinearRBReduction
+from rbnics.reduction_methods.base.linear_reduction_method import LinearReductionMethod
+from rbnics.reduction_methods.base.linear_time_dependent_pod_galerkin_reduction import LinearTimeDependentPODGalerkinReduction
+from rbnics.reduction_methods.base.linear_time_dependent_rb_reduction import LinearTimeDependentRBReduction
+from rbnics.reduction_methods.base.linear_time_dependent_reduction_method import LinearTimeDependentReductionMethod
 from rbnics.reduction_methods.base.nonlinear_pod_galerkin_reduction import NonlinearPODGalerkinReduction
 from rbnics.reduction_methods.base.nonlinear_rb_reduction import NonlinearRBReduction
 from rbnics.reduction_methods.base.nonlinear_reduction_method import NonlinearReductionMethod
@@ -32,6 +38,12 @@ from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDe
 
 __all__ = [
     'DifferentialProblemReductionMethod',
+    'LinearPODGalerkinReduction',
+    'LinearRBReduction',
+    'LinearReductionMethod',
+    'LinearTimeDependentPODGalerkinReduction',
+    'LinearTimeDependentRBReduction',
+    'LinearTimeDependentReductionMethod',
     'NonlinearPODGalerkinReduction',
     'NonlinearRBReduction',
     'NonlinearReductionMethod',
