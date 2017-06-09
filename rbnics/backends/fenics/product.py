@@ -19,12 +19,13 @@
 from ufl import Form
 from ufl.algebra import Division, Product, Sum
 from ufl.core.operator import Operator
-from dolfin import assemble, Constant, DirichletBC, Expression, project
+from dolfin import assemble, Constant, Expression, project
 from rbnics.backends.fenics.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.fenics.matrix import Matrix
 from rbnics.backends.fenics.vector import Vector
 from rbnics.backends.fenics.function import Function
 from rbnics.backends.fenics.wrapping import function_copy, tensor_copy
+from rbnics.backends.fenics.wrapping.dirichlet_bc import DirichletBC, ProductOutputDirichletBC
 from rbnics.utils.decorators import backend_for, ComputeThetaType
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -67,7 +68,7 @@ def product(thetas, operators, thetas2=None):
                     combined[key] = list()
                 combined[key].append((bc.value, op_index))
         # Sum them
-        output = list()
+        output = ProductOutputDirichletBC()
         for (key, item) in combined.iteritems():
             value = 0
             for addend in item:

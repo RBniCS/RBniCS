@@ -16,8 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import GenericMatrix
+from dolfin import as_backend_type, GenericMatrix
 from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.wrapping.dirichlet_bc import InvertProductOutputDirichletBC
 
 def Matrix():
     raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
@@ -49,4 +50,18 @@ def preserve_generator_attribute(operator):
     
 for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__div__", "__rdiv__", "__idiv__", "__truediv__", "__itruediv__"):
     preserve_generator_attribute(operator)
+
+# Define the __and__ operator to be used in combination with __invert__ operator 
+# of sum(product(theta, DirichletBCs)) to zero rows and columns associated to Dirichlet BCs
+def custom__and__(self, other):
+    if isinstance(other, InvertProductOutputDirichletBC):
+        output = self.copy()
+        mat = as_backend_type(output).mat()
+        for bc in other.bc_list:
+            constrained_dofs = [bc.function_space.dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
+            mat.zeroRowsColumns(constrained_dofs, 0.)
+        return output
+    else:
+        return NotImplemented
+setattr(GenericMatrix, "__and__", custom__and__)
 

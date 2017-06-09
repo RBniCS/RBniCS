@@ -40,3 +40,13 @@ def mul_by_scalar(self, other):
 setattr(dolfin_DirichletBC, "__mul__", mul_by_scalar)
 setattr(dolfin_DirichletBC, "__rmul__", mul_by_scalar)
 
+class ProductOutputDirichletBC(list):
+    # Define the __invert__ operator to be used in combination with __and__ operator of Matrix
+    # to zero rows and columns associated to Dirichlet BCs
+    def __invert__(self):
+        return InvertProductOutputDirichletBC(self)
+        
+class InvertProductOutputDirichletBC(object):
+    def __init__(self, bc_list):
+        self.bc_list = bc_list
+        

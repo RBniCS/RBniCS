@@ -22,10 +22,11 @@ from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
 from rbnics.backends.fenics.matrix import Matrix
 from rbnics.backends.fenics.vector import Vector
 from rbnics.backends.fenics.function import Function
+from rbnics.backends.fenics.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
 
 @Extends(AbstractLinearSolver)
-@BackendFor("fenics", inputs=((Matrix.Type(), Form), Function.Type(), (Vector.Type(), Form), (list_of(DirichletBC), dict_of(str, list_of(DirichletBC)), None)))
+@BackendFor("fenics", inputs=((Matrix.Type(), Form), Function.Type(), (Vector.Type(), Form), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class LinearSolver(AbstractLinearSolver):
     @override
     def __init__(self, lhs, solution, rhs, bcs=None):

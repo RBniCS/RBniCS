@@ -55,6 +55,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             self._riesz_solve_storage = Function(self.truth_problem.V)
             self._riesz_solve_inner_product = None # setup by init()
             self._riesz_solve_homogeneous_dirichlet_bc = None # setup by init()
+            self._riesz_product_inner_product = None # setup by init()
             # I/O
             self.folder["error_estimation"] = self.folder_prefix + "/" + "error_estimation"
             
@@ -95,6 +96,12 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 self._riesz_solve_inner_product = self.truth_problem._combined_inner_product
                 # Also setup homogeneous Dirichlet BCs for Riesz solve, if any
                 self._riesz_solve_homogeneous_dirichlet_bc = self.truth_problem._combined_and_homogenized_dirichlet_bc
+                # Also initialize inner product for Riesz products. This is the same as the inner product for Riesz solves
+                # but setting to zero rows & columns associated to boundary conditions
+                if self._riesz_solve_homogeneous_dirichlet_bc is not None:
+                    self._riesz_product_inner_product = self._riesz_solve_inner_product & ~self._riesz_solve_homogeneous_dirichlet_bc
+                else:
+                    self._riesz_product_inner_product = self._riesz_solve_inner_product
             else:
                 raise AssertionError("Invalid stage in _init_error_estimation_operators().")
                 
@@ -215,18 +222,18 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 if self.terms_order[term[0]] == 2 and self.terms_order[term[1]] == 2:
                     for q0 in range(self.Q[term[0]]):
                         for q1 in range(self.Q[term[1]]):
-                            self.riesz_product[term][q0, q1] = transpose(self.riesz[term[0]][q0])*self._riesz_solve_inner_product*self.riesz[term[1]][q1]
+                            self.riesz_product[term][q0, q1] = transpose(self.riesz[term[0]][q0])*self._riesz_product_inner_product*self.riesz[term[1]][q1]
                 elif self.terms_order[term[0]] == 2 and self.terms_order[term[1]] == 1:
                     for q0 in range(self.Q[term[0]]):
                         for q1 in range(self.Q[term[1]]):
                             assert len(self.riesz[term[1]][q1]) == 1
-                            self.riesz_product[term][q0, q1] = transpose(self.riesz[term[0]][q0])*self._riesz_solve_inner_product*self.riesz[term[1]][q1][0]
+                            self.riesz_product[term][q0, q1] = transpose(self.riesz[term[0]][q0])*self._riesz_product_inner_product*self.riesz[term[1]][q1][0]
                 elif self.terms_order[term[0]] == 1 and self.terms_order[term[1]] == 1:
                     for q0 in range(self.Q[term[0]]):
                         assert len(self.riesz[term[0]][q0]) == 1
                         for q1 in range(self.Q[term[1]]):
                             assert len(self.riesz[term[1]][q1]) == 1
-                            self.riesz_product[term][q0, q1] = transpose(self.riesz[term[0]][q0][0])*self._riesz_solve_inner_product*self.riesz[term[1]][q1][0]
+                            self.riesz_product[term][q0, q1] = transpose(self.riesz[term[0]][q0][0])*self._riesz_product_inner_product*self.riesz[term[1]][q1][0]
                 else:
                     raise ValueError("Invalid term order for assemble_error_estimation_operators().")
                 if "error_estimation" in self.folder:
