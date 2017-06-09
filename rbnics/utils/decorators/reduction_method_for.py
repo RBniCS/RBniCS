@@ -17,6 +17,7 @@
 #
 
 from rbnics.utils.decorators.for_decorators_helper import ForDecoratorsStore, ForDecoratorsLogging
+from rbnics.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
 from rbnics.utils.mpi import log, DEBUG
 
 def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
@@ -28,6 +29,8 @@ def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
     
 def ReductionMethodFor_Impl(Problem, category, replaces=None, replaces_if=None):
     def ReductionMethodFor_ImplDecorator(ReductionMethod):
+        # Decorate with multilevel reduction method
+        ReductionMethod = MultiLevelReductionMethod(ReductionMethod)
         # Add to local storage
         log(DEBUG,
             "In ReductionMethodFor with\n" +
@@ -47,7 +50,7 @@ def ReductionMethodFor_Impl(Problem, category, replaces=None, replaces_if=None):
         log(DEBUG, "")
         # Moreover also add to storage the category to generate recursively reduction methods in ReducedProblemFor
         ReductionMethodFor._all_reduction_methods_categories[ReductionMethod] = category
-        # Done with the storage, return the unchanged reduction method class
+        # Done with the storage, return
         return ReductionMethod
     return ReductionMethodFor_ImplDecorator
 

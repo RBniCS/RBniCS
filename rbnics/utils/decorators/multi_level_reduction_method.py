@@ -116,19 +116,21 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
                  
         def _replace_truth_problem(self, other_truth_problem):
             # Make sure that mu is in sync, for both the other truth problem ...
-            self._replace_truth_problem__other_truth_set_mu__original = other_truth_problem.set_mu
-            def other_truth_set_mu(self_, mu):
-                self._replace_truth_problem__other_truth_set_mu__original(mu)
-                if self.reduced_problem.mu != mu:
-                    self.reduced_problem.set_mu(mu)
-            other_truth_problem.set_mu = types.MethodType(other_truth_set_mu, other_truth_problem)
+            if not hasattr(self, "_replace_truth_problem__other_truth_set_mu__original"):
+                self._replace_truth_problem__other_truth_set_mu__original = other_truth_problem.set_mu
+                def other_truth_set_mu(self_, mu):
+                    self._replace_truth_problem__other_truth_set_mu__original(mu)
+                    if self.reduced_problem.mu != mu:
+                        self.reduced_problem.set_mu(mu)
+                other_truth_problem.set_mu = types.MethodType(other_truth_set_mu, other_truth_problem)
             # ... and the reduced problem
-            self._replace_truth_problem__reduced_set_mu__original = self.reduced_problem.set_mu
-            def reduced_set_mu(self_, mu):
-                self._replace_truth_problem__reduced_set_mu__original(mu)
-                if other_truth_problem.mu != mu:
-                    other_truth_problem.set_mu(mu)
-            self.reduced_problem.set_mu = types.MethodType(reduced_set_mu, self.reduced_problem)
+            if not hasattr(self, "_replace_truth_problem__reduced_set_mu__original"):
+                self._replace_truth_problem__reduced_set_mu__original = self.reduced_problem.set_mu
+                def reduced_set_mu(self_, mu):
+                    self._replace_truth_problem__reduced_set_mu__original(mu)
+                    if other_truth_problem.mu != mu:
+                        other_truth_problem.set_mu(mu)
+                self.reduced_problem.set_mu = types.MethodType(reduced_set_mu, self.reduced_problem)
             
             # Make sure that stability factors computations at the reduced order level
             # call the correct problem
@@ -138,16 +140,21 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             self.reduced_problem.get_stability_factor = types.MethodType(get_stability_factor__with_respect_to, self.reduced_problem)
             
             # Change truth problem
-            self._replace_truth_problem__bak_truth_problem = self.truth_problem
-            self.truth_problem = other_truth_problem
+            if not hasattr(self, "_replace_truth_problem__bak_truth_problem"):
+                self._replace_truth_problem__bak_truth_problem = self.truth_problem
+                self.truth_problem = other_truth_problem
+            else:
+                assert self.truth_problem is other_truth_problem
             
         def _undo_replace_truth_problem(self):
             # Restore the original mu sync, for both the other truth problem (currently stored in self.truth_problem)...
-            self.truth_problem.set_mu = self._replace_truth_problem__other_truth_set_mu__original
-            del self._replace_truth_problem__other_truth_set_mu__original
+            if hasattr(self, "_replace_truth_problem__other_truth_set_mu__original"):
+                self.truth_problem.set_mu = self._replace_truth_problem__other_truth_set_mu__original
+                del self._replace_truth_problem__other_truth_set_mu__original
             # ... and the reduced problem
-            self.reduced_problem.set_mu = self._replace_truth_problem__reduced_set_mu__original
-            del self._replace_truth_problem__reduced_set_mu__original
+            if hasattr(self, "_replace_truth_problem__reduced_set_mu__original"):
+                self.reduced_problem.set_mu = self._replace_truth_problem__reduced_set_mu__original
+                del self._replace_truth_problem__reduced_set_mu__original
             
             # Make sure that stability factors computations at the reduced order level
             # are reset to the standard method
@@ -155,8 +162,9 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             del self._replace_truth_problem__get_stability_factor__original
             
             # Reset truth problem
-            self.truth_problem = self._replace_truth_problem__bak_truth_problem
-            del self._replace_truth_problem__bak_truth_problem
+            if hasattr(self, "_replace_truth_problem__bak_truth_problem"):
+                self.truth_problem = self._replace_truth_problem__bak_truth_problem
+                del self._replace_truth_problem__bak_truth_problem
             
     # return value (a class) for the decorator
     return MultiLevelReductionMethod_Class

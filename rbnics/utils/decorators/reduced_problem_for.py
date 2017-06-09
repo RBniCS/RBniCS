@@ -17,6 +17,7 @@
 #
 
 from rbnics.utils.decorators.for_decorators_helper import ForDecoratorsStore, ForDecoratorsLogging
+from rbnics.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
 from rbnics.utils.decorators.reduction_method_for import ReductionMethodFor, ReductionMethodFor_Impl
 from rbnics.utils.mpi import log, DEBUG
 
@@ -35,6 +36,8 @@ def ReducedProblemFor(Problem, ReductionMethod, replaces=None, replaces_if=None)
     
 def ReducedProblemFor_Impl(Problem, ReductionMethod, replaces=None, replaces_if=None):
     def ReducedProblemFor_ImplDecorator(ReducedProblem):
+        # Decorate with multilevel reduced problem
+        ReducedProblem = MultiLevelReducedProblem(ReducedProblem)
         # Add to local storage
         log(DEBUG,
             "In ReducedProblemFor with\n" +
@@ -52,7 +55,7 @@ def ReducedProblemFor_Impl(Problem, ReductionMethod, replaces=None, replaces_if=
         log(DEBUG, "ReducedProblemFor storage now contains:")
         ForDecoratorsLogging(ReducedProblemFor._all_reduced_problems, "Problem", "ReducedProblem", "ReductionMethod")
         log(DEBUG, "\n")
-        # Done with the storage, return the unchanged reduced problem class
+        # Done with the storage, return
         return ReducedProblem
     return ReducedProblemFor_ImplDecorator
 
