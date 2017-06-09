@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends import AffineExpansionStorage, assign, copy, Function, TimeDependentProblem1Wrapper, TimeStepping
+from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
 from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
 from rbnics.utils.mpi import log, PROGRESS
 

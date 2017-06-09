@@ -74,25 +74,6 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
     def estimate_relative_error_output(self):
         return NotImplemented
 
-    ## Return the rror bound for the initial solution    
-    def get_initial_error_estimate_squared(self):
-        if not self.initial_condition_is_homogeneous:
-            self._solution = self._solution_over_time[0]
-            
-            assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-            N = self._solution.N
-            X_N = self.inner_product[:N, :N][0]
-            
-            theta_ic = self.compute_theta("initial_condition")
-            squared_error_estimate = (
-                  sum(product(theta_ic, self.initial_condition_product, theta_ic))
-                - 2.0*(transpose(self._solution)*sum(product(theta_ic, self.initial_condition[:N])))
-                + transpose(self._solution)*X_N*self._solution
-            )
-            return squared_error_estimate
-        else:
-            return 0.
-        
     ## Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
         residual_norm_squared_over_time = list() # of float

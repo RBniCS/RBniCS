@@ -48,10 +48,20 @@ class _Function_Type(object):
         return Function(self._v.__abs__())
         
     def __add__(self, other):
-        return Function(self._v.__add__(other._v))
+        if isinstance(other, _Function_Type):
+            return Function(self._v.__add__(other._v))
+        elif isinstance(other, Vector.Type()):
+            return Function(self._v.__add__(other))
+        else:
+            return NotImplemented
         
     def __sub__(self, other):
-        return Function(self._v.__sub__(other._v))
+        if isinstance(other, _Function_Type):
+            return Function(self._v.__sub__(other._v))
+        elif isinstance(other, Vector.Type()):
+            return Function(self._v.__sub__(other))
+        else:
+            return NotImplemented
         
     def __mul__(self, other):
         if isinstance(other, (float, int)):

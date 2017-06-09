@@ -17,8 +17,8 @@
 #
 
 from math import sqrt
-from rbnics.backends import assign, copy, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineTimeStepping
+from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
 from rbnics.utils.decorators import apply_decorator_only_once, Extends, override, sync_setters
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -162,24 +162,24 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             assert current_stage in ("online", "offline")
             if term.startswith("initial_condition"):
                 component = term.replace("initial_condition", "").replace("_", "")
-                # Compute
                 if current_stage == "online": # load from file
                     initial_condition = OnlineAffineExpansionStorage(0) # it will be resized by load
+                    assert "reduced_operators" in self.folder
                     initial_condition.load(self.folder["reduced_operators"], term)
                 elif current_stage == "offline":
-                # Get truth initial condition
                     if component != "":
                         truth_initial_condition = self.truth_problem.initial_condition[component]
-                        truth_inner_product = self.truth_problem.inner_product[component]
                         initial_condition = self.initial_condition[component]
+                        truth_projection_inner_product = self.truth_problem.projection_inner_product[component]
                     else:
                         truth_initial_condition = self.truth_problem.initial_condition
-                        truth_inner_product = self.truth_problem.inner_product
                         initial_condition = self.initial_condition
-                    assert len(truth_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                        truth_projection_inner_product = self.truth_problem.projection_inner_product
+                    assert len(truth_projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     for (q, truth_initial_condition_q) in enumerate(truth_initial_condition):
-                        initial_condition[q] = transpose(self.Z)*truth_inner_product[0]*truth_initial_condition_q
-                    initial_condition.save(self.folder["reduced_operators"], term)
+                        initial_condition[q] = transpose(self.Z)*truth_projection_inner_product[0]*truth_initial_condition_q
+                    if "reduced_operators" in self.folder:
+                        initial_condition.save(self.folder["reduced_operators"], term)
                 else:
                     raise AssertionError("Invalid stage in assemble_operator().")
                 # Assign
