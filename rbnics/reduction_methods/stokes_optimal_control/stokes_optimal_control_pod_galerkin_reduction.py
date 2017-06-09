@@ -21,20 +21,14 @@ from rbnics.backends import FunctionsList, ProperOrthogonalDecomposition
 from rbnics.utils.mpi import print
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from rbnics.reduction_methods.base import PODGalerkinReduction
+from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
 
-StokesOptimalControlPODGalerkinReduction_Base = PODGalerkinReduction(StokesOptimalControlReductionMethod)
+StokesOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
 @Extends(StokesOptimalControlPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(StokesOptimalControlProblem, "PODGalerkin")
 class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):    
-    
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call the parent initialization
-        StokesOptimalControlPODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
     
     ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
     @override

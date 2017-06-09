@@ -19,21 +19,16 @@
 from rbnics.problems.elliptic_coercive import EllipticCoercivePODGalerkinReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
 from rbnics.utils.decorators import Extends, override, ReducedProblemFor
-from rbnics.problems.base import TimeDependentPODGalerkinReducedProblem
+from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.parabolic_coercive import ParabolicCoercivePODGalerkinReduction
 
-ParabolicCoercivePODGalerkinReducedProblem_Base = ParabolicCoerciveReducedProblem(TimeDependentPODGalerkinReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
+ParabolicCoercivePODGalerkinReducedProblem_Base = LinearTimeDependentPODGalerkinReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 @Extends(ParabolicCoercivePODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(ParabolicCoerciveProblem, ParabolicCoercivePODGalerkinReduction)
 class ParabolicCoercivePODGalerkinReducedProblem(ParabolicCoercivePODGalerkinReducedProblem_Base):
-    
-    ## Default initialization of members.
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call to parent
-        ParabolicCoercivePODGalerkinReducedProblem_Base.__init__(self, truth_problem, **kwargs)
+    pass
         

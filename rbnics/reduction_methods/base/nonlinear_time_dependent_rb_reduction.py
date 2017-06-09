@@ -16,8 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.reduction_methods.base.nonlinear_rb_reduction import NonlinearRBReduction
 from rbnics.reduction_methods.base.time_dependent_rb_reduction import TimeDependentRBReduction
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import apply_decorator_only_once, Extends
 
 @apply_decorator_only_once
 def NonlinearTimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):

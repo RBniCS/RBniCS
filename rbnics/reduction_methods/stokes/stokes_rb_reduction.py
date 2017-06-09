@@ -19,22 +19,16 @@
 from rbnics.backends import GramSchmidt
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
-from rbnics.reduction_methods.base import RBReduction
+from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearRBReduction
 from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
 
-StokesRBReduction_Base = RBReduction(StokesReductionMethod)
+StokesRBReduction_Base = LinearRBReduction(StokesReductionMethod(DifferentialProblemReductionMethod))
 
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
 @Extends(StokesRBReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(StokesProblem, "ReducedBasis")
 class StokesRBReduction(StokesRBReduction_Base):    
-    
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call the parent initialization
-        StokesRBReduction_Base.__init__(self, truth_problem, **kwargs)
     
     ## Initialize data structures required for the offline phase: overridden version because supremizer GS is different from a standard component
     @override

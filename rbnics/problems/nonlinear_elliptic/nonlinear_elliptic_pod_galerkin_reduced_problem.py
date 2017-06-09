@@ -23,15 +23,10 @@ from rbnics.problems.base import NonlinearPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from rbnics.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGalerkinReduction
 
-NonlinearEllipticPODGalerkinReducedProblem_Base = NonlinearEllipticReducedProblem(NonlinearPODGalerkinReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
+NonlinearEllipticPODGalerkinReducedProblem_Base = NonlinearPODGalerkinReducedProblem(NonlinearEllipticReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
 
 @Extends(NonlinearEllipticPODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(NonlinearEllipticProblem, NonlinearEllipticPODGalerkinReduction)
 class NonlinearEllipticPODGalerkinReducedProblem(NonlinearEllipticPODGalerkinReducedProblem_Base):
-    
-    ## Default initialization of members.
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call to parent
-        NonlinearEllipticPODGalerkinReducedProblem_Base.__init__(self, truth_problem, **kwargs)
+    pass
         

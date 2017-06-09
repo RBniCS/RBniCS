@@ -17,12 +17,13 @@
 #
 
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
-#from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant import # TODO enable
+from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant_reduction import EllipticCoerciveRBNonCompliantReduction
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 
 __all__ = [
     'EllipticCoercivePODGalerkinReduction',
+    'EllipticCoerciveRBNonCompliantReduction',
     'EllipticCoerciveRBReduction',
     'EllipticCoerciveReductionMethod'
 ]

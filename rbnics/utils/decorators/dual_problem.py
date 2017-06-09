@@ -31,7 +31,7 @@ def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
         @sync_setters("primal_problem", "set_mu_range", "mu_range")
         def __init__(self, primal_problem):
             # Call to parent
-            ParametrizedDifferentialProblem_DerivedClass.__init__(self, primal_problem)
+            ParametrizedDifferentialProblem_DerivedClass.__init__(self, primal_problem.V)
             
             # Store the primal problem
             self.primal_problem = primal_problem

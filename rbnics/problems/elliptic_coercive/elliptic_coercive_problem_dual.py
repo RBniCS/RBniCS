@@ -20,14 +20,10 @@ from rbnics.backends import adjoint, Function
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.utils.decorators import DualProblem, Extends, override
 
-@Extends(EllipticCoerciveProblem)
-@DualProblem
-class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem):
+EllipticCoerciveProblem_Dual_Base = DualProblem(EllipticCoerciveProblem)
 
-    ## Default initialization of members.
-    @override
-    def __init__(self, primal_problem):
-        EllipticCoerciveProblem.__init__(self, primal_problem.V)
+@Extends(EllipticCoerciveProblem_Dual_Base)
+class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem_Dual_Base):
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
     @override

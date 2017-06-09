@@ -19,28 +19,22 @@
 from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.problems.base import ParametrizedReducedDifferentialProblem
 from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
-from rbnics.backends import assign, NonlinearSolver, product, sum
+from rbnics.backends import product, sum
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override, MultiLevelReducedProblem
+from rbnics.utils.decorators import Extends, override
 
 def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
-    @Extends(StokesReducedProblem_DerivedClass) # needs to be first in order to override for last the methods.
-    #@ReducedProblemFor(NavierStokesProblem, NavierStokesReductionMethod) # disabled, since now this is a decorator which depends on a derived (e.g. POD or RB) class
-    @MultiLevelReducedProblem
-    @NonlinearReducedProblem
-    class NavierStokesReducedProblem_Class(StokesReducedProblem_DerivedClass):
+    
+    NavierStokesReducedProblem_Base = NonlinearReducedProblem(StokesReducedProblem_DerivedClass)
+    
+    @Extends(NavierStokesReducedProblem_Base)
+    class NavierStokesReducedProblem_Class(NavierStokesReducedProblem_Base):
         
-        ## Default initialization of members.
-        @override
-        def __init__(self, truth_problem, **kwargs):
-            # Call to parent
-            StokesReducedProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-        
-        # Perform an online solve (internal)
-        def _solve(self, N, **kwargs):
-            # Functions required by the NonlinearSolver interface
-            def residual_eval(solution):
-                self._store_solution(solution)
+        class ProblemSolver(NavierStokesReducedProblem_Base.ProblemSolver):
+            def residual_eval(self, solution):
+                self.store_solution(solution)
+                problem = self.problem
+                N = self.N
                 assembled_operator = dict()
                 for term in ("a", "b", "bt", "c", "f", "g"):
                     assert self.terms_order[term] in (1, 2)
@@ -55,8 +49,11 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                     + assembled_operator["b"] + assembled_operator["bt"]
                     - assembled_operator["f"] - assembled_operator["g"]
                 )
-            def jacobian_eval(solution):
-                self._store_solution(solution)
+                
+            def jacobian_eval(self, solution):
+                self.store_solution(solution)
+                problem = self.problem
+                N = self.N
                 assembled_operator = dict()
                 for term in ("da", "db", "dbt", "dc"):
                     assert self.terms_order[term] is 2
@@ -65,18 +62,6 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                       assembled_operator["da"] + assembled_operator["dc"]
                     + assembled_operator["db"] + assembled_operator["dbt"]
                 )
-            def bc_eval():
-                theta_bc = dict()
-                for component in ("u", "p"):
-                    if self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]:
-                        theta_bc[component] = self.compute_theta("dirichlet_bc_" + component)
-                if len(theta_bc) == 0:
-                    theta_bc = None
-                return theta_bc
-            # Solve by NonlinearSolver object
-            solver = NonlinearSolver(jacobian_eval, self._solution, residual_eval, bc_eval())
-            solver.set_parameters(self._nonlinear_solver_parameters)
-            solver.solve()
         
     # return value (a class) for the decorator
     return NavierStokesReducedProblem_Class

@@ -19,10 +19,10 @@
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_reduced_problem import EllipticOptimalControlReducedProblem
 from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
-from rbnics.problems.base import PODGalerkinReducedProblem
+from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlPODGalerkinReduction
 
-EllipticOptimalControlPODGalerkinReducedProblem_Base = PODGalerkinReducedProblem(EllipticOptimalControlReducedProblem)
+EllipticOptimalControlPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem))
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.

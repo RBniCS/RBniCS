@@ -18,21 +18,16 @@
 
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from rbnics.reduction_methods.base import TimeDependentPODGalerkinReduction
+from rbnics.reduction_methods.base import LinearTimeDependentPODGalerkinReduction
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
 from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
 
-ParabolicCoercivePODGalerkinReduction_Base = ParabolicCoerciveReductionMethod(TimeDependentPODGalerkinReduction(EllipticCoercivePODGalerkinReduction))
+ParabolicCoercivePODGalerkinReduction_Base = LinearTimeDependentPODGalerkinReduction(ParabolicCoerciveReductionMethod(EllipticCoercivePODGalerkinReduction))
 
 # Base class containing the interface of a POD-Galerkin ROM
 # for parabolic coercive problems
 @Extends(ParabolicCoercivePODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(ParabolicCoerciveProblem, "PODGalerkin")
 class ParabolicCoercivePODGalerkinReduction(ParabolicCoercivePODGalerkinReduction_Base):
-    
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call the parent initialization
-        ParabolicCoercivePODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
+    pass
     

@@ -19,10 +19,10 @@
 from rbnics.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.problems.base import PODGalerkinReducedProblem
+from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
 
-EllipticCoercivePODGalerkinReducedProblem_Base = PODGalerkinReducedProblem(EllipticCoerciveReducedProblem)
+EllipticCoercivePODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem))
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.

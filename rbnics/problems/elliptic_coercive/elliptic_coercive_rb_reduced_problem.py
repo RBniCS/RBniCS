@@ -23,14 +23,14 @@ from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.utils.decorators import Extends, override, ReducedProblemFor
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.problems.base import RBReducedProblem
+from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
-EllipticCoerciveRBReducedProblem_Base = RBReducedProblem(EllipticCoerciveReducedProblem)
+EllipticCoerciveRBReducedProblem_Base = LinearRBReducedProblem(EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem))
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(EllipticCoerciveReducedProblem) # needs to be first in order to override for last the methods
+@Extends(EllipticCoerciveRBReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction)
 class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
     

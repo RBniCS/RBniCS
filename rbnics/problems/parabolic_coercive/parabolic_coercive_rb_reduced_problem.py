@@ -21,13 +21,13 @@ from numpy import isclose
 from rbnics.problems.elliptic_coercive import EllipticCoerciveRBReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
 from rbnics.utils.decorators import Extends, override, ReducedProblemFor
-from rbnics.problems.base import TimeDependentRBReducedProblem
+from rbnics.problems.base import LinearTimeDependentRBReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.parabolic_coercive import ParabolicCoerciveRBReduction
 from rbnics.backends import Function, FunctionsList, LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
 
-ParabolicCoerciveRBReducedProblem_Base = ParabolicCoerciveReducedProblem(TimeDependentRBReducedProblem(EllipticCoerciveRBReducedProblem))
+ParabolicCoerciveRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoerciveRBReducedProblem))
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.

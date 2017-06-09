@@ -16,13 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base import ParametrizedDifferentialProblem
+from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import Function, LinearSolver, product, sum, transpose
 from rbnics.utils.decorators import Extends, override
 
+EllipticOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
+
 # Base class containing the definition of saddle point problems
-@Extends(ParametrizedDifferentialProblem)
-class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
+@Extends(EllipticOptimalControlProblem_Base)
+class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
     """
     The problem to be solved is 
         min {J(y, u) = 1/2 m(y - y_d, y - y_d) + 1/2 n(u, u)} 
@@ -49,7 +51,7 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
     @override
     def __init__(self, V, **kwargs):
         # Call to parent
-        ParametrizedDifferentialProblem.__init__(self, V, **kwargs)
+        EllipticOptimalControlProblem_Base.__init__(self, V, **kwargs)
         
         # Form names for saddle point problems
         self.terms = ["a", "a*", "c", "c*", "m", "n", "f", "g", "h"]
@@ -62,40 +64,34 @@ class EllipticOptimalControlProblem(ParametrizedDifferentialProblem):
         }
         self.components = ["y", "u", "p"]
         
-    ## Perform a truth solve
-    @override
-    def _solve(self, **kwargs):
-        assembled_operator = dict()
-        for term in self.terms:
-            assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
-        assembled_dirichlet_bc = dict()
-        for component in ("y", "p"):
-            if self.dirichlet_bc[component] is not None:
-                assembled_dirichlet_bc[component] = sum(product(self.compute_theta("dirichlet_bc_" + component), self.dirichlet_bc[component]))
-        assert self.dirichlet_bc["u"] is None, "Control should not be constrained by Dirichlet BCs"
-        if len(assembled_dirichlet_bc) == 0:
-            assembled_dirichlet_bc = None
-        solver = LinearSolver(
-            (
+    class ProblemSolver(EllipticOptimalControlProblem_Base.ProblemSolver):
+        def matrix_eval(self):
+            problem = self.problem
+            assembled_operator = dict()
+            for term in ("a", "a*", "c", "c*", "m", "n"):
+                assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
+            return (
                   assembled_operator["m"]                           + assembled_operator["a*"]
                                           + assembled_operator["n"] - assembled_operator["c*"]
                 + assembled_operator["a"] - assembled_operator["c"]
-            ),
-            self._solution,
-            (
+            )
+            
+        def vector_eval(self):
+            problem = self.problem
+            assembled_operator = dict()
+            for term in ("f", "g"):
+                assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
+            return (
                   assembled_operator["g"]
                 
                 + assembled_operator["f"]
-            ),
-            assembled_dirichlet_bc
-        )
-        solver.solve()
-        
+            )
+                    
     ## Perform a truth evaluation of the cost functional
     @override
     def _compute_output(self):
         assembled_operator = dict()
-        for term in ("m", "n", "g", "h"):
+        for term in ("g", "h", "m", "n"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         self._output = (
             0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 

@@ -23,7 +23,7 @@ from rbnics.problems.base import NonlinearPODGalerkinReducedProblem
 from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
 from rbnics.reduction_methods.navier_stokes import NavierStokesPODGalerkinReduction
 
-NavierStokesPODGalerkinReducedProblem_Base = NavierStokesReducedProblem(NonlinearPODGalerkinReducedProblem(StokesPODGalerkinReducedProblem))
+NavierStokesPODGalerkinReducedProblem_Base = NonlinearPODGalerkinReducedProblem(NavierStokesReducedProblem(StokesPODGalerkinReducedProblem))
 
 @Extends(NavierStokesPODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(NavierStokesProblem, NavierStokesPODGalerkinReduction)

@@ -16,20 +16,19 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.reduction_methods.base import DifferentialProblemReductionMethod
+from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
+from rbnics.utils.decorators import Extends, override
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(DifferentialProblemReductionMethod) # needs to be first in order to override for last the methods.
-@ReductionMethodFor(EllipticCoerciveProblem, "Abstract")
-@MultiLevelReductionMethod
-class EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod):
+def EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call to parent
-        DifferentialProblemReductionMethod.__init__(self, truth_problem, **kwargs)
+    EllipticCoerciveReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
+
+    @Extends(EllipticCoerciveReductionMethod_Base)
+    class EllipticCoerciveReductionMethod_Class(EllipticCoerciveReductionMethod_Base):
+        pass
     
+    # return value (a class) for the decorator
+    return EllipticCoerciveReductionMethod_Class

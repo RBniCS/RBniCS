@@ -19,44 +19,31 @@
 from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.problems.base import ParametrizedReducedDifferentialProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
-from rbnics.backends import assign, NonlinearSolver, product, sum
+from rbnics.backends import product, sum
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override, MultiLevelReducedProblem
+from rbnics.utils.decorators import Extends, override
 
 def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
-    @Extends(EllipticCoerciveReducedProblem_DerivedClass) # needs to be first in order to override for last the methods.
-    #@ReducedProblemFor(NonlinearEllipticProblem, NonlinearEllipticReductionMethod) # disabled, since now this is a decorator which depends on a derived (e.g. POD or RB) class
-    @MultiLevelReducedProblem
-    @NonlinearReducedProblem
-    class NonlinearEllipticReducedProblem_Class(EllipticCoerciveReducedProblem_DerivedClass):
+    
+    NonlinearEllipticReducedProblem_Base = NonlinearReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
+    
+    @Extends(NonlinearEllipticReducedProblem_Base)
+    class NonlinearEllipticReducedProblem_Class(NonlinearEllipticReducedProblem_Base):
         
-        ## Default initialization of members.
-        @override
-        def __init__(self, truth_problem, **kwargs):
-            # Call to parent
-            EllipticCoerciveReducedProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-        
-        # Perform an online solve (internal)
-        def _solve(self, N, **kwargs):
-            # Functions required by the NonlinearSolver interface
-            def residual_eval(solution):
-                self._store_solution(solution)
-                assembled_operator = dict()
+        class ProblemSolver(NonlinearEllipticReducedProblem_Base.ProblemSolver):
+            def residual_eval(self, solution):
+                self.store_solution(solution)
+                problem = self.problem
+                N = self.N
                 assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N]))
                 assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
                 return assembled_operator["a"] - assembled_operator["f"]
-            def jacobian_eval(solution):
-                self._store_solution(solution)
+                
+            def jacobian_eval(self, solution):
+                self.store_solution(solution)
+                problem = self.problem
+                N = self.N
                 return sum(product(self.compute_theta("da"), self.operator["da"][:N, :N]))
-            def bc_eval():
-                if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
-                    return self.compute_theta("dirichlet_bc")
-                else:
-                    return None
-            # Solve by NonlinearSolver object
-            solver = NonlinearSolver(jacobian_eval, self._solution, residual_eval, bc_eval())
-            solver.set_parameters(self._nonlinear_solver_parameters)
-            solver.solve()
         
         # Internal method for error computation. Unlike the linear case, do not use the energy norm.
         @override

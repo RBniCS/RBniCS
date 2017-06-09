@@ -19,21 +19,16 @@
 from math import sqrt
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from rbnics.reduction_methods.base import TimeDependentRBReduction
+from rbnics.reduction_methods.base import LinearTimeDependentRBReduction
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
 
-ParabolicCoerciveRBReduction_Base = ParabolicCoerciveReductionMethod(TimeDependentRBReduction(EllipticCoerciveRBReduction))
+ParabolicCoerciveRBReduction_Base = LinearTimeDependentRBReduction(ParabolicCoerciveReductionMethod(EllipticCoerciveRBReduction))
 
 # Base class containing the interface of a RB ROM
 # for parabolic coercive problems
 @Extends(ParabolicCoerciveRBReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(ParabolicCoerciveProblem, "ReducedBasis")
 class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
-    
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call the parent initialization
-        ParabolicCoerciveRBReduction_Base.__init__(self, truth_problem, **kwargs)
+    pass
         

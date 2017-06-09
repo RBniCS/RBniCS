@@ -16,35 +16,39 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.reduction_methods.base import DifferentialProblemReductionMethod
+from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
+from rbnics.utils.decorators import Extends, override
 
-@Extends(DifferentialProblemReductionMethod) # needs to be first in order to override for last the methods.
-@ReductionMethodFor(StokesOptimalControlProblem, "Abstract")
-@MultiLevelReductionMethod
-class StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod):
+def StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call to parent
-        DifferentialProblemReductionMethod.__init__(self, truth_problem, **kwargs)
-        # I/O
-        self.folder["state_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
-        self.folder["adjoint_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
+    StokesOptimalControlReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
+    
+    @Extends(StokesOptimalControlReductionMethod_Base)
+    class StokesOptimalControlReductionMethod_Class(StokesOptimalControlReductionMethod_Base):
         
-    ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problems
-    def postprocess_snapshot(self, snapshot, snapshot_index):
-        # Compute supremizers
-        print("state supremizer solve for mu =", self.truth_problem.mu)
-        state_supremizer = self.truth_problem.solve_state_supremizer()
-        self.truth_problem.export_solution(self.folder["state_supremizer_snapshots"], "truth_" + str(snapshot_index) + "_s", state_supremizer, component="s")
-        print("adjoint supremizer solve for mu =", self.truth_problem.mu)
-        adjoint_supremizer = self.truth_problem.solve_adjoint_supremizer()
-        self.truth_problem.export_solution(self.folder["adjoint_supremizer_snapshots"], "truth_" + str(snapshot_index) + "_r", adjoint_supremizer, component="r")
-        # Call parent
-        snapshot = DifferentialProblemReductionMethod.postprocess_snapshot(self, snapshot, snapshot_index)
-        # Return a tuple
-        return (snapshot, state_supremizer, adjoint_supremizer)
-        
+        ## Default initialization of members
+        @override
+        def __init__(self, truth_problem, **kwargs):
+            # Call to parent
+            StokesOptimalControlReductionMethod_Base.__init__(self, truth_problem, **kwargs)
+            # I/O
+            self.folder["state_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
+            self.folder["adjoint_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
+            
+        ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problems
+        def postprocess_snapshot(self, snapshot, snapshot_index):
+            # Compute supremizers
+            print("state supremizer solve for mu =", self.truth_problem.mu)
+            state_supremizer = self.truth_problem.solve_state_supremizer()
+            self.truth_problem.export_solution(self.folder["state_supremizer_snapshots"], "truth_" + str(snapshot_index) + "_s", state_supremizer, component="s")
+            print("adjoint supremizer solve for mu =", self.truth_problem.mu)
+            adjoint_supremizer = self.truth_problem.solve_adjoint_supremizer()
+            self.truth_problem.export_solution(self.folder["adjoint_supremizer_snapshots"], "truth_" + str(snapshot_index) + "_r", adjoint_supremizer, component="r")
+            # Call parent
+            snapshot = StokesOptimalControlReductionMethod_Base.postprocess_snapshot(self, snapshot, snapshot_index)
+            # Return a tuple
+            return (snapshot, state_supremizer, adjoint_supremizer)
+    
+    # return value (a class) for the decorator
+    return StokesOptimalControlReductionMethod_Class

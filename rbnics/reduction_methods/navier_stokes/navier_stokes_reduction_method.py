@@ -18,20 +18,15 @@
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
 from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
-from rbnics.utils.decorators import Extends, override, MultiLevelReductionMethod
+from rbnics.utils.decorators import Extends, override
 
 def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
-    @Extends(StokesReductionMethod_DerivedClass) # needs to be first in order to override for last the methods.
-    #@ReductionMethodFor(NavierStokesProblem, "Abstract") # disabled, since now this is a decorator which depends on a derived (e.g. POD or RB) class
-    @MultiLevelReductionMethod
-    @NonlinearReductionMethod
-    class NavierStokesReductionMethod_Class(StokesReductionMethod_DerivedClass):
     
-        ## Default initialization of members
-        @override
-        def __init__(self, truth_problem, **kwargs):
-            # Call to parent
-            StokesReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
+    NavierStokesReductionMethod_Base = NonlinearReductionMethod(StokesReductionMethod_DerivedClass)
+    
+    @Extends(NavierStokesReductionMethod_Base)
+    class NavierStokesReductionMethod_Class(NavierStokesReductionMethod_Base):
+        pass
         
     # return value (a class) for the decorator
     return NavierStokesReductionMethod_Class

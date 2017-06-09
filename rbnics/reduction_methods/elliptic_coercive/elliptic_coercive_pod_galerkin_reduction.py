@@ -17,33 +17,15 @@
 #
 
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.reduction_methods.base import PODGalerkinReduction
+from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 
-EllipticCoercivePODGalerkinReduction_Base = PODGalerkinReduction(EllipticCoerciveReductionMethod)
+EllipticCoercivePODGalerkinReduction_Base = LinearPODGalerkinReduction(EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod))
 
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
 @Extends(EllipticCoercivePODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(EllipticCoerciveProblem, "PODGalerkin")
 class EllipticCoercivePODGalerkinReduction(EllipticCoercivePODGalerkinReduction_Base):
-    """This class implements a reduced order method based on a POD (Proper
-    Orthogonal Decomposition) Galerkin approach. In particular, it
-    implements the offline phase and the error analysis proper for the
-    POD approach.
-    
-    This class provides the following methods:
-    
-    ##  Methods related to the offline stage
-    - offline()
-    - update_snapshot_matrix()
-    - apply_POD()
-
-    ## Error analysis
-    - error_analysis()
-
-    A typical usage of this class is reported in tutorial 2.
-
-    """
     pass 

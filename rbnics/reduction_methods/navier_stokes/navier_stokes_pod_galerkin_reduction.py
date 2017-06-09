@@ -22,15 +22,10 @@ from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProb
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 from rbnics.reduction_methods.navier_stokes.navier_stokes_reduction_method import NavierStokesReductionMethod
 
-NavierStokesPODGalerkinReduction_Base = NavierStokesReductionMethod(NonlinearPODGalerkinReduction(StokesPODGalerkinReduction))
+NavierStokesPODGalerkinReduction_Base = NonlinearPODGalerkinReduction(NavierStokesReductionMethod(StokesPODGalerkinReduction))
 
 @Extends(NavierStokesPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(NavierStokesProblem, "PODGalerkin")
 class NavierStokesPODGalerkinReduction(NavierStokesPODGalerkinReduction_Base):
-    
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call the parent initialization
-        NavierStokesPODGalerkinReduction_Base.__init__(self, truth_problem, **kwargs)
+    pass
     

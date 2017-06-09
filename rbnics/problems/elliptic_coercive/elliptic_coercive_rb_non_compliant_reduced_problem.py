@@ -23,16 +23,16 @@ from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem impo
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant_reduction import _problem_is_noncompliant
 
-@Extends(EllipticCoerciveRBReducedProblem) # needs to be first in order to override for last the methods
+EllipticCoerciveRBNonCompliantReducedProblem_Base = PrimalDualReducedProblem(EllipticCoerciveRBReducedProblem)
+
+@Extends(EllipticCoerciveRBNonCompliantReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction, replaces=EllipticCoerciveRBReducedProblem, replaces_if=_problem_is_noncompliant)
-@PrimalDualReducedProblem
-class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBReducedProblem):
+class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBNonCompliantReducedProblem_Base):
     
     # Perform an online evaluation of the non compliant output
     @override
     def _compute_output(self, N):
-        assembled_output_operator = sum(product(self.compute_theta("s"), self.operator["s"][:N]))
-        self._output = transpose(assembled_output_operator)*self._solution
+        self._output = transpose(self._solution)*sum(product(self.compute_theta("s"), self.operator["s"][:N]))
         
     ## Compute the Riesz representation of term
     @override
@@ -40,7 +40,7 @@ class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBReducedProb
         if term == "s":
             pass
         else:
-            return EllipticCoerciveRBReducedProblem.compute_riesz(self, term)
+            return EllipticCoerciveRBNonCompliantReducedProblem_Base.compute_riesz(self, term)
             
     ## Assemble operators for error estimation
     @override
@@ -48,5 +48,5 @@ class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBReducedProb
         if term in (("a", "s"), ("f", "s"), ("s", "s")):
             pass
         else:
-            return EllipticCoerciveRBReducedProblem.assemble_error_estimation_operators(self, term, current_stage)
+            return EllipticCoerciveRBNonCompliantReducedProblem_Base.assemble_error_estimation_operators(self, term, current_stage)
             

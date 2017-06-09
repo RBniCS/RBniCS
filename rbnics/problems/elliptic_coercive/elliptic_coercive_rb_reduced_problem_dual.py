@@ -24,27 +24,27 @@ from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import Ell
 from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
 
+EllipticCoerciveRBReducedProblem_Dual_Base = DualReducedProblem(EllipticCoerciveRBReducedProblem)
+
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(EllipticCoerciveRBReducedProblem) # needs to be first in order to override for last the methods
+@Extends(EllipticCoerciveRBReducedProblem_Dual_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem_Dual, EllipticCoerciveRBReduction)
-@DualReducedProblem
-class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem):
+class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dual_Base):
     
     ## Default initialization of members.
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        EllipticCoerciveRBReducedProblem.__init__(self, truth_problem, **kwargs)
+        EllipticCoerciveRBReducedProblem_Dual_Base.__init__(self, truth_problem, **kwargs)
         
-        # $$ ONLINE DATA STRUCTURES $$ #
         # Residual terms
         self.output_correction_and_estimation = dict() # from string to OnlineAffineExpansionStorage
         
     ## Initialize data structures required for the online phase
     @override
     def init(self, current_stage="online"):
-        EllipticCoerciveRBReducedProblem.init(self, current_stage)
+        EllipticCoerciveRBReducedProblem_Dual_Base.init(self, current_stage)
         self._init_output_correction_and_estimation_operators(current_stage)
         
     def _init_output_correction_and_estimation_operators(self, current_stage="online"):

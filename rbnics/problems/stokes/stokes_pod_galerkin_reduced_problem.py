@@ -19,10 +19,10 @@
 from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
 from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
-from rbnics.problems.base import PODGalerkinReducedProblem
+from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 
-StokesPODGalerkinReducedProblem_Base = PODGalerkinReducedProblem(StokesReducedProblem)
+StokesPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(StokesReducedProblem(ParametrizedReducedDifferentialProblem))
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.

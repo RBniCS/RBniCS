@@ -16,59 +16,56 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base import ParametrizedReducedDifferentialProblem
+from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.backends import LinearSolver, product, sum, transpose
+from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor, MultiLevelReducedProblem
+from rbnics.utils.decorators import Extends, override
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
 
-# Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
-@Extends(ParametrizedReducedDifferentialProblem) # needs to be first in order to override for last the methods.
-@ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveReductionMethod)
-@MultiLevelReducedProblem
-class EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem):
+def EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    ## Default initialization of members.
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call to parent
-        ParametrizedReducedDifferentialProblem.__init__(self, truth_problem, **kwargs)
-    
-    # Perform an online solve (internal)
-    def _solve(self, N, **kwargs):
-        assembled_operator = dict()
-        assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
-        assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
-        if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
-            theta_bc = self.compute_theta("dirichlet_bc")
-        else:
-            theta_bc = None
-        solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"], theta_bc)
-        solver.solve()
+    EllipticCoerciveReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
+
+    # Base class containing the interface of a projection based ROM
+    # for elliptic coercive problems.
+    @Extends(EllipticCoerciveReducedProblem_Base)
+    class EllipticCoerciveReducedProblem_Class(EllipticCoerciveReducedProblem_Base):
         
-    # Perform an online evaluation of the (compliant) output
-    @override
-    def _compute_output(self, N):
-        assembled_output_operator = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
-        self._output = transpose(assembled_output_operator)*self._solution
-    
-    # Internal method for error computation
-    @override
-    def _compute_error(self, **kwargs):
-        inner_product = dict()
-        inner_product["u"] = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
-        assert "inner_product" not in kwargs
-        kwargs["inner_product"] = inner_product
-        return ParametrizedReducedDifferentialProblem._compute_error(self, **kwargs)
+        class ProblemSolver(EllipticCoerciveReducedProblem_Base.ProblemSolver):
+            def matrix_eval(self):
+                problem = self.problem
+                N = self.N
+                return sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
+                
+            def vector_eval(self):
+                problem = self.problem
+                N = self.N
+                return sum(product(problem.compute_theta("f"), problem.operator["f"][:N]))
+            
+        # Perform an online evaluation of the (compliant) output
+        @override
+        def _compute_output(self, N):
+            self._output = transpose(self._solution)*sum(product(self.compute_theta("f"), self.operator["f"][:N]))
         
-    # Internal method for relative error computation
-    @override
-    def _compute_relative_error(self, absolute_error, **kwargs):
-        inner_product = dict()
-        inner_product["u"] = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
-        assert "inner_product" not in kwargs
-        kwargs["inner_product"] = inner_product
-        return ParametrizedReducedDifferentialProblem._compute_relative_error(self, absolute_error, **kwargs)
+        # Internal method for error computation
+        @override
+        def _compute_error(self, **kwargs):
+            inner_product = dict()
+            inner_product["u"] = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
+            assert "inner_product" not in kwargs
+            kwargs["inner_product"] = inner_product
+            return EllipticCoerciveReducedProblem_Base._compute_error(self, **kwargs)
+            
+        # Internal method for relative error computation
+        @override
+        def _compute_relative_error(self, absolute_error, **kwargs):
+            inner_product = dict()
+            inner_product["u"] = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
+            assert "inner_product" not in kwargs
+            kwargs["inner_product"] = inner_product
+            return EllipticCoerciveReducedProblem_Base._compute_relative_error(self, absolute_error, **kwargs)
+        
+    # return value (a class) for the decorator
+    return EllipticCoerciveReducedProblem_Class
         

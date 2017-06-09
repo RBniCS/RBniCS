@@ -18,44 +18,35 @@
 
 from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
-from rbnics.backends import assign, Function, NonlinearSolver, product, sum
+from rbnics.backends import product, sum
 from rbnics.utils.decorators import Extends, override
 
-@Extends(EllipticCoerciveProblem)
-@NonlinearProblem
-class NonlinearEllipticProblem(EllipticCoerciveProblem):
+NonlinearEllipticProblem_Base = NonlinearProblem(EllipticCoerciveProblem)
+
+@Extends(NonlinearEllipticProblem_Base)
+class NonlinearEllipticProblem(NonlinearEllipticProblem_Base):
     
     ## Default initialization of members
     @override
     def __init__(self, V, **kwargs):
         # Call to parent
-        EllipticCoerciveProblem.__init__(self, V, **kwargs)
+        NonlinearEllipticProblem_Base.__init__(self, V, **kwargs)
         
         # Form names for nonlinear problems
         self.terms = ["a", "da", "f"]
         self.terms_order = {"a": 1, "da": 2, "f": 1}
-            
-    ## Perform a truth solve.
-    @override
-    def _solve(self, **kwargs):
-        # Functions required by the NonlinearSolver interface
-        def residual_eval(solution):
-            self._store_solution(solution)
+    
+    class ProblemSolver(NonlinearEllipticProblem_Base.ProblemSolver):
+        def residual_eval(self, solution):
+            self.store_solution(solution)
+            problem = self.problem
             assembled_operator = dict()
-            assembled_operator["a"] = sum(product(self.compute_theta("a"), self.operator["a"]))
-            assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"]))
+            assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"]))
+            assembled_operator["f"] = sum(product(problem.compute_theta("f"), problem.operator["f"]))
             return assembled_operator["a"] - assembled_operator["f"]
-        def jacobian_eval(solution):
-            self._store_solution(solution)
-            return sum(product(self.compute_theta("da"), self.operator["da"]))
-        def bc_eval():
-            if self.dirichlet_bc is not None:
-                return sum(product(self.compute_theta("dirichlet_bc"), self.dirichlet_bc))
-            else:
-                return None
-        # Solve by NonlinearSolver object
-        assign(self._solution, Function(self.V))
-        solver = NonlinearSolver(jacobian_eval, self._solution, residual_eval, bc_eval())
-        solver.set_parameters(self._nonlinear_solver_parameters)
-        solver.solve()
+            
+        def jacobian_eval(self, solution):
+            self.store_solution(solution)
+            problem = self.problem
+            return sum(product(problem.compute_theta("da"), problem.operator["da"]))
     

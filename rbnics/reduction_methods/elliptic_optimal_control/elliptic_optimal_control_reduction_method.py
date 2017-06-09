@@ -16,20 +16,19 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.reduction_methods.base import DifferentialProblemReductionMethod
+from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor, MultiLevelReductionMethod
+from rbnics.utils.decorators import Extends, override
 
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
-@Extends(DifferentialProblemReductionMethod) # needs to be first in order to override for last the methods.
-@ReductionMethodFor(EllipticOptimalControlProblem, "Abstract")
-@MultiLevelReductionMethod
-class EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod):
+def EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    ## Default initialization of members
-    @override
-    def __init__(self, truth_problem, **kwargs):
-        # Call to parent
-        DifferentialProblemReductionMethod.__init__(self, truth_problem, **kwargs)
+    EllipticOptimalControlReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
+        
+    @Extends(EllipticOptimalControlReductionMethod_Base)
+    class EllipticOptimalControlReductionMethod_Class(EllipticOptimalControlReductionMethod_Base):
+        pass
     
+    # return value (a class) for the decorator
+    return EllipticOptimalControlReductionMethod_Class

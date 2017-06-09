@@ -18,18 +18,19 @@
 
 from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.stokes import StokesProblem
-from rbnics.backends import assign, Function, LinearSolver, NonlinearSolver, product, sum
+from rbnics.backends import LinearSolver, product, sum
 from rbnics.utils.decorators import Extends, override
 
+NavierStokesProblem_Base = NonlinearProblem(StokesProblem)
+
 @Extends(StokesProblem)
-@NonlinearProblem
-class NavierStokesProblem(StokesProblem):
+class NavierStokesProblem(NavierStokesProblem_Base):
     
     ## Default initialization of members
     @override
     def __init__(self, V, **kwargs):
         # Call to parent
-        StokesProblem.__init__(self, V, **kwargs)
+        NavierStokesProblem_Base.__init__(self, V, **kwargs)
         
         # Form names for Navier-Stokes problems
         self.terms = [
@@ -44,44 +45,31 @@ class NavierStokesProblem(StokesProblem):
             # Auxiliary terms for supremizer enrichment
             "bt_restricted": 2
         }
-            
-    ## Perform a truth solve.
-    @override
-    def _solve(self, **kwargs):
-        # Functions required by the NonlinearSolver interface
-        def residual_eval(solution):
-            self._store_solution(solution)
+        
+    class ProblemSolver(NavierStokesProblem_Base.ProblemSolver):
+        def residual_eval(self, solution):
+            self.store_solution(solution)
+            problem = self.problem
             assembled_operator = dict()
             for term in ("a", "b", "bt", "c", "f", "g"):
-                assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
+                assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
                   assembled_operator["a"] + assembled_operator["c"]
                 + assembled_operator["b"] + assembled_operator["bt"]
                 - assembled_operator["f"] - assembled_operator["g"]
             )
-        def jacobian_eval(solution):
-            self._store_solution(solution)
+            
+        def jacobian_eval(self, solution):
+            self.store_solution(solution)
+            problem = self.problem
             assembled_operator = dict()
             for term in ("da", "db", "dbt", "dc"):
-                assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
+                assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
                   assembled_operator["da"] + assembled_operator["dc"]
                 + assembled_operator["db"] + assembled_operator["dbt"]
             )
-        def bc_eval():
-            assembled_dirichlet_bc = dict()
-            for component in ("u", "p"):
-                if self.dirichlet_bc[component] is not None:
-                    assembled_dirichlet_bc[component] = sum(product(self.compute_theta("dirichlet_bc_" + component), self.dirichlet_bc[component]))
-            if len(assembled_dirichlet_bc) == 0:
-                assembled_dirichlet_bc = None
-            return assembled_dirichlet_bc
-        # Solve by NonlinearSolver object
-        assign(self._solution, Function(self.V))
-        solver = NonlinearSolver(jacobian_eval, self._solution, residual_eval, bc_eval())
-        solver.set_parameters(self._nonlinear_solver_parameters)
-        solver.solve()
-        
+            
     def solve_supremizer(self):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]

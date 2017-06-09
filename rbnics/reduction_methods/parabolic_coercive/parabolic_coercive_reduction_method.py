@@ -18,22 +18,17 @@
 
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from rbnics.utils.decorators import Extends, override, MultiLevelReductionMethod
+from rbnics.utils.decorators import Extends, override
 
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems.
 def ParabolicCoerciveReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
-    @Extends(EllipticCoerciveReductionMethod_DerivedClass) # needs to be first in order to override for last the methods.
-    #@ReductionMethodFor(ParabolicCoerciveProblem, "Abstract") # disabled, since now this is a decorator which depends on a derived (e.g. POD or RB) class
-    @MultiLevelReductionMethod
-    @TimeDependentReductionMethod
-    class ParabolicCoerciveReductionMethod_Class(EllipticCoerciveReductionMethod_DerivedClass):
-        
-        ## Default initialization of members
-        @override
-        def __init__(self, truth_problem, **kwargs):
-            # Call to parent
-            EllipticCoerciveReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
+    
+    ParabolicCoerciveReductionMethod_Base = TimeDependentReductionMethod(EllipticCoerciveReductionMethod_DerivedClass)
+    
+    @Extends(ParabolicCoerciveReductionMethod_Base)
+    class ParabolicCoerciveReductionMethod_Class(ParabolicCoerciveReductionMethod_Base):
+        pass
         
     # return value (a class) for the decorator
     return ParabolicCoerciveReductionMethod_Class

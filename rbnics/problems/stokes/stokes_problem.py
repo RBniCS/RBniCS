@@ -16,19 +16,21 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base import ParametrizedDifferentialProblem
+from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import Function, LinearSolver, product, sum, transpose
 from rbnics.utils.decorators import Extends, override
 
+StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
+
 # Base class containing the definition of saddle point problems
-@Extends(ParametrizedDifferentialProblem)
-class StokesProblem(ParametrizedDifferentialProblem):
+@Extends(StokesProblem_Base)
+class StokesProblem(StokesProblem_Base):
     
     ## Default initialization of members
     @override
     def __init__(self, V, **kwargs):
         # Call to parent
-        ParametrizedDifferentialProblem.__init__(self, V, **kwargs)
+        StokesProblem_Base.__init__(self, V, **kwargs)
         
         # Form names for saddle point problems
         self.terms = [
@@ -46,25 +48,31 @@ class StokesProblem(ParametrizedDifferentialProblem):
         # Auxiliary storage for supremizer enrichment, using a subspace of V
         self._supremizer = Function(V, "s")
         
-    ## Perform a truth solve
-    @override
-    def _solve(self, **kwargs):
-        assembled_operator = dict()
-        for term in ("a", "b", "bt", "f", "g"):
-            assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
-        assembled_dirichlet_bc = dict()
-        for component in ("u", "p"):
-            if self.dirichlet_bc[component] is not None:
-                assembled_dirichlet_bc[component] = sum(product(self.compute_theta("dirichlet_bc_" + component), self.dirichlet_bc[component]))
-        if len(assembled_dirichlet_bc) == 0:
-            assembled_dirichlet_bc = None
-        solver = LinearSolver(
-            assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"],
-            self._solution,
-            assembled_operator["f"] + assembled_operator["g"],
-            assembled_dirichlet_bc
-        )
-        solver.solve()
+    class ProblemSolver(StokesProblem_Base.ProblemSolver):
+        def matrix_eval(self):
+            problem = self.problem
+            assembled_operator = dict()
+            for term in ("a", "b", "bt"):
+                assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
+            return assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
+            
+        def vector_eval(self):
+            problem = self.problem
+            assembled_operator = dict()
+            for term in ("f", "g"):
+                assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
+            return assembled_operator["f"] + assembled_operator["g"]
+        
+        # Custom combination of boundary conditions *not* to add BCs of supremizers
+        def bc_eval(self):
+            problem = self.problem
+            # Temporarily change problem.components
+            components_bak = problem.components
+            problem.components = ["u", "p"]
+            # Call Parent
+            StokesProblem_Base.ProblemSolver.bc_eval(self)
+            # Restore
+            problem.components = components_bak
     
     def solve_supremizer(self):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
@@ -89,8 +97,8 @@ class StokesProblem(ParametrizedDifferentialProblem):
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
-        ParametrizedDifferentialProblem.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
-    
+        StokesProblem_Base.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
+        
     # Custom combination of inner products *not* to add inner product corresponding to supremizers
     def _combine_all_inner_products(self):
         # Temporarily change self.components
