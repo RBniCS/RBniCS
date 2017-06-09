@@ -25,10 +25,10 @@ from rbnics.backends.numpy.vector import Vector as OnlineVector
 from rbnics.backends.numpy.function import Function as OnlineFunction
 from rbnics.backends.numpy.wrapping import slice_to_array, slice_to_size
 from rbnics.utils.io import NumpyIO as AffineExpansionStorageContent_IO, Folders, PickleIO as ContentSizeIO, PickleIO as ContentTypeIO, PickleIO as DictIO
-from rbnics.utils.decorators import BackendFor, Extends, list_of, override
+from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
-@BackendFor("numpy", inputs=((int, AbstractAffineExpansionStorage), (int, None)))
+@BackendFor("numpy", inputs=((int, tuple_of(OnlineMatrix.Type()), tuple_of(OnlineVector.Type()), AbstractAffineExpansionStorage), (int, None)))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     @override
     def __init__(self, arg1, arg2=None):
@@ -39,7 +39,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._largest_key = None
         # Carry out initialization
         assert (
-            (isinstance(arg1, int) and isinstance(arg1, AbstractAffineExpansionStorage))
+            isinstance(arg1, (int, tuple, AbstractAffineExpansionStorage))
                 or
             (isinstance(arg2, int) or arg2 is None)
         )
@@ -49,6 +49,12 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             self._content = arg1._content
             self._content_as_matrix = arg1._content_as_matrix
             self._precomputed_slices = arg1._precomputed_slices
+        elif isinstance(arg1, tuple):
+            assert all([isinstance(arg1i, (OnlineMatrix.Type(), OnlineVector.Type())) for arg1i in arg1])
+            assert arg2 is None
+            self._recursive = False
+            self._content = AffineExpansionStorageContent_Base((len(arg1), ), dtype=object)
+            self._largest_key = len(arg1) - 1
         elif isinstance(arg1, int):
             if arg2 is None:
                 self._recursive = False
@@ -65,6 +71,10 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._basis_component_index_to_component_name = None # will be filled in in __setitem__, if required
         self._component_name_to_basis_component_index = None # will be filled in in __setitem__, if required
         self._component_name_to_basis_component_length = None # will be filled in in __setitem__, if required
+        # Finish copy construction, if argument is tuple
+        if isinstance(arg1, tuple):
+            for (i, arg1i) in enumerate(arg1):
+                self[i] = arg1i
         
     @override
     def save(self, directory, filename):
@@ -122,6 +132,15 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index")
         assert DictIO.exists_file(full_directory, "component_name_to_basis_component_length")
         self._component_name_to_basis_component_length = DictIO.load_file(full_directory, "component_name_to_basis_component_length")
+        it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+        while not it.finished:
+            if self._basis_component_index_to_component_name is not None:
+                self._content[it.multi_index]._basis_component_index_to_component_name = self._basis_component_index_to_component_name
+            if self._component_name_to_basis_component_index is not None:
+                self._content[it.multi_index]._component_name_to_basis_component_index = self._component_name_to_basis_component_index
+            if self._component_name_to_basis_component_length is not None:
+                self._content[it.multi_index]._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+            it.iternext()
         # Load size
         assert ContentTypeIO.exists_file(full_directory, "content_type")
         content_type = ContentTypeIO.load_file(full_directory, "content_type")
@@ -262,10 +281,6 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 assert self._basis_component_index_to_component_name == item._basis_component_index_to_component_name
                 assert self._component_name_to_basis_component_index == item._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length == item._component_name_to_basis_component_length
-            if isinstance(item, (OnlineMatrix.Type(), OnlineVector.Type())): # attributes where temporarily added by transpose() method
-                del item._basis_component_index_to_component_name # cleanup temporary addition
-                del item._component_name_to_basis_component_index # cleanup temporary addition
-                del item._component_name_to_basis_component_length # cleanup temporary addition
         else:
             assert self._basis_component_index_to_component_name is None
             assert self._component_name_to_basis_component_index is None

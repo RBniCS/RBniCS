@@ -87,23 +87,3 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
             + transpose(self._solution)*sum(product(theta_b, self.riesz_product["b", "b"][:N, :N], theta_b))*self._solution
         )
         
-    # Custom Riesz solve inner product *not* to add inner product corresponding to supremizers
-    def _init_riesz_solve_inner_product(self):
-        # Temporarily change self.components
-        components_bak = self.components
-        self.components = ["u", "p"]
-        # Call Parent
-        StokesRBReducedProblem_Base._init_riesz_solve_inner_product(self)
-        # Restore
-        self.components = components_bak
-        
-    # Custom Riesz solve Dirichlet BCs *not* to add BCs corresponding to supremizers
-    def _init_riesz_solve_homogeneous_dirichlet_bc(self):
-        # Temporarily change self.components
-        components_bak = self.components
-        self.components = ["u", "p"]
-        # Call Parent
-        StokesRBReducedProblem_Base._init_riesz_solve_homogeneous_dirichlet_bc(self)
-        # Restore
-        self.components = components_bak
-        

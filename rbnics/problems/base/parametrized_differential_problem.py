@@ -20,7 +20,7 @@ from abc import ABCMeta, abstractmethod
 import types
 import hashlib
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
-from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_
+from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
 from rbnics.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -56,8 +56,12 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         # Matrices/vectors resulting from the truth discretization
         self.operator = dict() # from string to AffineExpansionStorage
         self.inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        self._combined_inner_product = None
+        self.projection_inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        self._combined_projection_inner_product = None
         self.dirichlet_bc = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components)
         self.dirichlet_bc_are_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
+        self._combined_and_homogenized_dirichlet_bc = None
         # Solution
         self._solution = Function(self.V)
         self._solution_cache = dict() # of Functions
@@ -92,11 +96,57 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
                 self.inner_product = inner_product.values()[0]
             else:
                 self.inner_product = inner_product
+            assert self._combined_inner_product is None
+            self._combined_inner_product = self._combine_all_inner_products()
+        # Assemble inner product to be used for projection
+        if self.projection_inner_product is None: # init was not called already
+            projection_inner_product = dict()
+            for component in self.components:
+                try:
+                    projection_inner_product[component] = AffineExpansionStorage(self.assemble_operator("projection_" + inner_product_string.format(c=component)))
+                except ValueError: # no projection_inner_product specified, revert to inner_product
+                    projection_inner_product[component] = AffineExpansionStorage(self.assemble_operator(inner_product_string.format(c=component)))
+            if n_components == 1:
+                self.projection_inner_product = projection_inner_product.values()[0]
+            else:
+                self.projection_inner_product = projection_inner_product
+            assert self._combined_projection_inner_product is None
+            self._combined_projection_inner_product = self._combine_all_projection_inner_products()
         # Assemble operators
         for term in self.terms:
-            self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
-            self.Q[term] = len(self.operator[term])
+            if term not in self.operator: # init was not called already
+                self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
+            if term not in self.Q: # init was not called already
+                self.Q[term] = len(self.operator[term])
             
+    def _combine_all_inner_products(self):
+        if len(self.components) > 1:
+            all_inner_products = list()
+            for component in self.components:
+                assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                all_inner_products.append(self.inner_product[component][0])
+            all_inner_products = tuple(all_inner_products)
+        else:
+            assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            all_inner_products = (self.inner_product[0], )
+        all_inner_products = AffineExpansionStorage(all_inner_products)
+        all_inner_products_thetas = (1.,)*len(all_inner_products)
+        return sum(product(all_inner_products_thetas, all_inner_products))
+        
+    def _combine_all_projection_inner_products(self):
+        if len(self.components) > 1:
+            all_projection_inner_products = list()
+            for component in self.components:
+                assert len(self.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                all_projection_inner_products.append(self.projection_inner_product[component][0])
+            all_projection_inner_products = tuple(all_projection_inner_products)
+        else:
+            assert len(self.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            all_projection_inner_products = (self.projection_inner_product[0], )
+        all_projection_inner_products = AffineExpansionStorage(all_projection_inner_products)
+        all_projection_inner_products_thetas = (1.,)*len(all_projection_inner_products)
+        return sum(product(all_projection_inner_products_thetas, all_projection_inner_products))
+        
     def _init_dirichlet_bc(self):
         """
         Initialize boundary conditions required for the offline phase. Internal method.
@@ -149,6 +199,27 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             else:
                 self.dirichlet_bc = dirichlet_bc
                 self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous
+            assert self._combined_and_homogenized_dirichlet_bc is None
+            self._combined_and_homogenized_dirichlet_bc = self._combine_and_homogenize_all_dirichlet_bcs()
+                
+    def _combine_and_homogenize_all_dirichlet_bcs(self):
+        if len(self.components) > 1:
+            all_dirichlet_bcs = list()
+            for component in self.components:
+                if self.dirichlet_bc[component] is not None:
+                    all_dirichlet_bcs.extend(self.dirichlet_bc[component])
+            if len(all_dirichlet_bcs) > 0:
+                all_dirichlet_bcs = tuple(all_dirichlet_bcs)
+                all_dirichlet_bcs = AffineExpansionStorage(all_dirichlet_bcs)
+            else:
+                all_dirichlet_bcs = None
+        else:
+            all_dirichlet_bcs = self.dirichlet_bc
+        if all_dirichlet_bcs is not None:
+            all_dirichlet_bcs_thetas = (0.,)*len(all_dirichlet_bcs)
+            return sum(product(all_dirichlet_bcs_thetas, all_dirichlet_bcs))
+        else:
+            return None
     
     def solve(self, **kwargs):
         """

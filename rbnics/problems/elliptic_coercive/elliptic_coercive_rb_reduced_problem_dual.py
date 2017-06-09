@@ -93,8 +93,6 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem):
                 raise ValueError("Invalid term for assemble_output_correction_and_estimation_operators().")
             return self.output_correction_and_estimation[short_term]
         elif current_stage == "offline":
-            assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-            inner_product = self.truth_problem.inner_product[0]
             if term == "output_correction_and_estimation_a":
                 for qa in range(self.primal_problem.Q["a"]):
                     self.output_correction_and_estimation["a"][qa] = transpose(self.Z)*self.primal_reduced_problem.truth_problem.operator["a"][qa]*self.primal_reduced_problem.Z

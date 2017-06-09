@@ -175,13 +175,20 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             # we need to re-assemble operators. Thus, for any value of current_stage,
             # we initialize the operators of the reduced problem as if we were offline
             self._init_operators("offline")
-            # Inner products
+            #
             n_components = len(self.components)
+            # Inner products
             if n_components > 1:
                 for component in self.components:
                     self._disable_load_and_save_for_online_storage(self.inner_product[component])
             else:
                 self._disable_load_and_save_for_online_storage(self.inner_product)
+            # Projection inner product
+            if n_components > 1:
+                for component in self.components:
+                    self._disable_load_and_save_for_online_storage(self.projection_inner_product[component])
+            else:
+                self._disable_load_and_save_for_online_storage(self.projection_inner_product)
             # Terms
             for term in self.terms:
                 self._disable_load_and_save_for_online_storage(self.operator[term])

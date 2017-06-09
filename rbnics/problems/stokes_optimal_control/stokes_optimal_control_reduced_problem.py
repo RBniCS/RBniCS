@@ -152,3 +152,22 @@ class StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem)
         else:
             return ParametrizedReducedDifferentialProblem.assemble_operator(self, term, current_stage)
                 
+        # Custom combination of inner products *not* to add inner product corresponding to supremizers
+        def _combine_all_inner_products(self):
+            # Temporarily change self.components
+            components_bak = self.components
+            self.components = ["v", "p", "u", "w", "q"]
+            # Call Parent
+            StokesOptimalControlReducedProblem_Base._combine_all_inner_products(self)
+            # Restore
+            self.components = components_bak
+            
+        # Custom combination of inner products *not* to add projection inner product corresponding to supremizers
+        def _combine_all_projection_inner_products(self):
+            # Temporarily change self.components
+            components_bak = self.components
+            self.components = ["v", "p", "u", "w", "q"]
+            # Call Parent
+            StokesOptimalControlReducedProblem_Base._combine_all_projection_inner_products(self)
+            # Restore
+            self.components = components_bak

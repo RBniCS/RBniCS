@@ -88,6 +88,10 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
             u = self.u
             x0 = inner(grad(u),grad(v))*dx
             return (x0,)
+        elif term == "projection_inner_product":
+            u = self.u
+            x0 = u*v*dx
+            return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
         

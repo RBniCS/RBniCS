@@ -88,40 +88,12 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 for term in self.riesz_product_terms:
                     self.riesz_product[term] = OnlineAffineExpansionStorage(self.Q[term[0]], self.Q[term[1]])
                 # Also initialize inner product for Riesz solve
-                self._init_riesz_solve_inner_product()
-                # Also setup homogeneous Dirichlet BCs, if any
-                self._init_riesz_solve_homogeneous_dirichlet_bc()
+                self._riesz_solve_inner_product = self.truth_problem._combined_inner_product
+                # Also setup homogeneous Dirichlet BCs for Riesz solve, if any
+                self._riesz_solve_homogeneous_dirichlet_bc = self.truth_problem._combined_and_homogenized_dirichlet_bc
             else:
                 raise AssertionError("Invalid stage in _init_error_estimation_operators().")
                 
-        def _init_riesz_solve_inner_product(self):
-            """
-            Inizialization of the inner product needed in order to compute the Riesz representations. Internal method.
-            """
-            self._riesz_solve_inner_product = self._projection_truth_inner_product
-        
-        def _init_riesz_solve_homogeneous_dirichlet_bc(self):
-            """
-            Inizialization of the boundary conditions needed in order to compute the Riesz representations. Internal method.
-            """
-            if len(self.components) > 1:
-                all_truth_dirichlet_bcs = list()
-                for component in self.components:
-                    if self.truth_problem.dirichlet_bc[component] is not None:
-                        all_truth_dirichlet_bcs.extend(self.truth_problem.dirichlet_bc[component])
-                if len(all_truth_dirichlet_bcs) > 0:
-                    all_truth_dirichlet_bcs = tuple(all_truth_dirichlet_bcs)
-                    all_truth_dirichlet_bcs = AffineExpansionStorage(all_truth_dirichlet_bcs)
-                else:
-                    all_truth_dirichlet_bcs = None
-            else:
-                all_truth_dirichlet_bcs = self.truth_problem.dirichlet_bc
-            if all_truth_dirichlet_bcs is not None:
-                all_truth_dirichlet_bcs_thetas = (0.,)*len(all_truth_dirichlet_bcs)
-                self._riesz_solve_homogeneous_dirichlet_bc = sum(product(all_truth_dirichlet_bcs_thetas, all_truth_dirichlet_bcs))
-            else:
-                self._riesz_solve_homogeneous_dirichlet_bc = None
-        
         @abstractmethod
         def estimate_error(self):
             """

@@ -159,4 +159,34 @@ class StokesOptimalControlProblem(ParametrizedDifferentialProblem):
             transpose(assembled_operator["g"])*self._solution + 
             0.5*assembled_operator["h"]
         )
+        
+    # Custom combination of inner products *not* to add inner product corresponding to supremizers
+    def _combine_all_inner_products(self):
+        # Temporarily change self.components
+        components_bak = self.components
+        self.components = ["v", "p", "u", "w", "q"]
+        # Call Parent
+        StokesOptimalControlProblem_Base._combine_all_inner_products(self)
+        # Restore
+        self.components = components_bak
+        
+    # Custom combination of inner products *not* to add projection inner product corresponding to supremizers
+    def _combine_all_projection_inner_products(self):
+        # Temporarily change self.components
+        components_bak = self.components
+        self.components = ["v", "p", "u", "w", "q"]
+        # Call Parent
+        StokesOptimalControlProblem_Base._combine_all_projection_inner_products(self)
+        # Restore
+        self.components = components_bak
+        
+    # Custom combination of Dirichlet BCs *not* to add BCs corresponding to supremizers
+    def _combine_and_homogenize_all_dirichlet_bcs(self):
+        # Temporarily change self.components
+        components_bak = self.components
+        self.components = ["v", "p", "u", "w", "q"]
+        # Call Parent
+        StokesOptimalControlProblem_Base._combine_and_homogenize_all_dirichlet_bcs(self)
+        # Restore
+        self.components = components_bak
     

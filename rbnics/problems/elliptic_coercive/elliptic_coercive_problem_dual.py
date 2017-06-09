@@ -58,6 +58,8 @@ class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem):
             return tuple(homogeneous_bc_expansion)
         elif term == "inner_product":
             return self.primal_problem.assemble_operator("inner_product")
+        elif term == "projection_inner_product":
+            return self.primal_problem.assemble_operator("projection_inner_product")
         else:
             raise ValueError("Invalid term for assemble_operator().")
             
