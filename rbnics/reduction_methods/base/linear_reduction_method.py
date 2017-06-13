@@ -16,15 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(None)
 def LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    LinearReductionMethod_Base = DifferentialProblemReductionMethod_DerivedClass
-    
-    @Extends(LinearReductionMethod_Base, preserve_class_name=True)
-    class LinearReductionMethod_Class(LinearReductionMethod_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class LinearReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 
     # return value (a class) for the decorator

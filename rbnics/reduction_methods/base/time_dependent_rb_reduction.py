@@ -21,23 +21,21 @@ from math import sqrt
 from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature, transpose
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
+from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 from rbnics.utils.io import ErrorAnalysisTable
 from rbnics.utils.mpi import log, DEBUG, print
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(RBReduction, TimeDependentReductionMethod)
 def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    TimeDependentRBReduction_Base = TimeDependentReductionMethod(RBReduction(DifferentialProblemReductionMethod_DerivedClass))
-    
-    @Extends(TimeDependentRBReduction_Base, preserve_class_name=True)
-    class TimeDependentRBReduction_Class(TimeDependentRBReduction_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class TimeDependentRBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ## Default initialization of members
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            TimeDependentRBReduction_Base.__init__(self, truth_problem, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # $$ OFFLINE DATA STRUCTURES $$ #
             # Choose among two versions of POD-Greedy
@@ -62,7 +60,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
         @override
         def set_Nmax(self, Nmax, **kwargs):
-            TimeDependentRBReduction_Base.set_Nmax(self, Nmax, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set POD-Greedy sizes
             assert "POD_Greedy" in kwargs
             assert isinstance(kwargs["POD_Greedy"], (int, list, tuple))
@@ -82,7 +80,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
         ## OFFLINE: set tolerance (stopping criterion)
         @override
         def set_tolerance(self, tol, **kwargs):
-            TimeDependentRBReduction_Base.set_tolerance(self, tol, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set POD-Greedy tolerance
             assert "POD_Greedy" in kwargs
             assert isinstance(kwargs["POD_Greedy"], (dict, float, list, tuple))
@@ -129,7 +127,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def _init_offline(self):
             # Call parent to initialize inner product
-            output = TimeDependentRBReduction_Base._init_offline(self)
+            output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
             
             # Check admissible values of POD_greedy_basis_extension
             assert self.POD_greedy_basis_extension in ("orthogonal", "POD")
@@ -323,7 +321,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             for column in ("error_output", "error_estimator_output", "relative_error_output", "relative_error_estimator_output"):
                 ErrorAnalysisTable.preprocess_setitem(column, solution_preprocess_setitem)
             
-            TimeDependentRBReduction_Base.error_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
             ErrorAnalysisTable.clear_setitem_preprocessing()
         

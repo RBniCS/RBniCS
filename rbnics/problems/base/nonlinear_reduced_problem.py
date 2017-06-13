@@ -17,26 +17,24 @@
 #
 
 from rbnics.backends import assign, NonlinearProblemWrapper
-from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
+from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(None)
 def NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    NonlinearReducedProblem_Base = ParametrizedReducedDifferentialProblem_DerivedClass
-    
-    @Extends(NonlinearReducedProblem_Base, preserve_class_name=True)
-    class NonlinearReducedProblem_Class(NonlinearReducedProblem_Base):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class NonlinearReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         ## Default initialization of members.
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            NonlinearReducedProblem_Base.__init__(self, truth_problem, **kwargs)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Nonlinear solver parameters
             self._nonlinear_solver_parameters = dict()
         
-        class ProblemSolver(NonlinearReducedProblem_Base.ProblemSolver, NonlinearProblemWrapper):
+        class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver, NonlinearProblemWrapper):
             # Store solution while solving the nonlinear problem
             def store_solution(self, solution):
                 assign(self.problem._solution, solution)

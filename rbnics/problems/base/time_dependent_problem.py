@@ -17,21 +17,19 @@
 #
 
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
-from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
+from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 from rbnics.utils.mpi import log, PROGRESS
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(None)
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
-    TimeDependentProblem_Base = ParametrizedDifferentialProblem_DerivedClass
-    
-    @Extends(TimeDependentProblem_Base, preserve_class_name=True)
-    class TimeDependentProblem_Class(TimeDependentProblem_Base):
+    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class TimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override
         def __init__(self, V, **kwargs):
             # Call the parent initialization
-            TimeDependentProblem_Base.__init__(self, V, **kwargs)
+            ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
             # Store quantities related to the time discretization
             self.t = 0.
             self.t0 = 0.
@@ -90,8 +88,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solution_dot_over_time = self._solution_dot_over_time
             assert suffix is None
             for (k, (solution, solution_dot)) in enumerate(zip(solution_over_time, solution_dot_over_time)):
-                TimeDependentProblem_Base.export_solution(self, folder + "/" + filename, "solution", solution, component=component, suffix=k)
-                TimeDependentProblem_Base.export_solution(self, folder + "/" + filename, "solution_dot", solution_dot, component=component, suffix=k)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution", solution, component=component, suffix=k)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution_dot", solution_dot, component=component, suffix=k)
                 
         ## Import solution from file
         @override
@@ -113,8 +111,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             del solution_over_time[:]
             del solution_dot_over_time[:]
             while self.t <= self.T:
-                import_solution = TimeDependentProblem_Base.import_solution(self, folder + "/" + filename, "solution", solution, suffix=k)
-                import_solution_dot = TimeDependentProblem_Base.import_solution(self, folder + "/" + filename, "solution_dot", solution_dot, suffix=k)
+                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution", solution, suffix=k)
+                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution_dot", solution_dot, suffix=k)
                 import_solution_and_solution_dot = import_solution and import_solution_dot
                 if import_solution_and_solution_dot:
                     solution_over_time.append(copy(self._solution))
@@ -134,7 +132,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
         ## Initialize data structures required for the offline phase
         @override
         def init(self):
-            TimeDependentProblem_Base.init(self)
+            ParametrizedDifferentialProblem_DerivedClass.init(self)
             self._init_initial_condition()
             
         def _init_initial_condition(self):
@@ -208,11 +206,11 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 self.export_solution(self.folder["cache"], cache_file)
             return self._solution_over_time
             
-        class ProblemSolver(TimeDependentProblem_Base.ProblemSolver, TimeDependentProblem1Wrapper):
+        class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
             def bc_eval(self, t):
                 problem = self.problem
                 problem.set_time(t)
-                return TimeDependentProblem_Base.ProblemSolver.bc_eval(self)
+                return ParametrizedDifferentialProblem_DerivedClass.ProblemSolver.bc_eval(self)
                 
             def ic_eval(self):
                 problem = self.problem

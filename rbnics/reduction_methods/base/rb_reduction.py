@@ -21,19 +21,14 @@ from abc import ABCMeta, abstractmethod
 from math import sqrt
 from rbnics.backends import GramSchmidt
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
+from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 from rbnics.utils.mpi import log, DEBUG, print
 
-@apply_decorator_only_once
-def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
-    """
-    It extends the DifferentialProblemReductionMethod_DerivedClas class.
-    """
+@RequiredBaseDecorators(None)
+def RBReduction(DifferentialProblemReductionMethod_DerivedClass):    
     
-    RBReduction_Base = DifferentialProblemReductionMethod_DerivedClass
-    
-    @Extends(RBReduction_Base, preserve_class_name=True)
-    class RBReduction_Class(RBReduction_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         __metaclass__ = ABCMeta
         
         """
@@ -47,7 +42,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
-            RBReduction_Base.__init__(self, truth_problem, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Declare a GS object
             self.GS = None # GramSchmidt (for problems with one component) or dict of GramSchmidt (for problem with several components)
@@ -61,7 +56,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def _init_offline(self):
             # Call parent to initialize inner product and reduced problem
-            output = RBReduction_Base._init_offline(self)
+            output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
             
             # Declare a new GS for each basis component
             if len(self.truth_problem.components) > 1:

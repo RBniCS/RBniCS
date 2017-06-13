@@ -20,27 +20,25 @@ from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from rbnics.problems.base.rb_reduced_problem import RBReducedProblem
 from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
-from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
+from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(RBReducedProblem, TimeDependentReducedProblem)
 def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    TimeDependentRBReducedProblem_Base = TimeDependentReducedProblem(RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
-    
-    @Extends(TimeDependentRBReducedProblem_Base, preserve_class_name=True)
-    class TimeDependentRBReducedProblem_Class(TimeDependentRBReducedProblem_Base):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class TimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
     
         ## Default initialization of members.
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            TimeDependentRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Storage related to error estimation for initial condition
             self.initial_condition_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components)
         
         def _init_error_estimation_operators(self, current_stage="online"):
-            TimeDependentRBReducedProblem_Base._init_error_estimation_operators(self, current_stage)
+            ParametrizedReducedDifferentialProblem_DerivedClass._init_error_estimation_operators(self, current_stage)
             # Also initialize data structures related to initial condition error estimation
             if len(self.components) > 1:
                 initial_condition_product = dict()
@@ -68,7 +66,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
         ## Build operators for error estimation
         def build_error_estimation_operators(self):
             # Call Parent
-            TimeDependentRBReducedProblem_Base.build_error_estimation_operators(self)
+            ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self)
             # Assemble initial condition product error estimation operator
             if len(self.components) > 1:
                 for component in self.components:
@@ -123,7 +121,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                 else:
                     raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
             else:
-                return TimeDependentRBReducedProblem_Base.assemble_error_estimation_operators(self, term, current_stage)
+                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_error_estimation_operators(self, term, current_stage)
                 
         ## Return the error bound for the initial condition    
         def get_initial_error_estimate_squared(self):

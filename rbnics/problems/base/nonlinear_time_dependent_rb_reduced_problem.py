@@ -18,15 +18,13 @@
 
 from rbnics.problems.base.nonlinear_rb_reduced_problem import NonlinearRBReducedProblem
 from rbnics.problems.base.time_dependent_rb_reduced_problem import TimeDependentRBReducedProblem
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(NonlinearRBReducedProblem, TimeDependentRBReducedProblem)
 def NonlinearTimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    NonlinearTimeDependentRBReducedProblem_Base = TimeDependentRBReducedProblem(NonlinearRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
-    
-    @Extends(NonlinearTimeDependentRBReducedProblem_Base, preserve_class_name=True)
-    class NonlinearTimeDependentRBReducedProblem_Class(NonlinearTimeDependentRBReducedProblem_Base):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class NonlinearTimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
                 
     # return value (a class) for the decorator

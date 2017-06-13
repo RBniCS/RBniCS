@@ -18,15 +18,13 @@
 
 from rbnics.problems.base.linear_pod_galerkin_reduced_problem import LinearPODGalerkinReducedProblem
 from rbnics.problems.base.time_dependent_pod_galerkin_reduced_problem import TimeDependentPODGalerkinReducedProblem
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(LinearPODGalerkinReducedProblem, TimeDependentPODGalerkinReducedProblem)
 def LinearTimeDependentPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    LinearTimeDependentPODGalerkinReducedProblem_Base = TimeDependentPODGalerkinReducedProblem(LinearPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
-    
-    @Extends(LinearTimeDependentPODGalerkinReducedProblem_Base, preserve_class_name=True)
-    class LinearTimeDependentPODGalerkinReducedProblem_Class(LinearTimeDependentPODGalerkinReducedProblem_Base):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class LinearTimeDependentPODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
                 
     # return value (a class) for the decorator

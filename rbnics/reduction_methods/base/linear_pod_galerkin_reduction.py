@@ -18,15 +18,13 @@
 
 from rbnics.reduction_methods.base.linear_reduction_method import LinearReductionMethod
 from rbnics.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(LinearReductionMethod, PODGalerkinReduction)
 def LinearPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    LinearPODGalerkinReduction_Base = PODGalerkinReduction(LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass))
-    
-    @Extends(LinearPODGalerkinReduction_Base, preserve_class_name=True)
-    class LinearPODGalerkinReduction_Class(LinearPODGalerkinReduction_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class LinearPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 
     # return value (a class) for the decorator

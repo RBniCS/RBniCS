@@ -18,15 +18,13 @@
 
 from rbnics.reduction_methods.base.nonlinear_pod_galerkin_reduction import NonlinearPODGalerkinReduction
 from rbnics.reduction_methods.base.time_dependent_pod_galerkin_reduction import TimeDependentPODGalerkinReduction
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(NonlinearPODGalerkinReduction, TimeDependentPODGalerkinReduction)
 def NonlinearTimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    NonlinearTimeDependentPODGalerkinReduction_Base = TimeDependentPODGalerkinReduction(NonlinearPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass))
-    
-    @Extends(NonlinearTimeDependentPODGalerkinReduction_Base, preserve_class_name=True)
-    class NonlinearTimeDependentPODGalerkinReduction_Class(NonlinearTimeDependentPODGalerkinReduction_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class NonlinearTimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 
     # return value (a class) for the decorator

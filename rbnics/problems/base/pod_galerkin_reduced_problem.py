@@ -16,18 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
-def PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    """
-    It extends the ParametrizedReducedDifferentialProblem_DerivedClass class.
-    """
+@RequiredBaseDecorators(None)
+def PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):    
     
-    PODGalerkinReducedProblem_Base = ParametrizedReducedDifferentialProblem_DerivedClass
-    
-    @Extends(PODGalerkinReducedProblem_Base, preserve_class_name=True)
-    class PODGalerkinReducedProblem_Class(PODGalerkinReducedProblem_Base):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class PODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
         
     # return value (a class) for the decorator

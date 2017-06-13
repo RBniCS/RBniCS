@@ -18,15 +18,13 @@
 
 from rbnics.reduction_methods.base.nonlinear_reduction_method import NonlinearReductionMethod
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(NonlinearReductionMethod, RBReduction)
 def NonlinearRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    NonlinearRBReduction_Base = RBReduction(NonlinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass))
-    
-    @Extends(NonlinearRBReduction_Base, preserve_class_name=True)
-    class NonlinearRBReduction_Class(NonlinearRBReduction_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class NonlinearRBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 
     # return value (a class) for the decorator

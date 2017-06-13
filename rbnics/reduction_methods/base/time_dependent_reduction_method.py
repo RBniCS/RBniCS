@@ -18,21 +18,19 @@
 
 import types
 from numpy import isclose
-from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
+from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(None)
 def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    TimeDependentReductionMethod_Base = DifferentialProblemReductionMethod_DerivedClass
-    
-    @Extends(TimeDependentReductionMethod_Base, preserve_class_name=True)
-    class TimeDependentReductionMethod_Class(TimeDependentReductionMethod_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class TimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ## Default initialization of members
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            TimeDependentReductionMethod_Base.__init__(self, truth_problem, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Indices for undersampling snapshots, e.g. after a transient
             self.reduction_first_index = None # keep temporal evolution from the beginning by default
@@ -65,14 +63,14 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             postprocessed_snapshot = list()
             for (k, snapshot_k) in enumerate(snapshot_over_time):
                 self.reduced_problem.set_time(k*self.reduced_problem.dt)
-                postprocessed_snapshot_k = TimeDependentReductionMethod_Base.postprocess_snapshot(self, snapshot_k, snapshot_index)
+                postprocessed_snapshot_k = DifferentialProblemReductionMethod_DerivedClass.postprocess_snapshot(self, snapshot_k, snapshot_index)
                 postprocessed_snapshot.append(postprocessed_snapshot_k)
             return postprocessed_snapshot
         
         ## Initialize data structures required for the speedup analysis phase
         @override
         def _init_speedup_analysis(self, **kwargs):
-            TimeDependentReductionMethod_Base._init_speedup_analysis(self, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             
             # Make sure to clean up problem and reduced problem solution cache to ensure that
             # solution and reduced solution are actually computed

@@ -17,17 +17,15 @@
 #
 
 from rbnics.backends import assign, LinearProblemWrapper, LinearSolver
-from rbnics.utils.decorators import apply_decorator_only_once, Extends, override
+from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(None)
 def LinearProblem(ParametrizedDifferentialProblem_DerivedClass):
     
-    LinearProblem_Base = ParametrizedDifferentialProblem_DerivedClass
-    
-    @Extends(LinearProblem_Base, preserve_class_name=True)
-    class LinearProblem_Class(LinearProblem_Base):
+    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class LinearProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         
-        class ProblemSolver(LinearProblem_Base.ProblemSolver, LinearProblemWrapper):
+        class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, LinearProblemWrapper):
             def solve(self):
                 problem = self.problem
                 solver = LinearSolver(self.matrix_eval(), problem._solution, self.vector_eval(), self.bc_eval())

@@ -18,15 +18,13 @@
 
 from rbnics.reduction_methods.base.nonlinear_reduction_method import NonlinearReductionMethod
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(NonlinearReductionMethod, TimeDependentReductionMethod)
 def NonlinearTimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    NonlinearTimeDependentReductionMethod_Base = TimeDependentReductionMethod(NonlinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass))
-    
-    @Extends(NonlinearTimeDependentReductionMethod_Base, preserve_class_name=True)
-    class NonlinearTimeDependentReductionMethod_Class(NonlinearTimeDependentReductionMethod_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class NonlinearTimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 
     # return value (a class) for the decorator

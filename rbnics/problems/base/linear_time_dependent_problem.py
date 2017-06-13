@@ -19,15 +19,13 @@
 from rbnics.backends import assign
 from rbnics.problems.base.linear_problem import LinearProblem
 from rbnics.problems.base.time_dependent_problem import TimeDependentProblem
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(LinearProblem, TimeDependentProblem)
 def LinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
-    LinearTimeDependentProblem_Base = TimeDependentProblem(LinearProblem(ParametrizedDifferentialProblem_DerivedClass))
-    
-    @Extends(LinearTimeDependentProblem_Base, preserve_class_name=True)
-    class LinearTimeDependentProblem_Class(LinearTimeDependentProblem_Base):
+    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class LinearTimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         pass
             
     # return value (a class) for the decorator

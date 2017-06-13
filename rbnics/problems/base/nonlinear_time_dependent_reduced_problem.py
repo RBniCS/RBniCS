@@ -19,17 +19,15 @@
 from rbnics.backends import assign
 from rbnics.problems.base.nonlinear_reduced_problem import NonlinearReducedProblem
 from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(NonlinearReducedProblem, TimeDependentReducedProblem)
 def NonlinearTimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    NonlinearTimeDependentReducedProblem_Base = TimeDependentReducedProblem(NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
-    
-    @Extends(NonlinearTimeDependentReducedProblem_Base, preserve_class_name=True)
-    class NonlinearTimeDependentReducedProblem_Class(NonlinearTimeDependentReducedProblem_Base):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class NonlinearTimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
-        class ProblemSolver(NonlinearTimeDependentReducedProblem_Base.ProblemSolver):
+        class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver):
             # Store solution dot while solving the nonlinear problem
             def store_solution_dot(self, solution_dot):
                 assign(self.problem._solution_dot, solution_dot)

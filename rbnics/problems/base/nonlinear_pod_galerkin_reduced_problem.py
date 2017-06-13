@@ -18,15 +18,13 @@
 
 from rbnics.problems.base.nonlinear_reduced_problem import NonlinearReducedProblem
 from rbnics.problems.base.pod_galerkin_reduced_problem import PODGalerkinReducedProblem
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(NonlinearReducedProblem, PODGalerkinReducedProblem)
 def NonlinearPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    NonlinearPODGalerkinReducedProblem_Base = PODGalerkinReducedProblem(NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass))
-    
-    @Extends(NonlinearPODGalerkinReducedProblem_Base, preserve_class_name=True)
-    class NonlinearPODGalerkinReducedProblem_Class(NonlinearPODGalerkinReducedProblem_Base):
+    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    class NonlinearPODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
                 
     # return value (a class) for the decorator

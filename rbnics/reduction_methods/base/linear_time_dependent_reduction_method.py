@@ -18,15 +18,13 @@
 
 from rbnics.reduction_methods.base.linear_reduction_method import LinearReductionMethod
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from rbnics.utils.decorators import apply_decorator_only_once, Extends
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
-@apply_decorator_only_once
+@RequiredBaseDecorators(LinearReductionMethod, TimeDependentReductionMethod)
 def LinearTimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    LinearTimeDependentReductionMethod_Base = TimeDependentReductionMethod(LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass))
-    
-    @Extends(LinearTimeDependentReductionMethod_Base, preserve_class_name=True)
-    class LinearTimeDependentReductionMethod_Class(LinearTimeDependentReductionMethod_Base):
+    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    class LinearTimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 
     # return value (a class) for the decorator
