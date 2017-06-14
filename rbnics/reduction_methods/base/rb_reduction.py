@@ -196,7 +196,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("absolute error estimator for current mu =", self.reduced_problem.estimate_error())
             
             # Carry out the actual greedy search
-            def solve_and_estimate_error(mu, index):
+            def solve_and_estimate_error(mu):
                 self.reduced_problem.set_mu(mu)
                 self.reduced_problem.solve()
                 error_estimator = self.reduced_problem.estimate_error()

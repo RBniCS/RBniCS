@@ -178,7 +178,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
-        def solve_and_estimate_error(mu, index):
+        def solve_and_estimate_error(mu):
             self.SCM_approximation.set_mu(mu)
             
             LB = self.SCM_approximation.get_stability_factor_lower_bound()

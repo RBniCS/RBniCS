@@ -235,7 +235,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         assert self.EIM_approximation.basis_generation == "Greedy"
-        def solve_and_computer_error(mu, index):
+        def solve_and_computer_error(mu):
             self.EIM_approximation.set_mu(mu)
             
             self.EIM_approximation.solve()

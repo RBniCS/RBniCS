@@ -274,7 +274,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("absolute error estimator for current mu =", error_estimator)
             
             # Carry out the actual greedy search
-            def solve_and_estimate_error(mu, index):
+            def solve_and_estimate_error(mu):
                 self.reduced_problem.set_mu(mu)
                 self.reduced_problem.solve()
                 error_estimator_over_time = self.reduced_problem.estimate_error()
