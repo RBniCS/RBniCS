@@ -40,13 +40,13 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.EIM_approximation = EIM_approximation
         # Declare a new container to store the snapshots
         self.snapshots_container = self.EIM_approximation.parametrized_expression.create_snapshots_container()
+        self._training_set_parameters_to_snapshots_container_index = dict()
         # I/O
         self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
         self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
         self.greedy_selected_parameters = GreedySelectedParametersList()
         self.greedy_errors = GreedyErrorEstimatorsList()
         #
-        self._offline__mu_index = 0
         # By default set a tolerance slightly larger than zero, in order to 
         # stop greedy iterations in trivial cases by default
         self.tol = 1e-15
@@ -56,6 +56,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
         # Since exact evaluation is required, we cannot use a distributed training set
         self.training_set.distributed_max = False
+        # Also initialize the map from parameter values to snapshots container index
+        self._training_set_parameters_to_snapshots_container_index = dict((mu, mu_index) for (mu_index, mu) in enumerate(self.training_set))
         return import_successful
     
     ## Initialize data structures required for the offline phase
@@ -128,19 +130,16 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        # Arbitrarily start from the first parameter in the training set (Greedy only)
         if self.EIM_approximation.basis_generation == "Greedy":
+            # Arbitrarily start from the first parameter in the training set
             self.EIM_approximation.set_mu(self.training_set[0])
-            self._offline__mu_index = 0
             
-        # Carry out greedy selection
-        if self.EIM_approximation.basis_generation == "Greedy":
+            # Carry out greedy selection
             relative_error_max = 2.*self.tol
             while self.EIM_approximation.N < self.Nmax and relative_error_max >= self.tol:
                 print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
             
-                mu_index = self._offline__mu_index
-                print("solve interpolation for mu =", self.training_set[mu_index])
+                print("solve interpolation for mu =", self.EIM_approximation.mu)
                 self.EIM_approximation.solve()
                 
                 print("compute and locate maximum interpolation error")
@@ -190,10 +189,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        # mu_index does not make any sense from now on (Greedy only)
-        if self.EIM_approximation.basis_generation == "Greedy":
-            self._offline__mu_index = None
-        
         self._finalize_offline()
         return self.EIM_approximation
         
@@ -233,8 +228,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def load_snapshot(self):
         assert self.EIM_approximation.basis_generation == "Greedy"
         mu = self.EIM_approximation.mu
-        mu_index = self._offline__mu_index
-        assert mu_index is not None
+        mu_index = self._training_set_parameters_to_snapshots_container_index[mu]
         assert mu == self.training_set[mu_index]
         return self.snapshots_container[mu_index]
         
@@ -242,7 +236,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def greedy(self):
         assert self.EIM_approximation.basis_generation == "Greedy"
         def solve_and_computer_error(mu, index):
-            self._offline__mu_index = index
             self.EIM_approximation.set_mu(mu)
             
             self.EIM_approximation.solve()
@@ -252,7 +245,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
         (error_max, error_argmax) = self.training_set.max(solve_and_computer_error, abs)
         self.EIM_approximation.set_mu(self.training_set[error_argmax])
-        self._offline__mu_index = error_argmax
         self.greedy_selected_parameters.append(self.training_set[error_argmax])
         self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
         self.greedy_errors.append(error_max)
