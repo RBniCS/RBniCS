@@ -19,9 +19,9 @@
 import types
 import re
 from dolfin import Expression
-from rbnics.backends.fenics.wrapping.parametrized_expression import ParametrizedExpression
 
 def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, **kwargs):
+    from rbnics.backends.fenics.wrapping.parametrized_expression import ParametrizedExpression
     if "element" not in kwargs:
         element = truth_problem.V.ufl_element()
         while element.num_sub_elements() > 0:
@@ -33,8 +33,9 @@ def is_parametrized_constant(expr):
     return isinstance(expr, Expression) and bool(is_parametrized_constant.regex.match(expr.cppcode))
 is_parametrized_constant.regex = re.compile("^mu_[0-9]+$")
 
-def parametrized_constant_to_float(expr):
-    point = expr.mesh.coordinates()[0]
+def parametrized_constant_to_float(expr, point=None):
+    if point is None:
+        point = expr._mesh.coordinates()[0]
     return expr(point)
     
 def expression_float(self):

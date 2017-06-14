@@ -16,8 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Expression
 import types
+from dolfin import Expression
+from rbnics.backends.fenics.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
 
 # This ideally should be a subclass of Expression. However, dolfin manual
 # states that subclassing Expression may be significantly slower than using 
@@ -57,20 +58,30 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         else:
             raise AssertionError("Invalid expression type in ParametrizedExpression")
     
+    # Detect mesh
+    if "domain" in kwargs:
+        mesh = kwargs["domain"]
+    else:
+        mesh = truth_problem.V.mesh()
+    
+    # Prepare a dictionary of mu
     mu_dict = {}
     for (p, mu_p) in enumerate(mu):
-        mu_dict[ "mu_" + str(p) ] = mu_p
+        assert isinstance(mu_p, (Expression, float))
+        if isinstance(mu_p, float):
+            mu_dict[ "mu_" + str(p) ] = mu_p
+        elif isinstance(mu_p, Expression):
+            assert is_parametrized_constant(mu_p)
+            mu_dict[ "mu_" + str(p) ] = parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0])
     del kwargs["mu"]
     kwargs.update(mu_dict)
     
+    # Initialize expression
     expression = Expression(parametrized_expression_code, *args, **kwargs)
     expression.mu = mu # to avoid repeated assignments
     
     # Store ufl_domain
-    if "domain" in kwargs:
-        expression._mesh = kwargs["domain"]
-    else:
-        expression._mesh = truth_problem.V.mesh()
+    expression._mesh = mesh
     def ufl_domain(self):
         return expression._mesh.ufl_domain()
     expression.ufl_domain = types.MethodType(ufl_domain, expression)

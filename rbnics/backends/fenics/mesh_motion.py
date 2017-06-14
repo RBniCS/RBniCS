@@ -80,7 +80,7 @@ class MeshMotion(AbstractMeshMotion):
                 ParametrizedExpression(
                     problem,
                     tuple(displacement_expression_on_subdomain),
-                    mu=tuple([r[0] for r in problem.mu_range]),
+                    mu=problem.mu,
                     element=self.deformation_V.ufl_element(),
                     domain=self.mesh
                 )
