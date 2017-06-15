@@ -112,8 +112,8 @@ unsteady_thermal_block_problem.set_final_time(3)
 
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(unsteady_thermal_block_problem)
-pod_galerkin_method.set_Nmax(40, nested_POD=4)
-pod_galerkin_method.set_tolerance(1e-5, nested_POD=1e-2)
+pod_galerkin_method.set_Nmax(20, nested_POD=4)
+pod_galerkin_method.set_tolerance(1e-6, nested_POD=1e-3)
 
 # 5. Perform the offline phase
 first_mu = (0.5,1.0)
