@@ -54,6 +54,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         self.N_bc = None # integer (for problems with one component) or dict of integers (for problem with several components)
         self.dirichlet_bc = None # bool (for problems with one component) or dict of bools (for problem with several components)
         self.dirichlet_bc_are_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
+        self._combined_and_homogenized_dirichlet_bc = None
         # Form names and order
         self.terms = truth_problem.terms
         self.terms_order = truth_problem.terms_order
@@ -207,6 +208,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             else:
                 self.dirichlet_bc = dirichlet_bc
             self.dirichlet_bc_are_homogeneous = self.truth_problem.dirichlet_bc_are_homogeneous
+            assert self._combined_and_homogenized_dirichlet_bc is None
+            self._combined_and_homogenized_dirichlet_bc = self._combine_and_homogenize_all_dirichlet_bcs()
         # Load basis functions
         if current_stage == "online":
             Z_loaded = self.Z.load(self.folder["basis"], "basis")
@@ -256,6 +259,21 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             # of basis functions without the lifting ones.
         else:
             raise AssertionError("Invalid stage in _init_basis_functions().")
+            
+    def _combine_and_homogenize_all_dirichlet_bcs(self):
+        if len(self.components) > 1:
+            all_dirichlet_bcs_thetas = dict()
+            for component in self.components:
+                if self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]:
+                    all_dirichlet_bcs_thetas[component] = (0,)*len(self.compute_theta("dirichlet_bc_" + component))
+            if len(all_dirichlet_bcs_thetas) == 0:
+                all_dirichlet_bcs_thetas = None
+        else:
+            if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
+                all_dirichlet_bcs_thetas = (0,)*len(self.compute_theta("dirichlet_bc"))
+            else:
+                all_dirichlet_bcs_thetas = None
+        return all_dirichlet_bcs_thetas
             
     @override
     def solve(self, N=None, **kwargs):
@@ -315,7 +333,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         problem_solver = self.ProblemSolver(self, N)
         problem_solver.solve()
         
-    def project(self, snapshot, N=None, **kwargs):
+    def project(self, snapshot, on_dirichlet_bc=True, N=None, **kwargs):
         N, kwargs = self._online_size_from_kwargs(N, **kwargs)
         N += self.N_bc
         
@@ -330,7 +348,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         projected_snapshot_N = OnlineFunction(N)
         
         # Project on reduced basis
-        solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(Z)*X*snapshot)
+        if on_dirichlet_bc:
+            solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(Z)*X*snapshot)
+        else:
+            solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(Z)*X*snapshot, self._combined_and_homogenized_dirichlet_bc)
         solver.solve()
         return projected_snapshot_N
     

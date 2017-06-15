@@ -186,8 +186,8 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 
         def _POD_greedy_orthogonalize_snapshot(self, snapshot_over_time):
             if self.reduced_problem.N > 0:
-                Z = self.reduced_problem.Z[:self.reduced_problem.N]
-                projected_snapshot_N_over_time = self.reduced_problem.project(snapshot_over_time, self.reduced_problem.N)
+                Z = self.reduced_problem.Z
+                projected_snapshot_N_over_time = self.reduced_problem.project(snapshot_over_time, on_dirichlet_bc=False)
                 orthogonal_snapshot_over_time = SnapshotsMatrix(self.truth_problem.V)
                 for (snapshot, projected_snapshot_N) in zip(snapshot_over_time, projected_snapshot_N_over_time):
                     orthogonal_snapshot_over_time.enrich(snapshot - Z*projected_snapshot_N)

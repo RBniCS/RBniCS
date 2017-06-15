@@ -317,10 +317,10 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             lifting /= theta_quadrature.integrate()
             return lifting
             
-        def project(self, snapshot_over_time, N=None, **kwargs):
+        def project(self, snapshot_over_time, on_dirichlet_bc=True, N=None, **kwargs):
             projected_snapshot_N_over_time = list()
             for snapshot in snapshot_over_time:
-                projected_snapshot_N = ParametrizedReducedDifferentialProblem_DerivedClass.project(self, snapshot, N, **kwargs)
+                projected_snapshot_N = ParametrizedReducedDifferentialProblem_DerivedClass.project(self, snapshot, on_dirichlet_bc, N, **kwargs)
                 projected_snapshot_N_over_time.append(projected_snapshot_N)
             return projected_snapshot_N_over_time
             
