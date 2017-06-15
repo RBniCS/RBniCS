@@ -126,14 +126,25 @@ class Graetz(EllipticCoerciveProblem):
         solve(lifting_A, lifting.vector(), lifting_F)
         return lifting
         
-    ## Preprocess the solution before export to add a lifting
+    ## Preprocess the solution before export to add lifting
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         assert component is None
+        assert suffix is None
         if solution is None:
             solution = self._solution
         solution_with_lifting = Function(self.V)
         solution_with_lifting.vector()[:] = solution.vector()[:] + self.lifting.vector()[:]
-        EllipticCoerciveProblem.export_solution(self, folder, filename, solution_with_lifting, component)
+        EllipticCoerciveProblem.export_solution(self, folder, filename, solution_with_lifting)
+        
+    ## Preprocess the solution after import to remove lifting
+    def import_solution(self, folder, filename, solution=None, suffix=None):
+        assert suffix is None
+        solution_with_lifting = Function(self.V)
+        EllipticCoerciveProblem.import_solution(self, folder, filename, solution_with_lifting)
+        if solution is None:
+            solution = self._solution
+        assign(solution, solution_with_lifting)
+        solution.vector()[:] = solution_with_lifting.vector()[:] - self.lifting.vector()[:]
         
 # 1. Read the mesh for this problem
 mesh = Mesh("data/graetz.xml")
@@ -145,18 +156,18 @@ V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Graetz class
 graetz_problem = Graetz(V, subdomains=subdomains, boundaries=boundaries)
-mu_range = [(0.01, 10.0), (0.01, 10.0)]
+mu_range = [(0.1, 10.0), (0.01, 10.0)]
 graetz_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis_method.set_Nmax(20, dual=20, SCM=15)
-reduced_basis_method.set_tolerance(1e-5, dual=1e-5, SCM=1e-2)
+reduced_basis_method.set_Nmax(30, dual=30, SCM=50)
+reduced_basis_method.set_tolerance(1e-5, dual=1e-5, SCM=1e-3)
 
 # 5. Perform the offline phase
 first_mu = (1.0, 1.0)
 graetz_problem.set_mu(first_mu)
-reduced_basis_method.initialize_training_set(100, dual=100, SCM=110)
+reduced_basis_method.initialize_training_set(200, dual=200, SCM=250)
 reduced_graetz_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
@@ -172,12 +183,18 @@ reduced_basis_method.error_analysis()
 # 8. Perform a speedup analysis
 reduced_basis_method.speedup_analysis()
 
-# 9. Allocate an object corresponding to the exact version of Graetz,
+# 9. Perform an error analysis employing a smaller number of SCM constraints
+reduced_basis_method.error_analysis(SCM=5)
+
+# 10. Perform a speedup analysis employing a smaller number of SCM constraints
+reduced_basis_method.speedup_analysis(SCM=5)
+
+# 11. Allocate an object corresponding to the exact version of Graetz,
 #    for which SCM is replaced by ExactCoercivityConstant
 exact_graetz_problem = exact_problem(graetz_problem)
 
-# 10. Perform an error analysis with respect to the exact problem
+# 12. Perform an error analysis with respect to the exact problem
 reduced_basis_method.error_analysis(with_respect_to=exact_graetz_problem)
 
-# 11. Perform a speedup analysis with respect to the exact problem
+# 13. Perform a speedup analysis with respect to the exact problem
 reduced_basis_method.speedup_analysis(with_respect_to=exact_graetz_problem)
