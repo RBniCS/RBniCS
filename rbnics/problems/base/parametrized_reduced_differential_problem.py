@@ -499,9 +499,15 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         if len(components) > 0:
             truth_solution = self.truth_problem._solution
             for component in components:
-                exact_norm_squared_component = transpose(truth_solution)*inner_product[component]*truth_solution
-                assert exact_norm_squared_component >= 0. or isclose(exact_norm_squared_component, 0.)
-                relative_error[component] = absolute_error[component]/sqrt(exact_norm_squared_component)
+                truth_solution_norm_squared_component = transpose(truth_solution)*inner_product[component]*truth_solution
+                assert truth_solution_norm_squared_component >= 0. or isclose(truth_solution_norm_squared_component, 0.)
+                if truth_solution_norm_squared_component != 0.:
+                    relative_error[component] = absolute_error[component]/sqrt(abs(truth_solution_norm_squared_component))
+                else:
+                    if absolute_error[component] == 0.:
+                        relative_error[component] = 0.
+                    else:
+                        relative_error[component] = float("NaN")
         # Simplify trivial case
         if len(components) == 1:
             relative_error = relative_error[components[0]]
@@ -587,11 +593,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             assert absolute_error_output is NotImplemented
             return NotImplemented
         else: # Compute the relative error on the output
-            truth_output = self.truth_problem._output
-            if truth_output == 0.:
-                return float('NaN')
-            else:
+            truth_output = abs(self.truth_problem._output)
+            if truth_output != 0.:
                 return absolute_error_output/truth_output
+            else:
+                if absolute_error_output == 0.:
+                    return 0.
+                else:
+                    return float("NaN")
         
     @override
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):

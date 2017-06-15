@@ -343,11 +343,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             for (k, (truth_solution, absolute_error)) in enumerate(zip(self.truth_problem._solution_over_time, absolute_error_over_time)):
                 self.set_time(k*self.dt)
                 assign(self.truth_problem._solution, truth_solution)
-                if absolute_error != 0.0:
-                    relative_error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error(self, absolute_error, **kwargs)
-                    relative_error_over_time.append(relative_error)
-                else:
-                    relative_error_over_time.append(0.0)
+                relative_error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error(self, absolute_error, **kwargs)
+                relative_error_over_time.append(relative_error)
             return relative_error_over_time
             
         # Internal method for output error computation
@@ -369,11 +366,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             for (k, (truth_output, absolute_error_output)) in enumerate(zip(self.truth_problem._output_over_time, absolute_error_output_over_time)):
                 self.set_time(k*self.dt)
                 self.truth_problem._output = truth_output
-                if absolute_error_output != 0.0:
-                    relative_error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error_output(self, absolute_error_output, **kwargs)
-                    relative_error_output_over_time.append(relative_error_output)
-                else:
-                    relative_error_output_over_time.append(0.0)
+                relative_error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error_output(self, absolute_error_output, **kwargs)
+                relative_error_output_over_time.append(relative_error_output)
             return relative_error_output_over_time
         
         ## Export solution to file
