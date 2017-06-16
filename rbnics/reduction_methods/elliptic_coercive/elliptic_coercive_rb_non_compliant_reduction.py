@@ -18,9 +18,10 @@
 
 import types
 from rbnics.backends import product, sum, transpose
-from rbnics.utils.decorators import Extends, PrimalDualReductionMethod, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
+from rbnics.reduction_methods.base import PrimalDualReductionMethod
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
 
 def _problem_is_noncompliant(truth_problem, **kwargs):
@@ -30,14 +31,20 @@ def _problem_is_noncompliant(truth_problem, **kwargs):
         return False
     else:
         # Make sure to add "s" to available terms
-        truth_problem.terms.append("s")
-        truth_problem.terms_order["s"] = 1
-        # Change the computation of the output to use "s"
-        def _compute_output(self_):
-            assembled_output_operator = sum(product(self_.compute_theta("s"), self_.operator["s"]))
-            self_._output = transpose(assembled_output_operator)*self_._solution
-            return self_._output
-        truth_problem._compute_output = types.MethodType(_compute_output, truth_problem)
+        assert (
+            ("s" in truth_problem.terms)
+                ==
+            ("s" in truth_problem.terms_order)
+        )
+        if not "s" in truth_problem.terms:
+            truth_problem.terms.append("s")
+            truth_problem.terms_order["s"] = 1
+            # Change the computation of the output to use "s"
+            def _compute_output(self_):
+                assembled_output_operator = sum(product(self_.compute_theta("s"), self_.operator["s"]))
+                self_._output = transpose(assembled_output_operator)*self_._solution
+                return self_._output
+            truth_problem._compute_output = types.MethodType(_compute_output, truth_problem)
         #
         return True
 

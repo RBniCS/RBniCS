@@ -30,7 +30,7 @@ def DualReducedProblem(ParametrizedDifferentialReducedProblem_DerivedClass):
             ParametrizedDifferentialReducedProblem_DerivedClass.__init__(self, dual_problem, **kwargs)
             
             # Primal truth problem
-            self.primal_problem = dual_problem.primal_problem
+            self.primal_truth_problem = dual_problem.primal_problem
             # Primal reduced problem, which will be attached by reduction method at the end of the offline stage
             self.primal_reduced_problem = None
             

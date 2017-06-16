@@ -19,7 +19,7 @@
 import inspect
 
 def CustomizeReducedProblemFor(Problem):
-    assert inspect.isabstract(Problem), "It suggested to use this customizer for abstract classes (e.g., before specifying theta terms and operators, or decorating with EIM or SCM), because otherwise the customization would be preserved with a call to exact_problem."
+    assert inspect.isabstract(Problem), "It is suggested to use this customizer for abstract classes (e.g., before specifying theta terms and operators, or decorating with EIM or SCM), because otherwise the customization would not be preserved with a call to exact_problem."
     def CustomizeReducedProblemFor_Decorator(customizer):
         CustomizeReducedProblemFor._all_reduced_problems_customizers[Problem] = customizer
         return customizer

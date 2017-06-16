@@ -41,6 +41,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         EllipticCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
         
         # Skip useless Riesz products
+        self.riesz_terms = ["f", "a"]
         self.riesz_product_terms = [("f", "f"), ("a", "f"), ("a", "a")]
     
     ## Return an error bound for the current solution

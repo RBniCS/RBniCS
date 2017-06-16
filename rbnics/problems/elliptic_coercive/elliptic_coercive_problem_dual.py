@@ -17,8 +17,9 @@
 #
 
 from rbnics.backends import adjoint, Function
+from rbnics.problems.base import DualProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.utils.decorators import DualProblem, Extends, override
+from rbnics.utils.decorators import Extends, override
 
 EllipticCoerciveProblem_Dual_Base = DualProblem(EllipticCoerciveProblem)
 

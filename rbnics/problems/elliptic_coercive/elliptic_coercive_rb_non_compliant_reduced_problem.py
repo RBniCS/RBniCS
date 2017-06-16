@@ -16,8 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, PrimalDualReducedProblem, ReducedProblemFor
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor
 from rbnics.backends import product, sum, transpose
+from rbnics.problems.base import PrimalDualReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
@@ -33,20 +34,4 @@ class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBNonComplian
     @override
     def _compute_output(self, N):
         self._output = transpose(self._solution)*sum(product(self.compute_theta("s"), self.operator["s"][:N]))
-        
-    ## Compute the Riesz representation of term
-    @override
-    def compute_riesz(self, term):
-        if term == "s":
-            pass
-        else:
-            return EllipticCoerciveRBNonCompliantReducedProblem_Base.compute_riesz(self, term)
-            
-    ## Assemble operators for error estimation
-    @override
-    def assemble_error_estimation_operators(self, term, current_stage="online"):
-        if term in (("a", "s"), ("f", "s"), ("s", "s")):
-            pass
-        else:
-            return EllipticCoerciveRBNonCompliantReducedProblem_Base.assemble_error_estimation_operators(self, term, current_stage)
             

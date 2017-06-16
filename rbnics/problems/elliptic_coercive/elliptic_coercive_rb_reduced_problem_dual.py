@@ -18,7 +18,8 @@
 
 from rbnics.backends import product, transpose, sum
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from rbnics.utils.decorators import DualReducedProblem, Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.problems.base import DualReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
 from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
@@ -54,8 +55,8 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
             self.output_correction_and_estimation["a"] = self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_a", "online")
             self.output_correction_and_estimation["f"] = self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_f", "online")
         elif current_stage == "offline":
-            self.output_correction_and_estimation["a"] = OnlineAffineExpansionStorage(self.primal_problem.Q["a"])
-            self.output_correction_and_estimation["f"] = OnlineAffineExpansionStorage(self.primal_problem.Q["f"])
+            self.output_correction_and_estimation["a"] = OnlineAffineExpansionStorage(self.primal_truth_problem.Q["a"])
+            self.output_correction_and_estimation["f"] = OnlineAffineExpansionStorage(self.primal_truth_problem.Q["f"])
             # Save empty files to avoid triggering an assert while finalizing dual offline stage
             self.output_correction_and_estimation["a"].save(self.folder["error_estimation"], "output_correction_and_estimation_a")
             self.output_correction_and_estimation["f"].save(self.folder["error_estimation"], "output_correction_and_estimation_f")
@@ -94,12 +95,12 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
             return self.output_correction_and_estimation[short_term]
         elif current_stage == "offline":
             if term == "output_correction_and_estimation_a":
-                for qa in range(self.primal_problem.Q["a"]):
-                    self.output_correction_and_estimation["a"][qa] = transpose(self.Z)*self.primal_reduced_problem.truth_problem.operator["a"][qa]*self.primal_reduced_problem.Z
+                for qa in range(self.primal_truth_problem.Q["a"]):
+                    self.output_correction_and_estimation["a"][qa] = transpose(self.Z)*self.primal_truth_problem.operator["a"][qa]*self.primal_reduced_problem.Z
                 self.output_correction_and_estimation["a"].save(self.folder["error_estimation"], "output_correction_and_estimation_a")
             elif term == "output_correction_and_estimation_f":
-                for qf in range(self.primal_problem.Q["f"]):
-                    self.output_correction_and_estimation["f"][qf] = transpose(self.Z)*self.primal_reduced_problem.truth_problem.operator["f"][qf]
+                for qf in range(self.primal_truth_problem.Q["f"]):
+                    self.output_correction_and_estimation["f"][qf] = transpose(self.Z)*self.primal_truth_problem.operator["f"][qf]
                 self.output_correction_and_estimation["f"].save(self.folder["error_estimation"], "output_correction_and_estimation_f")
             else:
                 raise ValueError("Invalid term for assemble_output_correction_and_estimation_operators().")

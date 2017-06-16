@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.io import ErrorAnalysisTable
+from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
 from rbnics.utils.decorators.extends import Extends
 from rbnics.utils.decorators.override import override
 
@@ -95,7 +95,7 @@ def PrimalDualReductionMethod(DualProblem):
                 primal_reduced_problem.dual_reduced_problem = dual_reduced_problem
                 dual_reduced_problem.primal_reduced_problem = primal_reduced_problem
                 # Compute data structures related to output correction and error estimation
-                self.reduced_problem.dual_reduced_problem.build_output_correction_and_estimation_operators()
+                dual_reduced_problem.build_output_correction_and_estimation_operators()
                 #
                 return primal_reduced_problem
                 
@@ -106,7 +106,8 @@ def PrimalDualReductionMethod(DualProblem):
                 # Carry out primal error analysis ...
                 DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
                 # ... and then dual error analysis
-                ErrorAnalysisTable.suppress_group("output")
+                ErrorAnalysisTable.suppress_group("output_error")
+                ErrorAnalysisTable.suppress_group("output_relative_error")
                 self.dual_reduction_method.error_analysis(N, **kwargs)
                 ErrorAnalysisTable.clear_suppressed_groups()
                 
@@ -117,7 +118,10 @@ def PrimalDualReductionMethod(DualProblem):
                 # Carry out primal speedup analysis ...
                 DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
                 # ... and then dual speedup analysis
+                SpeedupAnalysisTable.suppress_group("output_error")
+                SpeedupAnalysisTable.suppress_group("output_relative_error")
                 self.dual_reduction_method.speedup_analysis(N, **kwargs)
+                SpeedupAnalysisTable.clear_suppressed_groups()
                         
         # return value (a class) for the decorator
         return PrimalDualReductionMethod_Class
