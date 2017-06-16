@@ -30,6 +30,9 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
     class EIMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem, **kwargs):
+            # Initialize EIM approximations, if needed
+            truth_problem._init_EIM_approximations()
+            
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Storage for EIM reduction methods

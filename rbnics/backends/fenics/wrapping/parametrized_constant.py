@@ -68,9 +68,10 @@ from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor as Pr
 
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
     from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
-    if Algorithm in (DEIM, EIM):
-        # Change ProblemDecoratorFor to override DEIMDecoratedProblem.set_mu_range so that querying self.mu
-        # actually returns a ParametrizedConstant rather than a float
+    if Algorithm is DEIM:
+        # Change ProblemDecoratorFor to override DEIMDecoratedProblem._init_DEIM_approximations() so that DEIM approximations
+        # are built for self.mu which is a ParametrizedConstantTuple rather than a tuple of floats, in order for operators
+        # to be correctly identified as parametrized.
         def ProblemDecoratorFor_Decorator(ProblemDecorator):
             def ProblemDecoratorFor_DecoratedProblemGenerator(Problem):
                 DecoratedProblem_Base = ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)(ProblemDecorator)(Problem)
@@ -79,32 +80,46 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
                 @StoreProblemDecoratorsForFactories(DecoratedProblem_Base, Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)
                 class DecoratedProblem(DecoratedProblem_Base):
                     @override
-                    def set_mu_range(self, mu_range):
-                        # Storage for backup of parameter assigned while calling set_mu
-                        self._mu_ParametrizedConstant_override = None
-                        # Hack set_mu method to convert tuple to parametrized constants
-                        # only in this call (i.e. when _mu_ParametrizedConstant_override is set)
-                        original_set_mu = self.set_mu
-                        def modified_set_mu(self, mu):
-                            if hasattr(self, "_mu_ParametrizedConstant_override"):
-                                self.mu = ParametrizedConstantTuple(self, mu)
-                                self._mu_ParametrizedConstant_override = mu
-                            else:
-                                original_set_mu(mu)
-                        self.set_mu = types.MethodType(modified_set_mu, self)
-                        # Call parent, which in turns assembles operators using the hacked set_mu
-                        DecoratedProblem_Base.set_mu_range(self, mu_range)
+                    def _init_DEIM_approximations(self):
+                        # Temporarily replace float by a parametrized constant
+                        mu_bak = self.mu
+                        self.mu = ParametrizedConstantTuple(self, self.mu)
+                        # Call parent
+                        DecoratedProblem_Base._init_DEIM_approximations(self)
                         # Restore self.mu
-                        assert self._mu_ParametrizedConstant_override is not None
-                        self.mu = self._mu_ParametrizedConstant_override
-                        del self._mu_ParametrizedConstant_override
+                        self.mu = mu_bak
+                                        
+                return DecoratedProblem
+            return ProblemDecoratorFor_DecoratedProblemGenerator
+        return ProblemDecoratorFor_Decorator
+    elif Algorithm is EIM:
+        # Change ProblemDecoratorFor to override EIMDecoratedProblem._init_EIM_approximations() so that EIM approximations
+        # are built for self.mu which is a ParametrizedConstantTuple rather than a tuple of floats, in order for operators
+        # to be correctly identified as parametrized.
+        def ProblemDecoratorFor_Decorator(ProblemDecorator):
+            def ProblemDecoratorFor_DecoratedProblemGenerator(Problem):
+                DecoratedProblem_Base = ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)(ProblemDecorator)(Problem)
+                
+                @Extends(DecoratedProblem_Base, preserve_class_name=True)
+                @StoreProblemDecoratorsForFactories(DecoratedProblem_Base, Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)
+                class DecoratedProblem(DecoratedProblem_Base):
+                    @override
+                    def _init_EIM_approximations(self):
+                        # Temporarily replace float by a parametrized constant
+                        mu_bak = self.mu
+                        self.mu = ParametrizedConstantTuple(self, self.mu)
+                        # Call parent
+                        DecoratedProblem_Base._init_EIM_approximations(self)
+                        # Restore self.mu
+                        self.mu = mu_bak
                                         
                 return DecoratedProblem
             return ProblemDecoratorFor_DecoratedProblemGenerator
         return ProblemDecoratorFor_Decorator
     elif Algorithm is ExactParametrizedFunctions:
-        # Change ProblemDecoratorFor to override ExactParametrizedFunctionsDecoratedProblem.set_mu_range so that querying self.mu
-        # actually returns a ParametrizedConstant rather than a float
+        # Change ProblemDecoratorFor to override ExactParametrizedFunctionsDecoratedProblem.assemble_operator() so that operators
+        # are built for self.mu which is a ParametrizedConstantTuple rather than a tuple of floats, in order to avoid recompiling
+        # the expression every time the parameters change.
         def ProblemDecoratorFor_Decorator(ProblemDecorator):
             def ProblemDecoratorFor_DecoratedProblemGenerator(Problem):
                 DecoratedProblem_Base = ProblemDecoratorFor_Base(Algorithm, ExactAlgorithm, replaces, replaces_if, **kwargs)(ProblemDecorator)(Problem)
@@ -114,16 +129,13 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
                 class DecoratedProblem(DecoratedProblem_Base):
                     @override
                     def assemble_operator(self, term):
-                        # Storage for backup of parameter assigned while calling set_mu
-                        self._mu_ParametrizedConstant_override = self.mu
                         # Temporarily replace float by a parametrized constant
+                        mu_bak = self.mu
                         self.mu = ParametrizedConstantTuple(self, self.mu)
                         # Call parent
                         output = DecoratedProblem_Base.assemble_operator(self, term)
                         # Restore self.mu
-                        assert self._mu_ParametrizedConstant_override is not None
-                        self.mu = self._mu_ParametrizedConstant_override
-                        del self._mu_ParametrizedConstant_override
+                        self.mu = mu_bak
                         # Return
                         return output
                                         

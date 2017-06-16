@@ -54,31 +54,37 @@ def EIMDecoratedProblem(
                 # Avoid useless assignments
                 self._update_N_EIM__previous_kwargs = None
                 
-            @override
-            def set_mu_range(self, mu_range):
-                # Call to parent
-                ParametrizedDifferentialProblem_DerivedClass.set_mu_range(self, mu_range)
-                
-                # Preprocess each term in the affine expansions
-                # Note that this cannot be done in __init__ because operators may depend on self.mu,
-                # which is not defined at __init__ time
-                for term in self.terms:
-                    forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
-                    Q = len(forms)
-                    self.separated_forms[term] = AffineExpansionSeparatedFormsStorage(Q)
-                    for q in range(Q):
-                        self.separated_forms[term][q] = SeparatedParametrizedForm(forms[q])
-                        self.separated_forms[term][q].separate()
-                        # All parametrized coefficients should be approximated by EIM
-                        for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
-                            for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
-                                if factor not in self.EIM_approximations:
-                                    factory_factor = ParametrizedExpressionFactory(factor)
-                                    if factory_factor.is_time_dependent():
-                                        EIMApproximationType = TimeDependentEIMApproximation
-                                    else:
-                                        EIMApproximationType = EIMApproximation
-                                    self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, type(self).__name__ + "/eim/" + factor_name, basis_generation)
+            def _init_EIM_approximations(self):
+                # Preprocess each term in the affine expansions.
+                # Note that this cannot be done in __init__, because operators may depend on self.mu,
+                # which is not defined at __init__ time. Moreover, it cannot be done either by init, 
+                # because the init method is called by offline stage of the reduction method instance,
+                # but we need to EIM approximations need to be already set up at the time the reduction
+                # method instance is built. Thus, we will call this method in the reduction method instance
+                # constructor (having a safeguard in place to avoid repeated calls).
+                assert (
+                    (len(self.separated_forms) == 0)
+                        ==
+                    (len(self.EIM_approximations) == 0)
+                )
+                if len(self.EIM_approximations) == 0: # initialize EIM approximations only once
+                    for term in self.terms:
+                        forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
+                        Q = len(forms)
+                        self.separated_forms[term] = AffineExpansionSeparatedFormsStorage(Q)
+                        for q in range(Q):
+                            self.separated_forms[term][q] = SeparatedParametrizedForm(forms[q])
+                            self.separated_forms[term][q].separate()
+                            # All parametrized coefficients should be approximated by EIM
+                            for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
+                                for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
+                                    if factor not in self.EIM_approximations:
+                                        factory_factor = ParametrizedExpressionFactory(factor)
+                                        if factory_factor.is_time_dependent():
+                                            EIMApproximationType = TimeDependentEIMApproximation
+                                        else:
+                                            EIMApproximationType = EIMApproximation
+                                        self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, type(self).__name__ + "/eim/" + factor_name, basis_generation)
                 
             @override
             def _solve(self, **kwargs):

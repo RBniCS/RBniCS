@@ -30,6 +30,9 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
     class DEIMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         @override
         def __init__(self, truth_problem, **kwargs):
+            # Initialize DEIM approximations, if needed
+            truth_problem._init_DEIM_approximations()
+            
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Storage for DEIM reduction methods

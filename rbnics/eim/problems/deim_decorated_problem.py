@@ -53,28 +53,34 @@ def DEIMDecoratedProblem(
                 # Avoid useless assignments
                 self._update_N_DEIM__previous_kwargs = None
                 
-            @override
-            def set_mu_range(self, mu_range):
-                # Call to parent
-                ParametrizedDifferentialProblem_DerivedClass.set_mu_range(self, mu_range)
-                
-                # Preprocess each term in the affine expansions
-                # Note that this cannot be done in __init__ because operators may depend on self.mu,
-                # which is not defined at __init__ time
-                for term in self.terms:
-                    forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
-                    self.DEIM_approximations[term] = dict()
-                    self.non_DEIM_forms[term] = dict()
-                    for (q, form_q) in enumerate(forms):
-                        factory_form_q = ParametrizedTensorFactory(form_q)
-                        if factory_form_q.is_parametrized():
-                            if factory_form_q.is_time_dependent():
-                                DEIMApproximationType = TimeDependentDEIMApproximation
+            def _init_DEIM_approximations(self):
+                # Preprocess each term in the affine expansions.
+                # Note that this cannot be done in __init__, because operators may depend on self.mu,
+                # which is not defined at __init__ time. Moreover, it cannot be done either by init, 
+                # because the init method is called by offline stage of the reduction method instance,
+                # but we need to DEIM approximations need to be already set up at the time the reduction
+                # method instance is built. Thus, we will call this method in the reduction method instance
+                # constructor (having a safeguard in place to avoid repeated calls).
+                assert (
+                    (len(self.DEIM_approximations) == 0)
+                        ==
+                    (len(self.non_DEIM_forms) == 0)
+                )
+                if len(self.DEIM_approximations) == 0: # initialize DEIM approximations only once
+                    for term in self.terms:
+                        forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
+                        self.DEIM_approximations[term] = dict()
+                        self.non_DEIM_forms[term] = dict()
+                        for (q, form_q) in enumerate(forms):
+                            factory_form_q = ParametrizedTensorFactory(form_q)
+                            if factory_form_q.is_parametrized():
+                                if factory_form_q.is_time_dependent():
+                                    DEIMApproximationType = TimeDependentDEIMApproximation
+                                else:
+                                    DEIMApproximationType = DEIMApproximation
+                                self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, type(self).__name__ + "/deim/" + factory_form_q.name(), basis_generation)
                             else:
-                                DEIMApproximationType = DEIMApproximation
-                            self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, type(self).__name__ + "/deim/" + factory_form_q.name(), basis_generation)
-                        else:
-                            self.non_DEIM_forms[term][q] = form_q
+                                self.non_DEIM_forms[term][q] = form_q
                 
             @override
             def _solve(self, **kwargs):
