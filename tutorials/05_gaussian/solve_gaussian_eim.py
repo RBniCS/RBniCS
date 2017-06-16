@@ -114,20 +114,17 @@ reduced_basis_method.error_analysis()
 # 8. Perform a speedup analysis
 reduced_basis_method.speedup_analysis()
 
-# 9. Allocate an object corresponding to the exact version of Gaussian,
+# 9. Perform an error analysis with respect to the exact problem,
 #    for which EIM is replaced by ExactParametrizedFunctions
-exact_gaussian_problem = exact_problem(gaussian_problem)
+reduced_basis_method.error_analysis(with_respect_to=exact_problem)
 
-# 10. Perform an error analysis with respect to the exact problem
-reduced_basis_method.error_analysis(with_respect_to=exact_gaussian_problem)
+# 10. Perform a speedup analysis with respect to the exact problem
+reduced_basis_method.speedup_analysis(with_respect_to=exact_problem)
 
-# 11. Perform a speedup analysis with respect to the exact problem
-reduced_basis_method.speedup_analysis(with_respect_to=exact_gaussian_problem)
-
-# 12. Perform an error analysis with respect to the exact problem, but
+# 11. Perform an error analysis with respect to the exact problem, but
 #     employing a smaller number of EIM basis functions
-reduced_basis_method.error_analysis(with_respect_to=exact_gaussian_problem, EIM=11)
+reduced_basis_method.error_analysis(with_respect_to=exact_problem, EIM=11)
 
-# 13. Perform a speedup analysis with respect to the exact problem, but
+# 12. Perform a speedup analysis with respect to the exact problem, but
 #     employing a smaller number of EIM basis functions
-reduced_basis_method.speedup_analysis(with_respect_to=exact_gaussian_problem, EIM=11)
+reduced_basis_method.speedup_analysis(with_respect_to=exact_problem, EIM=11)

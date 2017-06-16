@@ -17,6 +17,7 @@
 #
 
 import types
+import inspect
 from rbnics.backends.common.linear_program_solver import LinearProgramSolver
 from rbnics.utils.decorators import Extends, override, ReductionMethodDecoratorFor
 from rbnics.scm.problems import SCM
@@ -109,10 +110,10 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         @override
         def _init_error_analysis(self, **kwargs):
-            # Call Parent
-            DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
             # Replace stability factor computation, if needed
             self._replace_stability_factor_computation(**kwargs)
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
             
         @override
         def _finalize_error_analysis(self, **kwargs):
@@ -140,10 +141,10 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         @override
         def _init_speedup_analysis(self, **kwargs):
-            # Call Parent
-            DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             # Replace stability factor computation, if needed
             self._replace_stability_factor_computation(**kwargs)
+            # Call Parent
+            DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             
         @override
         def _finalize_speedup_analysis(self, **kwargs):
@@ -156,9 +157,11 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self._replace_stability_factor_computation__get_stability_factor__original = self.reduced_problem.get_stability_factor
             if "SCM" not in kwargs:
                 if "with_respect_to" in kwargs:
+                    assert inspect.isfunction(kwargs["with_respect_to"])
+                    replaced_truth_problem = kwargs["with_respect_to"](self.truth_problem)
                     # Assume that the user wants to disable SCM and use the exact stability factor
                     def replaced_get_stability_factor(self_):
-                        return kwargs["with_respect_to"].get_stability_factor()
+                        return replaced_truth_problem.get_stability_factor()
                     self.reduced_problem.get_stability_factor = types.MethodType(replaced_get_stability_factor, self.reduced_problem)
             else:
                 assert isinstance(kwargs["SCM"], int)

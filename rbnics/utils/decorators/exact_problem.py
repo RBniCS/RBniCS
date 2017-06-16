@@ -17,6 +17,7 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators.sync_setters import sync_setters
 
 def exact_problem(decorated_problem, preserve_class_name=True):
     if (decorated_problem, preserve_class_name) not in _all_exact_problems:
@@ -25,7 +26,20 @@ def exact_problem(decorated_problem, preserve_class_name=True):
             assert hasattr(DecoratedProblem, "UndecoratedProblemClass")
             @Extends(DecoratedProblem.UndecoratedProblemClass, preserve_class_name=True)
             class ExactProblem_Class(DecoratedProblem.UndecoratedProblemClass):
-                pass
+                @sync_setters(decorated_problem, "set_mu", "mu")
+                @sync_setters(decorated_problem, "set_mu_range", "mu_range")
+                def __init__(self, V, **kwargs):
+                    DecoratedProblem.UndecoratedProblemClass.__init__(self, V, **kwargs)
+            
+            if hasattr(decorated_problem, "set_time"):
+                @Extends(ExactProblem_Class, preserve_class_name=True)
+                class ExactProblem_Class(ExactProblem_Class):
+                    @sync_setters(decorated_problem, "set_time", "t")
+                    @sync_setters(decorated_problem, "set_initial_time", "t0")
+                    @sync_setters(decorated_problem, "set_time_step_size", "dt")
+                    @sync_setters(decorated_problem, "set_final_time", "T")
+                    def __init__(self, V, **kwargs):
+                        ExactProblem_Class.__init__(self, V, **kwargs)
             
             if not preserve_class_name:
                 setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
@@ -41,8 +55,6 @@ def exact_problem(decorated_problem, preserve_class_name=True):
             
             # Create a new instance of ExactProblem_Class
             exact_problem = ExactProblem_Class(decorated_problem.V, **decorated_problem.problem_kwargs)
-            exact_problem.set_mu_range(decorated_problem.mu_range)
-            exact_problem.set_mu(decorated_problem.mu)
             setattr(exact_problem, "__decorated_problem__", decorated_problem)
             
             # Save

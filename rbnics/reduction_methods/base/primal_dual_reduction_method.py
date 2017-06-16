@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import inspect
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
 from rbnics.utils.decorators.extends import Extends
 from rbnics.utils.decorators.override import override
@@ -36,6 +37,8 @@ def PrimalDualReductionMethod(DualProblem):
                 self.dual_truth_problem = DualProblem(truth_problem)
                 # Dual reduction method
                 self.dual_reduction_method = DifferentialProblemReductionMethod_DerivedClass(self.dual_truth_problem, **kwargs)
+                # Dual reduced problem
+                self.dual_reduced_problem = None
                 
                 # Change the folder names in dual reduction method
                 new_folder_prefix = self.dual_truth_problem.folder_prefix
@@ -90,12 +93,12 @@ def PrimalDualReductionMethod(DualProblem):
                 primal_reduced_problem = DifferentialProblemReductionMethod_DerivedClass.offline(self)
                 # ... and then dual offline stage
                 self.truth_problem.set_mu(bak_first_mu)
-                dual_reduced_problem = self.dual_reduction_method.offline()
+                self.dual_reduced_problem = self.dual_reduction_method.offline()
                 # Attach reduced dual problem to reduced primal problem, and viceversa
-                primal_reduced_problem.dual_reduced_problem = dual_reduced_problem
-                dual_reduced_problem.primal_reduced_problem = primal_reduced_problem
+                primal_reduced_problem.dual_reduced_problem = self.dual_reduced_problem
+                self.dual_reduced_problem.primal_reduced_problem = primal_reduced_problem
                 # Compute data structures related to output correction and error estimation
-                dual_reduced_problem.build_output_correction_and_estimation_operators()
+                self.dual_reduced_problem.build_output_correction_and_estimation_operators()
                 #
                 return primal_reduced_problem
                 
@@ -108,7 +111,9 @@ def PrimalDualReductionMethod(DualProblem):
                 # ... and then dual error analysis
                 ErrorAnalysisTable.suppress_group("output_error")
                 ErrorAnalysisTable.suppress_group("output_relative_error")
+                self._replace_dual_truth_problem(**kwargs)
                 self.dual_reduction_method.error_analysis(N, **kwargs)
+                self._undo_replace_dual_truth_problem(**kwargs)
                 ErrorAnalysisTable.clear_suppressed_groups()
                 
             # Compute the speedup of the reduced order approximation with respect to the full order one
@@ -120,8 +125,25 @@ def PrimalDualReductionMethod(DualProblem):
                 # ... and then dual speedup analysis
                 SpeedupAnalysisTable.suppress_group("output_error")
                 SpeedupAnalysisTable.suppress_group("output_relative_error")
+                self._replace_dual_truth_problem(**kwargs)
                 self.dual_reduction_method.speedup_analysis(N, **kwargs)
+                self._undo_replace_dual_truth_problem(**kwargs)
                 SpeedupAnalysisTable.clear_suppressed_groups()
+                
+            def _replace_dual_truth_problem(self, **kwargs):
+                if "with_respect_to" in kwargs:
+                    if not hasattr(self, "_replace_dual_truth_problem__bak_dual_truth_problem"):
+                        self._replace_dual_truth_problem__bak_dual_truth_problem = self.dual_truth_problem
+                        assert inspect.isfunction(kwargs["with_respect_to"])
+                        self.dual_truth_problem = kwargs["with_respect_to"](self.dual_truth_problem)
+                        self.dual_reduced_problem.truth_problem = self.dual_truth_problem
+                
+            def _undo_replace_dual_truth_problem(self, **kwargs):
+                if "with_respect_to" in kwargs:
+                    if hasattr(self, "_replace_dual_truth_problem__bak_dual_truth_problem"):
+                        self.dual_truth_problem = self._replace_dual_truth_problem__bak_dual_truth_problem
+                        self.dual_reduced_problem.truth_problem = self.dual_truth_problem
+                        del self._replace_dual_truth_problem__bak_dual_truth_problem
                         
         # return value (a class) for the decorator
         return PrimalDualReductionMethod_Class

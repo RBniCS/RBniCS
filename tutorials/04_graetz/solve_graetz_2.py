@@ -151,12 +151,9 @@ reduced_basis_method.error_analysis(SCM=5)
 # 10. Perform a speedup analysis employing a smaller number of SCM constraints
 reduced_basis_method.speedup_analysis(SCM=5)
 
-# 11. Allocate an object corresponding to the exact version of Graetz,
-#    for which SCM is replaced by ExactCoercivityConstant
-exact_graetz_problem = exact_problem(graetz_problem)
+# 11. Perform an error analysis with respect to the exact problem,
+#     for which SCM is replaced by ExactCoercivityConstant
+reduced_basis_method.error_analysis(with_respect_to=exact_problem)
 
-# 12. Perform an error analysis with respect to the exact problem
-reduced_basis_method.error_analysis(with_respect_to=exact_graetz_problem)
-
-# 13. Perform a speedup analysis with respect to the exact problem
-reduced_basis_method.speedup_analysis(with_respect_to=exact_graetz_problem)
+# 12. Perform a speedup analysis with respect to the exact problem
+reduced_basis_method.speedup_analysis(with_respect_to=exact_problem)

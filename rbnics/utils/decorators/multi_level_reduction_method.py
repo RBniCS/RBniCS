@@ -17,6 +17,7 @@
 #
 
 import types
+import inspect
 from rbnics.utils.decorators.extends import Extends
 from rbnics.utils.decorators.override import override
 
@@ -54,16 +55,8 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
         
         @override
         def _init_error_analysis(self, **kwargs):
-            if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
-                if "with_respect_to" in kwargs:
-                    assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
-                                                                 # otherwise how should we know to which level in the 
-                                                                 # hierarchy is this truth problem supposed to be?
-                    self._replace_truth_problem(kwargs["with_respect_to"])
-                elif "with_respect_to_level" in kwargs:
-                    pass # TODO
-                else:
-                    raise ValueError("Invalid value for kwargs")
+            # Replace truth problem, if needed
+            self._replace_truth_problem(**kwargs)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
                 
@@ -71,30 +64,13 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
         def _finalize_error_analysis(self, **kwargs):
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
-            
-            if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
-                if "with_respect_to" in kwargs:
-                    assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
-                                                                 # otherwise how should we know to which level in the 
-                                                                 # hierarchy is this truth problem supposed to be?
-                    self._undo_replace_truth_problem()
-                elif "with_respect_to_level" in kwargs:
-                    pass # TODO
-                else:
-                    raise ValueError("Invalid value for kwargs")
+            # Undo replacement of truth problem, if needed
+            self._undo_replace_truth_problem(**kwargs)
             
         @override
         def _init_speedup_analysis(self, **kwargs):
-            if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
-                if "with_respect_to" in kwargs:
-                    assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
-                                                                 # otherwise how should we know to which level in the 
-                                                                 # hierarchy is this truth problem supposed to be?
-                    self._replace_truth_problem(kwargs["with_respect_to"])
-                elif "with_respect_to_level" in kwargs:
-                    pass # TODO
-                else:
-                    raise ValueError("Invalid value for kwargs")
+            # Replace truth problem, if needed
+            self._replace_truth_problem(**kwargs)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             
@@ -102,57 +78,23 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
         def _finalize_speedup_analysis(self, **kwargs):
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)
-            
-            if "with_respect_to" in kwargs or "with_respect_to_level" in kwargs:
-                if "with_respect_to" in kwargs:
-                    assert "with_respect_to_level" not in kwargs # the two options are mutually exclusive
-                                                                 # otherwise how should we know to which level in the 
-                                                                 # hierarchy is this truth problem supposed to be?
-                    self._undo_replace_truth_problem()
-                elif "with_respect_to_level" in kwargs:
-                    pass # TODO
-                else:
-                    raise ValueError("Invalid value for kwargs")
+            # Undo replacement of truth problem, if needed
+            self._undo_replace_truth_problem(**kwargs)
                  
-        def _replace_truth_problem(self, other_truth_problem):
-            # Make sure that mu is in sync, for both the other truth problem ...
-            if not hasattr(self, "_replace_truth_problem__other_truth_set_mu__original"):
-                self._replace_truth_problem__other_truth_set_mu__original = other_truth_problem.set_mu
-                def other_truth_set_mu(self_, mu):
-                    self._replace_truth_problem__other_truth_set_mu__original(mu)
-                    if self.reduced_problem.mu != mu:
-                        self.reduced_problem.set_mu(mu)
-                other_truth_problem.set_mu = types.MethodType(other_truth_set_mu, other_truth_problem)
-            # ... and the reduced problem
-            if not hasattr(self, "_replace_truth_problem__reduced_set_mu__original"):
-                self._replace_truth_problem__reduced_set_mu__original = self.reduced_problem.set_mu
-                def reduced_set_mu(self_, mu):
-                    self._replace_truth_problem__reduced_set_mu__original(mu)
-                    if other_truth_problem.mu != mu:
-                        other_truth_problem.set_mu(mu)
-                self.reduced_problem.set_mu = types.MethodType(reduced_set_mu, self.reduced_problem)
+        def _replace_truth_problem(self, **kwargs):
+            if "with_respect_to" in kwargs:
+                if not hasattr(self, "_replace_truth_problem__bak_truth_problem"):
+                    self._replace_truth_problem__bak_truth_problem = self.truth_problem
+                    assert inspect.isfunction(kwargs["with_respect_to"])
+                    self.truth_problem = kwargs["with_respect_to"](self.truth_problem)
+                    self.reduced_problem.truth_problem = self.truth_problem
             
-            # Change truth problem
-            if not hasattr(self, "_replace_truth_problem__bak_truth_problem"):
-                self._replace_truth_problem__bak_truth_problem = self.truth_problem
-                self.truth_problem = other_truth_problem
-            else:
-                assert self.truth_problem is other_truth_problem
-            
-        def _undo_replace_truth_problem(self):
-            # Restore the original mu sync, for both the other truth problem (currently stored in self.truth_problem)...
-            if hasattr(self, "_replace_truth_problem__other_truth_set_mu__original"):
-                self.truth_problem.set_mu = self._replace_truth_problem__other_truth_set_mu__original
-                del self._replace_truth_problem__other_truth_set_mu__original
-            # ... and the reduced problem
-            if hasattr(self, "_replace_truth_problem__reduced_set_mu__original"):
-                self.reduced_problem.set_mu = self._replace_truth_problem__reduced_set_mu__original
-                del self._replace_truth_problem__reduced_set_mu__original
-            
-            # Reset truth problem
-            if hasattr(self, "_replace_truth_problem__bak_truth_problem"):
-                self.truth_problem = self._replace_truth_problem__bak_truth_problem
-                del self._replace_truth_problem__bak_truth_problem
+        def _undo_replace_truth_problem(self, **kwargs):
+            if "with_respect_to" in kwargs:
+                if hasattr(self, "_replace_truth_problem__bak_truth_problem"):
+                    self.truth_problem = self._replace_truth_problem__bak_truth_problem
+                    self.reduced_problem.truth_problem = self.truth_problem
+                    del self._replace_truth_problem__bak_truth_problem
             
     # return value (a class) for the decorator
     return MultiLevelReductionMethod_Class

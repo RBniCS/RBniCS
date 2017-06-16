@@ -26,7 +26,6 @@ def regenerate_reduced_problem_from_exact_reduced_problem(truth_problem, reducti
     assert exact_reduced_problem == _problem_to_reduced_problem_map[truth_problem]
     del _problem_to_reduced_problem_map[truth_problem]
     reduced_problem = ReducedProblemFactory(truth_problem, reduction_method, **reduction_method._init_kwargs)
-    reduced_problem._error_computation_override__default_with_respect_to = exact_reduced_problem.truth_problem
     # Copy the basis functions from the exact reduced problem
     reduced_problem.Z = exact_reduced_problem.Z
     reduced_problem.N = exact_reduced_problem.N

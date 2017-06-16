@@ -18,14 +18,17 @@
 
 import types
 
-def sync_setters__internal(other_object__name, method__name, private_attribute__name, method__decorator=None):
+def sync_setters__internal(other_object__name__or__instance, method__name, private_attribute__name, method__decorator=None):
     def sync_setters_decorator(__init__):
         
         def __synced__init__(self, *args, **kwargs):
             # Call the parent initialization
             __init__(self, *args, **kwargs)
             # Get other_object
-            other_object = getattr(self, other_object__name)
+            if isinstance(other_object__name__or__instance, str):
+                other_object = getattr(self, other_object__name__or__instance)
+            else:
+                other_object = other_object__name__or__instance
             # Sync setters only if the other object is not None
             if other_object is not None:
                 # Initialize private storage
@@ -90,10 +93,10 @@ def sync_setters__internal(other_object__name, method__name, private_attribute__
         return __synced__init__
     return sync_setters_decorator
 
-def sync_setters(other_object__name, method__name, private_attribute__name):
+def sync_setters(other_object, method__name, private_attribute__name):
     assert method__name in ("set_final_time", "set_initial_time", "set_mu", "set_mu_range", "set_time", "set_time_step_size") # other uses have not been considered yet
     if method__name in ("set_final_time", "set_initial_time", "set_mu", "set_time", "set_time_step_size"):
-        return sync_setters__internal(other_object__name, method__name, private_attribute__name)
+        return sync_setters__internal(other_object, method__name, private_attribute__name)
     elif method__name == "set_mu_range":
         def set_mu_range__decorator(set_mu_range__method):
             def set_mu_range__decorated(self_, mu_range):
@@ -111,7 +114,7 @@ def sync_setters(other_object__name, method__name, private_attribute__name):
                 _synced_setters__disabled_methods.remove("set_mu")
                 self_.set_mu(tuple([r[0] for r in mu_range]))
             return set_mu_range__decorated
-        return sync_setters__internal(other_object__name, method__name, private_attribute__name, set_mu_range__decorator)
+        return sync_setters__internal(other_object, method__name, private_attribute__name, set_mu_range__decorator)
     else:
         raise AssertionError("Invalid method in sync_setters.")
     
