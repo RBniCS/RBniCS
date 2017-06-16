@@ -124,7 +124,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             assert self._train_first in ("DEIM", "Problem")
             if self._train_first == "DEIM":
                 # Perform first the DEIM offline phase, ...
-                bak_first_mu = tuple(list(self.truth_problem.mu))
+                bak_first_mu = self.truth_problem.mu
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
                         DEIM_reduction_term_q.offline()
@@ -135,7 +135,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 bak_truth_problem = self.truth_problem
                 self.truth_problem = exact_problem(bak_truth_problem)
                 # Perform first parent offline phase (with exact operators)
-                bak_first_mu = tuple(list(self.truth_problem.mu))
+                bak_first_mu = self.truth_problem.mu
                 exact_reduced_problem = DifferentialProblemReductionMethod_DerivedClass.offline(self)
                 # Then carry out DEIM offline phase
                 self.truth_problem.set_mu(bak_first_mu)

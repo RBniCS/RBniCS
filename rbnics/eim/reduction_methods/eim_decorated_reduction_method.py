@@ -124,7 +124,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             assert self._train_first in ("EIM", "Problem")
             if self._train_first == "EIM":
                 # Perform first the EIM offline phase, ...
-                bak_first_mu = tuple(list(self.truth_problem.mu))
+                bak_first_mu = self.truth_problem.mu
                 for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
                     EIM_reduction_coeff.offline()
                 # ..., and then call the parent method.
@@ -134,7 +134,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 bak_truth_problem = self.truth_problem
                 self.truth_problem = exact_problem(bak_truth_problem)
                 # Perform first parent offline phase (with exact operators)
-                bak_first_mu = tuple(list(self.truth_problem.mu))
+                bak_first_mu = self.truth_problem.mu
                 exact_reduced_problem = DifferentialProblemReductionMethod_DerivedClass.offline(self)
                 # Then carry out EIM offline phase
                 self.truth_problem.set_mu(bak_first_mu)

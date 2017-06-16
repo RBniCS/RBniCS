@@ -86,7 +86,7 @@ def PrimalDualReductionMethod(DualProblem):
             @override
             def offline(self):
                 # Carry out primal offline stage ...
-                bak_first_mu = tuple(list(self.truth_problem.mu))
+                bak_first_mu = self.truth_problem.mu
                 primal_reduced_problem = DifferentialProblemReductionMethod_DerivedClass.offline(self)
                 # ... and then dual offline stage
                 self.truth_problem.set_mu(bak_first_mu)

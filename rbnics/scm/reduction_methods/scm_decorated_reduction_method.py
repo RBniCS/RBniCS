@@ -84,7 +84,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         @override
         def offline(self):
             # Perform first the SCM offline phase, ...
-            bak_first_mu = tuple(list(self.truth_problem.mu))
+            bak_first_mu = self.truth_problem.mu
             self.SCM_reduction.offline()
             # ..., and then call the parent method.
             self.truth_problem.set_mu(bak_first_mu)
