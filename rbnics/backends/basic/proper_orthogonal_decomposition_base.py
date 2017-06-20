@@ -91,7 +91,10 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             
             total_energy = compute_total_energy(self.eigenvalues)
             self.retained_energy = compute_retained_energy(self.eigenvalues)
-            self.retained_energy /= total_energy
+            if total_energy > 0.:
+                self.retained_energy /= total_energy
+            else:
+                self.retained_energy += 1. # trivial case, all snapshots are zero
             
             for N in range(Nmax):
                 (eigvector, _) = eigensolver.get_eigenvector(N)

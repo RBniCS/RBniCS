@@ -47,7 +47,7 @@ class Stokes(StokesProblem):
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         #
         self.f = Constant((0.0, -10.0))
-        self.g = Constant(1.0) # DEIM would fail at interpolating a zero vector/matrix. We will multiply it by a theta coefficient equal to 0.
+        self.g = Constant(0.0)
         # Store parametrized tensors related to shape parametrization
         expression_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
         scalar_element = V.sub(0).sub(0).ufl_element()
@@ -97,7 +97,7 @@ class Stokes(StokesProblem):
             theta_f0 = 1.
             return (theta_f0,)
         elif term == "g":
-            theta_g0 = 0. # self.g is not zero to prevent failures in DEIM, so we multiply it by zero...
+            theta_g0 = 1.
             return (theta_g0,)
         else:
             raise ValueError("Invalid term for compute_theta().")

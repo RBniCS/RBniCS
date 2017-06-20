@@ -30,12 +30,12 @@ def abs(expression):
         matrix = expression
         abs_matrix = numpy_abs(matrix)
         ij_max = unravel_index(argmax(abs_matrix), abs_matrix.shape)
-        return AbsOutput(matrix[ij_max], ij_max)
+        return AbsOutput(float(matrix[ij_max]), ij_max)
     elif isinstance(expression, Vector.Type()):
         vector = expression
         abs_vector = numpy_abs(vector)
         i_max = (argmax(abs_vector), )
-        return AbsOutput(vector[i_max], i_max)
+        return AbsOutput(float(vector[i_max]), i_max)
     else: # impossible to arrive here anyway thanks to the assert
         raise AssertionError("Invalid argument to abs")
     

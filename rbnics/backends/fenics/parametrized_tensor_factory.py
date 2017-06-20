@@ -111,7 +111,6 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
                         return True
                     # ... problem solutions related to nonlinear terms
                     elif isinstance(node, Function) and is_problem_solution(node):
-                        truth_problem = get_problem_from_solution(node)
                         return True
         return False
         

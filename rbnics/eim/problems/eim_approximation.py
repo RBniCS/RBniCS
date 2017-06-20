@@ -103,21 +103,26 @@ class EIMApproximation(ParametrizedProblem):
         if N is None:
             N = self.N
             
-        if N == 0:
-            self._interpolation_coefficients = OnlineFunction()
-            return
+        if N > 0:
+            self._interpolation_coefficients = OnlineFunction(N)
+                
+            # Evaluate the parametrized expression at interpolation locations
+            rhs = evaluate(rhs_, self.interpolation_locations[:N])
             
-        # Evaluate the parametrized expression at interpolation locations
-        rhs = evaluate(rhs_, self.interpolation_locations[:N])
-        
-        # Extract the interpolation matrix
-        lhs = self.interpolation_matrix[0][:N,:N]
-        
-        # Solve the interpolation problem
-        self._interpolation_coefficients = OnlineFunction(N)
-        
-        solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
-        solver.solve()
+            (max_abs_rhs, _) = max(abs(rhs))
+            if max_abs_rhs == 0.:
+                # If the rhs is zero, then we are interpolating the zero function
+                # and the default zero coefficients are enough.
+                assert N == 1 # there is no need of having more than one basis functions to interpolate a zero function
+            else:
+                # Extract the interpolation matrix
+                lhs = self.interpolation_matrix[0][:N, :N]
+                
+                # Solve the interpolation problem
+                solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
+                solver.solve()
+        else:
+            self._interpolation_coefficients = OnlineFunction()
         
     ## Call online_solve and then convert the result of online solve from OnlineVector to a tuple
     def compute_interpolated_theta(self, N=None):

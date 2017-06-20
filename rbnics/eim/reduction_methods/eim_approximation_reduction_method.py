@@ -198,7 +198,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
     ## Update basis (greedy version)
     def update_basis_greedy(self, error, maximum_error):
-        self.EIM_approximation.Z.enrich(error/maximum_error)
+        if abs(maximum_error) > 0.:
+            self.EIM_approximation.Z.enrich(error/maximum_error)
+        else:
+            # Trivial case, greedy will stop at the first iteration
+            assert self.EIM_approximation.N == 0
+            self.EIM_approximation.Z.enrich(error) # error is actually zero
         self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
         self.EIM_approximation.N += 1
 
@@ -254,6 +259,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         else:
             # Trivial case, greedy will stop at the first iteration
             assert len(self.greedy_errors) == 1
+            assert self.EIM_approximation.N == 1
             return (0., 0.)
     
     # Compute the error of the empirical interpolation approximation with respect to the
