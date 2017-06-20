@@ -23,7 +23,7 @@ from rbnics.utils.decorators import backend_for
 from rbnics.utils.io import Folders
 
 # Export a solution to file
-@backend_for("numpy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None)))
-def import_(solution, directory, filename, suffix=None):
+@backend_for("numpy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
+def import_(solution, directory, filename, suffix=None, component=None):
     pass # TODO
     

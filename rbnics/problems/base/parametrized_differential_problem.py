@@ -337,7 +337,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         if component is None:
             export(solution, folder, filename, suffix)
         elif isinstance(component, str):
-            export(solution, folder, filename, suffix, component)
+            export(solution, folder, filename + "_" + component, suffix, component)
         elif isinstance(component, list):
             for c in component:
                 assert isinstance(c, str)
@@ -345,14 +345,27 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         else:
             raise AssertionError("Invalid component in export_solution()")
             
-    def import_solution(self, folder, filename, solution=None, suffix=None):
+    def import_solution(self, folder, filename, solution=None, component=None, suffix=None):
         """
         Import solution from file.
         """
         if solution is None:
             solution = self._solution
-        return import_(solution, folder, filename, suffix=suffix)
-
+        assert component is None or isinstance(component, (str, list))
+        if component is None and len(self.components) > 1:
+            component = self.components
+        if component is None:
+            return import_(solution, folder, filename, suffix)
+        elif isinstance(component, str):
+            return import_(solution, folder, filename + "_" + component, suffix, component)
+        elif isinstance(component, list):
+            for c in component:
+                assert isinstance(c, str)
+                if not import_(solution, folder, filename + "_" + c, suffix, c):
+                    return False
+            return True
+        else:
+            raise AssertionError("Invalid component in import_solution()")
     
     @abstractmethod
     def compute_theta(self, term):

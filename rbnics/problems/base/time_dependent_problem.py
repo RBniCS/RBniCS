@@ -93,7 +93,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 
         ## Import solution from file
         @override
-        def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, suffix=None):
+        def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution = self._solution
                 solution_over_time = self._solution_over_time
@@ -111,8 +111,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             del solution_over_time[:]
             del solution_dot_over_time[:]
             while self.t <= self.T:
-                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution", solution, suffix=k)
-                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution_dot", solution_dot, suffix=k)
+                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution", solution, component, suffix=k)
+                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder + "/" + filename, "solution_dot", solution_dot, component, suffix=k)
                 import_solution_and_solution_dot = import_solution and import_solution_dot
                 if import_solution_and_solution_dot:
                     solution_over_time.append(copy(self._solution))

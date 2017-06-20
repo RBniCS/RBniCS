@@ -17,11 +17,19 @@
 #
 
 # Returns True if it was possible to import the file, False otherwise
-def import_(solution, directory, filename, suffix, backend, wrapping):
+def import_(solution, directory, filename, suffix, component, backend, wrapping):
     assert isinstance(solution, (backend.Function.Type(), backend.Matrix.Type(), backend.Vector.Type()))
     if isinstance(solution, backend.Function.Type()):
-        return wrapping.function_load(solution, directory, filename, suffix=suffix)
+        if component is None:
+            return wrapping.function_load(solution, directory, filename, suffix=suffix)
+        else:
+            subspace = wrapping.get_function_subspace(solution, component)
+            restricted_solution = wrapping.function_extend_or_restrict(solution, component, subspace, None, weight=None, copy=True)
+            restricted_solution_loaded = wrapping.function_load(restricted_solution, directory, filename, suffix=suffix)
+            wrapping.function_extend_or_restrict(restricted_solution, None, solution.function_space(), component, weight=None, copy=True, extended_or_restricted_function=solution)
+            return restricted_solution_loaded
     elif isinstance(solution, (backend.Matrix.Type(), backend.Vector.Type())):
+        assert component is None
         assert suffix is None
         return wrapping.tensor_load(solution, directory, filename)
     else: # impossible to arrive here anyway, thanks to the assert

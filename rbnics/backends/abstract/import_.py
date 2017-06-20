@@ -20,6 +20,6 @@ from rbnics.utils.decorators import abstract_backend
 
 # Import a solution from file
 @abstract_backend
-def import_(solution, directory, filename, suffix=None):
+def import_(solution, directory, filename, suffix=None, component=None):
     pass
     

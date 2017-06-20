@@ -99,6 +99,12 @@ class StokesProblem(StokesProblem_Base):
             component = ["u", "p"] # but not "s"
         StokesProblem_Base.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
         
+    @override
+    def import_solution(self, folder, filename, solution=None, component=None, suffix=None):
+        if component is None:
+            component = ["u", "p"] # but not "s"
+        StokesProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
+        
     # Custom combination of inner products *not* to add inner product corresponding to supremizers
     def _combine_all_inner_products(self):
         # Temporarily change self.components

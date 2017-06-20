@@ -19,8 +19,8 @@
 from rbnics.utils.decorators import backend_for, list_of
 from rbnics.utils.io import Folders, PickleIO
 
-@backend_for("common", inputs=((list_of(float), list_of(int)), (Folders.Folder, str), str, None))
-def import_(solution, directory, filename, suffix=None):
+@backend_for("common", inputs=((list_of(float), list_of(int)), (Folders.Folder, str), str, None, None))
+def import_(solution, directory, filename, suffix=None, component=None):
     if PickleIO.exists_file(directory, filename):
         loaded_solution = PickleIO.load_file(directory, filename)
         assert len(solution) == len(loaded_solution)
