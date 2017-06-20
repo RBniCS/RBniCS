@@ -40,7 +40,7 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                 N = self.N
                 assembled_operator = dict()
                 for term in ("a", "a*", "c", "c*", "m", "n"):
-                    assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term][:N, :N]))
+                    assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return (
                       assembled_operator["m"]                           + assembled_operator["a*"]
                                               + assembled_operator["n"] - assembled_operator["c*"]
@@ -52,7 +52,7 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                 N = self.N
                 assembled_operator = dict()
                 for term in ("f", "g"):
-                    assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term][:N]))
+                    assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                 return (
                       assembled_operator["g"]
                     

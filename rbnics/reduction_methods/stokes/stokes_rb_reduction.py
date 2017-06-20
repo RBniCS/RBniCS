@@ -37,7 +37,7 @@ class StokesRBReduction(StokesRBReduction_Base):
         # supremizer GS requires a custom initialization. We thus duplicate here part of its code
         
         # Call parent of parent (!) to initialize inner product and reduced problem
-        output = StokesReductionMethod._init_offline(self)
+        output = StokesRBReduction_Base._init_offline(self)
         
         # Declare a new GS for each basis component
         self.GS = dict()

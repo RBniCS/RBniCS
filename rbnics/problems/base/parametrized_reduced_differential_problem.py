@@ -743,7 +743,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                     if "reduced_operators" in self.folder:
                         self.inner_product.save(self.folder["reduced_operators"], term)
                     return self.inner_product
-            elif term == "projection_inner_product":
+            elif term.startswith("projection_inner_product"):
                 component = term.replace("projection_inner_product", "").replace("_", "")
                 if component != "":
                     assert component in self.components

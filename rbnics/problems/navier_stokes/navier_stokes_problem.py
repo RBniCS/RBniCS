@@ -20,6 +20,7 @@ from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.backends import LinearSolver, product, sum
 from rbnics.utils.decorators import Extends, override
+from rbnics.utils.mpi import log, PROGRESS
 
 NavierStokesProblem_Base = NonlinearProblem(StokesProblem)
 
@@ -70,7 +71,7 @@ class NavierStokesProblem(NavierStokesProblem_Base):
                 + assembled_operator["db"] + assembled_operator["dbt"]
             )
             
-    def solve_supremizer(self):
+    def _solve_supremizer(self):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]
         assembled_operator_rhs = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))

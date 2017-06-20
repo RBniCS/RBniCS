@@ -22,7 +22,7 @@ python_sum = sum
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with product,
 # even though product actually carries out both the sum and the product!
-@backend_for("common", inputs=((list_of(float), ProductOutput), ))
+@backend_for("common", inputs=((list_of(float), list_of(int), ProductOutput), ))
 def sum(args):
     if isinstance(args, ProductOutput):
         return args.sum_product_return_value

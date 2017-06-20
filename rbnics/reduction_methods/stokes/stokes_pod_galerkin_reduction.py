@@ -37,7 +37,7 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code
         
         # Call parent of parent (!) to initialize inner product and reduced problem
-        output = StokesReductionMethod._init_offline(self)
+        output = StokesPODGalerkinReduction_Base._init_offline(self)
         
         # Declare a new POD for each basis component
         self.POD = dict()

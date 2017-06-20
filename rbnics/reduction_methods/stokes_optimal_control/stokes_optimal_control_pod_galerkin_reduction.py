@@ -37,7 +37,7 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code
         
         # Call parent of parent (!) to initialize inner product and reduced problem
-        output = StokesOptimalControlReductionMethod._init_offline(self)
+        output = StokesOptimalControlPODGalerkinReduction_Base._init_offline(self)
         
         # Declare a new POD for each basis component
         self.POD = dict()
@@ -72,7 +72,8 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         for component in self.truth_problem.components:
             print("# POD for component", component)
             POD = self.POD[component]
-            (_, Z[component], N[component]) = POD.apply(self.Nmax, self.tol)
+            assert self.tol[component] == 0. # TODO first negelect tolerances, then compute the max of N for each aggregated pair
+            (_, Z[component], N[component]) = POD.apply(self.Nmax, self.tol[component])
             POD.print_eigenvalues(N[component])
             POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
             POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
@@ -84,10 +85,10 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         # Aggregate POD modes related to state and adjoint
         for pair in (("v", "w"), ("s", "r"), ("p", "q")):
             for component_to in pair:
-                for component_from in pair:
-                    for i in range(N[component_from]):
+                for i in range(self.Nmax): # TODO should have been N[component_from], but cannot switch the next line
+                    for component_from in pair:
                         self.reduced_problem.Z.enrich(Z[component_from][i], component={component_from: component_to})
-                    self.reduced_problem.N[component_to] += N[component_from]
+                    self.reduced_problem.N[component_to] += 2
         
         # Save
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")

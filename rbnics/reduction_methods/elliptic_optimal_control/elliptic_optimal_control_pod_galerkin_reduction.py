@@ -40,7 +40,8 @@ class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerk
         for component in self.truth_problem.components:
             print("# POD for component", component)
             POD = self.POD[component]
-            (_, Z[component], N[component]) = POD.apply(self.Nmax, self.tol)
+            assert self.tol[component] == 0. # TODO first negelect tolerances, then compute the max of N for each aggregated pair
+            (_, Z[component], N[component]) = POD.apply(self.Nmax, self.tol[component])
             POD.print_eigenvalues(N[component])
             POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
             POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
@@ -51,10 +52,10 @@ class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerk
         
         # Aggregate POD modes related to state and adjoint
         for component_to in ("y", "p"):
-            for component_from in ("y", "p"):
-                for i in range(N[component_from]):
+            for i in range(self.Nmax): # TODO should have been N[component_from], but cannot switch the next line
+                for component_from in ("y", "p"):
                     self.reduced_problem.Z.enrich(Z[component_from][i], component={component_from: component_to})
-                self.reduced_problem.N[component_to] += N[component_from]
+                self.reduced_problem.N[component_to] += 2
         
         # Save
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")

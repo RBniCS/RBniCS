@@ -38,7 +38,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 N = self.N
                 assembled_operator = dict()
                 for term in ("a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n"):
-                    assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term][:N, :N]))
+                    assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return (
                       assembled_operator["m"]                                                      + assembled_operator["a*"] + assembled_operator["bt*"]
                                                                                                    + assembled_operator["b*"]
@@ -52,7 +52,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 N = self.N
                 assembled_operator = dict()
                 for term in ("f", "g", "l"):
-                    assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term][:N]))
+                    assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                 return (
                       assembled_operator["g"]
                     
@@ -68,9 +68,10 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 components_bak = problem.components
                 problem.components = ["v", "p", "w", "q"]
                 # Call Parent
-                StokesOptimalControlReducedProblem_Base.ProblemSolver.bc_eval(self)
-                # Restore
+                bcs = StokesOptimalControlReducedProblem_Base.ProblemSolver.bc_eval(self)
+                # Restore and return
                 problem.components = components_bak
+                return bcs
             
         # Perform an online evaluation of the cost functional
         @override
@@ -138,13 +139,19 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 return self.operator["bt_restricted"]
             elif term == "bt*_restricted":
                 self.operator["bt*_restricted"] = self.operator["bt*"]
-                return self.operator["bt_restricted"]
+                return self.operator["bt*_restricted"]
             elif term == "inner_product_s":
                 self.inner_product["s"] = self.inner_product["v"]
                 return self.inner_product["s"]
             elif term == "inner_product_r":
                 self.inner_product["r"] = self.inner_product["w"]
                 return self.inner_product["r"]
+            elif term == "projection_inner_product_s":
+                self.projection_inner_product["s"] = self.projection_inner_product["v"]
+                return self.projection_inner_product["s"]
+            elif term == "projection_inner_product_r":
+                self.projection_inner_product["r"] = self.projection_inner_product["w"]
+                return self.projection_inner_product["r"]
             else:
                 return StokesOptimalControlReducedProblem_Base.assemble_operator(self, term, current_stage)
                 
@@ -154,9 +161,10 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
             components_bak = self.components
             self.components = ["v", "p", "u", "w", "q"]
             # Call Parent
-            StokesOptimalControlReducedProblem_Base._combine_all_inner_products(self)
-            # Restore
+            combined_inner_products = StokesOptimalControlReducedProblem_Base._combine_all_inner_products(self)
+            # Restore and return
             self.components = components_bak
+            return combined_inner_products
             
         # Custom combination of inner products *not* to add projection inner product corresponding to supremizers
         def _combine_all_projection_inner_products(self):
@@ -164,9 +172,10 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
             components_bak = self.components
             self.components = ["v", "p", "u", "w", "q"]
             # Call Parent
-            StokesOptimalControlReducedProblem_Base._combine_all_projection_inner_products(self)
-            # Restore
+            combined_projection_inner_products = StokesOptimalControlReducedProblem_Base._combine_all_projection_inner_products(self)
+            # Restore and return
             self.components = components_bak
+            return combined_projection_inner_products
         
     # return value (a class) for the decorator
     return StokesOptimalControlReducedProblem_Class

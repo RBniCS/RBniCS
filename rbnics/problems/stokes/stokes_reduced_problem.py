@@ -40,7 +40,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 N = self.N
                 assembled_operator = dict()
                 for term in ("a", "b", "bt"):
-                    assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term][:N, :N]))
+                    assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
                 
             def vector_eval(self):
@@ -48,7 +48,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 N = self.N
                 assembled_operator = dict()
                 for term in ("f", "g"):
-                    assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term][:N]))
+                    assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                 return assembled_operator["f"] + assembled_operator["g"]
                 
             # Custom combination of boundary conditions *not* to add BCs of supremizers
@@ -58,9 +58,10 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 components_bak = problem.components
                 problem.components = ["u", "p"]
                 # Call Parent
-                StokesReducedProblem_Base.ProblemSolver.bc_eval(self)
-                # Restore
+                bcs = StokesReducedProblem_Base.ProblemSolver.bc_eval(self)
+                # Restore and return
                 problem.components = components_bak
+                return bcs
         
         # Internal method for error computation
         @override
@@ -90,6 +91,9 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             elif term == "inner_product_s":
                 self.inner_product["s"] = self.inner_product["u"]
                 return self.inner_product["s"]
+            elif term == "projection_inner_product_s":
+                self.projection_inner_product["s"] = self.projection_inner_product["u"]
+                return self.projection_inner_product["s"]
             else:
                 return StokesReducedProblem_Base.assemble_operator(self, term, current_stage)
                 
@@ -99,9 +103,10 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             components_bak = self.components
             self.components = ["u", "p"]
             # Call Parent
-            StokesReducedProblem_Base._combine_all_inner_products(self)
-            # Restore
+            combined_inner_products = StokesReducedProblem_Base._combine_all_inner_products(self)
+            # Restore and return
             self.components = components_bak
+            return combined_inner_products
             
         # Custom combination of inner products *not* to add projection inner product corresponding to supremizers
         def _combine_all_projection_inner_products(self):
@@ -109,9 +114,10 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             components_bak = self.components
             self.components = ["u", "p"]
             # Call Parent
-            StokesReducedProblem_Base._combine_all_projection_inner_products(self)
-            # Restore
+            combined_projection_inner_products = StokesReducedProblem_Base._combine_all_projection_inner_products(self)
+            # Restore and return
             self.components = components_bak
+            return combined_projection_inner_products
         
     # return value (a class) for the decorator
     return StokesReducedProblem_Class
