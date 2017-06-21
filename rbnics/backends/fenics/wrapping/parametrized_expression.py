@@ -107,8 +107,9 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         standard_set_time = truth_problem.set_time
         def overridden_set_time(self, t):
             standard_set_time(t)
-            if expression.t is not t:
-                expression.t = t
+            if hasattr(expression, "t"):
+                if expression.t is not t:
+                    expression.t = t
         truth_problem.set_time = types.MethodType(overridden_set_time, truth_problem)
     
     return expression
