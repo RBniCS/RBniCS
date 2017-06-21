@@ -34,6 +34,7 @@ from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
 from rbnics.problems.parabolic_coercive import ParabolicCoerciveProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
+from rbnics.problems.stokes_unsteady import StokesUnsteadyProblem
 from rbnics.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
 from rbnics.scm import SCM, ExactCoercivityConstant
 from rbnics.shape_parametrization import ShapeParametrization
@@ -53,6 +54,7 @@ __all__ += [
     'ParabolicCoerciveProblem',
     'StokesProblem',
     'StokesOptimalControlProblem',
+    'StokesUnsteadyProblem',
     # rbnics.sampling
     'DrawFrom',
     'EquispacedDistribution',

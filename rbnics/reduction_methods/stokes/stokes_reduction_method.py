@@ -42,13 +42,16 @@ def StokesReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
         ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
         def postprocess_snapshot(self, snapshot, snapshot_index):
             # Compute supremizer
-            print("supremizer solve for mu =", self.truth_problem.mu)
+            self._print_supremizer_solve_message()
             supremizer = self.truth_problem.solve_supremizer(snapshot)
             self.truth_problem.export_supremizer(self.folder["supremizer_snapshots"], "truth_" + str(snapshot_index))
             # Call parent
             snapshot = StokesReductionMethod_Base.postprocess_snapshot(self, snapshot, snapshot_index)
             # Return a tuple
             return (snapshot, supremizer)
+            
+        def _print_supremizer_solve_message(self):
+            print("supremizer solve for mu =", self.truth_problem.mu)
     
     # return value (a class) for the decorator
     return StokesReductionMethod_Class
