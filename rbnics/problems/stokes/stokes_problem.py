@@ -17,7 +17,7 @@
 #
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
-from rbnics.backends import copy, Function, LinearSolver, product, sum
+from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -78,18 +78,18 @@ class StokesProblem(StokesProblem_Base):
             return bcs
     
     def solve_supremizer(self):
-        (cache_key, cache_file) = self._cache_key_and_file_from_kwargs()
+        (cache_key, cache_file) = self._supremizer_cache_key_and_file()
         if cache_key in self._supremizer_cache: 
             log(PROGRESS, "Loading supremizer from cache")
             assign(self._supremizer, self._supremizer_cache[cache_key])
-        elif self.import_solution(self.folder["cache"], cache_file, self._supremizer, component="s"):
+        elif self.import_supremizer(self.folder["cache"], cache_file):
             log(PROGRESS, "Loading supremizer from file")
             self._supremizer_cache[cache_key] = copy(self._supremizer)
         else: # No precomputed supremizer available. Truth supremizer solve is performed.
             log(PROGRESS, "Solving supremizer problem")
             self._solve_supremizer()
             self._supremizer_cache[cache_key] = copy(self._supremizer)
-            self.export_solution(self.folder["cache"], cache_file, self._supremizer, component="s")
+            self.export_supremizer(self.folder["cache"], cache_file)
         return self._supremizer
     
     def _solve_supremizer(self):
@@ -108,6 +108,25 @@ class StokesProblem(StokesProblem_Base):
             assembled_dirichlet_bc
         )
         solver.solve()
+        
+    def _supremizer_cache_key_and_file(self):
+        return self._cache_key_and_file_from_kwargs()
+        
+    def export_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+        if supremizer is None:
+            supremizer = self._supremizer
+        assert component is None or isinstance(component, str)
+        if component is None:
+            component = "s"
+        export(supremizer, folder, filename + "_" + component, suffix, component)
+        
+    def import_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+        if supremizer is None:
+            supremizer = self._supremizer
+        assert component is None or isinstance(component, str)
+        if component is None:
+            component = "s"
+        return import_(supremizer, folder, filename + "_" + component, suffix, component)
         
     ## Export solution to file
     @override

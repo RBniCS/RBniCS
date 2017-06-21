@@ -44,7 +44,7 @@ def StokesReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             # Compute supremizer
             print("supremizer solve for mu =", self.truth_problem.mu)
             supremizer = self.truth_problem.solve_supremizer()
-            self.truth_problem.export_solution(self.folder["supremizer_snapshots"], "truth_" + str(snapshot_index), supremizer, component="s")
+            self.truth_problem.export_supremizer(self.folder["supremizer_snapshots"], "truth_" + str(snapshot_index))
             # Call parent
             snapshot = StokesReductionMethod_Base.postprocess_snapshot(self, snapshot, snapshot_index)
             # Return a tuple

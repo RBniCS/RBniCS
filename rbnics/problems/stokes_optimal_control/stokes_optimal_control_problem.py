@@ -17,7 +17,7 @@
 #
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
-from rbnics.backends import copy, Function, LinearSolver, product, sum, transpose
+from rbnics.backends import assign, copy, Function, LinearSolver, product, sum, transpose
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -123,18 +123,18 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             return bcs
             
     def solve_state_supremizer(self):
-        (cache_key, cache_file) = self._cache_key_and_file_from_kwargs()
+        (cache_key, cache_file) = self._supremizer_cache_key_and_file()
         if cache_key in self._state_supremizer_cache: 
             log(PROGRESS, "Loading state supremizer from cache")
             assign(self._state_supremizer, self._state_supremizer_cache[cache_key])
-        elif self.import_solution(self.folder["cache"], cache_file, self._state_supremizer, component="s"):
+        elif self.import_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s"):
             log(PROGRESS, "Loading state supremizer from file")
             self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
         else: # No precomputed state supremizer available. Truth state supremizer solve is performed.
             log(PROGRESS, "Solving state supremizer problem")
             self._solve_state_supremizer()
             self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
-            self.export_solution(self.folder["cache"], cache_file, self._state_supremizer, component="s")
+            self.export_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s")
         return self._state_supremizer
         
     def _solve_state_supremizer(self):
@@ -155,18 +155,18 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         solver.solve()
         
     def solve_adjoint_supremizer(self):
-        (cache_key, cache_file) = self._cache_key_and_file_from_kwargs()
+        (cache_key, cache_file) = self._supremizer_cache_key_and_file()
         if cache_key in self._adjoint_supremizer_cache: 
             log(PROGRESS, "Loading adjoint supremizer from cache")
             assign(self._adjoint_supremizer, self._adjoint_supremizer_cache[cache_key])
-        elif self.import_solution(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r"):
+        elif self.import_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r"):
             log(PROGRESS, "Loading adjoint supremizer from file")
             self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
         else: # No precomputed adjoint supremizer available. Truth adjoint supremizer solve is performed.
             log(PROGRESS, "Solving adjoint supremizer problem")
             self._solve_adjoint_supremizer()
             self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
-            self.export_solution(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r")
+            self.export_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r")
         return self._adjoint_supremizer
         
     def _solve_adjoint_supremizer(self):
@@ -186,6 +186,9 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         )
         solver.solve()
         
+    def _supremizer_cache_key_and_file(self):
+        return self._cache_key_and_file_from_kwargs()
+        
     ## Perform a truth evaluation of the cost functional
     @override
     def _compute_output(self):
@@ -198,6 +201,18 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             transpose(assembled_operator["g"])*self._solution + 
             0.5*assembled_operator["h"]
         )
+        
+    def export_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+        assert supremizer is not None
+        assert component is not None
+        assert isinstance(component, str)
+        export(supremizer, folder, filename + "_" + component, suffix, component)
+        
+    def import_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+        assert supremizer is not None
+        assert component is not None
+        assert isinstance(component, str)
+        return import_(supremizer, folder, filename + "_" + component, suffix, component)
         
     @override
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
