@@ -55,7 +55,7 @@ class EigenSolver(AbstractEigenSolver):
     def _clear_constrained_dofs(self, operator, diag_value):
         for bc_list in self.bcs._content:
             for bc in bc_list:
-                constrained_dofs = [bc.function_space.dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
+                constrained_dofs = [bc.function_space().dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
                 as_backend_type(operator).mat().zeroRowsColumns(constrained_dofs, diag_value)
         
     @override

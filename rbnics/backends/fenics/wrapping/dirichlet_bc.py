@@ -16,24 +16,71 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Constant, DirichletBC as dolfin_DirichletBC
+import types
+from numpy import zeros
+from dolfin import Constant, DirichletBC as dolfin_DirichletBC, FunctionSpace, GenericFunction, MeshFunctionSizet, SubDomain
 
-def DirichletBC(V, g, subdomains, subdomain_id):
-    output = dolfin_DirichletBC(V, g, subdomains, subdomain_id)
-    output.subdomains = subdomains # this is currently not available in the public interface
-    output.subdomain_id = subdomain_id # this is currently not available in the public interface
-    output.value = g # this is available but it is cast to a base type, and it makes performing the sum not possible
-    output.function_space = V # this is already available as a method, replace it with an attribute for consistency
+def DirichletBC(*args, **kwargs):
+    # Call the constructor
+    output = dolfin_DirichletBC(*args, **kwargs)
+    # Deduce private variable values from arguments
+    if len(args) == 1 and isinstance(args[0], dolfin_DirichletBC):
+        assert len(kwargs) == 0
+        _value = args[0]._value
+        _function_space = args[0]._function_space
+        _sorted_kwargs = args[0]._sorted_kwargs
+        _identifier = args[0]._identifier
+    else:
+        _value = args[1]
+        _function_space = args[0]
+        _sorted_kwargs = list()
+        for key in ["method", "check_midpoint"]:
+            if key in kwargs:
+                _sorted_kwargs.append(kwargs[key])
+        _identifier = list()
+        _identifier.extend(output.domain_args)
+        _identifier.extend(_sorted_kwargs)
+        _identifier = tuple(_identifier)
+    # Override the value(), set_value() and homogenize() methods. These are already available in the public interface,
+    # but it is cast the value to a base type (GenericFunction), which makes it not possible to perform the sum
+    output._value = _value
+    def value(self_):
+        return self_._value
+    output.value = types.MethodType(value, output)
+    def set_value(self_, g):
+        self_._value = g
+        dolfin_DirichletBC.set_value(self_, g)
+    output.set_value = types.MethodType(set_value, output)
+    def homogenize(self_):
+        self_._value = Constant(zeros(self_._value.ufl_shape))
+        dolfin_DirichletBC.set_value(self_, self_._value)
+    output.homogenize = types.MethodType(homogenize, output)
+    # Override the function_space() method. This is already available in the public interface,
+    # but it casts the function space to a C++ FunctionSpace and then wraps it into a python FunctionSpace,
+    # losing all the customization that we have done in the function_space.py file
+    output._function_space = _function_space
+    def function_space(self_):
+        return self_._function_space
+    output.function_space = types.MethodType(function_space, output)
+    # Define an identifier() method, that identifies whether BCs are defined on the same boundary
+    output._identifier = _identifier
+    def identifier(self_):
+        return self_._identifier
+    output.identifier = types.MethodType(identifier, output)
+    # Store kwargs, in a sorted way (as in dolfin_DirichletBC)
+    output._sorted_kwargs = _sorted_kwargs
+    # Return
     return output
 
 # Add a multiplication operator by a scalar
 def mul_by_scalar(self, other):
     if isinstance(other, (float, int)):
-        V = self.function_space
-        g = Constant(other)*self.value
-        subdomains = self.subdomains
-        subdomain_id = self.subdomain_id
-        return DirichletBC(V, g, subdomains, subdomain_id)
+        args = list()
+        args.append(self.function_space())
+        args.append(Constant(other)*self.value())
+        args.extend(self.domain_args)
+        args.extend(self._sorted_kwargs)
+        return DirichletBC(*args)
     else:
         return NotImplemented
         

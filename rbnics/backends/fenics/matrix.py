@@ -58,7 +58,7 @@ def custom__and__(self, other):
         output = self.copy()
         mat = as_backend_type(output).mat()
         for bc in other.bc_list:
-            constrained_dofs = [bc.function_space.dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
+            constrained_dofs = [bc.function_space().dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
             mat.zeroRowsColumns(constrained_dofs, 0.)
         return output
     else:

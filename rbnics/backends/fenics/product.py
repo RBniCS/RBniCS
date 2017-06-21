@@ -63,25 +63,29 @@ def product(thetas, operators, thetas2=None):
         combined = dict() # from (function space, boundary) to value
         for (op_index, op) in enumerate(operators):
             for bc in op:
-                key = (bc.function_space, bc.subdomains, bc.subdomain_id)
+                key = bc.identifier()
                 if not key in combined:
                     combined[key] = list()
-                combined[key].append((bc.value, op_index))
+                combined[key].append((bc, op_index))
         # Sum them
         output = ProductOutputDirichletBC()
         for (key, item) in combined.iteritems():
             value = 0
             for addend in item:
                 theta = float(thetas[ addend[1] ])
-                fun = addend[0]
+                fun = addend[0].value()
                 value += Constant(theta)*fun
-            try:
-                dirichlet_bc = DirichletBC(key[0], value, key[1], key[2])
-            except RuntimeError: # key[0] was a subspace, and DirichletBC does not handle collapsing
-                V_collapsed = key[0].collapse()
-                value_projected_collapsed = project(value, V_collapsed)
-                dirichlet_bc = DirichletBC(key[0], value_projected_collapsed, key[1], key[2])
-            output.append(dirichlet_bc)
+            V = item[0][0].function_space()
+            if len(V.component()) == 0: # FunctionSpace
+                value = project(value, V)
+            else: # subspace of a FunctionSpace
+                value = project(value, V.collapse())
+            args = list()
+            args.append(V)
+            args.append(value)
+            args.extend(item[0][0].domain_args)
+            args.extend(item[0][0]._sorted_kwargs)
+            output.append(DirichletBC(*args))
         return ProductOutput(output)
     elif operators.type() == "Form":
         log(PROGRESS, "re-assemblying form (due to inefficient evaluation)")

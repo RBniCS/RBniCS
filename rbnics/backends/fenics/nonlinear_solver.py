@@ -19,7 +19,7 @@
 from __future__ import print_function
 import types
 from ufl import Form
-from dolfin import as_backend_type, assemble, DirichletBC, GenericMatrix, GenericVector, NonlinearProblem, PETScSNESSolver
+from dolfin import as_backend_type, assemble, GenericMatrix, GenericVector, NonlinearProblem, PETScSNESSolver
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.fenics.function import Function
 from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
