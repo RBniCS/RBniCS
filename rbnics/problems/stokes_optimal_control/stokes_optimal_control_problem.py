@@ -122,7 +122,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             problem.components = components_bak
             return bcs
             
-    def solve_state_supremizer(self):
+    def solve_state_supremizer(self, solution):
         (cache_key, cache_file) = self._supremizer_cache_key_and_file()
         if cache_key in self._state_supremizer_cache: 
             log(PROGRESS, "Loading state supremizer from cache")
@@ -132,16 +132,16 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
         else: # No precomputed state supremizer available. Truth state supremizer solve is performed.
             log(PROGRESS, "Solving state supremizer problem")
-            self._solve_state_supremizer()
+            self._solve_state_supremizer(solution)
             self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
             self.export_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s")
         return self._state_supremizer
         
-    def _solve_state_supremizer(self):
+    def _solve_state_supremizer(self, solution):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]
         assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))
-        assembled_operator_rhs = assembled_operator_bt*self._solution
+        assembled_operator_rhs = assembled_operator_bt*solution
         if self.dirichlet_bc["s"] is not None:
             assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc_s"), self.dirichlet_bc["s"]))
         else:
@@ -154,7 +154,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         )
         solver.solve()
         
-    def solve_adjoint_supremizer(self):
+    def solve_adjoint_supremizer(self, solution):
         (cache_key, cache_file) = self._supremizer_cache_key_and_file()
         if cache_key in self._adjoint_supremizer_cache: 
             log(PROGRESS, "Loading adjoint supremizer from cache")
@@ -164,16 +164,16 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
         else: # No precomputed adjoint supremizer available. Truth adjoint supremizer solve is performed.
             log(PROGRESS, "Solving adjoint supremizer problem")
-            self._solve_adjoint_supremizer()
+            self._solve_adjoint_supremizer(solution)
             self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
             self.export_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r")
         return self._adjoint_supremizer
         
-    def _solve_adjoint_supremizer(self):
+    def _solve_adjoint_supremizer(self, solution):
         assert len(self.inner_product["r"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["r"][0]
         assembled_operator_btstar = sum(product(self.compute_theta("bt*_restricted"), self.operator["bt*_restricted"]))
-        assembled_operator_rhs = assembled_operator_btstar*self._solution
+        assembled_operator_rhs = assembled_operator_btstar*solution
         if self.dirichlet_bc["r"] is not None:
             assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc_r"), self.dirichlet_bc["r"]))
         else:

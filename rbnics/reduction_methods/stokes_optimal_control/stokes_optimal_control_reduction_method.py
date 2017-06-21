@@ -42,10 +42,10 @@ def StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod_Deriv
         def postprocess_snapshot(self, snapshot, snapshot_index):
             # Compute supremizers
             print("state supremizer solve for mu =", self.truth_problem.mu)
-            state_supremizer = self.truth_problem.solve_state_supremizer()
+            state_supremizer = self.truth_problem.solve_state_supremizer(snapshot)
             self.truth_problem.export_supremizer(self.folder["state_supremizer_snapshots"], "truth_" + str(snapshot_index), state_supremizer, component="s")
             print("adjoint supremizer solve for mu =", self.truth_problem.mu)
-            adjoint_supremizer = self.truth_problem.solve_adjoint_supremizer()
+            adjoint_supremizer = self.truth_problem.solve_adjoint_supremizer(snapshot)
             self.truth_problem.export_supremizer(self.folder["adjoint_supremizer_snapshots"], "truth_" + str(snapshot_index), adjoint_supremizer, component="r")
             # Call parent
             snapshot = StokesOptimalControlReductionMethod_Base.postprocess_snapshot(self, snapshot, snapshot_index)
