@@ -20,24 +20,24 @@ def RequiredBaseDecorators(*BaseDecorators):
     def RequiredBaseDecorators_FunctionDecorator(Decorator):
         def RequiredBaseDecorators_ClassDecorator(Class):
             BaseClass = Class
-            AlreadyAppliedBasedDecorators = list()
-            if hasattr(Class, "AlreadyAppliedBasedDecorators"):
-                AlreadyAppliedBasedDecorators.extend(Class.AlreadyAppliedBasedDecorators)
+            AlreadyAppliedBaseDecorators = list()
+            if hasattr(Class, "AlreadyAppliedBaseDecorators"):
+                AlreadyAppliedBaseDecorators.extend(Class.AlreadyAppliedBaseDecorators)
             
             for BaseDecorator in BaseDecorators:
                 if (
                     BaseDecorator is not None
                         and
-                    BaseDecorator.__name__ not in AlreadyAppliedBasedDecorators
+                    BaseDecorator.__name__ not in AlreadyAppliedBaseDecorators
                 ):
                     BaseClass = BaseDecorator(BaseClass)
-                    AlreadyAppliedBasedDecorators.append(BaseDecorator.__name__)
+                    AlreadyAppliedBaseDecorators.append(BaseDecorator.__name__)
             
-            if Decorator not in AlreadyAppliedBasedDecorators:
+            if Decorator not in AlreadyAppliedBaseDecorators:
                 DecoratedClass = Decorator(BaseClass)
-                DecoratedClass.AlreadyAppliedBasedDecorators = list()
-                DecoratedClass.AlreadyAppliedBasedDecorators.extend(AlreadyAppliedBasedDecorators)
-                DecoratedClass.AlreadyAppliedBasedDecorators.append(Decorator.__name__)
+                DecoratedClass.AlreadyAppliedBaseDecorators = list()
+                DecoratedClass.AlreadyAppliedBaseDecorators.extend(AlreadyAppliedBaseDecorators)
+                DecoratedClass.AlreadyAppliedBaseDecorators.append(Decorator.__name__)
                 return DecoratedClass
             else:
                 return BaseClass
