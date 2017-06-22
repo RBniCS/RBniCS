@@ -27,7 +27,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
         
         # A decorator class that allows to overload methods related to shape parametrization and mesh motion
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
-        class ShapeParametrizationDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
+        class ShapeParametrizationDecoratedProblem_Class_Base(ParametrizedDifferentialProblem_DerivedClass):
         
             ## Default initialization of members
             # The shape parametrization expression is a list of tuples. The i-th list element
@@ -52,13 +52,27 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                 # Also init mesh motion object
                 self.mesh_motion.init(self)
                 
-            ## Deform the mesh as a function of the geometrical parameters and then export solution to file
-            @override
-            def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
-                self.mesh_motion.move_mesh()
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component, suffix)
-                self.mesh_motion.reset_reference()
-        
+        if hasattr(ParametrizedDifferentialProblem_DerivedClass, "set_time"):
+            @Extends(ShapeParametrizationDecoratedProblem_Class_Base, preserve_class_name=True)
+            class ShapeParametrizationDecoratedProblem_Class(ShapeParametrizationDecoratedProblem_Class_Base):
+                
+                ## Deform the mesh as a function of the geometrical parameters and then export solution to file
+                @override
+                def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+                    self.mesh_motion.move_mesh()
+                    ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution_over_time, solution_dot_over_time, component, suffix)
+                    self.mesh_motion.reset_reference()
+        else:
+            @Extends(ShapeParametrizationDecoratedProblem_Class_Base, preserve_class_name=True)
+            class ShapeParametrizationDecoratedProblem_Class(ShapeParametrizationDecoratedProblem_Class_Base):
+                
+                ## Deform the mesh as a function of the geometrical parameters and then export solution to file
+                @override
+                def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+                    self.mesh_motion.move_mesh()
+                    ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component, suffix)
+                    self.mesh_motion.reset_reference()
+                    
         # return value (a class) for the decorator
         return ShapeParametrizationDecoratedProblem_Class
     
