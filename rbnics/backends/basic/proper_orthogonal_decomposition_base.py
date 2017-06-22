@@ -18,7 +18,7 @@
 
 from __future__ import print_function
 from math import sqrt
-from numpy import isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
+from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from rbnics.backends.online import OnlineEigenSolver
 from rbnics.utils.decorators import Extends, override
@@ -83,14 +83,15 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             eigensolver.solve()
             
             Neigs = len(self.snapshots_matrix)
+            Nmax = min(Nmax, Neigs)
             self.eigenvalues = zeros(Neigs)
             for i in range(Neigs):
                 (eig_i_real, eig_i_complex) = eigensolver.get_eigenvalue(i)
                 assert isclose(eig_i_complex, 0.)
                 self.eigenvalues[i] = eig_i_real
             
-            total_energy = compute_total_energy(self.eigenvalues)
-            self.retained_energy = compute_retained_energy(self.eigenvalues)
+            total_energy = compute_total_energy(abs(self.eigenvalues))
+            self.retained_energy = compute_retained_energy(abs(self.eigenvalues))
             if total_energy > 0.:
                 self.retained_energy /= total_energy
             else:
