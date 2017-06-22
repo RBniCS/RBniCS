@@ -42,6 +42,7 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
         ParabolicCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
         
         # Skip useless Riesz products
+        self.riesz_terms.append("m")
         self.riesz_product_terms.extend([("m", "f"), ("m", "a"), ("m", "m")])
         
     ## Return an error bound for the current solution
