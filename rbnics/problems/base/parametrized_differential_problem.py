@@ -185,9 +185,9 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
                         # but not the one in compute_theta (since theta would not matter, being multiplied by zero)
                         def generate_modified_compute_theta(component):
                             standard_compute_theta = self.compute_theta
-                            def modified_compute_theta(self, term):
+                            def modified_compute_theta(self_, term):
                                 if term == dirichlet_bc_string.format(c=component):
-                                    return (0,)*len(operator_bc)
+                                    return (0.,)*len(operator_bc)
                                 else:
                                     return standard_compute_theta(term)
                             return modified_compute_theta

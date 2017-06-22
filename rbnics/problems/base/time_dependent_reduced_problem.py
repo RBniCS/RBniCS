@@ -303,16 +303,34 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         @override
         def _lifting_truth_solve(self, term, i):
+            assert term.startswith("dirichlet_bc")
+            component = term.replace("dirichlet_bc", "").replace("_", "")
             # Since lifting solves for different values of i are associated to the same parameter 
             # but with a patched call to compute_theta(), which returns the i-th component, we set
             # a custom cache_key so that they are properly differentiated when reading from cache.
-            lifting_over_time = self.truth_problem.solve(cache_key="lifting_" + str(i))
+            lifting_over_time = self.truth_problem.solve(cache_key="lifting_" + component + "_" + str(i))
             theta_over_time = list()
             for k in range(len(lifting_over_time)):
                 self.set_time(k*self.dt)
                 theta_over_time.append(self.compute_theta(term)[i])
-            lifting_quadrature = TimeQuadrature((0., self.truth_problem.T), lifting_over_time)
-            theta_quadrature = TimeQuadrature((0., self.truth_problem.T), theta_over_time)
+            # We average the time dependent solution to be used as time independent lifting.
+            # Do not even bother adding the initial condition if it is zero
+            if component != "":
+                assert component in self.components
+                has_non_homogeneous_initial_condition = self.initial_condition[component] and not self.initial_condition_is_homogeneous[component]
+            else:
+                assert len(self.components) == 1
+                component = None
+                has_non_homogeneous_initial_condition = self.initial_condition and not self.initial_condition_is_homogeneous
+            if has_non_homogeneous_initial_condition:
+                time_interval = (0., self.truth_problem.T)
+            else:
+                time_interval = (self.truth_problem.dt, self.truth_problem.T)
+                lifting_over_time = lifting_over_time[1:]
+                theta_over_time = theta_over_time[1:]
+            # Compute the average and return
+            lifting_quadrature = TimeQuadrature(time_interval, lifting_over_time)
+            theta_quadrature = TimeQuadrature(time_interval, theta_over_time)
             lifting = lifting_quadrature.integrate()
             lifting /= theta_quadrature.integrate()
             return lifting

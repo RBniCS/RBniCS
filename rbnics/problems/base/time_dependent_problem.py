@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import types
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
 from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 from rbnics.utils.mpi import log, PROGRESS
@@ -166,6 +167,52 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 else:
                     self.initial_condition = initial_condition
                     self.initial_condition_is_homogeneous = initial_condition_is_homogeneous
+                # We enforce consistency between Dirichlet BCs and IC, as in the following cases:
+                # a) (homogeneous Dirichlet BCs, homogeneous IC): nothing to be enforced
+                # b) (non homogeneous Dirichlet BCs, homogeneous IC): we enforce that the theta
+                #     term of each Dirichlet BC is zero at t = 0, resulting in homogeneous Dirichlet BCs
+                #     at t = 0. This is needed e.g. in order to make sure that while post processing a snapshot
+                #     subtracting the lifting at t = 0 doesn't change the solution (which must remain zero)
+                # c) (homogeneous Dirichlet BCs, non homogeneous IC): we trust that the non homogeneous IC
+                #     provided by the user is actually zero on the Dirichlet boundaries, otherwise there will
+                #     be no way to accurately recover it by projecting on a space which only has bases equal
+                #     to zero on the Dirichlet boundary.
+                # d) (non homogeneous Dirichlet BCs, non homogeneous IC): we trust that the restriction of IC 
+                #     on the Dirichlet boundary is equal to the evaluation of the Dirichlet BCs at t = 0.
+                #     If that were not true, than post processing a snapshot subtracting the lifting at t = 0
+                #     would result in a postprocessed snapshot which is not zero on the Dirichlet boundary, thus
+                #     adding an element with non zero value on the Dirichlet boundary to the basis
+                for component in self.components:
+                    if len(self.components) > 1:
+                        has_homogeneous_dirichlet_bc = self.dirichlet_bc_are_homogeneous[component]
+                        has_homogeneous_initial_condition = self.initial_condition_is_homogeneous[component]
+                        dirichlet_bc_string = "dirichlet_bc_{c}"
+                    else:
+                        has_homogeneous_dirichlet_bc = self.dirichlet_bc_are_homogeneous
+                        has_homogeneous_initial_condition = self.initial_condition_is_homogeneous
+                        dirichlet_bc_string = "dirichlet_bc"
+                    if has_homogeneous_dirichlet_bc and has_homogeneous_initial_condition: # case a)
+                        pass
+                    elif not has_homogeneous_dirichlet_bc and has_homogeneous_initial_condition: # case b)
+                        def generate_modified_compute_theta(component):
+                            standard_compute_theta = self.compute_theta
+                            def modified_compute_theta(self_, term):
+                                if term == dirichlet_bc_string.format(c=component):
+                                    theta_bc = standard_compute_theta(term)
+                                    if self_.t == 0.:
+                                        return (0.,)*len(theta_bc)
+                                    else:
+                                        return theta_bc
+                                else:
+                                    return standard_compute_theta(term)
+                            return modified_compute_theta
+                        self.compute_theta = types.MethodType(generate_modified_compute_theta(component), self)
+                    elif has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition: # case c)
+                        pass
+                    elif not has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition: # case d)
+                        pass
+                    else:
+                        raise RuntimeError("Impossible to arrive here.")
         
         @override
         def solve(self, **kwargs):
