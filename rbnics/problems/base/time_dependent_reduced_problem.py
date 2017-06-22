@@ -352,17 +352,20 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assign(self.truth_problem._solution, truth_solution)
                 error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_error(self, **kwargs)
                 error_over_time.append(error)
+            error_over_time = self._convert_error_over_time(error_over_time)
             return error_over_time
             
         # Internal method for relative error computation
         @override
         def _compute_relative_error(self, absolute_error_over_time, **kwargs):
             relative_error_over_time = list()
-            for (k, (truth_solution, absolute_error)) in enumerate(zip(self.truth_problem._solution_over_time, absolute_error_over_time)):
+            for (k, truth_solution) in enumerate(self.truth_problem._solution_over_time):
                 self.set_time(k*self.dt)
                 assign(self.truth_problem._solution, truth_solution)
+                absolute_error = self._convert_error_at_time(k, absolute_error_over_time)
                 relative_error = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error(self, absolute_error, **kwargs)
                 relative_error_over_time.append(relative_error)
+            relative_error_over_time = self._convert_error_over_time(relative_error_over_time)
             return relative_error_over_time
             
         # Internal method for output error computation
@@ -387,6 +390,51 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 relative_error_output = ParametrizedReducedDifferentialProblem_DerivedClass._compute_relative_error_output(self, absolute_error_output, **kwargs)
                 relative_error_output_over_time.append(relative_error_output)
             return relative_error_output_over_time
+        
+        @staticmethod
+        def _convert_error_over_time(error_over_time):
+            """
+            This internal static method converts the error over time as follows:
+             - if the problem has only one component, no conversion is required;
+             - if the problem has more than one component, then a conversion is preformed such that
+               the result is a dict from components to error over time for that component, rather than
+               a list (over time) of dicts (over components)
+            """
+            assert isinstance(error_over_time, list)
+            assert isinstance(error_over_time[0], (dict, float))
+            if isinstance(error_over_time[0], dict):
+                assert all([isinstance(error, dict) for error in error_over_time])
+                components = error_over_time[0].keys()
+                assert all([error.keys() == components for error in error_over_time])
+                output = dict()
+                for component in components:
+                    output[component] = list()
+                    for error in error_over_time:
+                        output[component].append(error[component])
+                return output
+            else:
+                assert all([isinstance(error, float) for error in error_over_time])
+                return error_over_time
+        
+        @staticmethod
+        def _convert_error_at_time(k, converted_error_over_time):
+            """
+            This internal static method converts back the error at time step k as follows:
+             - if the problem has only one component, no conversion is required, and the error at time
+               k is returned by extracting the k-th index of the input;
+             - if the problem has more than one component, then a conversion is performed such that
+               the result is a dict from components to error at time step k
+            """
+            assert isinstance(converted_error_over_time, (dict, list))
+            if isinstance(converted_error_over_time, dict):
+                output = dict()
+                for (component, error_over_time_for_component) in converted_error_over_time.iteritems():
+                    assert all([isinstance(error, float) for error in error_over_time_for_component])
+                    output[component] = error_over_time_for_component[k]
+                return output
+            else:
+                assert all([isinstance(error, float) for error in converted_error_over_time])
+                return converted_error_over_time[k]
         
         ## Export solution to file
         @override
