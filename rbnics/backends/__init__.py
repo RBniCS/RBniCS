@@ -48,15 +48,32 @@ backends_factory(current_module)
 from rbnics.backends.abstract import LinearProblemWrapper, NonlinearProblemWrapper, TimeDependentProblemWrapper, TimeDependentProblem1Wrapper, TimeDependentProblem2Wrapper
 
 # Extend parent module __all__ variable with backends wrapping
+overridden_classes_or_functions = dict() # from name to list of backends
 for backend in available_backends:
     importlib.import_module("rbnics.backends." + backend + ".wrapping")
     wrapping_overridden = sys.modules["rbnics.backends." + backend + ".wrapping"].__overridden__
     for class_or_function in wrapping_overridden:
-        assert not hasattr(sys.modules["rbnics"], class_or_function)
-        setattr(sys.modules["rbnics"], class_or_function, getattr(sys.modules["rbnics.backends." + backend + ".wrapping"], class_or_function))
-        sys.modules["rbnics"].__all__ += [class_or_function]
+        if class_or_function not in overridden_classes_or_functions:
+            overridden_classes_or_functions[class_or_function] = list()
+        overridden_classes_or_functions[class_or_function].append(backend)
+for backend in available_backends:
+    if hasattr(sys.modules["rbnics.backends." + backend + ".wrapping"], "__overridden_replaces__"):
+        wrapping_overridden_replaces = sys.modules["rbnics.backends." + backend + ".wrapping"].__overridden_replaces__
+    else:
+        wrapping_overridden_replaces = dict()
+    for class_or_function in wrapping_overridden_replaces:
+        assert class_or_function in overridden_classes_or_functions
+        assert len(overridden_classes_or_functions[class_or_function]) > 1
+        overridden_classes_or_functions[class_or_function].remove(wrapping_overridden_replaces[class_or_function])
+for (class_or_function, backends) in overridden_classes_or_functions.iteritems():
+    assert len(backends) is 1
+    backend = backends[0]
+    assert not hasattr(sys.modules["rbnics"], class_or_function)
+    setattr(sys.modules["rbnics"], class_or_function, getattr(sys.modules["rbnics.backends." + backend + ".wrapping"], class_or_function))
+    sys.modules["rbnics"].__all__ += [class_or_function]
 
 # Clean up
 del current_module
 del current_directory
 del available_backends
+del overridden_classes_or_functions
