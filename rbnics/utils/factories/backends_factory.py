@@ -17,6 +17,7 @@
 #
 
 import inspect
+import itertools
 from numpy import ndarray as array
 from rbnics.utils.decorators import array_of, BackendFor, backend_for, dict_of, list_of, tuple_of
 from rbnics.utils.decorators.backend_for import _array_of, _dict_of, _list_of, _tuple_of
@@ -56,17 +57,36 @@ def backends_factory(backends_module):
                     "\trequested class or function = " + str(class_or_function_name) + "\n" +
                     "\tprovided inputs = " + str(input_types)
                 )
+                eligible_backends = dict() # from name to backend input types
                 for (backend_input_types, corresponding_backend) in input_map[class_or_function_name].iteritems():
                     if are_subclass(input_types, backend_input_types):
                         if corresponding_backend in backends_factory._enabled_backends:
-                            returned_class_or_function = return_map[corresponding_backend][class_or_function_name]
-                            if isinstance(returned_class_or_function, dict):
-                                returned_class_or_function = returned_class_or_function[online_backend_factory._online_backend]
-                            log(DEBUG,
-                                "\tcorresponding backend = " + corresponding_backend + "\n" +
-                                "\tcorresponding backend class or function = " + str(returned_class_or_function) + "\n"
-                            )
-                            return returned_class_or_function(*args, **kwargs)
+                            eligible_backends[corresponding_backend] = backend_input_types
+                if len(eligible_backends) > 0:
+                    eligible_backends_keys = eligible_backends.keys()
+                    if len(eligible_backends) > 1: # get the closest possible match, i.e. with children preferred to parents
+                        pairs = itertools.combinations(eligible_backends_keys, 2)
+                        for (corresponding_backend_1, corresponding_backend_2) in pairs:
+                            backend_input_types_1 = eligible_backends[corresponding_backend_1]
+                            backend_input_types_2 = eligible_backends[corresponding_backend_2]
+                            if are_subclass(backend_input_types_1, backend_input_types_2):
+                                if corresponding_backend_2 in eligible_backends_keys:
+                                    eligible_backends_keys.remove(corresponding_backend_2)
+                            elif are_subclass(backend_input_types_2, backend_input_types_1):
+                                if corresponding_backend_1 in eligible_backends_keys:
+                                    eligible_backends_keys.remove(corresponding_backend_1)
+                            else:
+                                raise RuntimeError("This case was supposed to never happen.")
+                        assert len(eligible_backends_keys) == 1
+                    corresponding_backend = eligible_backends_keys[0]
+                    returned_class_or_function = return_map[corresponding_backend][class_or_function_name]
+                    if isinstance(returned_class_or_function, dict):
+                        returned_class_or_function = returned_class_or_function[online_backend_factory._online_backend]
+                    log(DEBUG,
+                        "\tcorresponding backend = " + corresponding_backend + "\n" +
+                        "\tcorresponding backend class or function = " + str(returned_class_or_function) + "\n"
+                    )
+                    return returned_class_or_function(*args, **kwargs)
                 else:
                     error_message = "No backend found for return type " + str(class_or_function_name) + " with input arguments " + str(input_types) + ".\n"
                     error_message += "Available input types for " + str(class_or_function_name) + " are:\n"
