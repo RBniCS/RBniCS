@@ -46,13 +46,10 @@ class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem_Dual_Base):
         elif term == "f":
             return self.primal_problem.assemble_operator("s")
         elif term == "dirichlet_bc":
-            homogeneous_bc_expansion = list()
-            for bc_list in self.primal_problem.assemble_operator("dirichlet_bc"):
-                homogeneous_bc_list = list()
-                for bc in bc_list:
-                    homogeneous_bc_list.append(0.*bc)
-                homogeneous_bc_expansion.append(homogeneous_bc_list)
-            return tuple(homogeneous_bc_expansion)
+            # We abuse here the fact that no theta is specified, so it will automatically
+            # replaced by a zero multiplicative term. In this way, even if primal BCs are
+            # non homogeneous, dual BCs are homogeneous
+            return self.primal_problem.assemble_operator("dirichlet_bc")
         elif term == "inner_product":
             return self.primal_problem.assemble_operator("inner_product")
         elif term == "projection_inner_product":
