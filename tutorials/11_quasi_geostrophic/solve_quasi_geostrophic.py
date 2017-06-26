@@ -87,36 +87,39 @@ class Geostrophic(GeostrophicProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
                 
-# 1. Mesh import
+# 1. Read the mesh for this problem
 mesh = Mesh("data/square.xml")
 subdomains = MeshFunction("size_t", mesh, "data/square_physical_region.xml")
 boundaries = MeshFunction("size_t", mesh, "data/square_facet_region.xml")
 
-# 2. Space
+# 2. Create Finite Element space (Lagrange P1, two components)
 V_element = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 Q_element = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 W_element = MixedElement(V_element, Q_element)
 W = FunctionSpace(mesh, W_element, components = ["psi", "q"])
 
-# 3. Allocate an object of the Thermal Block class
+# 3. Allocate an object of the Geostrophic class
 geostrophic_problem = Geostrophic(W, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(1e-4, 1.0), (1e-4, 1.0)]
 geostrophic_problem.set_mu_range(mu_range)
 
-# 4. Prepare reduction with a POD
+# 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(geostrophic_problem)
 pod_galerkin_method.set_Nmax(20)
 
 # 5. Perform the offline phase
-pod_galerkin_method.initialize_training_set(100, sampling = LogUniformDistribution())
+pod_galerkin_method.initialize_training_set(100, sampling=LogUniformDistribution())
 reduced_geostrophic_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = (0*1e-4, (7e4/1e6)**3)
+online_mu = (1e-4, (7e4/1e6)**3)
 reduced_geostrophic_problem.set_mu(online_mu)
 reduced_geostrophic_problem.solve()
 reduced_geostrophic_problem.export_solution("Geostrophic", "online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100, sampling = LogUniformDistribution())
+pod_galerkin_method.initialize_testing_set(100, sampling=LogUniformDistribution())
 pod_galerkin_method.error_analysis()
+
+# 8. Perform a speedup analysis
+pod_galerkin_method.speedup_analysis()
