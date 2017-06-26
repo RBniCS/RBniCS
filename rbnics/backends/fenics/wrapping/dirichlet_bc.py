@@ -38,6 +38,7 @@ def DirichletBC(*args, **kwargs):
             if key in kwargs:
                 _sorted_kwargs.append(kwargs[key])
         _identifier = list()
+        _identifier.append(_function_space)
         _identifier.extend(output.domain_args)
         _identifier.extend(_sorted_kwargs)
         _identifier = tuple(_identifier)
