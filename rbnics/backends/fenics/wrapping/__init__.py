@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.fenics.wrapping.create_submesh import create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs
+from rbnics.backends.fenics.wrapping.create_submesh import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh
 from rbnics.backends.fenics.wrapping.dirichlet_bc import DirichletBC
 from rbnics.backends.fenics.wrapping.dofs_parallel_io_helpers import build_dof_map_writer_mapping, build_dof_map_reader_mapping
 from rbnics.backends.fenics.wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs import evaluate_and_vectorize_sparse_matrix_at_dofs
@@ -59,8 +59,9 @@ __all__ = [
     'assert_lagrange_1',
     'build_dof_map_reader_mapping',
     'build_dof_map_writer_mapping',
+    'convert_functionspace_to_submesh',
+    'convert_meshfunctions_to_submesh',
     'create_submesh',
-    'create_submesh_subdomains',
     'DirichletBC',
     'evaluate_and_vectorize_sparse_matrix_at_dofs',
     'evaluate_basis_functions_matrix_at_dofs',
@@ -91,12 +92,10 @@ __all__ = [
     'gram_schmidt_projection_step',
     'is_parametrized_constant',
     'matrix_mul_vector',
-    'mesh_dofs_to_submesh_dofs',
     'ParametrizedConstant',
     'parametrized_constant_to_float',
     'ParametrizedExpression',
     'plot',
-    'submesh_dofs_to_mesh_dofs'
     'tensor_copy',
     'tensor_load',
     'tensor_save',

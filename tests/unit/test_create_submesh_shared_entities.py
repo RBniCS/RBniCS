@@ -30,7 +30,7 @@ except OSError:
 mesh = Mesh()
 input_file = HDF5File(mesh.mpi_comm(), "data/test_create_submesh_shared_entities_mesh.h5", "r")
 input_file.read(mesh, "/mesh", False)
-cells = CellFunction("size_t", mesh)
+cells = CellFunction("bool", mesh)
 input_file.read(cells, "/cells")
 
 assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4, 5)
@@ -43,7 +43,7 @@ assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4, 5)
 #plot(mesh, interactive=True)
 #plot(cells, interactive=True)
 
-submesh = create_submesh(mesh, cells, 1)
+submesh = create_submesh(mesh, cells)
 #plot(submesh, interactive=True)
 
 output_subfile = HDF5File(submesh.mpi_comm(), "test_create_submesh_shared_entities.output_dir/submesh.h5", "w")

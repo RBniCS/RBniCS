@@ -16,9 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Cell, cells, compile_extension_module, DEBUG, Facet, facets, Function, FunctionSpace, LagrangeInterpolator, Mesh, MeshEditor, MeshFunction, log, parameters, Vertex, vertices
-from numpy import abs, array, isclose, float, logical_and, max, round, uintp, unique, where, zeros
+from numpy import array, uintp, unique, where
+from scipy.spatial.ckdtree import cKDTree as KDTree
 from mpi4py.MPI import SUM
+from dolfin import Cell, cells, compile_extension_module, DEBUG, Facet, facets, FunctionSpace, Mesh, MeshEditor, MeshFunction, MeshFunctionBool, log, Vertex, vertices
 
 # Implement an extended version of cbcpost create_submesh that:
 # a) as cbcpost version (and in contrast to standard dolfin) also works in parallel 
@@ -28,8 +29,12 @@ from mpi4py.MPI import SUM
 # e) stores map between mesh and submesh cells, facets and vertices
 # Part of this code is taken from cbcpost/utils/submesh.py, with the following copyright information:
 # Copyright (C) 2010-2014 Simula Research Laboratory
-def create_submesh(mesh, markers, marker_id):
+def create_submesh(mesh, markers):
     mpi_comm = mesh.mpi_comm().tompi4py()
+    assert isinstance(markers, MeshFunctionBool)
+    assert markers.dim() == mesh.topology().dim()
+    marker_id = True
+    
     ## 1. Extract marked cells ##
     # Dolfin does not support a distributed mesh that is empty on some processes.
     # cbcpost gets around this by moving a single cell from the a non-empty processor to an empty one.
@@ -302,14 +307,14 @@ def create_submesh(mesh, markers, marker_id):
     if backup_first_marker_id is not None:
         markers.array()[0] = backup_first_marker_id
     return submesh
-       
-def create_submesh_subdomains(mesh, submesh, mesh_subdomains):
-    assert mesh_subdomains is None or (isinstance(mesh_subdomains, list) and len(mesh_subdomains) > 0)
-    if mesh_subdomains is None:
+
+def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
+    assert meshfunctions_on_mesh is None or (isinstance(meshfunctions_on_mesh, list) and len(meshfunctions_on_mesh) > 0)
+    if meshfunctions_on_mesh is None:
         return None
-    submesh_subdomains = list()
+    meshfunctions_on_submesh = list()
     # Create submesh subdomains
-    for mesh_subdomain in mesh_subdomains:
+    for mesh_subdomain in meshfunctions_on_mesh:
         submesh_subdomain = MeshFunction("size_t", submesh, mesh_subdomain.dim())
         submesh_subdomain.set_all(0)
         assert submesh_subdomain.dim() in (submesh.topology().dim(), submesh.topology().dim() - 1)
@@ -320,55 +325,75 @@ def create_submesh_subdomains(mesh, submesh, mesh_subdomains):
             for submesh_facet in facets(submesh):
                 submesh_subdomain.array()[submesh_facet.index()] = mesh_subdomain.array()[submesh.submesh_to_mesh_facet_local_indices[submesh_facet.index()]]
         else: # impossible to arrive here anyway, thanks to the assert
-            raise AssertionError("Invalid arguments in create_submesh_subdomains.")
-        submesh_subdomains.append(submesh_subdomain)
-    return submesh_subdomains
-
-def mesh_dofs_to_submesh_dofs(mesh_V, submesh_V):
-    inverse_map = submesh_dofs_to_mesh_dofs(submesh_V, mesh_V)
-    return dict(zip(inverse_map.values(), inverse_map.keys()))
+            raise AssertionError("Invalid arguments in convert_meshfunctions_to_submesh.")
+        meshfunctions_on_submesh.append(submesh_subdomain)
+    return meshfunctions_on_submesh
     
-def submesh_dofs_to_mesh_dofs(submesh_V, mesh_V):
-    if mesh_V.ufl_element().family() == "Mixed":
-        assert mesh_V.num_sub_spaces() == submesh_V.num_sub_spaces()
-        for i in range(mesh_V.num_sub_spaces()):
-            assert mesh_V.sub(i).ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
-            assert submesh_V.sub(i).ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
+# This function is similar to cbcpost restriction_map. The main difference are:
+# a) it builds a KDTree for each cell, rather than exploring the entire submesh at a time, so that
+#    no ambiguity should arise even in DG function spaces
+# b) the maps from/to dofs are with respect to global dof indices
+# Part of this code is taken from cbcpost/utils/restriction_map.py, with the following copyright information:
+# Copyright (C) 2010-2014 Simula Research Laboratory
+def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, functionspace_on_submesh=None):
+    if functionspace_on_submesh is None:
+        functionspace_on_submesh = FunctionSpace(submesh, functionspace_on_mesh.ufl_element())
+    mesh_dofs_to_submesh_dofs = dict()
+    submesh_dofs_to_mesh_dofs = dict()
+    
+    # Initialize map from mesh dofs to submesh dofs, and viceversa
+    if functionspace_on_mesh.num_sub_spaces() > 0:
+        assert functionspace_on_mesh.num_sub_spaces() == functionspace_on_submesh.num_sub_spaces()
+        for i in range(functionspace_on_mesh.num_sub_spaces()):
+            (_, mesh_dofs_to_submesh_dofs_i, submesh_dofs_to_mesh_dofs_i) = convert_functionspace_to_submesh(functionspace_on_mesh.sub(i), submesh, functionspace_on_submesh.sub(i))
+            for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs_i.iteritems():
+                assert mesh_dof not in mesh_dofs_to_submesh_dofs
+                assert submesh_dof not in submesh_dofs_to_mesh_dofs
+            mesh_dofs_to_submesh_dofs.update(mesh_dofs_to_submesh_dofs_i)
+            submesh_dofs_to_mesh_dofs.update(submesh_dofs_to_mesh_dofs_i)
+        # Return
+        return (functionspace_on_submesh, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs)
     else:
-        assert mesh_V.ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
-        assert submesh_V.ufl_element().family() == "Lagrange", "The current implementation of mapping between dofs relies on LagrangeInterpolator"
-    
-    previous_allow_extrapolation_value = parameters["allow_extrapolation"]
-    parameters["allow_extrapolation"] = True
-    
-    interpolator = LagrangeInterpolator()
-    mesh_V_ownership_range = array(range(*mesh_V.dofmap().ownership_range()), dtype=float)
-    mesh_V_dofs = Function(mesh_V)
-    mesh_V_dofs.vector().set_local(mesh_V_ownership_range)
-    mesh_V_dofs.vector().apply("")
-    mesh_V_dofs_restricted_to_submesh_V = Function(submesh_V)
-    interpolator.interpolate(mesh_V_dofs_restricted_to_submesh_V, mesh_V_dofs)
-    mesh_V_dofs_restricted_to_submesh_V = mesh_V_dofs_restricted_to_submesh_V.vector().array()
-    submesh_V_local_indices = where(logical_and(
-        mesh_V_dofs_restricted_to_submesh_V >= - 0.5,
-        logical_and(
-            mesh_V_dofs_restricted_to_submesh_V <= mesh_V.dim() + 0.5, 
-            abs(mesh_V_dofs_restricted_to_submesh_V - round(mesh_V_dofs_restricted_to_submesh_V)) < 1.e-10
-        )
-    ))[0]
-    submesh_V_global_indices = [submesh_V.dofmap().local_to_global_index(local_dof) for local_dof in submesh_V_local_indices]
-    mesh_V_global_indices = round(mesh_V_dofs_restricted_to_submesh_V[submesh_V_local_indices]).astype('i')
-    assert len(unique(mesh_V_global_indices)) == len(mesh_V_global_indices)
-    assert len(mesh_V_global_indices) == submesh_V.dofmap().ownership_range()[1] - submesh_V.dofmap().ownership_range()[0]
-    
-    parameters["allow_extrapolation"] = previous_allow_extrapolation_value
-    
-    submesh_V_to_mesh_V_global_indices = dict(zip(submesh_V_global_indices, mesh_V_global_indices))
-    
-    mpi_comm = submesh_V.mesh().mpi_comm().tompi4py()
-    allgathered_submesh_V_to_mesh_V_global_indices = mpi_comm.bcast(submesh_V_to_mesh_V_global_indices, root=0)
-    for r in range(1, mpi_comm.size):
-        allgathered_submesh_V_to_mesh_V_global_indices.update( mpi_comm.bcast(submesh_V_to_mesh_V_global_indices, root=r) )
-    
-    return allgathered_submesh_V_to_mesh_V_global_indices
+        assert functionspace_on_mesh.ufl_element().family() == "Lagrange", "The current implementation has been tested only for Lagrange function spaces"
+        assert functionspace_on_submesh.ufl_element().family() == "Lagrange", "The current implementation has been tested only for Lagrange function spaces"
+        mesh = functionspace_on_mesh.mesh()
+        mesh_element = functionspace_on_mesh.element()
+        mesh_dofmap = functionspace_on_mesh.dofmap()
+        submesh_element = functionspace_on_submesh.element()
+        submesh_dofmap = functionspace_on_submesh.dofmap()
+        for submesh_cell in cells(submesh):
+            submesh_dof_coordinates = submesh_element.tabulate_dof_coordinates(submesh_cell)
+            submesh_cell_dofs = submesh_dofmap.cell_dofs(submesh_cell.index())
+            submesh_cell_dofs = [functionspace_on_submesh.dofmap().local_to_global_index(local_dof) for local_dof in submesh_cell_dofs]
+            mesh_cell = Cell(mesh, submesh.submesh_to_mesh_cell_local_indices[submesh_cell.index()])
+            mesh_dof_coordinates = mesh_element.tabulate_dof_coordinates(mesh_cell)
+            mesh_cell_dofs = mesh_dofmap.cell_dofs(mesh_cell.index())
+            mesh_cell_dofs = [functionspace_on_mesh.dofmap().local_to_global_index(local_dof) for local_dof in mesh_cell_dofs]
+            assert len(submesh_dof_coordinates) == len(mesh_dof_coordinates)
+            assert len(submesh_cell_dofs) == len(mesh_cell_dofs)
+            # Build a KDTree to compute distances from coordinates in mesh
+            kdtree = KDTree(mesh_dof_coordinates)
+            distances, mesh_indices = kdtree.query(submesh_dof_coordinates)
+            # Map from mesh to submesh
+            for (i, submesh_dof) in enumerate(submesh_cell_dofs):
+                distance, mesh_index = distances[i], mesh_indices[i]
+                assert distance < mesh_cell.h()*1e-5
+                mesh_dof = mesh_cell_dofs[mesh_index]
+                if mesh_dof not in mesh_dofs_to_submesh_dofs:
+                    mesh_dofs_to_submesh_dofs[mesh_dof] = submesh_dof
+                else:
+                    assert mesh_dofs_to_submesh_dofs[mesh_dof] == submesh_dof
+                if submesh_dof not in submesh_dofs_to_mesh_dofs:
+                    submesh_dofs_to_mesh_dofs[submesh_dof] = mesh_dof
+                else:
+                    assert submesh_dofs_to_mesh_dofs[submesh_dof] == mesh_dof
+        # Broadcast in parallel
+        mpi_comm = mesh.mpi_comm().tompi4py()
+        allgathered_mesh_dofs_to_submesh_dofs = mpi_comm.bcast(mesh_dofs_to_submesh_dofs, root=0)
+        allgathered_submesh_dofs_to_mesh_dofs = mpi_comm.bcast(submesh_dofs_to_mesh_dofs, root=0)
+        for r in range(1, mpi_comm.size):
+            allgathered_mesh_dofs_to_submesh_dofs.update( mpi_comm.bcast(mesh_dofs_to_submesh_dofs, root=r) )
+            allgathered_submesh_dofs_to_mesh_dofs.update( mpi_comm.bcast(submesh_dofs_to_mesh_dofs, root=r) )
+        # Return
+        return (functionspace_on_submesh, allgathered_mesh_dofs_to_submesh_dofs, allgathered_submesh_dofs_to_mesh_dofs)
     

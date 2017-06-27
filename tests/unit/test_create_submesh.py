@@ -19,7 +19,7 @@
 from dolfin import *
 set_log_level(PROGRESS)
 from fenicstools import DofMapPlotter
-from rbnics.backends.fenics.wrapping import create_submesh, create_submesh_subdomains, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs
+from rbnics.backends.fenics.wrapping import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh
 
 mesh = UnitSquareMesh(3, 3)
 assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4)
@@ -39,16 +39,15 @@ for f in facets(mesh):
         boundaries.array()[f.index()] += v.global_index()
 #plot(boundaries, interactive=True)
 
-markers = CellFunction("size_t", mesh, 0)
+markers = CellFunction("bool", mesh, False)
 hdf = HDF5File(mesh.mpi_comm(), "data/test_create_submesh_markers.h5", "r")
-hdf.read(markers, "/subdomains")
-
+hdf.read(markers, "/cells")
 #plot(markers, interactive=True)
 
-submesh = create_submesh(mesh, markers, 1)
+submesh = create_submesh(mesh, markers)
 #plot(submesh, interactive=True)
 
-[submesh_subdomains, submesh_boundaries] = create_submesh_subdomains(mesh, submesh, [subdomains, boundaries])
+[submesh_subdomains, submesh_boundaries] = convert_meshfunctions_to_submesh(mesh, submesh, [subdomains, boundaries])
 #plot(submesh_subdomains, interactive=True)
 #plot(submesh_boundaries, interactive=True)
 
@@ -103,18 +102,16 @@ for dim in [submesh.topology().dim(), submesh.topology().dim() - 1, 0]:
 # ~~~ Elliptic case ~~~ #
 log(PROGRESS, "~~~ Elliptic case ~~~")
 V = FunctionSpace(mesh, "CG", 2)
-submesh_V = FunctionSpace(submesh, "CG", 2)
+(submesh_V, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs) = convert_functionspace_to_submesh(V, submesh, markers)
 
 # e) compare dof numbers in mesh and reduced mesh by pressing D in dof map plotter. Double check the following maps:
 log(PROGRESS, "Mesh to submesh dofs")
 log(PROGRESS, "Local mesh dofs ownership range: " + str(V.dofmap().ownership_range()))
-mesh_dofs_to_submesh_dofs_ = mesh_dofs_to_submesh_dofs(V, submesh_V)
-for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs_.iteritems():
+for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs.iteritems():
     log(PROGRESS, "\t" + str(mesh_dof) + " -> " + str(submesh_dof))
 log(PROGRESS, "Submesh to mesh dofs")
 log(PROGRESS, "Local submesh dofs ownership range: " + str(submesh_V.dofmap().ownership_range()))
-submesh_dofs_to_mesh_dofs_ = submesh_dofs_to_mesh_dofs(submesh_V, V)
-for (submesh_dof, mesh_dof) in submesh_dofs_to_mesh_dofs_.iteritems():
+for (submesh_dof, mesh_dof) in submesh_dofs_to_mesh_dofs.iteritems():
     log(PROGRESS, "\t" + str(submesh_dof) + " -> " + str(mesh_dof))
     
 # In reduced function space dof map plotter:
@@ -144,18 +141,16 @@ element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
 element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 element   = MixedElement(element_0, element_1)
 V = FunctionSpace(mesh, element)
-submesh_V = FunctionSpace(submesh, element)
+(submesh_V, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs) = convert_functionspace_to_submesh(V, submesh, markers)
 
 # e) compare dof numbers in mesh and reduced mesh by pressing D in dof map plotter. Double check the following maps:
 log(PROGRESS, "Mesh to submesh dofs")
 log(PROGRESS, "Local mesh dofs ownership range: " + str(V.dofmap().ownership_range()))
-mesh_dofs_to_submesh_dofs_ = mesh_dofs_to_submesh_dofs(V, submesh_V)
-for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs_.iteritems():
+for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs.iteritems():
     log(PROGRESS, "\t" + str(mesh_dof) + " -> " + str(submesh_dof))
 log(PROGRESS, "Submesh to mesh dofs")
 log(PROGRESS, "Local submesh dofs ownership range: " + str(submesh_V.dofmap().ownership_range()))
-submesh_dofs_to_mesh_dofs_ = submesh_dofs_to_mesh_dofs(submesh_V, V)
-for (submesh_dof, mesh_dof) in submesh_dofs_to_mesh_dofs_.iteritems():
+for (submesh_dof, mesh_dof) in submesh_dofs_to_mesh_dofs.iteritems():
     log(PROGRESS, "\t" + str(submesh_dof) + " -> " + str(mesh_dof))
     
 # also check h) as above

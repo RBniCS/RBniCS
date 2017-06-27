@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import CellFunction, cells, DEBUG, File, FunctionSpace, has_hdf5, log, Mesh, MeshFunction
+from dolfin import CellFunction, cells, DEBUG, entities, File, FunctionSpace, has_hdf5, log, Mesh, MeshFunction
 if has_hdf5():
     from dolfin import HDF5File
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
@@ -26,7 +26,7 @@ from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_proble
 from rbnics.utils.io import ExportableList, Folders
 from rbnics.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
-from rbnics.backends.fenics.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, create_submesh_subdomains, evaluate_basis_functions_matrix_at_dofs, evaluate_sparse_function_at_dofs, mesh_dofs_to_submesh_dofs
+from rbnics.backends.fenics.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh, evaluate_basis_functions_matrix_at_dofs, evaluate_sparse_function_at_dofs
 
 @Extends(AbstractReducedMesh)
 @BackendFor("fenics", inputs=(FunctionSpace, ))
@@ -60,8 +60,10 @@ class ReducedMesh(AbstractReducedMesh):
         # ... which is not initialized in the constructor to avoid wasting time online
         # ... since it is only needed offline in the append() method
         
-        # Cell function to mark cells (on the full mesh)
-        self.reduced_mesh_cells_marker = None # will be of type CellFunction
+        # Cell functions to mark cells (on the full mesh)
+        self.reduced_mesh_markers = dict() # from N to CellFunction
+        if copy_from is not None:
+            self.reduced_mesh_markers[key_as_int] = copy_from.reduced_mesh_markers[key_as_int]
         # ... which again is not initialized here for performance reasons
         
         # DOFs list (of the full mesh) that need to be added at each N
@@ -135,12 +137,14 @@ class ReducedMesh(AbstractReducedMesh):
         assert len(global_dofs) == len(self.V)
         self.reduced_mesh_dofs_list.append(global_dofs)
         # Mark all cells
+        N = self._get_next_index()
+        reduced_mesh_markers = self.reduced_mesh_markers[N]
         for (component, global_dof) in enumerate(global_dofs):
             global_dof_found = 0
             if global_dof in self.dof_to_cells[component]:
                 global_dof_found = 1
                 for cell in self.dof_to_cells[component][global_dof]:
-                    self.reduced_mesh_cells_marker[cell] = 1
+                    reduced_mesh_markers[cell] = True
             global_dof_found = self.mpi_comm.allreduce(global_dof_found, op=MAX)
             assert global_dof_found == 1
         # Actually update to data structures using updated cells marker
@@ -149,11 +153,11 @@ class ReducedMesh(AbstractReducedMesh):
     def _update(self):
         N = self._get_next_index()
         # Create submesh
-        reduced_mesh = create_submesh(self.mesh, self.reduced_mesh_cells_marker, 1)
+        reduced_mesh = create_submesh(self.mesh, self.reduced_mesh_markers[N])
         self.reduced_mesh[N] = reduced_mesh
         # Create subdomain data on submesh
         if self.subdomain_data is not None:
-            reduced_subdomain_data_list = create_submesh_subdomains(self.mesh, reduced_mesh, self.subdomain_data)
+            reduced_subdomain_data_list = convert_meshfunctions_to_submesh(self.mesh, reduced_mesh, self.subdomain_data)
             reduced_subdomain_data = dict()
             assert len(self.subdomain_data) == len(reduced_subdomain_data_list)
             for (subdomain, reduced_subdomain) in zip(self.subdomain_data, reduced_subdomain_data_list):
@@ -161,16 +165,15 @@ class ReducedMesh(AbstractReducedMesh):
             self.reduced_subdomain_data[N] = reduced_subdomain_data
         else:
             self.reduced_subdomain_data[N] = None
-        # Store the FunctionSpace V on the reduced mesh
+        # Store the FunctionSpace V on the reduced mesh, as well as the map between DOFs on V and reduced_V
         reduced_function_spaces = list()
-        for V_component in self.V:
-            reduced_function_spaces.append(FunctionSpace(reduced_mesh, V_component.ufl_element()))
-        self.reduced_function_spaces[N] = tuple(reduced_function_spaces)
-        # Get the map between DOFs on V and reduced_V
         dofs__to__reduced_dofs = list() # of size len(V)
-        for (component, (V_component, reduced_V_component)) in enumerate(zip(self.V, reduced_function_spaces)):
-            dofs__to__reduced_dofs.append(mesh_dofs_to_submesh_dofs(V_component, reduced_V_component))
+        for (component, V_component) in enumerate(self.V):
+            (reduced_function_space_component, dofs__to__reduced_dofs_component, _) = convert_functionspace_to_submesh(V_component, reduced_mesh)
+            reduced_function_spaces.append(reduced_function_space_component)
+            dofs__to__reduced_dofs.append(dofs__to__reduced_dofs_component)
             log(DEBUG, "DOFs to reduced DOFs (component " + str(component) +") is " + str(dofs__to__reduced_dofs[component]))
+        self.reduced_function_spaces[N] = tuple(reduced_function_spaces)
         # ... and fill in reduced_mesh_reduced_dofs_list ...
         reduced_mesh_reduced_dofs_list = list()
         for dofs in self.reduced_mesh_dofs_list:
@@ -211,9 +214,14 @@ class ReducedMesh(AbstractReducedMesh):
                 # Add to storage
                 self.dof_to_cells.append(dof_to_cells)
             self.dof_to_cells = tuple(self.dof_to_cells)
-        # Initialize cells marker only the first time
-        if self.reduced_mesh_cells_marker is None:
-            self.reduced_mesh_cells_marker = CellFunction("size_t", self.mesh, 0)
+        # Initialize cells marker
+        N = self._get_next_index()
+        reduced_mesh_markers = CellFunction("bool", self.mesh)
+        reduced_mesh_markers.set_all(False)
+        if N > 0:
+            reduced_mesh_markers.array()[:] = self.reduced_mesh_markers[N - 1].array()
+        assert N not in self.reduced_mesh_markers
+        self.reduced_mesh_markers[N] = reduced_mesh_markers
     
     @override
     def save(self, directory, filename):
@@ -252,6 +260,18 @@ class ReducedMesh(AbstractReducedMesh):
                         output_file.write(reduced_subdomain, "/subdomain")
                         output_file.close()
                     subdomain_index += 1
+        # reduced_mesh_markers
+        for (index, reduced_mesh_markers) in self.reduced_mesh_markers.iteritems():
+            marker_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_markers"
+            if not has_hdf5():
+                assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
+                marker_filename = marker_filename + ".xml"
+                File(marker_filename) << reduced_mesh_markers
+            else:
+                marker_filename = marker_filename + ".h5"
+                output_file = HDF5File(self.mesh.mpi_comm(), marker_filename, "w")
+                output_file.write(reduced_mesh_markers, "/markers")
+                output_file.close()
         # Init
         self._init_for_save_if_needed()
         # reduced_mesh_dofs_list
@@ -395,6 +415,7 @@ class ReducedMesh(AbstractReducedMesh):
                     self.reduced_subdomain_data[index] = reduced_subdomain_data
                 else:
                     self.reduced_subdomain_data[index] = None
+            # do not load reduced_mesh_markers, as they are not needed online
             # Init
             self._init_for_load_if_needed(Nmax)
             # reduced_mesh_dofs_list
@@ -563,7 +584,7 @@ class ReducedMesh(AbstractReducedMesh):
             self._auxiliary_reduced_function_space[key] = auxiliary_reduced_V
             if not self._load_auxiliary_reduced_function_space(key):
                 # Get the map between DOFs on auxiliary_V and auxiliary_reduced_V
-                auxiliary_dofs_to_reduced_dofs = mesh_dofs_to_submesh_dofs(auxiliary_V, auxiliary_reduced_V)
+                (_, auxiliary_dofs_to_reduced_dofs, _) = convert_functionspace_to_submesh(auxiliary_V, self.reduced_mesh[index], auxiliary_reduced_V)
                 log(DEBUG, "Auxiliary DOFs to reduced DOFs is " + str(auxiliary_dofs_to_reduced_dofs))
                 self._auxiliary_dofs_to_reduced_dofs[key] = auxiliary_dofs_to_reduced_dofs
                 # Save to file
