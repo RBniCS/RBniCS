@@ -28,6 +28,7 @@ from rbnics.utils.io import PickleIO
 def tensor_load(tensor, directory, filename):
     mpi_comm = tensor.mpi_comm().tompi4py()
     form = tensor.generator._form
+    load_failed = False
     # Read in generator
     full_filename_generator = str(directory) + "/" + filename + ".generator"
     generator_string = None
@@ -36,8 +37,11 @@ def tensor_load(tensor, directory, filename):
             with open(full_filename_generator, "r") as generator_file:
                 generator_string = generator_file.readline()
         else:
-            return False
-    generator_string = mpi_comm.bcast(generator_string, root=is_io_process.root)
+            load_failed = True
+    if mpi_comm.bcast(load_failed, root=is_io_process.root):
+        return False
+    else:
+        generator_string = mpi_comm.bcast(generator_string, root=is_io_process.root)
     # Read in generator mpi size
     full_filename_generator_mpi_size = str(directory) + "/" + filename + ".generator_mpi_size"
     generator_mpi_size_string = None
@@ -46,8 +50,11 @@ def tensor_load(tensor, directory, filename):
             with open(full_filename_generator_mpi_size, "r") as generator_mpi_size_file:
                 generator_mpi_size_string = generator_mpi_size_file.readline()
         else:
-            return False
-    generator_mpi_size_string = mpi_comm.bcast(generator_mpi_size_string, root=is_io_process.root)
+            load_failed = True
+    if mpi_comm.bcast(load_failed, root=is_io_process.root):
+        return False
+    else:
+        generator_mpi_size_string = mpi_comm.bcast(generator_mpi_size_string, root=is_io_process.root)
     # Read in generator mapping from processor dependent indices (at the time of saving) to processor independent (global_cell_index, cell_dof) tuple
     (permutation, loaded) = permutation_load(tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
     if not loaded:
