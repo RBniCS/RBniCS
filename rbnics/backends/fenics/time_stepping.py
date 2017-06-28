@@ -239,7 +239,7 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
             if overwrite:
                 self.residual_vector = residual_form_or_vector
             else:
-                as_backend_type(residual_form_or_vector).vec().copy(as_backend_type(self.residual_vector).vec())
+                as_backend_type(residual_form_or_vector).vec().swap(as_backend_type(self.residual_vector).vec())
         else:
             raise AssertionError("Invalid time order in _TimeDependentProblem1.residual_vector_assemble.")
         
@@ -312,9 +312,11 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
             if overwrite:
                 self.jacobian_matrix = jacobian_form_or_matrix
             else:
-                as_backend_type(jacobian_form_or_matrix).mat().copy(as_backend_type(self.jacobian_matrix).mat())
-            # Make sure to keep nonzero patter, as FEniCS does by default
-            as_backend_type(jacobian_form_or_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+                self.jacobian_matrix.zero()
+                self.jacobian_matrix += jacobian_form_or_matrix
+            # Make sure to keep nonzero pattern, as FEniCS does by default, because this option is apparently
+            # not preserved by the sum
+            as_backend_type(self.jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
         else:
             raise AssertionError("Invalid time order in _TimeDependentProblem1.jacobian_matrix_assemble.")
             
@@ -389,7 +391,7 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
             if overwrite:
                 self.residual_vector = residual_form_or_vector
             else:
-                as_backend_type(residual_form_or_vector).vec().copy(as_backend_type(self.residual_vector).vec())
+                as_backend_type(residual_form_or_vector).vec().swap(as_backend_type(self.residual_vector).vec())
         else:
             raise AssertionError("Invalid time order in _TimeDependentProblem1.residual_vector_assemble.")
         
@@ -458,9 +460,11 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
             if overwrite:
                 self.jacobian_matrix = jacobian_form_or_matrix
             else:
-                as_backend_type(jacobian_form_or_matrix).mat().copy(as_backend_type(self.jacobian_matrix).mat())
-            # Make sure to keep nonzero patter, as FEniCS does by default
-            as_backend_type(jacobian_form_or_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+                self.jacobian_matrix.zero()
+                self.jacobian_matrix += jacobian_form_or_matrix
+            # Make sure to keep nonzero pattern, as FEniCS does by default, because this option is apparently
+            # not preserved by the sum
+            as_backend_type(self.jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
         else:
             raise AssertionError("Invalid time order in _TimeDependentProblem1.jacobian_matrix_assemble.")
             
