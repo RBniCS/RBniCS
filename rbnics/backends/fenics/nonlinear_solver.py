@@ -16,22 +16,28 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
-import types
+from petsc4py import PETSc
 from ufl import Form
 from dolfin import as_backend_type, assemble, GenericMatrix, GenericVector, NonlinearProblem, PETScSNESSolver
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.fenics.function import Function
-from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
-from rbnics.utils.mpi import print
+from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractNonlinearSolver)
 @BackendFor("fenics", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     @override
     def __init__(self, problem_wrapper, solution):
-        problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
-        self.solver  = _PETScSNESSolver(problem)
+        self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
+        self.solver  = PETScSNESSolver(solution.vector().mpi_comm())
+        # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
+        # Make sure to use a matrix with proper sparsity pattern if matrix_eval returns a matrix (rather than a Form)
+        jacobian_form_or_matrix = self.problem.jacobian_eval(self.problem.solution)
+        assert isinstance(jacobian_form_or_matrix, (Form, GenericMatrix))
+        if isinstance(jacobian_form_or_matrix, GenericMatrix):
+            jacobian_matrix = as_backend_type(jacobian_form_or_matrix).mat().duplicate()
+            self.solver.snes().setJacobian(None, jacobian_matrix)
+        # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
             
     @override
     def set_parameters(self, parameters):
@@ -39,7 +45,8 @@ class NonlinearSolver(AbstractNonlinearSolver):
         
     @override
     def solve(self):
-        return self.solver.solve()
+        self.solver.solve(self.problem, self.problem.solution.vector())
+        return self.problem.solution
     
 class _NonlinearProblem(NonlinearProblem):
     def __init__(self, residual_eval, solution, bcs, jacobian_eval):
@@ -49,6 +56,9 @@ class _NonlinearProblem(NonlinearProblem):
         self.solution = solution
         self.bcs = bcs
         self.jacobian_eval = jacobian_eval
+        # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
+        self._J_assemble_failed_in_init = False
+        # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
                
     def F(self, residual_vector, solution):
         # Assemble the residual
@@ -77,7 +87,13 @@ class _NonlinearProblem(NonlinearProblem):
         
     def J(self, jacobian_matrix, solution):
         # Assemble the jacobian
-        self.jacobian_matrix_assemble(jacobian_matrix, self.solution)
+        assembled = self.jacobian_matrix_assemble(jacobian_matrix, self.solution)
+        # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
+        if not assembled:
+            assert not self._J_assemble_failed_in_init # This should happen only once
+            self._J_assemble_failed_in_init = True
+            return
+        # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
         # Apply boundary conditions
         assert isinstance(self.bcs, (dict, list))
         if isinstance(self.bcs, list):
@@ -91,59 +107,24 @@ class _NonlinearProblem(NonlinearProblem):
             raise AssertionError("Invalid type for bcs.")
         
     def jacobian_matrix_assemble(self, jacobian_matrix, solution):
+        mat = as_backend_type(jacobian_matrix).mat()
         jacobian_form_or_matrix = self.jacobian_eval(solution)
         assert isinstance(jacobian_form_or_matrix, (Form, GenericMatrix))
         if isinstance(jacobian_form_or_matrix, Form):
             assemble(jacobian_form_or_matrix, tensor=jacobian_matrix)
+            return True
         elif isinstance(jacobian_form_or_matrix, GenericMatrix):
-            jacobian_matrix.zero()
-            jacobian_matrix += jacobian_form_or_matrix
+            # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
+            if jacobian_matrix.empty():
+                return False
+            # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
+            else:
+                jacobian_matrix.zero()
+                jacobian_matrix += jacobian_form_or_matrix
+                # Make sure to keep nonzero pattern, as FEniCS does by default, because this option is apparently
+                # not preserved by the sum
+                as_backend_type(jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+                return True
         else:
             raise AssertionError("Invalid case in _NonlinearProblem.jacobian_matrix_assemble.")
-        
-class _PETScSNESSolver(PETScSNESSolver):
-    def __init__(self, problem):
-        PETScSNESSolver.__init__(self, problem.solution.vector().mpi_comm())
-        self.problem = problem
-        
-    def solve(self):
-        jacobian_form_or_matrix = self.problem.jacobian_eval(self.problem.solution)
-        assert isinstance(jacobian_form_or_matrix, (Form, GenericMatrix))
-        if isinstance(jacobian_form_or_matrix, Form):
-            PETScSNESSolver.solve(self, self.problem, self.problem.solution.vector())
-            return self.problem.solution
-        elif isinstance(jacobian_form_or_matrix, GenericMatrix):
-            ## First of all, customize Parent's init ##
-            # Hack problem.J to not do anything when being called from Parent's init, 
-            # because the jacobian matrix has not been initialized yet and thus cannot be copied to
-            original_J = self.problem.J
-            def hacked_J(problem, jacobian_matrix, solution):
-                pass
-            self.problem.J = types.MethodType(hacked_J, self.problem)
-            # Call Parent
-            PETScSNESSolver.init(self, self.problem, self.problem.solution.vector())
-            # Make sure to use a matrix with proper sparsity pattern
-            self.snes().setJacobian(None, as_backend_type(jacobian_form_or_matrix).mat())
-            # Restore the original problem.J
-            self.problem.J = original_J
-            ## Then, run SNES solver. Note that we need to duplicate the code of Parent's solve  ##
-            ## because Parent's init is not virtual, and thus it would not be called even if the ##
-            ## previous block had been put in a overridden init method                           ##
-            solution_copy = self.problem.solution.vector().copy() # due to linesearch, see Parent's code
-            self.snes().solve(None, as_backend_type(solution_copy).vec())
-            as_backend_type(self.problem.solution.vector()).vec().copy(as_backend_type(solution_copy).vec())
-            as_backend_type(self.problem.solution.vector()).update_ghost_values()
-            its = self.snes().getIterationNumber()
-            reason = self.snes().getConvergedReason()
-            report = self.parameters["report"]
-            error_on_nonconvergence = self.parameters["error_on_nonconvergence"]
-            if reason > 0 and report:
-                print("PETSc SNES solver converged in " + str(its) + " iterations with convergence reason " + str(reason) + ".")
-            elif reason < 0:
-                print("PETSc SNES solver diverged in " + str(its) + " iterations with divergence reason " + str(reason) + ".")
-            if error_on_nonconvergence and reason < 0:
-                raise RuntimeError("Solver did not converge.")
-            return self.problem.solution
-        else:
-            raise AssertionError("Invalid case in _PETScSNESSolver.solve.")
-                
+    
