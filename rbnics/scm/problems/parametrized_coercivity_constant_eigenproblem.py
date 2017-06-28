@@ -108,7 +108,8 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         X = self.inner_product[0]
         
         if self.truth_problem.dirichlet_bc is not None:
-            eigensolver = EigenSolver(self.truth_problem.V, O, X, self.truth_problem.dirichlet_bc)
+            dirichlet_bcs_sum = sum(product((0., )*len(self.truth_problem.dirichlet_bc), self.truth_problem.dirichlet_bc))
+            eigensolver = EigenSolver(self.truth_problem.V, O, X, dirichlet_bcs_sum)
         else:
             eigensolver = EigenSolver(self.truth_problem.V, O, X)
         eigensolver_parameters = dict()

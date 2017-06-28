@@ -17,98 +17,82 @@
 #
 
 from numpy import isclose
-from dolfin import as_backend_type, Function, FunctionSpace, SLEPcEigenSolver
-from rbnics.backends.fenics.affine_expansion_storage import AffineExpansionStorage
+from petsc4py import PETSc
+from dolfin import as_backend_type, DirichletBC, Function, FunctionSpace, PETScMatrix, PETScVector, SLEPcEigenSolver
 from rbnics.backends.fenics.matrix import Matrix
+from rbnics.backends.fenics.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
-from rbnics.utils.decorators import BackendFor, Extends, list_of, override
+from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
 
 @Extends(AbstractEigenSolver)
-@BackendFor("fenics", inputs=(FunctionSpace, Matrix.Type(), (Matrix.Type(), None), (AffineExpansionStorage, None)))
+@BackendFor("fenics", inputs=(FunctionSpace, Matrix.Type(), (Matrix.Type(), None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class EigenSolver(AbstractEigenSolver):
     @override
     def __init__(self, V, A, B=None, bcs=None):
         self.V = V
-        self.A = A
-        self.B = B
-        self.bcs = bcs
-        if self.bcs is not None:
-            assert self.bcs.type() == "DirichletBC"
-            # Create a copy of A and B in order not to change the original references 
-            # when applying bcs by clearing constrained dofs
-            self.A = self.A.copy()
-            if self.B is not None:
-                self.B = self.B.copy()
-        self._init_eigensolver(1.) # we will check in solve if it is an appropriate spurious eigenvalue
-        
-    def _init_eigensolver(self, spurious_eigenvalue):
-        if self.bcs is not None:
-            self._spurious_eigenvalue = spurious_eigenvalue
-            self._clear_constrained_dofs(self.A, spurious_eigenvalue)
-            if self.B is not None:
-                self._clear_constrained_dofs(self.B, 1.)
+        if bcs is not None:
+            self._set_boundary_conditions(bcs)
+        self._set_operators(A, B)
         if self.B is not None:
-            self.eigen_solver = SLEPcEigenSolver(as_backend_type(self.A), as_backend_type(self.B))
+            self.eigen_solver = SLEPcEigenSolver(self.condensed_A, self.condensed_B)
         else:
-            self.eigen_solver = SLEPcEigenSolver(as_backend_type(self.A))
-
-    def _clear_constrained_dofs(self, operator, diag_value):
-        for bc_list in self.bcs._content:
-            for bc in bc_list:
-                constrained_dofs = [bc.function_space().dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
-                as_backend_type(operator).mat().zeroRowsColumns(constrained_dofs, diag_value)
+            self.eigen_solver = SLEPcEigenSolver(self.condensed_A)
+    
+    def _set_boundary_conditions(self, bcs):
+        # List all local and constrained local dofs
+        local_dofs = set()
+        constrained_local_dofs = set()
+        for bc in bcs:
+            dofmap = bc.function_space().dofmap()
+            local_range = dofmap.ownership_range()
+            local_dofs.update(range(local_range[0], local_range[1]))
+            constrained_local_dofs.update([
+                dofmap.local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()
+            ])
+            
+        # List all unconstrained dofs
+        unconstrained_local_dofs = local_dofs.difference(constrained_local_dofs)
+        unconstrained_local_dofs = list(unconstrained_local_dofs)
         
+        # Generate IS accordingly
+        comm = bcs[0].function_space().mesh().mpi_comm()
+        for bc in bcs:
+            assert comm == bc.function_space().mesh().mpi_comm()
+        self._is = PETSc.IS().createGeneral(unconstrained_local_dofs, comm)
+    
+    def _set_operators(self, A, B):
+        if hasattr(self, "_is"): # there were Dirichlet BCs
+            (self.A, self.condensed_A) = self._condense_matrix(A)
+            if B is not None:
+                (self.B, self.condensed_B) = self._condense_matrix(B)
+            else:
+                (self.B, self.condensed_B) = (None, None)
+        else:
+            (self.A, self.condensed_A) = (as_backend_type(A), as_backend_type(A))
+            if B is not None:
+                (self.B, self.condensed_B) = (as_backend_type(B), as_backend_type(B))
+            else:
+                (self.B, self.condensed_B) = (None, None)
+    
+    def _condense_matrix(self, mat):
+        mat = as_backend_type(mat)
+        
+        petsc_version = PETSc.Sys().getVersionInfo() 
+        if petsc_version["major"] == 3 and petsc_version["minor"] <= 7 and petsc_version["release"] is True:
+            condensed_mat = mat.mat().getSubMatrix(self._is, self._is)
+        else:
+            condensed_mat = mat.mat().createSubMatrix(self._is, self._is)
+
+        return mat, PETScMatrix(condensed_mat)
+    
     @override
-    def set_parameters(self, parameters, skip_init=False):
-        self._parameters = parameters
-        assert "spectrum" in parameters
-        assert parameters["spectrum"] in ("largest real", "smallest real")
-        self._spectrum = parameters["spectrum"]
-        if not skip_init and "spectral_shift" in parameters:
-            self._init_eigensolver(1./abs(parameters["spectral_shift"])) # we will check in solve if it is an appropriate spurious eigenvalue
+    def set_parameters(self, parameters):
         self.eigen_solver.parameters.update(parameters)
         
     @override
     def solve(self, n_eigs=None):
-        def do_solve():
-            assert n_eigs is not None
-            self.eigen_solver.solve(n_eigs)
-        
-        # Check if the spurious eigenvalue related to BCs is part of the computed eigenvalues.
-        # If it is, reinit the eigen problem with a different spurious eigenvalue
-        def have_spurious_eigenvalue():
-            if self.bcs is not None:
-                assert self._spectrum in ("largest real", "smallest real")
-                if self._spectrum == "largest real":
-                    smallest_computed_eigenvalue, smallest_computed_eigenvalue_imag = self.eigen_solver.get_eigenvalue(n_eigs - 1)
-                    assert isclose(smallest_computed_eigenvalue_imag, 0), "The required eigenvalue is not real"
-                    if self._spurious_eigenvalue - smallest_computed_eigenvalue >= 0. or isclose(self._spurious_eigenvalue - smallest_computed_eigenvalue, 0.):
-                        new_spurious_eigenvalue = 0.1*smallest_computed_eigenvalue
-                        if new_spurious_eigenvalue == self._spurious_eigenvalue: # recursion limit was exhausted
-                            return False
-                        self._init_eigensolver(new_spurious_eigenvalue)
-                        self.set_parameters(self._parameters, skip_init=True)
-                        return True
-                    else:
-                        return False
-                elif self._spectrum == "smallest real":
-                    largest_computed_eigenvalue, largest_computed_eigenvalue_imag = self.eigen_solver.get_eigenvalue(n_eigs - 1)
-                    assert isclose(largest_computed_eigenvalue_imag, 0), "The required eigenvalue is not real"
-                    if self._spurious_eigenvalue - largest_computed_eigenvalue <= 0. or isclose(self._spurious_eigenvalue - largest_computed_eigenvalue, 0.):
-                        new_spurious_eigenvalue = 10.*largest_computed_eigenvalue
-                        if new_spurious_eigenvalue == self._spurious_eigenvalue: # recursion limit was exhausted
-                            return False
-                        self._init_eigensolver(new_spurious_eigenvalue)
-                        self.set_parameters(self._parameters, skip_init=True)
-                        return True
-                    else:
-                        return False
-            else:
-                return False
-                
-        do_solve()
-        while have_spurious_eigenvalue():
-            do_solve() # the spurious eigenvalue has been changed by the previous call to have_spurious_eigenvalue
+        assert n_eigs is not None
+        self.eigen_solver.solve(n_eigs)
     
     @override
     def get_eigenvalue(self, i):
@@ -116,6 +100,34 @@ class EigenSolver(AbstractEigenSolver):
     
     @override
     def get_eigenvector(self, i):
-        (_, _, real_vector, imag_vector) = self.eigen_solver.get_eigenpair(i)
-        return (Function(self.V, real_vector), Function(self.V, imag_vector))
-        
+        # Get number of computed eigenvectors/values
+        num_computed_eigenvalues = self.eigen_solver.eps().getConverged()
+
+        if (i < num_computed_eigenvalues):
+            # Initialize eigenvectors
+            real_vector = PETScVector()
+            imag_vector = PETScVector()
+            self.A.init_vector(real_vector, 0)
+            self.A.init_vector(imag_vector, 0)
+
+            # Condense input vectors
+            if hasattr(self, "_is"): # there were Dirichlet BCs
+                condensed_real_vector = real_vector.vec().getSubVector(self._is)
+                condensed_imag_vector = imag_vector.vec().getSubVector(self._is)
+            else:
+                condensed_real_vector = real_vector
+                condensed_imag_vector = imag_vector
+
+            # Get eigenpairs
+            _ = self.eigen_solver.eps().getEigenpair(i, condensed_real_vector, condensed_imag_vector)
+
+            # Restore input vectors
+            if hasattr(self, "_is"): # there were Dirichlet BCs
+                real_vector.vec().restoreSubVector(self._is, condensed_real_vector)
+                imag_vector.vec().restoreSubVector(self._is, condensed_imag_vector)
+            
+            # Return as Function
+            return (Function(self.V, real_vector), Function(self.V, imag_vector))
+        else:
+            raise RuntimeError("Requested eigenpair has not been computed")
+            
