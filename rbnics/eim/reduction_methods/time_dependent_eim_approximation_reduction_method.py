@@ -46,6 +46,8 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
             time_training_set.save(self.folder["training_set"], "time_training_set")
         # Combine both sets into one
         self._combine_sets(self.training_set, time_training_set)
+        # Also initialize the map from parameter values to snapshots container index
+        self._training_set_parameters_to_snapshots_container_index = dict(((mu["mu"], mu["t"]), mu_index) for (mu_index, mu) in enumerate(self.training_set))
         # Return
         assert time_import_successful == import_successful
         return import_successful
@@ -90,8 +92,7 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         assert self.EIM_approximation.basis_generation == "Greedy"
         mu = self.EIM_approximation.mu
         t = self.EIM_approximation.t
-        mu_index = self._offline__mu_index
-        assert mu_index is not None
+        mu_index = self._training_set_parameters_to_snapshots_container_index[(mu, t)]
         assert mu == self.training_set[mu_index]["mu"]
         assert t == self.training_set[mu_index]["t"]
         return self.snapshots_container[mu_index]

@@ -20,10 +20,26 @@ import hashlib
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.utils.decorators import Extends, override, sync_setters
 
+def set_mu_decorator(set_mu):
+    def decorated_set_mu(self, mu):
+        assert isinstance(mu, (tuple, EnlargedMu))
+        if isinstance(mu, tuple):
+            set_mu(self, mu)
+        else:
+            assert len(mu) == 2
+            assert "mu" in mu
+            assert isinstance(mu["mu"], tuple)
+            set_mu(self, mu["mu"])
+            assert "t" in mu
+            assert isinstance(mu["t"], float)
+            self.set_time(mu["t"])
+    return decorated_set_mu
+
 @Extends(EIMApproximation)
 class TimeDependentEIMApproximation(EIMApproximation):
     
     @override
+    @sync_setters("truth_problem", "set_mu", "mu", set_mu_decorator)
     @sync_setters("truth_problem", "set_time", "t")
     @sync_setters("truth_problem", "set_initial_time", "t0")
     @sync_setters("truth_problem", "set_time_step_size", "dt")
@@ -33,9 +49,16 @@ class TimeDependentEIMApproximation(EIMApproximation):
         EIMApproximation.__init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation)
         
         # Store quantities related to the time discretization
+        self.t0 = 0.
         self.t = 0.
         self.dt = None
         self.T  = None
+        
+    ## Set initial time
+    def set_initial_time(self, t0):
+        assert isinstance(t0, (float, int))
+        t0 = float(t0)
+        self.t0 = t0
         
     ## Set current time
     def set_time(self, t):
@@ -54,20 +77,6 @@ class TimeDependentEIMApproximation(EIMApproximation):
         assert isinstance(T, (float, int))
         T = float(T)
         self.T = T
-    
-    ## Set the current value of the parameter. The parameter may have been extended in internal EIM classes to include also time.
-    def set_mu(self, mu):
-        assert isinstance(mu, (tuple, EnlargedMu))
-        if isinstance(mu, tuple):
-            EIMApproximation.set_mu(self, mu)
-        else:
-            assert len(mu) == 2
-            assert "mu" in mu
-            assert isinstance(mu["mu"], tuple)
-            EIMApproximation.set_mu(self, mu["mu"])
-            assert "t" in mu
-            assert isinstance(mu["t"], float)
-            self.set_time(mu["t"])
             
     def _cache_key_and_file(self):
         cache_key = (self.mu, self.t)

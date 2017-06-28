@@ -29,10 +29,14 @@ class MockTimeDependentProblem(ParametrizedProblem):
         self.V = V
         
         # Minimal subset of a time dependent ParametrizedDifferentialProblem
-        self.t = 0
-        self.dt = 0
-        self.T = 0
+        self.t0 = 0.
+        self.t = 0.
+        self.dt = 0.
+        self.T = 0.
         self.set_mu_range([])
+        
+    def set_initial_time(self, t0):
+        self.t0 = t0
         
     def set_time(self, t):
         self.t = t

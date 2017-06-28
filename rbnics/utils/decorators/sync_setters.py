@@ -80,11 +80,24 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                         for (obj, setter) in all_synced_setters:
                             if getattr(obj, private_attribute__name) is not arg:
                                 setter(arg)
+                method__decorator__changed = False
                 if method__decorator is not None:
-                    overridden_method = method__decorator(overridden_method)
-                if all_synced_setters_for_method_self is None:
+                    if method__name not in _synced_setters__decorators:
+                        _synced_setters__decorators[method__name] = list()
+                    if isinstance(method__decorator, list):
+                        for method__decorator_i in method__decorator:
+                            if method__decorator_i not in _synced_setters__decorators[method__name]:
+                                _synced_setters__decorators[method__name].append(method__decorator_i)
+                                method__decorator__changed = True
+                    else:
+                        if method__decorator not in _synced_setters__decorators[method__name]:
+                            _synced_setters__decorators[method__name].append(method__decorator)
+                        method__decorator__changed = True
+                    for method__decorator_i in _synced_setters__decorators[method__name]:
+                        overridden_method = method__decorator_i(overridden_method)
+                if all_synced_setters_for_method_self is None or method__decorator__changed:
                     setattr(self, method__name, types.MethodType(overridden_method, self))
-                if all_synced_setters_for_method_other_object is None:
+                if all_synced_setters_for_method_other_object is None or method__decorator__changed:
                     setattr(other_object, method__name, types.MethodType(overridden_method, other_object))
                 # Make sure that the value of my attribute is in sync with the value that is currently 
                 # stored in other_object, because it was set before overriding was carried out
@@ -93,30 +106,36 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
         return __synced__init__
     return sync_setters_decorator
 
-def sync_setters(other_object, method__name, private_attribute__name):
+def sync_setters(other_object, method__name, private_attribute__name, method__decorator=None):
     assert method__name in ("set_final_time", "set_initial_time", "set_mu", "set_mu_range", "set_time", "set_time_step_size") # other uses have not been considered yet
     if method__name in ("set_final_time", "set_initial_time", "set_mu", "set_time", "set_time_step_size"):
-        return sync_setters__internal(other_object, method__name, private_attribute__name)
+        return sync_setters__internal(other_object, method__name, private_attribute__name, method__decorator)
     elif method__name == "set_mu_range":
-        def set_mu_range__decorator(set_mu_range__method):
-            def set_mu_range__decorated(self_, mu_range):
-                # set_mu_range by defaults calls set_mu. Since set_mu
-                # (1) requires a properly initialized mu range, but
-                # (2) it has been overridden to be kept in sync, also
-                #     for object which have not been initialized yet, 
-                # we first disable set_mu
-                _synced_setters__disabled_methods.add("set_mu")
-                # We set (and sync) the mu range
-                set_mu_range__method(self_, mu_range)
-                # Finally, we restore the original set_mu and set (and sync)
-                # the value of mu so that it has the correct length,
-                # as done in ParametrizedProblem
-                _synced_setters__disabled_methods.remove("set_mu")
-                self_.set_mu(tuple([r[0] for r in mu_range]))
-            return set_mu_range__decorated
-        return sync_setters__internal(other_object, method__name, private_attribute__name, set_mu_range__decorator)
+        if method__decorator is not None:
+            method__decorator = [method__decorator, set_mu_range__decorator]
+        else:
+            method__decorator = set_mu_range__decorator
+        return sync_setters__internal(other_object, method__name, private_attribute__name, method__decorator)
     else:
         raise AssertionError("Invalid method in sync_setters.")
+        
+def set_mu_range__decorator(set_mu_range__method):
+    def set_mu_range__decorated(self_, mu_range):
+        # set_mu_range by defaults calls set_mu. Since set_mu
+        # (1) requires a properly initialized mu range, but
+        # (2) it has been overridden to be kept in sync, also
+        #     for object which have not been initialized yet, 
+        # we first disable set_mu
+        _synced_setters__disabled_methods.add("set_mu")
+        # We set (and sync) the mu range
+        set_mu_range__method(self_, mu_range)
+        # Finally, we restore the original set_mu and set (and sync)
+        # the value of mu so that it has the correct length,
+        # as done in ParametrizedProblem
+        _synced_setters__disabled_methods.remove("set_mu")
+        self_.set_mu(tuple([r[0] for r in mu_range]))
+    return set_mu_range__decorated
     
 _synced_setters = dict()
+_synced_setters__decorators = dict()
 _synced_setters__disabled_methods = set()
