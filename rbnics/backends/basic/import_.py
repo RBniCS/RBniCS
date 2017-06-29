@@ -23,10 +23,11 @@ def import_(solution, directory, filename, suffix, component, backend, wrapping)
         if component is None:
             return wrapping.function_load(solution, directory, filename, suffix=suffix)
         else:
+            space = wrapping.get_function_space(solution)
             subspace = wrapping.get_function_subspace(solution, component)
             restricted_solution = wrapping.function_extend_or_restrict(solution, component, subspace, None, weight=None, copy=True)
             restricted_solution_loaded = wrapping.function_load(restricted_solution, directory, filename, suffix=suffix)
-            wrapping.function_extend_or_restrict(restricted_solution, None, solution.function_space(), component, weight=None, copy=True, extended_or_restricted_function=solution)
+            wrapping.function_extend_or_restrict(restricted_solution, None, space, component, weight=None, copy=True, extended_or_restricted_function=solution)
             return restricted_solution_loaded
     elif isinstance(solution, (backend.Matrix.Type(), backend.Vector.Type())):
         assert component is None

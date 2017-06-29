@@ -22,6 +22,7 @@ from rbnics.backends.basic.wrapping.function_load import function_load
 from rbnics.backends.basic.wrapping.function_save import function_save
 from rbnics.backends.basic.wrapping.functions_list_basis_functions_matrix_adapter import functions_list_basis_functions_matrix_adapter
 from rbnics.backends.basic.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
+from rbnics.backends.basic.wrapping.get_function_space import get_function_space
 from rbnics.backends.basic.wrapping.get_function_subspace import get_function_subspace
 from rbnics.backends.basic.wrapping.get_mpi_comm import get_mpi_comm
 from rbnics.backends.basic.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
@@ -41,6 +42,7 @@ __all__ = [
     'functions_list_basis_functions_matrix_mul_online_matrix',
     'functions_list_basis_functions_matrix_mul_online_vector',
     'functions_list_basis_functions_matrix_mul_online_function',
+    'get_function_space',
     'get_function_subspace',
     'get_mpi_comm',
     'gram_schmidt_projection_step',

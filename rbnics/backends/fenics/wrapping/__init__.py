@@ -41,6 +41,7 @@ from rbnics.backends.fenics.wrapping.get_expression_name import get_expression_n
 from rbnics.backends.fenics.wrapping.get_form_argument import get_form_argument
 from rbnics.backends.fenics.wrapping.get_form_description import get_form_description
 from rbnics.backends.fenics.wrapping.get_form_name import get_form_name
+from rbnics.backends.fenics.wrapping.get_function_space import get_function_space
 from rbnics.backends.fenics.wrapping.get_function_subspace import get_function_subspace
 from rbnics.backends.fenics.wrapping.get_mpi_comm import get_mpi_comm
 from rbnics.backends.fenics.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
@@ -87,6 +88,7 @@ __all__ = [
     'get_form_argument',
     'get_form_description',
     'get_form_name',
+    'get_function_space',
     'get_function_subspace',
     'get_mpi_comm',
     'gram_schmidt_projection_step',

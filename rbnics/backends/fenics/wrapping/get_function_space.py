@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def get_function_subspace(function_space__or__function, component):
-    pass
+from dolfin import Function
 
+def get_function_space(function):
+    assert isinstance(function, Function)
+    return function.function_space()
