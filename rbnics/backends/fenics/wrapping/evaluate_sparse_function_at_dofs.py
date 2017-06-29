@@ -23,9 +23,13 @@ import rbnics.backends # avoid circular imports when importing fenics backend
 
 def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V, reduced_dofs_list):
     vec = as_backend_type(input_function.vector()).vec()
-    vec_row_start, vec_row_end = vec.getOwnershipRange()
     output_function = rbnics.backends.fenics.Function(output_V)
     out = as_backend_type(output_function.vector()).vec()
+    _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list)
+    return output_function
+    
+def _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list):
+    vec_row_start, vec_row_end = vec.getOwnershipRange()
     out_row_start, out_row_end = out.getOwnershipRange()
     mpi_comm = vec.comm.tompi4py()
     for (i, reduced_i) in zip(dofs_list, reduced_dofs_list):
@@ -47,5 +51,4 @@ def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V, reduce
             out.setValues(reduced_i, mpi_comm.recv(source=vec_i_processor), addv=PETSc.InsertMode.INSERT)
     out.assemble()
     out.ghostUpdate()
-    return output_function
     
