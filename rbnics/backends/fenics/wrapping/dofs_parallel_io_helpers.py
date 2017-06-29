@@ -17,17 +17,18 @@
 #
 
 # This file contains a python translation of dolfin/io/XMLFunctionData.cpp private
-# methods build_dof_map (renamed to build_dof_map_reader_mapping) and build_global_to_cell_dof
-# (renamed build_dof_map_writer_mapping).
+# methods build_dof_map (renamed to _build_dof_map_reader_mapping) and build_global_to_cell_dof
+# (renamed _build_dof_map_writer_mapping).
 # These methods are going to be used when writing vectors and matrices
-# to file. Please referer to the original file for original copyright information.
-# The original implementation of _build_dof_map_writer_mapping and _get_local_dofmap is
+# to file. Please refer to the original file for original copyright information.
+# The original implementation of _build_dof_map_reader_mapping, _build_dof_map_writer_mapping 
+# and _get_local_dofmap is
 # Copyright (C) 2011 Garth N. Wells
 
 from dolfin import cells
 from mpi4py.MPI import SUM
 
-def build_dof_map_writer_mapping(V):
+def build_dof_map_writer_mapping(V, local_dofmap=None):
     def extract_first_cell(mapping_output):
         (min_global_cell_index, min_cell_dof) = mapping_output[0]
         for i in range(1, len(mapping_output)):
@@ -37,7 +38,9 @@ def build_dof_map_writer_mapping(V):
                 min_cell_dof = current_cell_dof
         return (min_global_cell_index, min_cell_dof)
     if not V in build_dof_map_writer_mapping._storage:
-        dof_map_writer_mapping_original = _build_dof_map_writer_mapping(V)
+        if local_dofmap is None:
+            local_dofmap = _get_local_dofmap(V)
+        dof_map_writer_mapping_original = _build_dof_map_writer_mapping(V, local_dofmap)
         dof_map_writer_mapping_storage = dict()
         for (key, value) in dof_map_writer_mapping_original.iteritems():
             dof_map_writer_mapping_storage[key] = extract_first_cell(value)
@@ -45,16 +48,16 @@ def build_dof_map_writer_mapping(V):
     return build_dof_map_writer_mapping._storage[V]
 build_dof_map_writer_mapping._storage = dict()
 
-def build_dof_map_reader_mapping(V):
+def build_dof_map_reader_mapping(V, local_dofmap=None):
     if not V in build_dof_map_reader_mapping._storage:
-        build_dof_map_reader_mapping._storage[V] = _build_dof_map_reader_mapping(V)
+        if local_dofmap is None:
+            local_dofmap = _get_local_dofmap(V)
+        build_dof_map_reader_mapping._storage[V] = _build_dof_map_reader_mapping(V, local_dofmap)
     return build_dof_map_reader_mapping._storage[V]
 build_dof_map_reader_mapping._storage = dict()
 
-def _build_dof_map_writer_mapping(V): # was build_global_to_cell_dof in dolfin
-    dofmap = V.dofmap()
+def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cell_dof in dolfin
     mpi_comm = V.mesh().mpi_comm().tompi4py()
-    gathered_dofmap = _get_local_dofmap(V)
     
     # Build global dof -> (global cell, local dof) map on root process
     global_dof_to_cell_dof = dict()
@@ -73,10 +76,9 @@ def _build_dof_map_writer_mapping(V): # was build_global_to_cell_dof in dolfin
     global_dof_to_cell_dof = mpi_comm.bcast(global_dof_to_cell_dof, root=0)
     return global_dof_to_cell_dof
     
-def _build_dof_map_reader_mapping(V): # was build_dof_map in dolfin
+def _build_dof_map_reader_mapping(V, gathered_dofmap): # was build_dof_map in dolfin
     mesh = V.mesh()
     mpi_comm = mesh.mpi_comm().tompi4py()
-    gathered_dofmap = _get_local_dofmap(V)
 
     # Get global number of cells
     num_cells = mpi_comm.allreduce(mesh.num_cells(), op=SUM)
@@ -104,37 +106,27 @@ def _get_local_dofmap(V):
     mpi_comm = mesh.mpi_comm().tompi4py()
     
     local_dofmap = list() # of integers
-    if mpi_comm.size > 1:
-        # Check that local-to-global cell numbering is available
-        assert mesh.topology().have_global_indices(mesh.topology().dim())
-        
-        # Get local-to-global map
-        local_to_global_dof = dofmap.tabulate_local_to_global_dofs()
-        
-        # Build dof map data with global cell indices
-        for cell in cells(mesh):
-            local_cell_index = cell.index()
-            global_cell_index = cell.global_index()
-            cell_dofs = dofmap.cell_dofs(local_cell_index)
+    
+    # Check that local-to-global cell numbering is available
+    assert mesh.topology().have_global_indices(mesh.topology().dim())
+    
+    # Get local-to-global map
+    local_to_global_dof = dofmap.tabulate_local_to_global_dofs()
+    
+    # Build dof map data with global cell indices
+    for cell in cells(mesh):
+        local_cell_index = cell.index()
+        global_cell_index = cell.global_index()
+        cell_dofs = dofmap.cell_dofs(local_cell_index)
 
-            cell_dofs_global = list();
-            for cell_dof in cell_dofs:
-                cell_dofs_global.append(local_to_global_dof[cell_dof])
-            
-            # Store information as follows: global_cell_index, size of dofs, cell dof global 1, ...., cell dof global end
-            local_dofmap.append(global_cell_index)
-            local_dofmap.append(len(cell_dofs))
-            local_dofmap.extend(cell_dofs_global)
-    else:
-        # Build dof map data with local cell indices
-        for cell in cells(mesh):
-            local_cell_index = cell.index()
-            cell_dofs = dofmap.cell_dofs(local_cell_index)
-            
-            # Store information as follows: global_cell_index, size of dofs, cell dof global 1, ...., cell dof global end
-            local_dofmap.append(local_cell_index)
-            local_dofmap.append(len(cell_dofs))
-            local_dofmap.extend(cell_dofs)
+        cell_dofs_global = list();
+        for cell_dof in cell_dofs:
+            cell_dofs_global.append(local_to_global_dof[cell_dof])
+        
+        # Store information as follows: global_cell_index, size of dofs, cell dof global 1, ...., cell dof global end
+        local_dofmap.append(global_cell_index)
+        local_dofmap.append(len(cell_dofs))
+        local_dofmap.extend(cell_dofs_global)
 
     # Gather dof map data on root process
     gathered_dofmap = mpi_comm.gather(local_dofmap, root=0)
@@ -144,5 +136,5 @@ def _get_local_dofmap(V):
             gathered_dofmap_flattened.extend(proc_map)
         return gathered_dofmap_flattened
     else:
-        return None
+        return list()
     

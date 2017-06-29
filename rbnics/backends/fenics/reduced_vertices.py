@@ -18,19 +18,17 @@
 
 from numpy import ndarray as array
 from numpy.linalg import norm
-from dolfin import Cell, Mesh, Point
+from dolfin import Cell, FunctionSpace, Point
+import rbnics.backends
 from rbnics.backends.abstract import ReducedVertices as AbstractReducedVertices
-from rbnics.backends.fenics.reduced_mesh import ReducedMesh
-from rbnics.backends.fenics.wrapping import assert_lagrange_1
 from rbnics.utils.decorators import BackendFor, Extends, override
 from rbnics.utils.io import ExportableList, Folders
 
 @Extends(AbstractReducedVertices)
-@BackendFor("fenics", inputs=(Mesh, ))
+@BackendFor("fenics", inputs=(FunctionSpace, ))
 class ReducedVertices(AbstractReducedVertices):
     def __init__(self, V, **kwargs):
         AbstractReducedVertices.__init__(self, V)
-        assert_lagrange_1(V)
         self._V = V
         
         # Detect if **kwargs are provided by the copy constructor in __getitem__
@@ -45,11 +43,20 @@ class ReducedVertices(AbstractReducedVertices):
             key_as_slice = None
             key_as_int = None
             
+        # Detect if a custom backend has been provided in kwargs
+        if "backend" in kwargs:
+            self.backend = kwargs["backend"]
+        else:
+            self.backend = rbnics.backends.fenics
+            
+        # Check provided function space
+        self.backend.wrapping.assert_lagrange_1(V)
+            
         # Storage for reduced mesh
         if copy_from is None:
-            self._reduced_mesh = ReducedMesh((V, ))
+            self._reduced_mesh = self.backend.ReducedMesh((V, ))
         else:
-            self._reduced_mesh = ReducedMesh((V, ), copy_from=copy_from._reduced_mesh, key_as_slice=key_as_slice, key_as_int=key_as_int)
+            self._reduced_mesh = self.backend.ReducedMesh((V, ), copy_from=copy_from._reduced_mesh, key_as_slice=key_as_slice, key_as_int=key_as_int)
         
     @override
     def append(self, vertex_and_component_and_dof):

@@ -329,15 +329,19 @@ def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
         meshfunctions_on_submesh.append(submesh_subdomain)
     return meshfunctions_on_submesh
     
+def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, CustomFunctionSpace=None):
+    if CustomFunctionSpace is None:
+        CustomFunctionSpace = FunctionSpace
+    functionspace_on_submesh = CustomFunctionSpace(submesh, functionspace_on_mesh.ufl_element())
+    return functionspace_on_submesh
+    
 # This function is similar to cbcpost restriction_map. The main difference are:
 # a) it builds a KDTree for each cell, rather than exploring the entire submesh at a time, so that
 #    no ambiguity should arise even in DG function spaces
 # b) the maps from/to dofs are with respect to global dof indices
 # Part of this code is taken from cbcpost/utils/restriction_map.py, with the following copyright information:
 # Copyright (C) 2010-2014 Simula Research Laboratory
-def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, functionspace_on_submesh=None):
-    if functionspace_on_submesh is None:
-        functionspace_on_submesh = FunctionSpace(submesh, functionspace_on_mesh.ufl_element())
+def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, functionspace_on_submesh, submesh, global_indices=True):
     mesh_dofs_to_submesh_dofs = dict()
     submesh_dofs_to_mesh_dofs = dict()
     
@@ -345,18 +349,17 @@ def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, functionspa
     if functionspace_on_mesh.num_sub_spaces() > 0:
         assert functionspace_on_mesh.num_sub_spaces() == functionspace_on_submesh.num_sub_spaces()
         for i in range(functionspace_on_mesh.num_sub_spaces()):
-            (_, mesh_dofs_to_submesh_dofs_i, submesh_dofs_to_mesh_dofs_i) = convert_functionspace_to_submesh(functionspace_on_mesh.sub(i), submesh, functionspace_on_submesh.sub(i))
+            (mesh_dofs_to_submesh_dofs_i, submesh_dofs_to_mesh_dofs_i) = map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh.sub(i), mesh, functionspace_on_submesh.sub(i), submesh, global_indices)
             for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs_i.iteritems():
                 assert mesh_dof not in mesh_dofs_to_submesh_dofs
                 assert submesh_dof not in submesh_dofs_to_mesh_dofs
             mesh_dofs_to_submesh_dofs.update(mesh_dofs_to_submesh_dofs_i)
             submesh_dofs_to_mesh_dofs.update(submesh_dofs_to_mesh_dofs_i)
         # Return
-        return (functionspace_on_submesh, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs)
+        return (mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs)
     else:
         assert functionspace_on_mesh.ufl_element().family() == "Lagrange", "The current implementation has been tested only for Lagrange function spaces"
         assert functionspace_on_submesh.ufl_element().family() == "Lagrange", "The current implementation has been tested only for Lagrange function spaces"
-        mesh = functionspace_on_mesh.mesh()
         mesh_element = functionspace_on_mesh.element()
         mesh_dofmap = functionspace_on_mesh.dofmap()
         submesh_element = functionspace_on_submesh.element()
@@ -364,11 +367,13 @@ def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, functionspa
         for submesh_cell in cells(submesh):
             submesh_dof_coordinates = submesh_element.tabulate_dof_coordinates(submesh_cell)
             submesh_cell_dofs = submesh_dofmap.cell_dofs(submesh_cell.index())
-            submesh_cell_dofs = [functionspace_on_submesh.dofmap().local_to_global_index(local_dof) for local_dof in submesh_cell_dofs]
+            if global_indices:
+                submesh_cell_dofs = [functionspace_on_submesh.dofmap().local_to_global_index(local_dof) for local_dof in submesh_cell_dofs]
             mesh_cell = Cell(mesh, submesh.submesh_to_mesh_cell_local_indices[submesh_cell.index()])
             mesh_dof_coordinates = mesh_element.tabulate_dof_coordinates(mesh_cell)
             mesh_cell_dofs = mesh_dofmap.cell_dofs(mesh_cell.index())
-            mesh_cell_dofs = [functionspace_on_mesh.dofmap().local_to_global_index(local_dof) for local_dof in mesh_cell_dofs]
+            if global_indices:
+                mesh_cell_dofs = [functionspace_on_mesh.dofmap().local_to_global_index(local_dof) for local_dof in mesh_cell_dofs]
             assert len(submesh_dof_coordinates) == len(mesh_dof_coordinates)
             assert len(submesh_cell_dofs) == len(mesh_cell_dofs)
             # Build a KDTree to compute distances from coordinates in mesh
@@ -388,12 +393,16 @@ def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, functionspa
                 else:
                     assert submesh_dofs_to_mesh_dofs[submesh_dof] == mesh_dof
         # Broadcast in parallel
-        mpi_comm = mesh.mpi_comm().tompi4py()
-        allgathered_mesh_dofs_to_submesh_dofs = mpi_comm.bcast(mesh_dofs_to_submesh_dofs, root=0)
-        allgathered_submesh_dofs_to_mesh_dofs = mpi_comm.bcast(submesh_dofs_to_mesh_dofs, root=0)
-        for r in range(1, mpi_comm.size):
-            allgathered_mesh_dofs_to_submesh_dofs.update( mpi_comm.bcast(mesh_dofs_to_submesh_dofs, root=r) )
-            allgathered_submesh_dofs_to_mesh_dofs.update( mpi_comm.bcast(submesh_dofs_to_mesh_dofs, root=r) )
+        if global_indices:
+            mpi_comm = mesh.mpi_comm().tompi4py()
+            allgathered_mesh_dofs_to_submesh_dofs = mpi_comm.bcast(mesh_dofs_to_submesh_dofs, root=0)
+            allgathered_submesh_dofs_to_mesh_dofs = mpi_comm.bcast(submesh_dofs_to_mesh_dofs, root=0)
+            for r in range(1, mpi_comm.size):
+                allgathered_mesh_dofs_to_submesh_dofs.update( mpi_comm.bcast(mesh_dofs_to_submesh_dofs, root=r) )
+                allgathered_submesh_dofs_to_mesh_dofs.update( mpi_comm.bcast(submesh_dofs_to_mesh_dofs, root=r) )
+        else:
+            allgathered_mesh_dofs_to_submesh_dofs = mesh_dofs_to_submesh_dofs
+            allgathered_submesh_dofs_to_mesh_dofs = submesh_dofs_to_mesh_dofs
         # Return
-        return (functionspace_on_submesh, allgathered_mesh_dofs_to_submesh_dofs, allgathered_submesh_dofs_to_mesh_dofs)
+        return (allgathered_mesh_dofs_to_submesh_dofs, allgathered_submesh_dofs_to_mesh_dofs)
     
