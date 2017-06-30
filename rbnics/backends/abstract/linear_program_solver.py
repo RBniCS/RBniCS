@@ -16,17 +16,21 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import AbstractBackend
+from abc import ABCMeta
+from rbnics.utils.decorators import AbstractBackend, abstractclassmethod, abstractmethod
 
 @AbstractBackend
 class LinearProgramSolver(object):
+    __metaclass__ = ABCMeta
+    
     def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):
         pass
         
+    @abstractmethod
     def solve(self):
         pass
     
-    @classmethod
+    @abstractclassmethod
     def solve_can_raise(self):
         pass
         

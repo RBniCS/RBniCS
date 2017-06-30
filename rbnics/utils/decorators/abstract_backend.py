@@ -25,11 +25,13 @@ from rbnics.utils.decorators.extends import Extends
 
 def AbstractBackend(Class):
     assert inspect.isclass(Class)
+    assert hasattr(Class, "__metaclass__")
+    assert Class.__metaclass__ is ABCMeta
     
     @BackendFor("Abstract")
     @Extends(Class, preserve_class_name=True)
     class AbstractBackend_Class(Class):
-        __metaclass__ = ABCMeta
+        pass
     
     return AbstractBackend_Class
     
@@ -61,3 +63,11 @@ def abstractonlinemethod(method):
         raise NotImplementedError("This method is just a placeholder, it should never get called. If you see this error you have probably forgotten to implement a method in your backend, or you are trying to call this method with a backend which is not supposed to be used online.")
     
     return abstractonlinemethod_function
+    
+class abstractclassmethod(classmethod):
+
+    __isabstractmethod__ = True
+
+    def __init__(self, callable):
+        callable.__isabstractmethod__ = True
+        super(abstractclassmethod, self).__init__(callable)

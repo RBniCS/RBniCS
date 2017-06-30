@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractmethod, abstractonlinemethod, abstractproperty
+from rbnics.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractclassmethod, abstractmethod, abstractonlinemethod, abstractproperty
 from rbnics.utils.decorators.backend_for import array_of, BackendFor, backend_for, ComputeThetaType, dict_of, DictOfThetaType, list_of, OnlineSizeType, OverrideBackendFor, override_backend_for, ParametersType, SameBackendFor, same_backend_for, ThetaType, tuple_of
 from rbnics.utils.decorators.customize_reduction_method_for import CustomizeReductionMethodFor
 from rbnics.utils.decorators.customize_reduced_problem_for import CustomizeReducedProblemFor

@@ -16,12 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 # Class containing the implementation of the POD
 @AbstractBackend
 class HighOrderProperOrthogonalDecomposition(object):
-
+    __metaclass__ = ABCMeta
+    
     ## Default initialization of members
     def __init__(self, V_or_Z):
         pass

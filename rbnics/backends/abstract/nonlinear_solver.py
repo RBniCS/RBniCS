@@ -21,6 +21,8 @@ from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class NonlinearSolver(object):
+    __metaclass__ = ABCMeta
+    
     def __init__(self, jacobian, solution, residual, bcs=None):
         pass
         

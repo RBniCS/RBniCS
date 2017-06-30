@@ -16,11 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class EigenSolver(object):
-    @abstractmethod
+    __metaclass__ = ABCMeta
+    
     def __init__(self, V_or_Z, A, B=None, bcs=None):
         pass
         

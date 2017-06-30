@@ -16,11 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from abc import ABCMeta
 from rbnics.backends.abstract.functions_list import FunctionsList
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class BasisFunctionsMatrix(object):
+    __metaclass__ = ABCMeta
+    
     def __init__(self, V_or_Z):
         pass
     

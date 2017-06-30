@@ -16,13 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import AbstractBackend
+from abc import ABCMeta
+from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class TimeQuadrature(object):
+    __metaclass__ = ABCMeta
+    
     def __init__(self, time_interval, function_over_time):
         pass
-        
+    
+    @abstractmethod        
     def integrate(self):
         pass
         

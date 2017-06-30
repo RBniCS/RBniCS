@@ -16,11 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class SymbolicParameters(object):
-    @abstractmethod
+    __metaclass__ = ABCMeta
+    
     def __init__(cls, problem, V_or_Z, mu):
         pass
                 

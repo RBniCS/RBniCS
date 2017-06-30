@@ -21,6 +21,8 @@ from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
 class LinearSolver(object):
+    __metaclass__ = ABCMeta
+    
     def __init__(self, lhs, solution, rhs, bcs=None):
         pass
         

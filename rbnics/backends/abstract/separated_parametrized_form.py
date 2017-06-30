@@ -16,10 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod, abstractproperty
 
 @AbstractBackend
 class SeparatedParametrizedForm(object):
+    __metaclass__ = ABCMeta
+    
     def __init__(self, form):
         pass
         
