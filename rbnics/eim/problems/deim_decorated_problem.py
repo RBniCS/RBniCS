@@ -17,7 +17,7 @@
 #
 
 from itertools import product as cartesian_product
-from rbnics.backends import ParametrizedTensorFactory, SeparatedParametrizedForm
+from rbnics.backends import ParametrizedTensorFactory, SeparatedParametrizedForm, SymbolicParameters
 from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
@@ -67,6 +67,11 @@ def DEIMDecoratedProblem(
                     (len(self.non_DEIM_forms) == 0)
                 )
                 if len(self.DEIM_approximations) == 0: # initialize DEIM approximations only once
+                    # Temporarily replace float parameters with symbols, so that we can detect if operators
+                    # are parametrized
+                    mu_float = self.mu
+                    self.mu = SymbolicParameters(self, self.V, self.mu)
+                    # Loop over each term
                     for term in self.terms:
                         forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                         self.DEIM_approximations[term] = dict()
@@ -81,6 +86,8 @@ def DEIMDecoratedProblem(
                                 self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, type(self).__name__ + "/deim/" + factory_form_q.name(), basis_generation)
                             else:
                                 self.non_DEIM_forms[term][q] = form_q
+                    # Restore float parameters
+                    self.mu = mu_float
                 
             @override
             def _solve(self, **kwargs):

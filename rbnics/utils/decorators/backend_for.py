@@ -336,6 +336,7 @@ def ComputeThetaType(additional_types=None):
             theta_type.append(tuple_of(t))
     return tuple(theta_type)
 ThetaType = ComputeThetaType()
+ParametersType = ThetaType
 DictOfThetaType = tuple(dict_of(str, theta_subtype) for theta_subtype in ThetaType)
 OnlineSizeType = (int, dict_of(str, int))
 

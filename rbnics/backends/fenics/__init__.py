@@ -52,6 +52,7 @@ from rbnics.backends.fenics.reduced_vertices import ReducedVertices
 from rbnics.backends.fenics.separated_parametrized_form import SeparatedParametrizedForm
 from rbnics.backends.fenics.snapshots_matrix import SnapshotsMatrix
 from rbnics.backends.fenics.sum import sum
+from rbnics.backends.fenics.symbolic_parameters import SymbolicParameters
 from rbnics.backends.fenics.tensor_basis_list import TensorBasisList
 from rbnics.backends.fenics.tensor_snapshots_list import TensorSnapshotsList
 from rbnics.backends.fenics.tensors_list import TensorsList
@@ -89,6 +90,7 @@ __all__ = [
     'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',
+    'SymbolicParameters',
     'TensorBasisList',
     'TensorSnapshotsList',
     'TensorsList',

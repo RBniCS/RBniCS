@@ -19,8 +19,7 @@
 from __future__ import print_function
 from dolfin import *
 from rbnics import EquispacedDistribution
-from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, transpose
-from rbnics.backends.fenics.wrapping import ParametrizedConstant
+from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
 from rbnics.backends.online import OnlineFunction
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
@@ -41,7 +40,7 @@ class MockProblem(ParametrizedProblem):
         self.components = ["f"]
         # Parametrized function to be interpolated
         x = SpatialCoordinate(V.mesh())
-        mu = (ParametrizedConstant(self, "mu[0]", mu=(-1., -1.)), ParametrizedConstant(self, "mu[1]", mu=(-1., -1.)))
+        mu = SymbolicParameters(self, V, mu=(-1., -1.))
         self.f00 = 1./sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)
         self.f01 = 1./sqrt(pow(x[0]-mu[1], 2) + pow(x[1]-mu[0], 2) + 0.01)
         # Inner product

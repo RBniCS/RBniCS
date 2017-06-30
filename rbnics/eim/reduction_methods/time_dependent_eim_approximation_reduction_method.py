@@ -16,11 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 from rbnics.sampling import ParameterSpaceSubset
 from rbnics.sampling.distributions import DiscreteDistribution, UniformDistribution
 from rbnics.utils.decorators import Extends, override, sync_setters
 from rbnics.eim.problems.time_dependent_eim_approximation import EnlargedMu
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
+from rbnics.utils.mpi import print
 
 @Extends(EIMApproximationReductionMethod)
 class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMethod):
@@ -87,6 +89,9 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
             mu_t["t"] = t[0]
             mu_set[n] = mu_t
             
+    def _print_greedy_interpolation_solve_message(self):
+        print("solve interpolation for mu =", self.EIM_approximation.mu, "and t =", self.EIM_approximation.t)
+        
     ## Load the precomputed snapshot. Overridden to correct the assert
     def load_snapshot(self):
         assert self.EIM_approximation.basis_generation == "Greedy"

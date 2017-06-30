@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends import SymbolicParameters
 from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 
 def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
@@ -30,11 +31,18 @@ def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
-            ## Default initialization of members
             @override
-            def __init__(self, V, **kwargs):
-                # Call the parent initialization
-                ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
+            def init(self):
+                # Temporarily replace float parameters with symbols, so that the forms do not hardcode
+                # the current value of the parameter while assemblying.
+                mu_float = self.mu
+                self.mu = SymbolicParameters(self, self.V, self.mu)
+                # Call parent
+                output = ParametrizedDifferentialProblem_DerivedClass.init(self)
+                # Restore float parameters
+                self.mu = mu_float
+                # Return
+                return output
             
         # return value (a class) for the decorator
         return ExactParametrizedFunctionsDecoratedProblem_Class

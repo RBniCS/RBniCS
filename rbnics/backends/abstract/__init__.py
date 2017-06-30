@@ -45,6 +45,7 @@ from rbnics.backends.abstract.reduced_vertices import ReducedVertices
 from rbnics.backends.abstract.separated_parametrized_form import SeparatedParametrizedForm
 from rbnics.backends.abstract.snapshots_matrix import SnapshotsMatrix
 from rbnics.backends.abstract.sum import sum
+from rbnics.backends.abstract.symbolic_parameters import SymbolicParameters
 from rbnics.backends.abstract.tensor_basis_list import TensorBasisList
 from rbnics.backends.abstract.tensor_snapshots_list import TensorSnapshotsList
 from rbnics.backends.abstract.tensors_list import TensorsList
@@ -84,6 +85,7 @@ __all__ = [
     'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',
+    'SymbolicParameters',
     'TensorBasisList',
     'TensorSnapshotsList',
     'TensorsList',

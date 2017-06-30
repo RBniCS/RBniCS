@@ -256,9 +256,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 # The offline/online separation does not hold anymore, so we need to re-assemble operators,
                 # because the assemble_operator() of the truth problem *may* return parameter dependent operators.
                 # Thus, call the parent method enforcing current_stage = "offline"
-                output = ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, "offline")
-                # Return
-                return output
+                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, "offline")
             else:
                 # Call parent method
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)

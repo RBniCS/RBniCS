@@ -139,7 +139,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             while self.EIM_approximation.N < self.Nmax and relative_error_max >= self.tol:
                 print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
             
-                print("solve interpolation for mu =", self.EIM_approximation.mu)
+                self._print_greedy_interpolation_solve_message()
                 self.EIM_approximation.solve()
                 
                 print("compute and locate maximum interpolation error")
@@ -191,6 +191,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
         self._finalize_offline()
         return self.EIM_approximation
+        
+    def _print_greedy_interpolation_solve_message(self):
+        print("solve interpolation for mu =", self.EIM_approximation.mu)
         
     ## Update the snapshots container
     def add_to_snapshots(self, snapshot):

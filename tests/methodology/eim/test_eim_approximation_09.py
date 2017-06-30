@@ -18,9 +18,7 @@
 
 from dolfin import *
 from rbnics import EquispacedDistribution
-from rbnics.backends import ParametrizedTensorFactory
-from rbnics.backends.fenics import ParametrizedExpressionFactory
-from rbnics.backends.fenics.wrapping import ParametrizedConstant
+from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
@@ -28,13 +26,13 @@ class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V
         # Parametrized function to be interpolated
-        mu = ParametrizedConstant(self, "mu[0]", mu=(1., ))
+        mu = SymbolicParameters(self, V, mu=(1., ))
         if expression_type == "Function":
             x = project(Expression("x[0]", element=V.ufl_element()), V) # SpatialCoordinate is not supported by FEniCS dP measure
             x = (x, )
         else:
             x = SpatialCoordinate(V.mesh())
-        f = (1-x[0])*cos(3*pi*mu*(1+x[0]))*exp(-mu*(1+x[0]))
+        f = (1-x[0])*cos(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":

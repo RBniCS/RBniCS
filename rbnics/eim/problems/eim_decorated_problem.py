@@ -17,7 +17,7 @@
 #
 
 from itertools import product as cartesian_product
-from rbnics.backends import ParametrizedExpressionFactory, SeparatedParametrizedForm
+from rbnics.backends import ParametrizedExpressionFactory, SeparatedParametrizedForm, SymbolicParameters
 from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 from rbnics.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from rbnics.eim.problems.eim_approximation import EIMApproximation
@@ -68,6 +68,11 @@ def EIMDecoratedProblem(
                     (len(self.EIM_approximations) == 0)
                 )
                 if len(self.EIM_approximations) == 0: # initialize EIM approximations only once
+                    # Temporarily replace float parameters with symbols, so that we can detect if operators
+                    # are parametrized
+                    mu_float = self.mu
+                    self.mu = SymbolicParameters(self, self.V, self.mu)
+                    # Loop over each term
                     for term in self.terms:
                         forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                         Q = len(forms)
@@ -85,6 +90,8 @@ def EIMDecoratedProblem(
                                         else:
                                             EIMApproximationType = EIMApproximation
                                         self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, type(self).__name__ + "/eim/" + factor_name, basis_generation)
+                    # Restore float parameters
+                    self.mu = mu_float
                 
             @override
             def _solve(self, **kwargs):
