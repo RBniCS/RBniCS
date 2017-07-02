@@ -57,6 +57,7 @@ X = assemble(x)
 # Define boundary condition
 bc = [DirichletBC(V, exact_solution_expression, boundary)]
 
+# ::: Callbacks return tensors :: #
 # Solve the linear problem
 sparse_solution = Function(V)
 sparse_solver = SparseLinearSolver(A, sparse_solution, F, bc)
@@ -68,7 +69,22 @@ sparse_error.vector().add_local(+ sparse_solution.vector().array())
 sparse_error.vector().add_local(- exact_solution.vector().array())
 sparse_error.vector().apply("")
 sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-print "SparseLinearSolver error:", sparse_error_norm
+print "SparseLinearSolver error (tensor callbacks):", sparse_error_norm
+assert isclose(sparse_error_norm, 0., atol=1.e-5)
+
+# ::: Callbacks return forms :: #
+# Solve the linear problem
+sparse_solution = Function(V)
+sparse_solver = SparseLinearSolver(a, sparse_solution, f, bc)
+sparse_solver.solve()
+
+# Compute the error
+sparse_error = Function(V)
+sparse_error.vector().add_local(+ sparse_solution.vector().array())
+sparse_error.vector().add_local(- exact_solution.vector().array())
+sparse_error.vector().apply("")
+sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
+print "SparseLinearSolver error (form callbacks):", sparse_error_norm
 assert isclose(sparse_error_norm, 0., atol=1.e-5)
 
 # ~~~ Dense case ~~~ #
