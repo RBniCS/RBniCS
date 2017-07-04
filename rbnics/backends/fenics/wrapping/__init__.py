@@ -108,9 +108,11 @@ __all__ = [
     'vectorized_matrix_inner_vectorized_matrix'
 ]
 
-__overridden__ = [
-    'DirichletBC',
-    'FunctionSpace',
-    'ParametrizedExpression',
-    'plot'
-]
+__overridden__ = {
+    'rbnics': [
+        'DirichletBC',
+        'FunctionSpace',
+        'ParametrizedExpression',
+        'plot'
+    ]
+}

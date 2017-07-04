@@ -35,6 +35,7 @@ import rbnics.backends.abstract
 import rbnics.backends.common
 for backend in available_backends:
     importlib.import_module("rbnics.backends." + backend)
+    importlib.import_module("rbnics.backends." + backend + ".wrapping")
 
 # Combine all enabled backends available in the factory and store them in this module
 from rbnics.utils.factories import backends_factory, enable_backend
@@ -47,33 +48,35 @@ backends_factory(current_module)
 # and thus have not been processed by the enabled_backend function above
 from rbnics.backends.abstract import LinearProblemWrapper, NonlinearProblemWrapper, TimeDependentProblemWrapper, TimeDependentProblem1Wrapper, TimeDependentProblem2Wrapper
 
-# Extend parent module __all__ variable with backends wrapping
-overridden_classes_or_functions = dict() # from name to list of backends
+# Next, extend modules with __overridden__ variables in backends wrapping. In order to account for multiple overrides,
+# sort the list of available backends to account that
+depends_on_backends = dict()
+at_least_one_dependent_backend = False
 for backend in available_backends:
-    importlib.import_module("rbnics.backends." + backend + ".wrapping")
-    wrapping_overridden = sys.modules["rbnics.backends." + backend + ".wrapping"].__overridden__
-    for class_or_function in wrapping_overridden:
-        if class_or_function not in overridden_classes_or_functions:
-            overridden_classes_or_functions[class_or_function] = list()
-        overridden_classes_or_functions[class_or_function].append(backend)
-for backend in available_backends:
-    if hasattr(sys.modules["rbnics.backends." + backend + ".wrapping"], "__overridden_replaces__"):
-        wrapping_overridden_replaces = sys.modules["rbnics.backends." + backend + ".wrapping"].__overridden_replaces__
+    if hasattr(sys.modules["rbnics.backends." + backend + ".wrapping"], "__depends_on__"):
+        depends_on_backends[backend] = set(sys.modules["rbnics.backends." + backend + ".wrapping"].__depends_on__)
+        at_least_one_dependent_backend = True
     else:
-        wrapping_overridden_replaces = dict()
-    for class_or_function in wrapping_overridden_replaces:
-        assert class_or_function in overridden_classes_or_functions
-        assert len(overridden_classes_or_functions[class_or_function]) > 1
-        overridden_classes_or_functions[class_or_function].remove(wrapping_overridden_replaces[class_or_function])
-for (class_or_function, backends) in overridden_classes_or_functions.iteritems():
-    assert len(backends) is 1
-    backend = backends[0]
-    assert not hasattr(sys.modules["rbnics"], class_or_function)
-    setattr(sys.modules["rbnics"], class_or_function, getattr(sys.modules["rbnics.backends." + backend + ".wrapping"], class_or_function))
-    sys.modules["rbnics"].__all__ += [class_or_function]
+        depends_on_backends[backend] = set()
+if at_least_one_dependent_backend:
+    from toposort import toposort_flatten
+    available_backends = toposort_flatten(depends_on_backends)
+
+# Extend parent module __all__ variable with backends wrapping
+for backend in available_backends:
+    if hasattr(sys.modules["rbnics.backends." + backend + ".wrapping"], "__overridden__"):
+        wrapping_overridden = sys.modules["rbnics.backends." + backend + ".wrapping"].__overridden__
+        assert isinstance(wrapping_overridden, dict)
+        for (module_name, classes_or_functions) in wrapping_overridden.iteritems():
+            assert isinstance(classes_or_functions, (list, dict))
+            if isinstance(classes_or_functions, list):
+                classes_or_functions = dict((class_or_function, class_or_function) for class_or_function in classes_or_functions)
+            for (class_or_function_name, class_or_function_impl) in classes_or_functions.iteritems():
+                setattr(sys.modules[module_name], class_or_function_name, getattr(sys.modules["rbnics.backends." + backend + ".wrapping"], class_or_function_impl))
+                if class_or_function_name not in sys.modules[module_name].__all__:
+                    sys.modules[module_name].__all__.append(class_or_function_name)
 
 # Clean up
 del current_module
 del current_directory
 del available_backends
-del overridden_classes_or_functions

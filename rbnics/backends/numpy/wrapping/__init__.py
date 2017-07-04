@@ -57,5 +57,3 @@ __all__ = [
     'vectorized_matrix_inner_vectorized_matrix'
 ]
 
-__overridden__ = []
-
