@@ -24,7 +24,7 @@ from functools import wraps
 from numpy import ndarray as array, float64
 from rbnics.utils.mpi import log, DEBUG
 
-def BackendFor(library, online_backend=None, inputs=None):
+def BackendFor(library, online_backend=None, inputs=None, overrides=None):
     def BackendFor_Decorator(Class):
         log(DEBUG,
             "In BackendFor with\n" +
@@ -59,6 +59,9 @@ def BackendFor(library, online_backend=None, inputs=None):
             if Class.__name__ not in BackendFor._all_classes_inputs:
                 BackendFor._all_classes_inputs[Class.__name__] = dict() # from inputs to library
             for possible_inputs in combine_inputs(inputs):
+                if overrides is not None and possible_inputs in BackendFor._all_classes_inputs[Class.__name__]:
+                    assert BackendFor._all_classes_inputs[Class.__name__][possible_inputs] == overrides
+                    BackendFor._all_classes_inputs[Class.__name__].pop(possible_inputs)
                 assert possible_inputs not in BackendFor._all_classes_inputs[Class.__name__], "Input types " + str(possible_inputs) + " for " + Class.__name__ + " cannot be the same for backends " + BackendFor._all_classes_inputs[Class.__name__][possible_inputs] + " (already in storage) and " + library + " (to be added), otherwise it will not be possible to choose among them"
                 BackendFor._all_classes_inputs[Class.__name__][possible_inputs] = library
         
@@ -71,31 +74,10 @@ def BackendFor(library, online_backend=None, inputs=None):
         return Class
     return BackendFor_Decorator
     
-def SameBackendFor(library, source_library, Class, online_backend=None, inputs=None):
-    # TODO check that inputs are the same for library and source_library
-    pass
-    
-def OverrideBackendFor(library, online_backend=None, inputs=None):
-    def OverrideBackendFor_Decorator(Class):
-        if online_backend is None:
-            assert Class.__name__ in BackendFor._all_classes[library]
-            del BackendFor._all_classes[library][Class.__name__]
-        else:
-            assert online_backend in BackendFor._all_classes[library][Class.__name__]
-            del BackendFor._all_classes[library][Class.__name__][online_backend]
-            
-        if library is not "Abstract":
-            for possible_inputs in combine_inputs(inputs):
-                assert possible_inputs in BackendFor._all_classes_inputs[Class.__name__]
-                del BackendFor._all_classes_inputs[Class.__name__][possible_inputs]
-            
-        return BackendFor(library, online_backend, inputs)(Class)
-    return OverrideBackendFor_Decorator
-    
 BackendFor._all_classes = dict() # from library to dict from class name to class
 BackendFor._all_classes_inputs = dict() # from inputs to library
     
-def backend_for(library, online_backend=None, inputs=None, output=None):
+def backend_for(library, online_backend=None, inputs=None, output=None, overrides=None):
     def backend_for_decorator(function):
         log(DEBUG,
             "In backend_for with\n" +
@@ -134,9 +116,11 @@ def backend_for(library, online_backend=None, inputs=None, output=None):
             if function.__name__ not in backend_for._all_functions_inputs:
                 backend_for._all_functions_inputs[function.__name__] = dict() # from inputs to library
             for possible_inputs in combine_inputs(inputs):
+                if overrides is not None and possible_inputs in backend_for._all_functions_inputs[function.__name__]:
+                    assert backend_for._all_functions_inputs[function.__name__][possible_inputs] == overrides
+                    backend_for._all_functions_inputs[function.__name__].pop(possible_inputs)
                 assert possible_inputs not in backend_for._all_functions_inputs[function.__name__], "Input types " + str(possible_inputs) + " for " + function.__name__ + " cannot be the same for backends " + backend_for._all_functions_inputs[function.__name__][possible_inputs] + " (already in storage) and " + library + " (to be added), otherwise it will not be possible to choose among them"
                 backend_for._all_functions_inputs[function.__name__][possible_inputs] = library
-            
         
         log(DEBUG,
             "After backend_for, backends function storage contains\n" +
@@ -146,27 +130,6 @@ def backend_for(library, online_backend=None, inputs=None, output=None):
         
         return function
     return backend_for_decorator
-    
-def same_backend_for(library, source_library, Class, online_backend=None, inputs=None, output=None):
-    # TODO check that inputs/output are the same for library and source_library
-    pass
-    
-def override_backend_for(library, online_backend=None, inputs=None, output=None):
-    def override_backend_for_decorator(function):
-        if online_backend is None:
-            assert function.__name__ in backend_for._all_functions[library]
-            del backend_for._all_functions[library][function.__name__]
-        else:
-            assert online_backend in backend_for._all_functions[library][function.__name__]
-            del backend_for._all_functions[library][function.__name__][online_backend]
-            
-        if library is not "Abstract":
-            for possible_inputs in combine_inputs(inputs):
-                assert possible_inputs in backend_for._all_functions_inputs[function.__name__]
-                del backend_for._all_functions_inputs[function.__name__][possible_inputs]
-                
-        return backend_for(library, online_backend, inputs, output)(function)
-    return override_backend_for_decorator
 
 backend_for._all_functions = dict() # from library to dict from function name to function
 backend_for._all_functions_inputs = dict() # from inputs to library

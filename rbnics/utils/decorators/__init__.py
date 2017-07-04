@@ -17,7 +17,7 @@
 #
 
 from rbnics.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractclassmethod, abstractmethod, abstractonlinemethod, abstractproperty
-from rbnics.utils.decorators.backend_for import array_of, BackendFor, backend_for, ComputeThetaType, dict_of, DictOfThetaType, list_of, OnlineSizeType, OverrideBackendFor, override_backend_for, ParametersType, SameBackendFor, same_backend_for, ThetaType, tuple_of
+from rbnics.utils.decorators.backend_for import array_of, BackendFor, backend_for, ComputeThetaType, dict_of, DictOfThetaType, list_of, OnlineSizeType, ParametersType, ThetaType, tuple_of
 from rbnics.utils.decorators.customize_reduction_method_for import CustomizeReductionMethodFor
 from rbnics.utils.decorators.customize_reduced_problem_for import CustomizeReducedProblemFor
 from rbnics.utils.decorators.extends import Extends
@@ -68,8 +68,6 @@ __all__ = [
     'MultiLevelReductionMethod',
     'OnlineSizeType',
     'override',
-    'OverrideBackendFor',
-    'override_backend_for',
     'ParametersType',
     'ProblemDecoratorFor',
     'ReducedProblemDecoratorFor',
@@ -78,8 +76,6 @@ __all__ = [
     'ReductionMethodFor',
     'regenerate_reduced_problem_from_exact_reduced_problem',
     'RequiredBaseDecorators',
-    'SameBackendFor',
-    'same_backend_for',
     'set_map_from_problem_to_training_status_on',
     'set_map_from_problem_to_training_status_off',
     'StoreMapFromProblemNameToProblem',
