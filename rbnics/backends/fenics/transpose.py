@@ -25,7 +25,6 @@ from rbnics.backends.fenics.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.fenics.function import Function
 from rbnics.backends.fenics.functions_list import FunctionsList
 from rbnics.backends.fenics.vector import Vector
-import rbnics.backends.fenics.wrapping
 import rbnics.backends.numpy
 from rbnics.utils.decorators import backend_for
 

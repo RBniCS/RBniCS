@@ -19,7 +19,6 @@
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 from rbnics.backends.basic import TensorsList as BasicTensorsList
 import rbnics.backends.numpy
-import rbnics.backends.numpy.wrapping
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicTensorsList)

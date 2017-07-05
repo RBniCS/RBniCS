@@ -21,7 +21,6 @@ from rbnics.backends.fenics.matrix import Matrix
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
 import rbnics.backends.fenics
-import rbnics.backends.fenics.wrapping
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)

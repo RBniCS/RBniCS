@@ -19,7 +19,6 @@
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.basic import FunctionsList as BasicFunctionsList
 import rbnics.backends.numpy
-import rbnics.backends.numpy.wrapping
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicFunctionsList)

@@ -21,7 +21,6 @@ import rbnics.backends.fenics
 from rbnics.backends.fenics.function import Function
 from rbnics.backends.fenics.matrix import Matrix
 from rbnics.backends.fenics.vector import Vector
-import rbnics.backends.fenics.wrapping
 from rbnics.utils.decorators import backend_for
 from rbnics.utils.io import Folders
 

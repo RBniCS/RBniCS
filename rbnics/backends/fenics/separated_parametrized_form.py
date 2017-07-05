@@ -28,7 +28,7 @@ from ufl.indexed import Indexed
 from rbnics.utils.io import ExportableList
 from rbnics.utils.decorators import BackendFor, Extends, override
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from rbnics.backends.fenics.wrapping import get_expression_name
+from rbnics.backends.fenics.wrapping import expression_name
 
 @Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("fenics", inputs=(Form, ))
@@ -187,9 +187,9 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         for addend in self._coefficients:
             self._placeholder_names.append( list() ) # of string
             for factor in addend:
-                self._placeholder_names[-1].append(get_expression_name(factor))
+                self._placeholder_names[-1].append(expression_name(factor))
                 
-        log(PROGRESS, "4. Assert list length consistency")
+        log(PROGRESS, "5. Assert list length consistency")
         assert len(self._coefficients) == len(self._placeholders)
         assert len(self._coefficients) == len(self._placeholder_names)
         for (c, p, pn) in zip(self._coefficients, self._placeholders, self._placeholder_names):

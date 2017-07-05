@@ -21,7 +21,6 @@ import rbnics.backends.numpy
 from rbnics.backends.numpy.function import Function
 from rbnics.backends.numpy.matrix import Matrix
 from rbnics.backends.numpy.vector import Vector
-import rbnics.backends.numpy.wrapping
 from rbnics.utils.decorators import backend_for, list_of
 
 @backend_for("numpy", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), ))

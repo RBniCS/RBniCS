@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends.numpy.wrapping.tensor_copy import tensor_copy
-import rbnics.backends # avoid circular imports when importing numpy backend
+import rbnics.backends.numpy
 
 def tensors_list_mul_online_function(tensors_list, online_function):
     assert isinstance(online_function, rbnics.backends.numpy.Function.Type())

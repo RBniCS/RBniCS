@@ -19,7 +19,6 @@
 from dolfin import FunctionSpace
 from rbnics.backends.basic import TensorsList as BasicTensorsList
 import rbnics.backends.fenics
-import rbnics.backends.fenics.wrapping
 import rbnics.backends.numpy
 from rbnics.utils.decorators import BackendFor, Extends, override
 

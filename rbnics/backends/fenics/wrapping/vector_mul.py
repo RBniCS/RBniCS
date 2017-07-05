@@ -19,7 +19,7 @@
 from ufl import Form
 from ufl.core.operator import Operator
 from dolfin import assemble
-import rbnics.backends # avoid circular imports when importing fenics backend
+import rbnics.backends.fenics
 from rbnics.backends.fenics.wrapping import function_from_ufl_operators
 
 def vector_mul_vector(vector1, vector2):

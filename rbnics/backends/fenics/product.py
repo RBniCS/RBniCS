@@ -88,14 +88,11 @@ def product(thetas, operators, thetas2=None):
             output.append(DirichletBC(*args))
         return ProductOutput(output)
     elif operators.type() == "Form":
-        log(PROGRESS, "re-assemblying form (due to inefficient evaluation)")
-        assert isinstance(operators[0], Form)
+        assert all([isinstance(operator, Form) for operator in operators])
         output = 0
         for (theta, operator) in zip(thetas, operators):
             theta = float(theta)
             output += Constant(theta)*operator
-        # keep_diagonal is enabled because it is needed to constrain DirichletBC eigenvalues in SCM
-        output = assemble(output, keep_diagonal=True)
         return ProductOutput(output)
     elif operators.type() == "Function":
         output = function_copy(operators[0])

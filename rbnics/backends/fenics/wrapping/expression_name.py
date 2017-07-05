@@ -19,31 +19,50 @@
 from numpy import zeros
 from dolfin import __version__ as dolfin_version, Constant, Function
 from ufl.core.multiindex import FixedIndex, Index, MultiIndex
-from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 from ufl.indexed import Indexed
 import hashlib
-from rbnics.utils.decorators import get_problem_from_solution, is_problem_solution
+import rbnics.backends.fenics
+from rbnics.utils.decorators import get_problem_from_solution
 
-def get_expression_name(expression):
+def expression_name(expression, backend=None):
+    if backend is None:
+        backend = rbnics.backends.fenics
+    
     str_repr = ""
-    coefficients_replacement = {}
-    for n in pre_traversal(expression):
+    visited = set()
+    coefficients_replacement = dict()
+    for n in backend.wrapping.expression_iterator(expression):
+        if n in visited:
+            continue
         n = _preprocess_indexed(n, coefficients_replacement, str_repr)
         if hasattr(n, "cppcode"):
             coefficients_replacement[repr(n)] = str(n.cppcode)
             str_repr += repr(n.cppcode)
-        elif isinstance(n, Function) and is_problem_solution(n):
-            problem = get_problem_from_solution(n)
-            coefficients_replacement[repr(n)] = str(type(problem).__name__)
-            str_repr += repr(type(problem).__name__)
+            visited.add(n)
+        elif backend.wrapping.is_problem_solution_or_problem_solution_component_type(n):
+            if backend.wrapping.is_problem_solution_or_problem_solution_component(n):
+                (preprocessed_n, component, truth_solution) = backend.wrapping.solution_identify_component(n)
+                problem = get_problem_from_solution(truth_solution)
+            else:
+                (problem, component) = backend.wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
+                preprocessed_n = n
+            coefficients_replacement[repr(preprocessed_n)] = str(type(problem).__name__) + str(component)
+            str_repr += repr(type(problem).__name__) + str(component)
+            # Make sure to skip any parent solution related to this one
+            visited.add(n)
+            visited.add(preprocessed_n)
+            for parent_n in backend.wrapping.solution_iterator(preprocessed_n):
+                visited.add(parent_n)
         elif isinstance(n, Constant):
             x = zeros(1)
             vals = zeros(n.value_size())
             n.eval(vals, x)
             coefficients_replacement[repr(n)] = str(vals)
             str_repr += repr(str(vals))
+            visited.add(n)
         else:
             str_repr += repr(n)
+            visited.add(n)
     for key, value in coefficients_replacement.iteritems():
         str_repr = str_repr.replace(key, value)
     hash_code = hashlib.sha1(

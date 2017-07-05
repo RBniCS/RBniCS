@@ -16,6 +16,19 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends.basic.wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs import evaluate_and_vectorize_sparse_matrix_at_dofs
+from rbnics.backends.basic.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
+from rbnics.backends.basic.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
+from rbnics.backends.basic.wrapping.expression_description import expression_description
+from rbnics.backends.basic.wrapping.expression_iterator import expression_iterator
+from rbnics.backends.basic.wrapping.expression_name import expression_name
+from rbnics.backends.basic.wrapping.expression_on_reduced_mesh import expression_on_reduced_mesh
+from rbnics.backends.basic.wrapping.expression_on_truth_mesh import expression_on_truth_mesh
+from rbnics.backends.basic.wrapping.form_description import form_description
+from rbnics.backends.basic.wrapping.form_iterator import form_iterator
+from rbnics.backends.basic.wrapping.form_name import form_name
+from rbnics.backends.basic.wrapping.form_on_reduced_function_space import form_on_reduced_function_space
+from rbnics.backends.basic.wrapping.form_on_truth_function_space import form_on_truth_function_space
 from rbnics.backends.basic.wrapping.function_copy import function_copy
 from rbnics.backends.basic.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.basic.wrapping.function_load import function_load
@@ -26,6 +39,8 @@ from rbnics.backends.basic.wrapping.get_function_space import get_function_space
 from rbnics.backends.basic.wrapping.get_function_subspace import get_function_subspace
 from rbnics.backends.basic.wrapping.get_mpi_comm import get_mpi_comm
 from rbnics.backends.basic.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
+from rbnics.backends.basic.wrapping.is_parametrized import is_parametrized
+from rbnics.backends.basic.wrapping.is_time_dependent import is_time_dependent
 from rbnics.backends.basic.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
 from rbnics.backends.basic.wrapping.tensor_copy import tensor_copy
 from rbnics.backends.basic.wrapping.tensor_load import tensor_load
@@ -34,6 +49,19 @@ from rbnics.backends.basic.wrapping.tensors_list_mul import tensors_list_mul_onl
 from rbnics.backends.basic.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
+    'evaluate_and_vectorize_sparse_matrix_at_dofs',
+    'evaluate_sparse_function_at_dofs',
+    'evaluate_sparse_vector_at_dofs',
+    'expression_description',
+    'expression_iterator',
+    'expression_name',
+    'expression_on_reduced_mesh',
+    'expression_on_truth_mesh',
+    'form_description',
+    'form_iterator',
+    'form_name',
+    'form_on_reduced_function_space',
+    'form_on_truth_function_space',
     'function_copy',
     'function_extend_or_restrict',
     'function_load',
@@ -46,6 +74,8 @@ __all__ = [
     'get_function_subspace',
     'get_mpi_comm',
     'gram_schmidt_projection_step',
+    'is_parametrized',
+    'is_time_dependent',
     'matrix_mul_vector',
     'tensor_copy',
     'tensor_load',

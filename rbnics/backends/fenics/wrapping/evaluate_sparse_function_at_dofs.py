@@ -18,15 +18,25 @@
 
 from mpi4py.MPI import MAX
 from petsc4py import PETSc
-from dolfin import as_backend_type
-import rbnics.backends # avoid circular imports when importing fenics backend
+from dolfin import as_backend_type, Function
+from rbnics.backends.fenics.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
+from rbnics.backends.fenics.wrapping.ufl_lagrange_interpolation import assert_lagrange_1
 
-def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V, reduced_dofs_list):
-    vec = as_backend_type(input_function.vector()).vec()
-    output_function = rbnics.backends.fenics.Function(output_V)
-    out = as_backend_type(output_function.vector()).vec()
-    _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list)
-    return output_function
+def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, reduced_dofs_list=None):
+    assert (
+        (output_V is None)
+            ==
+        (reduced_dofs_list is None)
+    )
+    if output_V is None:
+        assert_lagrange_1(input_function.function_space())
+        return evaluate_sparse_vector_at_dofs(input_function.vector(), dofs_list)
+    else:
+        vec = as_backend_type(input_function.vector()).vec()
+        output_function = Function(output_V)
+        out = as_backend_type(output_function.vector()).vec()
+        _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list)
+        return output_function
     
 def _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list):
     vec_row_start, vec_row_end = vec.getOwnershipRange()

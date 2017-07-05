@@ -16,12 +16,18 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def get_form_argument(form, number):
-    all_arguments = form.arguments()
-    number_arguments = list()
-    for argument in all_arguments:
-        if argument.number() == number:
-            number_arguments.append(argument)
-    assert len(number_arguments) == 1
-    return number_arguments[0]
-    
+from rbnics.backends.fenics.wrapping.expression_replace import expression_replace
+
+def form_replace(form, replacements, replacement_type="nodes"):
+    assert replacement_type in ("nodes", "measures")
+    if replacement_type == "nodes":
+        return expression_replace(form, replacements)
+    elif replacement_type == "measures":
+        replaced_form = 0
+        for integral in form.integrals():
+            measure = replacements[integral.integrand()]
+            replaced_form += integral.integrand()*measure
+        return replaced_form
+    else:
+        raise AssertionError("Invalid replacement type")
+

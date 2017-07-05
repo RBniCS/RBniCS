@@ -16,72 +16,107 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from ufl.algorithms.traversal import iter_expressions
-from ufl.corealg.traversal import traverse_unique_terminals
-from dolfin import assign, Function
-from rbnics.backends.fenics.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
-from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_problem_solution, is_training_finished
+import rbnics.backends.fenics
+from rbnics.backends.fenics.wrapping.function_extend_or_restrict import _sub_from_tuple
+from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
-def expression_on_truth_mesh(expression_wrapper):
+def expression_on_truth_mesh(expression_wrapper, backend=None):
+    if backend is None:
+        backend = rbnics.backends.fenics
+    
     expression = expression_wrapper._expression
+    expression_name = expression_wrapper._name
     EIM_approximation = get_EIM_approximation_from_parametrized_expression(expression_wrapper)
     
-    if expression not in expression_on_truth_mesh__reduced_problem_to_truth_solution_cache:
-        visited = list()
+    if expression_name not in expression_on_truth_mesh__reduced_problem_to_truth_solution_cache:
+        visited = set()
+        truth_problem_to_components = dict() # from truth problem to components
         truth_problem_to_truth_solution = dict() # from truth problem to solution
+        reduced_problem_to_components = dict() # from reduced problem to components
         reduced_problem_to_truth_solution = dict() # from reduced problem to solution
         
         # Look for terminals on truth mesh
-        for subexpression in iter_expressions(expression):
-            for node in traverse_unique_terminals(subexpression):
-                node = function_from_subfunction_if_any(node)
-                if node in visited:
-                    continue
-                # ... problem solutions related to nonlinear terms
-                elif isinstance(node, Function) and is_problem_solution(node):
-                    truth_problem = get_problem_from_solution(node)
+        for node in backend.wrapping.expression_iterator(expression):
+            if node in visited:
+                continue
+            # ... problem solutions related to nonlinear terms
+            elif backend.wrapping.is_problem_solution_or_problem_solution_component_type(node):
+                if backend.wrapping.is_problem_solution_or_problem_solution_component(node):
+                    (preprocessed_node, component, truth_solution) = backend.wrapping.solution_identify_component(node)
+                    truth_problem = get_problem_from_solution(truth_solution)
                     if is_training_finished(truth_problem):
                         reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                        reduced_problem_to_truth_solution[reduced_problem] = node
+                        if reduced_problem not in reduced_problem_to_components:
+                            reduced_problem_to_components[reduced_problem] = list()
+                        reduced_problem_to_components[reduced_problem].append(component)
+                        reduced_problem_to_truth_solution[reduced_problem] = truth_solution
                     else:
                         if not hasattr(truth_problem, "_is_solving"):
                             exact_truth_problem = exact_problem(truth_problem)
                             exact_truth_problem.init()
-                            truth_problem_to_truth_solution[exact_truth_problem] = node
+                            if exact_truth_problem not in truth_problem_to_components:
+                                truth_problem_to_components[exact_truth_problem] = list()
+                            truth_problem_to_components[exact_truth_problem].append(component)
+                            truth_problem_to_truth_solution[exact_truth_problem] = truth_solution
                         else:
-                            truth_problem_to_truth_solution[truth_problem] = node
-                    visited.append(node)
-        
+                            if truth_problem not in truth_problem_to_components:
+                                truth_problem_to_components[truth_problem] = list()
+                            truth_problem_to_components[truth_problem].append(component)
+                            truth_problem_to_truth_solution[truth_problem] = truth_solution
+                else:
+                    preprocessed_node = node
+                # Make sure to skip any parent solution related to this one
+                visited.add(node)
+                visited.add(preprocessed_node)
+                for parent_node in backend.wrapping.solution_iterator(preprocessed_node):
+                    visited.add(parent_node)
+                    
         # Cache the resulting dicts
-        expression_on_truth_mesh__truth_problem_to_truth_solution_cache[expression] = truth_problem_to_truth_solution
-        expression_on_truth_mesh__reduced_problem_to_truth_solution_cache[expression] = reduced_problem_to_truth_solution
+        expression_on_truth_mesh__truth_problem_to_components_cache[expression_name] = truth_problem_to_components
+        expression_on_truth_mesh__truth_problem_to_truth_solution_cache[expression_name] = truth_problem_to_truth_solution
+        expression_on_truth_mesh__reduced_problem_to_components_cache[expression_name] = reduced_problem_to_components
+        expression_on_truth_mesh__reduced_problem_to_truth_solution_cache[expression_name] = reduced_problem_to_truth_solution
         
     # Extract from cache
-    truth_problem_to_truth_solution = expression_on_truth_mesh__truth_problem_to_truth_solution_cache[expression]
-    reduced_problem_to_truth_solution = expression_on_truth_mesh__reduced_problem_to_truth_solution_cache[expression]
+    truth_problem_to_components = expression_on_truth_mesh__truth_problem_to_components_cache[expression_name]
+    truth_problem_to_truth_solution = expression_on_truth_mesh__truth_problem_to_truth_solution_cache[expression_name]
+    reduced_problem_to_components = expression_on_truth_mesh__reduced_problem_to_components_cache[expression_name]
+    reduced_problem_to_truth_solution = expression_on_truth_mesh__reduced_problem_to_truth_solution_cache[expression_name]
     
     # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
     for (truth_problem, truth_solution) in truth_problem_to_truth_solution.iteritems():
         truth_problem.set_mu(EIM_approximation.mu)
         if not hasattr(truth_problem, "_is_solving"):
             log(PROGRESS, "In expression_on_truth_mesh, requiring truth problem solve for problem " + str(truth_problem))
-            assign(truth_solution, truth_problem.solve())
+            truth_problem.solve()
         else:
-            log(PROGRESS, "In expression_on_truth_mesh, loading truth problem solution for problem " + str(truth_problem))
-            assign(truth_solution, truth_problem._solution)
+            log(PROGRESS, "In expression_on_truth_mesh, loading current truth problem solution for problem " + str(truth_problem))
+        for component in truth_problem_to_components[truth_problem]:
+            solution_to = _sub_from_tuple(truth_solution, component)
+            solution_from = _sub_from_tuple(truth_problem._solution, component)
+            backend.assign(solution_to, solution_from)
         
     # Solve reduced problems associated to nonlinear terms
     for (reduced_problem, truth_solution) in reduced_problem_to_truth_solution.iteritems():
         reduced_problem.set_mu(EIM_approximation.mu)
         assert not hasattr(reduced_problem, "_is_solving")
         log(PROGRESS, "In expression_on_truth_mesh, requiring reduced problem solve for problem " + str(reduced_problem))
-        reduced_solution = reduced_problem.solve()
-        assign(truth_solution, reduced_problem.Z[:reduced_solution.N]*reduced_solution)
+        reduced_problem.solve()
+        for component in reduced_problem_to_components[reduced_problem]:
+            solution_to = _sub_from_tuple(truth_solution, component)
+            solution_from = _sub_from_tuple(reduced_problem.Z[:reduced_problem._solution.N]*reduced_problem._solution, component)
+            backend.assign(solution_to, solution_from)
     
-    return expression
+    # Interpolate and return
+    space = expression_wrapper._space
+    backend.wrapping.assert_lagrange_1(space)
+    interpolated_expression = backend.Function(space)
+    backend.wrapping.ufl_lagrange_interpolation(interpolated_expression, expression)
+    return interpolated_expression
 
+expression_on_truth_mesh__truth_problem_to_components_cache = dict()
 expression_on_truth_mesh__truth_problem_to_truth_solution_cache = dict()
+expression_on_truth_mesh__reduced_problem_to_components_cache = dict()
 expression_on_truth_mesh__reduced_problem_to_truth_solution_cache = dict()
-

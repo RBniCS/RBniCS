@@ -20,7 +20,6 @@ from ufl.core.operator import Operator
 from dolfin import FunctionSpace
 from rbnics.backends.basic import FunctionsList as BasicFunctionsList
 import rbnics.backends.fenics
-import rbnics.backends.fenics.wrapping
 from rbnics.backends.fenics.wrapping import function_from_ufl_operators
 import rbnics.backends.numpy
 from rbnics.utils.decorators import BackendFor, Extends, override

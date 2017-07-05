@@ -18,7 +18,7 @@
 
 from collections import OrderedDict
 from dolfin import assign
-import rbnics.backends # avoid circular imports when importing fenics backend
+import rbnics.backends.fenics
 
 def function_extend_or_restrict(function, function_components, V, V_components, weight, copy, extended_or_restricted_function=None):
     function_V = function.function_space()

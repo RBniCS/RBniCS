@@ -19,7 +19,7 @@
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
 from rbnics.backends.numpy.wrapping.function_copy import function_copy
-import rbnics.backends # avoid circular imports when importing numpy backend
+import rbnics.backends.numpy
 
 def functions_list_basis_functions_matrix_mul_online_matrix(functions_list_basis_functions_matrix, online_matrix, FunctionsListType, backend):
     Z = functions_list_basis_functions_matrix.V_or_Z

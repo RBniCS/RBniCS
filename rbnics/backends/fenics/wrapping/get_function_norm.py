@@ -16,16 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import __version__ as dolfin_version
-import hashlib
-from rbnics.backends.fenics.wrapping.get_expression_name import get_expression_name
+from dolfin import Function
 
-def get_form_name(form):
-    str_repr = ""
-    for integral in form.integrals():
-        str_repr += get_expression_name(integral.integrand())
-    hash_code = hashlib.sha1(
-                    (str_repr + dolfin_version).encode("utf-8")
-                ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
-    return hash_code
-    
+def get_function_norm(function, norm_type):
+    assert isinstance(function, Function)
+    return function.vector().norm(norm_type)

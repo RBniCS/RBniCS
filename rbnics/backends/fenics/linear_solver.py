@@ -41,7 +41,7 @@ class LinearSolver(AbstractLinearSolver):
             else:
                 self.lhs = lhs
         elif isinstance(lhs, Form):
-            self.lhs = assemble(lhs)
+            self.lhs = assemble(lhs, keep_diagonal=True)
         else:
             raise AssertionError("Invalid lhs provided to FEniCS LinearSolver")
         # Store rhs

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends # avoid circular imports when importing numpy backend
+import rbnics.backends.numpy
 
 def tensor_copy(tensor):
     assert isinstance(tensor, (rbnics.backends.numpy.Matrix.Type(), rbnics.backends.numpy.Vector.Type())

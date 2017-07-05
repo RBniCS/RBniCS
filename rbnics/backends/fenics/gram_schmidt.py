@@ -19,7 +19,6 @@
 from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
 import rbnics.backends.fenics
 from rbnics.backends.fenics.matrix import Matrix
-import rbnics.backends.fenics.wrapping
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicGramSchmidt)

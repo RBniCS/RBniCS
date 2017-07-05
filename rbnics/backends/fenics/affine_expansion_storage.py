@@ -60,7 +60,6 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         if is_Form or is_Tensor:
             is_parametrized = any(all_is_parametrized)
             if not is_parametrized:
-                # keep_diagonal is enabled because it is needed to constrain DirichletBC eigenvalues in SCM
                 self._content = list()
                 for (arg, arg_is_Form) in zip(args, all_is_Form):
                     if arg_is_Form:

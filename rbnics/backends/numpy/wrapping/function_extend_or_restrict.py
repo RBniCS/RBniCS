@@ -16,8 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends # avoid circular imports when importing numpy backend
-
 def function_extend_or_restrict(function, function_components, Z, Z_components, weight, copy, extended_or_restricted_function=None):
     pass # TODO
     

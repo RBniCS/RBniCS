@@ -19,7 +19,7 @@
 from numpy import ndarray as array
 from numpy.linalg import norm
 from dolfin import Cell, FunctionSpace, Point
-import rbnics.backends
+import rbnics.backends.fenics
 from rbnics.backends.abstract import ReducedVertices as AbstractReducedVertices
 from rbnics.utils.decorators import BackendFor, Extends, override
 from rbnics.utils.io import ExportableList, Folders
@@ -89,7 +89,7 @@ class ReducedVertices(AbstractReducedVertices):
         assert isinstance(key, slice)
         assert key.start is None 
         assert key.step is None
-        return ReducedVertices(self._V, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
+        return self.backend.ReducedVertices(self._V, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
         
     def get_reduced_mesh(self, index=None):
         return self._reduced_mesh.get_reduced_mesh(index)
@@ -109,12 +109,12 @@ class ReducedVertices(AbstractReducedVertices):
     def get_reduced_dofs_list(self, index=None):
         return self._reduced_mesh.get_reduced_dofs_list(index)
         
-    def get_auxiliary_reduced_function_space(self, auxiliary_problem, index=None):
-        return self._reduced_mesh.get_auxiliary_reduced_function_space(auxiliary_problem, index)
+    def get_auxiliary_reduced_function_space(self, auxiliary_problem, component, index=None):
+        return self._reduced_mesh.get_auxiliary_reduced_function_space(auxiliary_problem, component, index)
         
-    def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, auxiliary_reduced_problem, index=None):
-        return self._reduced_mesh.get_auxiliary_basis_functions_matrix(auxiliary_problem, auxiliary_reduced_problem, index)
+    def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, auxiliary_reduced_problem, component, index=None):
+        return self._reduced_mesh.get_auxiliary_basis_functions_matrix(auxiliary_problem, auxiliary_reduced_problem, component, index)
         
-    def get_auxiliary_function_interpolator(self, auxiliary_problem, index=None):
-        return self._reduced_mesh.get_auxiliary_function_interpolator(auxiliary_problem, index)
+    def get_auxiliary_function_interpolator(self, auxiliary_problem, component, index=None):
+        return self._reduced_mesh.get_auxiliary_function_interpolator(auxiliary_problem, component, index)
         

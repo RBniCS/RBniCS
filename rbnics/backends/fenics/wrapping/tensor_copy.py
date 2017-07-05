@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends # avoid circular imports when importing fenics backend
+import rbnics.backends.fenics
 
 def tensor_copy(tensor):
     assert isinstance(tensor, (rbnics.backends.fenics.Matrix.Type(), rbnics.backends.fenics.Vector.Type()))

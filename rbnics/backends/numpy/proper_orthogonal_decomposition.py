@@ -20,7 +20,6 @@ from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
 import rbnics.backends.numpy
-import rbnics.backends.numpy.wrapping
 from rbnics.backends.numpy.matrix import Matrix
 from rbnics.utils.decorators import BackendFor, Extends, override
 

@@ -22,7 +22,6 @@ from rbnics.backends.numpy.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.numpy.function import Function
 from rbnics.backends.numpy.functions_list import FunctionsList
 from rbnics.backends.numpy.vector import Vector
-import rbnics.backends.numpy.wrapping
 from rbnics.utils.decorators import backend_for
 
 @backend_for("numpy", online_backend="numpy", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Vector.Type()), ))

@@ -35,7 +35,7 @@ from rbnics.utils.decorators.required_base_decorators import RequiredBaseDecorat
 from rbnics.utils.decorators.store_map_from_problem_name_to_problem import add_to_map_from_problem_name_to_problem, get_problem_from_problem_name, StoreMapFromProblemNameToProblem
 from rbnics.utils.decorators.store_map_from_problem_to_reduced_problem import add_to_map_from_problem_to_reduced_problem, get_reduced_problem_from_problem, StoreMapFromProblemToReducedProblem
 from rbnics.utils.decorators.store_and_update_map_from_problem_to_training_status import is_training_finished, set_map_from_problem_to_training_status_on, set_map_from_problem_to_training_status_off, StoreMapFromProblemToTrainingStatus, UpdateMapFromProblemToTrainingStatus
-from rbnics.utils.decorators.store_map_from_solution_to_problem import add_to_map_from_solution_to_problem, get_problem_from_solution, is_problem_solution, StoreMapFromSolutionToProblem
+from rbnics.utils.decorators.store_map_from_solution_to_problem import add_to_map_from_solution_to_problem, get_problem_from_solution, StoreMapFromSolutionToProblem
 from rbnics.utils.decorators.store_problem_decorators_for_factories import StoreProblemDecoratorsForFactories
 from rbnics.utils.decorators.sync_setters import sync_setters
 
@@ -61,7 +61,6 @@ __all__ = [
     'get_problem_from_problem_name',
     'get_problem_from_solution',
     'get_reduced_problem_from_problem',
-    'is_problem_solution',
     'is_training_finished',
     'list_of',
     'MultiLevelReducedProblem',

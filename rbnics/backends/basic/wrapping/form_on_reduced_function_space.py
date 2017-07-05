@@ -16,16 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.fenics.wrapping.get_expression_description import get_expression_description
-
-def get_form_description(form):
-    coefficients_repr = {}
-    for integral in form.integrals():
-        coefficients_repr_integral = get_expression_description(integral.integrand())
-        # Check consistency
-        intersection = set(coefficients_repr_integral.keys()).intersection(set(coefficients_repr.keys()))
-        for key in intersection:
-            assert coefficients_repr_integral[key] == coefficients_repr[key]
-        # Update
-        coefficients_repr.update(coefficients_repr_integral)
-    return coefficients_repr
+def form_on_reduced_function_space(form_wrapper, at):
+    pass

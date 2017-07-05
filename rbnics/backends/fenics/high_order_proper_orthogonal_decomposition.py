@@ -20,7 +20,6 @@ from dolfin import FunctionSpace
 from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
 import rbnics.backends.fenics
-import rbnics.backends.fenics.wrapping
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)

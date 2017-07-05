@@ -25,23 +25,23 @@ def function_from_subfunction_if_any(node):
     if isinstance(node, Function):
         return node
     elif isinstance(node, Indexed):
-        if len(node) == 2 and isinstance(node[0], Function) and isinstance(node[1], MultiIndex):
-            return node[0]
+        if len(node.ufl_operands) == 2 and isinstance(node.ufl_operands[0], Function) and isinstance(node.ufl_operands[1], MultiIndex):
+            return node.ufl_operands[0]
     elif isinstance(node, ListTensor):
         if (
             all(isinstance(component, Indexed) for component in node.ufl_operands)
                 and
             all(
-              (len(component) == 2 and isinstance(component[0], Function) and isinstance(component[1], MultiIndex))
+              (len(component.ufl_operands) == 2 and isinstance(component.ufl_operands[0], Function) and isinstance(component.ufl_operands[1], MultiIndex))
               for component in node.ufl_operands
             )
                 and
             all(
-              component[0] == node.ufl_operands[-1][0]
+              component.ufl_operands[0] == node.ufl_operands[-1].ufl_operands[0]
               for component in node.ufl_operands
             )
         ):
-            return node.ufl_operands[-1][0]
+            return node.ufl_operands[-1].ufl_operands[0]
         else:
             return node
     else:
