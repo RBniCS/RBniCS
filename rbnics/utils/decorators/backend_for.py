@@ -187,19 +187,23 @@ def logging_all_classes_functions_inputs(storage):
     
 # Helper functions to be more precise when input types are tuple or list
 def _tuple_or_list_or_array_of__collapse(types, ChildClass):
-    if not ChildClass is None and isinstance(types, tuple) and all([isinstance(t, ChildClass) for t in types]):
+    if isinstance(types, tuple):
         all_types = set()
         for t in types:
-            if isinstance(t.types, tuple):
-                for tt in t.types:
-                    assert inspect.isclass(tt)
-                all_types.update(t.types)
+            if isinstance(t, ChildClass):
+                if isinstance(t.types, tuple):
+                    for tt in t.types:
+                        assert inspect.isclass(tt)
+                    all_types.update(t.types)
+                else:
+                    assert inspect.isclass(t.types)
+                    all_types.add(t.types)
             else:
-                assert inspect.isclass(t.types)
-                all_types.add(t.types)
-        return tuple(all_types)
+                assert inspect.isclass(t)
+                all_types.add(t)
+        return (tuple(all_types), frozenset(all_types))
     else:
-        return types
+        return (types, frozenset({types}))
         
 class _tuple_or_list_or_array_of(object):
     def __init__(self, types):
@@ -263,22 +267,22 @@ _all_array_of_instances = dict()
 _all_dict_of_instances = dict()
 
 def tuple_of(types):
-    types = _tuple_or_list_or_array_of__collapse(types, _tuple_of)
-    if types not in _all_tuple_of_instances:
-        _all_tuple_of_instances[types] = _tuple_of(types)
-    return _all_tuple_of_instances[types]
+    (types, types_set) = _tuple_or_list_or_array_of__collapse(types, _tuple_of)
+    if types_set not in _all_tuple_of_instances:
+        _all_tuple_of_instances[types_set] = _tuple_of(types)
+    return _all_tuple_of_instances[types_set]
     
 def list_of(types):
-    types = _tuple_or_list_or_array_of__collapse(types, _list_of)
-    if types not in _all_list_of_instances:
-        _all_list_of_instances[types] = _list_of(types)
-    return _all_list_of_instances[types]
+    (types, types_set) = _tuple_or_list_or_array_of__collapse(types, _list_of)
+    if types_set not in _all_list_of_instances:
+        _all_list_of_instances[types_set] = _list_of(types)
+    return _all_list_of_instances[types_set]
     
 def array_of(types):
-    types = _tuple_or_list_or_array_of__collapse(types, _array_of)
-    if types not in _all_array_of_instances:
-        _all_array_of_instances[types] = _array_of(types)
-    return _all_array_of_instances[types]
+    (types, types_set) = _tuple_or_list_or_array_of__collapse(types, _array_of)
+    if types_set not in _all_array_of_instances:
+        _all_array_of_instances[types_set] = _array_of(types)
+    return _all_array_of_instances[types_set]
     
 def dict_of(types_from, types_to):
     types = (types_from, types_to)
