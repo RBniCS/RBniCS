@@ -29,6 +29,13 @@ from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFr
 from rbnics.utils.io import Folders
 from rbnics.utils.mpi import print
 
+"""
+The aim of this script is to test EIM/DEIM for nonlinear problems. A parametrized problem is defined
+and reduced by means of a reduction method. Then:
+* EIM: the expression to be interpolated is the solution of the nonlinear reduced problem.
+* DEIM: the form to be interpolated contains the solution of the nonlinear reduced problem.
+"""
+
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem

@@ -29,6 +29,17 @@ from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFr
 from rbnics.utils.io import Folders
 from rbnics.utils.mpi import print
 
+"""
+The aim of this script is to test EIM/DEIM for nonlinear problems on mixed function spaces. 
+This test is an extension of test 11. The main difference with respect to test 11 is that a only a component
+of the reduced order solution is required to define the parametrized expression/tensor.
+* EIM: the expression to be interpolated is a component of the solution of the nonlinear reduced problem.
+  This results in a parametrized expression of type ListTensor.
+* DEIM: the form to be interpolated contains a component of the solution of the nonlinear reduced problem,
+  splitted between x and y. This results in two coefficients in the integrand (denoted by f0[0] and f1[0] below)
+  which are of type Indexed.
+"""
+
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem

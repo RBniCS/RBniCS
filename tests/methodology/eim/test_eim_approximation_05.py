@@ -22,6 +22,13 @@ from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFac
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+"""
+This test is combination of tests 01-03. 
+The aim of this script is to test that integration correctly handles several parametrized expressions.
+* EIM: not applicable.
+* DEIM: several parametrized expressions are combined when defining forms.
+"""
+
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V

@@ -22,6 +22,14 @@ from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFac
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+"""
+This test is an extension of test 01. 
+The aim of this script is to test the detection of parametrized expression defined using SymbolicParameters for mu and
+SpatialCoordinates fo x. 
+* EIM: test the case when the expression to be interpolated is an Operator (rather than an Expression).
+* DEIM: test interpolation of form with integrand function of type Operator (rather than Expression).
+"""
+
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V

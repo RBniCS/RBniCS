@@ -22,6 +22,14 @@ from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFac
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+"""
+The aim of this script is to test that DEIM correctly handles collapsed subspaces. This is a prototype of
+the restricted operators required by the right-hand side of a supremizer solve.
+* EIM: not applicable.
+* DEIM: define a test function on a collapsed subspace (while, in case of rank 2 forms, the trial is defined
+  on the full space), and integrate.
+"""
+
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V

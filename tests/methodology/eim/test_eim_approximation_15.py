@@ -29,6 +29,13 @@ from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFr
 from rbnics.utils.io import Folders
 from rbnics.utils.mpi import print
 
+"""
+This test is similar to test 13.
+* EIM: no relevant difference with respect to test 13.
+* DEIM: the solution component is not further splitted between x and y. This results in a single coefficient
+  of type ListTensor (rather than two coefficients of type Indexed).
+"""
+
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem

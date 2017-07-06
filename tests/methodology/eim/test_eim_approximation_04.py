@@ -22,6 +22,13 @@ from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFac
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+"""
+This test is an extension of test 03. 
+The aim of this script is to test that integration of a subdomain is correctly handled by DEIM.
+* EIM: no difference with respect to test 03.
+* DEIM: the integral in form definitions is now restricted to a subdomain.
+"""
+
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, subdomains, expression_type, basis_generation):
         self.V = V

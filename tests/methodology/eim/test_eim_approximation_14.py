@@ -27,6 +27,13 @@ from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import print
 
+"""
+The aim of this script is to test EIM/DEIM for nonlinear problems, extending test 13. 
+The difference with respect to test 13 is that a parametrized problem is defined but it is not 
+reduced any further. See the description of EIM and DEIM for test 13, taking care of the fact
+that the high fidelity solution is used in place of the reduced order one.
+"""
+
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem

@@ -22,6 +22,13 @@ from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFac
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+"""
+The aim of this test is to check the interpolation of vector valued functions.
+* EIM: test interpolation of a scalar function
+* DEIM: test interpolation of form with integrand given by the inner product of a vector valued function 
+  and some derivative of a test/trial functions of a scalar space
+"""
+
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V

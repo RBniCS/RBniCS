@@ -23,6 +23,13 @@ from rbnics.problems.base import ParametrizedProblem
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
 
+"""
+This test is an extension of test 01.
+The aim of this script is to test the detection of time dependent parametrized expression.
+* EIM: test the case when the expression to be interpolated is time dependent.
+* DEIM: test interpolation of form with a time dependent integrand function.
+"""
+
 class MockTimeDependentProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):
         ParametrizedProblem.__init__(self, "")

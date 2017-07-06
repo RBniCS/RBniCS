@@ -22,6 +22,12 @@ from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFac
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+"""
+This is a third basic test for EIM/DEIM, based on the Gaussian function of tutorial 05.
+* EIM: test interpolation of a scalar function
+* DEIM: test interpolation of form with scalar integrand on a scalar space
+"""
+
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V

@@ -28,7 +28,7 @@ from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFr
 from rbnics.utils.mpi import print
 
 """
-This test is the version of test 15 where high fidelity solution is used in place of reduced order one.
+This test is the version of test 17 where high fidelity solution is used in place of reduced order one.
 """
 
 @StoreMapFromProblemNameToProblem
@@ -37,7 +37,7 @@ This test is the version of test 15 where high fidelity solution is used in plac
 class MockProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):
         # Call parent
-        ParametrizedProblem.__init__(self, "test_eim_approximation_16_mock_problem.output_dir")
+        ParametrizedProblem.__init__(self, "test_eim_approximation_18_mock_problem.output_dir")
         # Minimal subset of a ParametrizedDifferentialProblem
         self.V = V
         self._solution = Function(V)
@@ -72,24 +72,23 @@ class MockProblem(ParametrizedProblem):
         
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, truth_problem, expression_type, basis_generation):
-        self.V = truth_problem.V1
-        (f0, _) = split(truth_problem._solution)
+        self.V = truth_problem.V
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f0), "test_eim_approximation_16_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(truth_problem._solution), "test_eim_approximation_18_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(self.V)
-            form = inner(f0, grad(v))*dx
+            form = inner(truth_problem._solution, v)*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_16_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_18_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(self.V)
             v = TestFunction(self.V)
-            form = inner(f0, grad(u))*v*dx
+            form = inner(truth_problem._solution, u)*v[0]*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_16_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_18_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 

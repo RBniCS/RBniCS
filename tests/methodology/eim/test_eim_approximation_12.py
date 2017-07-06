@@ -27,6 +27,16 @@ from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import print
 
+"""
+The aim of this script is to test EIM/DEIM for nonlinear problems, extending test 11. 
+The difference with respect to test 11 is that a parametrized problem is defined but it is not 
+reduced any further.
+Thus, the high fidelity solution will be usued inside the parametrized expression/tensor, while
+in test 11 the reduced order solution was being used.
+* EIM: the expression to be interpolated is the solution of the nonlinear high fidelity problem.
+* DEIM: the form to be interpolated contains the solution of the nonlinear high fidelity problem.
+"""
+
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem

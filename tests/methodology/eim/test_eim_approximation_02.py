@@ -22,6 +22,15 @@ from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFac
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+"""
+This is a second basic test for EIM/DEIM, based on the test case of section 3.3.2 of
+    S. Chaturantabut and D. C. Sorensen
+    Nonlinear Model Reduction via Discrete Empirical Interpolation
+    SIAM Journal on Scientific Computing 2010 32:5, 2737-2764 
+* EIM: test interpolation of a scalar function
+* DEIM: test interpolation of form with scalar integrand on a scalar space
+"""
+
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, V, expression_type, basis_generation):
         self.V = V

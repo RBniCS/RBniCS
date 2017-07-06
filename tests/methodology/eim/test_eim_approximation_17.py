@@ -24,11 +24,19 @@ from rbnics.backends.online import OnlineFunction
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.problems.base import ParametrizedProblem
-from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
+from rbnics.reduction_methods.base import ReductionMethod
+from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
+from rbnics.utils.io import Folders
 from rbnics.utils.mpi import print
 
 """
-This test is the version of test 15 where high fidelity solution is used in place of reduced order one.
+This test is similar to test 15. However, in contrast to test 15, the solution is not splitted at all.
+* EIM: unsplitted solution is used in the definition of the parametrized expression, similarly to test 11.
+* DEIM: unsplitted solution is used in the definition of the parametrized tensor. This results in a single coefficient
+  of type Function, which however is stored internally by UFL as an Indexed of Function and a mute index. This test
+  requires the FEniCS backend to properly differentiate between Indexed objects with a fixed index (such as a component
+  of the solution as in test 13) and Indexed objects with a mute index, which should be treated has if the entire solution
+  was required.
 """
 
 @StoreMapFromProblemNameToProblem
@@ -37,7 +45,7 @@ This test is the version of test 15 where high fidelity solution is used in plac
 class MockProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):
         # Call parent
-        ParametrizedProblem.__init__(self, "test_eim_approximation_16_mock_problem.output_dir")
+        ParametrizedProblem.__init__(self, "test_eim_approximation_17_mock_problem.output_dir")
         # Minimal subset of a ParametrizedDifferentialProblem
         self.V = V
         self._solution = Function(V)
@@ -56,11 +64,7 @@ class MockProblem(ParametrizedProblem):
         self.V00 = V.sub(0).sub(0).collapse()
         self.V1 = V.sub(1).collapse()
         
-    def init(self):
-        pass
-        
     def solve(self):
-        print("solving mock problem at mu =", self.mu)
         assert not hasattr(self, "_is_solving")
         self._is_solving = True
         f00 = project(self.f00, self.V00)
@@ -69,27 +73,84 @@ class MockProblem(ParametrizedProblem):
         assign(self._solution.sub(0).sub(1), f01)
         delattr(self, "_is_solving")
         return self._solution
+
+@UpdateMapFromProblemToTrainingStatus
+class MockReductionMethod(ReductionMethod):
+    def __init__(self, truth_problem, **kwargs):
+        # Call parent
+        ReductionMethod.__init__(self, "test_eim_approximation_17_mock_problem.output_dir", truth_problem.mu_range)
+        # Minimal subset of a DifferentialProblemReductionMethod
+        self.truth_problem = truth_problem
+        self.reduced_problem = None
+        # I/O
+        self.folder["basis"] = self.truth_problem.folder_prefix + "/" + "basis"
+        # Gram Schmidt
+        self.GS = GramSchmidt(self.truth_problem.X)
+        
+    def offline(self):
+        self.reduced_problem = MockReducedProblem(self.truth_problem)
+        if self.folder["basis"].create(): # basis folder was not available yet
+            for mu in self.training_set:
+                self.truth_problem.set_mu(mu)
+                print("solving mock problem at mu =", self.truth_problem.mu)
+                f = self.truth_problem.solve()
+                self.reduced_problem.Z.enrich(f)
+                self.GS.apply(self.reduced_problem.Z, 0)
+            self.reduced_problem.Z.save(self.folder["basis"], "basis")
+        else:
+            self.reduced_problem.Z.load(self.folder["basis"], "basis")
+        self._finalize_offline()
+        return self.reduced_problem
+        
+    def error_analysis(self, N=None, **kwargs):
+        pass
+        
+    def speedup_analysis(self, N=None, **kwargs):
+        pass
+
+@StoreMapFromProblemToReducedProblem
+class MockReducedProblem(ParametrizedProblem):
+    @sync_setters("truth_problem", "set_mu", "mu")
+    @sync_setters("truth_problem", "set_mu_range", "mu_range")
+    def __init__(self, truth_problem, **kwargs):
+        # Call parent
+        ParametrizedProblem.__init__(self, "test_eim_approximation_17_vector.mock_problem_dir")
+        # Minimal subset of a ParametrizedReducedDifferentialProblem
+        self.truth_problem = truth_problem
+        self.Z = BasisFunctionsMatrix(self.truth_problem.V)
+        self.Z.init(self.truth_problem.components)
+        self._solution = OnlineFunction()
+        
+    def solve(self):
+        print("solving mock reduced problem at mu =", self.mu)
+        assert not hasattr(self, "_is_solving")
+        self._is_solving = True
+        f = self.truth_problem.solve()
+        f_N = transpose(self.Z)*self.truth_problem.X*f
+        # Return the reduced solution
+        self._solution = OnlineFunction(f_N)
+        delattr(self, "_is_solving")
+        return self._solution
         
 class ParametrizedFunctionApproximation(EIMApproximation):
     def __init__(self, truth_problem, expression_type, basis_generation):
-        self.V = truth_problem.V1
-        (f0, _) = split(truth_problem._solution)
+        self.V = truth_problem.V
         #
         assert expression_type in ("Function", "Vector", "Matrix")
         if expression_type == "Function":
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f0), "test_eim_approximation_16_function.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(truth_problem._solution), "test_eim_approximation_17_function.output_dir", basis_generation)
         elif expression_type == "Vector":
             v = TestFunction(self.V)
-            form = inner(f0, grad(v))*dx
+            form = inner(truth_problem._solution, v)*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_16_vector.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_17_vector.output_dir", basis_generation)
         elif expression_type == "Matrix":
             u = TrialFunction(self.V)
             v = TestFunction(self.V)
-            form = inner(f0, grad(u))*v*dx
+            form = inner(truth_problem._solution, u)*v[0]*dx
             # Call Parent constructor
-            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_16_matrix.output_dir", basis_generation)
+            EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), "test_eim_approximation_17_matrix.output_dir", basis_generation)
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid expression_type")
 
@@ -107,7 +168,11 @@ problem = MockProblem(V)
 mu_range = [(-1., -0.01), (-1., -0.01)]
 problem.set_mu_range(mu_range)
 
-# 4. Postpone generation of the reduced problem
+# 4. Create a reduction method and run the offline phase to generate the corresponding
+#    reduced problem
+reduction_method = MockReductionMethod(problem)
+reduction_method.initialize_training_set(16, sampling=EquispacedDistribution())
+reduced_problem = reduction_method.offline()
 
 # 5. Allocate an object of the ParametrizedFunctionApproximation class
 expression_type = "Function" # Function or Vector or Matrix
