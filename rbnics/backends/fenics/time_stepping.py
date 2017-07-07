@@ -25,7 +25,7 @@ from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeD
 from rbnics.backends.fenics.assign import assign
 from rbnics.backends.fenics.function import Function
 from rbnics.utils.mpi import print
-from rbnics.utils.decorators import BackendFor, Extends, list_of, override
+from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractTimeStepping)
 @BackendFor("fenics", inputs=(TimeDependentProblemWrapper, Function.Type(), (Function.Type(), None)))
@@ -39,7 +39,7 @@ class TimeStepping(AbstractTimeStepping):
             if ic is not None:
                 assign(solution, ic)
             self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
-            self.solver  = _PETScTSIntegrator(self.problem)
+            self.solver  = _PETScTSIntegrator(self.problem, self.problem.solution.vector())
         elif problem_wrapper.time_order() == 2:
             if solution_dot is None:
                 solution_dot = Function(solution.function_space()) # equal to zero
@@ -50,11 +50,12 @@ class TimeStepping(AbstractTimeStepping):
                 assign(solution, ic_eval_output[0])
                 assign(solution_dot, ic_eval_output[1])
             self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
-            self.solver  = _PETScTSIntegrator(self.problem)
+            self.solver  = _PETScTSIntegrator(self.problem, self.problem.solution.vector(), self.problem.solution_dot.vector())
         else:
             raise AssertionError("Invalid time order in TimeStepping.__init__().")
         # Store solution input
         self.solution = solution
+        self.solution_dot = solution_dot
         # Store time order input
         self.time_order = problem_wrapper.time_order()
             
@@ -73,6 +74,10 @@ class TimeStepping(AbstractTimeStepping):
         self.solution.vector().zero()
         self.solution.vector().add_local(all_solutions[-1].vector().array())
         self.solution.vector().apply("")
+        if self.solution_dot is not None:
+            self.solution_dot.vector().zero()
+            self.solution_dot.vector().add_local(all_solutions_dot[-1].vector().array())
+            self.solution_dot.vector().apply("")
         if self.time_order == 1:
             return (all_solutions_time, all_solutions, all_solutions_dot)
         elif self.time_order == 2:
@@ -177,6 +182,59 @@ class _TimeDependentProblem_Base(object):
             self.output_t += self.output_dt
             # Disable final timestep workaround
             at_final_time_step = False
+            
+    def _residual_vector_assemble(self, residual_form_or_vector, overwrite):
+        assert isinstance(residual_form_or_vector, (Form, GenericVector))
+        if isinstance(residual_form_or_vector, Form):
+            assemble(residual_form_or_vector, tensor=self.residual_vector)
+        elif isinstance(residual_form_or_vector, GenericVector):
+            if overwrite:
+                self.residual_vector = residual_form_or_vector
+            else:
+                as_backend_type(residual_form_or_vector).vec().swap(as_backend_type(self.residual_vector).vec())
+        else:
+            raise AssertionError("Invalid time order in _TimeDependentProblem_Base._residual_vector_assemble.")
+            
+    def _residual_bcs_apply(self, bcs):
+        assert isinstance(bcs, (dict, list))
+        if isinstance(bcs, list):
+            for bc in bcs:
+                bc.apply(self.residual_vector, self.solution.vector())
+        elif isinstance(bcs, dict):
+            for key in bcs:
+                for bc in bcs[key]:
+                    bc.apply(self.residual_vector, self.solution.vector())
+        else:
+            raise AssertionError("Invalid type for bcs.")
+        
+    def _jacobian_matrix_assemble(self, jacobian_form_or_matrix, overwrite):
+        assert isinstance(jacobian_form_or_matrix, (Form, GenericMatrix))
+        if isinstance(jacobian_form_or_matrix, Form):
+            assemble(jacobian_form_or_matrix, tensor=self.jacobian_matrix)
+        elif isinstance(jacobian_form_or_matrix, GenericMatrix):
+            if overwrite:
+                self.jacobian_matrix = jacobian_form_or_matrix
+            else:
+                self.jacobian_matrix.zero()
+                self.jacobian_matrix += jacobian_form_or_matrix
+            # Make sure to keep nonzero pattern, as FEniCS does by default, because this option is apparently
+            # not preserved by the sum
+            as_backend_type(self.jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+        else:
+            raise AssertionError("Invalid time order in _TimeDependentProblem_Base._jacobian_matrix_assemble.")
+            
+    def _jacobian_bcs_apply(self, bcs):
+        assert isinstance(bcs, (dict, list))
+        if isinstance(bcs, list):
+            for bc in bcs:
+                bc.apply(self.jacobian_matrix)
+        elif isinstance(bcs, dict):
+            for key in bcs:
+                for bc in bcs[key]:
+                    bc.apply(self.jacobian_matrix)
+        else:
+            raise AssertionError("Invalid type for bcs.")
+        
         
 class _TimeDependentProblem1(_TimeDependentProblem_Base):
     def __init__(self, residual_eval, solution, bc_eval, jacobian_eval):
@@ -219,29 +277,11 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         self.residual_vector_assemble(t, self.solution, self.solution_dot)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        assert isinstance(bcs, (dict, list))
-        if isinstance(bcs, list):
-            for bc in bcs:
-                bc.apply(self.residual_vector, self.solution.vector())
-        elif isinstance(bcs, dict):
-            for key in bcs:
-                for bc in bcs[key]:
-                    bc.apply(self.residual_vector, self.solution.vector())
-        else:
-            raise AssertionError("Invalid type for bcs.")
-            
+        self._residual_bcs_apply(bcs)
+        
     def residual_vector_assemble(self, t, solution, solution_dot, overwrite=False):
         residual_form_or_vector = self.residual_eval(t, solution, solution_dot)
-        assert isinstance(residual_form_or_vector, (Form, GenericVector))
-        if isinstance(residual_form_or_vector, Form):
-            assemble(residual_form_or_vector, tensor=self.residual_vector)
-        elif isinstance(residual_form_or_vector, GenericVector):
-            if overwrite:
-                self.residual_vector = residual_form_or_vector
-            else:
-                as_backend_type(residual_form_or_vector).vec().swap(as_backend_type(self.residual_vector).vec())
-        else:
-            raise AssertionError("Invalid time order in _TimeDependentProblem1.residual_vector_assemble.")
+        self._residual_vector_assemble(residual_form_or_vector, overwrite)
         
     def jacobian_matrix_eval(self, ts, t, solution, solution_dot, solution_dot_coefficient, jacobian, preconditioner):
         """
@@ -292,34 +332,12 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         self.jacobian_matrix_assemble(t, self.solution, self.solution_dot, solution_dot_coefficient)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        assert isinstance(bcs, (dict, list))
-        if isinstance(bcs, list):
-            for bc in bcs:
-                bc.apply(self.jacobian_matrix)
-        elif isinstance(bcs, dict):
-            for key in bcs:
-                for bc in bcs[key]:
-                    bc.apply(self.jacobian_matrix)
-        else:
-            raise AssertionError("Invalid type for bcs.")
-            
+        self._jacobian_bcs_apply(bcs)
+        
     def jacobian_matrix_assemble(self, t, solution, solution_dot, solution_dot_coefficient, overwrite=False):
         jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_coefficient)
-        assert isinstance(jacobian_form_or_matrix, (Form, GenericMatrix))
-        if isinstance(jacobian_form_or_matrix, Form):
-            assemble(jacobian_form_or_matrix, tensor=self.jacobian_matrix)
-        elif isinstance(jacobian_form_or_matrix, GenericMatrix):
-            if overwrite:
-                self.jacobian_matrix = jacobian_form_or_matrix
-            else:
-                self.jacobian_matrix.zero()
-                self.jacobian_matrix += jacobian_form_or_matrix
-            # Make sure to keep nonzero pattern, as FEniCS does by default, because this option is apparently
-            # not preserved by the sum
-            as_backend_type(self.jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
-        else:
-            raise AssertionError("Invalid time order in _TimeDependentProblem1.jacobian_matrix_assemble.")
-            
+        self._jacobian_matrix_assemble(jacobian_form_or_matrix, overwrite)
+        
     def update_solution(self, solution, solution_dot):
         solution.ghostUpdate()
         solution_dot.ghostUpdate()
@@ -371,29 +389,11 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         self.residual_vector_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        assert isinstance(bcs, (dict, list))
-        if isinstance(bcs, list):
-            for bc in bcs:
-                bc.apply(self.residual_vector, self.solution.vector())
-        elif isinstance(bcs, dict):
-            for key in bcs:
-                for bc in bcs[key]:
-                    bc.apply(self.residual_vector, self.solution.vector())
-        else:
-            raise AssertionError("Invalid type for bcs.")
+        self._residual_bcs_apply(bcs)
             
     def residual_vector_assemble(self, t, solution, solution_dot, solution_dot_dot, overwrite=False):
         residual_form_or_vector = self.residual_eval(t, solution, solution_dot, solution_dot_dot)
-        assert isinstance(residual_form_or_vector, (Form, GenericVector))
-        if isinstance(residual_form_or_vector, Form):
-            assemble(residual_form_or_vector, tensor=self.residual_vector)
-        elif isinstance(residual_form_or_vector, GenericVector):
-            if overwrite:
-                self.residual_vector = residual_form_or_vector
-            else:
-                as_backend_type(residual_form_or_vector).vec().swap(as_backend_type(self.residual_vector).vec())
-        else:
-            raise AssertionError("Invalid time order in _TimeDependentProblem1.residual_vector_assemble.")
+        self._residual_vector_assemble(residual_form_or_vector, overwrite)
         
     def jacobian_matrix_eval(self, ts, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient, jacobian, preconditioner):
         """
@@ -440,33 +440,11 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         self.jacobian_matrix_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        assert isinstance(bcs, (dict, list))
-        if isinstance(bcs, list):
-            for bc in bcs:
-                bc.apply(self.jacobian_matrix)
-        elif isinstance(bcs, dict):
-            for key in bcs:
-                for bc in bcs[key]:
-                    bc.apply(self.jacobian_matrix)
-        else:
-            raise AssertionError("Invalid type for bcs.")
+        self._jacobian_bcs_apply(bcs)
             
     def jacobian_matrix_assemble(self, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient, overwrite=False):
         jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)
-        assert isinstance(jacobian_form_or_matrix, (Form, GenericMatrix))
-        if isinstance(jacobian_form_or_matrix, Form):
-            assemble(jacobian_form_or_matrix, tensor=self.jacobian_matrix)
-        elif isinstance(jacobian_form_or_matrix, GenericMatrix):
-            if overwrite:
-                self.jacobian_matrix = jacobian_form_or_matrix
-            else:
-                self.jacobian_matrix.zero()
-                self.jacobian_matrix += jacobian_form_or_matrix
-            # Make sure to keep nonzero pattern, as FEniCS does by default, because this option is apparently
-            # not preserved by the sum
-            as_backend_type(self.jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
-        else:
-            raise AssertionError("Invalid time order in _TimeDependentProblem1.jacobian_matrix_assemble.")
+        self._jacobian_matrix_assemble(jacobian_form_or_matrix, overwrite)
             
     def update_solution(self, solution, solution_dot, solution_dot_dot):
         solution.ghostUpdate()
@@ -476,12 +454,13 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         self.solution_dot = PETScFunction(self.V, PETScVector(solution_dot))
         self.solution_dot_dot = PETScFunction(self.V, PETScVector(solution_dot_dot))
             
-            
 class _PETScTSIntegrator(object):
-    def __init__(self, problem):
+    def __init__(self, problem, solution, solution_dot=None):
         self.problem = problem
+        self.solution = solution
+        self.solution_dot = solution_dot
         # Create PETSc's TS object
-        self.ts = PETSc.TS().create(problem.solution.vector().mpi_comm())
+        self.ts = PETSc.TS().create(self.solution.mpi_comm())
         # ... and associate residual and jacobian
         assert problem.time_order in (1, 2)
         if problem.time_order == 1:
@@ -577,11 +556,11 @@ class _PETScTSIntegrator(object):
         self.ts.setFromOptions()
         
     def solve(self):
-        petsc_solution = as_backend_type(self.problem.solution.vector()).vec()
+        petsc_solution = as_backend_type(self.solution).vec()
         if self.problem.time_order == 1:
             self.ts.solve(petsc_solution)
         elif self.problem.time_order == 2: # need to explicitly set the solution and solution_dot, as done in PETSc/src/ts/examples/tutorials/ex43.c
-            petsc_solution_dot = as_backend_type(self.problem.solution_dot.vector()).vec()
+            petsc_solution_dot = as_backend_type(self.solution_dot).vec()
             self.ts.setSolution2(petsc_solution, petsc_solution_dot)
             self.ts.solve(petsc_solution)
         else:
