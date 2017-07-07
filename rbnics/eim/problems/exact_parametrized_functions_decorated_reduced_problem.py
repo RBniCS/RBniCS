@@ -143,11 +143,14 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         ReducedParametrizedProblem_DecoratedClass.ProblemSolver.solve(self)
                         assign(reduced_problem.truth_problem._solution, bak_truth_solution)
                     
-            ReducedParametrizedProblem_DecoratedClass = _AlsoDecorateNonlinearSolutionStorage_Class
+            return _AlsoDecorateNonlinearSolutionStorage_Class
+        else:
+            return ReducedParametrizedProblem_DecoratedClass
             
+    def _AlsoDecorateNonlinearSolutionDotStorage(ReducedParametrizedProblem_DecoratedClass):
         if hasattr(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, "store_solution_dot"):
             @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
-            class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
+            class _AlsoDecorateNonlinearSolutionDotStorage_Class(ReducedParametrizedProblem_DecoratedClass):
             
                 class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
                     # Override online assign to make sure that the truth solution dot is updated,
@@ -170,13 +173,14 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         ReducedParametrizedProblem_DecoratedClass.ProblemSolver.solve(self)
                         assign(reduced_problem.truth_problem._solution_dot, bak_truth_solution_dot)
             
-            ReducedParametrizedProblem_DecoratedClass = _AlsoDecorateNonlinearSolutionStorage_Class
-            
-        return ReducedParametrizedProblem_DecoratedClass
+            return _AlsoDecorateNonlinearSolutionDotStorage_Class
+        else:
+            return ReducedParametrizedProblem_DecoratedClass
            
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     @_AlsoDecorateErrorEstimationOperators
     @_AlsoDecorateNonlinearSolutionStorage
+    @_AlsoDecorateNonlinearSolutionDotStorage
     class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         @override

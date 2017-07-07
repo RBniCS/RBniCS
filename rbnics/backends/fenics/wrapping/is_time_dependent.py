@@ -18,6 +18,7 @@
 
 from dolfin import Expression, Function
 import rbnics.backends.fenics
+from rbnics.utils.decorators import get_problem_from_solution
 
 def is_time_dependent(expression_or_form, iterator, backend=None):
     if backend is None:

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends import assign, NonlinearProblemWrapper
+from rbnics.backends import assign, NonlinearProblemWrapper, NonlinearSolver
 from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)

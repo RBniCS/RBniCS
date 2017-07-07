@@ -93,6 +93,7 @@ def product(thetas, operators, thetas2=None):
         for (theta, operator) in zip(thetas, operators):
             theta = float(theta)
             output += Constant(theta)*operator
+        output = assemble(output, keep_diagonal=True)
         return ProductOutput(output)
     elif operators.type() == "Function":
         output = function_copy(operators[0])
