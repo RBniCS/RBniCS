@@ -105,10 +105,10 @@ if has_glpk:
             
             return min_f
             
-    @override
-    @classmethod
-    def solve_can_raise(self):
-        return False
+        @override
+        @classmethod
+        def solve_can_raise(self):
+            return False
             
 else:
     @Extends(AbstractLinearProgramSolver)
