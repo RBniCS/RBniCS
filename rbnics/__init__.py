@@ -25,6 +25,9 @@ __email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sart
 # Set empty __all__ variable to be possibly extended by backends
 __all__ = []
 
+# Process configuration files first
+from rbnics.utils.config import config
+
 # Import the minimum subset of RBniCS required to run tutorials
 from rbnics.eim import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
@@ -38,7 +41,6 @@ from rbnics.problems.stokes_unsteady import StokesUnsteadyProblem
 from rbnics.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
 from rbnics.scm import SCM, ExactCoercivityConstant
 from rbnics.shape_parametrization import ShapeParametrization
-from rbnics.utils.config import config
 from rbnics.utils.decorators import CustomizeReducedProblemFor, CustomizeReductionMethodFor, exact_problem
 from rbnics.utils.factories import ReducedBasis, PODGalerkin
 

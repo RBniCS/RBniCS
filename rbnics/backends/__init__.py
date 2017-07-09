@@ -20,27 +20,22 @@ import importlib
 import os
 import sys
 current_module = sys.modules[__name__]
-current_directory = os.path.dirname(os.path.realpath(__file__))
-available_backends = list()
-for root, dirs, files in os.walk(current_directory):
-    available_backends.extend(dirs)
-    break # prevent recursive exploration
-available_backends.remove("abstract")
-available_backends.remove("basic")
-available_backends.remove("common")
-available_backends.remove("online")
+
+# Get the list of required backends
+from rbnics.utils.config import config
+required_backends = config.get("backends", "required backends")
 
 # Make sure to import all available backends, so that they are added to the factory storage
 import rbnics.backends.abstract
 import rbnics.backends.common
-for backend in available_backends:
+for backend in required_backends:
     importlib.import_module("rbnics.backends." + backend)
     importlib.import_module("rbnics.backends." + backend + ".wrapping")
 
-# Combine all enabled backends available in the factory and store them in this module
+# Combine all available backends in the factory and store them in this module
 from rbnics.utils.factories import backends_factory, enable_backend
 enable_backend("common")
-for backend in available_backends:
+for backend in required_backends:
     enable_backend(backend)
 backends_factory(current_module)
 
@@ -52,7 +47,7 @@ from rbnics.backends.abstract import LinearProblemWrapper, NonlinearProblemWrapp
 # sort the list of available backends to account that
 depends_on_backends = dict()
 at_least_one_dependent_backend = False
-for backend in available_backends:
+for backend in required_backends:
     if hasattr(sys.modules["rbnics.backends." + backend + ".wrapping"], "__depends_on__"):
         depends_on_backends[backend] = set(sys.modules["rbnics.backends." + backend + ".wrapping"].__depends_on__)
         at_least_one_dependent_backend = True
@@ -60,10 +55,10 @@ for backend in available_backends:
         depends_on_backends[backend] = set()
 if at_least_one_dependent_backend:
     from toposort import toposort_flatten
-    available_backends = toposort_flatten(depends_on_backends)
+    required_backends = toposort_flatten(depends_on_backends)
 
 # Extend parent module __all__ variable with backends wrapping
-for backend in available_backends:
+for backend in required_backends:
     if hasattr(sys.modules["rbnics.backends." + backend + ".wrapping"], "__overridden__"):
         wrapping_overridden = sys.modules["rbnics.backends." + backend + ".wrapping"].__overridden__
         assert isinstance(wrapping_overridden, dict)
@@ -78,5 +73,6 @@ for backend in available_backends:
 
 # Clean up
 del current_module
-del current_directory
-del available_backends
+del required_backends
+del depends_on_backends
+del at_least_one_dependent_backend

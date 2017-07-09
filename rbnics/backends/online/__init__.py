@@ -20,9 +20,12 @@ import sys
 current_module = sys.modules[__name__]
 
 # Set the online backend
+from rbnics.utils.config import config
 from rbnics.utils.factories import set_online_backend, online_backend_factory
-set_online_backend("numpy")
+online_backend = config.get("backends", "online backend")
+set_online_backend(online_backend)
 online_backend_factory(current_module)
 
 # Clean up
 del current_module
+del online_backend

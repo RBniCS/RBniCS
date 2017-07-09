@@ -91,7 +91,8 @@ def backends_factory(backends_module):
                     error_message = "No backend found for return type " + str(class_or_function_name) + " with input arguments " + str(input_types) + ".\n"
                     error_message += "Available input types for " + str(class_or_function_name) + " are:\n"
                     for (backend_input_types, corresponding_backend) in input_map[class_or_function_name].iteritems():
-                        error_message += "\t" + str(backend_input_types) + ": " + corresponding_backend + "\n"
+                        if corresponding_backend in backends_factory._enabled_backends:
+                            error_message += "\t" + str(backend_input_types) + ": " + corresponding_backend + "\n"
                     error_message += "\n"
                     raise TypeError(error_message)
             else: # used in some constructors
