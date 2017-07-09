@@ -20,7 +20,7 @@ import sys
 from numpy import asarray, isclose
 from dolfin import *
 from rbnics.backends.abstract import TimeDependentProblem2Wrapper
-from rbnics.backends.fenics import TimeStepping as SparseTimeStepping
+from rbnics.backends.dolfin import TimeStepping as SparseTimeStepping
 
 """
 Solve

@@ -18,8 +18,8 @@
 
 from numpy import isclose
 from dolfin import *
-from rbnics.backends.fenics import transpose
-from rbnics.backends.fenics.wrapping import function_from_ufl_operators
+from rbnics.backends.dolfin import transpose
+from rbnics.backends.dolfin.wrapping import function_from_ufl_operators
 
 def conversion_test(V, isclose):
     z1 = Function(V)

@@ -38,17 +38,17 @@ common/*.pyc
 common/*/*~
 common/*/*.bak
 common/*/*.pyc
-# ... fenics subpackage ...
-!fenics/
-!fenics/*
-fenics/*~
-fenics/*.bak
-fenics/*.pyc
-!fenics/*/
-!fenics/*/*
-fenics/*/*~
-fenics/*/*.bak
-fenics/*/*.pyc
+# ... dolfin subpackage ...
+!dolfin/
+!dolfin/*
+dolfin/*~
+dolfin/*.bak
+dolfin/*.pyc
+!dolfin/*/
+!dolfin/*/*
+dolfin/*/*~
+dolfin/*/*.bak
+dolfin/*/*.pyc
 # ... numpy subpackage ...
 !numpy/
 !numpy/*

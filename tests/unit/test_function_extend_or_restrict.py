@@ -18,8 +18,8 @@
 
 from numpy import isclose
 from dolfin import *
-from rbnics.backends.fenics import Function
-from rbnics.backends.fenics.wrapping import function_extend_or_restrict, FunctionSpace
+from rbnics.backends.dolfin import Function
+from rbnics.backends.dolfin.wrapping import function_extend_or_restrict, FunctionSpace
 
 mesh = UnitSquareMesh(10, 10)
 

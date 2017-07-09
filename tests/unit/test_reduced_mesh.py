@@ -22,8 +22,8 @@ from dolfin import *
 set_log_level(PROGRESS)
 from mshr import *
 from fenicstools import DofMapPlotter
-from rbnics.backends.fenics import ReducedMesh
-from rbnics.backends.fenics.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
+from rbnics.backends.dolfin import ReducedMesh
+from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
 
 # Possibly disable saving to file. This bool can be used to 
 # check loading with a number of processors different from

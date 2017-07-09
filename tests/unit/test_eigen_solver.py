@@ -18,7 +18,7 @@
 
 from numpy import isclose
 from dolfin import *
-from rbnics.backends.fenics import EigenSolver as SparseEigenSolver
+from rbnics.backends.dolfin import EigenSolver as SparseEigenSolver
 from rbnics.backends.numpy import EigenSolver as DenseEigenSolver, Matrix as DenseMatrix
 
 """

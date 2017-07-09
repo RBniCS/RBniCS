@@ -18,7 +18,7 @@
 
 from dolfin import *
 set_log_level(PROGRESS)
-from rbnics.backends.fenics import SeparatedParametrizedForm
+from rbnics.backends.dolfin import SeparatedParametrizedForm
 
 mesh = UnitSquareMesh(10, 10)
 
