@@ -17,6 +17,7 @@
 #
 
 import dolfin
+from dolfin import plot as original_plot
 from rbnics.backends.online import OnlineFunction
 
 def plot(obj, *args, **kwargs):
@@ -25,7 +26,8 @@ def plot(obj, *args, **kwargs):
         N = obj.N
         Z = kwargs["reduced_problem"].Z[:N]
         del kwargs["reduced_problem"]
-        dolfin.plot(Z*obj, *args, **kwargs)
+        original_plot(Z*obj, *args, **kwargs)
     else:
-        dolfin.plot(obj, *args, **kwargs)
+        original_plot(obj, *args, **kwargs)
+dolfin.plot = plot
 

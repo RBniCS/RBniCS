@@ -16,15 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
 from numpy import zeros
-from dolfin import Constant, DirichletBC as dolfin_DirichletBC, FunctionSpace, GenericFunction, MeshFunctionSizet, SubDomain
+from dolfin import Constant, DirichletBC
 
-def DirichletBC(*args, **kwargs):
+original_DirichletBC__init__ = DirichletBC.__init__
+def custom_DirichletBC__init__(self, *args, **kwargs):
     # Call the constructor
-    output = dolfin_DirichletBC(*args, **kwargs)
+    original_DirichletBC__init__(self, *args, **kwargs)
     # Deduce private variable values from arguments
-    if len(args) == 1 and isinstance(args[0], dolfin_DirichletBC):
+    if len(args) == 1 and isinstance(args[0], DirichletBC):
         assert len(kwargs) == 0
         _value = args[0]._value
         _function_space = args[0]._function_space
@@ -39,42 +39,46 @@ def DirichletBC(*args, **kwargs):
                 _sorted_kwargs.append(kwargs[key])
         _identifier = list()
         _identifier.append(_function_space)
-        _identifier.extend(output.domain_args)
+        _identifier.extend(self.domain_args)
         _identifier.extend(_sorted_kwargs)
         _identifier = tuple(_identifier)
-    # Override the value(), set_value() and homogenize() methods. These are already available in the public interface,
-    # but it is cast the value to a base type (GenericFunction), which makes it not possible to perform the sum
-    output._value = _value
-    def value(self_):
-        return self_._value
-    output.value = types.MethodType(value, output)
-    def set_value(self_, g):
-        self_._value = g
-        dolfin_DirichletBC.set_value(self_, g)
-    output.set_value = types.MethodType(set_value, output)
-    def homogenize(self_):
-        self_._value = Constant(zeros(self_._value.ufl_shape))
-        dolfin_DirichletBC.set_value(self_, self_._value)
-    output.homogenize = types.MethodType(homogenize, output)
-    # Override the function_space() method. This is already available in the public interface,
-    # but it casts the function space to a C++ FunctionSpace and then wraps it into a python FunctionSpace,
-    # losing all the customization that we have done in the function_space.py file
-    output._function_space = _function_space
-    def function_space(self_):
-        return self_._function_space
-    output.function_space = types.MethodType(function_space, output)
-    # Define an identifier() method, that identifies whether BCs are defined on the same boundary
-    output._identifier = _identifier
-    def identifier(self_):
-        return self_._identifier
-    output.identifier = types.MethodType(identifier, output)
-    # Store kwargs, in a sorted way (as in dolfin_DirichletBC)
-    output._sorted_kwargs = _sorted_kwargs
-    # Return
-    return output
+    # Assign private variable values
+    self._value = _value
+    self._function_space = _function_space
+    self._sorted_kwargs = _sorted_kwargs
+    self._identifier = _identifier
+DirichletBC.__init__ = custom_DirichletBC__init__
+
+# Override the value(), set_value() and homogenize() methods. These are already available in the public interface,
+# but it is cast the value to a base type (GenericFunction), which makes it not possible to perform the sum
+def custom_DirichletBC_value(self):
+    return self._value
+DirichletBC.value = custom_DirichletBC_value
+original_DirichletBC_set_value = DirichletBC.set_value
+def custom_DirichletBC_set_value(self, g):
+    self_._value = g
+    original_DirichletBC_set_value(self, g)
+DirichletBC.set_value = custom_DirichletBC_set_value
+original_DirichletBC_homogenize = DirichletBC.homogenize
+def custom_DirichletBC_homogenize(self):
+    self._value = Constant(zeros(self._value.ufl_shape))
+    original_DirichletBC_homogenize(self, self._value)
+DirichletBC.homogenize = custom_DirichletBC_homogenize
+
+# Override the function_space() method. This is already available in the public interface,
+# but it casts the function space to a C++ FunctionSpace and then wraps it into a python FunctionSpace,
+# losing all the customization that we have done in the function_space.py file
+def custom_DirichletBC_function_space(self):
+    return self._function_space
+DirichletBC.function_space = custom_DirichletBC_function_space
+
+# Define an identifier() method, that identifies whether BCs are defined on the same boundary
+def custom_DirichletBC_identifier(self):
+    return self._identifier
+DirichletBC.identifier = custom_DirichletBC_identifier
 
 # Add a multiplication operator by a scalar
-def mul_by_scalar(self, other):
+def custom_DirichletBC_mul_by_scalar(self, other):
     if isinstance(other, (float, int)):
         args = list()
         args.append(self.function_space())
@@ -84,9 +88,8 @@ def mul_by_scalar(self, other):
         return DirichletBC(*args)
     else:
         return NotImplemented
-        
-setattr(dolfin_DirichletBC, "__mul__", mul_by_scalar)
-setattr(dolfin_DirichletBC, "__rmul__", mul_by_scalar)
+DirichletBC.__mul__ = custom_DirichletBC_mul_by_scalar
+DirichletBC__rmul__ = custom_DirichletBC_mul_by_scalar
 
 class ProductOutputDirichletBC(list):
     # Define the __invert__ operator to be used in combination with __and__ operator of Matrix

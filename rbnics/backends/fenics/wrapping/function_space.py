@@ -17,18 +17,19 @@
 #
 
 import types
-from dolfin import FunctionSpace as dolfin_FunctionSpace
+from dolfin import FunctionSpace
 
-def FunctionSpace(*args, **kwargs):
+original_FunctionSpace__init__ = FunctionSpace.__init__
+def custom_FunctionSpace__init__(self, *args, **kwargs):
     if "components" in kwargs:
         components = kwargs["components"]
         del kwargs["components"]
     else:
         components = None
-    output = dolfin_FunctionSpace(*args, **kwargs)
+    original_FunctionSpace__init__(self, *args, **kwargs)
     if components is not None:
-        _enable_string_components(components, output)
-    return output
+        _enable_string_components(components, self)
+FunctionSpace.__init__ = custom_FunctionSpace__init__
     
 def _enable_string_components(components, function_space):
     _init_component_to_index(components, function_space)

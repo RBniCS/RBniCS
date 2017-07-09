@@ -138,9 +138,6 @@ __all__ = [
 
 __overridden__ = {
     'rbnics': [
-        'DirichletBC',
-        'FunctionSpace',
-        'ParametrizedExpression',
-        'plot'
+        'ParametrizedExpression'
     ]
 }

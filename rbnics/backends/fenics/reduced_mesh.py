@@ -16,12 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import CellFunction, cells, DEBUG, entities, File, FunctionSpace, has_hdf5, log, Mesh, MeshFunction
+from dolfin import CellFunction, cells, DEBUG, entities, File, has_hdf5, log, Mesh, MeshFunction
 if has_hdf5():
     from dolfin import HDF5File
 import rbnics.backends.fenics
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
-from rbnics.backends.fenics.wrapping import FunctionSpace as FunctionSpaceWithComponents
+from rbnics.backends.fenics.wrapping import FunctionSpace
 from rbnics.backends.fenics.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_problem_name, override
 from rbnics.utils.io import ExportableList, Folders
@@ -235,7 +235,7 @@ class ReducedMesh(AbstractReducedMesh):
     def _get_reduced_function_space_type(self, V_component):
         if hasattr(V_component, "_component_to_index"):
             def CustomFunctionSpace(mesh, element):
-                return FunctionSpaceWithComponents(mesh, element, components=V_component._component_to_index)
+                return FunctionSpace(mesh, element, components=V_component._component_to_index)
             return CustomFunctionSpace
         else:
             return FunctionSpace
@@ -625,7 +625,7 @@ class ReducedMesh(AbstractReducedMesh):
     def _get_auxiliary_reduced_function_space_type(self, auxiliary_V):
         if hasattr(auxiliary_V, "_component_to_index"):
             def CustomFunctionSpace(mesh, element):
-                return FunctionSpaceWithComponents(mesh, element, components=auxiliary_V._component_to_index)
+                return FunctionSpace(mesh, element, components=auxiliary_V._component_to_index)
             return CustomFunctionSpace
         else:
             return FunctionSpace
