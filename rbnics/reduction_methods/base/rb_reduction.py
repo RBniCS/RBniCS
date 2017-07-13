@@ -107,6 +107,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             """
             need_to_do_offline_stage = self._init_offline()
             if not need_to_do_offline_stage:
+                self._finalize_offline()
                 return self.reduced_problem
                         
             print("==============================================================")

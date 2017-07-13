@@ -47,6 +47,9 @@ def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_Deri
             
         @override
         def _finalize_offline(self):
+            # Call the parent finalization
+            DifferentialProblemReductionMethod_DerivedClass._finalize_offline(self)
+            
             # Update reduced problem to training status
             set_map_from_problem_to_training_status_on(self.truth_problem)
             

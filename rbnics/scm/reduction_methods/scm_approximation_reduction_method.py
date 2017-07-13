@@ -67,7 +67,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         all_folders.pop("testing_set") # this is required only in the error analysis
         at_least_one_folder_created = all_folders.create()
         if not at_least_one_folder_created:
-            self.SCM_approximation.init("online")
             return False # offline construction should be skipped, since data are already available
         else:
             self.SCM_approximation.init("offline")
@@ -83,6 +82,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
     def offline(self):
         need_to_do_offline_stage = self._init_offline()
         if not need_to_do_offline_stage:
+            self._finalize_offline()
             return self.SCM_approximation
         
         print("==============================================================")

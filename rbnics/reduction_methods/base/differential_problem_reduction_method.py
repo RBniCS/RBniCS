@@ -60,7 +60,6 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         all_folders.pop("testing_set") # this is required only in the error analysis
         at_least_one_folder_created = all_folders.create()
         if not at_least_one_folder_created:
-            self.reduced_problem.init("online")
             return False # offline construction should be skipped, since data are already available
         else:
             self.reduced_problem.init("offline")
