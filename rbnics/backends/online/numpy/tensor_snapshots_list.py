@@ -21,7 +21,7 @@ from rbnics.backends.online.numpy.tensors_list import TensorsList
 from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(TensorsList)
-@BackendFor("numpy", online_backend="numpy", inputs=(AbstractTensorsList, ))
+@BackendFor("numpy", inputs=(AbstractTensorsList, ))
 class TensorSnapshotsList(TensorsList):
     pass
 

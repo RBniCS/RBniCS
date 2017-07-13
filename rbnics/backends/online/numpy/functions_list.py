@@ -22,9 +22,9 @@ import rbnics.backends.online.numpy
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicFunctionsList)
-@BackendFor("numpy", online_backend="numpy", inputs=(AbstractFunctionsList, (str, None)))
+@BackendFor("numpy", inputs=(AbstractFunctionsList, (str, None)))
 class FunctionsList(BasicFunctionsList):
     @override
     def __init__(self, Z, component=None):
-        BasicFunctionsList.__init__(self, Z, component, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping, rbnics.backends.online.numpy)
+        BasicFunctionsList.__init__(self, Z, component, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
         

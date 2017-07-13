@@ -24,7 +24,7 @@ from rbnics.backends.online.numpy.functions_list import FunctionsList
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import backend_for
 
-@backend_for("numpy", online_backend="numpy", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Vector.Type()), ))
+@backend_for("numpy", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Vector.Type()), ))
 def transpose(arg):
-    return basic_transpose(arg, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping, rbnics.backends.online.numpy)
+    return basic_transpose(arg, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
     

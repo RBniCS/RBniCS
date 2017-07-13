@@ -17,6 +17,7 @@
 #
 
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
+import rbnics.backends.online
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import is_io_process
 
@@ -27,7 +28,7 @@ from rbnics.utils.mpi import is_io_process
 @Extends(AbstractFunctionsList)
 class FunctionsList(AbstractFunctionsList):
     @override
-    def __init__(self, V_or_Z, component, backend, wrapping, online_backend, AdditionalFunctionTypes=None):
+    def __init__(self, V_or_Z, component, backend, wrapping, AdditionalFunctionTypes=None):
         if component is None:
             self.V_or_Z = V_or_Z
         else:
@@ -35,7 +36,6 @@ class FunctionsList(AbstractFunctionsList):
         self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
         self.backend = backend
         self.wrapping = wrapping
-        self.online_backend = online_backend
         if AdditionalFunctionTypes is None:
             self.FunctionTypes = (backend.Function.Type(), )
         else:
@@ -114,12 +114,12 @@ class FunctionsList(AbstractFunctionsList):
     
     @override
     def __mul__(self, other):
-        assert isinstance(other, (self.online_backend.Matrix.Type(), self.online_backend.Vector.Type(), tuple, self.online_backend.Function.Type()))
-        if isinstance(other, self.online_backend.Matrix.Type()):
+        assert isinstance(other, (rbnics.backends.online.OnlineMatrix.Type(), rbnics.backends.online.OnlineVector.Type(), tuple, rbnics.backends.online.OnlineFunction.Type()))
+        if isinstance(other, rbnics.backends.online.OnlineMatrix.Type()):
             return self.wrapping.functions_list_basis_functions_matrix_mul_online_matrix(self, other, self.backend.FunctionsList, self.backend)
-        elif isinstance(other, (self.online_backend.Vector.Type(), tuple)): # tuple is used when multiplying by theta_bc
+        elif isinstance(other, (rbnics.backends.online.OnlineVector.Type(), tuple)): # tuple is used when multiplying by theta_bc
             return self.wrapping.functions_list_basis_functions_matrix_mul_online_vector(self, other, self.backend)
-        elif isinstance(other, self.online_backend.Function.Type()):
+        elif isinstance(other, rbnics.backends.online.OnlineFunction.Type()):
             return self.wrapping.functions_list_basis_functions_matrix_mul_online_function(self, other, self.backend)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.__mul__.")

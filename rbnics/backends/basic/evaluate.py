@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online import OnlineMatrix
+import rbnics.backends.online
 
 def evaluate(expression_, at, backend, wrapping):
     assert isinstance(expression_, (backend.Matrix.Type(), backend.Vector.Type(), backend.Function.Type(), backend.TensorsList, backend.FunctionsList, backend.ParametrizedTensorFactory, backend.ParametrizedExpressionFactory))
@@ -30,7 +30,7 @@ def evaluate(expression_, at, backend, wrapping):
             functions_list = expression_
             assert at is not None
             out_size = len(at.get_dofs_list())
-            out = OnlineMatrix(out_size, out_size)
+            out = rbnics.backends.online.OnlineMatrix(out_size, out_size)
             for (j, fun_j) in enumerate(functions_list):
                 evaluate_fun_j = backend.evaluate(fun_j, at)
                 for (i, out_ij) in enumerate(evaluate_fun_j):
@@ -56,7 +56,7 @@ def evaluate(expression_, at, backend, wrapping):
             tensors_list = expression_
             assert at is not None
             out_size = len(at.get_dofs_list())
-            out = OnlineMatrix(out_size, out_size)
+            out = rbnics.backends.online.OnlineMatrix(out_size, out_size)
             for (j, tensor_j) in enumerate(tensors_list):
                 evaluate_tensor_j = backend.evaluate(tensor_j, at)
                 for (i, out_ij) in enumerate(evaluate_tensor_j):

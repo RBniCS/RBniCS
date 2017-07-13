@@ -20,7 +20,7 @@ from __future__ import print_function
 from math import sqrt
 from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
-from rbnics.backends.online import OnlineEigenSolver
+import rbnics.backends.online
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import is_io_process, print
 
@@ -74,7 +74,7 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             else:
                 Z = self.BasisContainerType(self.V_or_Z, self.container_type_second_argument)
                             
-            eigensolver = OnlineEigenSolver(Z, correlation) 
+            eigensolver = rbnics.backends.online.OnlineEigenSolver(Z, correlation) 
             parameters = {
                 "problem_type": "hermitian",
                 "spectrum": "largest real"

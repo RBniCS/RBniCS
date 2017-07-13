@@ -21,15 +21,14 @@ from dolfin import FunctionSpace
 from rbnics.backends.basic import FunctionsList as BasicFunctionsList
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.wrapping import function_from_ufl_operators
-import rbnics.backends.numpy
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicFunctionsList)
-@BackendFor("dolfin", online_backend="numpy", inputs=(FunctionSpace, (str, None)))
+@BackendFor("dolfin", inputs=(FunctionSpace, (str, None)))
 class FunctionsList(BasicFunctionsList):
     @override
     def __init__(self, V, component=None):
-        BasicFunctionsList.__init__(self, V, component, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, rbnics.backends.numpy, AdditionalFunctionTypes=(Operator, ))
+        BasicFunctionsList.__init__(self, V, component, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, AdditionalFunctionTypes=(Operator, ))
         
     @override
     def _enrich(self, function, component=None, weight=None, copy=True):

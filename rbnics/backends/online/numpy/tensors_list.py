@@ -22,9 +22,9 @@ import rbnics.backends.online.numpy
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(BasicTensorsList)
-@BackendFor("numpy", online_backend="numpy", inputs=(AbstractTensorsList, ))
+@BackendFor("numpy", inputs=(AbstractTensorsList, ))
 class TensorsList(BasicTensorsList):
     @override
     def __init__(self, Z, empty_tensor):
-        BasicTensorsList.__init__(self, Z, empty_tensor, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping, rbnics.backends.online.numpy)
+        BasicTensorsList.__init__(self, Z, empty_tensor, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
         

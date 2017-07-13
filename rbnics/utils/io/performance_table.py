@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import zeros as Content
-from numpy import min, exp, mean, log, max
+from numpy import exp, log, max, mean, min, zeros as Content
 
 class PerformanceTable(object):
     

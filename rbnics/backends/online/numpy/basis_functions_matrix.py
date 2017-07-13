@@ -21,10 +21,10 @@ from rbnics.backends.basic import BasisFunctionsMatrix as BasicBasisFunctionsMat
 import rbnics.backends.online.numpy
 from rbnics.utils.decorators import BackendFor, Extends, override
 
-@BackendFor("numpy", online_backend="numpy", inputs=(AbstractFunctionsList, ))
+@BackendFor("numpy", inputs=(AbstractFunctionsList, ))
 @Extends(BasicBasisFunctionsMatrix)
 class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
     @override
     def __init__(self, Z):
-        BasicBasisFunctionsMatrix.__init__(self, Z, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping, rbnics.backends.online.numpy)
+        BasicBasisFunctionsMatrix.__init__(self, Z, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
 

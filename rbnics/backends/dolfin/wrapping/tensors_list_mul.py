@@ -18,10 +18,10 @@
 
 from rbnics.backends.dolfin.wrapping.tensor_copy import tensor_copy
 import rbnics.backends.dolfin
-import rbnics.backends.numpy
+from rbnics.backends.online import OnlineFunction
 
 def tensors_list_mul_online_function(tensors_list, online_function):
-    assert isinstance(online_function, rbnics.backends.numpy.Function.Type())
+    assert isinstance(online_function, OnlineFunction.Type())
     online_vector = online_function.vector()
     
     output = tensor_copy(tensors_list._list[0])
@@ -29,10 +29,12 @@ def tensors_list_mul_online_function(tensors_list, online_function):
     assert isinstance(output, (rbnics.backends.dolfin.Matrix.Type(), rbnics.backends.dolfin.Vector.Type()))
     if isinstance(output, rbnics.backends.dolfin.Matrix.Type()):
         for (i, matrix_i) in enumerate(tensors_list._list):
-            output += matrix_i*online_vector.item(i)
+            online_vector_i = float(online_vector[i])
+            output += matrix_i*online_vector_i
     elif isinstance(output, rbnics.backends.dolfin.Vector.Type()):
         for (i, vector_i) in enumerate(tensors_list._list):
-            output.add_local(vector_i.array()*online_vector.item(i))
+            online_vector_i = float(online_vector[i])
+            output.add_local(vector_i.array()*online_vector_i)
         output.apply("add")
     else: # impossible to arrive here anyway, thanks to the assert
         raise AssertionError("Invalid arguments in tensors_list_mul_online_function.")

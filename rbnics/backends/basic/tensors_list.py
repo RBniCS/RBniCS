@@ -17,19 +17,19 @@
 #
 
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
+import rbnics.backends.online
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import is_io_process
 
 @Extends(AbstractTensorsList)
 class TensorsList(AbstractTensorsList):
     @override
-    def __init__(self, V_or_Z, empty_tensor, backend, wrapping, online_backend):
+    def __init__(self, V_or_Z, empty_tensor, backend, wrapping):
         self.V_or_Z = V_or_Z
         self.empty_tensor = empty_tensor
         self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
         self.backend = backend
         self.wrapping = wrapping
-        self.online_backend = online_backend
         self._list = list() # of tensors
         self._precomputed_slices = dict() # from tuple to TensorsList
     
@@ -88,7 +88,7 @@ class TensorsList(AbstractTensorsList):
     
     @override
     def __mul__(self, other):
-        assert isinstance(other, self.online_backend.Function.Type())
+        assert isinstance(other, rbnics.backends.online.OnlineFunction.Type())
         return self.wrapping.tensors_list_mul_online_function(self, other)
     
     @override

@@ -21,7 +21,7 @@ from rbnics.backends.dolfin.tensors_list import TensorsList
 from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(TensorsList)
-@BackendFor("dolfin", online_backend="numpy", inputs=(FunctionSpace, ))
+@BackendFor("dolfin", inputs=(FunctionSpace, ))
 class TensorSnapshotsList(TensorsList):
     pass
 

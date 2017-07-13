@@ -17,7 +17,6 @@
 #
 
 import os # for path
-import numpy
 from rbnics.utils.mpi import is_io_process
 
 class TextIO(object):

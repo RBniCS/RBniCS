@@ -25,15 +25,14 @@ from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.functions_list import FunctionsList
 from rbnics.backends.dolfin.vector import Vector
-import rbnics.backends.numpy
 from rbnics.utils.decorators import backend_for
 
-@backend_for("dolfin", online_backend="numpy", inputs=((BasisFunctionsMatrix, Form, Function.Type(), FunctionsList, Operator, Vector.Type()), ))
+@backend_for("dolfin", inputs=((BasisFunctionsMatrix, Form, Function.Type(), FunctionsList, Operator, Vector.Type()), ))
 def transpose(arg):
     def AdditionalIsVector(arg):
         return isinstance(arg, Form) and len(arg.arguments()) is 1
     def AdditionalIsMatrix(arg):
         return isinstance(arg, Form) and len(arg.arguments()) is 2
-    return basic_transpose(arg, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, rbnics.backends.numpy, AdditionalFunctionTypes=(Operator, ), AdditionalIsVector=AdditionalIsVector, AdditionalIsMatrix=AdditionalIsMatrix)
+    return basic_transpose(arg, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, AdditionalFunctionTypes=(Operator, ), AdditionalIsVector=AdditionalIsVector, AdditionalIsMatrix=AdditionalIsMatrix)
     
         

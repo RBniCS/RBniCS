@@ -19,7 +19,7 @@
 import rbnics.backends.online.numpy
 
 def tensor_copy(tensor):
-    assert isinstance(tensor, (rbnics.backends.online.numpy.Matrix.Type(), rbnics.backends.online.numpy.Vector.Type())
+    assert isinstance(tensor, (rbnics.backends.online.numpy.Matrix.Type(), rbnics.backends.online.numpy.Vector.Type()))
     if isinstance(tensor, rbnics.backends.online.numpy.Matrix.Type()):
         m = rbnics.backends.online.numpy.Matrix(*tensor.shape)
         m[:] = tensor

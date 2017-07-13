@@ -24,12 +24,11 @@ from functools import wraps
 from numpy import ndarray as array, float64
 from rbnics.utils.mpi import log, DEBUG
 
-def BackendFor(library, online_backend=None, inputs=None, overrides=None):
+def BackendFor(library, inputs=None, overrides=None):
     def BackendFor_Decorator(Class):
         log(DEBUG,
             "In BackendFor with\n" +
             "\tlibrary = " + str(library) + "\n" +
-            "\tonline_backend = " + str(online_backend) + "\n" +
             "\tinputs = " + str(inputs) + "\n" +
             "\tClass = " + str(Class) + "\n"
         )
@@ -39,14 +38,8 @@ def BackendFor(library, online_backend=None, inputs=None, overrides=None):
         if not library in BackendFor._all_classes:
             BackendFor._all_classes[library] = dict() # from class name to class (if no online backend) or dict over online backends (if online backed provided)
             
-        if online_backend is None:
-            assert Class.__name__ not in BackendFor._all_classes[library]
-            BackendFor._all_classes[library][Class.__name__] = Class
-        else:
-            if Class.__name__ not in BackendFor._all_classes[library]:
-                BackendFor._all_classes[library][Class.__name__] = dict() # from online_backend to class
-            assert online_backend not in BackendFor._all_classes[library][Class.__name__]
-            BackendFor._all_classes[library][Class.__name__][online_backend] = Class
+        assert Class.__name__ not in BackendFor._all_classes[library]
+        BackendFor._all_classes[library][Class.__name__] = Class
         
         if library is not "Abstract":
             # TODO check that the signature are the same, or at worst there have been added arguments with default values (or new methods, not required by the interface)
@@ -77,12 +70,11 @@ def BackendFor(library, online_backend=None, inputs=None, overrides=None):
 BackendFor._all_classes = dict() # from library to dict from class name to class
 BackendFor._all_classes_inputs = dict() # from inputs to library
     
-def backend_for(library, online_backend=None, inputs=None, output=None, overrides=None):
+def backend_for(library, inputs=None, output=None, overrides=None):
     def backend_for_decorator(function):
         log(DEBUG,
             "In backend_for with\n" +
             "\tlibrary = " + str(library) +
-            "\tonline_backend = " + str(online_backend) +
             "\tinputs = " + str(inputs) +
             "\tfunction = " + str(function)
         )
@@ -92,15 +84,9 @@ def backend_for(library, online_backend=None, inputs=None, output=None, override
         if not library in backend_for._all_functions:
             backend_for._all_functions[library] = dict() # from function name to function (if no online backend) or dict over online backends (if online backed provided)
         
-        if online_backend is None:
-            assert function.__name__ not in backend_for._all_functions[library]
-            backend_for._all_functions[library][function.__name__] = function
-        else:
-            if function.__name__ not in backend_for._all_functions[library]:
-                backend_for._all_functions[library][function.__name__] = dict() # from online_backend to function
-            assert online_backend not in backend_for._all_functions[library][function.__name__]
-            backend_for._all_functions[library][function.__name__][online_backend] = function
-            
+        assert function.__name__ not in backend_for._all_functions[library]
+        backend_for._all_functions[library][function.__name__] = function
+                    
         if library is not "Abstract":
             # TODO check that the signature are the same, or at worst there have been added arguments with default values
             
@@ -164,13 +150,7 @@ def logging_all_classes_functions(storage):
     for library in storage:
         output += "\t\t" + library + ": {" + "\n"
         for name in storage[library]:
-            if isinstance(storage[library][name], dict):
-                output += "\t\t\t" + name + ": {" + "\n"
-                for online_backend in storage[library][name]:
-                    output += "\t\t\t\t" + online_backend + ": " + str(storage[library][name][online_backend]) + "\n"
-                output += "\t\t\t" + "}" + "\n"
-            else:
-                output += "\t\t\t" + name + ": " + str(storage[library][name]) + "\n"
+            output += "\t\t\t" + name + ": " + str(storage[library][name]) + "\n"
         output += "\t\t" + "}" + "\n"
     output += "\t" + "}"
     return output
