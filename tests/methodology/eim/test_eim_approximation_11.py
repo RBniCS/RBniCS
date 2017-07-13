@@ -56,6 +56,9 @@ class MockProblem(ParametrizedProblem):
         g = TestFunction(self.V)
         self.X = assemble(f*g*dx)
         
+    def init(self):
+        pass
+        
     def solve(self):
         assert not hasattr(self, "_is_solving")
         self._is_solving = True

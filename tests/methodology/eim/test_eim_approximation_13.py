@@ -65,6 +65,9 @@ class MockProblem(ParametrizedProblem):
         self.V00 = V.sub(0).sub(0).collapse()
         self.V1 = V.sub(1).collapse()
         
+    def init(self):
+        pass
+        
     def solve(self):
         assert not hasattr(self, "_is_solving")
         self._is_solving = True
