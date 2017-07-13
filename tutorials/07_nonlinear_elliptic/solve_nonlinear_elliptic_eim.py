@@ -45,10 +45,6 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             "error_on_nonconvergence": True
         }
     
-    ## Return the alpha_lower bound.
-    def get_stability_factor(self):
-        return 1.
-    
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
