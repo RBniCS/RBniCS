@@ -16,24 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import importlib
-import sys
-current_module = sys.modules[__name__]
+from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
+import rbnics.backends.online.numpy
+from rbnics.backends.online.numpy.matrix import Matrix
+from rbnics.utils.decorators import BackendFor, Extends, override
 
-# Get the online backend name
-from rbnics.utils.config import config
-online_backend = config.get("backends", "online backend")
-
-# Import it
-importlib.import_module("rbnics.backends.online." + online_backend)
-importlib.import_module("rbnics.backends.online." + online_backend + ".wrapping")
-
-# As set it as online backend in the factory
-from rbnics.utils.factories import enable_backend, online_backend_factory, set_online_backend
-enable_backend(online_backend)
-set_online_backend(online_backend)
-online_backend_factory(current_module)
-
-# Clean up
-del current_module
-del online_backend
+@Extends(BasicGramSchmidt)
+@BackendFor("numpy", inputs=(Matrix.Type(), ))
+class GramSchmidt(BasicGramSchmidt):
+    @override
+    def __init__(self, X):
+        BasicGramSchmidt.__init__(self, X, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
+        

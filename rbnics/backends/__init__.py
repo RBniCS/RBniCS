@@ -17,7 +17,6 @@
 #
 
 import importlib
-import os
 import sys
 current_module = sys.modules[__name__]
 

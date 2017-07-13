@@ -66,7 +66,6 @@ def read_config(config):
             if dir_ in sys.modules:
                 required_backends.add(dir_)
         break # prevent recursive exploration
-    required_backends.add(config.get("backends", "online backend"))
     config.set("backends", "required backends", required_backends)
     
 def _convert_list_str_options(config, section, option):

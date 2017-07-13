@@ -16,24 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import importlib
-import sys
-current_module = sys.modules[__name__]
+import rbnics.backends.online.numpy
 
-# Get the online backend name
-from rbnics.utils.config import config
-online_backend = config.get("backends", "online backend")
+def matrix_mul_vector(matrix, vector):
+    if isinstance(vector, rbnics.backends.online.numpy.Function.Type()):
+        vector = vector.vector()
+    return matrix*vector
 
-# Import it
-importlib.import_module("rbnics.backends.online." + online_backend)
-importlib.import_module("rbnics.backends.online." + online_backend + ".wrapping")
-
-# As set it as online backend in the factory
-from rbnics.utils.factories import enable_backend, online_backend_factory, set_online_backend
-enable_backend(online_backend)
-set_online_backend(online_backend)
-online_backend_factory(current_module)
-
-# Clean up
-del current_module
-del online_backend
+def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
+    assert isinstance(matrix, rbnics.backends.online.numpy.Matrix.Type())
+    assert isinstance(other_matrix, rbnics.backends.online.numpy.Matrix.Type())
+    return (matrix*other_matrix).sum()
+    

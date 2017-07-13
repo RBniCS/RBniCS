@@ -16,24 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import importlib
-import sys
-current_module = sys.modules[__name__]
+import rbnics.backends.online.numpy
 
-# Get the online backend name
-from rbnics.utils.config import config
-online_backend = config.get("backends", "online backend")
+def vector_mul_vector(vector1, vector2):
+    if isinstance(vector1, rbnics.backends.online.numpy.Function.Type()):
+        vector1 = vector1.vector()
+    if isinstance(vector2, rbnics.backends.online.numpy.Function.Type()):
+        vector2 = vector2.vector()
+    output = vector1.T*vector2
+    assert output.shape == (1, 1)
+    return output.item(0, 0)
 
-# Import it
-importlib.import_module("rbnics.backends.online." + online_backend)
-importlib.import_module("rbnics.backends.online." + online_backend + ".wrapping")
-
-# As set it as online backend in the factory
-from rbnics.utils.factories import enable_backend, online_backend_factory, set_online_backend
-enable_backend(online_backend)
-set_online_backend(online_backend)
-online_backend_factory(current_module)
-
-# Clean up
-del current_module
-del online_backend

@@ -16,24 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import importlib
-import sys
-current_module = sys.modules[__name__]
+from rbnics.backends.online.numpy.wrapping.tensor_copy import tensor_copy
+import rbnics.backends.online
 
-# Get the online backend name
-from rbnics.utils.config import config
-online_backend = config.get("backends", "online backend")
-
-# Import it
-importlib.import_module("rbnics.backends.online." + online_backend)
-importlib.import_module("rbnics.backends.online." + online_backend + ".wrapping")
-
-# As set it as online backend in the factory
-from rbnics.utils.factories import enable_backend, online_backend_factory, set_online_backend
-enable_backend(online_backend)
-set_online_backend(online_backend)
-online_backend_factory(current_module)
-
-# Clean up
-del current_module
-del online_backend
+def tensors_list_mul_online_function(tensors_list, online_function):
+    assert isinstance(online_function, rbnics.backends.online.OnlineFunction.Type())
+    online_vector = online_function.vector()
+    
+    output = tensor_copy(tensors_list._list[0])
+    output[:] = 0.
+    for (i, tensor_i) in enumerate(tensors_list._list):
+        online_vector_i = float(online_vector[i])
+        output[:] += tensor_i*online_vector_i
+    return output
+    

@@ -16,24 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import importlib
-import sys
-current_module = sys.modules[__name__]
+from rbnics.backends.online.numpy.product import ProductOutput
+from rbnics.utils.decorators import backend_for
 
-# Get the online backend name
-from rbnics.utils.config import config
-online_backend = config.get("backends", "online backend")
-
-# Import it
-importlib.import_module("rbnics.backends.online." + online_backend)
-importlib.import_module("rbnics.backends.online." + online_backend + ".wrapping")
-
-# As set it as online backend in the factory
-from rbnics.utils.factories import enable_backend, online_backend_factory, set_online_backend
-enable_backend(online_backend)
-set_online_backend(online_backend)
-online_backend_factory(current_module)
-
-# Clean up
-del current_module
-del online_backend
+# product function to assemble truth/reduced affine expansions. To be used in combination with product,
+# even though product actually carries out both the sum and the product!
+@backend_for("numpy", inputs=(ProductOutput, ))
+def sum(product_output):
+    return product_output.sum_product_return_value
+        

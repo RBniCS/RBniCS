@@ -49,17 +49,6 @@ dolfin/*.pyc
 dolfin/*/*~
 dolfin/*/*.bak
 dolfin/*/*.pyc
-# ... numpy subpackage ...
-!numpy/
-!numpy/*
-numpy/*~
-numpy/*.bak
-numpy/*.pyc
-!numpy/*/
-!numpy/*/*
-numpy/*/*~
-numpy/*/*.bak
-numpy/*/*.pyc
 # ... online subpackage ...
 !online/
 !online/*
@@ -71,3 +60,14 @@ online/*.pyc
 online/*/*~
 online/*/*.bak
 online/*/*.pyc
+# ... online/numpy subpackage ...
+!online/numpy/
+!online/numpy/*
+online/numpy/*~
+online/numpy/*.bak
+online/numpy/*.pyc
+!online/numpy/*/
+!online/numpy/*/*
+online/numpy/*/*~
+online/numpy/*/*.bak
+online/numpy/*/*.pyc

@@ -16,24 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import importlib
-import sys
-current_module = sys.modules[__name__]
+import rbnics.backends.online.numpy
 
-# Get the online backend name
-from rbnics.utils.config import config
-online_backend = config.get("backends", "online backend")
-
-# Import it
-importlib.import_module("rbnics.backends.online." + online_backend)
-importlib.import_module("rbnics.backends.online." + online_backend + ".wrapping")
-
-# As set it as online backend in the factory
-from rbnics.utils.factories import enable_backend, online_backend_factory, set_online_backend
-enable_backend(online_backend)
-set_online_backend(online_backend)
-online_backend_factory(current_module)
-
-# Clean up
-del current_module
-del online_backend
+def tensor_copy(tensor):
+    assert isinstance(tensor, (rbnics.backends.online.numpy.Matrix.Type(), rbnics.backends.online.numpy.Vector.Type())
+    if isinstance(tensor, rbnics.backends.online.numpy.Matrix.Type()):
+        m = rbnics.backends.online.numpy.Matrix(*tensor.shape)
+        m[:] = tensor
+        return m
+    elif isinstance(tensor, rbnics.backends.online.numpy.Vector.Type()):
+        V = rbnics.backends.online.numpy.Vector(tensor.size)
+        v[:] = tensor
+        return v
+    else: # impossible to arrive here anyway, thanks to the assert
+        raise AssertionError("Invalid arguments in tensor_copy.")
