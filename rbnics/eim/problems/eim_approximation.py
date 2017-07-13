@@ -113,7 +113,7 @@ class EIMApproximation(ParametrizedProblem):
             if max_abs_rhs == 0.:
                 # If the rhs is zero, then we are interpolating the zero function
                 # and the default zero coefficients are enough.
-                assert N == 1 # there is no need of having more than one basis functions to interpolate a zero function
+                pass
             else:
                 # Extract the interpolation matrix
                 lhs = self.interpolation_matrix[0][:N, :N]
