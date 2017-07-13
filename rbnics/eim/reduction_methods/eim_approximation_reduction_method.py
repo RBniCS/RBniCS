@@ -155,7 +155,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 print("update interpolation matrix")
                 self.update_interpolation_matrix()
                 
-                print("find next mu")
                 (error_max, relative_error_max) = self.greedy()
                 print("maximum interpolation error =", error_max)
                 print("maximum interpolation relative error =", relative_error_max)
@@ -243,6 +242,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
     ## Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         assert self.EIM_approximation.basis_generation == "Greedy"
+        
+        # Print some additional information on the consistency of the reduced basis
+        self.EIM_approximation.solve()
+        self.EIM_approximation.snapshot = self.load_snapshot()
+        (_, err, _) = self.EIM_approximation.compute_maximum_interpolation_error()
+        print("interpolation error for current mu =", abs(err))
+        
+        # Carry out the actual greedy search
         def solve_and_computer_error(mu):
             self.EIM_approximation.set_mu(mu)
             
@@ -251,6 +258,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             (_, err, _) = self.EIM_approximation.compute_maximum_interpolation_error()
             return err
             
+        print("find next mu")
         (error_max, error_argmax) = self.training_set.max(solve_and_computer_error, abs)
         self.EIM_approximation.set_mu(self.training_set[error_argmax])
         self.greedy_selected_parameters.append(self.training_set[error_argmax])

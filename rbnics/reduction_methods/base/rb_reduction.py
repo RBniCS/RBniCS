@@ -191,7 +191,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             :return: max error estimator and the respective parameter.
             """
             
-            # Print some additional information if logging of level PROGRESS is enabled
+            # Print some additional information on the consistency of the reduced basis
             print("absolute error for current mu =", self.reduced_problem.compute_error())
             print("absolute error estimator for current mu =", self.reduced_problem.estimate_error())
             
