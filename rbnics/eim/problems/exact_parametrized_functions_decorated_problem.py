@@ -39,6 +39,8 @@ def ExactParametrizedFunctionsDecoratedProblem(
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
+                # Storage for symbolic parameters
+                self.mu_symbolic = None
                 
                 # Store values passed to decorator
                 assert isinstance(stages, (str, tuple))
@@ -58,16 +60,17 @@ def ExactParametrizedFunctionsDecoratedProblem(
             
             @override
             def init(self):
+                # Initialize symbolic parameters only once
+                if self.mu_symbolic is None:
+                    self.mu_symbolic = SymbolicParameters(self, self.V, self.mu)
                 # Temporarily replace float parameters with symbols, so that the forms do not hardcode
                 # the current value of the parameter while assemblying.
                 mu_float = self.mu
-                self.mu = SymbolicParameters(self, self.V, self.mu)
+                self.mu = self.mu_symbolic
                 # Call parent
-                output = ParametrizedDifferentialProblem_DerivedClass.init(self)
+                ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Restore float parameters
                 self.mu = mu_float
-                # Return
-                return output
             
         # return value (a class) for the decorator
         return ExactParametrizedFunctionsDecoratedProblem_Class

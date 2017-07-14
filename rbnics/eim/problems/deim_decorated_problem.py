@@ -42,6 +42,8 @@ def DEIMDecoratedProblem(
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
+                # Storage for symbolic parameters
+                self.mu_symbolic = None
                 # Storage for DEIM reduced problems
                 self.DEIM_approximations = dict() # from term to dict of DEIMApproximation
                 self.non_DEIM_forms = dict() # from term to dict of forms
@@ -83,10 +85,13 @@ def DEIMDecoratedProblem(
                     (len(self.non_DEIM_forms) == 0)
                 )
                 if len(self.DEIM_approximations) == 0: # initialize DEIM approximations only once
+                    # Initialize symbolic parameters only once (may be shared between DEIM and exact interpolation)
+                    if self.mu_symbolic is None:
+                        self.mu_symbolic = SymbolicParameters(self, self.V, self.mu)
                     # Temporarily replace float parameters with symbols, so that we can detect if operators
                     # are parametrized
                     mu_float = self.mu
-                    self.mu = SymbolicParameters(self, self.V, self.mu)
+                    self.mu = self.mu_symbolic
                     # Loop over each term
                     for term in self.terms:
                         forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
