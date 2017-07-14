@@ -38,6 +38,9 @@ def BackendFor(library, inputs=None, overrides=None):
         if not library in BackendFor._all_classes:
             BackendFor._all_classes[library] = dict() # from class name to class (if no online backend) or dict over online backends (if online backed provided)
             
+        if overrides is not None:
+            assert BackendFor._all_classes[library][Class.__name__] is overrides
+            BackendFor._all_classes[library].pop(Class.__name__)
         assert Class.__name__ not in BackendFor._all_classes[library]
         BackendFor._all_classes[library][Class.__name__] = Class
         
@@ -53,7 +56,7 @@ def BackendFor(library, inputs=None, overrides=None):
                 BackendFor._all_classes_inputs[Class.__name__] = dict() # from inputs to library
             for possible_inputs in combine_inputs(inputs):
                 if overrides is not None and possible_inputs in BackendFor._all_classes_inputs[Class.__name__]:
-                    assert BackendFor._all_classes_inputs[Class.__name__][possible_inputs] == overrides
+                    assert BackendFor._all_classes_inputs[Class.__name__][possible_inputs] == library
                     BackendFor._all_classes_inputs[Class.__name__].pop(possible_inputs)
                 assert possible_inputs not in BackendFor._all_classes_inputs[Class.__name__], "Input types " + str(possible_inputs) + " for " + Class.__name__ + " cannot be the same for backends " + BackendFor._all_classes_inputs[Class.__name__][possible_inputs] + " (already in storage) and " + library + " (to be added), otherwise it will not be possible to choose among them"
                 BackendFor._all_classes_inputs[Class.__name__][possible_inputs] = library
@@ -84,6 +87,9 @@ def backend_for(library, inputs=None, output=None, overrides=None):
         if not library in backend_for._all_functions:
             backend_for._all_functions[library] = dict() # from function name to function (if no online backend) or dict over online backends (if online backed provided)
         
+        if overrides is not None:
+            assert backend_for._all_functions[library][function.__name__] is function
+            backend_for._all_functions[library].pop(function.__name__)
         assert function.__name__ not in backend_for._all_functions[library]
         backend_for._all_functions[library][function.__name__] = function
                     
@@ -103,7 +109,7 @@ def backend_for(library, inputs=None, output=None, overrides=None):
                 backend_for._all_functions_inputs[function.__name__] = dict() # from inputs to library
             for possible_inputs in combine_inputs(inputs):
                 if overrides is not None and possible_inputs in backend_for._all_functions_inputs[function.__name__]:
-                    assert backend_for._all_functions_inputs[function.__name__][possible_inputs] == overrides
+                    assert backend_for._all_functions_inputs[function.__name__][possible_inputs] == library
                     backend_for._all_functions_inputs[function.__name__].pop(possible_inputs)
                 assert possible_inputs not in backend_for._all_functions_inputs[function.__name__], "Input types " + str(possible_inputs) + " for " + function.__name__ + " cannot be the same for backends " + backend_for._all_functions_inputs[function.__name__][possible_inputs] + " (already in storage) and " + library + " (to be added), otherwise it will not be possible to choose among them"
                 backend_for._all_functions_inputs[function.__name__][possible_inputs] = library
