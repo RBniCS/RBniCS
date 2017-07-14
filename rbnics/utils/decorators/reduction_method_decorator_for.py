@@ -19,22 +19,23 @@
 from rbnics.utils.decorators.for_decorators_helper import ForDecoratorsStore, ForDecoratorsLogging
 from rbnics.utils.mpi import log, DEBUG
 
-def ReductionMethodDecoratorFor(Algorithm, replaces=None, replaces_if=None):
+def ReductionMethodDecoratorFor(Algorithm, enabled_if=None, replaces=None, replaces_if=None):
     def ReductionMethodDecoratorFor_Decorator(ReductionMethodDecorator):
         # Add to local storage
         log(DEBUG,
             "In ReductionMethodDecoratorFor with\n" +
             "\tAlgorithm = " + str(Algorithm) + "\n" +
             "\tReductionMethodDecorator = " + str(ReductionMethodDecorator) + "\n" +
+            "\tenabled_if = " + str(enabled_if) + "\n" +
             "\treplaces = " + str(replaces) + "\n" +
-            "\treplaces_if = " + str(replaces_if)
+            "\treplaces_if = " + str(replaces_if) + "\n"
         )
         def go_to_next_level(Key, StoredKey):
             # Algorithms are functions (decorators) to it is not possible
             # to define inheritance levels. Flatten the storage levels
             # and thus rely only on explicit replaces provided by the user
             return False
-        ForDecoratorsStore(Algorithm, ReductionMethodDecoratorFor._all_reduction_method_decorators, (ReductionMethodDecorator, None, replaces, replaces_if), go_to_next_level)
+        ForDecoratorsStore(Algorithm, ReductionMethodDecoratorFor._all_reduction_method_decorators, (ReductionMethodDecorator, None, enabled_if, replaces, replaces_if), go_to_next_level)
         log(DEBUG, "ReductionMethodDecoratorFor storage now contains:")
         ForDecoratorsLogging(ReductionMethodDecoratorFor._all_reduction_method_decorators, "Algorithm", "ReductionMethodDecorator", None)
         log(DEBUG, "")
@@ -42,4 +43,4 @@ def ReductionMethodDecoratorFor(Algorithm, replaces=None, replaces_if=None):
         return ReductionMethodDecorator
     return ReductionMethodDecoratorFor_Decorator
     
-ReductionMethodDecoratorFor._all_reduction_method_decorators = list() # (over inheritance level) of dicts from Algorithm to list of (ReductionMethodDecorator, None, replaces, replaces_if)
+ReductionMethodDecoratorFor._all_reduction_method_decorators = list() # (over inheritance level) of dicts from Algorithm to list of (ReductionMethodDecorator, None, enabled_if, replaces, replaces_if)

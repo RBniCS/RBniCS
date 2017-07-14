@@ -42,7 +42,17 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     def ReducedProblem_condition_on_dict_key(Problem):
         return isinstance(truth_problem, Problem)
     def ReducedProblem_condition_for_valid_candidate(tuple_):
-        return isinstance(reduction_method, tuple_[1]) # 1-th entry stores the reduction method type
+        ReductionMethodType = tuple_[1] # 1-th entry stores the reduction method type
+        enabled_if = tuple_[2] # 2-th entry stores the condition for enabling this reduced problem
+        return (
+            isinstance(reduction_method, ReductionMethodType)
+                and
+            (
+                enabled_if is None # enable in any case
+                    or
+                enabled_if(truth_problem, **kwargs)
+            )
+        )
     def ReducedProblem_condition_for_candidate_replacement(candidate_replaces_if):
         return (
             candidate_replaces_if is None # replace in any case
@@ -53,6 +63,7 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     TypesList.extend(
         FactoryGenerateTypes(ReducedProblemFor._all_reduced_problems, ReducedProblem_condition_on_dict_key, ReducedProblem_condition_for_valid_candidate, ReducedProblem_condition_for_candidate_replacement)
     )
+    assert len(TypesList) > 0
     
     # Look if any customizer has been defined
     for (Problem, customizer) in CustomizeReducedProblemFor._all_reduced_problems_customizers.iteritems():
@@ -64,7 +75,12 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
         def ReducedProblemDecorator_condition_on_dict_key(Algorithm):
             return Algorithm in type(truth_problem).ProblemDecorators
         def ReducedProblemDecorator_condition_for_valid_candidate(tuple_):
-            return True # always a valid candidate
+            enabled_if = tuple_[2] # 2-th entry stores the condition for enabling this reduced problem decorator
+            return (
+                enabled_if is None # enable in any case
+                    or
+                enabled_if(truth_problem, **kwargs)
+            )
         def ReducedProblemDecorator_condition_for_candidate_replacement(candidate_replaces_if):
             return (
                 candidate_replaces_if is None # replace in any case

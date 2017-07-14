@@ -19,7 +19,7 @@
 from rbnics.utils.decorators.extends import Extends
 from rbnics.utils.decorators.override import override
 
-def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
+def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, enabled_if=None, replaces=None, replaces_if=None, **kwargs):
     def StoreProblemDecoratorsForFactories_Decorator(DecoratedProblem_Base):
         assert issubclass(DecoratedProblem_Base, Problem)
         
@@ -71,7 +71,7 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
                 and
             ExactAlgorithm in DecoratedProblem.ProblemExactDecorators
         ): # avoid duplicates
-            DecoratedProblem.ProblemDecorators.append(Algorithm) # replaces and replaces_if are not used, but will be passed also to reduction methods and reduced problem.
+            DecoratedProblem.ProblemDecorators.append(Algorithm) # enabled_if, replaces and replaces_if are not used, but will be passed also to reduction methods and reduced problem as well.
             DecoratedProblem.ProblemDecoratorsKwargs.append(kwargs)
             DecoratedProblem.ProblemExactDecorators.append(ExactAlgorithm)
         

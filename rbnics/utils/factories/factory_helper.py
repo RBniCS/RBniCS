@@ -35,11 +35,12 @@ def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_val
                     if condition_for_valid_candidate(tuple_):
                         log(DEBUG, "\t\tProcessing candidate " + str(tuple_[0]) + ": valid")
                         candidates.append(tuple_[0]) # 0-th entry stores the type
-                        candidates_replaces.append(tuple_[2]) # 2-th entry stores what other type to replace
-                        candidates_replaces_if.append(tuple_[3]) # 3-th entry stores when to replace it
+                        candidates_replaces.append(tuple_[3]) # 3-th entry stores what other type to replace
+                        candidates_replaces_if.append(tuple_[4]) # 4-th entry stores when to replace it
                     else:
                         log(DEBUG, "\t\tProcessing candidate " + str(tuple_[0]) + ": invalid")
-                assert len(candidates) > 0
+                if len(candidates) is 0:
+                    continue
                 if len(candidates) > 1:
                     log(DEBUG, "\t\tFound several candidates: " + str(candidates))
                     candidates_to_be_removed = list()
@@ -92,6 +93,5 @@ def FactoryGenerateTypes(list_of_dicts, condition_on_dict_key, condition_for_val
             else:
                 log(DEBUG, "\tSkipping key " + str(key))
     
-    assert len(TypesList) > 0
     return TypesList
     

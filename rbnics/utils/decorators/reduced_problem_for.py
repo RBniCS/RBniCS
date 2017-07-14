@@ -21,8 +21,8 @@ from rbnics.utils.decorators.multi_level_reduced_problem import MultiLevelReduce
 from rbnics.utils.decorators.reduction_method_for import ReductionMethodFor, ReductionMethodFor_Impl
 from rbnics.utils.mpi import log, DEBUG
 
-def ReducedProblemFor(Problem, ReductionMethod, replaces=None, replaces_if=None):
-    impl = ReducedProblemFor_Impl(Problem, ReductionMethod, replaces, replaces_if)
+def ReducedProblemFor(Problem, ReductionMethod, enabled_if=None, replaces=None, replaces_if=None):
+    impl = ReducedProblemFor_Impl(Problem, ReductionMethod, enabled_if, replaces, replaces_if)
     def ReducedProblemFor_Decorator(ReducedProblem):
         output = impl(ReducedProblem)
         # The current reduced problem can also be used as a truth problem for multilevel reduction
@@ -34,7 +34,7 @@ def ReducedProblemFor(Problem, ReductionMethod, replaces=None, replaces_if=None)
         return output
     return ReducedProblemFor_Decorator
     
-def ReducedProblemFor_Impl(Problem, ReductionMethod, replaces=None, replaces_if=None):
+def ReducedProblemFor_Impl(Problem, ReductionMethod, enabled_if=None, replaces=None, replaces_if=None):
     def ReducedProblemFor_ImplDecorator(ReducedProblem):
         # Decorate with multilevel reduced problem
         ReducedProblem = MultiLevelReducedProblem(ReducedProblem)
@@ -44,6 +44,7 @@ def ReducedProblemFor_Impl(Problem, ReductionMethod, replaces=None, replaces_if=
             "\tProblem = " + str(Problem) + "\n" +
             "\tReductionMethod = " + str(ReductionMethod) + "\n" +
             "\tReducedProblem = " + str(ReducedProblem) + "\n" +
+            "\tenabled_if = " + str(enabled_if) + "\n" +
             "\treplaces = " + str(replaces) + "\n" +
             "\treplaces_if = " + str(replaces_if) + "\n"
         )
@@ -51,7 +52,7 @@ def ReducedProblemFor_Impl(Problem, ReductionMethod, replaces=None, replaces_if=
             # List the keys in order of inheritance: base classes will come first
             # in the list, then their children, and then children of their children.
             return Key is not StoredKey and issubclass(Key, StoredKey)
-        ForDecoratorsStore(Problem, ReducedProblemFor._all_reduced_problems, (ReducedProblem, ReductionMethod, replaces, replaces_if), go_to_next_level)
+        ForDecoratorsStore(Problem, ReducedProblemFor._all_reduced_problems, (ReducedProblem, ReductionMethod, enabled_if, replaces, replaces_if), go_to_next_level)
         log(DEBUG, "ReducedProblemFor storage now contains:")
         ForDecoratorsLogging(ReducedProblemFor._all_reduced_problems, "Problem", "ReducedProblem", "ReductionMethod")
         log(DEBUG, "\n")
@@ -59,4 +60,4 @@ def ReducedProblemFor_Impl(Problem, ReductionMethod, replaces=None, replaces_if=
         return ReducedProblem
     return ReducedProblemFor_ImplDecorator
 
-ReducedProblemFor._all_reduced_problems = list() # (over inheritance level) of dicts from Problem to list of (ReducedProblem, ReductionMethod, replaces, replaces_if)
+ReducedProblemFor._all_reduced_problems = list() # (over inheritance level) of dicts from Problem to list of (ReducedProblem, ReductionMethod, enabled_if, replaces, replaces_if)

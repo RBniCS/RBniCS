@@ -20,14 +20,14 @@ from rbnics.utils.decorators.for_decorators_helper import ForDecoratorsStore, Fo
 from rbnics.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
 from rbnics.utils.mpi import log, DEBUG
 
-def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
-    impl = ReductionMethodFor_Impl(Problem, category, replaces, replaces_if)
+def ReductionMethodFor(Problem, category, enabled_if=None, replaces=None, replaces_if=None):
+    impl = ReductionMethodFor_Impl(Problem, category, enabled_if, replaces, replaces_if)
     def ReductionMethodFor_Decorator(ReductionMethod):
         output = impl(ReductionMethod)
         return output
     return ReductionMethodFor_Decorator
     
-def ReductionMethodFor_Impl(Problem, category, replaces=None, replaces_if=None):
+def ReductionMethodFor_Impl(Problem, category, enabled_if=None, replaces=None, replaces_if=None):
     def ReductionMethodFor_ImplDecorator(ReductionMethod):
         # Decorate with multilevel reduction method
         ReductionMethod = MultiLevelReductionMethod(ReductionMethod)
@@ -37,6 +37,7 @@ def ReductionMethodFor_Impl(Problem, category, replaces=None, replaces_if=None):
             "\tProblem = " + str(Problem) + "\n" +
             "\tReductionMethod = " + str(ReductionMethod) + "\n" +
             "\tcategory = " + str(category) + "\n" +
+            "\tenabled_if = " + str(enabled_if) + "\n" +
             "\treplaces = " + str(replaces) + "\n" +
             "\treplaces_if = " + str(replaces_if)
         )
@@ -44,7 +45,7 @@ def ReductionMethodFor_Impl(Problem, category, replaces=None, replaces_if=None):
             # List the keys in order of inheritance: base classes will come first
             # in the list, then their children, and then children of their children.
             return Key is not StoredKey and issubclass(Key, StoredKey)
-        ForDecoratorsStore(Problem, ReductionMethodFor._all_reduction_methods, (ReductionMethod, category, replaces, replaces_if), go_to_next_level)
+        ForDecoratorsStore(Problem, ReductionMethodFor._all_reduction_methods, (ReductionMethod, category, enabled_if, replaces, replaces_if), go_to_next_level)
         log(DEBUG, "ReductionMethodFor storage now contains:")
         ForDecoratorsLogging(ReductionMethodFor._all_reduction_methods, "Problem", "ReductionMethod", "category")
         log(DEBUG, "")
@@ -54,5 +55,5 @@ def ReductionMethodFor_Impl(Problem, category, replaces=None, replaces_if=None):
         return ReductionMethod
     return ReductionMethodFor_ImplDecorator
 
-ReductionMethodFor._all_reduction_methods = list() # (over inheritance level) of dicts from Problem to list of (ReductionMethod, category, replaces, replaces_if)
+ReductionMethodFor._all_reduction_methods = list() # (over inheritance level) of dicts from Problem to list of (ReductionMethod, category, enabled_if, replaces, replaces_if)
 ReductionMethodFor._all_reduction_methods_categories = dict() # from reduction method to category

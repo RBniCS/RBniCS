@@ -52,8 +52,7 @@ def ForDecoratorsLogging(storage, key_string, data_0_string, data_1_string):
                 log(DEBUG, "\t\t\t\t" + data_0_string + ": " + str(data[0]))
                 if data_1_string is not None:
                     log(DEBUG, "\t\t\t\t" + data_1_string + ": " + str(data[1]))
-                log(DEBUG, "\t\t\t\t" + "replaces" + ": " + str(data[2]))
-                log(DEBUG, "\t\t\t\t" + "replaces_if" + ": " + str(data[3]))
+                log(DEBUG, "\t\t\t\t" + "enabled_if" + ": " + str(data[2]))
+                log(DEBUG, "\t\t\t\t" + "replaces" + ": " + str(data[3]))
+                log(DEBUG, "\t\t\t\t" + "replaces_if" + ": " + str(data[4]))
                 
-            
-    
