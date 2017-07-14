@@ -93,7 +93,7 @@ def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
         def __init__(self, truth_problem, **kwargs):
             ReducedNonlinearElliptic_Base.__init__(self, truth_problem, **kwargs)
             self._nonlinear_solver_parameters["report"] = True
-            self._nonlinear_solver_parameters["line_search"] = False
+            self._nonlinear_solver_parameters["line_search"] = "wolfe"
             
     return ReducedNonlinearElliptic
 
@@ -113,13 +113,14 @@ nonlinear_elliptic_problem.set_mu_range(mu_range)
 # 4. Prepare reduction with a reduced basis method
 pod_galerkin_method = PODGalerkin(nonlinear_elliptic_problem)
 pod_galerkin_method.set_Nmax(20)
+pod_galerkin_method.set_tolerance(1e-8)
 
 # 5. Perform the offline phase
 pod_galerkin_method.initialize_training_set(50)
 reduced_nonlinear_elliptic_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = (0.01, 10.0)
+online_mu = (0.3, 9.0)
 reduced_nonlinear_elliptic_problem.set_mu(online_mu)
 reduced_nonlinear_elliptic_problem.solve()
 reduced_nonlinear_elliptic_problem.export_solution("NonlinearElliptic", "online_solution")
