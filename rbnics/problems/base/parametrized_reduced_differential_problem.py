@@ -712,6 +712,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             # However, in order to have a consistent interface we return the assembled
             # operator
             if term in self.terms:
+                assert self.Q[term] == self.truth_problem.Q[term]
                 for q in range(self.Q[term]):
                     assert self.terms_order[term] in (0, 1, 2)
                     if self.terms_order[term] == 2:

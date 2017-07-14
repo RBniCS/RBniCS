@@ -23,6 +23,7 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApprox
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 
 def DEIMDecoratedProblem(
+    stages=("offline", "online"),
     basis_generation="POD",
     train_first="DEIM",
     **decorator_kwargs
@@ -47,7 +48,22 @@ def DEIMDecoratedProblem(
                 
                 # Store value of N_DEIM passed to solve
                 self._N_DEIM = None
-                # Store value passed to decorator
+                # Store values passed to decorator
+                assert isinstance(stages, (str, tuple))
+                if isinstance(stages, tuple):
+                    assert len(stages) in (1, 2)
+                    assert stages[0] in ("offline", "online")
+                    if len(stages) > 1:
+                        assert stages[1] in ("offline", "online")
+                        assert stages[0] != stages[1]
+                    self._apply_DEIM_at_stages = stages
+                elif isinstance(stages, str):
+                    assert stages != "offline", "This choice does not make any sense because it requires a DEIM offline stage which then is not used online"
+                    assert stages == "online"
+                    self._apply_DEIM_at_stages = (stages, )
+                else:
+                    raise AssertionError("Invalid value for stages")
+                assert train_first in ("DEIM", "Problem")
                 self._train_first = train_first
                 
                 # Avoid useless assignments
@@ -116,39 +132,51 @@ def DEIMDecoratedProblem(
             @override
             def assemble_operator(self, term):
                 if term in self.terms:
-                    deim_forms = list()
-                    # Append forms computed with DEIM, if applicable
-                    for (_, deim_approximation) in self.DEIM_approximations[term].iteritems():
-                        deim_forms.extend(deim_approximation.Z)
-                    # Append forms which did not require DEIM, if applicable
-                    for (_, non_deim_form) in self.non_DEIM_forms[term].iteritems():
-                        deim_forms.append(non_deim_form)
-                    return tuple(deim_forms)
+                    if "offline" in self._apply_DEIM_at_stages:
+                        return self._assemble_operator_DEIM(term)
+                    else:
+                        return ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                 else:
                     return ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term) # may raise an exception
-                    
+
+            def _assemble_operator_DEIM(self, term):
+                deim_forms = list()
+                # Append forms computed with DEIM, if applicable
+                for (_, deim_approximation) in self.DEIM_approximations[term].iteritems():
+                    deim_forms.extend(deim_approximation.Z)
+                # Append forms which did not require DEIM, if applicable
+                for (_, non_deim_form) in self.non_DEIM_forms[term].iteritems():
+                    deim_forms.append(non_deim_form)
+                return tuple(deim_forms)
+            
             @override
             def compute_theta(self, term):
-                original_thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term) # may raise an exception
                 if term in self.terms:
-                    deim_thetas = list()
-                    assert len(self.DEIM_approximations[term]) + len(self.non_DEIM_forms[term]) == len(original_thetas)
-                    if self._N_DEIM is not None:
-                        assert term in self._N_DEIM 
-                        assert len(self.DEIM_approximations[term]) == len(self._N_DEIM[term])
-                    # Append forms computed with DEIM, if applicable
-                    for (q, deim_approximation) in self.DEIM_approximations[term].iteritems():
-                        N_DEIM = None
-                        if self._N_DEIM is not None:
-                            N_DEIM = self._N_DEIM[term][q]
-                        deim_thetas_q = map(lambda v: v*original_thetas[q], deim_approximation.compute_interpolated_theta(N_DEIM))
-                        deim_thetas.extend(deim_thetas_q)
-                    # Append forms which did not require DEIM, if applicable
-                    for q in self.non_DEIM_forms[term]:
-                        deim_thetas.append(original_thetas[q])
-                    return tuple(deim_thetas)
+                    if "offline" in self._apply_DEIM_at_stages:
+                        return self._compute_theta_DEIM(term)
+                    else:
+                        return ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
                 else:
-                    return original_thetas
+                    return ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term) # may raise an exception
+            
+            def _compute_theta_DEIM(self, term):
+                original_thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
+                deim_thetas = list()
+                assert len(self.DEIM_approximations[term]) + len(self.non_DEIM_forms[term]) == len(original_thetas)
+                if self._N_DEIM is not None:
+                    assert term in self._N_DEIM 
+                    assert len(self.DEIM_approximations[term]) == len(self._N_DEIM[term])
+                # Append forms computed with DEIM, if applicable
+                for (q, deim_approximation) in self.DEIM_approximations[term].iteritems():
+                    N_DEIM = None
+                    if self._N_DEIM is not None:
+                        N_DEIM = self._N_DEIM[term][q]
+                    deim_thetas_q = map(lambda v: v*original_thetas[q], deim_approximation.compute_interpolated_theta(N_DEIM))
+                    deim_thetas.extend(deim_thetas_q)
+                # Append forms which did not require DEIM, if applicable
+                for q in self.non_DEIM_forms[term]:
+                    deim_thetas.append(original_thetas[q])
+                return tuple(deim_thetas)
             
         # return value (a class) for the decorator
         return DEIMDecoratedProblem_Class

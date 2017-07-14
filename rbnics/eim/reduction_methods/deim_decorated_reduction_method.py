@@ -16,12 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor, regenerate_reduced_problem_from_exact_reduced_problem
 from rbnics.eim.problems import DEIM
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod as TimeDependentDEIMApproximationReductionMethod
+from rbnics.utils.decorators import exact_problem, Extends, override, ReductionMethodDecoratorFor, regenerate_reduced_problem_from_exact_reduced_problem, set_map_from_problem_to_training_status_on
 
 @ReductionMethodDecoratorFor(DEIM)
 def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -121,32 +121,34 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         ## Perform the offline phase of the reduced order model
         @override
         def offline(self):
+            def train_DEIM():
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                        DEIM_reduction_term_q.offline()
+                    
+            def train_problem():
+                return DifferentialProblemReductionMethod_DerivedClass.offline(self)
+            
             assert self._train_first in ("DEIM", "Problem")
             if self._train_first == "DEIM":
-                # Perform first the DEIM offline phase, ...
+                if "offline" not in self.truth_problem._apply_DEIM_at_stages:
+                    assert hasattr(self.truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
+                    assert "offline" in self.truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
                 bak_first_mu = self.truth_problem.mu
-                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
-                        DEIM_reduction_term_q.offline()
-                # ..., and then call the parent method.
+                train_DEIM()
                 self.truth_problem.set_mu(bak_first_mu)
-                return DifferentialProblemReductionMethod_DerivedClass.offline(self)
-            else:
-                bak_truth_problem = self.truth_problem
-                self.truth_problem = exact_problem(bak_truth_problem)
-                # Perform first parent offline phase (with exact operators)
-                bak_first_mu = self.truth_problem.mu
-                exact_reduced_problem = DifferentialProblemReductionMethod_DerivedClass.offline(self)
-                # Then carry out DEIM offline phase
-                self.truth_problem.set_mu(bak_first_mu)
-                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
-                        DEIM_reduction_term_q.offline()
-                # Restore the original truth problem
-                self.truth_problem = bak_truth_problem
-                # Re-generate a reduced problem associated to the original truth problem
-                self.reduced_problem = regenerate_reduced_problem_from_exact_reduced_problem(self.truth_problem, self, exact_reduced_problem)
+                self.reduced_problem = train_problem()
                 return self.reduced_problem
+            elif self._train_first == "Problem":
+                assert hasattr(self.truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
+                assert "offline" in self.truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
+                bak_first_mu = self.truth_problem.mu
+                self.reduced_problem = train_problem()
+                self.truth_problem.set_mu(bak_first_mu)
+                train_DEIM()
+                return self.reduced_problem
+            else:
+                raise AssertionError("Invalid value for train_first")
     
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set

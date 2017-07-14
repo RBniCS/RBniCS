@@ -19,7 +19,10 @@
 from rbnics.backends import SymbolicParameters
 from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 
-def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
+def ExactParametrizedFunctionsDecoratedProblem(
+    stages=("offline", "online"),
+    **decorator_kwargs
+):
 
     from rbnics.eim.problems.deim import DEIM
     from rbnics.eim.problems.eim import EIM
@@ -30,6 +33,28 @@ def ExactParametrizedFunctionsDecoratedProblem(**decorator_kwargs):
         
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
+            
+            ## Default initialization of members
+            @override
+            def __init__(self, V, **kwargs):
+                # Call the parent initialization
+                ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
+                
+                # Store values passed to decorator
+                assert isinstance(stages, (str, tuple))
+                if isinstance(stages, tuple):
+                    assert len(stages) in (1, 2)
+                    assert stages[0] in ("offline", "online")
+                    if len(stages) > 1:
+                        assert stages[1] in ("offline", "online")
+                        assert stages[0] != stages[1]
+                    self._apply_exact_approximation_at_stages = stages
+                elif isinstance(stages, str):
+                    assert stages != "online", "This choice does not make any sense because it requires an EIM/DEIM offline stage which then is not used online"
+                    assert stages == "offline"
+                    self._apply_exact_approximation_at_stages = (stages, )
+                else:
+                    raise AssertionError("Invalid value for stages")
             
             @override
             def init(self):
