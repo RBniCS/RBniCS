@@ -40,8 +40,14 @@ def evaluate(expression_, at, backend, wrapping):
             if at is None:
                 return wrapping.expression_on_truth_mesh(expression_)
             else:
+                # Efficient version, interpolating only on the reduced mesh
                 interpolated_expression = wrapping.expression_on_reduced_mesh(expression_, at)
                 return wrapping.evaluate_sparse_function_at_dofs(interpolated_expression, at.get_reduced_dofs_list())
+                """
+                # Inefficient version, interpolating on the entire high fidelity mesh
+                interpolated_expression = wrapping.expression_on_truth_mesh(expression_)
+                return wrapping.evaluate_sparse_function_at_dofs(interpolated_expression, at.get_dofs_list())
+                """
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to evaluate")
     elif isinstance(expression_, (backend.Matrix.Type(), backend.Vector.Type(), backend.TensorsList, backend.ParametrizedTensorFactory)):
@@ -64,9 +70,11 @@ def evaluate(expression_, at, backend, wrapping):
             return out
         elif isinstance(expression_, backend.ParametrizedTensorFactory):
             if at is None:
-                return wrapping.form_on_truth_function_space(expression_)
+                (assembled_form, _) = wrapping.form_on_truth_function_space(expression_)
+                return assembled_form
             else:
-                (assembled_form, form_rank) = wrapping.form_on_reduced_function_space(expression_, at, backend)
+                # Efficient version, assemblying only on the reduced mesh
+                (assembled_form, form_rank) = wrapping.form_on_reduced_function_space(expression_, at)
                 assert form_rank in (1, 2)
                 if form_rank is 2:
                     return wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs(assembled_form, at.get_reduced_dofs_list())
@@ -74,6 +82,17 @@ def evaluate(expression_, at, backend, wrapping):
                     return wrapping.evaluate_sparse_vector_at_dofs(assembled_form, at.get_reduced_dofs_list())
                 else: # impossible to arrive here anyway thanks to the assert
                     raise AssertionError("Invalid form rank")
+                """
+                # Inefficient version, assemblying on the entire high fidelity mesh
+                (assembled_form, form_rank) = wrapping.form_on_truth_function_space(expression_)
+                assert form_rank in (1, 2)
+                if form_rank is 2:
+                    return wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs(assembled_form, at.get_dofs_list())
+                elif form_rank is 1:
+                    return wrapping.evaluate_sparse_vector_at_dofs(assembled_form, at.get_dofs_list())
+                else: # impossible to arrive here anyway thanks to the assert
+                    raise AssertionError("Invalid form rank")
+                """
         else: # impossible to arrive here anyway thanks to the assert
             raise AssertionError("Invalid argument to evaluate")
     else: # impossible to arrive here anyway thanks to the assert

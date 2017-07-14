@@ -32,10 +32,12 @@ def form_on_truth_function_space(form_wrapper, backend=None):
     
     if form_name not in form_on_truth_function_space__reduced_problem_to_truth_solution_cache:
         visited = set()
-        truth_problem_to_components = dict() # from truth problem to components
-        truth_problem_to_truth_solution = dict() # from truth problem to solution
-        reduced_problem_to_components = dict() # from reduced problem to components
-        reduced_problem_to_truth_solution = dict() # from reduced problem to solution
+        truth_problems = list()
+        truth_problem_to_components = dict()
+        truth_problem_to_exact_truth_problem = dict()
+        truth_problem_to_truth_solution = dict()
+        reduced_problem_to_components = dict()
+        reduced_problem_to_truth_solution = dict()
         
         # Look for terminals on truth mesh
         for node in backend.wrapping.form_iterator(form):
@@ -46,25 +48,17 @@ def form_on_truth_function_space(form_wrapper, backend=None):
                 if backend.wrapping.is_problem_solution_or_problem_solution_component(node):
                     (preprocessed_node, component, truth_solution) = backend.wrapping.solution_identify_component(node)
                     truth_problem = get_problem_from_solution(truth_solution)
-                    if is_training_finished(truth_problem):
-                        reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                        if reduced_problem not in reduced_problem_to_components:
-                            reduced_problem_to_components[reduced_problem] = list()
-                        reduced_problem_to_components[reduced_problem].append(component)
-                        reduced_problem_to_truth_solution[reduced_problem] = truth_solution
-                    else:
-                        if not hasattr(truth_problem, "_is_solving"):
-                            exact_truth_problem = exact_problem(truth_problem)
-                            exact_truth_problem.init()
-                            if exact_truth_problem not in truth_problem_to_components:
-                                truth_problem_to_components[exact_truth_problem] = list()
-                            truth_problem_to_components[exact_truth_problem].append(component)
-                            truth_problem_to_truth_solution[exact_truth_problem] = truth_solution
-                        else:
-                            if truth_problem not in truth_problem_to_components:
-                                truth_problem_to_components[truth_problem] = list()
-                            truth_problem_to_components[truth_problem].append(component)
-                            truth_problem_to_truth_solution[truth_problem] = truth_solution
+                    truth_problems.append(truth_problem)
+                    # Store the corresponding exact truth problem
+                    exact_truth_problem = exact_problem(truth_problem)
+                    exact_truth_problem.init()
+                    truth_problem_to_exact_truth_problem[truth_problem] = exact_truth_problem
+                    # Store the solution
+                    truth_problem_to_truth_solution[truth_problem] = truth_solution
+                    # Store the component
+                    if truth_problem not in truth_problem_to_components:
+                        truth_problem_to_components[truth_problem] = list()
+                    truth_problem_to_components[truth_problem].append(component)
                 else:
                     preprocessed_node = node
                 # Make sure to skip any parent solution related to this one
@@ -74,47 +68,89 @@ def form_on_truth_function_space(form_wrapper, backend=None):
                     visited.add(parent_node)
         
         # Cache the resulting dicts
+        form_on_truth_function_space__truth_problems_cache[form_name] = truth_problems
         form_on_truth_function_space__truth_problem_to_components_cache[form_name] = truth_problem_to_components
+        form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache[form_name] = truth_problem_to_exact_truth_problem
         form_on_truth_function_space__truth_problem_to_truth_solution_cache[form_name] = truth_problem_to_truth_solution
         form_on_truth_function_space__reduced_problem_to_components_cache[form_name] = reduced_problem_to_components
         form_on_truth_function_space__reduced_problem_to_truth_solution_cache[form_name] = reduced_problem_to_truth_solution
         
     # Extract from cache
+    truth_problems = form_on_truth_function_space__truth_problems_cache[form_name]
     truth_problem_to_components = form_on_truth_function_space__truth_problem_to_components_cache[form_name]
+    truth_problem_to_exact_truth_problem = form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache[form_name]
     truth_problem_to_truth_solution = form_on_truth_function_space__truth_problem_to_truth_solution_cache[form_name]
     reduced_problem_to_components = form_on_truth_function_space__reduced_problem_to_components_cache[form_name]
     reduced_problem_to_truth_solution = form_on_truth_function_space__reduced_problem_to_truth_solution_cache[form_name]
     
-    # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
-    for (truth_problem, truth_solution) in truth_problem_to_truth_solution.iteritems():
-        truth_problem.set_mu(EIM_approximation.mu)
+    # Get list of truth and reduced problems that need to be solved, possibly updating cache
+    required_truth_problems = list()
+    required_reduced_problems = list()
+    for truth_problem in truth_problems:
         if not hasattr(truth_problem, "_is_solving"):
+            if is_training_finished(truth_problem):
+                reduced_problem = get_reduced_problem_from_problem(truth_problem)
+                assert not hasattr(reduced_problem, "_is_solving")
+                # Store the component
+                if reduced_problem not in reduced_problem_to_components:
+                    reduced_problem_to_components[reduced_problem] = truth_problem_to_components[truth_problem]
+                # Store the solution
+                if reduced_problem not in reduced_problem_to_truth_solution:
+                    reduced_problem_to_truth_solution[reduced_problem] = truth_problem_to_truth_solution[truth_problem]
+                # Append to list of required reduced problems
+                required_reduced_problems.append(reduced_problem)
+            else:
+                exact_truth_problem = truth_problem_to_exact_truth_problem[truth_problem]
+                # Store the component
+                if exact_truth_problem not in truth_problem_to_components:
+                    truth_problem_to_components[exact_truth_problem] = truth_problem_to_components[truth_problem]
+                # Store the solution
+                if exact_truth_problem not in truth_problem_to_truth_solution:
+                    truth_problem_to_truth_solution[exact_truth_problem] = truth_problem_to_truth_solution[truth_problem]
+                # Append to list of required truth problems which are not currently solving
+                required_truth_problems.append((exact_truth_problem, False))
+        else:
+            # Append to list of required truth problems which are currently solving
+            required_truth_problems.append((truth_problem, True))
+    
+    # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
+    for (truth_problem, is_solving) in required_truth_problems:
+        # Solve (if necessary) ...
+        truth_problem.set_mu(EIM_approximation.mu)
+        if not is_solving:
             log(PROGRESS, "In form_on_truth_function_space, requiring truth problem solve for problem " + str(truth_problem))
             truth_problem.solve()
         else:
             log(PROGRESS, "In form_on_truth_function_space, loading current truth problem solution for problem " + str(truth_problem))
+        # ... and assign to truth_solution
+        truth_solution = truth_problem_to_truth_solution[truth_problem]
         for component in truth_problem_to_components[truth_problem]:
             solution_to = _sub_from_tuple(truth_solution, component)
             solution_from = _sub_from_tuple(truth_problem._solution, component)
             backend.assign(solution_to, solution_from)
     
     # Solve reduced problems associated to nonlinear terms
-    for (reduced_problem, truth_solution) in reduced_problem_to_truth_solution.iteritems():
+    for reduced_problem in required_reduced_problems:
+        # Solve ...
         reduced_problem.set_mu(EIM_approximation.mu)
-        assert not hasattr(reduced_problem, "_is_solving")
         log(PROGRESS, "In form_on_truth_function_space, requiring reduced problem solve for problem " + str(reduced_problem))
         reduced_problem.solve()
+        # ... and assign to truth_solution
+        truth_solution = reduced_problem_to_truth_solution[reduced_problem]
         for component in reduced_problem_to_components[reduced_problem]:
             solution_to = _sub_from_tuple(truth_solution, component)
             solution_from = _sub_from_tuple(reduced_problem.Z[:reduced_problem._solution.N]*reduced_problem._solution, component)
             backend.assign(solution_to, solution_from)
     
     # Assemble and return
-    tensor = backend.wrapping.assemble(form)
-    tensor.generator = form_wrapper # for I/O
-    return tensor
+    assembled_form = backend.wrapping.assemble(form)
+    assembled_form.generator = form_wrapper # for I/O
+    form_rank = assembled_form.rank()
+    return (assembled_form, form_rank)
 
+form_on_truth_function_space__truth_problems_cache = dict()    
 form_on_truth_function_space__truth_problem_to_components_cache = dict()    
+form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache = dict()
 form_on_truth_function_space__truth_problem_to_truth_solution_cache = dict()
 form_on_truth_function_space__reduced_problem_to_components_cache = dict()
 form_on_truth_function_space__reduced_problem_to_truth_solution_cache = dict()

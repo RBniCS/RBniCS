@@ -84,7 +84,7 @@ class Replacer(MultiFunction):
         assert len(o.ufl_operands) == 2
         assert isinstance(o.ufl_operands[1], MultiIndex)
         if isinstance(o.ufl_operands[0], Function):
-            indices = node.ufl_operands[1].indices()
+            indices = o.ufl_operands[1].indices()
             is_fixed = isinstance(indices[0], FixedIndex)
             assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
             is_mute = isinstance(indices[0], Index) # mute index for sum
