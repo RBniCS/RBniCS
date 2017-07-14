@@ -18,7 +18,7 @@
 
 from __future__ import print_function
 from dolfin import *
-from rbnics import EquispacedDistribution
+from rbnics import EquispacedDistribution, ExactParametrizedFunctions
 from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
 from rbnics.backends.online import OnlineFunction
 from rbnics.eim.problems.eim_approximation import EIMApproximation
@@ -34,6 +34,7 @@ reduced any further. See the description of EIM and DEIM for test 13, taking car
 that the high fidelity solution is used in place of the reduced order one.
 """
 
+@ExactParametrizedFunctions("offline")
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem

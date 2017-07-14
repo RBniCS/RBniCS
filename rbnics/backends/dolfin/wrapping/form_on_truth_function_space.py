@@ -17,7 +17,7 @@
 #
 
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
+from rbnics.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
@@ -34,7 +34,6 @@ def form_on_truth_function_space(form_wrapper, backend=None):
         visited = set()
         truth_problems = list()
         truth_problem_to_components = dict()
-        truth_problem_to_exact_truth_problem = dict()
         truth_problem_to_truth_solution = dict()
         reduced_problem_to_components = dict()
         reduced_problem_to_truth_solution = dict()
@@ -49,10 +48,8 @@ def form_on_truth_function_space(form_wrapper, backend=None):
                     (preprocessed_node, component, truth_solution) = backend.wrapping.solution_identify_component(node)
                     truth_problem = get_problem_from_solution(truth_solution)
                     truth_problems.append(truth_problem)
-                    # Store the corresponding exact truth problem
-                    exact_truth_problem = exact_problem(truth_problem)
-                    exact_truth_problem.init()
-                    truth_problem_to_exact_truth_problem[truth_problem] = exact_truth_problem
+                    # Init truth problem (if required), as it may not have been initialized
+                    truth_problem.init()
                     # Store the solution
                     truth_problem_to_truth_solution[truth_problem] = truth_solution
                     # Store the component
@@ -70,7 +67,6 @@ def form_on_truth_function_space(form_wrapper, backend=None):
         # Cache the resulting dicts
         form_on_truth_function_space__truth_problems_cache[form_name] = truth_problems
         form_on_truth_function_space__truth_problem_to_components_cache[form_name] = truth_problem_to_components
-        form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache[form_name] = truth_problem_to_exact_truth_problem
         form_on_truth_function_space__truth_problem_to_truth_solution_cache[form_name] = truth_problem_to_truth_solution
         form_on_truth_function_space__reduced_problem_to_components_cache[form_name] = reduced_problem_to_components
         form_on_truth_function_space__reduced_problem_to_truth_solution_cache[form_name] = reduced_problem_to_truth_solution
@@ -78,7 +74,6 @@ def form_on_truth_function_space(form_wrapper, backend=None):
     # Extract from cache
     truth_problems = form_on_truth_function_space__truth_problems_cache[form_name]
     truth_problem_to_components = form_on_truth_function_space__truth_problem_to_components_cache[form_name]
-    truth_problem_to_exact_truth_problem = form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache[form_name]
     truth_problem_to_truth_solution = form_on_truth_function_space__truth_problem_to_truth_solution_cache[form_name]
     reduced_problem_to_components = form_on_truth_function_space__reduced_problem_to_components_cache[form_name]
     reduced_problem_to_truth_solution = form_on_truth_function_space__reduced_problem_to_truth_solution_cache[form_name]
@@ -100,15 +95,10 @@ def form_on_truth_function_space(form_wrapper, backend=None):
                 # Append to list of required reduced problems
                 required_reduced_problems.append(reduced_problem)
             else:
-                exact_truth_problem = truth_problem_to_exact_truth_problem[truth_problem]
-                # Store the component
-                if exact_truth_problem not in truth_problem_to_components:
-                    truth_problem_to_components[exact_truth_problem] = truth_problem_to_components[truth_problem]
-                # Store the solution
-                if exact_truth_problem not in truth_problem_to_truth_solution:
-                    truth_problem_to_truth_solution[exact_truth_problem] = truth_problem_to_truth_solution[truth_problem]
+                assert hasattr(truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
+                assert "offline" in truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
                 # Append to list of required truth problems which are not currently solving
-                required_truth_problems.append((exact_truth_problem, False))
+                required_truth_problems.append((truth_problem, False))
         else:
             # Append to list of required truth problems which are currently solving
             required_truth_problems.append((truth_problem, True))
@@ -150,7 +140,6 @@ def form_on_truth_function_space(form_wrapper, backend=None):
 
 form_on_truth_function_space__truth_problems_cache = dict()    
 form_on_truth_function_space__truth_problem_to_components_cache = dict()    
-form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache = dict()
 form_on_truth_function_space__truth_problem_to_truth_solution_cache = dict()
 form_on_truth_function_space__reduced_problem_to_components_cache = dict()
 form_on_truth_function_space__reduced_problem_to_truth_solution_cache = dict()

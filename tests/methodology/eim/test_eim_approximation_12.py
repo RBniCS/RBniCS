@@ -18,7 +18,7 @@
 
 from __future__ import print_function
 from dolfin import *
-from rbnics import EquispacedDistribution
+from rbnics import EquispacedDistribution, ExactParametrizedFunctions
 from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
 from rbnics.backends.online import OnlineFunction
 from rbnics.eim.problems.eim_approximation import EIMApproximation
@@ -37,6 +37,7 @@ in test 11 the reduced order solution was being used.
 * DEIM: the form to be interpolated contains the solution of the nonlinear high fidelity problem.
 """
 
+@ExactParametrizedFunctions("offline")
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem

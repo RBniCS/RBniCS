@@ -21,7 +21,7 @@ from ufl.geometry import GeometricQuantity
 from dolfin import Argument
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
-from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
+from rbnics.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
@@ -40,7 +40,6 @@ def form_on_reduced_function_space(form_wrapper, at, backend=None):
         replacements = dict()
         truth_problems = list()
         truth_problem_to_components = dict()
-        truth_problem_to_exact_truth_problem = dict()
         truth_problem_to_reduced_mesh_solution = dict()
         truth_problem_to_reduced_mesh_interpolator = dict()
         reduced_problem_to_components = dict()
@@ -61,10 +60,8 @@ def form_on_reduced_function_space(form_wrapper, at, backend=None):
                     (preprocessed_node, component, truth_solution) = backend.wrapping.solution_identify_component(node)
                     truth_problem = get_problem_from_solution(truth_solution)
                     truth_problems.append(truth_problem)
-                    # Store the corresponding exact truth problem
-                    exact_truth_problem = exact_problem(truth_problem)
-                    exact_truth_problem.init()
-                    truth_problem_to_exact_truth_problem[truth_problem] = exact_truth_problem
+                    # Init truth problem (if required), as it may not have been initialized
+                    truth_problem.init()
                     # Store the component
                     if truth_problem not in truth_problem_to_components:
                         truth_problem_to_components[truth_problem] = list()
@@ -72,7 +69,7 @@ def form_on_reduced_function_space(form_wrapper, at, backend=None):
                     # Get the function space corresponding to preprocessed_node on the reduced mesh
                     auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem, component)
                     # Define and store the replacement
-                    if exact_truth_problem not in truth_problem_to_reduced_mesh_solution:
+                    if truth_problem not in truth_problem_to_reduced_mesh_solution:
                         truth_problem_to_reduced_mesh_solution[truth_problem] = list()
                     replacements[preprocessed_node] = backend.Function(auxiliary_reduced_V)
                     truth_problem_to_reduced_mesh_solution[truth_problem].append(replacements[preprocessed_node])
@@ -130,7 +127,6 @@ def form_on_reduced_function_space(form_wrapper, at, backend=None):
         form_on_reduced_function_space__form_cache[(form_name, reduced_V)] = replaced_form_with_replaced_measures
         form_on_reduced_function_space__truth_problems_cache[(form_name, reduced_V)] = truth_problems
         form_on_reduced_function_space__truth_problem_to_components_cache[(form_name, reduced_V)] = truth_problem_to_components
-        form_on_reduced_function_space__truth_problem_to_exact_truth_problem_cache[(form_name, reduced_V)] = truth_problem_to_exact_truth_problem
         form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)] = truth_problem_to_reduced_mesh_solution
         form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache[(form_name, reduced_V)] = truth_problem_to_reduced_mesh_interpolator
         form_on_reduced_function_space__reduced_problem_to_components_cache[(form_name, reduced_V)] = reduced_problem_to_components
@@ -141,7 +137,6 @@ def form_on_reduced_function_space(form_wrapper, at, backend=None):
     replaced_form_with_replaced_measures = form_on_reduced_function_space__form_cache[(form_name, reduced_V)]
     truth_problems = form_on_reduced_function_space__truth_problems_cache[(form_name, reduced_V)]
     truth_problem_to_components = form_on_reduced_function_space__truth_problem_to_components_cache[(form_name, reduced_V)]
-    truth_problem_to_exact_truth_problem = form_on_reduced_function_space__truth_problem_to_exact_truth_problem_cache[(form_name, reduced_V)]
     truth_problem_to_reduced_mesh_solution = form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)]
     truth_problem_to_reduced_mesh_interpolator = form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache[(form_name, reduced_V)]
     reduced_problem_to_components = form_on_reduced_function_space__reduced_problem_to_components_cache[(form_name, reduced_V)]
@@ -169,20 +164,10 @@ def form_on_reduced_function_space(form_wrapper, at, backend=None):
                 # Append to list of required reduced problems
                 required_reduced_problems.append((reduced_problem, hasattr(reduced_problem, "_is_solving")))
             else:
-                exact_truth_problem = truth_problem_to_exact_truth_problem[truth_problem]
-                # Store the component
-                if exact_truth_problem not in truth_problem_to_components:
-                    truth_problem_to_components[exact_truth_problem] = truth_problem_to_components[truth_problem]
-                # Store the replacement
-                if exact_truth_problem not in truth_problem_to_reduced_mesh_solution:
-                    truth_problem_to_reduced_mesh_solution[exact_truth_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
-                # Get interpolator on reduced mesh
-                if exact_truth_problem not in truth_problem_to_reduced_mesh_interpolator:
-                    truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = list()
-                    for component in truth_problem_to_components[exact_truth_problem]:
-                        truth_problem_to_reduced_mesh_interpolator[exact_truth_problem].append(at.get_auxiliary_function_interpolator(exact_truth_problem, component))
+                assert hasattr(truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
+                assert "offline" in truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
                 # Append to list of required truth problems which are not currently solving
-                required_truth_problems.append((exact_truth_problem, False))
+                required_truth_problems.append((truth_problem, False))
         else:
             # Append to list of required truth problems which are currently solving
             required_truth_problems.append((truth_problem, True))
@@ -225,7 +210,6 @@ def form_on_reduced_function_space(form_wrapper, at, backend=None):
 form_on_reduced_function_space__form_cache = dict()
 form_on_reduced_function_space__truth_problems_cache = dict()
 form_on_reduced_function_space__truth_problem_to_components_cache = dict()
-form_on_reduced_function_space__truth_problem_to_exact_truth_problem_cache = dict()
 form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache = dict()
 form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache = dict()
 form_on_reduced_function_space__reduced_problem_to_components_cache = dict()
