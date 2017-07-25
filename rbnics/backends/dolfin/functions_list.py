@@ -28,7 +28,12 @@ from rbnics.utils.decorators import BackendFor, Extends, override
 class FunctionsList(BasicFunctionsList):
     @override
     def __init__(self, V, component=None):
-        BasicFunctionsList.__init__(self, V, component, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, AdditionalFunctionTypes=(Operator, ))
+        def AdditionalIsFunction(arg):
+            return isinstance(arg, Operator)
+        def ConvertAdditionalFunctionTypes(arg):
+            assert isinstance(arg, Operator)
+            return function_from_ufl_operators(arg)
+        BasicFunctionsList.__init__(self, V, component, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes)
         
     @override
     def _enrich(self, function, component=None, weight=None, copy=True):

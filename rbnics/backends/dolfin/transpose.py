@@ -25,14 +25,26 @@ from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.functions_list import FunctionsList
 from rbnics.backends.dolfin.vector import Vector
+from rbnics.backends.dolfin.wrapping import function_from_ufl_operators
 from rbnics.utils.decorators import backend_for
 
 @backend_for("dolfin", inputs=((BasisFunctionsMatrix, Form, Function.Type(), FunctionsList, Operator, Vector.Type()), ))
 def transpose(arg):
+    def AdditionalIsFunction(arg):
+        return isinstance(arg, Operator)
+    def ConvertAdditionalFunctionTypes(arg):
+        assert isinstance(arg, Operator)
+        return function_from_ufl_operators(arg)
     def AdditionalIsVector(arg):
         return isinstance(arg, Form) and len(arg.arguments()) is 1
+    def ConvertAdditionalVectorTypes(arg):
+        assert isinstance(arg, Form) and len(arg.arguments()) is 1
+        return assemble(arg)
     def AdditionalIsMatrix(arg):
         return isinstance(arg, Form) and len(arg.arguments()) is 2
-    return basic_transpose(arg, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, AdditionalFunctionTypes=(Operator, ), AdditionalIsVector=AdditionalIsVector, AdditionalIsMatrix=AdditionalIsMatrix)
+    def ConvertAdditionalMatrixTypes(arg):
+        assert isinstance(arg, Form) and len(arg.arguments()) is 2
+        return assemble(arg)
+    return basic_transpose(arg, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes)
     
         

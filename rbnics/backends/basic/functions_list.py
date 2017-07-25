@@ -28,7 +28,7 @@ from rbnics.utils.mpi import is_io_process
 @Extends(AbstractFunctionsList)
 class FunctionsList(AbstractFunctionsList):
     @override
-    def __init__(self, V_or_Z, component, backend, wrapping, AdditionalFunctionTypes=None):
+    def __init__(self, V_or_Z, component, backend, wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
         if component is None:
             self.V_or_Z = V_or_Z
         else:
@@ -36,18 +36,28 @@ class FunctionsList(AbstractFunctionsList):
         self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
         self.backend = backend
         self.wrapping = wrapping
-        if AdditionalFunctionTypes is None:
-            self.FunctionTypes = (backend.Function.Type(), )
+        if AdditionalIsFunction is None:
+            def _AdditionalIsFunction(arg):
+                return False
+            self.AdditionalIsFunction = _AdditionalIsFunction
         else:
-            self.FunctionTypes = AdditionalFunctionTypes + (backend.Function.Type(), )
+            self.AdditionalIsFunction = AdditionalIsFunction
+        if ConvertAdditionalFunctionTypes is None:
+            def _ConvertAdditionalFunctionTypes(arg):
+                raise NotImplementedError("Please implement conversion of additional function types")
+            self.ConvertAdditionalFunctionTypes = _ConvertAdditionalFunctionTypes
+        else:
+            self.ConvertAdditionalFunctionTypes = ConvertAdditionalFunctionTypes
         self._list = list() # of functions
         self._precomputed_slices = dict() # from tuple to FunctionsList
     
     @override
     def enrich(self, functions, component=None, weights=None, copy=True):
         # Append to storage
-        assert isinstance(functions, (tuple, list, FunctionsList, ) + self.FunctionTypes)
-        if isinstance(functions, self.FunctionTypes):
+        assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function.Type())) or self.AdditionalIsFunction(functions)
+        if isinstance(functions, self.backend.Function.Type()) or self.AdditionalIsFunction(functions):
+            if self.AdditionalIsFunction(functions):
+                functions = self.ConvertAdditionalFunctionTypes(functions)
             self._enrich(functions, component=component, weight=weights, copy=copy)
         elif isinstance(functions, (tuple, list, FunctionsList)):
             if weights is not None:
