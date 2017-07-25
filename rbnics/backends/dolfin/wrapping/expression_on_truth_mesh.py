@@ -18,7 +18,7 @@
 
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
-from rbnics.utils.decorators import get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
+from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
@@ -34,6 +34,7 @@ def expression_on_truth_mesh(expression_wrapper, backend=None):
         visited = set()
         truth_problems = list()
         truth_problem_to_components = dict()
+        truth_problem_to_exact_truth_problem = dict()
         truth_problem_to_truth_solution = dict()
         reduced_problem_to_components = dict()
         reduced_problem_to_truth_solution = dict()
@@ -50,6 +51,10 @@ def expression_on_truth_mesh(expression_wrapper, backend=None):
                     truth_problems.append(truth_problem)
                     # Init truth problem (if required), as it may not have been initialized
                     truth_problem.init()
+                    # Store the corresponding exact truth problem
+                    exact_truth_problem = exact_problem(truth_problem)
+                    exact_truth_problem.init()
+                    truth_problem_to_exact_truth_problem[truth_problem] = exact_truth_problem
                     # Store the solution
                     truth_problem_to_truth_solution[truth_problem] = truth_solution
                     # Store the component
@@ -67,6 +72,7 @@ def expression_on_truth_mesh(expression_wrapper, backend=None):
         # Cache the resulting dicts
         expression_on_truth_mesh__truth_problems_cache[expression_name] = truth_problems
         expression_on_truth_mesh__truth_problem_to_components_cache[expression_name] = truth_problem_to_components
+        expression_on_truth_mesh__truth_problem_to_exact_truth_problem_cache[expression_name] = truth_problem_to_exact_truth_problem
         expression_on_truth_mesh__truth_problem_to_truth_solution_cache[expression_name] = truth_problem_to_truth_solution
         expression_on_truth_mesh__reduced_problem_to_components_cache[expression_name] = reduced_problem_to_components
         expression_on_truth_mesh__reduced_problem_to_truth_solution_cache[expression_name] = reduced_problem_to_truth_solution
@@ -74,6 +80,7 @@ def expression_on_truth_mesh(expression_wrapper, backend=None):
     # Extract from cache
     truth_problems = expression_on_truth_mesh__truth_problems_cache[expression_name]
     truth_problem_to_components = expression_on_truth_mesh__truth_problem_to_components_cache[expression_name]
+    truth_problem_to_exact_truth_problem = expression_on_truth_mesh__truth_problem_to_exact_truth_problem_cache[expression_name]
     truth_problem_to_truth_solution = expression_on_truth_mesh__truth_problem_to_truth_solution_cache[expression_name]
     reduced_problem_to_components = expression_on_truth_mesh__reduced_problem_to_components_cache[expression_name]
     reduced_problem_to_truth_solution = expression_on_truth_mesh__reduced_problem_to_truth_solution_cache[expression_name]
@@ -95,10 +102,23 @@ def expression_on_truth_mesh(expression_wrapper, backend=None):
                 # Append to list of required reduced problems
                 required_reduced_problems.append(reduced_problem)
             else:
-                assert hasattr(truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
-                assert "offline" in truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
-                # Append to list of required truth problems which are not currently solving
-                required_truth_problems.append((truth_problem, False))
+                if (
+                    hasattr(truth_problem, "_apply_exact_approximation_at_stages")
+                        and
+                    "offline" in truth_problem._apply_exact_approximation_at_stages
+                ):
+                    # Append to list of required truth problems which are not currently solving
+                    required_truth_problems.append((truth_problem, False))
+                else:
+                    exact_truth_problem = truth_problem_to_exact_truth_problem[truth_problem]
+                    # Store the component
+                    if exact_truth_problem not in truth_problem_to_components:
+                        truth_problem_to_components[exact_truth_problem] = truth_problem_to_components[truth_problem]
+                    # Store the solution
+                    if exact_truth_problem not in truth_problem_to_truth_solution:
+                        truth_problem_to_truth_solution[exact_truth_problem] = truth_problem_to_truth_solution[truth_problem]
+                    # Append to list of required truth problems which are not currently solving
+                    required_truth_problems.append((exact_truth_problem, False))
         else:
             # Append to list of required truth problems which are currently solving
             required_truth_problems.append((truth_problem, True))
@@ -141,6 +161,7 @@ def expression_on_truth_mesh(expression_wrapper, backend=None):
 
 expression_on_truth_mesh__truth_problems_cache = dict()
 expression_on_truth_mesh__truth_problem_to_components_cache = dict()
+expression_on_truth_mesh__truth_problem_to_exact_truth_problem_cache = dict()
 expression_on_truth_mesh__truth_problem_to_truth_solution_cache = dict()
 expression_on_truth_mesh__reduced_problem_to_components_cache = dict()
 expression_on_truth_mesh__reduced_problem_to_truth_solution_cache = dict()
