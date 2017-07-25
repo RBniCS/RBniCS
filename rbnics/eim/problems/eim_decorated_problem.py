@@ -32,15 +32,13 @@ def ExactEIMAlgorithm(**kwargs):
 def EIMDecoratedProblem(
     stages=("offline", "online"),
     basis_generation="Greedy",
-    train_first="EIM",
     **decorator_kwargs
 ):
     from rbnics.eim.problems.eim import EIM
     
     @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactEIMAlgorithm,
         stages=stages,
-        basis_generation=basis_generation,
-        train_first=train_first
+        basis_generation=basis_generation
     )
     def EIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
                 
@@ -75,8 +73,6 @@ def EIMDecoratedProblem(
                     self._apply_EIM_at_stages = (stages, )
                 else:
                     raise AssertionError("Invalid value for stages")
-                assert train_first in ("EIM", "Problem")
-                self._train_first = train_first
                 
                 # Avoid useless assignments
                 self._update_N_EIM__previous_kwargs = None

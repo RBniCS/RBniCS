@@ -31,15 +31,13 @@ def ExactDEIMAlgorithm(**kwargs):
 def DEIMDecoratedProblem(
     stages=("offline", "online"),
     basis_generation="POD",
-    train_first="DEIM",
     **decorator_kwargs
 ):
     from rbnics.eim.problems.deim import DEIM
     
     @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactDEIMAlgorithm,
         stages=stages,
-        basis_generation=basis_generation,
-        train_first=train_first
+        basis_generation=basis_generation
     )
     def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
                 
@@ -74,8 +72,6 @@ def DEIMDecoratedProblem(
                     self._apply_DEIM_at_stages = (stages, )
                 else:
                     raise AssertionError("Invalid value for stages")
-                assert train_first in ("DEIM", "Problem")
-                self._train_first = train_first
                 
                 # Avoid useless assignments
                 self._update_N_DEIM__previous_kwargs = None

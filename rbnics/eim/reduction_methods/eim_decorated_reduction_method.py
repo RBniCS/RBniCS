@@ -46,10 +46,6 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 else:
                     EIMApproximationReductionMethodType = EIMApproximationReductionMethod
                 self.EIM_reductions[coeff] = EIMApproximationReductionMethod(EIM_approximation_coeff)
-                
-            # Retrieve value passed to decorator
-            self._train_first = truth_problem._train_first
-            del truth_problem._train_first
             
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
         @override
@@ -121,34 +117,15 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         ## Perform the offline phase of the reduced order model
         @override
         def offline(self):
-            def train_EIM():
-                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
-                    EIM_reduction_coeff.offline()
-                    
-            def train_problem():
-                return DifferentialProblemReductionMethod_DerivedClass.offline(self)
-            
-            assert self._train_first in ("EIM", "Problem")
-            if self._train_first == "EIM":
-                if "offline" not in self.truth_problem._apply_EIM_at_stages:
-                    assert hasattr(self.truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
-                    assert "offline" in self.truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
-                bak_first_mu = self.truth_problem.mu
-                train_EIM()
-                self.truth_problem.set_mu(bak_first_mu)
-                self.reduced_problem = train_problem()
-                return self.reduced_problem
-            elif self._train_first == "Problem":
+            if "offline" not in self.truth_problem._apply_EIM_at_stages:
                 assert hasattr(self.truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
                 assert "offline" in self.truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
-                bak_first_mu = self.truth_problem.mu
-                self.reduced_problem = train_problem()
-                self.truth_problem.set_mu(bak_first_mu)
-                train_EIM()
-                return self.reduced_problem
-            else:
-                raise AssertionError("Invalid value for train_first")
-    
+            bak_first_mu = self.truth_problem.mu
+            for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                EIM_reduction_coeff.offline()
+            self.truth_problem.set_mu(bak_first_mu)
+            return DifferentialProblemReductionMethod_DerivedClass.offline(self)
+            
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
         @override
