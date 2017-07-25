@@ -19,6 +19,12 @@
 from rbnics.backends import SymbolicParameters
 from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 
+def ExactParametrizedFunctions_OfflineAndOnline(**kwargs):
+    # Enable exact parametrized functions evaluation both offline and online
+    from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    kwargs["stages"] = ("offline", "online")
+    return ExactParametrizedFunctions(**kwargs)
+
 def ExactParametrizedFunctionsDecoratedProblem(
     stages=("offline", "online"),
     **decorator_kwargs
@@ -28,7 +34,9 @@ def ExactParametrizedFunctionsDecoratedProblem(
     from rbnics.eim.problems.eim import EIM
     from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     
-    @ProblemDecoratorFor(ExactParametrizedFunctions)
+    @ProblemDecoratorFor(ExactParametrizedFunctions, ExactAlgorithm=ExactParametrizedFunctions_OfflineAndOnline,
+        stages=stages
+    )
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)

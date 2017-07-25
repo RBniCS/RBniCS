@@ -22,16 +22,21 @@ from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 
+def ExactDEIMAlgorithm(**kwargs):
+    # Enable exact parametrized functions evaluation both offline and online
+    from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    kwargs["stages"] = ("offline", "online")
+    return ExactParametrizedFunctions(**kwargs)
+
 def DEIMDecoratedProblem(
     stages=("offline", "online"),
     basis_generation="POD",
     train_first="DEIM",
     **decorator_kwargs
 ):
-    from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     from rbnics.eim.problems.deim import DEIM
     
-    @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactParametrizedFunctions,
+    @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactDEIMAlgorithm,
         stages=stages,
         basis_generation=basis_generation,
         train_first=train_first

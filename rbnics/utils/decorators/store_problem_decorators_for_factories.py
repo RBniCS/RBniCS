@@ -64,13 +64,10 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
         if hasattr(Problem, "ProblemExactDecorators"):
             delattr(Problem, "ProblemExactDecorators")
         # ... and append the new problem decorator
-        if not (
-            Algorithm in DecoratedProblem.ProblemDecorators
-                and
-            kwargs in DecoratedProblem.ProblemDecoratorsKwargs
-                and
-            ExactAlgorithm in DecoratedProblem.ProblemExactDecorators
-        ): # avoid duplicates
+        if Algorithm in DecoratedProblem.ProblemDecorators:
+            assert kwargs in DecoratedProblem.ProblemDecoratorsKwargs, "You have decorated twice the problem with same decorator but different kwargs"
+            assert ExactAlgorithm in DecoratedProblem.ProblemExactDecorators, "You have decorated twice the problem with same decorator but different exact decorator"
+        else:
             DecoratedProblem.ProblemDecorators.append(Algorithm) # enabled_if, replaces and replaces_if are not used, but will be passed also to reduction methods and reduced problem as well.
             DecoratedProblem.ProblemDecoratorsKwargs.append(kwargs)
             DecoratedProblem.ProblemExactDecorators.append(ExactAlgorithm)

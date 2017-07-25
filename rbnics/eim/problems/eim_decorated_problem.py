@@ -23,16 +23,21 @@ from rbnics.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 
+def ExactEIMAlgorithm(**kwargs):
+    # Enable exact parametrized functions evaluation both offline and online
+    from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+    kwargs["stages"] = ("offline", "online")
+    return ExactParametrizedFunctions(**kwargs)
+
 def EIMDecoratedProblem(
     stages=("offline", "online"),
     basis_generation="Greedy",
     train_first="EIM",
     **decorator_kwargs
 ):
-    from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     from rbnics.eim.problems.eim import EIM
     
-    @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactParametrizedFunctions,
+    @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactEIMAlgorithm,
         stages=stages,
         basis_generation=basis_generation,
         train_first=train_first
