@@ -58,6 +58,9 @@ class MockProblem(ParametrizedProblem):
         g = TestFunction(self.V)
         self.X = assemble(f*g*dx)
         
+    def name(self):
+        return "MockProblem"
+        
     def init(self):
         pass
         

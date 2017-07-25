@@ -30,9 +30,9 @@ from rbnics.utils.io import Folders
 from rbnics.utils.mpi import print
 
 """
-This test is similar to test 15. However, in contrast to test 15, the solution is not splitted at all.
-* EIM: unsplitted solution is used in the definition of the parametrized expression, similarly to test 11.
-* DEIM: unsplitted solution is used in the definition of the parametrized tensor. This results in a single coefficient
+This test is similar to test 15. However, in contrast to test 15, the solution is not split at all.
+* EIM: unsplit solution is used in the definition of the parametrized expression, similarly to test 11.
+* DEIM: unsplit solution is used in the definition of the parametrized tensor. This results in a single coefficient
   of type Function, which however is stored internally by UFL as an Indexed of Function and a mute index. This test
   requires the FEniCS backend to properly differentiate between Indexed objects with a fixed index (such as a component
   of the solution as in test 13) and Indexed objects with a mute index, which should be treated has if the entire solution
@@ -63,6 +63,9 @@ class MockProblem(ParametrizedProblem):
         self.V0 = V.sub(0).collapse()
         self.V00 = V.sub(0).sub(0).collapse()
         self.V1 = V.sub(1).collapse()
+        
+    def name(self):
+        return "MockProblem"
         
     def init(self):
         pass

@@ -42,6 +42,9 @@ class MockTimeDependentProblem(ParametrizedProblem):
         self.T = 0.
         self.set_mu_range([])
         
+    def name(self):
+        return "MockTimeDependentProblem"
+        
     def set_initial_time(self, t0):
         self.t0 = t0
         

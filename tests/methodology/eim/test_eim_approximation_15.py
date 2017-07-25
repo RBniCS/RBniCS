@@ -32,7 +32,7 @@ from rbnics.utils.mpi import print
 """
 This test is similar to test 13.
 * EIM: no relevant difference with respect to test 13.
-* DEIM: the solution component is not further splitted between x and y. This results in a single coefficient
+* DEIM: the solution component is not further split between x and y. This results in a single coefficient
   of type ListTensor (rather than two coefficients of type Indexed).
 """
 
@@ -60,6 +60,9 @@ class MockProblem(ParametrizedProblem):
         self.V0 = V.sub(0).collapse()
         self.V00 = V.sub(0).sub(0).collapse()
         self.V1 = V.sub(1).collapse()
+        
+    def name(self):
+        return "MockProblem"
         
     def init(self):
         pass

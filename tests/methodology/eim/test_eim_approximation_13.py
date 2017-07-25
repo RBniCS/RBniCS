@@ -36,7 +36,7 @@ of the reduced order solution is required to define the parametrized expression/
 * EIM: the expression to be interpolated is a component of the solution of the nonlinear reduced problem.
   This results in a parametrized expression of type ListTensor.
 * DEIM: the form to be interpolated contains a component of the solution of the nonlinear reduced problem,
-  splitted between x and y. This results in two coefficients in the integrand (denoted by f0[0] and f1[0] below)
+  split between x and y. This results in two coefficients in the integrand (denoted by f0[0] and f1[0] below)
   which are of type Indexed.
 """
 
@@ -64,6 +64,9 @@ class MockProblem(ParametrizedProblem):
         self.V0 = V.sub(0).collapse()
         self.V00 = V.sub(0).sub(0).collapse()
         self.V1 = V.sub(1).collapse()
+        
+    def name(self):
+        return "MockProblem"
         
     def init(self):
         pass

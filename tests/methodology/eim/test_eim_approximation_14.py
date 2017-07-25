@@ -60,6 +60,9 @@ class MockProblem(ParametrizedProblem):
         self.V00 = V.sub(0).sub(0).collapse()
         self.V1 = V.sub(1).collapse()
         
+    def name(self):
+        return "MockProblem"
+        
     def init(self):
         pass
         
