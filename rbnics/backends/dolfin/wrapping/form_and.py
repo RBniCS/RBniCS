@@ -17,15 +17,13 @@
 #
 
 from ufl import Form
-from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
-import rbnics.backends.dolfin
-from rbnics.backends.dolfin.matrix import Matrix
-from rbnics.utils.decorators import BackendFor, Extends, override
+from dolfin import assemble
+from rbnics.backends.dolfin.wrapping.dirichlet_bc import InvertProductOutputDirichletBC
 
-@Extends(BasicGramSchmidt)
-@BackendFor("dolfin", inputs=((Form, Matrix.Type()), ))
-class GramSchmidt(BasicGramSchmidt):
-    @override
-    def __init__(self, X):
-        BasicGramSchmidt.__init__(self, X, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
-        
+def custom__and__(self, other):
+    if isinstance(other, InvertProductOutputDirichletBC):
+        output = assemble(self, keep_diagonal=True)
+        return output & other
+    else:
+        return NotImplemented
+setattr(Form, "__and__", custom__and__)

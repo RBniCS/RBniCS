@@ -28,7 +28,7 @@ def init_config(config):
     """
     
     config.add_section("backends")
-    config.set("backends", "delay assembly", False)
+    config.set("backends", "delay assembly", "False")
     config.set("backends", "online backend", "numpy")
     config.set("backends", "required backends", []) # will be filled in automatically
 
@@ -43,8 +43,8 @@ def read_config(config):
     # Read from file
     config_files_list = list()
     config_files_list.append(os.path.join(rbnics_directory, ".rbnicsrc"))
-    if hasattr(sys.modules['__main__'], "__file__"):
-        main_directory = os.path.dirname(os.path.realpath(sys.modules['__main__'].__file__))
+    if hasattr(sys.modules["__main__"], "__file__"):
+        main_directory = os.path.dirname(os.path.realpath(sys.modules["__main__"].__file__))
         main_directory_split = main_directory.split(os.path.sep)
         for p in range(len(main_directory_split), 0, -1):
             new_config_file_list = list()

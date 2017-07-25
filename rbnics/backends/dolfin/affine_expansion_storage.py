@@ -22,7 +22,8 @@ from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExp
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
-from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
+from rbnics.backends.dolfin.wrapping import form_iterator, is_parametrized
+from rbnics.utils.config import config
 from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
@@ -32,6 +33,8 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def __init__(self, args):
         self._content = None
         self._type = None
+        # Get config value
+        delay_assembly = config.getboolean("backends", "delay assembly")
         # Type checking
         is_Form = self._is_Form(args[0])
         is_Tensor = self._is_Tensor(args[0])
@@ -47,7 +50,10 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 all_is_Tensor.append(self._is_Tensor(args[i]))
                 assert all_is_Form[i] or all_is_Tensor[i]
                 if all_is_Form[i]:
-                    all_is_parametrized.append(ParametrizedTensorFactory(args[i]).is_parametrized())
+                    if delay_assembly:
+                        all_is_parametrized.append(True)
+                    else:
+                        all_is_parametrized.append(is_parametrized(args[i], form_iterator))
                 else:
                     all_is_parametrized.append(False)
             elif is_DirichletBC:
@@ -58,8 +64,8 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
                 return TypeError("Invalid input arguments to AffineExpansionStorage")
         # Actual init
         if is_Form or is_Tensor:
-            is_parametrized = any(all_is_parametrized)
-            if not is_parametrized:
+            any_is_parametrized = any(all_is_parametrized)
+            if not any_is_parametrized:
                 self._content = list()
                 for (arg, arg_is_Form) in zip(args, all_is_Form):
                     if arg_is_Form:

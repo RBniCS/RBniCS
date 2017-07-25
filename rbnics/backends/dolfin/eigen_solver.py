@@ -18,20 +18,27 @@
 
 from numpy import isclose
 from petsc4py import PETSc
-from dolfin import as_backend_type, DirichletBC, Function, FunctionSpace, PETScMatrix, PETScVector, SLEPcEigenSolver
+from ufl import Form
+from dolfin import as_backend_type, assemble, DirichletBC, Function, FunctionSpace, PETScMatrix, PETScVector, SLEPcEigenSolver
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
 from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
 
 @Extends(AbstractEigenSolver)
-@BackendFor("dolfin", inputs=(FunctionSpace, Matrix.Type(), (Matrix.Type(), None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
+@BackendFor("dolfin", inputs=(FunctionSpace, (Matrix.Type(), Form), (Matrix.Type(), Form, None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class EigenSolver(AbstractEigenSolver):
     @override
     def __init__(self, V, A, B=None, bcs=None):
         self.V = V
         if bcs is not None:
             self._set_boundary_conditions(bcs)
+        assert isinstance(A, (Matrix.Type(), Form))
+        if isinstance(A, Form):
+            A = assemble(A, keep_diagonal=True)
+        assert isinstance(B, (Matrix.Type(), Form)) or B is None
+        if isinstance(B, Form):
+            B = assemble(B, keep_diagonal=True)
         self._set_operators(A, B)
         if self.B is not None:
             self.eigen_solver = SLEPcEigenSolver(self.condensed_A, self.condensed_B)

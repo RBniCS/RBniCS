@@ -30,10 +30,12 @@ from rbnics.backends.dolfin.wrapping.expression_name import expression_name
 from rbnics.backends.dolfin.wrapping.expression_on_reduced_mesh import expression_on_reduced_mesh
 from rbnics.backends.dolfin.wrapping.expression_on_truth_mesh import expression_on_truth_mesh
 from rbnics.backends.dolfin.wrapping.expression_replace import expression_replace
+import rbnics.backends.dolfin.wrapping.form_and
 from rbnics.backends.dolfin.wrapping.form_argument_replace import form_argument_replace
 from rbnics.backends.dolfin.wrapping.form_argument_space import form_argument_space
 from rbnics.backends.dolfin.wrapping.form_description import form_description
 from rbnics.backends.dolfin.wrapping.form_iterator import form_iterator
+import rbnics.backends.dolfin.wrapping.form_mul
 from rbnics.backends.dolfin.wrapping.form_name import form_name
 from rbnics.backends.dolfin.wrapping.form_on_reduced_function_space import form_on_reduced_function_space
 from rbnics.backends.dolfin.wrapping.form_on_truth_function_space import form_on_truth_function_space

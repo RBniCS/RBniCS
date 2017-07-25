@@ -19,7 +19,7 @@
 from ufl import Form
 from ufl.algebra import Division, Product, Sum
 from ufl.core.operator import Operator
-from dolfin import assemble, Constant, Expression, project
+from dolfin import Constant, Expression, project
 from rbnics.backends.dolfin.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
@@ -93,7 +93,6 @@ def product(thetas, operators, thetas2=None):
         for (theta, operator) in zip(thetas, operators):
             theta = float(theta)
             output += Constant(theta)*operator
-        output = assemble(output, keep_diagonal=True)
         return ProductOutput(output)
     elif operators.type() == "Function":
         output = function_copy(operators[0])
