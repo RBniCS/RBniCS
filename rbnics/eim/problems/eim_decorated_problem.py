@@ -32,7 +32,11 @@ def EIMDecoratedProblem(
     from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     from rbnics.eim.problems.eim import EIM
     
-    @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactParametrizedFunctions)
+    @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactParametrizedFunctions,
+        stages=stages,
+        basis_generation=basis_generation,
+        train_first=train_first
+    )
     def EIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
                 
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
