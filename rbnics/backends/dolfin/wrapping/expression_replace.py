@@ -56,15 +56,7 @@ class Replacer(MultiFunction):
         for (k, v) in mapping.iteritems():
             self._mapping[k] = v
             if isinstance(k, ListTensor):
-                assert all(isinstance(component, Indexed) for component in k.ufl_operands)
-                assert all(
-                  (len(component.ufl_operands) == 2 and isinstance(component.ufl_operands[0], Function) and isinstance(component.ufl_operands[1], MultiIndex))
-                  for component in k.ufl_operands
-                )
-                assert all(
-                  component.ufl_operands[0] == k.ufl_operands[-1].ufl_operands[0]
-                  for component in k.ufl_operands
-                )
+                assert self._is_ListTensor_of_Functions(k)
                 split_k = k.ufl_operands
                 split_v = split(v)
                 assert len(split_k) == len(split_v)
@@ -83,7 +75,7 @@ class Replacer(MultiFunction):
     def indexed(self, o, Ap, ii):
         assert len(o.ufl_operands) == 2
         assert isinstance(o.ufl_operands[1], MultiIndex)
-        if isinstance(o.ufl_operands[0], Function):
+        if isinstance(o.ufl_operands[0], Function) or self._is_ListTensor_of_Functions(o.ufl_operands[0]):
             indices = o.ufl_operands[1].indices()
             is_fixed = isinstance(indices[0], FixedIndex)
             assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
@@ -102,7 +94,19 @@ class Replacer(MultiFunction):
             return replace_for_terminals_only(o, self._mapping_terminals_only)
     
     def list_tensor(self, o, *dops):
-        if (
+        if self._is_ListTensor_of_Functions(o):
+            assert o in self._mapping
+            return self._mapping[o]
+        else:
+            return replace_for_terminals_only(o, self._mapping_terminals_only)
+
+    def coefficient_derivative(self, o):
+        error("Derivatives should be applied before executing replace.")
+        
+    def _is_ListTensor_of_Functions(self, o):
+        return (
+            isinstance(o, ListTensor)
+                and
             all(isinstance(component, Indexed) for component in o.ufl_operands)
                 and
             all(
@@ -114,14 +118,7 @@ class Replacer(MultiFunction):
               component.ufl_operands[0] == o.ufl_operands[-1].ufl_operands[0]
               for component in o.ufl_operands
             )
-        ):
-            assert o in self._mapping
-            return self._mapping[o]
-        else:
-            return replace_for_terminals_only(o, self._mapping_terminals_only)
-
-    def coefficient_derivative(self, o):
-        error("Derivatives should be applied before executing replace.")
+        )
         
 def replace(e, mapping):
     """Replace objects in expression.
