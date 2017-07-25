@@ -19,7 +19,7 @@
 from ufl import Form
 from ufl.algebra import Division, Product, Sum
 from ufl.core.operator import Operator
-from dolfin import Constant, Expression, project
+from dolfin import assemble, Constant, Expression, project
 from rbnics.backends.dolfin.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
@@ -87,13 +87,6 @@ def product(thetas, operators, thetas2=None):
             args.extend(item[0][0]._sorted_kwargs)
             output.append(DirichletBC(*args))
         return ProductOutput(output)
-    elif operators.type() == "Form":
-        assert all([isinstance(operator, Form) for operator in operators])
-        output = 0
-        for (theta, operator) in zip(thetas, operators):
-            theta = float(theta)
-            output += Constant(theta)*operator
-        return ProductOutput(output)
     elif operators.type() == "Function":
         output = function_copy(operators[0])
         output.vector().zero()
@@ -102,6 +95,27 @@ def product(thetas, operators, thetas2=None):
             output.vector().add_local(theta*operator.vector().array())
         output.vector().apply("add")
         return ProductOutput(output)
+    elif operators.type() == "UnassembledForm":
+        are_Form = [isinstance(operator, Form) for operator in operators]
+        if all(are_Form):
+            # Keep the operators as Forms and delay assembly as long as possible
+            output = 0
+            for (theta, operator) in zip(thetas, operators):
+                theta = float(theta)
+                output += Constant(theta)*operator
+            return ProductOutput(output)
+        else:
+            # Since there are matrices/vectors among provided operators,
+            # we are forced to assemble every form in order to sum them
+            # with the other matrices/vectors
+            assembled_operators = ListOfAssembledForms()
+            for (index, operator) in enumerate(operators):
+                if are_Form[index]:
+                    assembled_operators.append(assemble(operator, keep_diagonal=True))
+                else:
+                    assert isinstance(operator, (Matrix.Type(), Vector.Type()))
+                    assembled_operators.append(operator)
+            return product(thetas, assembled_operators)
     else:
         raise AssertionError("product(): invalid operands.")
         
@@ -110,3 +124,7 @@ class ProductOutput(object):
     def __init__(self, sum_product_return_value):
         self.sum_product_return_value = sum_product_return_value
         
+# Auxiliary class to reduce code duplication
+class ListOfAssembledForms(list):
+    def type(self):
+        return "AssembledForm"

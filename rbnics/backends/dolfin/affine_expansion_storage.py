@@ -36,51 +36,59 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         # Get config value
         delay_assembly = config.getboolean("backends", "delay assembly")
         # Type checking
-        is_Form = self._is_Form(args[0])
-        is_Tensor = self._is_Tensor(args[0])
-        is_DirichletBC = self._is_DirichletBC(args[0])
-        is_Function = self._is_Function(args[0])
-        assert is_Form or is_DirichletBC or is_Function or is_Tensor
-        all_is_Form = list()
-        all_is_Tensor = list()
-        all_is_parametrized = list()
+        first_is_Form = self._is_Form(args[0])
+        first_is_Tensor = self._is_Tensor(args[0])
+        first_is_DirichletBC = self._is_DirichletBC(args[0])
+        first_is_Function = self._is_Function(args[0])
+        assert first_is_Form or first_is_DirichletBC or first_is_Function or first_is_Tensor
+        are_Form = list()
+        are_Tensor = list()
+        are_DirichletBC = list()
+        are_Function = list()
+        are_parametrized = list()
         for i in range(len(args)):
-            if is_Form or is_Tensor:
-                all_is_Form.append(self._is_Form(args[i]))
-                all_is_Tensor.append(self._is_Tensor(args[i]))
-                assert all_is_Form[i] or all_is_Tensor[i]
-                if all_is_Form[i]:
+            if first_is_Form or first_is_Tensor:
+                are_Form.append(self._is_Form(args[i]))
+                are_Tensor.append(self._is_Tensor(args[i]))
+                assert are_Form[i] or are_Tensor[i]
+                if are_Form[i]:
                     if delay_assembly:
-                        all_is_parametrized.append(True)
+                        are_parametrized.append(True)
                     else:
-                        all_is_parametrized.append(is_parametrized(args[i], form_iterator))
+                        are_parametrized.append(is_parametrized(args[i], form_iterator))
                 else:
-                    all_is_parametrized.append(False)
-            elif is_DirichletBC:
-                assert self._is_DirichletBC(args[i])
-            elif is_Function:
-                assert self._is_Function(args[i])
+                    are_parametrized.append(False)
+            elif first_is_DirichletBC:
+                are_DirichletBC.append(self._is_DirichletBC(args[i]))
+            elif first_is_Function:
+                are_Function.append(args[i])
             else:
                 return TypeError("Invalid input arguments to AffineExpansionStorage")
         # Actual init
-        if is_Form or is_Tensor:
-            any_is_parametrized = any(all_is_parametrized)
+        if first_is_Form or first_is_Tensor:
+            any_is_parametrized = any(are_parametrized)
             if not any_is_parametrized:
                 self._content = list()
-                for (arg, arg_is_Form) in zip(args, all_is_Form):
+                for (arg, arg_is_Form) in zip(args, are_Form):
                     if arg_is_Form:
                         self._content.append(assemble(arg, keep_diagonal=True))
                     else:
                         self._content.append(arg)
                 self._type = "AssembledForm"
             else:
-                assert all(all_is_Form)
-                self._content = args
-                self._type = "Form"
-        elif is_DirichletBC:
+                self._content = list()
+                for (arg, arg_is_Form, arg_is_parametrized) in zip(args, are_Form, are_parametrized):
+                    if arg_is_Form and not arg_is_parametrized:
+                        self._content.append(assemble(arg, keep_diagonal=True))
+                    else:
+                        self._content.append(arg) # either a Tensor or a parametrized Form
+                self._type = "UnassembledForm"
+        elif first_is_DirichletBC:
+            assert all(are_DirichletBC)
             self._content = args
             self._type = "DirichletBC"
-        elif is_Function:
+        elif first_is_Function:
+            assert all(are_Function)
             self._content = args
             self._type = "Function"
         else:
