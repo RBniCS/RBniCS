@@ -47,6 +47,10 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         # Desired velocity
         self.vx_d = Expression("x[1]", degree=1)
         
+    ## Return custom problem name
+    def name(self):
+        return "StokesOptimalControl1"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -252,7 +256,7 @@ reduced_stokes_optimal_control = pod_galerkin_method.offline()
 online_mu = (1.7, 1.5)
 reduced_stokes_optimal_control.set_mu(online_mu)
 reduced_stokes_optimal_control.solve()
-reduced_stokes_optimal_control.export_solution("StokesOptimalControl", "online_solution")
+reduced_stokes_optimal_control.export_solution("StokesOptimalControl1", "online_solution")
 print "Reduced output for mu =", online_mu, "is", reduced_stokes_optimal_control.compute_output()
 
 # 7. Perform an error analysis

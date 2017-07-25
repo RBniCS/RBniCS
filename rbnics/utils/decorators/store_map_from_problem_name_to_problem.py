@@ -30,7 +30,7 @@ def StoreMapFromProblemNameToProblem(ParametrizedReducedDifferentialProblem_Deri
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Populate problem name to problem map
-            add_to_map_from_problem_name_to_problem(type(self).__name__, self)
+            add_to_map_from_problem_name_to_problem(self.name(), self)
             
     # return value (a class) for the decorator
     return StoreMapFromProblemNameToProblem_Class
@@ -38,7 +38,7 @@ def StoreMapFromProblemNameToProblem(ParametrizedReducedDifferentialProblem_Deri
 def add_to_map_from_problem_name_to_problem(problem_name, problem):
     if hasattr(type(problem), "__is_exact__"):
         assert type(problem).__is_exact__ is True
-        problem_name = type(problem).__DecoratedProblem__.__name__
+        problem_name = problem.__decorated_problem__.name()
         assert problem_name in _problem_name_to_problem_map
     else:
         assert problem_name not in _problem_name_to_problem_map

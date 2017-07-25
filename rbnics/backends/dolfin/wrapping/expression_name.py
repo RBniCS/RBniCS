@@ -46,8 +46,8 @@ def expression_name(expression, backend=None):
             else:
                 (problem, component) = backend.wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
                 preprocessed_n = n
-            coefficients_replacement[repr(preprocessed_n)] = str(type(problem).__name__) + str(component)
-            str_repr += repr(type(problem).__name__) + str(component)
+            coefficients_replacement[repr(preprocessed_n)] = str(problem.name()) + str(component)
+            str_repr += repr(problem.name()) + str(component)
             # Make sure to skip any parent solution related to this one
             visited.add(n)
             visited.add(preprocessed_n)

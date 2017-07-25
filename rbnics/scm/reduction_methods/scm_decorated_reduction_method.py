@@ -34,7 +34,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Storage for SCM reduction method
-            self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, type(self.truth_problem).__name__ + "/scm")
+            self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, self.truth_problem.name() + "/scm")
             
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
         @override

@@ -40,7 +40,11 @@ class Graetz(EllipticCoerciveProblem):
         self.ds = Measure("ds")(subdomain_data=boundaries)
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
-                
+        
+    ## Return custom problem name
+    def name(self):
+        return "Graetz2"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -136,7 +140,7 @@ reduced_graetz_problem = reduced_basis_method.offline()
 online_mu = (10.0, 0.01, 1.0, 1.0)
 reduced_graetz_problem.set_mu(online_mu)
 reduced_graetz_problem.solve()
-reduced_graetz_problem.export_solution("Graetz", "online_solution")
+reduced_graetz_problem.export_solution("Graetz2", "online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(100, dual=100, SCM=100)

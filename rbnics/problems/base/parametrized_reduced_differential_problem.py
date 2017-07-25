@@ -46,7 +46,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
     def __init__(self, truth_problem, **kwargs):
     
         # Call to parent
-        ParametrizedProblem.__init__(self, type(truth_problem).__name__)
+        ParametrizedProblem.__init__(self, truth_problem.name())
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Online reduced space dimension

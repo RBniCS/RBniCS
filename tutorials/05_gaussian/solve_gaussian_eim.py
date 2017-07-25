@@ -36,6 +36,10 @@ class Gaussian(EllipticCoerciveProblem):
         self.f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
         # note that we cannot use self.mu in the initialization of self.f, because self.mu has not been initialized yet
         
+    ## Return custom problem name
+    def name(self):
+        return "GaussianEIM"
+        
     ## Return the alpha_lower bound.
     def get_stability_factor(self):
         return 1.
@@ -101,11 +105,11 @@ reduced_gaussian_problem = reduced_basis_method.offline()
 online_mu = (0.3,-1.0)
 reduced_gaussian_problem.set_mu(online_mu)
 reduced_gaussian_problem.solve()
-reduced_gaussian_problem.export_solution("Gaussian", "online_solution")
+reduced_gaussian_problem.export_solution("GaussianEIM", "online_solution")
 reduced_gaussian_problem.solve(EIM=11)
-reduced_gaussian_problem.export_solution("Gaussian", "online_solution__EIM_11")
+reduced_gaussian_problem.export_solution("GaussianEIM", "online_solution__EIM_11")
 reduced_gaussian_problem.solve(EIM=1)
-reduced_gaussian_problem.export_solution("Gaussian", "online_solution__EIM_1")
+reduced_gaussian_problem.export_solution("GaussianEIM", "online_solution__EIM_1")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(50, EIM=60)

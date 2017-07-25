@@ -36,6 +36,10 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
         # Store the initial condition expression
         self.ic = Expression("1-x[1]", element=self.V.ufl_element())
         
+    ## Return custom problem name
+    def name(self):
+        return "UnsteadyThermalBlock2RB"
+        
     ## Return the alpha_lower bound.
     def get_stability_factor(self):
         return min(self.compute_theta("a"))
@@ -124,7 +128,7 @@ reduced_unsteady_thermal_block_problem = reduced_basis_method.offline()
 online_mu = (8.0,-1.0)
 reduced_unsteady_thermal_block_problem.set_mu(online_mu)
 reduced_unsteady_thermal_block_problem.solve()
-reduced_unsteady_thermal_block_problem.export_solution("UnsteadyThermalBlock", "online_solution")
+reduced_unsteady_thermal_block_problem.export_solution("UnsteadyThermalBlock2RB", "online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(10)

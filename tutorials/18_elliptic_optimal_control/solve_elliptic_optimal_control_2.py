@@ -39,7 +39,11 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         self.alpha = 0.01
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.sub(0).ufl_element())
-                
+        
+    ## Return custom problem name
+    def name(self):
+        return "EllipticOptimalControl2"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -176,7 +180,7 @@ reduced_elliptic_optimal_control = pod_galerkin_method.offline()
 online_mu = (15.0, 0.6, 1.8)
 reduced_elliptic_optimal_control.set_mu(online_mu)
 reduced_elliptic_optimal_control.solve()
-reduced_elliptic_optimal_control.export_solution("EllipticOptimalControl", "online_solution")
+reduced_elliptic_optimal_control.export_solution("EllipticOptimalControl2", "online_solution")
 print "Reduced output for mu =", online_mu, "is", reduced_elliptic_optimal_control.compute_output()
 
 # 7. Perform an error analysis

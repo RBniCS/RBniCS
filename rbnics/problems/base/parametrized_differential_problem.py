@@ -43,7 +43,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
     def __init__(self, V, **kwargs):
     
         # Call to parent
-        ParametrizedProblem.__init__(self, type(self).__name__)
+        ParametrizedProblem.__init__(self, self.name())
         
         # Input arguments
         self.V = V
@@ -70,6 +70,9 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         self._output_cache__current_cache_key = None
         # I/O
         self.folder["cache"] = self.folder_prefix + "/" + "cache"
+        
+    def name(self):
+        return type(self).__name__
     
     def init(self):
         """

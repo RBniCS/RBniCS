@@ -34,10 +34,14 @@ def get_auxiliary_problem_for_non_parametrized_function(function, backend=None):
     )
     if function not in get_auxiliary_problem_for_non_parametrized_function._storage_problem:
         assert isinstance(function, Function), "The case of split(non parametrized function) has not been implemented yet"
-        # Only a V attribute is required
+        # Only a V attribute and a name method are required
         class AuxiliaryProblemForNonParametrizedFunction(object):
             def __init__(self, function):
                 self.V = backend.wrapping.get_function_space(function)
+                
+            def name(self):
+                return type(self).__name__
+                
         # Change the name of the (local) class to (almost) uniquely identify the function.
         # Since the unique dolfin identifier f_** may change between runs, we use as identifiers
         # a combination of the norms, truncated to the first five significant figures.

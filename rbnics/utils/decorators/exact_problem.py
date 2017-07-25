@@ -29,6 +29,9 @@ def exact_problem(decorated_problem, preserve_class_name=True):
                 @sync_setters(decorated_problem, "set_mu", "mu")
                 @sync_setters(decorated_problem, "set_mu_range", "mu_range")
                 def __init__(self, V, **kwargs):
+                    # Store reference to original problem
+                    self.__decorated_problem__ = decorated_problem
+                    # Call Parent constructor
                     DecoratedProblem.UndecoratedProblemClass.__init__(self, V, **kwargs)
             
             if hasattr(decorated_problem, "set_time"):
@@ -43,6 +46,11 @@ def exact_problem(decorated_problem, preserve_class_name=True):
             
             if not preserve_class_name:
                 setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
+                @Extends(ExactProblem_Class, preserve_class_name=True)
+                class ExactProblem_Class(ExactProblem_Class):
+                    def name(self):
+                        return "Exact" + decorated_problem.name()
+                        
             setattr(ExactProblem_Class, "__is_exact__", True)
             setattr(ExactProblem_Class, "__DecoratedProblem__", DecoratedProblem)
             
@@ -55,7 +63,6 @@ def exact_problem(decorated_problem, preserve_class_name=True):
             
             # Create a new instance of ExactProblem_Class
             exact_problem = ExactProblem_Class(decorated_problem.V, **decorated_problem.problem_kwargs)
-            setattr(exact_problem, "__decorated_problem__", decorated_problem)
             
             # Save
             _all_exact_problems[(decorated_problem, preserve_class_name)] = exact_problem

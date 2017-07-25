@@ -46,6 +46,10 @@ class StokesUnsteady(StokesUnsteadyProblem):
         self.f = Constant((0.0, 0.0))
         self.g = Constant(0.0)
         
+    ## Return custom problem name
+    def name(self):
+        return "StokesUnsteady1"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -180,7 +184,7 @@ reduced_stokes_unsteady_problem = pod_galerkin_method.offline()
 online_mu = (1.0, )
 reduced_stokes_unsteady_problem.set_mu(online_mu)
 reduced_stokes_unsteady_problem.solve()
-reduced_stokes_unsteady_problem.export_solution("StokesUnsteady", "online_solution")
+reduced_stokes_unsteady_problem.export_solution("StokesUnsteady1", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(30)

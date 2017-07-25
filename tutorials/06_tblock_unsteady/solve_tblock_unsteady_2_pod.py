@@ -35,7 +35,11 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         # Store the initial condition expression
         self.ic = Expression("1-x[1]", element=self.V.ufl_element())
-    
+        
+    ## Return custom problem name
+    def name(self):
+        return "UnsteadyThermalBlock2POD"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -120,7 +124,7 @@ reduced_unsteady_thermal_block_problem = pod_galerkin_method.offline()
 online_mu = (8.0,-1.0)
 reduced_unsteady_thermal_block_problem.set_mu(online_mu)
 reduced_unsteady_thermal_block_problem.solve()
-reduced_unsteady_thermal_block_problem.export_solution("UnsteadyThermalBlock", "online_solution")
+reduced_unsteady_thermal_block_problem.export_solution("UnsteadyThermalBlock2POD", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(10)

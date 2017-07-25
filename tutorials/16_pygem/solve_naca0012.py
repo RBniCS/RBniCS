@@ -120,7 +120,7 @@ reduced_naca0012_problem = reduced_basis_method.offline()
 online_mu = (0.1, )*8
 reduced_naca0012_problem.set_mu(online_mu)
 reduced_naca0012_problem.solve()
-reduced_naca0012_problem.export_solution("naca0012", "online_solution")
+reduced_naca0012_problem.export_solution("NACA0012", "online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(100, DEIM=300)

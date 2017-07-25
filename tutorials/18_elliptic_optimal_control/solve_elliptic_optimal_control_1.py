@@ -41,7 +41,11 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         self.ds = Measure("ds")(subdomain_data=boundaries)
         # Regularization coefficient
         self.alpha = 0.01
-                
+        
+    ## Return custom problem name
+    def name(self):
+        return "EllipticOptimalControl1"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -186,7 +190,7 @@ reduced_elliptic_optimal_control = pod_galerkin_method.offline()
 online_mu = (3.0, 0.6)
 reduced_elliptic_optimal_control.set_mu(online_mu)
 reduced_elliptic_optimal_control.solve()
-reduced_elliptic_optimal_control.export_solution("EllipticOptimalControl", "online_solution")
+reduced_elliptic_optimal_control.export_solution("EllipticOptimalControl1", "online_solution")
 print "Reduced output for mu =", online_mu, "is", reduced_elliptic_optimal_control.compute_output()
 
 # 7. Perform an error analysis

@@ -32,7 +32,7 @@ class DifferentialProblemReductionMethod(ReductionMethod):
     @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        ReductionMethod.__init__(self, type(truth_problem).__name__, truth_problem.mu_range)
+        ReductionMethod.__init__(self, truth_problem.name(), truth_problem.mu_range)
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Reduced order problem

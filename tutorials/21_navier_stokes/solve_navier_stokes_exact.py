@@ -80,6 +80,10 @@ class NavierStokes(NavierStokesProblem):
             "error_on_nonconvergence": False
         }
         
+    ## Return custom problem name
+    def name(self):
+        return "NavierStokesExact"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -237,13 +241,9 @@ reduced_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
 online_mu = (80.0, 1.5)
-stokes_problem.set_mu(online_mu)
-stokes_problem.solve()
-stokes_problem.export_solution("NavierStokes", "offline_solution")
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
-print reduced_stokes_problem.compute_relative_error()
-reduced_stokes_problem.export_solution("NavierStokes", "online_solution")
+reduced_stokes_problem.export_solution("NavierStokesExact", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100)

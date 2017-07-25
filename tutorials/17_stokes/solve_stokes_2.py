@@ -78,6 +78,10 @@ class Stokes(StokesProblem):
             self.tensor_kappa.append(ParametrizedExpression(self, tensor_kappa[s], mu=expression_mu, element=tensor_element))
             self.tensor_chi.append(ParametrizedExpression(self, tensor_chi[s], mu=expression_mu, element=tensor_element))
         
+    ## Return custom problem name
+    def name(self):
+        return "Stokes2"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -206,7 +210,7 @@ reduced_stokes_problem = pod_galerkin_method.offline()
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution("Stokes", "online_solution")
+reduced_stokes_problem.export_solution("Stokes2", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), EIM=10)

@@ -40,7 +40,7 @@ def expression_description(expression, backend=None):
             else:
                 (problem, component) = backend.wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
                 preprocessed_n = n
-            coefficients_repr[preprocessed_n] = "solution of " + str(type(problem).__name__)
+            coefficients_repr[preprocessed_n] = "solution of " + str(problem.name())
             if len(component) is 1 and component[0] is not None:
                 coefficients_repr[preprocessed_n] += ", component " + str(component[0])
             elif len(component) > 1:

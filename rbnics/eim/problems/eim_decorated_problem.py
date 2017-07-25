@@ -110,7 +110,7 @@ def EIMDecoratedProblem(
                                             EIMApproximationType = TimeDependentEIMApproximation
                                         else:
                                             EIMApproximationType = EIMApproximation
-                                        self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, type(self).__name__ + "/eim/" + factor_name, basis_generation)
+                                        self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, self.name() + "/eim/" + factor_name, basis_generation)
                     # Restore float parameters
                     self.mu = mu_float
                 

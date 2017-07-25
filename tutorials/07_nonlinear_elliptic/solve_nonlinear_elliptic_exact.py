@@ -44,7 +44,11 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             "report": True,
             "error_on_nonconvergence": True
         }
-    
+        
+    ## Return custom problem name
+    def name(self):
+        return "NonlinearEllipticExact"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -123,7 +127,7 @@ reduced_nonlinear_elliptic_problem = pod_galerkin_method.offline()
 online_mu = (0.3, 9.0)
 reduced_nonlinear_elliptic_problem.set_mu(online_mu)
 reduced_nonlinear_elliptic_problem.solve()
-reduced_nonlinear_elliptic_problem.export_solution("NonlinearElliptic", "online_solution")
+reduced_nonlinear_elliptic_problem.export_solution("NonlinearEllipticExact", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(50)

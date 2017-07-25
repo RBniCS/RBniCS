@@ -104,7 +104,7 @@ def DEIMDecoratedProblem(
                                     DEIMApproximationType = TimeDependentDEIMApproximation
                                 else:
                                     DEIMApproximationType = DEIMApproximation
-                                self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, type(self).__name__ + "/deim/" + factory_form_q.name(), basis_generation)
+                                self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, self.name() + "/deim/" + factory_form_q.name(), basis_generation)
                             else:
                                 self.non_DEIM_forms[term][q] = form_q
                     # Restore float parameters

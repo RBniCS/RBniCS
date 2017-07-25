@@ -555,7 +555,7 @@ class ReducedMesh(AbstractReducedMesh):
             return False
             
     def _auxiliary_key_to_folder(self, key):
-        folder = type(key[0]).__name__ + "/"
+        folder = key[0].name() + "/"
         assert isinstance(key[1], tuple)
         assert len(key[1]) > 0
         if len(key[1]) is 1:

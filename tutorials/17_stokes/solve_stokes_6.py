@@ -48,7 +48,11 @@ class Stokes(StokesProblem):
         self.inlet = Expression(("- 1./0.25*(x[1] - 1)*(2 - x[1])", "0."), degree=2)
         self.f = Constant((0.0, 0.0))
         self.g = Constant(0.0)
-    
+        
+    ## Return custom problem name
+    def name(self):
+        return "Stokes6"
+        
     ## Return the lower bound for inf-sup constant.
     def get_stability_factor(self):
         return 1.
@@ -226,7 +230,7 @@ reduced_stokes_problem = reduced_basis_method.offline()
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution("Stokes", "online_solution")
+reduced_stokes_problem.export_solution("Stokes6", "online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())

@@ -61,7 +61,7 @@ def SCMDecoratedProblem(
                 decorator_inputs["bounding_box_maximum_eigensolver_parameters"] = bounding_box_maximum_eigensolver_parameters
                 decorator_inputs["coercivity_eigensolver_parameters"] = coercivity_eigensolver_parameters
                 # Storage for SCM reduced problems
-                self.SCM_approximation = SCMApproximation(self, type(self).__name__ + "/scm", **decorator_inputs)
+                self.SCM_approximation = SCMApproximation(self, self.name() + "/scm", **decorator_inputs)
                 
             ## Return the alpha_lower bound.
             @override

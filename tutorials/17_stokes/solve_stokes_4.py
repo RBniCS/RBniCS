@@ -48,7 +48,11 @@ class Stokes(StokesProblem):
         self.inlet = Expression(("- 1./0.25*(x[1] - 1)*(2 - x[1])", "0."), degree=2)
         self.f = Constant((0.0, 0.0))
         self.g = Constant(0.0)
-    
+        
+    ## Return custom problem name
+    def name(self):
+        return "Stokes4"
+        
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -222,7 +226,7 @@ reduced_stokes_problem = pod_galerkin_method.offline()
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution("Stokes", "online_solution")
+reduced_stokes_problem.export_solution("Stokes4", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
