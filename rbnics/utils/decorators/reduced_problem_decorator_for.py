@@ -31,7 +31,7 @@ def ReducedProblemDecoratorFor(Algorithm, enabled_if=None, replaces=None, replac
             "\treplaces_if = " + str(replaces_if) + "\n"
         )
         def go_to_next_level(Key, StoredKey):
-            # Algorithms are functions (decorators) to it is not possible
+            # Algorithms are functions (decorators) so it is not possible
             # to define inheritance levels. Flatten the storage levels
             # and thus rely only on explicit replaces provided by the user
             return False

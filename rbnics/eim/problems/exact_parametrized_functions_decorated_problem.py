@@ -28,7 +28,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
     from rbnics.eim.problems.eim import EIM
     from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     
-    @ProblemDecoratorFor(ExactParametrizedFunctions, replaces=(DEIM, EIM))
+    @ProblemDecoratorFor(ExactParametrizedFunctions)
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
