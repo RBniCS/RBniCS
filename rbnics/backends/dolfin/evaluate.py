@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from ufl.core.operator import Operator
 from rbnics.backends.basic import evaluate as basic_evaluate
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.function import Function
@@ -27,9 +28,12 @@ from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.backends.dolfin.reduced_vertices import ReducedVertices
 from rbnics.backends.dolfin.tensors_list import TensorsList
 from rbnics.backends.dolfin.vector import Vector
+from rbnics.backends.dolfin.wrapping import function_from_ufl_operators
 from rbnics.utils.decorators import backend_for
 
 # Evaluate a parametrized expression, possibly at a specific location
-@backend_for("dolfin", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory), (ReducedMesh, ReducedVertices, None)))
+@backend_for("dolfin", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), Operator, TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory), (ReducedMesh, ReducedVertices, None)))
 def evaluate(expression, at=None):
+    if isinstance(expression, Operator):
+        expression = function_from_ufl_operators(expression)
     return basic_evaluate(expression, at, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)

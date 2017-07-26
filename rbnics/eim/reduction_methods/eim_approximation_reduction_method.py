@@ -19,7 +19,7 @@
 from __future__ import print_function
 import types
 from rbnics.reduction_methods.base import ReductionMethod
-from rbnics.backends import evaluate
+from rbnics.backends import abs, evaluate, max
 from rbnics.backends.online import OnlineMatrix
 from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from rbnics.utils.mpi import print
@@ -246,8 +246,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # Print some additional information on the consistency of the reduced basis
         self.EIM_approximation.solve()
         self.EIM_approximation.snapshot = self.load_snapshot()
-        (_, err, _) = self.EIM_approximation.compute_maximum_interpolation_error()
-        print("interpolation error for current mu =", abs(err))
+        error = self.EIM_approximation.snapshot - self.EIM_approximation.Z*self.EIM_approximation._interpolation_coefficients
+        error_on_interpolation_locations = evaluate(error, self.EIM_approximation.interpolation_locations)
+        (maximum_error, _) = max(abs(error))
+        (maximum_error_on_interpolation_locations, _) = max(abs(error_on_interpolation_locations)) # for consistency check, should be zero
+        print("interpolation error for current mu =", abs(maximum_error))
+        print("interpolation error on interpolation locations for current mu =", abs(maximum_error_on_interpolation_locations))
         
         # Carry out the actual greedy search
         def solve_and_computer_error(mu):
@@ -255,11 +259,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             self.EIM_approximation.solve()
             self.EIM_approximation.snapshot = self.load_snapshot()
-            (_, err, _) = self.EIM_approximation.compute_maximum_interpolation_error()
-            return err
+            (_, maximum_error, _) = self.EIM_approximation.compute_maximum_interpolation_error()
+            return abs(maximum_error)
             
         print("find next mu")
-        (error_max, error_argmax) = self.training_set.max(solve_and_computer_error, abs)
+        (error_max, error_argmax) = self.training_set.max(solve_and_computer_error)
         self.EIM_approximation.set_mu(self.training_set[error_argmax])
         self.greedy_selected_parameters.append(self.training_set[error_argmax])
         self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
