@@ -47,7 +47,7 @@ class MockProblem(ParametrizedProblem):
         x = SpatialCoordinate(V.mesh())
         mu = SymbolicParameters(self, V, mu=(-1., -1.))
         self.f00 = 1./sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)
-        self.f01 = 1./sqrt(pow(x[0]-mu[1], 2) + pow(x[1]-mu[0], 2) + 0.01)
+        self.f01 = 1./sqrt(pow(x[0]-mu[0], 4) + pow(x[1]-mu[1], 4) + 0.01)
         # Inner product
         f = TrialFunction(self.V)
         g = TestFunction(self.V)
