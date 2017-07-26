@@ -18,13 +18,12 @@
 
 import rbnics.backends.dolfin
 
-def evaluate_basis_functions_matrix_at_dofs(input_basis_functions_matrix, dofs_list, reduced_V, reduced_dofs_list, backend=None):
+def evaluate_basis_functions_matrix_at_dofs(input_basis_functions_matrix, dofs_list, output_basis_functions_matrix, reduced_dofs_list, backend=None):
     if backend is None:
         backend = rbnics.backends.dolfin
     
-    components = input_basis_functions_matrix._components_name
-    output_basis_functions_matrix = backend.BasisFunctionsMatrix(reduced_V)
-    output_basis_functions_matrix.init(components)
+    components = output_basis_functions_matrix._components_name
+    reduced_V = output_basis_functions_matrix.V_or_Z
     if len(components) > 1:
         for component in components:
             input_functions_list = input_basis_functions_matrix._components[component]

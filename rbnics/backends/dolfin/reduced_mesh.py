@@ -539,21 +539,48 @@ class ReducedMesh(AbstractReducedMesh):
         else:
             return False
                 
-    def _load_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_V):
+    def _load_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_problem, auxiliary_reduced_V):
         # Get full directory name
         full_directory = Folders.Folder(self._auxiliary_io_directory + "/" + self._auxiliary_io_filename)
         full_directory.create()
         # Load auxiliary basis functions matrix
         full_directory_plus_key = Folders.Folder(full_directory + "/auxiliary_basis_functions/" + self._auxiliary_key_to_folder(key))
         if not full_directory_plus_key.create():
-            auxiliary_basis_functions_matrix = self.backend.BasisFunctionsMatrix(auxiliary_reduced_V)
-            auxiliary_basis_functions_matrix.init(key[0].components)
+            auxiliary_basis_functions_matrix = self._init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V)
             auxiliary_basis_functions_matrix.load(full_directory_plus_key, "auxiliary_basis")
             self._auxiliary_basis_functions_matrix[key] = auxiliary_basis_functions_matrix
             return True
         else:
             return False
             
+    def _init_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_problem, auxiliary_reduced_V):
+        auxiliary_basis_functions_matrix = self.backend.BasisFunctionsMatrix(auxiliary_reduced_V)
+        components_tuple = key[1]
+        assert isinstance(components_tuple, tuple)
+        assert len(components_tuple) > 0
+        if len(components_tuple) == 1:
+            component_as_int = components_tuple[0]
+            if component_as_int is None:
+                # Initialize a basis function matrix for all components
+                components_name = auxiliary_reduced_problem.Z._components_name
+            else:
+                # Initialize a basis function matrix only for the required integer component
+                assert isinstance(component_as_int, int)
+                components_name = [auxiliary_reduced_problem.Z._components_name[component_as_int]]
+        else:
+            # This handles the case where a subcomponent of a single component is required
+            # (e.g., x subcomponent of the velocity field component of a (velocity, pressure) solution)
+            # Since basis are constructed with respect to components (rather than subcomponents) we
+            # use only the first entry in the tuple to detect the corresponding component name
+            assert all([isinstance(c, int) for c in components_tuple]) # there is no None and all entries are integer
+            component_as_int = components_tuple[0]
+            components_name = [auxiliary_reduced_problem.Z._components_name[component_as_int]]
+            # Note that the discard of all other subcomponents is automatically handled by
+            # evaluate_basis_functions_matrix_at_dofs, which will be provided reduced dofs
+            # acting only on the active subcomponent.
+        auxiliary_basis_functions_matrix.init(components_name)
+        return auxiliary_basis_functions_matrix
+        
     def _auxiliary_key_to_folder(self, key):
         folder = key[0].name() + "/"
         assert isinstance(key[1], tuple)
@@ -637,10 +664,11 @@ class ReducedMesh(AbstractReducedMesh):
         key = (auxiliary_problem, component, index) # the mapping between problem and reduced problem is one to one, so there is no need to store both of them in the key
         if not key in self._auxiliary_basis_functions_matrix:
             auxiliary_reduced_V = self.get_auxiliary_reduced_function_space(auxiliary_problem, component, index)
-            if not self._load_auxiliary_basis_functions_matrix(key, auxiliary_reduced_V):
-                self._auxiliary_basis_functions_matrix[key] = self.backend.wrapping.evaluate_basis_functions_matrix_at_dofs(
+            if not self._load_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V):
+                self._auxiliary_basis_functions_matrix[key] = self._init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V)
+                self.backend.wrapping.evaluate_basis_functions_matrix_at_dofs(
                     auxiliary_reduced_problem.Z, self._auxiliary_dofs_to_reduced_dofs[key].keys(), 
-                    auxiliary_reduced_V, self._auxiliary_dofs_to_reduced_dofs[key].values()
+                    self._auxiliary_basis_functions_matrix[key], self._auxiliary_dofs_to_reduced_dofs[key].values()
                 )
                 # Save to file
                 self._save_auxiliary_basis_functions_matrix(key)
