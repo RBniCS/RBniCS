@@ -57,11 +57,11 @@ class NavierStokes(NavierStokesProblem):
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
-        mu1 = 1./mu[0]
-        if term in ("a", "da"):
-            theta_a0 = mu1
+        mu1 = mu[0]
+        if term == "a":
+            theta_a0 = 1.
             return (theta_a0,)
-        elif term in ("b", "bt", "bt_restricted", "db", "dbt"):
+        elif term in ("b", "bt", "bt_restricted"):
             theta_b0 = 1.
             return (theta_b0,)
         elif term in ("c", "dc"):
@@ -82,42 +82,31 @@ class NavierStokes(NavierStokesProblem):
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         dx = self.dx
-        if term in ("a", "da"):
-            u = self.u
+        if term == "a":
+            u = self.du
             v = self.v
             a0 = 0
             for s in range(2):
                 a0 += inner(grad(u) + transpose(grad(u)), grad(v))*dx(s + 1) #####transpose(grad(u)) ci serve?
             if term == "a":
                 return (a0,)
-            else:
-                du = self.du
-                return (derivative(a0, u, du),)
-        elif term in ("b", "db"):
-            u = self.u
+        elif term == "b":
+            u = self.du
             q = self.q
             b0 = 0
             for s in range(2):
                 b0 += - q*div(u)*dx(s + 1)
-            if term == "b":
-                return (b0,)
-            else:
-                du = self.du
-                return (derivative(b0, u, du),)
-        elif term in ("bt", "bt_restricted", "dbt"):
-            p = self.p
-            if term in ("bt", "dbt"):
+            return (b0,)
+        elif term in ("bt", "bt_restricted"):
+            p = self.dp
+            if term == "bt":
                 v = self.v
             elif term == "bt_restricted":
                 v = self.r
             bt0 = 0
             for s in range(2):
                 bt0 += - p*div(v)*dx(s + 1)
-            if term in ("bt", "bt_restricted"):
-                return (bt0,)
-            else:
-                dp = self.dp
-                return (derivative(bt0, p, dp),)
+            return (bt0,)
         elif term in ("c", "dc"):
             u = self.u
             v = self.v
@@ -194,16 +183,16 @@ stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(stokes_problem)
-pod_galerkin_method.set_Nmax(20)
+pod_galerkin_method.set_Nmax(2)
 
 # 5. Perform the offline phase
-lifting_mu = (1.0, 2.0)
+lifting_mu = [1.0]
 stokes_problem.set_mu(lifting_mu)
-pod_galerkin_method.initialize_training_set(100, sampling=EquispacedDistribution())
+pod_galerkin_method.initialize_training_set(3, sampling=EquispacedDistribution())
 reduced_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = (80.0)
+online_mu = [80.0]
 stokes_problem.set_mu(online_mu)
 stokes_problem.solve()
 stokes_problem.export_solution("NavierStokes", "offline_solution")

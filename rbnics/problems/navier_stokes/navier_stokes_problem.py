@@ -35,14 +35,14 @@ class NavierStokesProblem(NavierStokesProblem_Base):
         
         # Form names for Navier-Stokes problems
         self.terms = [
-            "a", "b", "bt", "c", "f", "g",
-            "da", "db", "dbt", "dc",
+            "f", "g", "c",
+            "a", "b", "bt", "dc",
             # Auxiliary terms for supremizer enrichment
             "bt_restricted"
         ]
         self.terms_order = {
-            "a": 1, "b": 1, "bt": 1, "c": 1, "f": 1, "g": 1,
-            "da": 2, "db": 2, "dbt": 2, "dc": 2,
+            "f": 1, "g": 1, "c": 1,
+            "a": 2, "b": 2, "bt": 2, "dc": 2,
             # Auxiliary terms for supremizer enrichment
             "bt_restricted": 2
         }
@@ -54,35 +54,17 @@ class NavierStokesProblem(NavierStokesProblem_Base):
             for term in ("a", "b", "bt", "c", "f", "g"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
-                  assembled_operator["a"] + assembled_operator["c"]
-                + assembled_operator["b"] + assembled_operator["bt"]
-                - assembled_operator["f"] - assembled_operator["g"]
+                (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
+                 - assembled_operator["f"] - assembled_operator["g"] + assembled_operator["c"]
             )
             
         def jacobian_eval(self, solution):
             problem = self.problem
             assembled_operator = dict()
-            for term in ("da", "db", "dbt", "dc"):
+            for term in ("a", "b", "bt", "dc"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
-                  assembled_operator["da"] + assembled_operator["dc"]
-                + assembled_operator["db"] + assembled_operator["dbt"]
+                  assembled_operator["a"] + assembled_operator["dc"]
+                + assembled_operator["b"] + assembled_operator["bt"]
             )
-            
-    def _solve_supremizer(self):
-        assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
-        assembled_operator_lhs = self.inner_product["s"][0]
-        assembled_operator_rhs = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))
-        if self.dirichlet_bc["s"] is not None:
-            assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc_s"), self.dirichlet_bc["s"]))
-        else:
-            assembled_dirichlet_bc = None
-        solver = LinearSolver(
-            assembled_operator_lhs,
-            self._supremizer,
-            assembled_operator_rhs,
-            assembled_dirichlet_bc
-        )
-        solver.solve()
-        return self._supremizer
     

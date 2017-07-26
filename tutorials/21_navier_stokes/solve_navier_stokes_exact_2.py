@@ -89,10 +89,10 @@ class NavierStokes(NavierStokesProblem):
         mu = self.mu
         mu1 = mu[0]
         mu2 = mu[1]
-        if term in ("a", "da"):
+        if term == "a":
             theta_a0 = 1.
             return (theta_a0,)
-        elif term in ("b", "bt", "bt_restricted", "db", "dbt"):
+        elif term in ("b", "bt", "bt_restricted"):
             theta_b0 = 1.
             return (theta_b0,)
         elif term in ("c", "dc"):
@@ -113,52 +113,39 @@ class NavierStokes(NavierStokesProblem):
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         dx = self.dx
-        if term in ("a", "da"):
-            u = self.u
+        if term == "a":
+            u = self.du
             v = self.v
             tensor_kappa = self.tensor_kappa
             a0 = 0
             for s in range(2):
                 a0 += inner(grad(u)*tensor_kappa[s] + transpose(grad(u)*tensor_kappa[s]), grad(v))*dx(s + 1)
-            if term == "a":
-                return (a0,)
-            else:
-                du = self.du
-                return (derivative(a0, u, du),)
-        elif term in ("b", "db"):
-            u = self.u
+            return (a0,)
+        elif term == "b":
+            u = self.du
             q = self.q
             tensor_chi = self.tensor_chi
             b0 = 0
             for s in range(2):
                 b0 += - q*tr(tensor_chi[s]*grad(u))*dx(s + 1)
-            if term == "b":
-                return (b0,)
-            else:
-                du = self.du
-                return (derivative(b0, u, du),)
-        elif term in ("bt", "bt_restricted", "dbt"):
-            p = self.p
-            if term in ("bt", "dbt"):
+            return (b0,)
+        elif term in ("bt", "bt_restricted"):
+            p = self.dp
+            if term == "bt":
                 v = self.v
-            elif term == "bt_restricted":
+            else:
                 v = self.r
             tensor_chi = self.tensor_chi
             bt0 = 0
             for s in range(2):
                 bt0 += - p*tr(tensor_chi[s]*grad(v))*dx(s + 1)
-            if term in ("bt", "bt_restricted"):
-                return (bt0,)
-            else:
-                dp = self.dp
-                return (derivative(bt0, p, dp),)
+            return (bt0,)
         elif term in ("c", "dc"):
             u = self.u
             v = self.v
-            tensor_chi = self.tensor_chi
             c0 = 0
             for s in range(2):
-                c0 += inner(grad(u)*tensor_chi[s]*u, v)*dx(s + 1)
+                c0 += inner(grad(u)*u, v)*dx(s + 1)
             if term == "c":
                 return (c0,)
             else:

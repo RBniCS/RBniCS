@@ -18,7 +18,7 @@
 
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.reduction_methods.base import NonlinearPODGalerkinReduction
-from navier_stokes_tensor3_problem import NavierStokesProblem
+from problems.navier_stokes_tensor3_problem import NavierStokesProblem
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 from navier_stokes_tensor3_reduction_method import NavierStokesReductionMethod
 

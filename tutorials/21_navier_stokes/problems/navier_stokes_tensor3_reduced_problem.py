@@ -18,7 +18,7 @@
 
 from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.problems.base import ParametrizedReducedDifferentialProblem
-from navier_stokes_tensor3_problem import NavierStokesProblem
+from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
 from rbnics.backends import product, sum
 from rbnics.backends.online import OnlineFunction
 from rbnics.utils.decorators import Extends, override
@@ -37,17 +37,16 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                 N = self.N
                 assembled_operator = dict()
                 for term in ("a", "b", "bt", "c", "f", "g"):
-                    assert self.terms_order[term] in (1, 2)
-                    if self.terms_order[term] == 2:
+                    assert problem.terms_order[term] in (1, 2)
+                    if problem.terms_order[term] == 2:
                         assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
-                    elif self.terms_order[term] == 1:
+                    elif problem.terms_order[term] == 1:
                         assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                     else:
                         raise AssertionError("Invalid value for order of term " + term)
                 return (
-                      assembled_operator["a"] + assembled_operator["c"]
-                    + assembled_operator["b"] + assembled_operator["bt"]
-                    - assembled_operator["f"] - assembled_operator["g"]
+                      (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
+                    - assembled_operator["f"] - assembled_operator["g"] + assembled_operator["c"]
                 )
                 
             def jacobian_eval(self, solution):
@@ -55,12 +54,12 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                 problem = self.problem
                 N = self.N
                 assembled_operator = dict()
-                for term in ("da", "db", "dbt", "dc"):
-                    assert self.terms_order[term] is 2
+                for term in ("a", "b", "bt", "dc"):
+                    assert problem.terms_order[term] is 2
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return (
-                      assembled_operator["da"] + assembled_operator["dc"]
-                    + assembled_operator["db"] + assembled_operator["dbt"]
+                      assembled_operator["a"] + assembled_operator["dc"]
+                    + assembled_operator["b"] + assembled_operator["bt"]
                 )
         
     # return value (a class) for the decorator

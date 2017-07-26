@@ -17,7 +17,7 @@
 #
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
-from navier_stokes_tensor3_problem import NavierStokesProblem
+from problems.navier_stokes_tensor3_problem import NavierStokesProblem
 from rbnics.utils.decorators import Extends, override
 
 def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
