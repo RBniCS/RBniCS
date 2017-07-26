@@ -22,7 +22,7 @@ from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
 from ufl.algorithms import expand_derivatives, Transformer
 from ufl.algorithms.traversal import iter_expressions
-from ufl.core.multiindex import MultiIndex
+from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
 from rbnics.utils.io import ExportableList
@@ -132,18 +132,28 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                 candidate = all_candidates[0]
                             else: # part of the expression was not parametrized, but separating the non parametrized part would result in more than one coefficient
                                 candidate = n
-                                log(PROGRESS, "\t\t\t Node " + str(n) + " was not splitted because it would have resulted in more than one coefficient, namely " + ", ".join([str(c) for c in all_candidates]))
-                            # Add the coefficient if it is a scalar, or the vector/matrix extracted from Indexed object if it is an Indexed
-                            if not isinstance(candidate, Indexed):
-                                # Add the node to the coefficients
-                                self._coefficients[-1].append(candidate)
-                                log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
-                            else:
-                                # Add the node to the coefficients
-                                self._coefficients[-1].append(candidate.ufl_operands[0])
+                                log(PROGRESS, "\t\t\t Node " + str(n) + " was not split because it would have resulted in more than one coefficient, namely " + ", ".join([str(c) for c in all_candidates]))
+                            # Add the coefficient
+                            if isinstance(candidate, Indexed):
                                 assert isinstance(candidate.ufl_operands[1], MultiIndex)
                                 assert len(candidate.ufl_operands) == 2
-                                log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                indices = candidate.ufl_operands[1].indices()
+                                is_fixed = isinstance(indices[0], FixedIndex)
+                                assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
+                                is_mute = isinstance(indices[0], Index) # mute index for sum
+                                assert all([isinstance(index, Index) == is_mute for index in indices])
+                                assert (is_fixed and not is_mute) or (not is_fixed and is_mute)
+                                if is_fixed:
+                                    self._coefficients[-1].append(candidate)
+                                    log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with fixed index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])) + " for fixed index " + str(candidate.ufl_operands[1]))
+                                elif is_mute:
+                                    self._coefficients[-1].append(candidate.ufl_operands[0])
+                                    log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with mute index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                else:
+                                    raise AssertionError("Invalid index")
+                            else:
+                                self._coefficients[-1].append(candidate)
+                                log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
                     else:
                         log(PROGRESS, "\t\t Node " + str(n) + " to be skipped because is a descendant of a coefficient which has already been detected")
             if len(self._coefficients[-1]) == 0: # then there were no coefficients to extract
