@@ -503,15 +503,23 @@ class _PETScTSIntegrator(object):
             elif key == "linear_solver":
                 snes = self.ts.getSNES()
                 ksp = snes.getKSP()
-                ksp.setType('preonly')
-                ksp.getPC().setType('lu')
+                ksp.setType("preonly")
+                ksp.getPC().setType("lu")
                 ksp.getPC().setFactorSolverPackage(value)
             elif key == "max_time_steps":
                 self.ts.setMaxSteps(value)
             elif key == "monitor":
                 self.problem.output_monitor = value
             elif key == "problem_type":
+                assert value in ("linear", "nonlinear")
                 self.ts.setProblemType(getattr(self.ts.ProblemType, value.upper()))
+                snes = self.ts.getSNES()
+                if value == "linear":
+                    snes.setType("ksponly")
+                elif value == "nonlinear":
+                    snes.setType("newtonls")
+                else:
+                    raise ValueError("Invalid paramater passed as problem type.")
             elif key == "report":
                 if value == True:
                     def print_time(ts):
