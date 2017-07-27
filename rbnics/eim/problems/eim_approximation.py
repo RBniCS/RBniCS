@@ -92,7 +92,7 @@ class EIMApproximation(ParametrizedProblem):
         return (cache_key, cache_file)
         
     # Perform an online solve.
-    def solve(self, N=None, for_rhs=None):
+    def solve(self, N=None):
         if N is None:
             N = self.N
         
