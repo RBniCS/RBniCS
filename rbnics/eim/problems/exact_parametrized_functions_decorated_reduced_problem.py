@@ -206,19 +206,35 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             self._init_operators("offline")
             #
             n_components = len(self.components)
-            # Inner products
+            # Initialize (if offline) and precompute (if online) inner products.
+            # Precomputation is possible as they do not depend on the parameters
             if n_components > 1:
+                inner_product_string = "inner_product_{c}"
                 for component in self.components:
                     self._disable_load_and_save_for_online_storage(self.inner_product[component])
+                    if current_stage == "online":
+                        self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), "offline")
             else:
                 self._disable_load_and_save_for_online_storage(self.inner_product)
-            # Projection inner product
+                if current_stage == "online":
+                    self.inner_product = self.assemble_operator("inner_product", "offline")
+            if current_stage == "online":
+                self._combined_inner_product = self._combine_all_inner_products()
+            # Initialize (if offline) and precompute (if online) projection inner products
+            # Precomputation is possible as they do not depend on the parameters
             if n_components > 1:
+                projection_inner_product_string = "projection_inner_product_{c}"
                 for component in self.components:
                     self._disable_load_and_save_for_online_storage(self.projection_inner_product[component])
+                    if current_stage == "online":
+                        self.projection_inner_product[component] = self.assemble_operator(projection_inner_product_string.format(c=component), "online")
             else:
                 self._disable_load_and_save_for_online_storage(self.projection_inner_product)
-            # Terms
+                if current_stage == "online":
+                    self.projection_inner_product = self.assemble_operator("projection_inner_product", "online")
+            if current_stage == "online":
+                self._combined_projection_inner_product = self._combine_all_projection_inner_products()
+            # Initialize terms (bot offline and online, as they cannot be precomputed)
             for term in self.terms:
                 self._disable_load_and_save_for_online_storage(self.operator[term])
 
@@ -250,7 +266,12 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
         def build_reduced_operators(self, current_stage="offline"):
             if current_stage == "online":
                 log(PROGRESS, "build reduced operators (due to inefficient evaluation)")
-                output = ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self)
+                # Inner products and projection inner products have been already precomputed, as they
+                # are not parametric dependent.
+                #
+                # Terms
+                for term in self.terms:
+                    self.operator[term] = self.assemble_operator(term, "offline")
             else:
                 # The offline/online separation does not hold anymore, so we cannot precompute 
                 # reduced operators.
