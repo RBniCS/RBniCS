@@ -21,7 +21,7 @@ from numpy import asarray, isclose
 from dolfin import *
 from rbnics.backends.abstract import TimeDependentProblem1Wrapper
 from rbnics.backends.dolfin import TimeStepping as SparseTimeStepping
-from rbnics.backends.numpy import Function as DenseFunction, Matrix as DenseMatrix, TimeStepping as DenseTimeStepping, Vector as DenseVector
+from rbnics.backends.online.numpy import Function as DenseFunction, Matrix as DenseMatrix, TimeStepping as DenseTimeStepping, Vector as DenseVector
 
 # Additional command line options for PETSc TS
 args = "--petsc.ts_bdf_order 3 --petsc.ts_bdf_adapt true"

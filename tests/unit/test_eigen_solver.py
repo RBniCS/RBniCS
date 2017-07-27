@@ -19,7 +19,7 @@
 from numpy import isclose
 from dolfin import *
 from rbnics.backends.dolfin import EigenSolver as SparseEigenSolver
-from rbnics.backends.numpy import EigenSolver as DenseEigenSolver, Matrix as DenseMatrix
+from rbnics.backends.online.numpy import EigenSolver as DenseEigenSolver, Matrix as DenseMatrix
 
 """
 Computation of the inf-sup constant

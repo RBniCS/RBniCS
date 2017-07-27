@@ -20,7 +20,7 @@ from numpy import asarray, isclose
 from dolfin import *
 from rbnics.backends.abstract import NonlinearProblemWrapper
 from rbnics.backends.dolfin import NonlinearSolver as SparseNonlinearSolver
-from rbnics.backends.numpy import Function as DenseFunction, NonlinearSolver as DenseNonlinearSolver, Matrix as DenseMatrix, Vector as DenseVector
+from rbnics.backends.online.numpy import Function as DenseFunction, NonlinearSolver as DenseNonlinearSolver, Matrix as DenseMatrix, Vector as DenseVector
 
 """
 Solve

@@ -19,7 +19,7 @@
 from numpy import isclose
 from dolfin import *
 from rbnics.backends.dolfin import LinearSolver as SparseLinearSolver
-from rbnics.backends.numpy import Function as DenseFunction, LinearSolver as DenseLinearSolver, Matrix as DenseMatrix, Vector as DenseVector
+from rbnics.backends.online.numpy import Function as DenseFunction, LinearSolver as DenseLinearSolver, Matrix as DenseMatrix, Vector as DenseVector
 
 """
 Solve
