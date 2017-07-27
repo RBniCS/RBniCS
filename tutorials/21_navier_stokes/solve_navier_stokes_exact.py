@@ -72,13 +72,13 @@ class NavierStokes(NavierStokesProblem):
             self.tensor_kappa.append(ParametrizedExpression(self, tensor_kappa[s], mu=expression_mu, element=tensor_element))
             self.tensor_chi.append(ParametrizedExpression(self, tensor_chi[s], mu=expression_mu, element=tensor_element))
         # Customize nonlinear solver parameters
-        self._nonlinear_solver_parameters = {
+        self._nonlinear_solver_parameters.update({
             "linear_solver": "mumps",
             "maximum_iterations": 20,
             "report": True,
             "line_search": "bt",
-            "error_on_nonconvergence": False
-        }
+            "error_on_nonconvergence": True
+        })
         
     ## Return custom problem name
     def name(self):
@@ -209,7 +209,10 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
     class ReducedNavierStokes(ReducedNavierStokes_Base):
         def __init__(self, truth_problem, **kwargs):
             ReducedNavierStokes_Base.__init__(self, truth_problem, **kwargs)
-            self._nonlinear_solver_parameters["report"] = True
+            self._nonlinear_solver_parameters.update({
+                "report": True,
+                "line_search": "wolfe"
+            })
             
     return ReducedNavierStokes
 

@@ -39,12 +39,12 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         # Store the forcing term expression
         self.f = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", element=self.V.ufl_element())
         # Customize nonlinear solver parameters
-        self._nonlinear_solver_parameters = {
+        self._nonlinear_solver_parameters.update({
             "linear_solver": "mumps",
             "maximum_iterations": 20,
             "report": True,
             "error_on_nonconvergence": True
-        }
+        })
         
     ## Return custom problem name
     def name(self):
@@ -97,8 +97,10 @@ def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
     class ReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
         def __init__(self, truth_problem, **kwargs):
             ReducedNonlinearElliptic_Base.__init__(self, truth_problem, **kwargs)
-            self._nonlinear_solver_parameters["report"] = True
-            self._nonlinear_solver_parameters["line_search"] = "wolfe"
+            self._nonlinear_solver_parameters.update({
+                "report": True,
+                "line_search": "wolfe"
+            })
             
     return ReducedNonlinearElliptic
         
