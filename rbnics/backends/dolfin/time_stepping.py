@@ -196,8 +196,10 @@ class _TimeDependentProblem_Base(object):
             raise AssertionError("Invalid time order in _TimeDependentProblem_Base._residual_vector_assemble.")
             
     def _residual_bcs_apply(self, bcs):
-        assert isinstance(bcs, (dict, list))
-        if isinstance(bcs, list):
+        assert isinstance(bcs, (dict, list)) or bcs is None
+        if bcs is None:
+            pass
+        elif isinstance(bcs, list):
             for bc in bcs:
                 bc.apply(self.residual_vector, self.solution.vector())
         elif isinstance(bcs, dict):
@@ -224,8 +226,10 @@ class _TimeDependentProblem_Base(object):
             raise AssertionError("Invalid time order in _TimeDependentProblem_Base._jacobian_matrix_assemble.")
             
     def _jacobian_bcs_apply(self, bcs):
-        assert isinstance(bcs, (dict, list))
-        if isinstance(bcs, list):
+        assert isinstance(bcs, (dict, list)) or bcs is None
+        if bcs is None:
+            pass
+        elif isinstance(bcs, list):
             for bc in bcs:
                 bc.apply(self.jacobian_matrix)
         elif isinstance(bcs, dict):

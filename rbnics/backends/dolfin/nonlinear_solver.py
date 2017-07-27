@@ -64,8 +64,10 @@ class _NonlinearProblem(NonlinearProblem):
         # Assemble the residual
         self.residual_vector_assemble(residual_vector, self.solution)
         # Apply boundary conditions
-        assert isinstance(self.bcs, (dict, list))
-        if isinstance(self.bcs, list):
+        assert isinstance(self.bcs, (dict, list)) or self.bcs is None
+        if self.bcs is None:
+            pass
+        elif isinstance(self.bcs, list):
             for bc in self.bcs:
                 bc.apply(residual_vector, self.solution.vector())
         elif isinstance(self.bcs, dict):
@@ -95,8 +97,10 @@ class _NonlinearProblem(NonlinearProblem):
             return
         # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
         # Apply boundary conditions
-        assert isinstance(self.bcs, (dict, list))
-        if isinstance(self.bcs, list):
+        assert isinstance(self.bcs, (dict, list)) or self.bcs is None
+        if self.bcs is None:
+            pass
+        elif isinstance(self.bcs, list):
             for bc in self.bcs:
                     bc.apply(jacobian_matrix)
         elif isinstance(self.bcs, dict):
