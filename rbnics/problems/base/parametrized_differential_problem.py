@@ -21,6 +21,7 @@ import types
 import hashlib
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
+from rbnics.utils.config import config
 from rbnics.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -70,6 +71,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         self._output_cache__current_cache_key = None
         # I/O
         self.folder["cache"] = self.folder_prefix + "/" + "cache"
+        self.cache_config = config.get("problems", "cache")
         
     def name(self):
         return type(self).__name__
@@ -231,12 +233,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         Perform a truth solve in case no precomputed solution is imported.
         """
         (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
-        if cache_key in self._solution_cache: 
+        if "RAM" in self.cache_config and cache_key in self._solution_cache:
             log(PROGRESS, "Loading truth solution from cache")
             assign(self._solution, self._solution_cache[cache_key])
-        elif self.import_solution(self.folder["cache"], cache_file):
+        elif "Disk" in self.cache_config and self.import_solution(self.folder["cache"], cache_file):
             log(PROGRESS, "Loading truth solution from file")
-            self._solution_cache[cache_key] = copy(self._solution)
+            if "RAM" in self.cache_config:
+                self._solution_cache[cache_key] = copy(self._solution)
         else: # No precomputed solution available. Truth solve is performed.
             log(PROGRESS, "Solving truth problem")
             assert not hasattr(self, "_is_solving")
@@ -244,8 +247,9 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             assign(self._solution, Function(self.V))
             self._solve(**kwargs)
             delattr(self, "_is_solving")
-            self._solution_cache[cache_key] = copy(self._solution)
-            self.export_solution(self.folder["cache"], cache_file)
+            if "RAM" in self.cache_config:
+                self._solution_cache[cache_key] = copy(self._solution)
+            self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
         return self._solution
     
     class ProblemSolver(object):
@@ -299,13 +303,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
         :return: output evaluation.
         """
         cache_key = self._output_cache__current_cache_key
-        if cache_key in self._output_cache:
+        if "RAM" in self.cache_config and cache_key in self._output_cache:
             log(PROGRESS, "Loading truth output from cache")
             self._output = self._output_cache[cache_key]
         else: # No precomputed output available. Truth output is performed.
             log(PROGRESS, "Computing truth output")
             self._compute_output()
-            self._output_cache[cache_key] = self._output
+            if "RAM" in self.cache_config:
+                self._output_cache[cache_key] = self._output
         return self._output
         
     def _compute_output(self):

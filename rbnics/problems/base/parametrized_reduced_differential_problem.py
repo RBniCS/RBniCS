@@ -82,6 +82,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         # I/O
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
+        self.cache_config = config.get("reduced problems", "cache")
     
     def init(self, current_stage="online"):
         """
@@ -288,7 +289,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         N += self.N_bc
         cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
         self._solution = OnlineFunction(N)
-        if cache_key in self._solution_cache:
+        if "RAM" in self.cache_config and cache_key in self._solution_cache:
             log(PROGRESS, "Loading reduced solution from cache")
             assign(self._solution, self._solution_cache[cache_key])
         else:
@@ -297,7 +298,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
             self._is_solving = True
             self._solve(N, **kwargs)
             delattr(self, "_is_solving")
-            self._solution_cache[cache_key] = copy(self._solution)
+            if "RAM" in self.cache_config:
+                self._solution_cache[cache_key] = copy(self._solution)
         return self._solution
         
     class ProblemSolver(object):
@@ -361,14 +363,15 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
         :return: reduced output
         """
         cache_key = self._output_cache__current_cache_key
-        if cache_key in self._output_cache:
+        if "RAM" in self.cache_config and cache_key in self._output_cache:
             log(PROGRESS, "Loading reduced output from cache")
             self._output = self._output_cache[cache_key]
         else:
             log(PROGRESS, "Computing reduced output")
             N = self._solution.N
             self._compute_output(N)
-            self._output_cache[cache_key] = self._output
+            if "RAM" in self.cache_config:
+                self._output_cache[cache_key] = self._output
         return self._output
         
     def _compute_output(self, N):

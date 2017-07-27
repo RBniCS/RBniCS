@@ -59,6 +59,7 @@ class EIMApproximation(ParametrizedProblem):
         self.folder["basis"] = self.folder_prefix + "/" + "basis"
         self.folder["cache"] = self.folder_prefix + "/" + "cache"
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
+        self.cache_config = config.get("EIM", "cache")
         
     ## Initialize data structures required for the online phase
     def init(self, current_stage="online"):
@@ -77,14 +78,16 @@ class EIMApproximation(ParametrizedProblem):
 
     def evaluate_parametrized_expression(self):
         (cache_key, cache_file) = self._cache_key_and_file()
-        if cache_key in self.snapshot_cache:
+        if "RAM" in self.cache_config and cache_key in self.snapshot_cache:
             self.snapshot = self.snapshot_cache[cache_key]
-        elif self.import_solution(self.folder["cache"], cache_file):
-            self.snapshot_cache[cache_key] = copy(self.snapshot)
+        elif "Disk" in self.cache_config and self.import_solution(self.folder["cache"], cache_file):
+            if "RAM" in self.cache_config:
+                self.snapshot_cache[cache_key] = copy(self.snapshot)
         else:
             self.snapshot = evaluate(self.parametrized_expression)
-            self.snapshot_cache[cache_key] = copy(self.snapshot)
-            self.export_solution(self.folder["cache"], cache_file)
+            if "RAM" in self.cache_config:
+                self.snapshot_cache[cache_key] = copy(self.snapshot)
+            self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
         
     def _cache_key_and_file(self):
         cache_key = self.mu

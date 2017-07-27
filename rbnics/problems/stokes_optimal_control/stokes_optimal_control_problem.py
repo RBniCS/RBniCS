@@ -124,17 +124,19 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             
     def solve_state_supremizer(self, solution):
         (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if cache_key in self._state_supremizer_cache: 
+        if "RAM" in self.cache_config and cache_key in self._state_supremizer_cache: 
             log(PROGRESS, "Loading state supremizer from cache")
             assign(self._state_supremizer, self._state_supremizer_cache[cache_key])
-        elif self.import_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s"):
+        elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s"):
             log(PROGRESS, "Loading state supremizer from file")
-            self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
+            if "RAM" in self.cache_config:
+                self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
         else: # No precomputed state supremizer available. Truth state supremizer solve is performed.
             log(PROGRESS, "Solving state supremizer problem")
             self._solve_state_supremizer(solution)
-            self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
-            self.export_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s")
+            if "RAM" in self.cache_config:
+                self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
+            self.export_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s") # Note that we export to file regardless of config options, because they may change across different runs
         return self._state_supremizer
         
     def _solve_state_supremizer(self, solution):
@@ -156,17 +158,19 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         
     def solve_adjoint_supremizer(self, solution):
         (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if cache_key in self._adjoint_supremizer_cache: 
+        if "RAM" in self.cache_config and cache_key in self._adjoint_supremizer_cache: 
             log(PROGRESS, "Loading adjoint supremizer from cache")
             assign(self._adjoint_supremizer, self._adjoint_supremizer_cache[cache_key])
-        elif self.import_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r"):
+        elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r"):
             log(PROGRESS, "Loading adjoint supremizer from file")
-            self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
+            if "RAM" in self.cache_config:
+                self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
         else: # No precomputed adjoint supremizer available. Truth adjoint supremizer solve is performed.
             log(PROGRESS, "Solving adjoint supremizer problem")
             self._solve_adjoint_supremizer(solution)
-            self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
-            self.export_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r")
+            if "RAM" in self.cache_config:
+                self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
+            self.export_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r") # Note that we export to file regardless of config options, because they may change across different runs
         return self._adjoint_supremizer
         
     def _solve_adjoint_supremizer(self, solution):

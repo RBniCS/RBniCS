@@ -208,7 +208,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     ==
                 (cache_key in self._solution_dot_over_time_cache)
             )
-            if cache_key in self._solution_cache:
+            if "RAM" in self.cache_config and cache_key in self._solution_cache:
                 log(PROGRESS, "Loading reduced solution from cache")
                 assign(self._solution, self._solution_cache[cache_key])
                 assign(self._solution_dot, self._solution_dot_cache[cache_key])
@@ -220,10 +220,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 self._is_solving = True
                 self._solve(N, **kwargs)
                 delattr(self, "_is_solving")
-                self._solution_cache[cache_key] = copy(self._solution)
-                self._solution_dot_cache[cache_key] = copy(self._solution_dot)
-                self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
-                self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
+                if "RAM" in self.cache_config:
+                    self._solution_cache[cache_key] = copy(self._solution)
+                    self._solution_dot_cache[cache_key] = copy(self._solution_dot)
+                    self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
+                    self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
             return self._solution_over_time
             
         class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
@@ -283,7 +284,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     ==
                 (cache_key in self._output_over_time_cache)
             )
-            if cache_key in self._output_cache:
+            if "RAM" in self.cache_config and cache_key in self._output_cache:
                 log(PROGRESS, "Loading reduced output from cache")
                 self._output = self._output_cache[cache_key]
                 self._output_over_time = self._output_over_time_cache[cache_key]
@@ -291,8 +292,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 log(PROGRESS, "Computing reduced output")
                 N = self._solution.N
                 self._compute_output(N)
-                self._output_cache[cache_key] = self._output
-                self._output_over_time_cache[cache_key] = self._output_over_time
+                if "RAM" in self.cache_config:
+                    self._output_cache[cache_key] = self._output
+                    self._output_over_time_cache[cache_key] = self._output_over_time
             return self._output_over_time
             
         # Perform an online evaluation of the output. Internal method

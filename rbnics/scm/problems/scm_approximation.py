@@ -57,6 +57,7 @@ class SCMApproximation(ParametrizedProblem):
         
         # I/O
         self.folder["cache"] = self.folder_prefix + "/" + "reduced_cache"
+        self.cache_config = config.get("SCM", "cache")
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         # 
         self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(truth_problem, "a", True, "smallest", kwargs["coercivity_eigensolver_parameters"], self.folder_prefix)
@@ -110,12 +111,13 @@ class SCMApproximation(ParametrizedProblem):
             N = self.N
         assert N <= len(self.greedy_selected_parameters)
         (cache_key, cache_file) = self._cache_key_and_file(N)
-        if cache_key in self._alpha_LB_cache:
+        if "RAM" in self.cache_config and cache_key in self._alpha_LB_cache:
             log(PROGRESS, "Loading stability factor lower bound from cache")
             self._alpha_LB = self._alpha_LB_cache[cache_key]
-        elif self.import_stability_factor_lower_bound(self.folder["cache"], cache_file):
+        elif "Disk" in self.cache_config and self.import_stability_factor_lower_bound(self.folder["cache"], cache_file):
             log(PROGRESS, "Loading stability factor lower bound from file")
-            self._alpha_LB_cache[cache_key] = self._alpha_LB
+            if "RAM" in self.cache_config:
+                self._alpha_LB_cache[cache_key] = self._alpha_LB
         else:
             log(PROGRESS, "Solving stability factor lower bound reduced problem")
             Q = self.truth_problem.Q["a"]
@@ -149,7 +151,7 @@ class SCMApproximation(ParametrizedProblem):
                     constraints_matrix[j, q] = current_theta_a[q]
                 
                 # Assemble the RHS of the constraint
-                (constraints_vector[j], _) = self.evaluate_stability_factor() # note that computations for this call are already cached
+                (constraints_vector[j], _) = self.evaluate_stability_factor() # note that computations for this call may be already cached
             self.set_mu(mu_bak)
             
             # 2b. Add constraints: also constrain the closest point in the complement of selected parameters, 
@@ -169,7 +171,7 @@ class SCMApproximation(ParametrizedProblem):
                     
                 # Assemble the RHS of the constraint
                 if N > 1:
-                    constraints_vector[M_e + j] = self.get_stability_factor_lower_bound(N - 1) # note that computations for this call are already cached
+                    constraints_vector[M_e + j] = self.get_stability_factor_lower_bound(N - 1) # note that computations for this call may be already cached
                 else:
                     constraints_vector[M_e + j] = 0.
             self.set_mu(mu_bak)
@@ -201,8 +203,9 @@ class SCMApproximation(ParametrizedProblem):
                 (alpha_LB, _) = self.evaluate_stability_factor()
             
             self._alpha_LB = alpha_LB
-            self._alpha_LB_cache[cache_key] = alpha_LB
-            self.export_stability_factor_lower_bound(self.folder["cache"], cache_file)
+            if "RAM" in self.cache_config:
+                self._alpha_LB_cache[cache_key] = alpha_LB
+            self.export_stability_factor_lower_bound(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
         return self._alpha_LB
 
     ## Get an upper bound for alpha
@@ -210,12 +213,13 @@ class SCMApproximation(ParametrizedProblem):
         if N is None:
             N = self.N
         (cache_key, cache_file) = self._cache_key_and_file(N)
-        if cache_key in self._alpha_UB_cache:
+        if "RAM" in self.cache_config and cache_key in self._alpha_UB_cache:
             log(PROGRESS, "Loading stability factor upper bound from cache")
             self._alpha_UB = self._alpha_UB_cache[cache_key]
-        elif self.import_stability_factor_upper_bound(self.folder["cache"], cache_file):
+        elif "Disk" in self.cache_config and self.import_stability_factor_upper_bound(self.folder["cache"], cache_file):
             log(PROGRESS, "Loading stability factor upper bound from file")
-            self._alpha_UB_cache[cache_key] = self._alpha_UB
+            if "RAM" in self.cache_config:
+                self._alpha_UB_cache[cache_key] = self._alpha_UB
         else:
             log(PROGRESS, "Solving stability factor upper bound reduced problem")
             Q = self.truth_problem.Q["a"]
@@ -238,8 +242,9 @@ class SCMApproximation(ParametrizedProblem):
             assert alpha_UB is not None
             alpha_UB = float(alpha_UB)
             self._alpha_UB = alpha_UB
-            self._alpha_UB_cache[cache_key] = alpha_UB
-            self.export_stability_factor_upper_bound(self.folder["cache"], cache_file)
+            if "RAM" in self.cache_config:
+                self._alpha_UB_cache[cache_key] = alpha_UB
+            self.export_stability_factor_upper_bound(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
         return self._alpha_UB
             
     def _cache_key_and_file(self, N):

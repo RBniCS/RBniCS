@@ -79,17 +79,19 @@ class StokesProblem(StokesProblem_Base):
     
     def solve_supremizer(self, solution):
         (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if cache_key in self._supremizer_cache: 
+        if "RAM" in self.cache_config and cache_key in self._supremizer_cache: 
             log(PROGRESS, "Loading supremizer from cache")
             assign(self._supremizer, self._supremizer_cache[cache_key])
-        elif self.import_supremizer(self.folder["cache"], cache_file):
+        elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file):
             log(PROGRESS, "Loading supremizer from file")
-            self._supremizer_cache[cache_key] = copy(self._supremizer)
+            if "RAM" in self.cache_config:
+                self._supremizer_cache[cache_key] = copy(self._supremizer)
         else: # No precomputed supremizer available. Truth supremizer solve is performed.
             log(PROGRESS, "Solving supremizer problem")
             self._solve_supremizer(solution)
-            self._supremizer_cache[cache_key] = copy(self._supremizer)
-            self.export_supremizer(self.folder["cache"], cache_file)
+            if "RAM" in self.cache_config:
+                self._supremizer_cache[cache_key] = copy(self._supremizer)
+            self.export_supremizer(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
         return self._supremizer
     
     def _solve_supremizer(self, solution):

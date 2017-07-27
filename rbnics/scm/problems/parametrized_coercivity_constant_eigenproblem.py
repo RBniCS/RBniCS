@@ -55,6 +55,7 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         self._eigenvector = Function(truth_problem.V)
         self._eigenvector_cache = dict()
         self.folder["cache"] = folder_prefix + "/" + "cache"
+        self.cache_config = config.get("problems", "cache")
     
     def init(self):
         # Store the symmetric part of the required term
@@ -80,20 +81,22 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
                 ==
             (cache_key in self._eigenvector_cache)
         )
-        if cache_key in self._eigenvalue_cache: 
+        if "RAM" in self.cache_config and cache_key in self._eigenvalue_cache: 
             log(PROGRESS, "Loading coercivity constant from cache")
             self._eigenvalue = self._eigenvalue_cache[cache_key]
             assign(self._eigenvector, self._eigenvector_cache[cache_key])
-        elif self.import_solution(self.folder["cache"], cache_file):
+        elif "Disk" in self.cache_config and self.import_solution(self.folder["cache"], cache_file):
             log(PROGRESS, "Loading coercivity constant from file")
-            self._eigenvalue_cache[cache_key] = self._eigenvalue
-            self._eigenvector_cache[cache_key] = copy(self._eigenvector)
+            if "RAM" in self.cache_config:
+                self._eigenvalue_cache[cache_key] = self._eigenvalue
+                self._eigenvector_cache[cache_key] = copy(self._eigenvector)
         else: # No precomputed solution available. Truth solve is performed.
             log(PROGRESS, "Solving coercivity constant eigenproblem")
             self._solve()
-            self._eigenvalue_cache[cache_key] = self._eigenvalue
-            self._eigenvector_cache[cache_key] = copy(self._eigenvector)
-            self.export_solution(self.folder["cache"], cache_file)
+            if "RAM" in self.cache_config:
+                self._eigenvalue_cache[cache_key] = self._eigenvalue
+                self._eigenvector_cache[cache_key] = copy(self._eigenvector)
+            self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
         return (self._eigenvalue, self._eigenvector)
         
     def _solve(self):

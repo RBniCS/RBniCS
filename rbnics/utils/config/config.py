@@ -32,8 +32,17 @@ def init_config(config):
     config.set("backends", "online backend", "numpy")
     config.set("backends", "required backends", []) # will be filled in automatically
 
+    config.add_section("EIM")
+    config.set("EIM", "cache", ["Disk", "RAM"])
+    
     config.add_section("problems")
-    config.set("problems", "cache", ["File", "RAM"])
+    config.set("problems", "cache", ["Disk", "RAM"])
+    
+    config.add_section("reduced problems")
+    config.set("reduced problems", "cache", ["RAM"])
+    
+    config.add_section("SCM")
+    config.set("SCM", "cache", ["Disk", "RAM"])
 
 def read_config(config):
     """
@@ -57,7 +66,14 @@ def read_config(config):
     config.read(config_files_list)
     
     # Convert list of string options
+    _convert_list_str_options(config, "EIM", "cache")
+    assert set(config.get("EIM", "cache")).issubset(["Disk", "RAM"])
     _convert_list_str_options(config, "problems", "cache")
+    assert set(config.get("problems", "cache")).issubset(["Disk", "RAM"])
+    _convert_list_str_options(config, "reduced problems", "cache")
+    assert set(config.get("reduced problems", "cache")).issubset(["RAM"])
+    _convert_list_str_options(config, "SCM", "cache")
+    assert set(config.get("SCM", "cache")).issubset(["Disk", "RAM"])
     
     # Fill in ("backends", "required backends")
     required_backends = set()

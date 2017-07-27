@@ -226,18 +226,19 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     ==
                 (cache_key in self._solution_dot_over_time_cache)
             )
-            if cache_key in self._solution_cache:
+            if "RAM" in self.cache_config and cache_key in self._solution_cache:
                 log(PROGRESS, "Loading truth solution from cache")
                 assign(self._solution, self._solution_cache[cache_key])
                 assign(self._solution_dot, self._solution_dot_cache[cache_key])
                 assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
                 assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
-            elif self.import_solution(self.folder["cache"], cache_file):
+            elif "Disk" in self.cache_config and self.import_solution(self.folder["cache"], cache_file):
                 log(PROGRESS, "Loading truth solution from file")
-                self._solution_cache[cache_key] = copy(self._solution)
-                self._solution_dot_cache[cache_key] = copy(self._solution_dot)
-                self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
-                self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
+                if "RAM" in self.cache_config:
+                    self._solution_cache[cache_key] = copy(self._solution)
+                    self._solution_dot_cache[cache_key] = copy(self._solution_dot)
+                    self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
+                    self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
             else:
                 log(PROGRESS, "Solving truth problem")
                 assert not hasattr(self, "_is_solving")
@@ -246,11 +247,12 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assign(self._solution_dot, Function(self.V))
                 self._solve(**kwargs)
                 delattr(self, "_is_solving")
-                self._solution_cache[cache_key] = copy(self._solution)
-                self._solution_dot_cache[cache_key] = copy(self._solution_dot)
-                self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
-                self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
-                self.export_solution(self.folder["cache"], cache_file)
+                if "RAM" in self.cache_config:
+                    self._solution_cache[cache_key] = copy(self._solution)
+                    self._solution_dot_cache[cache_key] = copy(self._solution_dot)
+                    self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
+                    self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
+                self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
             return self._solution_over_time
             
         class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
@@ -309,15 +311,16 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     ==
                 (cache_key in self._output_over_time_cache)
             )
-            if cache_key in self._output_cache:
+            if "RAM" in self.cache_config and cache_key in self._output_cache:
                 log(PROGRESS, "Loading truth output from cache")
                 self._output = self._output_cache[cache_key]
                 self._output_over_time = self._output_over_time_cache[cache_key]
             else: # No precomputed output available. Truth output is performed.
                 log(PROGRESS, "Computing truth output")
                 self._compute_output()
-                self._output_cache[cache_key] = self._output
-                self._output_over_time_cache[cache_key] = self._output_over_time
+                if "RAM" in self.cache_config:
+                    self._output_cache[cache_key] = self._output
+                    self._output_over_time_cache[cache_key] = self._output_over_time
             return self._output_over_time
             
         ## Perform a truth evaluation of the output
