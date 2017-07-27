@@ -19,14 +19,19 @@
 from rbnics.backends import assign
 from rbnics.problems.base.linear_reduced_problem import LinearReducedProblem
 from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 
 @RequiredBaseDecorators(LinearReducedProblem, TimeDependentReducedProblem)
 def LinearTimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class LinearTimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        pass
+        @override
+        def __init__(self, truth_problem, **kwargs):
+            # Call the parent initialization
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
+            # Set the problem type in time stepping parameters
+            self._time_stepping_parameters["problem_type"] = "linear"
         
     # return value (a class) for the decorator
     return LinearTimeDependentReducedProblem_Class
