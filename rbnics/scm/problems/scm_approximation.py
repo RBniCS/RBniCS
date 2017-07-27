@@ -24,6 +24,7 @@ from numpy import isclose
 from rbnics.backends import export, import_, LinearProgramSolver, product, sum
 from rbnics.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from rbnics.problems.base import ParametrizedProblem
+from rbnics.utils.config import config
 from rbnics.utils.decorators import sync_setters, Extends, override
 from rbnics.utils.io import GreedySelectedParametersList
 from rbnics.utils.mpi import log, print, PROGRESS

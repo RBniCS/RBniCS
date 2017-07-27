@@ -24,8 +24,9 @@ from numpy import isclose
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, BasisFunctionsMatrix, copy, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
-from rbnics.utils.io import OnlineSizeDict
+from rbnics.utils.config import config
 from rbnics.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
+from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, print, PROGRESS
 
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.

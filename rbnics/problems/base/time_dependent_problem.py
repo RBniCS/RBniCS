@@ -18,6 +18,7 @@
 
 import types
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
+from rbnics.utils.config import config
 from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 from rbnics.utils.mpi import log, PROGRESS
 

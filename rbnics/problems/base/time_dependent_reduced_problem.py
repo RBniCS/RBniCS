@@ -19,6 +19,7 @@
 from math import sqrt
 from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
+from rbnics.utils.config import config
 from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators, sync_setters
 from rbnics.utils.mpi import log, PROGRESS
 
