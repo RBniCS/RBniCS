@@ -34,6 +34,7 @@ from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
 from rbnics.problems.elliptic_optimal_control import EllipticOptimalControlProblem
 from rbnics.problems.navier_stokes import NavierStokesProblem
 from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
+from rbnics.problems.nonlinear_parabolic import NonlinearParabolicProblem
 from rbnics.problems.parabolic_coercive import ParabolicCoerciveProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
@@ -54,6 +55,7 @@ __all__ += [
     'EllipticOptimalControlProblem',
     'NavierStokesProblem',
     'NonlinearEllipticProblem',
+    'NonlinearParabolicProblem',
     'ParabolicCoerciveProblem',
     'StokesProblem',
     'StokesOptimalControlProblem',
