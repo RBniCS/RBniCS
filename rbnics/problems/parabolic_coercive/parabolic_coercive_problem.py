@@ -34,8 +34,8 @@ class ParabolicCoerciveProblem(ParabolicCoerciveProblem_Base):
         ParabolicCoerciveProblem_Base.__init__(self, V, **kwargs)
         
         # Form names for parabolic problems
-        self.terms = ["m", "a", "f"]
-        self.terms_order = {"m": 2, "a": 2, "f": 1}
+        self.terms.append("m")
+        self.terms_order.update({"m": 2})
         
     class ProblemSolver(ParabolicCoerciveProblem_Base.ProblemSolver):
         def residual_eval(self, t, solution, solution_dot):
