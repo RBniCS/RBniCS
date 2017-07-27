@@ -24,6 +24,7 @@ from rbnics.backends.common.linear_program_solver import LinearProgramSolver
 from rbnics.backends.common.product import product
 from rbnics.backends.common.separated_parametrized_form import SeparatedParametrizedForm
 from rbnics.backends.common.sum import sum
+from rbnics.backends.common.symbolic_parameters import SymbolicParameters
 from rbnics.backends.common.time_quadrature import TimeQuadrature
 
 __all__ = [
@@ -35,5 +36,6 @@ __all__ = [
     'product',
     'SeparatedParametrizedForm',
     'sum',
+    'SymbolicParameters',
     'TimeQuadrature'
 ]
