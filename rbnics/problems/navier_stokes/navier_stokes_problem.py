@@ -49,7 +49,6 @@ class NavierStokesProblem(NavierStokesProblem_Base):
         
     class ProblemSolver(NavierStokesProblem_Base.ProblemSolver):
         def residual_eval(self, solution):
-            self.store_solution(solution)
             problem = self.problem
             assembled_operator = dict()
             for term in ("a", "b", "bt", "c", "f", "g"):
@@ -61,7 +60,6 @@ class NavierStokesProblem(NavierStokesProblem_Base):
             )
             
         def jacobian_eval(self, solution):
-            self.store_solution(solution)
             problem = self.problem
             assembled_operator = dict()
             for term in ("da", "db", "dbt", "dc"):

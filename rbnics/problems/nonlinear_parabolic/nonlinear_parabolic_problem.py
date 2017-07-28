@@ -39,8 +39,6 @@ class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
         
     class ProblemSolver(NonlinearParabolicProblem_Base.ProblemSolver):
         def residual_eval(self, t, solution, solution_dot):
-            self.store_solution(solution)
-            self.store_solution_dot(solution_dot)
             problem = self.problem
             problem.set_time(t)
             assembled_operator = dict()
@@ -54,8 +52,6 @@ class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
             )
             
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
-            self.store_solution(solution)
-            self.store_solution_dot(solution_dot)
             problem = self.problem
             problem.set_time(t)
             assembled_operator = dict()

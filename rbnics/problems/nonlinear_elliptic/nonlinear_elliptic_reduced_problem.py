@@ -32,7 +32,6 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
         
         class ProblemSolver(NonlinearEllipticReducedProblem_Base.ProblemSolver):
             def residual_eval(self, solution):
-                self.store_solution(solution)
                 problem = self.problem
                 N = self.N
                 assembled_operator = dict()
@@ -41,7 +40,6 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                 return assembled_operator["a"] - assembled_operator["f"]
                 
             def jacobian_eval(self, solution):
-                self.store_solution(solution)
                 problem = self.problem
                 N = self.N
                 return sum(product(problem.compute_theta("da"), problem.operator["da"][:N, :N]))

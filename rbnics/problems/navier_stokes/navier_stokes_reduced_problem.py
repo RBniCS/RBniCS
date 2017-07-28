@@ -32,7 +32,6 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
         
         class ProblemSolver(NavierStokesReducedProblem_Base.ProblemSolver):
             def residual_eval(self, solution):
-                self.store_solution(solution)
                 problem = self.problem
                 N = self.N
                 assembled_operator = dict()
@@ -51,7 +50,6 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                 )
                 
             def jacobian_eval(self, solution):
-                self.store_solution(solution)
                 problem = self.problem
                 N = self.N
                 assembled_operator = dict()

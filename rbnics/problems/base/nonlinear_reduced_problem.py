@@ -35,10 +35,6 @@ def NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
             self._nonlinear_solver_parameters = dict()
         
         class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver, NonlinearProblemWrapper):
-            # Store solution while solving the nonlinear problem
-            def store_solution(self, solution):
-                assign(self.problem._solution, solution)
-                
             def solve(self):
                 problem = self.problem
                 solver = NonlinearSolver(self, problem._solution)

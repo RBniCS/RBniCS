@@ -32,8 +32,6 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
             
         class ProblemSolver(NonlinearParabolicReducedProblem_Base.ProblemSolver):
             def residual_eval(self, t, solution, solution_dot):
-                self.store_solution(solution)
-                self.store_solution_dot(solution_dot)
                 problem = self.problem
                 N = self.N
                 problem.set_time(t)
@@ -48,8 +46,6 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
                 )
                 
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
-                self.store_solution(solution)
-                self.store_solution_dot(solution_dot)
                 problem = self.problem
                 N = self.N
                 problem.set_time(t)

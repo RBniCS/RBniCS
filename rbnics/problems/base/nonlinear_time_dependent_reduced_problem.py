@@ -32,11 +32,6 @@ def NonlinearTimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Set the problem type in time stepping parameters
             self._time_stepping_parameters["problem_type"] = "nonlinear"
-            
-        class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver):
-            # Store solution dot while solving the nonlinear problem
-            def store_solution_dot(self, solution_dot):
-                assign(self.problem._solution_dot, solution_dot)
         
     # return value (a class) for the decorator
     return NonlinearTimeDependentReducedProblem_Class
