@@ -34,13 +34,9 @@ bottom_subdomain = Rectangle(Point(pre_step_length, 0.), Point(pre_step_length +
 domain.set_subdomain(1, top_subdomain)
 domain.set_subdomain(2, bottom_subdomain)
 mesh = generate_mesh(domain, 50)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Inlet(SubDomain):
@@ -70,10 +66,11 @@ bottom.mark(boundaries, bottom_ID)
 top = Top()
 top_ID = 2
 top.mark(boundaries, top_ID)
-plot(boundaries)
-interactive()
 
 # Save to xml file
 File("backward_facing_step.xml") << mesh
 File("backward_facing_step_physical_region.xml") << subdomains
 File("backward_facing_step_facet_region.xml") << boundaries
+XDMFFile("backward_facing_step.xdmf").write(mesh)
+XDMFFile("backward_facing_step_physical_region.xdmf").write(subdomains)
+XDMFFile("backward_facing_step_facet_region.xdmf").write(boundaries)

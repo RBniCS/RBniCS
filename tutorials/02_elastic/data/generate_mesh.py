@@ -25,13 +25,9 @@ for i in range(3):
     for j in range(3):
         domain.set_subdomain(i + j*3 + 1, Rectangle(Point(i/3., j/3.), Point((i+1)/3., (j+1)/3.)))
 mesh = generate_mesh(domain, 32)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Left(SubDomain):
@@ -77,10 +73,11 @@ for i in range(3):
     right.mark(boundaries, i+2)
     bottom = Bottom(i/3., (i+1)/3.)
     bottom.mark(boundaries, 1)
-plot(boundaries)
-interactive()
 
 # Save
 File("elastic.xml") << mesh
 File("elastic_physical_region.xml") << subdomains
 File("elastic_facet_region.xml") << boundaries
+XDMFFile("elastic.xdmf").write(mesh)
+XDMFFile("elastic_physical_region.xdmf").write(subdomains)
+XDMFFile("elastic_facet_region.xdmf").write(boundaries)

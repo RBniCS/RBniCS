@@ -35,13 +35,9 @@ domain = outer_rectangle - inner_rectangle
 for i, s in subdomain.iteritems():
     domain.set_subdomain(i, subdomain[i])
 mesh = generate_mesh(domain, 46)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class LeftInner(SubDomain):
@@ -94,10 +90,11 @@ topOuter = TopOuter()
 topOuter.mark(boundaries, 7)
 rightOuter = RightOuter()
 rightOuter.mark(boundaries, 8)
-plot(boundaries)
-interactive()
 
 # Save
 File("hole.xml") << mesh
 File("hole_physical_region.xml") << subdomains
 File("hole_facet_region.xml") << boundaries
+XDMFFile("hole.xdmf").write(mesh)
+XDMFFile("hole_physical_region.xdmf").write(subdomains)
+XDMFFile("hole_facet_region.xdmf").write(boundaries)

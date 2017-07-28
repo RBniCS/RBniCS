@@ -26,13 +26,9 @@ domain = rectangle
 domain.set_subdomain(1, circle)
 domain.set_subdomain(2, rectangle - circle)
 mesh = generate_mesh(domain, 15)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Left(SubDomain):
@@ -61,10 +57,11 @@ right = Right()
 right.mark(boundaries, 2)
 top = Top()
 top.mark(boundaries, 3)
-plot(boundaries)
-interactive()
 
 # Save
 File("tblock.xml") << mesh
 File("tblock_physical_region.xml") << subdomains
 File("tblock_facet_region.xml") << boundaries
+XDMFFile("tblock.xdmf").write(mesh)
+XDMFFile("tblock_physical_region.xdmf").write(subdomains)
+XDMFFile("tblock_facet_region.xdmf").write(boundaries)

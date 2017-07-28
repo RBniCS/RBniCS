@@ -37,13 +37,9 @@ domain.set_subdomain(2, subdomain_2)
 domain.set_subdomain(3, subdomain_3)
 domain.set_subdomain(4, subdomain_4)
 mesh = generate_mesh(domain, 50)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Inlet(SubDomain):
@@ -74,10 +70,11 @@ outlet.mark(boundaries, outlet_ID)
 walls = Walls()
 walls_ID = 3
 walls.mark(boundaries, walls_ID)
-plot(boundaries)
-interactive()
 
 # Save to xml file
 File("t_bypass.xml") << mesh
 File("t_bypass_physical_region.xml") << subdomains
 File("t_bypass_facet_region.xml") << boundaries
+XDMFFile("t_bypass.xdmf").write(mesh)
+XDMFFile("t_bypass_physical_region.xdmf").write(subdomains)
+XDMFFile("t_bypass_facet_region.xdmf").write(boundaries)

@@ -22,14 +22,10 @@ from mshr import *
 # Create mesh
 domain = Rectangle(Point(0., 0.), Point(1., 1.))
 mesh = generate_mesh(domain, 30)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2)
 subdomains.set_all(0)
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Boundary(SubDomain):
@@ -40,10 +36,11 @@ boundaries = FacetFunction("size_t", mesh)
 boundaries.set_all(0)
 boundary = Boundary()
 boundary.mark(boundaries, 1)
-plot(boundaries)
-interactive()
 
 # Save
 File("square.xml") << mesh
 File("square_physical_region.xml") << subdomains
 File("square_facet_region.xml") << boundaries
+XDMFFile("square.xdmf").write(mesh)
+XDMFFile("square_physical_region.xdmf").write(subdomains)
+XDMFFile("square_facet_region.xdmf").write(boundaries)

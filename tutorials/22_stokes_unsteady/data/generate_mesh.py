@@ -26,14 +26,10 @@ subdomain2 = Rectangle(Point(0.5, 0.0), Point(1.0, 1.0))
 domain.set_subdomain(1, subdomain1) # add some fake subdomains to make sure that the mesh is split
 domain.set_subdomain(2, subdomain2) # at x[0] = 0.5, since we will pin the pressure there
 mesh = generate_mesh(domain, 27)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2)
 subdomains.set_all(1)
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Left(SubDomain):
@@ -62,10 +58,11 @@ left = Left()
 left.mark(boundaries, 2)
 right = Right()
 right.mark(boundaries, 2)
-plot(boundaries)
-interactive()
 
 # Save
 File("cavity.xml") << mesh
 File("cavity_physical_region.xml") << subdomains
 File("cavity_facet_region.xml") << boundaries
+XDMFFile("cavity.xdmf").write(mesh)
+XDMFFile("cavity_physical_region.xdmf").write(subdomains)
+XDMFFile("cavity_facet_region.xdmf").write(boundaries)

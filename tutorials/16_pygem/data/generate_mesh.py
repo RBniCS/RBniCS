@@ -57,15 +57,9 @@ for refinements in range(1):
             cell_markers[cell] = True
     mesh = refine(mesh, cell_markers)
 
-# Plot mesh
-plot(mesh)
-interactive()
-
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2)
 subdomains.set_all(0)
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Left(SubDomain):
@@ -100,10 +94,11 @@ top = Top()
 top.mark(boundaries, 4)
 right = Right()
 right.mark(boundaries, 5)
-plot(boundaries)
-interactive()
 
 # Save
 File("naca0012.xml") << mesh
 File("naca0012_physical_region.xml") << subdomains
 File("naca0012_facet_region.xml") << boundaries
+XDMFFile("naca0012.xdmf").write(mesh)
+XDMFFile("naca0012_physical_region.xdmf").write(subdomains)
+XDMFFile("naca0012_facet_region.xdmf").write(boundaries)

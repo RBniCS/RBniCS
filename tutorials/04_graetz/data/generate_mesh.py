@@ -28,13 +28,9 @@ domain = rectangle
 for i, s in subdomain.iteritems():
     domain.set_subdomain(i, subdomain[i])
 mesh = generate_mesh(domain, 64)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Left(SubDomain):
@@ -83,10 +79,11 @@ topLeft = Top(0., 1.)
 topLeft.mark(boundaries, 7)
 left = Left()
 left.mark(boundaries, 8)
-plot(boundaries)
-interactive()
 
 # Save
 File("graetz.xml") << mesh
 File("graetz_physical_region.xml") << subdomains
 File("graetz_facet_region.xml") << boundaries
+XDMFFile("graetz.xdmf").write(mesh)
+XDMFFile("graetz_physical_region.xdmf").write(subdomains)
+XDMFFile("graetz_facet_region.xdmf").write(boundaries)

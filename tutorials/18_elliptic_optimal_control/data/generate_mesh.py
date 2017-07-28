@@ -33,13 +33,9 @@ def generate_mesh2():
     for i, s in subdomain.iteritems():
         domain.set_subdomain(i, subdomain[i])
     mesh = generate_mesh(domain, 64)
-    plot(mesh)
-    interactive()
 
     # Create subdomains
     subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
-    plot(subdomains)
-    interactive()
 
     # Create boundaries
     class Left(SubDomain):
@@ -84,13 +80,14 @@ def generate_mesh2():
     top2.mark(boundaries, 2)
     right = Right()
     right.mark(boundaries, 3)
-    plot(boundaries)
-    interactive()
 
     # Save
     File("mesh2.xml") << mesh
     File("mesh2_physical_region.xml") << subdomains
     File("mesh2_facet_region.xml") << boundaries
+    XDMFFile("mesh2.xdmf").write(mesh)
+    XDMFFile("mesh2_physical_region.xdmf").write(subdomains)
+    XDMFFile("mesh2_facet_region.xdmf").write(boundaries)
     
 generate_mesh1()
 generate_mesh2()

@@ -31,14 +31,10 @@ else:
 rectangle = Rectangle(Point(-1., -1.), Point(1., 1.))
 domain = rectangle
 mesh = generate_mesh(domain, n)
-plot(mesh)
-interactive()
 
 # Create subdomains
 subdomains = CellFunction("size_t", mesh)
 subdomains.set_all(0)
-plot(subdomains)
-interactive()
 
 # Create boundaries
 class Left(SubDomain):
@@ -67,10 +63,11 @@ right = Right()
 right.mark(boundaries, 2)
 top = Top()
 top.mark(boundaries, 3)
-plot(boundaries)
-interactive()
 
 # Save
 File(filename + ".xml") << mesh
 File(filename + "_physical_region.xml") << subdomains
 File(filename + "_facet_region.xml") << boundaries
+XDMFFile(filename + ".xdmf").write(mesh)
+XDMFFile(filename + "_physical_region.xdmf").write(subdomains)
+XDMFFile(filename + "_facet_region.xdmf").write(boundaries)
