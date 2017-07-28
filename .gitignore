@@ -1,3 +1,8 @@
 *~
 *.bak
 *.pyc
+*.pvd
+*.vtu
+*.pvtu
+*.xdmf
+*.h5
