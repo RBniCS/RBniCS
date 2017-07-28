@@ -60,6 +60,7 @@ def arithmetic_with_form(operator):
     original_operator = getattr(GenericMatrix, operator)
     def custom_operator(self, other):
         if isinstance(other, Form):
+            assert len(other.arguments()) is 2
             other = assemble(other, keep_diagonal=True)
         return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)

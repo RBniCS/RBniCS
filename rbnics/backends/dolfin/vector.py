@@ -49,7 +49,8 @@ def arithmetic_with_form(operator):
     original_operator = getattr(GenericVector, operator)
     def custom_operator(self, other):
         if isinstance(other, Form):
-            other = assemble(other, keep_diagonal=True)
+            assert len(other.arguments()) is 1
+            other = assemble(other)
         return original_operator(self, other)
     setattr(GenericVector, operator, custom_operator)
 
