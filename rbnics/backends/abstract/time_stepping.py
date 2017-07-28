@@ -23,7 +23,7 @@ from rbnics.utils.decorators import AbstractBackend, abstractmethod
 class TimeStepping(object):
     __metaclass__ = ABCMeta
     
-    def __init__(self, problem_wrapper, solution, solution_dot=None):
+    def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):
         pass
         
     @abstractmethod

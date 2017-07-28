@@ -293,7 +293,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     
             def solve(self):
                 problem = self.problem
-                solver = TimeStepping(self, problem._solution)
+                solver = TimeStepping(self, problem._solution, problem._solution_dot)
                 solver.set_parameters(problem._time_stepping_parameters)
                 (_, problem._solution_over_time, problem._solution_dot_over_time) = solver.solve()
                 assign(problem._solution, problem._solution_over_time[-1])

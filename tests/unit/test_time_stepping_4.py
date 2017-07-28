@@ -67,6 +67,7 @@ du = TrialFunction(V)
 du_dot_dot = TrialFunction(V)
 v = TestFunction(V)
 u = Function(V)
+u_dot = Function(V)
 u_dot_dot = Function(V)
 g = Expression("-1./2.*sin(t+x[0])*(3*cos(2*(t+x[0]))+1)", t=0., element=V.ufl_element())
 r_u = inner((1+u**2)*grad(u), grad(v))*dx
@@ -85,12 +86,9 @@ class SparseProblemWrapper(TimeDependentProblem2Wrapper):
     # Residual and jacobian functions
     def residual_eval(self, t, solution, solution_dot, solution_dot_dot):
         g.t = t
-        return replace(r, {u: solution, u_dot_dot: solution_dot_dot})
+        return r
     def jacobian_eval(self, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient):
-        return (
-            Constant(solution_dot_dot_coefficient)*replace(j_u_dot_dot, {u_dot_dot: solution_dot_dot}) +
-            replace(j_u, {u: solution})
-        )
+        return Constant(solution_dot_dot_coefficient)*j_u_dot_dot + j_u
         
     # Define boundary condition
     def bc_eval(self, t):
@@ -106,14 +104,15 @@ class SparseProblemWrapper(TimeDependentProblem2Wrapper):
         return (sparse_solution, sparse_solution_dot)
         
     # Define custom monitor to plot the solution
-    def monitor(self, t, solution):
-        plot(solution, key="u", title="t = " + str(t))
+    def monitor(self, t, solution, solution_dot, solution_dot_dot):
+        plot(solution, key="u", title="u at t = " + str(t))
+        plot(solution_dot, key="u_dot", title="u_dot at t = " + str(t))
+        plot(solution_dot_dot, key="u_dot_dot", title="u_dot_dot at t = " + str(t))
 
 # Solve the time dependent problem
 sparse_problem_wrapper = SparseProblemWrapper()
-sparse_solution = Function(V)
-sparse_solution_dot = Function(V)
-sparse_solver = SparseTimeStepping(sparse_problem_wrapper, sparse_solution, sparse_solution_dot)
+(sparse_solution, sparse_solution_dot, sparse_solution_dot_dot) = (u, u_dot, u_dot_dot)
+sparse_solver = SparseTimeStepping(sparse_problem_wrapper, sparse_solution, sparse_solution_dot, sparse_solution_dot_dot)
 sparse_solver.set_parameters({
     "initial_time": 0.0,
     "time_step_size": dt,
@@ -142,12 +141,12 @@ sparse_error.vector().add_local(- exact_solution.vector().array())
 sparse_error.vector().apply("")
 sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
 sparse_error_dot = Function(V)
-sparse_error_dot.vector().add_local(+ all_sparse_solutions_dot[-1].vector().array())
+sparse_error_dot.vector().add_local(+ sparse_solution_dot.vector().array())
 sparse_error_dot.vector().add_local(- exact_solution_dot.vector().array())
 sparse_error_dot.vector().apply("")
 sparse_error_dot_norm = sparse_error_dot.vector().inner(X*sparse_error_dot.vector())
 sparse_error_dot_dot = Function(V)
-sparse_error_dot_dot.vector().add_local(+ all_sparse_solutions_dot_dot[-1].vector().array())
+sparse_error_dot_dot.vector().add_local(+ sparse_solution_dot_dot.vector().array())
 sparse_error_dot_dot.vector().add_local(- exact_solution_dot_dot.vector().array())
 sparse_error_dot_dot.vector().apply("")
 sparse_error_dot_dot_norm = sparse_error_dot_dot.vector().inner(X*sparse_error_dot_dot.vector())

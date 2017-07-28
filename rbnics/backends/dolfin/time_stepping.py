@@ -20,7 +20,7 @@ from __future__ import print_function
 from numpy import isclose
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import as_backend_type, assemble, Function as PETScFunction, GenericMatrix, GenericVector, PETScMatrix, PETScVector
+from dolfin import as_backend_type, assemble, GenericMatrix, GenericVector, PETScMatrix, PETScVector
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
 from rbnics.backends.dolfin.assign import assign
 from rbnics.backends.dolfin.function import Function
@@ -28,34 +28,34 @@ from rbnics.utils.mpi import print
 from rbnics.utils.decorators import BackendFor, Extends, override
 
 @Extends(AbstractTimeStepping)
-@BackendFor("dolfin", inputs=(TimeDependentProblemWrapper, Function.Type(), (Function.Type(), None)))
+@BackendFor("dolfin", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
     @override
-    def __init__(self, problem_wrapper, solution, solution_dot=None):
+    def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):
         assert problem_wrapper.time_order() in (1, 2)
         if problem_wrapper.time_order() == 1:
-            assert solution_dot is None
+            assert solution_dot_dot is None
             ic = problem_wrapper.ic_eval()
             if ic is not None:
                 assign(solution, ic)
-            self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
-            self.solver  = _PETScTSIntegrator(self.problem, self.problem.solution.vector())
+            self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
+            self.solver  = _PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy()) # create copies to avoid internal storage overwriting
         elif problem_wrapper.time_order() == 2:
-            if solution_dot is None:
-                solution_dot = Function(solution.function_space()) # equal to zero
+            assert solution_dot_dot is not None
             ic_eval_output = problem_wrapper.ic_eval()
             assert isinstance(ic_eval_output, tuple) or ic_eval_output is None
             if ic_eval_output is not None:
                 assert len(ic_eval_output) == 2
                 assign(solution, ic_eval_output[0])
                 assign(solution_dot, ic_eval_output[1])
-            self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
-            self.solver  = _PETScTSIntegrator(self.problem, self.problem.solution.vector(), self.problem.solution_dot.vector())
+            self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
+            self.solver  = _PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy(), self.problem.solution_dot_dot.vector().copy()) # create copies to avoid internal storage overwriting
         else:
             raise AssertionError("Invalid time order in TimeStepping.__init__().")
         # Store solution input
         self.solution = solution
         self.solution_dot = solution_dot
+        self.solution_dot_dot = solution_dot_dot
         # Store time order input
         self.time_order = problem_wrapper.time_order()
             
@@ -73,11 +73,14 @@ class TimeStepping(AbstractTimeStepping):
             raise AssertionError("Invalid time order in TimeStepping.solve().")
         self.solution.vector().zero()
         self.solution.vector().add_local(all_solutions[-1].vector().array())
-        self.solution.vector().apply("")
-        if self.solution_dot is not None:
-            self.solution_dot.vector().zero()
-            self.solution_dot.vector().add_local(all_solutions_dot[-1].vector().array())
-            self.solution_dot.vector().apply("")
+        self.solution.vector().apply("add")
+        self.solution_dot.vector().zero()
+        self.solution_dot.vector().add_local(all_solutions_dot[-1].vector().array())
+        self.solution_dot.vector().apply("add")
+        if self.solution_dot_dot is not None:
+            self.solution_dot_dot.vector().zero()
+            self.solution_dot_dot.vector().add_local(all_solutions_dot_dot[-1].vector().array())
+            self.solution_dot_dot.vector().apply("add")
         if self.time_order == 1:
             return (all_solutions_time, all_solutions, all_solutions_dot)
         elif self.time_order == 2:
@@ -86,10 +89,11 @@ class TimeStepping(AbstractTimeStepping):
             raise AssertionError("Invalid time order in TimeStepping.solve().")
         
 class _TimeDependentProblem_Base(object):
-    def __init__(self, residual_eval, solution, bc_eval, jacobian_eval):
+    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval):
         # Store input arguments
         self.residual_eval = residual_eval
         self.solution = solution
+        self.solution_dot = solution_dot
         self.bc_eval = bc_eval
         self.jacobian_eval = jacobian_eval
         # Storage for derivatives
@@ -151,21 +155,27 @@ class _TimeDependentProblem_Base(object):
                     output_solution_dot.vector().zero()
                 else:
                     output_solution_dot.vector().add_local(- self.all_solutions[-2].vector().array())
-                    output_solution_dot.vector().apply("")
+                    output_solution_dot.vector().apply("add")
                     output_solution_dot.vector()[:] *= 1./self.output_dt
                 self.all_solutions_dot.append(output_solution_dot)
+                if self.output_monitor is not None:
+                    self.output_monitor(self.output_t, output_solution, output_solution_dot)
             else:
                 # ts.interpolate is not yet available for TSALPHA2, assume that no adaptation was carried out
                 (output_solution_petsc, output_solution_dot_petsc) = ts.getSolution2()
                 output_solution_petsc.assemble()
                 output_solution_petsc.ghostUpdate()
-                output_solution = PETScFunction(self.V, PETScVector(output_solution_petsc))
-                output_solution = output_solution.copy(deepcopy=True)
+                output_solution = self.solution.copy(deepcopy=True)
+                output_solution.vector().zero()
+                output_solution.vector().add_local(output_solution_petsc.getArray())
+                output_solution.vector().apply("add")
                 self.all_solutions.append(output_solution)
                 output_solution_dot_petsc.assemble()
                 output_solution_dot_petsc.ghostUpdate()
-                output_solution_dot = PETScFunction(self.V, PETScVector(output_solution_dot_petsc))
-                output_solution_dot = output_solution_dot.copy(deepcopy=True)
+                output_solution_dot = self.solution_dot.copy(deepcopy=True)
+                output_solution_dot.vector().zero()
+                output_solution_dot.vector().add_local(output_solution_dot_petsc.getArray())
+                output_solution_dot.vector().apply("add")
                 self.all_solutions_dot.append(output_solution_dot)
                 # Compute time derivative by a simple finite difference
                 output_solution_dot_dot = self.all_solutions_dot[-1].copy(deepcopy=True)
@@ -173,11 +183,11 @@ class _TimeDependentProblem_Base(object):
                     output_solution_dot_dot.vector().zero()
                 else:
                     output_solution_dot_dot.vector().add_local(- self.all_solutions_dot[-2].vector().array())
-                    output_solution_dot_dot.vector().apply("")
+                    output_solution_dot_dot.vector().apply("add")
                     output_solution_dot_dot.vector()[:] *= 1./self.output_dt
                 self.all_solutions_dot_dot.append(output_solution_dot_dot)
-            if self.output_monitor is not None:
-                self.output_monitor(self.output_t, output_solution)
+                if self.output_monitor is not None:
+                    self.output_monitor(self.output_t, output_solution, output_solution_dot, output_solution_dot_dot)
             self.output_t_prev = self.output_t
             self.output_t += self.output_dt
             # Disable final timestep workaround
@@ -239,14 +249,23 @@ class _TimeDependentProblem_Base(object):
         else:
             raise AssertionError("Invalid type for bcs.")
         
+    def update_solution(self, solution):
+        solution.ghostUpdate()
+        self.solution.vector().zero()
+        self.solution.vector().add_local(solution.getArray())
+        self.solution.vector().apply("add")
+        
+    def update_solution_dot(self, solution_dot):
+        solution_dot.ghostUpdate()
+        self.solution_dot.vector().zero()
+        self.solution_dot.vector().add_local(solution_dot.getArray())
+        self.solution_dot.vector().apply("add")
         
 class _TimeDependentProblem1(_TimeDependentProblem_Base):
-    def __init__(self, residual_eval, solution, bc_eval, jacobian_eval):
-        _TimeDependentProblem_Base.__init__(self, residual_eval, solution, bc_eval, jacobian_eval)
+    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval):
+        _TimeDependentProblem_Base.__init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval)
         # Auxiliary storage for time order
         self.time_order = 1
-        # Additional storage for derivatives
-        self.solution_dot = Function(self.V)
         # Make sure that residual vector and jacobian matrix are properly initialized
         self.residual_vector_assemble(0., self.solution, self.solution_dot, overwrite=True)
         self.jacobian_matrix_assemble(0., self.solution, self.solution_dot, 0., overwrite=True)
@@ -275,7 +294,8 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
            (from PETSc/src/ts/interface/ts.c)
         """
         # 1. Store solution and solution_dot in dolfin data structures
-        self.update_solution(solution, solution_dot)
+        self.update_solution(solution)
+        self.update_solution_dot(solution_dot)
         # 2. Assemble the residual
         self.residual_vector = PETScVector(residual)
         self.residual_vector_assemble(t, self.solution, self.solution_dot)
@@ -328,8 +348,8 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
            
            (from PETSc/src/ts/interface/ts.c)
         """
-        # 1. Store solution and solution_dot in dolfin data structures
-        self.update_solution(solution, solution_dot)
+        # 1. There is no need to store solution and solution_dot in dolfin data structures, since this has
+        #    already been done by the residual
         # 2. Assemble the jacobian
         assert jacobian == preconditioner
         self.jacobian_matrix = PETScMatrix(jacobian)
@@ -342,18 +362,11 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_coefficient)
         self._jacobian_matrix_assemble(jacobian_form_or_matrix, overwrite)
         
-    def update_solution(self, solution, solution_dot):
-        solution.ghostUpdate()
-        solution_dot.ghostUpdate()
-        self.solution = PETScFunction(self.V, PETScVector(solution))
-        self.solution_dot = PETScFunction(self.V, PETScVector(solution_dot))
-        
 class _TimeDependentProblem2(_TimeDependentProblem_Base):
-    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval):
-        _TimeDependentProblem_Base.__init__(self, residual_eval, solution, bc_eval, jacobian_eval)
+    def __init__(self, residual_eval, solution, solution_dot, solution_dot_dot, bc_eval, jacobian_eval):
+        _TimeDependentProblem_Base.__init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval)
         # Additional storage for derivatives
-        self.solution_dot = solution_dot
-        self.solution_dot_dot = Function(self.V)
+        self.solution_dot_dot = solution_dot_dot
         # Auxiliary storage for time order
         self.time_order = 2
         # Make sure that residual vector and jacobian matrix are properly initialized
@@ -387,7 +400,9 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
            (from PETSc/src/ts/interface/ts.c)
         """
         # 1. Store solution and solution_dot in dolfin data structures
-        self.update_solution(solution, solution_dot, solution_dot_dot)
+        self.update_solution(solution)
+        self.update_solution_dot(solution_dot)
+        self.update_solution_dot_dot(solution_dot_dot)
         # 2. Assemble the residual
         self.residual_vector = PETScVector(residual)
         self.residual_vector_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot)
@@ -436,8 +451,8 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
            
            (from PETSc/src/ts/interface/ts.c)
         """
-        # 1. Store solution and solution_dot in dolfin data structures
-        self.update_solution(solution, solution_dot, solution_dot_dot)
+        # 1. There is no need to store solution, solution_dot and solution_dot_dot in dolfin data structures, 
+        #    since this has already been done by the residual
         # 2. Assemble the jacobian
         assert jacobian == preconditioner
         self.jacobian_matrix = PETScMatrix(jacobian)
@@ -450,19 +465,18 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)
         self._jacobian_matrix_assemble(jacobian_form_or_matrix, overwrite)
             
-    def update_solution(self, solution, solution_dot, solution_dot_dot):
-        solution.ghostUpdate()
-        solution_dot.ghostUpdate()
+    def update_solution_dot_dot(self, solution_dot_dot):
         solution_dot_dot.ghostUpdate()
-        self.solution = PETScFunction(self.V, PETScVector(solution))
-        self.solution_dot = PETScFunction(self.V, PETScVector(solution_dot))
-        self.solution_dot_dot = PETScFunction(self.V, PETScVector(solution_dot_dot))
+        self.solution_dot_dot.vector().zero()
+        self.solution_dot_dot.vector().add_local(solution_dot_dot.getArray())
+        self.solution_dot_dot.vector().apply("add")
             
 class _PETScTSIntegrator(object):
-    def __init__(self, problem, solution, solution_dot=None):
+    def __init__(self, problem, solution, solution_dot, solution_dot_dot=None):
         self.problem = problem
         self.solution = solution
         self.solution_dot = solution_dot
+        self.solution_dot_dot = solution_dot_dot
         # Create PETSc's TS object
         self.ts = PETSc.TS().create(self.solution.mpi_comm())
         # ... and associate residual and jacobian

@@ -82,12 +82,9 @@ class SparseProblemWrapper(TimeDependentProblem1Wrapper):
     # Residual and jacobian functions
     def residual_eval(self, t, solution, solution_dot):
         g.t = t
-        return replace(r, {u: solution, u_dot: solution_dot})
+        return r
     def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
-        return (
-            Constant(solution_dot_coefficient)*replace(j_u_dot, {u_dot: solution_dot}) +
-            replace(j_u, {u: solution})
-        )
+        return Constant(solution_dot_coefficient)*j_u_dot + j_u
         
     # Define boundary condition
     def bc_eval(self, t):
@@ -100,43 +97,45 @@ class SparseProblemWrapper(TimeDependentProblem1Wrapper):
         return project(exact_solution_expression, V)
         
     # Define custom monitor to plot the solution
-    def monitor(self, t, solution):
-        plot(solution, key="u", title="t = " + str(t))
+    def monitor(self, t, solution, solution_dot):
+        plot(solution, key="u", title="u at t = " + str(t))
+        plot(solution_dot, key="u_dot", title="u_dot at t = " + str(t))
 
-# Solve the time dependent problem
-sparse_problem_wrapper = SparseProblemWrapper()
-sparse_solution = Function(V)
-sparse_solver = SparseTimeStepping(sparse_problem_wrapper, sparse_solution)
-sparse_solver.set_parameters({
-    "initial_time": 0.0,
-    "time_step_size": dt,
-    "final_time": T,
-    "exact_final_time": "stepover",
-    "integrator_type": "bdf",
-    "problem_type": "linear",
-    "linear_solver": "mumps",
-    "monitor": sparse_problem_wrapper.monitor,
-    "report": True
-})
-all_sparse_solutions_time, all_sparse_solutions, all_sparse_solutions_dot = sparse_solver.solve()
-assert len(all_sparse_solutions_time) == int(T/dt + 1)
-assert len(all_sparse_solutions) == int(T/dt + 1)
-assert len(all_sparse_solutions_dot) == int(T/dt + 1)
+for integrator_type in ("beuler", "bdf"):
+    # Solve the time dependent problem
+    sparse_problem_wrapper = SparseProblemWrapper()
+    (sparse_solution, sparse_solution_dot) = (u, u_dot)
+    sparse_solver = SparseTimeStepping(sparse_problem_wrapper, sparse_solution, sparse_solution_dot)
+    sparse_solver.set_parameters({
+        "initial_time": 0.0,
+        "time_step_size": dt,
+        "final_time": T,
+        "exact_final_time": "stepover",
+        "integrator_type": integrator_type,
+        "problem_type": "linear",
+        "linear_solver": "mumps",
+        "monitor": sparse_problem_wrapper.monitor,
+        "report": True
+    })
+    all_sparse_solutions_time, all_sparse_solutions, all_sparse_solutions_dot = sparse_solver.solve()
+    assert len(all_sparse_solutions_time) == int(T/dt + 1)
+    assert len(all_sparse_solutions) == int(T/dt + 1)
+    assert len(all_sparse_solutions_dot) == int(T/dt + 1)
 
-# Compute the error
-sparse_error = Function(V)
-sparse_error.vector().add_local(+ sparse_solution.vector().array())
-sparse_error.vector().add_local(- exact_solution.vector().array())
-sparse_error.vector().apply("")
-sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-sparse_error_dot = Function(V)
-sparse_error_dot.vector().add_local(+ all_sparse_solutions_dot[-1].vector().array())
-sparse_error_dot.vector().add_local(- exact_solution_dot.vector().array())
-sparse_error_dot.vector().apply("")
-sparse_error_dot_norm = sparse_error_dot.vector().inner(X*sparse_error_dot.vector())
-print "SparseTimeStepping error:", sparse_error_norm, sparse_error_dot_norm
-assert isclose(sparse_error_norm, 0., atol=1.e-5)
-assert isclose(sparse_error_dot_norm, 0., atol=1.e-4)
+    # Compute the error
+    sparse_error = Function(V)
+    sparse_error.vector().add_local(+ sparse_solution.vector().array())
+    sparse_error.vector().add_local(- exact_solution.vector().array())
+    sparse_error.vector().apply("")
+    sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
+    sparse_error_dot = Function(V)
+    sparse_error_dot.vector().add_local(+ sparse_solution_dot.vector().array())
+    sparse_error_dot.vector().add_local(- exact_solution_dot.vector().array())
+    sparse_error_dot.vector().apply("")
+    sparse_error_dot_norm = sparse_error_dot.vector().inner(X*sparse_error_dot.vector())
+    print "SparseTimeStepping error (" + integrator_type + "):", sparse_error_norm, sparse_error_dot_norm
+    assert isclose(sparse_error_norm, 0., atol=1.e-4)
+    assert isclose(sparse_error_dot_norm, 0., atol=1.e-4)
 
 # ~~~ Dense case ~~~ #
 if mesh.mpi_comm().size == 1: # dense solver is not partitioned
@@ -187,9 +186,11 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
             return dense_solution
             
         # Define custom monitor to plot the solution
-        def monitor(self, t, solution):
+        def monitor(self, t, solution, solution_dot):
             self._solution_from_dense_to_sparse(solution, u)
-            plot(u, key="u", title="t = " + str(t))
+            self._solution_from_dense_to_sparse(solution_dot, u_dot)
+            plot(u, key="u", title="u at t = " + str(t))
+            plot(u_dot, key="u_dot", title="u_dot at t = " + str(t))
             
         def _solution_from_dense_to_sparse(self, solution, u):
             solution_array = asarray(solution.vector()).reshape(-1)
@@ -198,45 +199,47 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
             u.vector().add_local(solution_array)
             u.vector().apply("")
             solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-        
-    # Solve the time dependent problem
-    dense_problem_wrapper = DenseProblemWrapper()
-    dense_solution = DenseFunction(*sparse_solution.vector().array().shape)
-    dense_solver = DenseTimeStepping(dense_problem_wrapper, dense_solution)
-    dense_solver.set_parameters({
-        "initial_time": 0.0,
-        "time_step_size": dt,
-        "final_time": T,
-        "integrator_type": "ida",
-        "problem_type": "linear",
-        "monitor": dense_problem_wrapper.monitor,
-        "report": True
-    })
-    all_dense_solutions_time, all_dense_solutions, all_dense_solutions_dot = dense_solver.solve()
-    assert len(all_dense_solutions_time) == int(T/dt + 1)
-    assert len(all_dense_solutions) == int(T/dt + 1)
-    assert len(all_dense_solutions_dot) == int(T/dt + 1)
-    dense_solution_array = dense_solution.vector()
-    dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
-    dense_solution_dot_array = all_dense_solutions_dot[-1].vector()
-    dense_solution_dot_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = dense_solution_dot_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
     
-    # Compute the error
-    dense_error = DenseFunction(*exact_solution.vector().array().shape)
-    dense_error.vector()[:] = exact_solution.vector().array().reshape((-1, 1))
-    dense_error.vector()[:] -= dense_solution_array
-    dense_error_norm = dense_error.vector().T*(X.array()*dense_error.vector())
-    assert dense_error_norm.shape == (1, 1)
-    dense_error_norm = dense_error_norm[0, 0]
-    dense_error_dot = DenseFunction(*exact_solution_dot.vector().array().shape)
-    dense_error_dot.vector()[:] = exact_solution_dot.vector().array().reshape((-1, 1))
-    dense_error_dot.vector()[:] -= dense_solution_dot_array
-    dense_error_dot_norm = dense_error_dot.vector().T*(X.array()*dense_error_dot.vector())
-    assert dense_error_dot_norm.shape == (1, 1)
-    dense_error_dot_norm = dense_error_dot_norm[0, 0]
-    print "DenseTimeStepping error:", dense_error_norm, dense_error_dot_norm
-    assert isclose(dense_error_norm, 0., atol=1.e-5)
-    assert isclose(dense_error_dot_norm, 0., atol=1.e-4)
+    for integrator_type in ("beuler", "ida"):
+        # Solve the time dependent problem
+        dense_problem_wrapper = DenseProblemWrapper()
+        dense_shape = sparse_solution.vector().array().shape
+        (dense_solution, dense_solution_dot) = (DenseFunction(*dense_shape), DenseFunction(*dense_shape))
+        dense_solver = DenseTimeStepping(dense_problem_wrapper, dense_solution, dense_solution_dot)
+        dense_solver.set_parameters({
+            "initial_time": 0.0,
+            "time_step_size": dt,
+            "final_time": T,
+            "integrator_type": integrator_type,
+            "problem_type": "linear",
+            "monitor": dense_problem_wrapper.monitor,
+            "report": True
+        })
+        all_dense_solutions_time, all_dense_solutions, all_dense_solutions_dot = dense_solver.solve()
+        assert len(all_dense_solutions_time) == int(T/dt + 1)
+        assert len(all_dense_solutions) == int(T/dt + 1)
+        assert len(all_dense_solutions_dot) == int(T/dt + 1)
+        dense_solution_array = dense_solution.vector()
+        dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+        dense_solution_dot_array = dense_solution_dot.vector()
+        dense_solution_dot_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = dense_solution_dot_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+        
+        # Compute the error
+        dense_error = DenseFunction(*exact_solution.vector().array().shape)
+        dense_error.vector()[:] = exact_solution.vector().array().reshape((-1, 1))
+        dense_error.vector()[:] -= dense_solution_array
+        dense_error_norm = dense_error.vector().T*(X.array()*dense_error.vector())
+        assert dense_error_norm.shape == (1, 1)
+        dense_error_norm = dense_error_norm[0, 0]
+        dense_error_dot = DenseFunction(*exact_solution_dot.vector().array().shape)
+        dense_error_dot.vector()[:] = exact_solution_dot.vector().array().reshape((-1, 1))
+        dense_error_dot.vector()[:] -= dense_solution_dot_array
+        dense_error_dot_norm = dense_error_dot.vector().T*(X.array()*dense_error_dot.vector())
+        assert dense_error_dot_norm.shape == (1, 1)
+        dense_error_dot_norm = dense_error_dot_norm[0, 0]
+        print "DenseTimeStepping error (" + integrator_type + "):", dense_error_norm, dense_error_dot_norm
+        assert isclose(dense_error_norm, 0., atol=1.e-4)
+        assert isclose(dense_error_dot_norm, 0., atol=1.e-4)
 else:
     print "DenseTimeStepping error: skipped in parallel"
 

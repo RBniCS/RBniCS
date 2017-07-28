@@ -70,9 +70,9 @@ def sparse_initial_guess():
 class SparseFormProblemWrapper(NonlinearProblemWrapper):
     # Residual and jacobian functions
     def residual_eval(self, solution):
-        return replace(r, {u: solution})
+        return r
     def jacobian_eval(self, solution):
-        return replace(j, {u: solution})
+        return j
         
     # Define boundary condition
     def bc_eval(self):
@@ -80,7 +80,8 @@ class SparseFormProblemWrapper(NonlinearProblemWrapper):
     
 # Solve the nonlinear problem
 sparse_form_problem_wrapper = SparseFormProblemWrapper()
-sparse_form_solution = sparse_initial_guess()
+sparse_form_solution = u
+assign(sparse_form_solution, sparse_initial_guess())
 sparse_form_solver = SparseNonlinearSolver(sparse_form_problem_wrapper, sparse_form_solution)
 sparse_form_solver.set_parameters({
     "linear_solver": "mumps",
@@ -103,9 +104,9 @@ assert isclose(sparse_form_error_norm, 0., atol=1.e-5)
 class SparseTensorProblemWrapper(NonlinearProblemWrapper):
     # Residual and jacobian functions
     def residual_eval(self, solution):
-        return assemble(replace(r, {u: solution}))
+        return assemble(r)
     def jacobian_eval(self, solution):
-        return assemble(replace(j, {u: solution}))
+        return assemble(j)
         
     # Define boundary condition
     def bc_eval(self):
@@ -113,7 +114,8 @@ class SparseTensorProblemWrapper(NonlinearProblemWrapper):
     
 # Solve the nonlinear problem
 sparse_tensor_problem_wrapper = SparseTensorProblemWrapper()
-sparse_tensor_solution = sparse_initial_guess()
+sparse_tensor_solution = u
+assign(sparse_tensor_solution, sparse_initial_guess())
 sparse_tensor_solver = SparseNonlinearSolver(sparse_tensor_problem_wrapper, sparse_tensor_solution)
 sparse_tensor_solver.set_parameters({
     "linear_solver": "mumps",
