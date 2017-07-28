@@ -61,7 +61,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             elif first_is_DirichletBC:
                 are_DirichletBC.append(self._is_DirichletBC(args[i]))
             elif first_is_Function:
-                are_Function.append(args[i])
+                are_Function.append(self._is_Function(args[i]))
             else:
                 return TypeError("Invalid input arguments to AffineExpansionStorage")
         # Actual init
