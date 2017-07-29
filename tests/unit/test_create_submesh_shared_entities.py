@@ -40,11 +40,7 @@ assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4, 5)
 # 4 processors -> test a parallel case with no submesh shared entities but a facet is close to processors interface
 # 5 processors -> test a parallel case with submesh shared entities (a FE patch split accross two processors)
 
-#plot(mesh, interactive=True)
-#plot(cells, interactive=True)
-
 submesh = create_submesh(mesh, cells)
-#plot(submesh, interactive=True)
 
 output_subfile = HDF5File(submesh.mpi_comm(), "test_create_submesh_shared_entities.output_dir/submesh.h5", "w")
 output_subfile.write(submesh, "/submesh")
@@ -55,5 +51,3 @@ output_subfile.close()
 submesh2 = Mesh()
 input_subfile = HDF5File(submesh2.mpi_comm(), "test_create_submesh_shared_entities.output_dir/submesh.h5", "r")
 input_subfile.read(submesh2, "/submesh", False)
-#plot(submesh2, interactive=True)
-

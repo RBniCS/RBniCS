@@ -69,12 +69,6 @@ for pair in dofs:
     reduced_mesh.append(pair)
     
     """
-    plot(reduced_mesh.reduced_mesh_cells_marker)
-    interactive()
-    plot(reduced_mesh.get_reduced_mesh())
-    interactive()
-    """
-    """
     dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
     dmp.plot()
     dmp.show()
@@ -128,12 +122,6 @@ for pair in dofs:
     reduced_mesh.append(pair)
     
     """
-    plot(reduced_mesh.reduced_mesh_cells_marker)
-    interactive()
-    plot(reduced_mesh.get_reduced_mesh())
-    interactive()
-    """
-    """
     dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
     dmp.plot()
     dmp.show()
@@ -183,12 +171,6 @@ for pair in dofs:
     log(PROGRESS, "Adding " + str(pair))
     reduced_mesh.append(pair)
     
-    """
-    plot(reduced_mesh.reduced_mesh_cells_marker)
-    interactive()
-    plot(reduced_mesh.get_reduced_mesh())
-    interactive()
-    """
     """
     dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
     dmp.plot()
@@ -253,12 +235,6 @@ for pair in dofs:
     reduced_mesh.append(pair)
     
     """
-    plot(reduced_mesh.reduced_mesh_cells_marker)
-    interactive()
-    plot(reduced_mesh.get_reduced_mesh())
-    interactive()
-    """
-    """
     dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
     dmp.plot()
     dmp.show()
@@ -315,12 +291,6 @@ for pair in dofs:
     log(PROGRESS, "Adding " + str(pair))
     reduced_mesh.append(pair)
     
-    """
-    plot(reduced_mesh.reduced_mesh_cells_marker)
-    interactive()
-    plot(reduced_mesh.get_reduced_mesh())
-    interactive()
-    """
     """
     dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
     dmp.plot()
@@ -387,12 +357,6 @@ for pair in dofs:
     reduced_mesh.append(pair)
     
     """
-    plot(reduced_mesh.reduced_mesh_cells_marker)
-    interactive()
-    plot(reduced_mesh.get_reduced_mesh())
-    interactive()
-    """
-    """
     dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
     dmp.plot()
     dmp.show()
@@ -447,12 +411,6 @@ for pair in dofs:
     log(PROGRESS, "Adding " + str(pair))
     reduced_mesh.append(pair)
     
-    """
-    plot(reduced_mesh.reduced_mesh_cells_marker)
-    interactive()
-    plot(reduced_mesh.get_reduced_mesh())
-    interactive()
-    """
     """
     dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
     dmp.plot()

@@ -19,6 +19,7 @@
 import sys
 from numpy import asarray, isclose
 from dolfin import *
+import matplotlib.pyplot as plt
 from rbnics.backends.abstract import TimeDependentProblem1Wrapper
 from rbnics.backends.dolfin import TimeStepping as SparseTimeStepping
 from rbnics.backends.online.numpy import Function as DenseFunction, Matrix as DenseMatrix, TimeStepping as DenseTimeStepping, Vector as DenseVector
@@ -98,8 +99,12 @@ class SparseProblemWrapper(TimeDependentProblem1Wrapper):
         
     # Define custom monitor to plot the solution
     def monitor(self, t, solution, solution_dot):
-        plot(solution, key="u", title="u at t = " + str(t))
-        plot(solution_dot, key="u_dot", title="u_dot at t = " + str(t))
+        plt.subplot(1, 2, 1).clear()
+        plot(solution, title="u at t = " + str(t))
+        plt.subplot(1, 2, 2).clear()
+        plot(solution_dot, title="u_dot at t = " + str(t))
+        plt.show(block=False)
+        plt.pause(DOLFIN_EPS)
 
 for integrator_type in ("beuler", "bdf"):
     # Solve the time dependent problem
@@ -189,8 +194,12 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
         def monitor(self, t, solution, solution_dot):
             self._solution_from_dense_to_sparse(solution, u)
             self._solution_from_dense_to_sparse(solution_dot, u_dot)
-            plot(u, key="u", title="u at t = " + str(t))
-            plot(u_dot, key="u_dot", title="u_dot at t = " + str(t))
+            plt.subplot(1, 2, 1).clear()
+            plot(u, title="u at t = " + str(t))
+            plt.subplot(1, 2, 2).clear()
+            plot(u_dot, title="u_dot at t = " + str(t))
+            plt.show(block=False)
+            plt.pause(DOLFIN_EPS)
             
         def _solution_from_dense_to_sparse(self, solution, u):
             solution_array = asarray(solution.vector()).reshape(-1)

@@ -30,26 +30,20 @@ assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4)
 subdomains = CellFunction("size_t", mesh, 0)
 for c in cells(mesh):
     subdomains.array()[c.index()] = c.global_index()
-#plot(subdomains, interactive=True)
 
 boundaries = FacetFunction("size_t", mesh, 0)
 for f in facets(mesh):
     boundaries.array()[f.index()] = 0
     for v in vertices(f):
         boundaries.array()[f.index()] += v.global_index()
-#plot(boundaries, interactive=True)
 
 markers = CellFunction("bool", mesh, False)
 hdf = HDF5File(mesh.mpi_comm(), "data/test_create_submesh_markers.h5", "r")
 hdf.read(markers, "/cells")
-#plot(markers, interactive=True)
 
 submesh = create_submesh(mesh, markers)
-#plot(submesh, interactive=True)
 
 [submesh_subdomains, submesh_boundaries] = convert_meshfunctions_to_submesh(mesh, submesh, [subdomains, boundaries])
-#plot(submesh_subdomains, interactive=True)
-#plot(submesh_boundaries, interactive=True)
 
 # A dof map plotter will be opened in a few lines. You can use it to do the following checks, denoted by a), b), etc.
 

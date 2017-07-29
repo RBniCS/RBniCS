@@ -19,6 +19,7 @@
 import sys
 from numpy import asarray, isclose
 from dolfin import *
+import matplotlib.pyplot as plt
 from rbnics.backends.abstract import TimeDependentProblem2Wrapper
 from rbnics.backends.dolfin import TimeStepping as SparseTimeStepping
 #from rbnics.backends.online.numpy import Function as DenseFunction, Matrix as DenseMatrix, TimeStepping as DenseTimeStepping, Vector as DenseVector
@@ -105,9 +106,14 @@ class SparseProblemWrapper(TimeDependentProblem2Wrapper):
         
     # Define custom monitor to plot the solution
     def monitor(self, t, solution, solution_dot, solution_dot_dot):
-        plot(solution, key="u", title="u at t = " + str(t))
-        plot(solution_dot, key="u_dot", title="u_dot at t = " + str(t))
-        plot(solution_dot_dot, key="u_dot_dot", title="u_dot_dot at t = " + str(t))
+        plt.subplot(1, 3, 1).clear()
+        plot(solution, title="u at t = " + str(t))
+        plt.subplot(1, 3, 2).clear()
+        plot(solution_dot, title="u_dot at t = " + str(t))
+        plt.subplot(1, 3, 3).clear()
+        plot(solution_dot_dot, title="u_dot_dot at t = " + str(t))
+        plt.show(block=False)
+        plt.pause(DOLFIN_EPS)
 
 # Solve the time dependent problem
 sparse_problem_wrapper = SparseProblemWrapper()
