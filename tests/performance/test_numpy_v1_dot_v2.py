@@ -17,11 +17,8 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from rbnics.backends.online import OnlineVector
 from rbnics.backends import transpose
-
-OnlineVector_Type = OnlineVector.Type()
+from test_utils import RandomNumpyVector, TestBase
 
 class Test(TestBase):
     def __init__(self, N):
@@ -36,8 +33,8 @@ class Test(TestBase):
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                v1 = OnlineVector_Type(self.rand(N)).transpose() # as column vector
-                v2 = OnlineVector_Type(self.rand(N)).transpose() # as column vector
+                v1 = RandomNumpyVector(N)
+                v2 = RandomNumpyVector(N)
                 self.storage[self.index] = (v1, v2)
             else:
                 (v1, v2) = self.storage[self.index]
@@ -45,7 +42,7 @@ class Test(TestBase):
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                v1_dot_v2_builtin = v1.T*v2
+                v1_dot_v2_builtin = float(v1.T*v2)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
                 v1_dot_v2_transpose = transpose(v1)*v2

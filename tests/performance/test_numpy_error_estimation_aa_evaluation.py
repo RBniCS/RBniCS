@@ -17,62 +17,66 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from dolfin import *
-from rbnics.backends import AffineExpansionStorage, product, sum
+from numpy import zeros as legacy_tensor
+from numpy.linalg import norm
+from rbnics.backends import product, sum, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from test_utils import RandomNumpyMatrix, RandomNumpyVector, RandomTuple, TestBase
 
 class Test(TestBase):
-    def __init__(self, Nh, Q):
+    def __init__(self, N, Q):
+        self.N = N
         self.Q = Q
-        mesh = UnitSquareMesh(Nh, Nh)
-        V = FunctionSpace(mesh, "Lagrange", 1)
-        self.g = Function(V)
-        v = TestFunction(V)
-        self.f = self.g*v*dx
         # Call parent init
         TestBase.__init__(self)
             
     def run(self):
+        N = self.N
         Q = self.Q
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                f = ()
-                for i in range(self.Q):
-                    # Generate random vector
-                    self.g.vector().set_local(self.rand(self.g.vector().array().size))
-                    self.g.vector().apply("insert")
-                    # Generate random form
-                    f += (self.f,)
-                F = AffineExpansionStorage(f)
+                aa_product = OnlineAffineExpansionStorage(Q, Q)
+                aa_product_legacy = legacy_tensor((Q, Q, N, N))
+                for i in range(Q):
+                    for j in range(Q):
+                        # Generate random matrix
+                        aa_product[i, j] = RandomNumpyMatrix(N, N)
+                        for n in range(N):
+                            for m in range(N):
+                                aa_product_legacy[i, j, n, m] = aa_product[i, j][n, m]
                 # Genereate random theta
-                theta = tuple(self.rand(Q))
+                theta = RandomTuple(Q)
+                # Generate random solution
+                u = RandomNumpyVector(N)
+                v = RandomNumpyVector(N)
                 # Store
-                self.storage[self.index] = (theta, F)
+                self.storage[self.index] = (theta, aa_product, aa_product_legacy, u, v)
             else:
-                (theta, F) = self.storage[self.index]
+                (theta, aa_product, aa_product_legacy, u, v) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                assembled_vector_builtin = F[0].copy()
-                assembled_vector_builtin.zero()
-                for i in range(self.Q):
-                    assembled_vector_builtin.add_local(theta[i]*F[i].array())
-                assembled_vector_builtin.apply("insert")
+                error_estimator_legacy = 0.
+                for i in range(Q):
+                    for j in range(Q):
+                        for n in range(N):
+                            for m in range(N):
+                                error_estimator_legacy += u.item(n)*theta[i]*aa_product_legacy[i, j, n, m]*theta[j]*v.item(m)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
-                assembled_vector_sum_product = sum(product(theta, F))
+                error_estimator_sum_product = transpose(u)*sum(product(theta, aa_product, theta))*v
         if test_id >= 2:
-            return (assembled_vector_builtin - assembled_vector_sum_product).norm("l2")/assembled_vector_builtin.norm("l2")
+            return abs(error_estimator_legacy - error_estimator_sum_product)/abs(error_estimator_legacy)
 
-for i in range(3, 7):
-    Nh = 2**i
-    for j in range(1, 4):
-        Q = 10 + 4*j
-        test = Test(Nh, Q)
-        print("Nh =", test.g.vector().size(), "and Q =", Q)
+for i in range(4, 9):
+    N = 2**i
+    for j in range(1, 8):
+        Q = 2 + 4*j
+        test = Test(N, Q)
+        print("N =", N, "and Q =", Q)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()
@@ -81,13 +85,13 @@ for i in range(3, 7):
         
         test.init_test(1, "a")
         usec_1a = test.timeit()
-        print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        print("Legacy method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
         test.init_test(1, "b")
         usec_1b = test.timeit()
         print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        print("Relative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
+        print("Speed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
         
         test.init_test(2)
         error = test.average()

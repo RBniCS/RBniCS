@@ -17,60 +17,60 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
 from dolfin import *
-from rbnics.backends import product, sum
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineMatrix
-from numpy.linalg import norm
-from numpy.random import randint
-
-OnlineMatrix_Type = OnlineMatrix.Type()
+from rbnics.backends import AffineExpansionStorage, product, sum
+from test_utils import RandomDolfinFunction, RandomTuple, TestBase
 
 class Test(TestBase):
-    def __init__(self, Nmax, Q):
-        self.Nmax = Nmax
+    def __init__(self, Nh, Q):
         self.Q = Q
+        mesh = UnitSquareMesh(Nh, Nh)
+        self.V = FunctionSpace(mesh, "Lagrange", 1)
+        v = TestFunction(self.V)
+        self.f = lambda g: g*v*dx
         # Call parent init
         TestBase.__init__(self)
             
     def run(self):
-        Nmax = self.Nmax
         Q = self.Q
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                A = OnlineAffineExpansionStorage(self.Q)
+                f = ()
                 for i in range(self.Q):
-                    # Generate random matrix
-                    A[i] = OnlineMatrix_Type(self.rand(Nmax, Nmax))
+                    # Generate random vector
+                    g = RandomDolfinFunction(self.V)
+                    # Generate random form
+                    f += (self.f(g),)
+                F = AffineExpansionStorage(f)
                 # Genereate random theta
-                theta = tuple(self.rand(Q))
-                # Generate N <= Nmax
-                N = randint(1, Nmax + 1)
+                theta = RandomTuple(Q)
                 # Store
-                self.storage[self.index] = (theta, A, N)
+                self.storage[self.index] = (theta, F)
             else:
-                (theta, A, N) = self.storage[self.index]
+                (theta, F) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                assembled_matrix_builtin = theta[0]*A[0][:N, :N]
-                for i in range(1, self.Q):
-                    assembled_matrix_builtin += theta[i]*A[i][:N, :N]
+                assembled_vector_builtin = F[0].copy()
+                assembled_vector_builtin.zero()
+                for i in range(self.Q):
+                    assembled_vector_builtin.add_local(theta[i]*F[i].array())
+                assembled_vector_builtin.apply("insert")
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
-                assembled_matrix_sum_product = sum(product(theta, A[:N, :N]))
+                assembled_vector_sum_product = sum(product(theta, F))
         if test_id >= 2:
-            return norm(assembled_matrix_builtin - assembled_matrix_sum_product)/norm(assembled_matrix_builtin)
+            return (assembled_vector_builtin - assembled_vector_sum_product).norm("l2")/assembled_vector_builtin.norm("l2")
 
-for i in range(4, 9):
-    N = 2**i
+for i in range(3, 7):
+    Nh = 2**i
     for j in range(1, 4):
         Q = 10 + 4*j
-        test = Test(N, Q)
-        print("N =", N, "and Q =", Q)
+        test = Test(Nh, Q)
+        print("Nh =", test.V.dim(), "and Q =", Q)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()

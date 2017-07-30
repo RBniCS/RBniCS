@@ -17,15 +17,11 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from dolfin import *
-from rbnics.backends import product, sum, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineMatrix, OnlineVector
 from numpy import zeros as legacy_tensor
 from numpy.linalg import norm
-
-OnlineMatrix_Type = OnlineMatrix.Type()
-OnlineVector_Type = OnlineVector.Type()
+from rbnics.backends import product, sum, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from test_utils import RandomNumber, RandomNumpyMatrix, RandomNumpyVector, RandomTuple, TestBase
 
 class Test(TestBase):
     def __init__(self, N, Qa, Qf):
@@ -49,7 +45,7 @@ class Test(TestBase):
                 for i in range(Qa):
                     for j in range(Qa):
                         # Generate random matrix
-                        aa_product[i, j] = OnlineMatrix_Type(self.rand(N, N))
+                        aa_product[i, j] = RandomNumpyMatrix(N, N)
                         for n in range(N):
                             for m in range(N):
                                 aa_product_legacy[i, j, n, m] = aa_product[i, j][n, m]
@@ -58,7 +54,7 @@ class Test(TestBase):
                 for i in range(Qa):
                     for j in range(Qf):
                         # Generate random matrix
-                        af_product[i, j] = OnlineVector_Type(self.rand(N)).transpose()
+                        af_product[i, j] = RandomNumpyVector(N)
                         for n in range(N):
                             af_product_legacy[i, j, n] = af_product[i, j][n]
                 ff_product = OnlineAffineExpansionStorage(Qf, Qf)
@@ -66,20 +62,20 @@ class Test(TestBase):
                 for i in range(Qf):
                     for j in range(Qf):
                         # Generate random matrix
-                        ff_product[i, j] = self.rand(1)[0]
+                        ff_product[i, j] = RandomNumber()
                         ff_product_legacy[i, j] = ff_product[i, j]
                 # Genereate random theta
                 theta_a = []
                 theta_f = []
                 for t in range(Ntrain):
-                    theta_a.append(tuple(self.rand(Qa)))
-                    theta_f.append(tuple(self.rand(Qf)))
+                    theta_a.append(RandomTuple(Qa))
+                    theta_f.append(RandomTuple(Qf))
                 # Generate random solution
                 u = []
                 v = []
                 for t in range(Ntrain):
-                    u.append(OnlineVector_Type(self.rand(N)).transpose()) # as column vector
-                    v.append(OnlineVector_Type(self.rand(N)).transpose()) # as column vector
+                    u.append(RandomNumpyVector(N))
+                    v.append(RandomNumpyVector(N))
                 # Store
                 self.storage[self.index] = (theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
             else:

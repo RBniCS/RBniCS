@@ -17,12 +17,10 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from dolfin import *
+from numpy.linalg import norm
 from rbnics.backends import product, sum
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from numpy import zeros as legacy_tensor
-from numpy.linalg import norm
+from test_utils import RandomNumpyVector, RandomTuple, TestBase
 
 class Test(TestBase):
     def __init__(self, N, Q):
@@ -38,37 +36,34 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                ff_product = OnlineAffineExpansionStorage(Q, Q)
-                ff_product_legacy = legacy_tensor((Q, Q))
-                for i in range(Q):
-                    for j in range(Q):
-                        # Generate random matrix
-                        ff_product[i, j] = self.rand(1)[0]
-                        ff_product_legacy[i, j] = ff_product[i, j]
+                F = OnlineAffineExpansionStorage(self.Q)
+                for i in range(self.Q):
+                    # Generate random vector
+                    F[i] = RandomNumpyVector(N)
                 # Genereate random theta
-                theta = tuple(self.rand(Q))
+                theta = RandomTuple(Q)
                 # Store
-                self.storage[self.index] = (theta, ff_product, ff_product_legacy)
+                self.storage[self.index] = (theta, F)
             else:
-                (theta, ff_product, ff_product_legacy) = self.storage[self.index]
+                (theta, F) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                error_estimator_legacy = 0.
-                for i in range(Q):
-                    for j in range(Q):
-                        error_estimator_legacy += theta[i]*ff_product_legacy[i, j]*theta[j]
+                assembled_vector_builtin = theta[0]*F[0]
+                for i in range(1, self.Q):
+                    assembled_vector_builtin += theta[i]*F[i]
+                assembled_vector_builtin.N = N
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
-                error_estimator_sum_product = sum(product(theta, ff_product, theta))
+                assembled_vector_sum_product = sum(product(theta, F))
         if test_id >= 2:
-            return abs(error_estimator_legacy - error_estimator_sum_product)/abs(error_estimator_legacy)
+            return norm(assembled_vector_builtin - assembled_vector_sum_product)/norm(assembled_vector_builtin)
 
 for i in range(4, 9):
     N = 2**i
-    for j in range(1, 8):
-        Q = 2 + 4*j
+    for j in range(1, 4):
+        Q = 10 + 4*j
         test = Test(N, Q)
         print("N =", N, "and Q =", Q)
         
@@ -79,13 +74,13 @@ for i in range(4, 9):
         
         test.init_test(1, "a")
         usec_1a = test.timeit()
-        print("Legacy method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
         test.init_test(1, "b")
         usec_1b = test.timeit()
         print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        print("Speed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
+        print("Relative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
         
         test.init_test(2)
         error = test.average()

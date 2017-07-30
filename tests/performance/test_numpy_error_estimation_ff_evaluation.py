@@ -17,15 +17,11 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from dolfin import *
-from rbnics.backends import product, sum, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineMatrix, OnlineVector
 from numpy import zeros as legacy_tensor
 from numpy.linalg import norm
-
-OnlineMatrix_Type = OnlineMatrix.Type()
-OnlineVector_Type = OnlineVector.Type()
+from rbnics.backends import product, sum
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from test_utils import RandomNumber, RandomTuple, TestBase
 
 class Test(TestBase):
     def __init__(self, N, Q):
@@ -41,24 +37,19 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                aa_product = OnlineAffineExpansionStorage(Q, Q)
-                aa_product_legacy = legacy_tensor((Q, Q, N, N))
+                ff_product = OnlineAffineExpansionStorage(Q, Q)
+                ff_product_legacy = legacy_tensor((Q, Q))
                 for i in range(Q):
                     for j in range(Q):
                         # Generate random matrix
-                        aa_product[i, j] = OnlineMatrix_Type(self.rand(N, N))
-                        for n in range(N):
-                            for m in range(N):
-                                aa_product_legacy[i, j, n, m] = aa_product[i, j][n, m]
+                        ff_product[i, j] = RandomNumber()
+                        ff_product_legacy[i, j] = ff_product[i, j]
                 # Genereate random theta
-                theta = tuple(self.rand(Q))
-                # Generate random solution
-                u = OnlineVector_Type(self.rand(N)).transpose() # as column vector
-                v = OnlineVector_Type(self.rand(N)).transpose() # as column vector
+                theta = RandomTuple(Q)
                 # Store
-                self.storage[self.index] = (theta, aa_product, aa_product_legacy, u, v)
+                self.storage[self.index] = (theta, ff_product, ff_product_legacy)
             else:
-                (theta, aa_product, aa_product_legacy, u, v) = self.storage[self.index]
+                (theta, ff_product, ff_product_legacy) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
@@ -66,12 +57,10 @@ class Test(TestBase):
                 error_estimator_legacy = 0.
                 for i in range(Q):
                     for j in range(Q):
-                        for n in range(N):
-                            for m in range(N):
-                                error_estimator_legacy += u.item(n)*theta[i]*aa_product_legacy[i, j, n, m]*theta[j]*v.item(m)
+                        error_estimator_legacy += theta[i]*ff_product_legacy[i, j]*theta[j]
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
-                error_estimator_sum_product = transpose(u)*sum(product(theta, aa_product, theta))*v
+                error_estimator_sum_product = sum(product(theta, ff_product, theta))
         if test_id >= 2:
             return abs(error_estimator_legacy - error_estimator_sum_product)/abs(error_estimator_legacy)
 

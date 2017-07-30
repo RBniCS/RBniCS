@@ -17,20 +17,20 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
 from dolfin import *
+from numpy.linalg import norm
 from rbnics.backends import BasisFunctionsMatrix, transpose
-from rbnics.backends.online import OnlineVector
-
-OnlineVector_Type = OnlineVector.Type()
+from rbnics.backends.online.numpy import Matrix as NumpyMatrix
+from test_utils import RandomDolfinFunction, TestBase
 
 class Test(TestBase):
     def __init__(self, Nh, N):
         self.N = N
         mesh = UnitSquareMesh(Nh, Nh)
-        V = FunctionSpace(mesh, "Lagrange", 1)
-        self.b = Function(V)
-        self.Z = BasisFunctionsMatrix(V)
+        self.V = FunctionSpace(mesh, "Lagrange", 1)
+        u = TrialFunction(self.V)
+        v = TestFunction(self.V)
+        self.a = lambda k: k*inner(grad(u), grad(v))*dx
         # Call parent init
         TestBase.__init__(self)
             
@@ -41,37 +41,39 @@ class Test(TestBase):
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                self.Z.clear()
+                Z = BasisFunctionsMatrix(self.V)
+                Z.init("u")
                 for _ in range(self.N):
-                    self.b.vector().set_local(self.rand(self.b.vector().array().size))
-                    self.b.vector().apply("insert")
-                    self.Z.enrich(self.b)
-                uN = OnlineVector_Type(self.rand(N)).transpose() # as column vector
+                    b = RandomDolfinFunction(self.V)
+                    Z.enrich(b)
+                k = RandomDolfinFunction(self.V)
+                # Generate random matrix
+                A = assemble(self.a(k))
                 # Store
-                self.storage[self.index] = (self.Z, uN)
+                self.storage[self.index] = (Z, A)
             else:
-                (self.Z, uN) = self.storage[self.index]
+                (Z, A) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                Z_uN_builtin = uN.item(0)*self.Z[0].vector()
-                for i in range(1, self.N):
-                    Z_uN_builtin.add_local(uN.item(i)*self.Z[i].vector().array())
-                Z_uN_builtin.apply("add")
+                Z_T_dot_A_Z_builtin = NumpyMatrix(self.N, self.N)
+                for j in range(self.N):
+                    A_Z_j = A*Z[j].vector()
+                    for i in range(self.N):
+                        Z_T_dot_A_Z_builtin[i, j] = Z[i].vector().inner(A_Z_j)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using mul method
-                Z_uN_mul = self.Z*uN
-                Z_uN_mul = Z_uN_mul.vector()
+                # Time using transpose() method
+                Z_T_dot_A_Z_transpose = transpose(Z)*A*Z
         if test_id >= 2:
-            return (Z_uN_builtin - Z_uN_mul).norm("l2")/Z_uN_builtin.norm("l2")
+            return norm(Z_T_dot_A_Z_builtin - Z_T_dot_A_Z_transpose)/norm(Z_T_dot_A_Z_builtin)
 
 for i in range(3, 7):
     Nh = 2**i
     for j in range(1, 4):
         N = 10 + 4*j
         test = Test(Nh, N)
-        print("Nh =", test.b.vector().size(), "and N =", N)
+        print("Nh =", test.V.dim(), "and N =", N)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()
@@ -84,7 +86,7 @@ for i in range(3, 7):
         
         test.init_test(1, "b")
         usec_1b = test.timeit()
-        print("mul method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        print("transpose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
         print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
         

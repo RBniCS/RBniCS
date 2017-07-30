@@ -17,14 +17,11 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from dolfin import *
-from rbnics.backends import product, sum
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineVector
 from numpy.linalg import norm
 from numpy.random import randint
-
-OnlineVector_Type = OnlineVector.Type()
+from rbnics.backends import product, sum
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from test_utils import RandomNumpyVector, RandomTuple, TestBase
 
 class Test(TestBase):
     def __init__(self, Nmax, Q):
@@ -43,9 +40,9 @@ class Test(TestBase):
                 F = OnlineAffineExpansionStorage(self.Q)
                 for i in range(self.Q):
                     # Generate random vector
-                    F[i] = OnlineVector_Type(self.rand(Nmax)).transpose() # as column vector
+                    F[i] = RandomNumpyVector(Nmax)
                 # Genereate random theta
-                theta = tuple(self.rand(Q))
+                theta = RandomTuple(Q)
                 # Generate N <= Nmax
                 N = randint(1, Nmax + 1)
                 # Store
@@ -59,6 +56,7 @@ class Test(TestBase):
                 assembled_vector_builtin = theta[0]*F[0][:N]
                 for i in range(1, self.Q):
                     assembled_vector_builtin += theta[i]*F[i][:N]
+                assembled_vector_builtin.N = N
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
                 assembled_vector_sum_product = sum(product(theta, F[:N]))

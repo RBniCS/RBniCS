@@ -17,20 +17,17 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
 from dolfin import *
-from rbnics.backends import BasisFunctionsMatrix, transpose
-from rbnics.backends.online import OnlineVector
 from numpy.linalg import norm
+from rbnics.backends import BasisFunctionsMatrix, transpose
+from rbnics.backends.online.numpy import Vector as NumpyVector
+from test_utils import RandomDolfinFunction, TestBase
 
 class Test(TestBase):
     def __init__(self, Nh, N):
         self.N = N
         mesh = UnitSquareMesh(Nh, Nh)
-        V = FunctionSpace(mesh, "Lagrange", 1)
-        self.b = Function(V)
-        self.Z = BasisFunctionsMatrix(V)
-        self.F = Function(V)
+        self.V = FunctionSpace(mesh, "Lagrange", 1)
         # Call parent init
         TestBase.__init__(self)
             
@@ -41,26 +38,26 @@ class Test(TestBase):
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                self.Z.clear()
+                Z = BasisFunctionsMatrix(self.V)
+                Z.init("u")
                 for _ in range(self.N):
-                    self.b.vector().set_local(self.rand(self.b.vector().array().size))
-                    self.b.vector().apply("insert")
-                    self.Z.enrich(self.b)
-                self.F.vector().set_local(self.rand(self.F.vector().array().size))
+                    b = RandomDolfinFunction(self.V)
+                    Z.enrich(b)
+                F = RandomDolfinFunction(self.V)
                 # Store
-                self.storage[self.index] = (self.Z, self.F)
+                self.storage[self.index] = (Z, F)
             else:
-                (self.Z, self.F) = self.storage[self.index]
+                (Z, F) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                Z_T_dot_F_builtin = OnlineVector(self.N)
+                Z_T_dot_F_builtin = NumpyVector(self.N)
                 for i in range(self.N):
-                    Z_T_dot_F_builtin[i] = self.Z[i].vector().inner(self.F.vector())
+                    Z_T_dot_F_builtin[i] = Z[i].vector().inner(F.vector())
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
-                Z_T_dot_F_transpose = transpose(self.Z)*self.F.vector()
+                Z_T_dot_F_transpose = transpose(Z)*F.vector()
         if test_id >= 2:
             return norm(Z_T_dot_F_builtin - Z_T_dot_F_transpose)/norm(Z_T_dot_F_builtin)
 
@@ -69,7 +66,7 @@ for i in range(3, 7):
     for j in range(1, 4):
         N = 10 + 4*j
         test = Test(Nh, N)
-        print("Nh =", test.b.vector().size(), "and N =", N)
+        print("Nh =", test.V.dim(), "and N =", N)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()

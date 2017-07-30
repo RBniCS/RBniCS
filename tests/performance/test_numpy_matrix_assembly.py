@@ -17,13 +17,10 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from dolfin import *
-from rbnics.backends import product, sum
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineVector
 from numpy.linalg import norm
-
-OnlineVector_Type = OnlineVector.Type()
+from rbnics.backends import product, sum
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from test_utils import RandomNumpyMatrix, RandomTuple, TestBase
 
 class Test(TestBase):
     def __init__(self, N, Q):
@@ -39,28 +36,30 @@ class Test(TestBase):
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                F = OnlineAffineExpansionStorage(self.Q)
+                A = OnlineAffineExpansionStorage(self.Q)
                 for i in range(self.Q):
-                    # Generate random vector
-                    F[i] = OnlineVector_Type(self.rand(N)).transpose() # as column vector
+                    # Generate random matrix
+                    A[i] = RandomNumpyMatrix(N, N)
                 # Genereate random theta
-                theta = tuple(self.rand(Q))
+                theta = RandomTuple(Q)
                 # Store
-                self.storage[self.index] = (theta, F)
+                self.storage[self.index] = (theta, A)
             else:
-                (theta, F) = self.storage[self.index]
+                (theta, A) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                assembled_vector_builtin = theta[0]*F[0]
+                assembled_matrix_builtin = theta[0]*A[0]
                 for i in range(1, self.Q):
-                    assembled_vector_builtin += theta[i]*F[i]
+                    assembled_matrix_builtin += theta[i]*A[i]
+                assembled_matrix_builtin.M = N
+                assembled_matrix_builtin.N = N
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
-                assembled_vector_sum_product = sum(product(theta, F))
+                assembled_matrix_sum_product = sum(product(theta, A))
         if test_id >= 2:
-            return norm(assembled_vector_builtin - assembled_vector_sum_product)/norm(assembled_vector_builtin)
+            return norm(assembled_matrix_builtin - assembled_matrix_sum_product)/norm(assembled_matrix_builtin)
 
 for i in range(4, 9):
     N = 2**i

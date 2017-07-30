@@ -17,15 +17,11 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from dolfin import *
-from rbnics.backends import product, sum, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineMatrix, OnlineVector
 from numpy import zeros as legacy_tensor
 from numpy.linalg import norm
-
-OnlineMatrix_Type = OnlineMatrix.Type()
-OnlineVector_Type = OnlineVector.Type()
+from rbnics.backends import product, sum, transpose
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from test_utils import RandomNumpyVector, RandomTuple, TestBase
 
 class Test(TestBase):
     def __init__(self, N, Qa, Qf):
@@ -47,15 +43,15 @@ class Test(TestBase):
                 af_product_legacy = legacy_tensor((Qa, Qf, N))
                 for i in range(Qa):
                     for j in range(Qf):
-                        # Generate random matrix
-                        af_product[i, j] = OnlineVector_Type(self.rand(N)).transpose()
+                        # Generate random vector
+                        af_product[i, j] = RandomNumpyVector(N)
                         for n in range(N):
                             af_product_legacy[i, j, n] = af_product[i, j][n]
                 # Genereate random theta
-                theta_a = tuple(self.rand(Qa))
-                theta_f = tuple(self.rand(Qf))
+                theta_a = RandomTuple(Qa)
+                theta_f = RandomTuple(Qf)
                 # Generate random solution
-                u = OnlineVector_Type(self.rand(N)).transpose() # as column vector
+                u = RandomNumpyVector(N)
                 # Store
                 self.storage[self.index] = (theta_a, theta_f, af_product, af_product_legacy, u)
             else:

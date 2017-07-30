@@ -17,67 +17,59 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
-from dolfin import *
-from rbnics.backends import BasisFunctionsMatrix, transpose
-from rbnics.backends.online import OnlineVector
 from numpy.linalg import norm
+from numpy.random import randint
+from rbnics.backends import product, sum
+from rbnics.backends.online import OnlineAffineExpansionStorage
+from test_utils import RandomNumpyMatrix, RandomTuple, TestBase
 
 class Test(TestBase):
-    def __init__(self, Nh, N):
-        self.N = N
-        mesh = UnitSquareMesh(Nh, Nh)
-        V = FunctionSpace(mesh, "Lagrange", 1)
-        self.b = Function(V)
-        self.Z = BasisFunctionsMatrix(V)
-        self.k = Function(V)
-        u = TrialFunction(V)
-        v = TestFunction(V)
-        self.a = self.k*inner(grad(u), grad(v))*dx
+    def __init__(self, Nmax, Q):
+        self.Nmax = Nmax
+        self.Q = Q
         # Call parent init
         TestBase.__init__(self)
             
     def run(self):
-        N = self.N
+        Nmax = self.Nmax
+        Q = self.Q
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                # Generate random vectors
-                self.Z.clear()
-                for i in range(self.N + 1):
-                    self.b.vector().set_local(self.rand(self.b.vector().array().size))
-                    self.b.vector().apply("insert")
-                    if i < self.N:
-                        self.Z.enrich(self.b)
-                self.k.vector().set_local(self.rand(self.k.vector().array().size))
-                # Generate random matrix
-                A = assemble(self.a)
+                A = OnlineAffineExpansionStorage(self.Q)
+                for i in range(self.Q):
+                    # Generate random matrix
+                    A[i] = RandomNumpyMatrix(Nmax, Nmax)
+                # Genereate random theta
+                theta = RandomTuple(Q)
+                # Generate N <= Nmax
+                N = randint(1, Nmax + 1)
                 # Store
-                z = self.b.vector().copy()
-                self.storage[self.index] = (self.Z, A, z)
+                self.storage[self.index] = (theta, A, N)
             else:
-                (self.Z, A, z) = self.storage[self.index]
+                (theta, A, N) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                Z_T_dot_A_z_builtin = OnlineVector(self.N)
-                A_z = A*z
-                for i in range(self.N):
-                    Z_T_dot_A_z_builtin[i] = self.Z[i].vector().inner(A_z)
+                assembled_matrix_builtin = theta[0]*A[0][:N, :N]
+                for i in range(1, self.Q):
+                    assembled_matrix_builtin += theta[i]*A[i][:N, :N]
+                assembled_matrix_builtin.M = N
+                assembled_matrix_builtin.N = N
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using transpose() method
-                Z_T_dot_A_z_transpose = transpose(self.Z)*A*z
+                # Time using sum(product()) method
+                assembled_matrix_sum_product = sum(product(theta, A[:N, :N]))
         if test_id >= 2:
-            return norm(Z_T_dot_A_z_builtin - Z_T_dot_A_z_transpose)/norm(Z_T_dot_A_z_builtin)
+            return norm(assembled_matrix_builtin - assembled_matrix_sum_product)/norm(assembled_matrix_builtin)
 
-for i in range(3, 7):
-    Nh = 2**i
+for i in range(4, 9):
+    N = 2**i
     for j in range(1, 4):
-        N = 10 + 4*j
-        test = Test(Nh, N)
-        print("Nh =", test.b.vector().size(), "and N =", N)
+        Q = 10 + 4*j
+        test = Test(N, Q)
+        print("N =", N, "and Q =", Q)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()
@@ -90,10 +82,11 @@ for i in range(3, 7):
         
         test.init_test(1, "b")
         usec_1b = test.timeit()
-        print("transpose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
+        print("Relative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
         
         test.init_test(2)
         error = test.average()
         print("Relative error:", error)
+    

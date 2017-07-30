@@ -17,20 +17,14 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
 from dolfin import *
 from rbnics.backends import transpose
+from test_utils import RandomDolfinFunction, TestBase
 
 class Test(TestBase):
     def __init__(self, Nh):
         mesh = UnitSquareMesh(Nh, Nh)
-        V = FunctionSpace(mesh, "Lagrange", 1)
-        self.v1 = Function(V)
-        self.v2 = Function(V)
-        self.k = Function(V)
-        u = TrialFunction(V)
-        v = TestFunction(V)
-        self.a = self.k*inner(grad(u), grad(v))*dx
+        self.V = FunctionSpace(mesh, "Lagrange", 1)
         # Call parent init
         TestBase.__init__(self)
             
@@ -40,35 +34,26 @@ class Test(TestBase):
         if test_id >= 0:
             if not self.index in self.storage:
                 # Generate random vectors
-                self.v1.vector().set_local(self.rand(self.v1.vector().array().size))
-                self.v1.vector().apply("insert")
-                self.v2.vector().set_local(self.rand(self.v2.vector().array().size))
-                self.v2.vector().apply("insert")
-                self.k.vector().set_local(self.rand(self.k.vector().array().size))
-                self.k.vector().apply("insert")
-                # Generate random matrix
-                A = assemble(self.a)
-                # Store
-                v1 = self.v1.vector().copy()
-                v2 = self.v2.vector().copy()
-                self.storage[self.index] = (v1, v2, A)
+                v1 = RandomDolfinFunction(self.V).vector()
+                v2 = RandomDolfinFunction(self.V).vector()
+                self.storage[self.index] = (v1, v2)
             else:
-                (v1, v2, A) = self.storage[self.index]
+                (v1, v2) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                v1_dot_A_v2_builtin = v1.inner(A*v2)
+                v1_dot_v2_builtin = v1.inner(v2)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
-                v1_dot_A_v2_transpose = transpose(v1)*A*v2
+                v1_dot_v2_transpose = transpose(v1)*v2
         if test_id >= 2:
-            return (v1_dot_A_v2_builtin - v1_dot_A_v2_transpose)/v1_dot_A_v2_builtin
+            return (v1_dot_v2_builtin - v1_dot_v2_transpose)/v1_dot_v2_builtin
 
-for i in range(1, 8):
+for i in range(1, 9):
     Nh = 2**i
     test = Test(Nh)
-    print("Nh =", test.v1.vector().size())
+    print("Nh =", test.V.dim())
     
     test.init_test(0)
     (usec_0_build, usec_0_access) = test.timeit()

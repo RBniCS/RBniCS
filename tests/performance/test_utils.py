@@ -18,27 +18,11 @@
 
 import sys
 import timeit
+from dolfin import Function
 from numpy import mean, zeros
 from numpy.random import random, randint
+from rbnics.backends.online.numpy import Matrix as NumpyMatrix, Vector as NumpyVector
 
-class Timer(object):
-    def __init__(self, test):
-        self.timeit_timer = timeit.Timer(lambda: test.run())
-        # Inspired by python's cpython/master/Lib/timeit.py,
-        # which is called by python -mtimeit script,
-        # determine number so that 0.2 <= total time < 2.0
-        for i in range(1, 10):
-            test.index = 0
-            test.storage = {}
-            self.number = 10**i
-            r = self.timeit_timer.timeit(self.number)
-            if r >= 0.2:
-                # Clean up, we do want to time again
-                # the construction phase
-                test.index = 0
-                test.storage = {}
-                #
-                break
 class TestBase(object):
     def __init__(self):
         self.test_id = 0
@@ -47,7 +31,7 @@ class TestBase(object):
         self.index = 0
         self.storage = {}
         #
-        self.timer = Timer(self)
+        self.timer = _Timer(self)
             
     def init_test(self, test_id, test_subid=None):
         self.test_id = test_id
@@ -56,9 +40,6 @@ class TestBase(object):
     def run(self):
         pass
     
-    def rand(self, *args):
-        return (-1)**randint(2, size=(args))*random(args)/(1e-3 + random(args))
-        
     def timeit(self):
         def run_timeit(self):
             self.index = 0
@@ -83,27 +64,47 @@ class TestBase(object):
     
     def number_of_runs(self):
         return self.timer.number
-    
-def main():
-    t = Timer(stmt="ttt += 1", setup="import test_v1_dot_v2; ttt = 0")
-    # ... copying from python's cpython/master/Lib/timeit.py ...
-    # determine number so that 0.2 <= total time < 2.0
-    for i in range(1, 10):
-        number = 10**i
-        try:
-            x = t.timeit(number)
-        except:
-            t.print_exc()
-            return 1
-        if x >= 0.2:
-            break
-    try:
-        r = t.repeat(repeat=3, number=number)
-    except:
-        t.print_exc()
-        return 1
-    usec = min(r) * 1e6 / number
-    print(usec)
 
-if __name__ == "__main__":
-    sys.exit(main())
+def RandomDolfinFunction(V):
+    f = Function(V)
+    f.vector().set_local(_rand(f.vector().array().size))
+    f.vector().apply("insert")
+    return f
+
+def RandomNumber():
+    return _rand(1)[0]
+
+def RandomNumpyMatrix(N, M):
+    m = NumpyMatrix(N, M)
+    m[:] = _rand(N, M)
+    return m
+    
+def RandomNumpyVector(N):
+    v = NumpyVector(N)
+    v[:] = _rand(N, 1)
+    return v
+    
+def RandomTuple(Q):
+    return tuple(_rand(Q))
+        
+class _Timer(object):
+    def __init__(self, test):
+        self.timeit_timer = timeit.Timer(lambda: test.run())
+        # Inspired by python's cpython/master/Lib/timeit.py,
+        # which is called by python -mtimeit script,
+        # determine number so that 0.2 <= total time < 2.0
+        for i in range(1, 10):
+            test.index = 0
+            test.storage = {}
+            self.number = 10**i
+            r = self.timeit_timer.timeit(self.number)
+            if r >= 0.2:
+                # Clean up, we do want to time again
+                # the construction phase
+                test.index = 0
+                test.storage = {}
+                #
+                break
+                
+def _rand(*args):
+    return (-1)**randint(2, size=(args))*random(args)/(1e-3 + random(args))

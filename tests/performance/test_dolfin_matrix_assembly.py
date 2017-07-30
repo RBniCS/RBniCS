@@ -17,34 +17,36 @@
 #
 
 from __future__ import print_function
-from test_main import TestBase
 from dolfin import *
-from rbnics.backends import product, sum
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineMatrix
-from numpy.linalg import norm
-
-OnlineMatrix_Type = OnlineMatrix.Type()
+from rbnics.backends import AffineExpansionStorage, product, sum
+from test_utils import RandomDolfinFunction, RandomTuple, TestBase
 
 class Test(TestBase):
-    def __init__(self, N, Q):
-        self.N = N
+    def __init__(self, Nh, Q):
         self.Q = Q
+        mesh = UnitSquareMesh(Nh, Nh)
+        self.V = FunctionSpace(mesh, "Lagrange", 1)
+        u = TrialFunction(self.V)
+        v = TestFunction(self.V)
+        self.a = lambda k: k*inner(grad(u), grad(v))*dx
         # Call parent init
         TestBase.__init__(self)
             
     def run(self):
-        N = self.N
         Q = self.Q
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                A = OnlineAffineExpansionStorage(self.Q)
+                a = ()
                 for i in range(self.Q):
-                    # Generate random matrix
-                    A[i] = OnlineMatrix_Type(self.rand(N, N))
+                    # Generate random vector
+                    k = RandomDolfinFunction(self.V)
+                    # Generate random form
+                    a += (self.a(k),)
+                A = AffineExpansionStorage(a)
                 # Genereate random theta
-                theta = tuple(self.rand(Q))
+                theta = RandomTuple(Q)
                 # Store
                 self.storage[self.index] = (theta, A)
             else:
@@ -60,14 +62,14 @@ class Test(TestBase):
                 # Time using sum(product()) method
                 assembled_matrix_sum_product = sum(product(theta, A))
         if test_id >= 2:
-            return norm(assembled_matrix_builtin - assembled_matrix_sum_product)/norm(assembled_matrix_builtin)
+            return (assembled_matrix_builtin - assembled_matrix_sum_product).norm("frobenius")/assembled_matrix_builtin.norm("frobenius")
 
-for i in range(4, 9):
-    N = 2**i
+for i in range(3, 7):
+    Nh = 2**i
     for j in range(1, 4):
         Q = 10 + 4*j
-        test = Test(N, Q)
-        print("N =", N, "and Q =", Q)
+        test = Test(Nh, Q)
+        print("Nh =", test.V.dim(), "and Q =", Q)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()
