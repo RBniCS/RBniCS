@@ -60,14 +60,3 @@ online/*.pyc
 online/*/*~
 online/*/*.bak
 online/*/*.pyc
-# ... online/numpy subpackage ...
-!online/numpy/
-!online/numpy/*
-online/numpy/*~
-online/numpy/*.bak
-online/numpy/*.pyc
-!online/numpy/*/
-!online/numpy/*/*
-online/numpy/*/*~
-online/numpy/*/*.bak
-online/numpy/*/*.pyc

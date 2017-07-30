@@ -1,0 +1,18 @@
+# Ignore everything ...
+*
+*/
+# ... except this file ...
+!.gitignore
+# ... __init__ file of this package ...
+!__init__.py
+# ... numpy subpackage ...
+!numpy/
+!numpy/*
+numpy/*~
+numpy/*.bak
+numpy/*.pyc
+!numpy/*/
+!numpy/*/*
+numpy/*/*~
+numpy/*/*.bak
+numpy/*/*.pyc
