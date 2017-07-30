@@ -208,7 +208,7 @@ class _ScipyImplicitEuler(object):
             solver.solve()
             all_solutions.append(function_copy(self.solution))
             self.solution_dot.vector()[:] = (all_solutions[-1].vector() - all_solutions[-2].vector())/self._time_step_size
-            all_solutions_dot.append(self.solution_dot)
+            all_solutions_dot.append(function_copy(self.solution_dot))
             self.solution_previous.vector()[:] = self.solution.vector()
             if self._monitor is not None:
                 self._monitor(t, self.solution, self.solution_dot)
