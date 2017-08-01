@@ -16,15 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from navier_stokes_tensor3_pod_galerkin_reduced_problem import NavierStokesPODGalerkinReducedProblem
-from navier_stokes_tensor3_problem import NavierStokesProblem
-#from rbnics.problems.navier_stokes.navier_stokes_rb_reduced_problem import NavierStokesRBReducedProblem
-from navier_stokes_tensor3_reduced_problem import NavierStokesReducedProblem
+from navier_stokes_tensor3_pod_galerkin_reduced_problem import NavierStokesTensor3PODGalerkinReducedProblem
+from navier_stokes_tensor3_problem import NavierStokesTensor3Problem
+#from rbnics.problems.navier_stokes.navier_stokes_rb_reduced_problem import NavierStokesTensor3RBReducedProblem
+from navier_stokes_tensor3_reduced_problem import NavierStokesTensor3ReducedProblem
 
 
 __all__ = [
-    'NavierStokesPODGalerkinReducedProblem',
-    'NavierStokesProblem',
-#    'NavierStokesRBReducedProblem',
-    'NavierStokesReducedProblem'
+    'NavierStokesTensor3PODGalerkinReducedProblem',
+    'NavierStokesTensor3Problem',
+#    'NavierStokesTensor3RBReducedProblem',
+    'NavierStokesTensor3ReducedProblem'
 ]

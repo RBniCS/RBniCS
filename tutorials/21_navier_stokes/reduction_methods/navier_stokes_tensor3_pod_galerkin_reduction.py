@@ -16,16 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
-from rbnics.reduction_methods.base import NonlinearPODGalerkinReduction
-from problems.navier_stokes_tensor3_problem import NavierStokesProblem
-from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
-from navier_stokes_tensor3_reduction_method import NavierStokesReductionMethod
+from rbnics.reduction_methods.navier_stokes import NavierStokesPODGalerkinReduction
+from problems.navier_stokes_tensor3_problem import NavierStokesTensor3Problem
+from navier_stokes_tensor3_reduction_method import NavierStokesTensor3ReductionMethod
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 
-NavierStokesPODGalerkinReduction_Base = NonlinearPODGalerkinReduction(NavierStokesReductionMethod(StokesPODGalerkinReduction))
+NavierStokesTensor3PODGalerkinReduction_Base = NavierStokesTensor3ReductionMethod(NavierStokesPODGalerkinReduction)
 
-@Extends(NavierStokesPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
-@ReductionMethodFor(NavierStokesProblem, "PODGalerkin")
-class NavierStokesPODGalerkinReduction(NavierStokesPODGalerkinReduction_Base):
+@Extends(NavierStokesTensor3PODGalerkinReduction_Base) # needs to be first in order to override for last the methods
+@ReductionMethodFor(NavierStokesTensor3Problem, "PODGalerkin")
+class NavierStokesTensor3PODGalerkinReduction(NavierStokesTensor3PODGalerkinReduction_Base):
     pass
     

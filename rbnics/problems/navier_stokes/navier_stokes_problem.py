@@ -54,8 +54,9 @@ class NavierStokesProblem(NavierStokesProblem_Base):
             for term in ("a", "b", "bt", "c", "f", "g"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
-                (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
-                 - assembled_operator["f"] - assembled_operator["g"] + assembled_operator["c"]
+                  (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
+                 + assembled_operator["c"]
+                 - assembled_operator["f"] - assembled_operator["g"]
             )
             
         def jacobian_eval(self, solution):
@@ -64,7 +65,7 @@ class NavierStokesProblem(NavierStokesProblem_Base):
             for term in ("a", "b", "bt", "dc"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
-                  assembled_operator["a"] + assembled_operator["dc"]
-                + assembled_operator["b"] + assembled_operator["bt"]
+                  assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
+                + assembled_operator["dc"]
             )
     

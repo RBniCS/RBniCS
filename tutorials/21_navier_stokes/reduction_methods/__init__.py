@@ -16,12 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from navier_stokes_tensor3_pod_galerkin_reduction import NavierStokesPODGalerkinReduction
-#from rbnics.reduction_methods.navier_stokes.navier_stokes_rb_reduction import NavierStokesRBReduction
-from navier_stokes_tensor3_reduction_method import NavierStokesReductionMethod
+from navier_stokes_tensor3_pod_galerkin_reduction import NavierStokesTensor3PODGalerkinReduction
+#from rbnics.reduction_methods.navier_stokes.navier_stokes_rb_reduction import NavierStokesTensor3RBReduction
+from navier_stokes_tensor3_reduction_method import NavierStokesTensor3ReductionMethod
 
 __all__ = [
-    'NavierStokesPODGalerkinReduction',
-#    'NavierStokesRBReduction',
-    'NavierStokesReductionMethod'
+    'NavierStokesTensor3PODGalerkinReduction',
+#    'NavierStokesTensor3RBReduction',
+    'NavierStokesTensor3ReductionMethod'
 ]

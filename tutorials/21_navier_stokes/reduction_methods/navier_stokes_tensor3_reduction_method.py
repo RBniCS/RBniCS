@@ -16,18 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.reduction_methods.base import NonlinearReductionMethod
-from problems.navier_stokes_tensor3_problem import NavierStokesProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.reduction_methods.navier_stokes import NavierStokesReductionMethod
+from rbnics.utils.decorators import Extends
 
-def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
+def NavierStokesTensor3ReductionMethod(NavierStokesReductionMethod_DerivedClass):
     
-    NavierStokesReductionMethod_Base = NonlinearReductionMethod(StokesReductionMethod_DerivedClass)
+    NavierStokesTensor3ReductionMethod_Base = NavierStokesReductionMethod_DerivedClass
     
-    @Extends(NavierStokesReductionMethod_Base)
-    class NavierStokesReductionMethod_Class(NavierStokesReductionMethod_Base):
+    @Extends(NavierStokesTensor3ReductionMethod_Base)
+    class NavierStokesTensor3ReductionMethod_Class(NavierStokesTensor3ReductionMethod_Base):
         pass
         
     # return value (a class) for the decorator
-    return NavierStokesReductionMethod_Class
+    return NavierStokesTensor3ReductionMethod_Class
         
