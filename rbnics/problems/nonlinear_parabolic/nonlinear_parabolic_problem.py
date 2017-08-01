@@ -40,7 +40,6 @@ class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
     class ProblemSolver(NonlinearParabolicProblem_Base.ProblemSolver):
         def residual_eval(self, t, solution, solution_dot):
             problem = self.problem
-            problem.set_time(t)
             assembled_operator = dict()
             assembled_operator["m"] = sum(product(problem.compute_theta("m"), problem.operator["m"]))
             assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"]))
@@ -53,7 +52,6 @@ class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
             
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
             problem = self.problem
-            problem.set_time(t)
             assembled_operator = dict()
             assembled_operator["m"] = sum(product(problem.compute_theta("m"), problem.operator["m"]))
             assembled_operator["da"] = sum(product(problem.compute_theta("da"), problem.operator["da"]))

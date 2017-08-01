@@ -48,7 +48,7 @@ class TimeStepping(AbstractTimeStepping):
             ic = problem_wrapper.ic_eval()
             if ic is not None:
                 assign(solution, ic)
-            self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
+            self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
             self.solver  = self.problem.create_solver({"problem_type": "linear"})
         elif problem_wrapper.time_order() == 2:
             assert solution_dot_dot is not None
@@ -58,7 +58,7 @@ class TimeStepping(AbstractTimeStepping):
                 assert len(ic_eval_output) == 2
                 assign(solution, ic_eval_output[0])
                 assign(solution_dot, ic_eval_output[1])
-            self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
+            self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
             self.solver  = self.problem.create_solver({"problem_type": "nonlinear"})
         else:
             raise AssertionError("Invalid time order in TimeStepping.__init__().")
@@ -72,12 +72,13 @@ class TimeStepping(AbstractTimeStepping):
         return self.solver.solve()
         
 class _TimeDependentProblem1(object):
-    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval):
+    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
         self.residual_eval = residual_eval
         self.solution = solution
         self.solution_dot = solution_dot
         self.bc_eval = bc_eval
         self.jacobian_eval = jacobian_eval
+        self.set_time = set_time
         
     def create_solver(self, parameters=None):
         if parameters is None:
@@ -98,18 +99,18 @@ class _TimeDependentProblem1(object):
         assert problem_type in ("linear", "nonlinear")
         
         if integrator_type == "beuler":
-            solver = _ScipyImplicitEuler(self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval, problem_type)
+            solver = _ScipyImplicitEuler(self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval, self.set_time, problem_type)
             solver.set_parameters(parameters)
             return solver
         elif integrator_type == "ida":
-            solver = _AssimuloIDA(self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval)
+            solver = _AssimuloIDA(self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval, self.set_time)
             solver.set_parameters(parameters)
             return solver
         else:
             raise AssertionError("Invalid integrator type in _TimeDependentProblem_Base.create_solver().")
         
 class _ScipyImplicitEuler(object):
-    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, problem_type):
+    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time, problem_type):
         self.residual_eval = residual_eval
         self.solution = solution
         self.solution_dot = solution_dot
@@ -117,11 +118,13 @@ class _ScipyImplicitEuler(object):
         self.zero = Function(self.solution.vector().N) # equal to zero
         self.bc_eval = bc_eval
         self.jacobian_eval = jacobian_eval
+        self.set_time = set_time
         self.problem_type = problem_type
         # Setup solver
         if problem_type == "linear":
             class _LinearSolver(LinearSolver):
                 def __init__(self_, t):
+                    self.set_time(t)
                     minus_solution_previous_over_dt = self.solution_previous
                     minus_solution_previous_over_dt.vector()[:] /= - self._time_step_size
                     lhs = self.jacobian_eval(t, self.zero, self.zero, 1./self._time_step_size)
@@ -134,6 +137,8 @@ class _ScipyImplicitEuler(object):
             class _NonlinearSolver(NonlinearSolver):
                 def __init__(self_, t):
                     class _NonlinearProblemWrapper(NonlinearProblemWrapper):
+                        def __init__(self_):
+                            self.set_time(t)
                         def _store_solution_and_solution_dot(self_, solution):
                             self.solution.vector()[:] = solution.vector()
                             self.solution_dot.vector()[:] = (solution.vector() - self.solution_previous.vector())/self._time_step_size
@@ -217,12 +222,13 @@ class _ScipyImplicitEuler(object):
         
 if has_IDA:
     class _AssimuloIDA(object):
-        def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval):
+        def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
             self.residual_eval = residual_eval
             self.solution = solution
             self.solution_dot = solution_dot
             self.bc_eval = bc_eval
             self.jacobian_eval = jacobian_eval
+            self.set_time = set_time
             # We should be solving a square system
             self.sample_residual = residual_eval(0, self.solution, self.solution_dot)
             self.sample_jacobian = jacobian_eval(0, self.solution, self.solution_dot, 0.)
@@ -240,6 +246,8 @@ if has_IDA:
                     self.current_bc.apply_to_vector(self.solution.vector())
                     solution[:] = asarray(self.solution.vector()).reshape(-1)
             def _assimulo_residual_eval(t, solution, solution_dot):
+                # Store current time
+                self.set_time(t)
                 # Convert to a matrix with one column, rather than an array
                 _store_solution_and_solution_dot(t, solution, solution_dot)
                 # Compute residual
@@ -250,6 +258,8 @@ if has_IDA:
                 # Convert to an array, rather than a matrix with one column, and return
                 return asarray(residual_vector).reshape(-1)
             def _assimulo_jacobian_eval(solution_dot_coefficient, t, solution, solution_dot):
+                # Store current time
+                self.set_time(t)
                 # Convert to a matrix with one column, rather than an array
                 _store_solution_and_solution_dot(t, solution, solution_dot)
                 # Compute jacobian

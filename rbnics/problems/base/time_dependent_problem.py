@@ -257,9 +257,12 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             return self._solution_over_time
             
         class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
-            def bc_eval(self, t):
+            def set_time(self, t):
                 problem = self.problem
                 problem.set_time(t)
+                
+            def bc_eval(self, t):
+                assert self.problem.t == t
                 return ParametrizedDifferentialProblem_DerivedClass.ProblemSolver.bc_eval(self)
                 
             def ic_eval(self):

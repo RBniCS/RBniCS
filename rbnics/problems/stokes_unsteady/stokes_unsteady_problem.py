@@ -45,7 +45,6 @@ class StokesUnsteadyProblem(StokesUnsteadyProblem_Base):
     class ProblemSolver(StokesUnsteadyProblem_Base.ProblemSolver):
         def residual_eval(self, t, solution, solution_dot):
             problem = self.problem
-            problem.set_time(t)
             assembled_operator = dict()
             for term in ("m", "a", "b", "bt", "f", "g"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
@@ -60,7 +59,6 @@ class StokesUnsteadyProblem(StokesUnsteadyProblem_Base):
             
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
             problem = self.problem
-            problem.set_time(t)
             assembled_operator = dict()
             for term in ("m", "a", "b", "bt"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))

@@ -34,7 +34,6 @@ def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
             def residual_eval(self, t, solution, solution_dot):
                 problem = self.problem
                 N = self.N
-                problem.set_time(t)
                 assembled_operator = dict()
                 for term in ("m", "a", "b", "bt", "f", "g"):
                     assert problem.terms_order[term] in (1, 2)
@@ -56,7 +55,6 @@ def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
                 problem = self.problem
                 N = self.N
-                problem.set_time(t)
                 assembled_operator = dict()
                 for term in ("m", "a", "b", "bt"):
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))

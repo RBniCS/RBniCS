@@ -34,7 +34,6 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
             def residual_eval(self, t, solution, solution_dot):
                 problem = self.problem
                 N = self.N
-                problem.set_time(t)
                 assembled_operator = dict()
                 assembled_operator["m"] = sum(product(problem.compute_theta("m"), problem.operator["m"][:N, :N]))
                 assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N]))
@@ -48,7 +47,6 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
                 problem = self.problem
                 N = self.N
-                problem.set_time(t)
                 assembled_operator = dict()
                 assembled_operator["m"] = sum(product(problem.compute_theta("m"), problem.operator["m"][:N, :N]))
                 assembled_operator["da"] = sum(product(problem.compute_theta("da"), problem.operator["da"][:N, :N]))

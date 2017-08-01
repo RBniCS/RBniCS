@@ -37,6 +37,9 @@ class TimeStepping(object):
 class TimeDependentProblemWrapper(object):
     __metaclass__ = ABCMeta
     
+    def set_time(self, t):
+        pass
+    
     @abstractmethod
     def time_order(self):
         pass

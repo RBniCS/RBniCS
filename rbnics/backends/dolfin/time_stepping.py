@@ -38,7 +38,7 @@ class TimeStepping(AbstractTimeStepping):
             ic = problem_wrapper.ic_eval()
             if ic is not None:
                 assign(solution, ic)
-            self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
+            self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
             self.solver  = _PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy()) # create copies to avoid internal storage overwriting
         elif problem_wrapper.time_order() == 2:
             assert solution_dot_dot is not None
@@ -48,7 +48,7 @@ class TimeStepping(AbstractTimeStepping):
                 assert len(ic_eval_output) == 2
                 assign(solution, ic_eval_output[0])
                 assign(solution_dot, ic_eval_output[1])
-            self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval)
+            self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
             self.solver  = _PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy(), self.problem.solution_dot_dot.vector().copy()) # create copies to avoid internal storage overwriting
         else:
             raise AssertionError("Invalid time order in TimeStepping.__init__().")
@@ -89,13 +89,14 @@ class TimeStepping(AbstractTimeStepping):
             raise AssertionError("Invalid time order in TimeStepping.solve().")
         
 class _TimeDependentProblem_Base(object):
-    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval):
+    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
         # Store input arguments
         self.residual_eval = residual_eval
         self.solution = solution
         self.solution_dot = solution_dot
         self.bc_eval = bc_eval
         self.jacobian_eval = jacobian_eval
+        self.set_time = set_time
         # Storage for derivatives
         self.V = solution.function_space()
         # Storage for residual and jacobian
@@ -262,8 +263,8 @@ class _TimeDependentProblem_Base(object):
         self.solution_dot.vector().apply("add")
         
 class _TimeDependentProblem1(_TimeDependentProblem_Base):
-    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval):
-        _TimeDependentProblem_Base.__init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval)
+    def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
+        _TimeDependentProblem_Base.__init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time)
         # Auxiliary storage for time order
         self.time_order = 1
         # Make sure that residual vector and jacobian matrix are properly initialized
@@ -293,7 +294,8 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
            
            (from PETSc/src/ts/interface/ts.c)
         """
-        # 1. Store solution and solution_dot in dolfin data structures
+        # 1. Store solution and solution_dot in dolfin data structures, as well as current time
+        self.set_time(t)
         self.update_solution(solution)
         self.update_solution_dot(solution_dot)
         # 2. Assemble the residual
@@ -348,8 +350,8 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
            
            (from PETSc/src/ts/interface/ts.c)
         """
-        # 1. There is no need to store solution and solution_dot in dolfin data structures, since this has
-        #    already been done by the residual
+        # 1. There is no need to store solution and solution_dot in dolfin data structures, nor current time,
+        #    since this has already been done by the residual
         # 2. Assemble the jacobian
         assert jacobian == preconditioner
         self.jacobian_matrix = PETScMatrix(jacobian)
@@ -363,8 +365,8 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         self._jacobian_matrix_assemble(jacobian_form_or_matrix, overwrite)
         
 class _TimeDependentProblem2(_TimeDependentProblem_Base):
-    def __init__(self, residual_eval, solution, solution_dot, solution_dot_dot, bc_eval, jacobian_eval):
-        _TimeDependentProblem_Base.__init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval)
+    def __init__(self, residual_eval, solution, solution_dot, solution_dot_dot, bc_eval, jacobian_eval, set_time):
+        _TimeDependentProblem_Base.__init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time)
         # Additional storage for derivatives
         self.solution_dot_dot = solution_dot_dot
         # Auxiliary storage for time order
@@ -399,7 +401,8 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
            
            (from PETSc/src/ts/interface/ts.c)
         """
-        # 1. Store solution and solution_dot in dolfin data structures
+        # 1. Store solution and solution_dot in dolfin data structures, as well as current time
+        self.set_time(t)
         self.update_solution(solution)
         self.update_solution_dot(solution_dot)
         self.update_solution_dot_dot(solution_dot_dot)
@@ -451,8 +454,8 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
            
            (from PETSc/src/ts/interface/ts.c)
         """
-        # 1. There is no need to store solution, solution_dot and solution_dot_dot in dolfin data structures, 
-        #    since this has already been done by the residual
+        # 1. There is no need to store solution, solution_dot and solution_dot_dot in dolfin data structures,
+        #    nor current time, since this has already been done by the residual
         # 2. Assemble the jacobian
         assert jacobian == preconditioner
         self.jacobian_matrix = PETScMatrix(jacobian)
