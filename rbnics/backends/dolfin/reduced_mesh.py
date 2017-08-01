@@ -16,9 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import CellFunction, cells, DEBUG, entities, File, has_hdf5, log, Mesh, MeshFunction
-if has_hdf5():
+from dolfin import CellFunction, cells, DEBUG, entities, File, has_hdf5, has_hdf5_parallel, log, Mesh, MeshFunction, XDMFFile
+if has_hdf5() and has_hdf5_parallel():
     from dolfin import HDF5File
+    hdf5_file_type = "h5" # Will be switched to "xdmf" in future, because there is currently a bug in reading back in 1D meshes from XDMF
 import rbnics.backends.dolfin
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
 from rbnics.backends.dolfin.wrapping import FunctionSpace
@@ -251,15 +252,22 @@ class ReducedMesh(AbstractReducedMesh):
         # reduced_mesh
         for (index, reduced_mesh) in self.reduced_mesh.iteritems():
             mesh_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index)
-            if not has_hdf5():
+            if not has_hdf5() or not has_hdf5_parallel():
                 assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
                 mesh_filename = mesh_filename + ".xml"
                 File(mesh_filename) << reduced_mesh
             else:
-                mesh_filename = mesh_filename + ".h5"
-                output_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "w")
-                output_file.write(reduced_mesh, "/mesh")
-                output_file.close()
+                assert hdf5_file_type in ("h5", "xdmf")
+                if hdf5_file_type == "h5":
+                    mesh_filename = mesh_filename + ".h5"
+                    output_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "w")
+                    output_file.write(reduced_mesh, "/mesh")
+                    output_file.close()
+                else:
+                    mesh_filename = mesh_filename + ".xdmf"
+                    output_file = XDMFFile(self.mesh.mpi_comm(), mesh_filename)
+                    output_file.write(reduced_mesh)
+                    output_file.close()
         # cannot save reduced_function_spaces to file
         # reduced_subdomain_data
         if self.subdomain_data is not None:
@@ -267,28 +275,42 @@ class ReducedMesh(AbstractReducedMesh):
                 subdomain_index = 0
                 for (subdomain, reduced_subdomain) in reduced_subdomain_data.iteritems():
                     subdomain_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index)
-                    if not has_hdf5():
+                    if not has_hdf5() or not has_hdf5_parallel():
                         assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
                         subdomain_filename = subdomain_filename + ".xml"
                         File(subdomain_filename) << reduced_subdomain
                     else:
-                        subdomain_filename = subdomain_filename + ".h5"
-                        output_file = HDF5File(self.mesh.mpi_comm(), subdomain_filename, "w")
-                        output_file.write(reduced_subdomain, "/subdomain")
-                        output_file.close()
+                        assert hdf5_file_type in ("h5", "xdmf")
+                        if hdf5_file_type == "h5":
+                            subdomain_filename = subdomain_filename + ".h5"
+                            output_file = HDF5File(self.mesh.mpi_comm(), subdomain_filename, "w")
+                            output_file.write(reduced_subdomain, "/subdomain")
+                            output_file.close()
+                        else:
+                            subdomain_filename = subdomain_filename + ".xdmf"
+                            output_file = XDMFFile(self.mesh.mpi_comm(), subdomain_filename)
+                            output_file.write(reduced_subdomain)
+                            output_file.close()
                     subdomain_index += 1
         # reduced_mesh_markers
         for (index, reduced_mesh_markers) in self.reduced_mesh_markers.iteritems():
             marker_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_markers"
-            if not has_hdf5():
+            if not has_hdf5() or not has_hdf5_parallel():
                 assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
                 marker_filename = marker_filename + ".xml"
                 File(marker_filename) << reduced_mesh_markers
             else:
-                marker_filename = marker_filename + ".h5"
-                output_file = HDF5File(self.mesh.mpi_comm(), marker_filename, "w")
-                output_file.write(reduced_mesh_markers, "/markers")
-                output_file.close()
+                assert hdf5_file_type in ("h5", "xdmf")
+                if hdf5_file_type == "h5":
+                    marker_filename = marker_filename + ".h5"
+                    output_file = HDF5File(self.mesh.mpi_comm(), marker_filename, "w")
+                    output_file.write(reduced_mesh_markers, "/markers")
+                    output_file.close()
+                else:
+                    marker_filename = marker_filename + ".xdmf"
+                    output_file = XDMFFile(self.mesh.mpi_comm(), marker_filename)
+                    output_file.write(reduced_mesh_markers)
+                    output_file.close()
         # Init
         self._init_for_save_if_needed()
         # reduced_mesh_dofs_list
@@ -396,16 +418,23 @@ class ReducedMesh(AbstractReducedMesh):
             # reduced_mesh
             for index in range(Nmax):
                 mesh_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index)
-                if not has_hdf5():
+                if not has_hdf5() or not has_hdf5_parallel():
                     assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to load a mesh in parallel"
                     mesh_filename = mesh_filename + ".xml"
                     reduced_mesh = Mesh(mesh_filename)
                 else:
-                    mesh_filename = mesh_filename + ".h5"
                     reduced_mesh = Mesh()
-                    input_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "r")
-                    input_file.read(reduced_mesh, "/mesh", False)
-                    input_file.close()
+                    assert hdf5_file_type in ("h5", "xdmf")
+                    if hdf5_file_type == "h5":
+                        mesh_filename = mesh_filename + ".h5"
+                        input_file = HDF5File(self.mesh.mpi_comm(), mesh_filename, "r")
+                        input_file.read(reduced_mesh, "/mesh", False)
+                        input_file.close()
+                    else:
+                        mesh_filename = mesh_filename + ".xdmf"
+                        input_file = XDMFFile(self.mesh.mpi_comm(), mesh_filename)
+                        input_file.read(reduced_mesh)
+                        input_file.close()
                 self.reduced_mesh[index] = reduced_mesh
                 # Also initialize reduced function spaces
                 reduced_function_spaces = list()
@@ -419,16 +448,23 @@ class ReducedMesh(AbstractReducedMesh):
                     reduced_subdomain_data = dict()
                     for (subdomain_index, subdomain) in enumerate(self.subdomain_data):
                         subdomain_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index)
-                        if not has_hdf5():
+                        if not has_hdf5() or not has_hdf5_parallel():
                             assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to load a mesh in parallel"
                             subdomain_filename = subdomain_filename + ".xml"
                             reduced_subdomain = MeshFunction("size_t", self.reduced_mesh[index], subdomain_filename)
                         else:
-                            subdomain_filename = subdomain_filename + ".h5"
-                            input_file = HDF5File(self.mesh.mpi_comm(), subdomain_filename, "r")
                             reduced_subdomain = MeshFunction("size_t", self.reduced_mesh[index], subdomain.dim())
-                            input_file.read(reduced_subdomain, "/subdomain")
-                            input_file.close()
+                            assert hdf5_file_type in ("h5", "xdmf")
+                            if hdf5_file_type == "h5":
+                                subdomain_filename = subdomain_filename + ".xdmf"
+                                input_file = XDMFFile(self.mesh.mpi_comm(), subdomain_filename)
+                                input_file.read(reduced_subdomain)
+                                input_file.close()
+                            else:
+                                subdomain_filename = subdomain_filename + ".h5"
+                                input_file = HDF5File(self.mesh.mpi_comm(), subdomain_filename, "r")
+                                input_file.read(reduced_subdomain)
+                                input_file.close()
                         reduced_subdomain_data[subdomain] = reduced_subdomain
                     self.reduced_subdomain_data[index] = reduced_subdomain_data
                 else:
