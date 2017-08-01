@@ -596,7 +596,11 @@ class ReducedMesh(AbstractReducedMesh):
         assert len(components_tuple) > 0
         if len(components_tuple) == 1:
             component_as_int = components_tuple[0]
-            if component_as_int is None:
+            if (
+                component_as_int is None # all components
+                    or 
+                len(auxiliary_reduced_problem.Z._components_name) is 1 # subcomponent of a problem with only one component
+            ):
                 # Initialize a basis function matrix for all components
                 components_name = auxiliary_reduced_problem.Z._components_name
             else:
@@ -604,13 +608,16 @@ class ReducedMesh(AbstractReducedMesh):
                 assert isinstance(component_as_int, int)
                 components_name = [auxiliary_reduced_problem.Z._components_name[component_as_int]]
         else:
-            # This handles the case where a subcomponent of a single component is required
+            # This handles the case where a subcomponent of a component is required
             # (e.g., x subcomponent of the velocity field component of a (velocity, pressure) solution)
             # Since basis are constructed with respect to components (rather than subcomponents) we
             # use only the first entry in the tuple to detect the corresponding component name
             assert all([isinstance(c, int) for c in components_tuple]) # there is no None and all entries are integer
-            component_as_int = components_tuple[0]
-            components_name = [auxiliary_reduced_problem.Z._components_name[component_as_int]]
+            if len(auxiliary_reduced_problem.Z._components_name) is 1: # subcomponent of a problem with only one component
+                components_name = [auxiliary_reduced_problem.Z._components_name[0]]
+            else: # subcomponent of a problem with more than one component
+                component_as_int = components_tuple[0]
+                components_name = [auxiliary_reduced_problem.Z._components_name[component_as_int]]
             # Note that the discard of all other subcomponents is automatically handled by
             # evaluate_basis_functions_matrix_at_dofs, which will be provided reduced dofs
             # acting only on the active subcomponent.
