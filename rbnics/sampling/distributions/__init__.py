@@ -21,6 +21,7 @@ from rbnics.sampling.distributions.discrete_distribution import DiscreteDistribu
 from rbnics.sampling.distributions.distribution import Distribution
 from rbnics.sampling.distributions.draw_from import DrawFrom
 from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution
+from rbnics.sampling.distributions.log_equispaced_distribution import LogEquispacedDistribution
 from rbnics.sampling.distributions.log_uniform_distribution import LogUniformDistribution
 from rbnics.sampling.distributions.uniform_distribution import UniformDistribution
 
@@ -29,6 +30,7 @@ __all__ = [
     'DiscreteDistribution',
     'Distribution',
     'EquispacedDistribution',
+    'LogEquispacedDistribution',
     'LogUniformDistribution',
     'UniformDistribution'
 ]

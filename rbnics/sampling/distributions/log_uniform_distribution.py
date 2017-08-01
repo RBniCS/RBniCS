@@ -17,19 +17,17 @@
 #
 
 from math import exp, log
-from numpy import random
 from rbnics.sampling.distributions.distribution import Distribution
+from rbnics.sampling.distributions.uniform_distribution import UniformDistribution
 from rbnics.utils.decorators import Extends, override
 
 @Extends(Distribution)
 class LogUniformDistribution(Distribution):
+    def __init__(self):
+        self.uniform_distribution = UniformDistribution()
+        
     @override
     def sample(self, box, n):
-        set_ = list() # of tuples
-        for i in range(n):
-            mu = list() # of numbers
-            for box_p in box:
-                mu.append(exp(random.uniform(log(box_p[0]), log(box_p[1]))))
-            set_.append(tuple(mu))
-        return set_
-        
+        log_box = [(log(box_p[0]), log(box_p[1])) for box_p in box]
+        log_set = self.uniform_distribution.sample(log_box, n)
+        return [tuple(exp(log_mu_p) for log_mu_p in log_mu) for log_mu in log_set]

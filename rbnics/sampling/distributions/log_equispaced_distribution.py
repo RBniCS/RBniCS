@@ -16,16 +16,18 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.sampling.parameter_space_subset import ParameterSpaceSubset
-from rbnics.sampling.distributions import DrawFrom, EquispacedDistribution, LogEquispacedDistribution, LogUniformDistribution, UniformDistribution
+from math import exp, log
+from rbnics.sampling.distributions.distribution import Distribution
+from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution
+from rbnics.utils.decorators import Extends, override
 
-__all__ = [
-    # rbnics.sampling
-    'ParameterSpaceSubset',
-    # rbnics.sampling.distributions
-    'DrawFrom',
-    'EquispacedDistribution',
-    'LogEquispacedDistribution',
-    'LogUniformDistribution',
-    'UniformDistribution'
-]
+@Extends(Distribution)
+class LogEquispacedDistribution(Distribution):
+    def __init__(self):
+        self.equispaced_distribution = EquispacedDistribution()
+        
+    @override
+    def sample(self, box, n):
+        log_box = [(log(box_p[0]), log(box_p[1])) for box_p in box]
+        log_set = self.equispaced_distribution.sample(log_box, n)
+        return [tuple(exp(log_mu_p) for log_mu_p in log_mu) for log_mu in log_set]

@@ -39,7 +39,7 @@ from rbnics.problems.parabolic_coercive import ParabolicCoerciveProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
 from rbnics.problems.stokes_unsteady import StokesUnsteadyProblem
-from rbnics.sampling import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
+from rbnics.sampling import DrawFrom, EquispacedDistribution, LogEquispacedDistribution, LogUniformDistribution, UniformDistribution
 from rbnics.scm import SCM, ExactCoercivityConstant
 from rbnics.shape_parametrization import ShapeParametrization
 from rbnics.utils.decorators import CustomizeReducedProblemFor, CustomizeReductionMethodFor, exact_problem
@@ -63,6 +63,7 @@ __all__ += [
     # rbnics.sampling
     'DrawFrom',
     'EquispacedDistribution',
+    'LogEquispacedDistribution',
     'LogUniformDistribution',
     'UniformDistribution',
     # rbnics.scm
