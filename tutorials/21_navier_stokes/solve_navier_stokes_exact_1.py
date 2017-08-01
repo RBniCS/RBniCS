@@ -17,11 +17,9 @@
 #
 
 from dolfin import *
-set_log_level(PROGRESS)
 from rbnics import *
-from problems import *
-from reduction_methods import *
 
+@ExactParametrizedFunctions()
 class NavierStokes(NavierStokesProblem):
     
     ## Default initialization of members
@@ -46,13 +44,17 @@ class NavierStokes(NavierStokesProblem):
         self.f = Constant((0.0, 0.0))
         self.g = Constant(0.0)
         # Customize nonlinear solver parameters
-        self._nonlinear_solver_parameters = {
+        self._nonlinear_solver_parameters.update({
             "linear_solver": "mumps",
             "maximum_iterations": 20,
             "report": True,
             "line_search": "bt",
-            "error_on_nonconvergence": False
-        }
+            "error_on_nonconvergence": True
+        })
+        
+    ## Return custom problem name
+    def name(self):
+        return "NavierStokesExact1"
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
@@ -85,34 +87,25 @@ class NavierStokes(NavierStokesProblem):
         if term == "a":
             u = self.du
             v = self.v
-            a0 = 0
-            for s in range(2):
-                a0 += inner(grad(u) + transpose(grad(u)), grad(v))*dx(s + 1) #####transpose(grad(u)) ci serve?
-            if term == "a":
-                return (a0,)
+            a0 = inner(grad(u) + transpose(grad(u)), grad(v))*dx
+            return (a0,)
         elif term == "b":
             u = self.du
             q = self.q
-            b0 = 0
-            for s in range(2):
-                b0 += - q*div(u)*dx(s + 1)
+            b0 = - q*div(u)*dx
             return (b0,)
         elif term in ("bt", "bt_restricted"):
             p = self.dp
             if term == "bt":
                 v = self.v
-            elif term == "bt_restricted":
+            else:
                 v = self.r
-            bt0 = 0
-            for s in range(2):
-                bt0 += - p*div(v)*dx(s + 1)
+            bt0 = - p*div(v)*dx
             return (bt0,)
         elif term in ("c", "dc"):
             u = self.u
             v = self.v
-            c0 = 0
-            for s in range(2):
-                c0 += inner(grad(u)*u, v)*dx(s + 1)
+            c0 = inner(grad(u)*u, v)*dx
             if term == "c":
                 return (c0,)
             else:
@@ -120,15 +113,11 @@ class NavierStokes(NavierStokesProblem):
                 return (derivative(c0, u, du),)
         elif term == "f":
             v = self.v
-            f0 = 0
-            for s in range(2):
-                f0 += inner(self.f, v)*dx(s + 1)
+            f0 = inner(self.f, v)*dx
             return (f0,)
         elif term == "g":
             q = self.q
-            g0 = 0
-            for s in range(2):
-                g0 += self.g*q*dx(s + 1)
+            g0 = self.g*q*dx
             return (g0,)
         elif term == "dirichlet_bc_u":
             bc0 = [DirichletBC(self.V.sub(0), self.inlet,           self.boundaries, 1),
@@ -161,7 +150,10 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
     class ReducedNavierStokes(ReducedNavierStokes_Base):
         def __init__(self, truth_problem, **kwargs):
             ReducedNavierStokes_Base.__init__(self, truth_problem, **kwargs)
-            self._nonlinear_solver_parameters["report"] = True
+            self._nonlinear_solver_parameters.update({
+                "report": True,
+                "line_search": "wolfe"
+            })
             
     return ReducedNavierStokes
 
@@ -177,29 +169,25 @@ element   = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the Elastic Block class
-stokes_problem = NavierStokes(V, subdomains=subdomains, boundaries=boundaries)
-mu_range = [(1.,100.)]
-stokes_problem.set_mu_range(mu_range)
+navier_stokes_problem = NavierStokes(V, subdomains=subdomains, boundaries=boundaries)
+mu_range = [(1.0, 80.0)]
+navier_stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
-pod_galerkin_method = PODGalerkin(stokes_problem)
-pod_galerkin_method.set_Nmax(2)
+pod_galerkin_method = PODGalerkin(navier_stokes_problem)
+pod_galerkin_method.set_Nmax(20)
 
 # 5. Perform the offline phase
-lifting_mu = [1.0]
-stokes_problem.set_mu(lifting_mu)
-pod_galerkin_method.initialize_training_set(3, sampling=EquispacedDistribution())
-reduced_stokes_problem = pod_galerkin_method.offline()
+lifting_mu = (1.0,)
+navier_stokes_problem.set_mu(lifting_mu)
+pod_galerkin_method.initialize_training_set(100, sampling=EquispacedDistribution())
+reduced_navier_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = [80.0]
-stokes_problem.set_mu(online_mu)
-stokes_problem.solve()
-stokes_problem.export_solution("NavierStokes", "offline_solution")
-reduced_stokes_problem.set_mu(online_mu)
-reduced_stokes_problem.solve()
-print reduced_stokes_problem.compute_relative_error()
-reduced_stokes_problem.export_solution("NavierStokes", "online_solution")
+online_mu = (80.0,)
+reduced_navier_stokes_problem.set_mu(online_mu)
+reduced_navier_stokes_problem.solve()
+reduced_navier_stokes_problem.export_solution("NavierStokesExact1", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100)

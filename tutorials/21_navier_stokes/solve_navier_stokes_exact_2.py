@@ -17,7 +17,6 @@
 #
 
 from dolfin import *
-set_log_level(PROGRESS)
 from rbnics import *
 
 @ExactParametrizedFunctions()
@@ -82,13 +81,12 @@ class NavierStokes(NavierStokesProblem):
         
     ## Return custom problem name
     def name(self):
-        return "NavierStokesExact"
+        return "NavierStokesExact2"
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
         mu1 = mu[0]
-        mu2 = mu[1]
         if term == "a":
             theta_a0 = 1.
             return (theta_a0,)
@@ -215,25 +213,25 @@ element   = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the Elastic Block class
-stokes_problem = NavierStokes(V, subdomains=subdomains, boundaries=boundaries)
+navier_stokes_problem = NavierStokes(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(1.0, 80.0), (1.5, 2.5)]
-stokes_problem.set_mu_range(mu_range)
+navier_stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
-pod_galerkin_method = PODGalerkin(stokes_problem)
+pod_galerkin_method = PODGalerkin(navier_stokes_problem)
 pod_galerkin_method.set_Nmax(20)
 
 # 5. Perform the offline phase
 lifting_mu = (1.0, 2.0)
-stokes_problem.set_mu(lifting_mu)
+navier_stokes_problem.set_mu(lifting_mu)
 pod_galerkin_method.initialize_training_set(100, sampling=EquispacedDistribution())
-reduced_stokes_problem = pod_galerkin_method.offline()
+reduced_navier_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
 online_mu = (80.0, 1.5)
-reduced_stokes_problem.set_mu(online_mu)
-reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution("NavierStokesExact", "online_solution")
+reduced_navier_stokes_problem.set_mu(online_mu)
+reduced_navier_stokes_problem.solve()
+reduced_navier_stokes_problem.export_solution("NavierStokesExact2", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100)
