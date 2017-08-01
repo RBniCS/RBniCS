@@ -21,7 +21,7 @@ from mshr import *
 
 # Geometrical parameters
 pre_step_length = 4.
-after_step_length = 14.
+after_step_length = 18.
 pre_step_height = 3.
 after_step_height = 5.
 
