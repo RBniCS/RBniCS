@@ -26,13 +26,22 @@ from ufl.classes import CoefficientDerivative
 from ufl.constantvalue import as_ufl
 from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.corealg.multifunction import MultiFunction
+from ufl.domain import extract_domains
 from ufl.indexed import Indexed
 from ufl.log import error
 from ufl.tensors import ListTensor
 from dolfin import Function, split
 
 def expression_replace(expression, replacements):
-    return replace(expression, replacements)
+    replaced_expression = replace(expression, replacements)
+    replaced_expression_domains = extract_domains(replaced_expression)
+    assert len(replaced_expression_domains) in (0, 1)
+    expression_domains = extract_domains(expression)
+    assert len(expression_domains) in (0, 1)
+    assert len(expression_domains) == len(replaced_expression_domains)
+    if len(expression_domains) is 1:
+        assert replaced_expression_domains[0] is not expression_domains[0]
+    return replaced_expression
 
 class Replacer(MultiFunction):
     def __init__(self, mapping):

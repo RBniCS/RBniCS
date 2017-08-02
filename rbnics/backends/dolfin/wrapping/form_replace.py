@@ -16,12 +16,20 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.dolfin.wrapping.expression_replace import expression_replace
+from ufl.domain import extract_domains
+from rbnics.backends.dolfin.wrapping.expression_replace import replace
 
 def form_replace(form, replacements, replacement_type="nodes"):
     assert replacement_type in ("nodes", "measures")
     if replacement_type == "nodes":
-        return expression_replace(form, replacements)
+        replaced_form = replace(form, replacements)
+        for (integral, replaced_integral) in zip(form.integrals(), replaced_form.integrals()):
+            replaced_integral_domains = extract_domains(replaced_integral.integrand())
+            assert len(replaced_integral_domains) is 1
+            integral_domains = extract_domains(integral.integrand())
+            assert len(integral_domains) is 1
+            assert replaced_integral_domains[0] is not integral_domains[0]
+        return replaced_form
     elif replacement_type == "measures":
         replaced_form = 0
         for integral in form.integrals():
