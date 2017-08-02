@@ -19,7 +19,6 @@
 # This file contains a copy of UFL replace with a customized Replacer,
 # which also handles Indexed and ListTensor cases
 
-from ufl.algorithms.replace import replace as replace_for_terminals_only
 from ufl.algorithms.map_integrands import map_integrand_dags
 from ufl.algorithms.analysis import has_exact_type
 from ufl.classes import CoefficientDerivative
@@ -29,7 +28,7 @@ from ufl.corealg.multifunction import MultiFunction
 from ufl.domain import extract_domains
 from ufl.indexed import Indexed
 from ufl.log import error
-from ufl.tensors import ListTensor
+from ufl.tensors import ComponentTensor, ListTensor
 from dolfin import Function, split
 
 def expression_replace(expression, replacements):
@@ -55,22 +54,17 @@ class Replacer(MultiFunction):
                 error("This implementation can only replace Terminal objects or non terminal Indexed and ListTensor objects.")
         if not all(k.ufl_shape == v.ufl_shape for k, v in mapping.iteritems()):
             error("Replacement expressions must have the same shape as what they replace.")
-        # Create a mapping with terminals only
-        self._mapping_terminals_only = dict()
-        for (k, v) in mapping.iteritems():
-            if k._ufl_is_terminal_:
-                self._mapping_terminals_only[k] = v
-        # Enrich the mapping extracting each Indexed from any ListTensor
+        # Prepare the mapping extracting each Indexed from any ListTensor
         self._mapping = dict()
         for (k, v) in mapping.iteritems():
-            self._mapping[k] = v
             if isinstance(k, ListTensor):
-                assert self._is_ListTensor_of_Functions(k)
                 split_k = k.ufl_operands
                 split_v = split(v)
                 assert len(split_k) == len(split_v)
                 for (sub_k, sub_v) in zip(split_k, split_v):
                     self._mapping[sub_k] = sub_v
+            else:
+                self._mapping[k] = v
 
     expr = MultiFunction.reuse_if_untouched
 
@@ -81,53 +75,40 @@ class Replacer(MultiFunction):
         else:
             return e
             
-    def indexed(self, o, Ap, ii):
-        assert len(o.ufl_operands) == 2
-        assert isinstance(o.ufl_operands[1], MultiIndex)
-        if isinstance(o.ufl_operands[0], Function) or self._is_ListTensor_of_Functions(o.ufl_operands[0]):
-            indices = o.ufl_operands[1].indices()
-            is_fixed = isinstance(indices[0], FixedIndex)
-            assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
-            is_mute = isinstance(indices[0], Index) # mute index for sum
-            assert all([isinstance(index, Index) == is_mute for index in indices])
-            assert (is_fixed and not is_mute) or (not is_fixed and is_mute)
-            if is_fixed:
-                assert o in self._mapping
-                return self._mapping[o]
-            elif is_mute:
-                assert o.ufl_operands[0] in self._mapping
-                return Indexed(self._mapping[o.ufl_operands[0]], o.ufl_operands[1])
-            else:
-                raise AssertionError("Invalid index")
-        else:
-            return replace_for_terminals_only(o, self._mapping_terminals_only)
-    
-    def list_tensor(self, o, *dops):
-        if self._is_ListTensor_of_Functions(o):
-            assert o in self._mapping
+    def indexed(self, o, *dops):
+        if o in self._mapping:
             return self._mapping[o]
         else:
-            return replace_for_terminals_only(o, self._mapping_terminals_only)
+            assert len(o.ufl_operands) == 2
+            assert isinstance(o.ufl_operands[1], MultiIndex)
+            if o.ufl_operands[0] in self._mapping:
+                replaced_ufl_operand_0 = self._mapping[o.ufl_operands[0]]
+            else:
+                replaced_ufl_operand_0 = map_integrand_dags(self, o.ufl_operands[0])
+            return Indexed(replaced_ufl_operand_0, o.ufl_operands[1])
+    
+    def list_tensor(self, o, *dops):
+        assert o not in self._mapping
+        replaced_ufl_operands = list()
+        for ufl_operand in o.ufl_operands:
+            if ufl_operand in self._mapping:
+                replaced_ufl_operands.append(self._mapping[ufl_operand])
+            else:
+                replaced_ufl_operands.append(map_integrand_dags(self, ufl_operand))
+        return ListTensor(*replaced_ufl_operands)
+        
+    def component_tensor(self, o, *dops):
+        assert o not in self._mapping
+        assert len(o.ufl_operands) == 2
+        assert isinstance(o.ufl_operands[1], MultiIndex)
+        if o.ufl_operands[0] in self._mapping:
+            replaced_ufl_operand_0 = self._mapping[o.ufl_operands[0]]
+        else:
+            replaced_ufl_operand_0 = map_integrand_dags(self, o.ufl_operands[0])
+        return ComponentTensor(replaced_ufl_operand_0, o.ufl_operands[1])
 
     def coefficient_derivative(self, o):
         error("Derivatives should be applied before executing replace.")
-        
-    def _is_ListTensor_of_Functions(self, o):
-        return (
-            isinstance(o, ListTensor)
-                and
-            all(isinstance(component, Indexed) for component in o.ufl_operands)
-                and
-            all(
-              (len(component.ufl_operands) == 2 and isinstance(component.ufl_operands[0], Function) and isinstance(component.ufl_operands[1], MultiIndex))
-              for component in o.ufl_operands
-            )
-                and
-            all(
-              component.ufl_operands[0] == o.ufl_operands[-1].ufl_operands[0]
-              for component in o.ufl_operands
-            )
-        )
         
 def replace(e, mapping):
     """Replace objects in expression.
