@@ -84,6 +84,7 @@ class NavierStokes(NavierStokesProblem):
         return "NavierStokesExact2"
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
+    @compute_theta_for_derivative({"dc": "c"})
     def compute_theta(self, term):
         mu = self.mu
         mu1 = mu[0]
@@ -93,7 +94,7 @@ class NavierStokes(NavierStokesProblem):
         elif term in ("b", "bt", "bt_restricted"):
             theta_b0 = 1.
             return (theta_b0,)
-        elif term in ("c", "dc"):
+        elif term == "c":
             theta_c0 = 1.
             return (theta_c0,)
         elif term == "f":
@@ -109,6 +110,7 @@ class NavierStokes(NavierStokesProblem):
             raise ValueError("Invalid term for compute_theta().")
                 
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    @assemble_operator_for_derivative({"dc": "c"})
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":
@@ -138,17 +140,13 @@ class NavierStokes(NavierStokesProblem):
             for s in range(2):
                 bt0 += - p*tr(tensor_chi[s]*grad(v))*dx(s + 1)
             return (bt0,)
-        elif term in ("c", "dc"):
+        elif term == "c":
             u = self.u
             v = self.v
             c0 = 0
             for s in range(2):
                 c0 += inner(grad(u)*u, v)*dx(s + 1)
-            if term == "c":
-                return (c0,)
-            else:
-                du = self.du
-                return (derivative(c0, u, du),)
+            return (c0,)
         elif term == "f":
             v = self.v
             det_deformation_gradient = self.det_deformation_gradient
