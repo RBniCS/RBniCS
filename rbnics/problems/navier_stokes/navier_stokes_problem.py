@@ -34,18 +34,12 @@ class NavierStokesProblem(NavierStokesProblem_Base):
         NavierStokesProblem_Base.__init__(self, V, **kwargs)
         
         # Form names for Navier-Stokes problems
-        self.terms = [
-            "f", "g", "c",
-            "a", "b", "bt", "dc",
-            # Auxiliary terms for supremizer enrichment
-            "bt_restricted"
-        ]
-        self.terms_order = {
-            "f": 1, "g": 1, "c": 1,
-            "a": 2, "b": 2, "bt": 2, "dc": 2,
-            # Auxiliary terms for supremizer enrichment
-            "bt_restricted": 2
-        }
+        self.terms.extend([
+            "c", "dc"
+        ])
+        self.terms_order.update({
+            "c": 1, "dc": 2
+        })
         
     class ProblemSolver(NavierStokesProblem_Base.ProblemSolver):
         def residual_eval(self, solution):

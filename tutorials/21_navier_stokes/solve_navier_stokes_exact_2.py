@@ -36,7 +36,7 @@ class NavierStokes(NavierStokesProblem):
         self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
         dup = TrialFunction(V)
         (self.du, self.dp) = split(dup)
-        (self.u, self.p) = split(self._solution)
+        (self.u, _) = split(self._solution)
         vq = TestFunction(V)
         (self.v, self.q) = split(vq)
         self.s = TrialFunction(V.sub(0).collapse())
