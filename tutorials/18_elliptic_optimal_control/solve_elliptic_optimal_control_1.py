@@ -50,12 +50,12 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
     def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
-        if term == "a" or term == "a*":
+        if term  in ("a", "a*"):
             theta_a0 = 1.0
             theta_a1 = 1.0/mu1
             theta_a2 = mu1
             return (theta_a0, theta_a1, theta_a2)
-        elif term == "c" or term == "c*":
+        elif term in ("c", "c*"):
             theta_c0 = 1.0
             theta_c1 = mu1
             return (theta_c0, theta_c1)

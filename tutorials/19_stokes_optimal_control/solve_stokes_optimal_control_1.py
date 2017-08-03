@@ -55,7 +55,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
     def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
-        if term == "a" or term == "a*":
+        if term in ("a", "a*"):
             nu = self.nu
             theta_a0 = nu*mu1
             theta_a1 = nu/mu1
@@ -64,7 +64,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             theta_b0 = mu1
             theta_b1 = 1.0
             return (theta_b0, theta_b1)
-        elif term == "c" or term == "c*":
+        elif term in ("c", "c*"):
             theta_c0 = mu1
             return (theta_c0,)
         elif term == "m":

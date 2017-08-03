@@ -49,11 +49,11 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
         mu3 = self.mu[2]
-        if term == "a" or term == "a*":
+        if term in ("a", "a*"):
             theta_a0 = 1.0/mu1
             theta_a1 = 1.0
             return (theta_a0, theta_a1)
-        elif term == "c" or term == "c*":
+        elif term in ("c", "c*"):
             theta_c0 = 1.0
             return (theta_c0,)
         elif term == "m":
