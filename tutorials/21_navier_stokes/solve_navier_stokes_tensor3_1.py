@@ -20,27 +20,25 @@ from dolfin import *
 from rbnics import *
 from problems import *
 from reduction_methods import *
+from utils import *
 
 class NavierStokes(NavierStokesTensor3Problem):
     
     ## Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
-        NavierStokesProblem.__init__(self, V, **kwargs)
+        NavierStokesTensor3Problem.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
         assert "subdomains" in kwargs
         assert "boundaries" in kwargs
         self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
         dup = TrialFunction(V)
         (self.du, self.dp) = split(dup)
-        (self.u, _) = split(self._solution)
         (self.u_placeholder_1, _) = split(self._solution_placeholder_1)
         (self.u_placeholder_2, _) = split(self._solution_placeholder_2)
         (self.u_placeholder_3, _) = split(self._solution_placeholder_3)
         vq = TestFunction(V)
         (self.v, self.q) = split(vq)
-        self.s = TrialFunction(V.sub(0).collapse())
-        self.r = TestFunction(V.sub(0).collapse())
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         #
@@ -61,16 +59,18 @@ class NavierStokes(NavierStokesTensor3Problem):
         return "NavierStokesTensor3_1"
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
+    @compute_theta_for_derivative({"dc": "c"})
+    @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
         mu = self.mu
         mu1 = mu[0]
         if term == "a":
             theta_a0 = 1.
             return (theta_a0,)
-        elif term in ("b", "bt", "bt_restricted"):
+        elif term in ("b", "bt"):
             theta_b0 = 1.
             return (theta_b0,)
-        elif term in ("c", "dc"):
+        elif term == "c":
             theta_c0 = 1.
             return (theta_c0,)
         elif term == "f":
@@ -86,6 +86,10 @@ class NavierStokes(NavierStokesTensor3Problem):
             raise ValueError("Invalid term for compute_theta().")
                 
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    @assemble_operator_for_derivative_and_tensor3({"dc": "c"})
+    @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
+    @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
+    @assemble_operator_for_restriction({"inner_product_s": "inner_product_u"}, test="s", trial="s")
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":
@@ -98,35 +102,17 @@ class NavierStokes(NavierStokesTensor3Problem):
             q = self.q
             b0 = - q*div(u)*dx
             return (b0,)
-        elif term in ("bt", "bt_restricted"):
+        elif term == "bt":
             p = self.dp
-            if term == "bt":
-                v = self.v
-            else:
-                v = self.r
+            v = self.v
             bt0 = - p*div(v)*dx
             return (bt0,)
-        elif term in ("c", "c_tensor3", "dc", "dc_tensor3"):
+        elif term == "c":
             u_placeholder_1 = self.u_placeholder_1
             u_placeholder_2 = self.u_placeholder_2
-            u_placeholder_2 = self.u_placeholder_3
-            c0 = inner(grad(u_placeholder_2)*u_placeholder_1, v)*dx
-            if term == "c_tensor3":
-                return (c0,)
-            else:
-                u = self.u
-                v = self.v
-                c0 = replace(c0, {u_placeholder_1: u, u_placeholder_2: u, u_placeholder_3: v})
-                if term == "c":
-                    return (c0,)
-                else:
-                    du = self.du
-                    dc0 = derivative(c0, u, du)
-                    if term == "dc":
-                        return (dc0,)
-                    else:
-                        dc0 = replace(dc0, {u: u_placeholder_1, du: u_placeholder_2, v: u_placeholder_3})
-                        return (dc0,)
+            u_placeholder_3 = self.u_placeholder_3
+            c0 = inner(grad(u_placeholder_2)*u_placeholder_1, u_placeholder_3)*dx
+            return (c0,)
         elif term == "f":
             v = self.v
             f0 = inner(self.f, v)*dx
@@ -139,17 +125,9 @@ class NavierStokes(NavierStokesTensor3Problem):
             bc0 = [DirichletBC(self.V.sub(0), self.inlet,           self.boundaries, 1),
                    DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 2)]
             return (bc0,)
-        elif term == "dirichlet_bc_s":
-            bc0 = [DirichletBC(self.V.sub(0).collapse(), Constant((0.0, 0.0)), self.boundaries, 1),
-                   DirichletBC(self.V.sub(0).collapse(), Constant((0.0, 0.0)), self.boundaries, 2)]
-            return (bc0,)
-        elif term == "inner_product_u" or term == "inner_product_s":
-            if term == "inner_product_u":
-                du = self.du
-                v = self.v
-            elif term == "inner_product_s":
-                du = self.s
-                v = self.r
+        elif term == "inner_product_u":
+            du = self.du
+            v = self.v
             x0 = inner(grad(du),grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":
@@ -161,7 +139,7 @@ class NavierStokes(NavierStokesTensor3Problem):
             raise ValueError("Invalid term for assemble_operator().")
         
 # Customize the resulting reduced problem
-@CustomizeReducedProblemFor(NavierStokesProblem)
+@CustomizeReducedProblemFor(NavierStokesTensor3Problem)
 def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
     class ReducedNavierStokes(ReducedNavierStokes_Base):
         def __init__(self, truth_problem, **kwargs):
@@ -191,7 +169,7 @@ navier_stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(navier_stokes_problem)
-pod_galerkin_method.set_Nmax(20)
+pod_galerkin_method.set_Nmax(10)
 
 # 5. Perform the offline phase
 lifting_mu = (1.0,)

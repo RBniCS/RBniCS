@@ -164,7 +164,7 @@ navier_stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(navier_stokes_problem)
-pod_galerkin_method.set_Nmax(20)
+pod_galerkin_method.set_Nmax(10)
 
 # 5. Perform the offline phase
 lifting_mu = (1.0,)

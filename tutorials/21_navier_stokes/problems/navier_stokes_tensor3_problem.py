@@ -18,7 +18,7 @@
 
 from dolfin import Function
 from rbnics.problems.navier_stokes import NavierStokesProblem
-from rbnics.utils.decorators import Extends
+from rbnics.utils.decorators import Extends, override
 
 @Extends(NavierStokesProblem)
 class NavierStokesTensor3Problem(NavierStokesProblem):
@@ -30,9 +30,9 @@ class NavierStokesTensor3Problem(NavierStokesProblem):
         NavierStokesProblem.__init__(self, V, **kwargs)
         
         # Placeholders for tensor3 assembly
-        self.solution_placeholder_1 = Function(V)
-        self.solution_placeholder_2 = Function(V)
-        self.solution_placeholder_3 = Function(V)
+        self._solution_placeholder_1 = Function(V)
+        self._solution_placeholder_2 = Function(V)
+        self._solution_placeholder_3 = Function(V)
         
     def _init_operators(self):
         NavierStokesProblem._init_operators(self)

@@ -17,6 +17,7 @@
 #
 
 from ufl import replace
+from dolfin import TestFunction, TrialFunction
 from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.problems.navier_stokes.navier_stokes_reduced_problem import NavierStokesReducedProblem
@@ -30,6 +31,8 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
     class NavierStokesTensor3ReducedProblem_Class(NavierStokesTensor3ReducedProblem_Base):
         @override
         def __init__(self, truth_problem, **kwargs):
+            # Call Parent
+            NavierStokesTensor3ReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             # Store value of N passed to solve
             self._N_solve = None
             
@@ -60,25 +63,31 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
         @override
         def compute_theta(self, term):
             if term in ("c", "dc"):
-                N = dict()
-                N["u"] = self._N_solve["u"]
-                N["s"] = self._N_solve["s"]
                 truth_Q = self.truth_problem.Q[term]
                 truth_theta = NavierStokesTensor3ReducedProblem_Base.compute_theta(self, term)
                 reduced_theta = list()
-                reduced_solution = self._solution
+                reduced_solution = self._solution.vector()
+                offset = {"u": 0, "s": self._N_solve["u"]}
                 if term == "c":
                     for truth_q in range(truth_Q):
                         for c1 in ("u", "s"):
-                            for n1 in range(N[c1]):
+                            for n1 in range(self.N[c1]):
                                 for c2 in ("u", "s"):
-                                    for n2 in range(N[c2]):
-                                        reduced_theta.append(truth_theta[truth_q]*reduced_solution[c1][n1]*reduced_solution[c2][n2])
+                                    for n2 in range(self.N[c2]):
+                                        if n1 >= self._N_solve[c1] or n2 >= self._N_solve[c2]:
+                                            reduced_theta.append(0.)
+                                        else:
+                                            reduced_theta_q_c_n = float(truth_theta[truth_q]*reduced_solution[offset[c1] + n1]*reduced_solution[offset[c2] + n2])
+                                            reduced_theta.append(reduced_theta_q_c_n)
                 elif term == "dc":
                     for truth_q in range(truth_Q):
                         for c in ("u", "s"):
-                            for n in range(N[c]):
-                                reduced_theta.append(truth_theta[truth_q]*reduced_solution[c][n])
+                            for n in range(self.N[c]):
+                                if n >= self._N_solve[c]:
+                                    reduced_theta.append(0.)
+                                else:
+                                    reduced_theta_q_c_n = float(truth_theta[truth_q]*reduced_solution[offset[c] + n])
+                                    reduced_theta.append(reduced_theta_q_c_n)
                 return tuple(reduced_theta)
             else:
                 return NavierStokesTensor3ReducedProblem_Base.compute_theta(self, term)
@@ -90,42 +99,43 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
                 return NavierStokesTensor3ReducedProblem_Base.assemble_operator(self, term, "online")
             elif current_stage == "offline":
                 if term in ("c", "dc"):
-                    N = dict()
-                    N["u"] = len(Z["u"])
-                    N["s"] = len(Z["s"])
                     truth_Q = self.truth_problem.Q[term]
-                    reduced_Q = original_Q*(N["u"] + N["s"])
-                    self.Q[term] = reduced_Q
-                    self.operator[term] = OnlineAffineExpansionStorage(reduced_Q)
                     test = TestFunction(self.truth_problem.V)
-                    reduced_q = 0
                     if term == "c":
+                        reduced_Q = truth_Q*(self.N["u"] + self.N["s"])**2
+                        self.Q[term] = reduced_Q
+                        self.operator[term] = OnlineAffineExpansionStorage(reduced_Q)
+                        reduced_q = 0
                         for truth_q in range(truth_Q):
                             for c1 in ("u", "s"):
-                                for n1 in range(N[c1]):
+                                for n1 in range(self.N[c1]):
                                     for c2 in ("u", "s"):
-                                        for n2 in range(N[c2]):
+                                        for n2 in range(self.N[c2]):
                                             truth_operator_q_c_n = replace(
                                                 self.truth_problem.operator[term + "_tensor3"][truth_q],
                                                 {
-                                                    self.truth_problem.solution_placeholder_1: self.Z[c1][n1],
-                                                    self.truth_problem.solution_placeholder_2: self.Z[c2][n2],
-                                                    self.truth_problem.solution_placeholder_3: test
+                                                    self.truth_problem._solution_placeholder_1: self.Z[c1][n1],
+                                                    self.truth_problem._solution_placeholder_2: self.Z[c2][n2],
+                                                    self.truth_problem._solution_placeholder_3: test
                                                 }
                                             )
                                             self.operator[term][reduced_q] = transpose(self.Z)*truth_operator_q_c_n
                                             reduced_q += 1
                     elif term == "dc":
                         trial = TrialFunction(self.truth_problem.V)
+                        reduced_Q = truth_Q*(self.N["u"] + self.N["s"])
+                        self.Q[term] = reduced_Q
+                        self.operator[term] = OnlineAffineExpansionStorage(reduced_Q)
+                        reduced_q = 0
                         for truth_q in range(truth_Q):
                             for c in ("u", "s"):
-                                for n in range(N[c]):
+                                for n in range(self.N[c]):
                                     truth_operator_q_c_n = replace(
                                         self.truth_problem.operator[term + "_tensor3"][truth_q],
                                         {
-                                            self.truth_problem.solution_placeholder_1: self.Z[c][n],
-                                            self.truth_problem.solution_placeholder_2: trial,
-                                            self.truth_problem.solution_placeholder_3: test
+                                            self.truth_problem._solution_placeholder_1: self.Z[c][n],
+                                            self.truth_problem._solution_placeholder_2: trial,
+                                            self.truth_problem._solution_placeholder_3: test
                                         }
                                     )
                                     self.operator["dc"][reduced_q] = transpose(self.Z)*truth_operator_q_c_n*self.Z
