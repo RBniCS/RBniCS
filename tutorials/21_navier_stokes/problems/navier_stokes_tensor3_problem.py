@@ -16,9 +16,28 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from dolfin import Function
 from rbnics.problems.navier_stokes import NavierStokesProblem
 from rbnics.utils.decorators import Extends
 
 @Extends(NavierStokesProblem)
 class NavierStokesTensor3Problem(NavierStokesProblem):
-    pass
+    
+    ## Default initialization of members
+    @override
+    def __init__(self, V, **kwargs):
+        # Call to parent
+        NavierStokesProblem.__init__(self, V, **kwargs)
+        
+        # Placeholders for tensor3 assembly
+        self.solution_placeholder_1 = Function(V)
+        self.solution_placeholder_2 = Function(V)
+        self.solution_placeholder_3 = Function(V)
+        
+    def _init_operators(self):
+        NavierStokesProblem._init_operators(self)
+        # Add tensor3 version of nonlinear terms
+        for term in ("c_tensor3", "dc_tensor3"):
+            if term not in self.operator: # init was not called already
+                self.operator[term] = self.assemble_operator(term) 
+                # note that we do not store this in a AffineExpansionStorage, as no assembly should be done
