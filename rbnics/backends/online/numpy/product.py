@@ -39,7 +39,7 @@ def product(thetas, operators, thetas2=None):
         for (index, (theta, operator)) in enumerate(zip(thetas, operators)):
             if index == 0:
                 output = theta*operator
-            else:
+            elif theta != 0.:
                 output += theta*operator
         '''
         # Vectorized version:
