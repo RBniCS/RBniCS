@@ -36,8 +36,6 @@ class StokesUnsteady(StokesUnsteadyProblem):
         (self.u, self.p) = split(up)
         vq = TestFunction(V)
         (self.v, self.q) = split(vq)
-        self.s = TrialFunction(V.sub(0).collapse())
-        self.r = TestFunction(V.sub(0).collapse())
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         #
@@ -51,6 +49,7 @@ class StokesUnsteady(StokesUnsteadyProblem):
         return "StokesUnsteady1"
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
+    @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
         mu = self.mu
         mu1 = mu[0]
@@ -58,7 +57,7 @@ class StokesUnsteady(StokesUnsteadyProblem):
             theta_a0 = 1./mu1
             theta_a1 = mu1
             return (theta_a0, theta_a1)
-        elif term == "b" or term == "bt" or term == "bt_restricted":
+        elif term in ("b", "bt"):
             theta_b0 = 1.
             theta_b1 = mu1
             return (theta_b0, theta_b1)
@@ -78,6 +77,9 @@ class StokesUnsteady(StokesUnsteadyProblem):
             raise ValueError("Invalid term for compute_theta().")
                 
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
+    @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
+    @assemble_operator_for_restriction({"inner_product_s": "inner_product_u"}, test="s", trial="s")
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":
@@ -92,12 +94,9 @@ class StokesUnsteady(StokesUnsteadyProblem):
             b0 = - q*u[0].dx(0)*dx
             b1 = - q*u[1].dx(1)*dx
             return (b0, b1)
-        elif term == "bt" or term == "bt_restricted":
+        elif term == "bt":
             p = self.p
-            if term == "bt":
-                v = self.v
-            elif term == "bt_restricted":
-                v = self.r
+            v = self.v
             bt0 = - p*v[0].dx(0)*dx
             bt1 = - p*v[1].dx(1)*dx
             return (bt0, bt1)
@@ -114,18 +113,9 @@ class StokesUnsteady(StokesUnsteadyProblem):
             v = self.v
             m0 = inner(u, v)*dx
             return (m0, )
-        elif term == "dirichlet_bc_u" or term == "dirichlet_bc_s":
-            zero = Constant((0.0, 0.0))
-            if term == "dirichlet_bc_u":
-                V_s = self.V.sub(0)
-                bc1 = self.bc1
-                bc2 = self.bc2
-            elif term == "dirichlet_bc_s":
-                V_s = self.V.sub(0).collapse()
-                bc1 = zero
-                bc2 = zero
-            bc0 = [DirichletBC(V_s, bc1, self.boundaries, 1),
-                   DirichletBC(V_s, bc2, self.boundaries, 2)]
+        elif term == "dirichlet_bc_u":
+            bc0 = [DirichletBC(self.V.sub(0), self.bc1, self.boundaries, 1),
+                   DirichletBC(self.V.sub(0), self.bc2, self.boundaries, 2)]
             return (bc0,)
         elif term == "dirichlet_bc_p":
             class CenterDomain(SubDomain):
@@ -134,13 +124,9 @@ class StokesUnsteady(StokesUnsteadyProblem):
             center_domain = CenterDomain()
             bc0 = [DirichletBC(self.V.sub(1), Constant(0.), center_domain, method="pointwise")]
             return (bc0, )
-        elif term == "inner_product_u" or term == "inner_product_s":
-            if term == "inner_product_u":
-                u = self.u
-                v = self.v
-            elif term == "inner_product_s":
-                u = self.s
-                v = self.r
+        elif term == "inner_product_u":
+            u = self.u
+            v = self.v
             x0 = inner(grad(u),grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":

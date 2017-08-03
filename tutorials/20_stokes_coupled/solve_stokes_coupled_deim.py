@@ -43,8 +43,6 @@ class Stokes(StokesProblem):
         (self.u, self.p) = split(up)
         vq = TestFunction(V)
         (self.v, self.q) = split(vq)
-        self.s = TrialFunction(V.sub(0).collapse())
-        self.r = TestFunction(V.sub(0).collapse())
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         #
@@ -85,6 +83,7 @@ class Stokes(StokesProblem):
         return "StokesDEIM"
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
+    @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
         mu = self.mu
         mu1 = mu[0]
@@ -96,7 +95,7 @@ class Stokes(StokesProblem):
         if term == "a":
             theta_a0 = 1.
             return (theta_a0,)
-        elif term == "b" or term == "bt" or term == "bt_restricted":
+        elif term in ("b", "bt"):
             theta_b0 = 1.
             return (theta_b0,)
         elif term == "f":
@@ -109,6 +108,9 @@ class Stokes(StokesProblem):
             raise ValueError("Invalid term for compute_theta().")
                 
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
+    @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
+    @assemble_operator_for_restriction({"inner_product_s": "inner_product_u"}, test="s", trial="s")
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":
@@ -127,12 +129,9 @@ class Stokes(StokesProblem):
             for s in range(4):
                 b0 += - q*tr(tensor_chi[s]*grad(u))*dx(s + 1)
             return (b0,)
-        elif term == "bt" or term == "bt_restricted":
+        elif term == "bt":
             p = self.p
-            if term == "bt":
-                v = self.v
-            elif term == "bt_restricted":
-                v = self.r
+            v = self.v
             tensor_chi = self.tensor_chi
             bt0 = 0
             for s in range(4):
@@ -152,20 +151,12 @@ class Stokes(StokesProblem):
             for s in range(4):
                 g0 += self.g*q*det_deformation_gradient[s]*dx(s + 1)
             return (g0,)
-        elif term == "dirichlet_bc_u" or term == "dirichlet_bc_s":
-            if term == "dirichlet_bc_u":
-                V_s = self.V.sub(0)
-            elif term == "dirichlet_bc_s":
-                V_s = self.V.sub(0).collapse()
-            bc0 = [DirichletBC(V_s, Constant((0.0, 0.0)), self.boundaries, 3)]
+        elif term == "dirichlet_bc_u":
+            bc0 = [DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 3)]
             return (bc0,)
-        elif term == "inner_product_u" or term == "inner_product_s":
-            if term == "inner_product_u":
-                u = self.u
-                v = self.v
-            elif term == "inner_product_s":
-                u = self.s
-                v = self.r
+        elif term == "inner_product_u":
+            u = self.u
+            v = self.v
             x0 = inner(grad(u),grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":

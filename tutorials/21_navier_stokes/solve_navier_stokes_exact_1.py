@@ -35,8 +35,6 @@ class NavierStokes(NavierStokesProblem):
         (self.u, _) = split(self._solution)
         vq = TestFunction(V)
         (self.v, self.q) = split(vq)
-        self.s = TrialFunction(V.sub(0).collapse())
-        self.r = TestFunction(V.sub(0).collapse())
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         #
@@ -58,13 +56,14 @@ class NavierStokes(NavierStokesProblem):
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivative({"dc": "c"})
+    @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
         mu = self.mu
         mu1 = mu[0]
         if term == "a":
             theta_a0 = 1.
             return (theta_a0,)
-        elif term in ("b", "bt", "bt_restricted"):
+        elif term in ("b", "bt"):
             theta_b0 = 1.
             return (theta_b0,)
         elif term == "c":
@@ -84,6 +83,9 @@ class NavierStokes(NavierStokesProblem):
                 
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivative({"dc": "c"})
+    @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
+    @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
+    @assemble_operator_for_restriction({"inner_product_s": "inner_product_u"}, test="s", trial="s")
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":
@@ -96,12 +98,9 @@ class NavierStokes(NavierStokesProblem):
             q = self.q
             b0 = - q*div(u)*dx
             return (b0,)
-        elif term in ("bt", "bt_restricted"):
+        elif term == "bt":
             p = self.dp
-            if term == "bt":
-                v = self.v
-            else:
-                v = self.r
+            v = self.v
             bt0 = - p*div(v)*dx
             return (bt0,)
         elif term == "c":
@@ -121,17 +120,9 @@ class NavierStokes(NavierStokesProblem):
             bc0 = [DirichletBC(self.V.sub(0), self.inlet,           self.boundaries, 1),
                    DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 2)]
             return (bc0,)
-        elif term == "dirichlet_bc_s":
-            bc0 = [DirichletBC(self.V.sub(0).collapse(), Constant((0.0, 0.0)), self.boundaries, 1),
-                   DirichletBC(self.V.sub(0).collapse(), Constant((0.0, 0.0)), self.boundaries, 2)]
-            return (bc0,)
-        elif term == "inner_product_u" or term == "inner_product_s":
-            if term == "inner_product_u":
-                du = self.du
-                v = self.v
-            elif term == "inner_product_s":
-                du = self.s
-                v = self.r
+        elif term == "inner_product_u":
+            du = self.du
+            v = self.v
             x0 = inner(grad(du),grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":

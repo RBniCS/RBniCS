@@ -18,7 +18,9 @@
 
 from rbnics.backends.dolfin.wrapping.assemble import assemble
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_derivative import assemble_operator_for_derivative
+from rbnics.backends.dolfin.wrapping.assemble_operator_for_restriction import assemble_operator_for_restriction
 from rbnics.backends.dolfin.wrapping.compute_theta_for_derivative import compute_theta_for_derivative
+from rbnics.backends.dolfin.wrapping.compute_theta_for_restriction import compute_theta_for_restriction
 from rbnics.backends.dolfin.wrapping.create_submesh import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh, map_functionspaces_between_mesh_and_submesh
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC
 from rbnics.backends.dolfin.wrapping.dofs_parallel_io_helpers import build_dof_map_writer_mapping, build_dof_map_reader_mapping
@@ -76,10 +78,12 @@ from rbnics.backends.dolfin.wrapping.vector_mul import vector_mul_vector
 __all__ = [
     'assemble',
     'assemble_operator_for_derivative',
+    'assemble_operator_for_restriction',
     'assert_lagrange_1',
     'build_dof_map_reader_mapping',
     'build_dof_map_writer_mapping',
     'compute_theta_for_derivative',
+    'compute_theta_for_restriction',
     'convert_functionspace_to_submesh',
     'convert_meshfunctions_to_submesh',
     'create_submesh',
@@ -145,7 +149,9 @@ __all__ = [
 __overridden__ = {
     'rbnics': [
         'assemble_operator_for_derivative',
+        'assemble_operator_for_restriction',
         'compute_theta_for_derivative',
+        'compute_theta_for_restriction',
         'ParametrizedExpression'
     ]
 }

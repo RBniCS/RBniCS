@@ -17,7 +17,7 @@
 #
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
-from rbnics.backends import assign, copy, Function, LinearSolver, product, sum, transpose
+from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum, transpose
 from rbnics.utils.config import config
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import log, PROGRESS

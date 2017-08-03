@@ -36,8 +36,6 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         (self.v, self.p, self.u, self.w, self.q) = split(trial)
         test = TestFunction(V)
         (self.psi, self.pi, self.tau, self.phi, self.xi) = split(test)
-        self.s, self.r = TrialFunction(V.sub("s").collapse()), TrialFunction(V.sub("r").collapse())
-        self.sigma, self.rho = TestFunction(V.sub("s").collapse()), TestFunction(V.sub("r").collapse())
         self.dx = Measure("dx")(subdomain_data=subdomains)
         self.ds = Measure("ds")(subdomain_data=boundaries)
         # Regularization coefficient
@@ -52,6 +50,8 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         return "StokesOptimalControl1"
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
+    @compute_theta_for_restriction({"bt_restricted": "bt"})
+    @compute_theta_for_restriction({"bt*_restricted": "bt*"})
     def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
@@ -60,13 +60,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             theta_a0 = nu*mu1
             theta_a1 = nu/mu1
             return (theta_a0, theta_a1)
-        elif (
-            term == "b" or term == "b*"
-                or 
-            term == "bt" or term == "bt*"
-                or
-            term == "bt_restricted" or term == "bt*_restricted"
-        ):
+        elif term in ("b", "b*", "bt", "bt*"):
             theta_b0 = mu1
             theta_b1 = 1.0
             return (theta_b0, theta_b1)
@@ -98,6 +92,12 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             raise ValueError("Invalid term for compute_theta().")
                     
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    @assemble_operator_for_restriction({"bt*_restricted": "bt*"}, test="s")
+    @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="r")
+    @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_v"}, trial="s")
+    @assemble_operator_for_restriction({"dirichlet_bc_r": "dirichlet_bc_w"}, trial="r")
+    @assemble_operator_for_restriction({"inner_product_s": "inner_product_v"}, test="s", trial="s")
+    @assemble_operator_for_restriction({"inner_product_r": "inner_product_w"}, test="r", trial="r")
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":
@@ -118,12 +118,9 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             b0 = - xi*v[0].dx(0)*dx
             b1 = - xi*v[1].dx(1)*dx
             return (b0, b1)
-        elif term == "bt" or term == "bt_restricted":
+        elif term == "bt":
             p = self.p
-            if term == "bt":
-                phi = self.phi
-            elif term == "bt_restricted":
-                phi = self.sigma
+            phi = self.phi
             bt0 = - p*phi[0].dx(0)*dx
             bt1 = - p*phi[1].dx(1)*dx
             return (bt0, bt1)
@@ -133,12 +130,9 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             bs0 = - pi*w[0].dx(0)*dx
             bs1 = - pi*w[1].dx(1)*dx
             return (bs0, bs1)
-        elif term == "bt*" or term == "bt*_restricted":
+        elif term == "bt*":
             q = self.q
-            if term == "bt*":
-                psi = self.psi
-            elif term == "bt*_restricted":
-                psi = self.rho
+            psi = self.psi
             bts0 = - q*psi[0].dx(0)*dx
             bts1 = - q*psi[1].dx(1)*dx
             return (bts0, bts1)
@@ -184,19 +178,9 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         elif term == "dirichlet_bc_w":
             bc0 = [DirichletBC(self.V.sub("w"), Constant((0.0, 0.0)), self.boundaries, 1)]
             return (bc0,)
-        elif term == "dirichlet_bc_s":
-            bc0 = [DirichletBC(self.V.sub("s").collapse(), Constant((0.0, 0.0)), self.boundaries, 1)]
-            return (bc0,)
-        elif term == "dirichlet_bc_r":
-            bc0 = [DirichletBC(self.V.sub("r").collapse(), Constant((0.0, 0.0)), self.boundaries, 1)]
-            return (bc0,)
-        elif term == "inner_product_v" or term == "inner_product_s":
-            if term == "inner_product_v":
-                v = self.v
-                psi = self.psi
-            elif term == "inner_product_s":
-                v = self.s
-                psi = self.sigma
+        elif term == "inner_product_v":
+            v = self.v
+            psi = self.psi
             x0 = inner(grad(v), grad(psi))*dx
             return (x0,)
         elif term == "inner_product_p":
@@ -209,13 +193,9 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             tau = self.tau
             x0 = inner(u, tau)*dx
             return (x0,)
-        elif term == "inner_product_w" or term == "inner_product_r":
-            if term == "inner_product_w":
-                w = self.w
-                phi = self.phi
-            elif term == "inner_product_r":
-                w = self.r
-                phi = self.rho
+        elif term == "inner_product_w":
+            w = self.w
+            phi = self.phi
             x0 = inner(grad(w), grad(phi))*dx
             return (x0,)
         elif term == "inner_product_q":

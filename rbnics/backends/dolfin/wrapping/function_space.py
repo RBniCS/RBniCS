@@ -53,8 +53,9 @@ def _enable_string_components(components, function_space):
             components = {i: None}
             _init_component_to_index(components, output)
         return output
-        
     function_space.sub = types.MethodType(custom_sub, function_space)
+    
+    _preserve_root_space_after_sub(function_space, None)
     
     original_extract_sub_space = function_space.extract_sub_space
     def custom_extract_sub_space(self_, i):
@@ -65,6 +66,16 @@ def _enable_string_components(components, function_space):
             _init_component_to_index(components, output)
         return output
     function_space.extract_sub_space = types.MethodType(custom_extract_sub_space, function_space)
+    
+def _preserve_root_space_after_sub(function_space, root_space_after_sub):
+    function_space._root_space_after_sub = root_space_after_sub
+    
+    original_sub = function_space.sub
+    def custom_sub(self_, i):
+        output = original_sub(i)
+        _preserve_root_space_after_sub(output, self_)
+        return output
+    function_space.sub = types.MethodType(custom_sub, function_space)
     
 def _init_component_to_index(components, function_space):
     assert isinstance(components, (list, dict))
