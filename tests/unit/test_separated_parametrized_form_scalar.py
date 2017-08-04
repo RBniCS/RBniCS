@@ -43,6 +43,7 @@ tensor_V = TensorFunctionSpace(mesh, "Lagrange", 1)
 
 expr12 = Function(V) # f_19
 expr13 = Function(vector_V) # f_22
+expr13_split = split(expr13)
 expr14 = Function(tensor_V) # f_25
 
 u = TrialFunction(V)
@@ -666,3 +667,41 @@ log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a16_sep._form_unchanged)) + "\n"
 )
 assert 0 == len(a16_sep._form_unchanged)
+
+a17 = expr13_split[0]*u*v*dx + expr13_split[1]*u.dx(0)*v*dx
+a17_sep = SeparatedParametrizedForm(a17)
+log(PROGRESS, "*** ###              FORM 17             ### ***")
+log(PROGRESS, "This form is similar to form 15, but each term is multiplied to a component of a Function")
+a17_sep.separate()
+log(PROGRESS, "\tLen coefficients:\n" +
+    "\t\t" + str(len(a17_sep.coefficients)) + "\n"
+)
+assert 2 == len(a17_sep.coefficients)
+log(PROGRESS, "\tSublen coefficients:\n" +
+    "\t\t" + str(len(a17_sep.coefficients[0])) + "\n" +
+    "\t\t" + str(len(a17_sep.coefficients[1])) + "\n"
+)
+assert 1 == len(a17_sep.coefficients[0])
+assert 1 == len(a17_sep.coefficients[1])
+log(PROGRESS, "\tCoefficients:\n" +
+    "\t\t" + str(a17_sep.coefficients[0][0]) + "\n" +
+    "\t\t" + str(a17_sep.coefficients[1][0]) + "\n"
+)
+assert "f_22[0]" == str(a17_sep.coefficients[0][0])
+assert "f_22[1]" == str(a17_sep.coefficients[1][0])
+log(PROGRESS, "\tPlaceholders:\n" +
+    "\t\t" + str(a17_sep._placeholders[0][0]) + "\n" +
+    "\t\t" + str(a17_sep._placeholders[1][0]) + "\n"
+)
+assert "f_61" == str(a17_sep._placeholders[0][0])
+assert "f_62" == str(a17_sep._placeholders[1][0])
+log(PROGRESS, "\tForms with placeholders:\n" +
+    "\t\t" + str(a17_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
+    "\t\t" + str(a17_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n"
+)
+assert "v_0 * v_1 * f_61" == str(a17_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "v_0 * (grad(v_1))[0] * f_62" == str(a17_sep._form_with_placeholders[1].integrals()[0].integrand())
+log(PROGRESS, "\tLen unchanged forms:\n" +
+    "\t\t" + str(len(a17_sep._form_unchanged)) + "\n"
+)
+assert 0 == len(a17_sep._form_unchanged)
