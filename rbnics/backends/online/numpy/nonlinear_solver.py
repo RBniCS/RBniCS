@@ -83,7 +83,7 @@ class _NonlinearProblem(object):
         assert sample_jacobian.N == sample_residual.N
         # Prepare storage for BCs, if necessary
         if bcs is not None:
-            self.bcs = DirichletBC(sample_jacobian, sample_residual, bcs)
+            self.bcs = DirichletBC(bcs)
             # Apply BCs to initial guess
             self.bcs.apply_to_vector(self.solution.vector())
         else:

@@ -17,9 +17,7 @@
 #
 
 class DirichletBC(object):
-    def __init__(self, lhs, rhs, bcs):
-        self.lhs = lhs # only for __sub__
-        self.rhs = rhs # only for __sub__
+    def __init__(self, bcs):
         if bcs is not None:
             self.bcs = bcs
             assert isinstance(self.bcs, (tuple, dict))
@@ -89,32 +87,4 @@ class DirichletBC(object):
                         matrix[block_i, :] = 0.
                         matrix[block_i, block_i] = 1.
             else:
-                raise AssertionError("Invalid bc in DirichletBC.apply_to_matrix().")
-        
-    def __sub__(self, other_bc):
-        if self.bcs is not None:
-            assert isinstance(self.bcs, tuple) == isinstance(other_bc.bcs, tuple)
-            assert isinstance(self.bcs, dict) == isinstance(other_bc.bcs, dict)
-            if isinstance(self.bcs, tuple):
-                output_bcs = list()
-                for (self_bc_i, other_bc_i) in zip(self.bcs, other_bc.bcs):
-                    output_bcs.append(self_bc_i - other_bc_i)
-                output_bcs = tuple(output_bcs)
-                return DirichletBC(self.lhs, self.rhs, output_bcs)
-            elif isinstance(self.bcs, dict):
-                assert self.bcs.keys() == other_bc.bcs.keys()
-                output_bcs = dict()
-                for component_name in self.bcs:
-                    component_self_bc = self.bcs[component_name]
-                    component_other_bc = other_bc.bcs[component_name]
-                    component_output_bcs = list()
-                    for (self_bc_i, other_bc_i) in zip(component_self_bc, component_other_bc):
-                        component_output_bcs.append(self_bc_i - other_bc_i)
-                    component_output_bcs = tuple(component_output_bcs)
-                    output_bcs[component_name] = component_output_bcs
-                return DirichletBC(self.lhs, self.rhs, output_bcs)
-            else:
-                raise AssertionError("Invalid bc in DirichletBC.__sub__().")
-        else:
-            return DirichletBC(self.lhs, self.rhs, None)
-    
+                raise AssertionError("Invalid bc in DirichletBC.apply_to_matrix().")    

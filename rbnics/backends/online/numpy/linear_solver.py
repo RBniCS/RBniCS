@@ -37,7 +37,7 @@ class LinearSolver(AbstractLinearSolver):
         assert self.lhs.N == self.rhs.N
         # Apply BCs, if necessary
         if bcs is not None:
-            self.bcs = DirichletBC(self.lhs, self.rhs, bcs)
+            self.bcs = DirichletBC(bcs)
             self.bcs.apply_to_vector(self.rhs)
             self.bcs.apply_to_matrix(self.lhs)
                 

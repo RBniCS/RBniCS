@@ -129,7 +129,7 @@ class _ScipyImplicitEuler(object):
                     minus_solution_previous_over_dt.vector()[:] /= - self._time_step_size
                     lhs = self.jacobian_eval(t, self.zero, self.zero, 1./self._time_step_size)
                     rhs = - self.residual_eval(t, self.zero, minus_solution_previous_over_dt)
-                    bcs_t = DirichletBC(lhs, rhs, self.bc_eval(t))
+                    bcs_t = DirichletBC(self.bc_eval(t))
                     LinearSolver.__init__(self_, lhs, self.solution, rhs, bcs_t.bcs)
                 
             self.solver_generator = _LinearSolver
@@ -242,7 +242,7 @@ if has_IDA:
                 self.solution_dot.vector()[:] = solution_dot.reshape((-1, 1))
                 # Update current bc
                 if self.bc_eval is not None:
-                    self.current_bc = DirichletBC(self.sample_jacobian, self.sample_residual, self.bc_eval(t))
+                    self.current_bc = DirichletBC(self.bc_eval(t))
                     self.current_bc.apply_to_vector(self.solution.vector())
                     solution[:] = asarray(self.solution.vector()).reshape(-1)
             def _assimulo_residual_eval(t, solution, solution_dot):
@@ -355,7 +355,7 @@ if has_IDA:
                 self.solution.vector()[:] = solution.reshape((-1, 1))
                 # Fix bcs
                 if self.bc_eval is not None:
-                    self.current_bc = DirichletBC(self.sample_jacobian, self.sample_residual, self.bc_eval(t))
+                    self.current_bc = DirichletBC(self.bc_eval(t))
                     self.current_bc.apply_to_vector(self.solution.vector())
                 all_solutions_as_functions.append(function_copy(self.solution))
                 if len(all_solutions_as_functions) > 1: # monitor is being called at t > 0.
