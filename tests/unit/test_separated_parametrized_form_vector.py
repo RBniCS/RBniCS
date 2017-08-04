@@ -36,6 +36,12 @@ expr7 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), degree=1, cell=
 expr8 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), degree=1, cell=mesh.ufl_cell()) # f_11
 expr9 = Constant(((1, 2), (3, 4))) # f_12
 
+scalar_V = FunctionSpace(mesh, "Lagrange", 3)
+tensor_V = TensorFunctionSpace(mesh, "Lagrange", 1)
+expr10 = Function(scalar_V) # f_17
+expr11 = Function(V) # f_20
+expr12 = Function(tensor_V) # f_23
+
 u = TrialFunction(V)
 v = TestFunction(V)
 
@@ -71,17 +77,17 @@ log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a1_sep._placeholders[1][0]) + "\n" +
     "\t\t" + str(a1_sep._placeholders[2][0]) + "\n"
 )
-assert "f_13" == str(a1_sep._placeholders[0][0])
-assert "f_14" == str(a1_sep._placeholders[1][0])
-assert "f_15" == str(a1_sep._placeholders[2][0])
+assert "f_26" == str(a1_sep._placeholders[0][0])
+assert "f_27" == str(a1_sep._placeholders[1][0])
+assert "f_28" == str(a1_sep._placeholders[2][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a1_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a1_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a1_sep._form_with_placeholders[2].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{14}} sum_{i_{13}} ({ A | A_{i_8, i_9} = sum_{i_{10}} f_13[i_8, i_{10}] * (grad(v_1))[i_{10}, i_9]  })[i_{13}, i_{14}] * (grad(v_0))[i_{13}, i_{14}]  " == str(a1_sep._form_with_placeholders[0].integrals()[0].integrand())
-assert "sum_{i_{15}} ({ A | A_{i_{11}} = sum_{i_{12}} f_14[i_{12}] * (grad(v_1))[i_{11}, i_{12}]  })[i_{15}] * v_0[i_{15}] " == str(a1_sep._form_with_placeholders[1].integrals()[0].integrand())
-assert "f_15 * (sum_{i_{16}} v_0[i_{16}] * v_1[i_{16}] )" == str(a1_sep._form_with_placeholders[2].integrals()[0].integrand())
+assert "sum_{i_{14}} sum_{i_{13}} ({ A | A_{i_8, i_9} = sum_{i_{10}} f_26[i_8, i_{10}] * (grad(v_1))[i_{10}, i_9]  })[i_{13}, i_{14}] * (grad(v_0))[i_{13}, i_{14}]  " == str(a1_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{15}} ({ A | A_{i_{11}} = sum_{i_{12}} f_27[i_{12}] * (grad(v_1))[i_{11}, i_{12}]  })[i_{15}] * v_0[i_{15}] " == str(a1_sep._form_with_placeholders[1].integrals()[0].integrand())
+assert "f_28 * (sum_{i_{16}} v_0[i_{16}] * v_1[i_{16}] )" == str(a1_sep._form_with_placeholders[2].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a1_sep._form_unchanged)) + "\n"
 )
@@ -117,17 +123,17 @@ log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a2_sep._placeholders[1][0]) + "\n" +
     "\t\t" + str(a2_sep._placeholders[2][0]) + "\n"
 )
-assert "f_16" == str(a2_sep._placeholders[0][0])
-assert "f_17" == str(a2_sep._placeholders[1][0])
-assert "f_18" == str(a2_sep._placeholders[2][0])
+assert "f_29" == str(a2_sep._placeholders[0][0])
+assert "f_30" == str(a2_sep._placeholders[1][0])
+assert "f_31" == str(a2_sep._placeholders[2][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a2_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a2_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a2_sep._form_with_placeholders[2].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{26}} sum_{i_{25}} ({ A | A_{i_{20}, i_{21}} = sum_{i_{22}} f_16[i_{20}, i_{22}] * (grad(v_1))[i_{22}, i_{21}]  })[i_{25}, i_{26}] * (grad(v_0))[i_{25}, i_{26}]  " == str(a2_sep._form_with_placeholders[0].integrals()[0].integrand())
-assert "sum_{i_{27}} ({ A | A_{i_{23}} = sum_{i_{24}} f_17[i_{24}] * (grad(v_1))[i_{23}, i_{24}]  })[i_{27}] * v_0[i_{27}] " == str(a2_sep._form_with_placeholders[1].integrals()[0].integrand())
-assert "f_18 * (sum_{i_{28}} v_0[i_{28}] * v_1[i_{28}] )" == str(a2_sep._form_with_placeholders[2].integrals()[0].integrand())
+assert "sum_{i_{26}} sum_{i_{25}} ({ A | A_{i_{20}, i_{21}} = sum_{i_{22}} f_29[i_{20}, i_{22}] * (grad(v_1))[i_{22}, i_{21}]  })[i_{25}, i_{26}] * (grad(v_0))[i_{25}, i_{26}]  " == str(a2_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{27}} ({ A | A_{i_{23}} = sum_{i_{24}} f_30[i_{24}] * (grad(v_1))[i_{23}, i_{24}]  })[i_{27}] * v_0[i_{27}] " == str(a2_sep._form_with_placeholders[1].integrals()[0].integrand())
+assert "f_31 * (sum_{i_{28}} v_0[i_{28}] * v_1[i_{28}] )" == str(a2_sep._form_with_placeholders[2].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a2_sep._form_unchanged)) + "\n"
 )
@@ -163,17 +169,17 @@ log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a3_sep._placeholders[1][0]) + "\n" +
     "\t\t" + str(a3_sep._placeholders[2][0]) + "\n"
 )
-assert "f_19" == str(a3_sep._placeholders[0][0])
-assert "f_20" == str(a3_sep._placeholders[1][0])
-assert "f_21" == str(a3_sep._placeholders[2][0])
+assert "f_32" == str(a3_sep._placeholders[0][0])
+assert "f_33" == str(a3_sep._placeholders[1][0])
+assert "f_34" == str(a3_sep._placeholders[2][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a3_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a3_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a3_sep._form_with_placeholders[2].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{39}} sum_{i_{38}} f_19[i_{38}, i_{39}] * (grad(v_0))[i_{38}, i_{39}]  " == str(a3_sep._form_with_placeholders[0].integrals()[0].integrand())
-assert "sum_{i_{40}} ({ A | A_{i_{36}} = sum_{i_{37}} f_20[i_{37}] * (grad(v_1))[i_{36}, i_{37}]  })[i_{40}] * v_0[i_{40}] " == str(a3_sep._form_with_placeholders[1].integrals()[0].integrand())
-assert "f_21 * (sum_{i_{41}} v_0[i_{41}] * v_1[i_{41}] )" == str(a3_sep._form_with_placeholders[2].integrals()[0].integrand())
+assert "sum_{i_{39}} sum_{i_{38}} f_32[i_{38}, i_{39}] * (grad(v_0))[i_{38}, i_{39}]  " == str(a3_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{40}} ({ A | A_{i_{36}} = sum_{i_{37}} f_33[i_{37}] * (grad(v_1))[i_{36}, i_{37}]  })[i_{40}] * v_0[i_{40}] " == str(a3_sep._form_with_placeholders[1].integrals()[0].integrand())
+assert "f_34 * (sum_{i_{41}} v_0[i_{41}] * v_1[i_{41}] )" == str(a3_sep._form_with_placeholders[2].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a3_sep._form_unchanged)) + "\n"
 )
@@ -210,17 +216,17 @@ log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a4_sep._placeholders[1][0]) + "\n" +
     "\t\t" + str(a4_sep._placeholders[2][0]) + "\n"
 )
-assert "f_22" == str(a4_sep._placeholders[0][0])
-assert "f_23" == str(a4_sep._placeholders[1][0])
-assert "f_24" == str(a4_sep._placeholders[2][0])
+assert "f_35" == str(a4_sep._placeholders[0][0])
+assert "f_36" == str(a4_sep._placeholders[1][0])
+assert "f_37" == str(a4_sep._placeholders[2][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a4_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a4_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a4_sep._form_with_placeholders[2].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{51}} sum_{i_{50}} ({ A | A_{i_{44}, i_{45}} = sum_{i_{46}} f_22[i_{44}, i_{46}] * (grad(v_1))[i_{46}, i_{45}]  })[i_{50}, i_{51}] * (grad(v_0))[i_{50}, i_{51}]  " == str(a4_sep._form_with_placeholders[0].integrals()[0].integrand())
-assert "sum_{i_{52}} ({ A | A_{i_{49}} = ({ A | A_{i_{47}} = sum_{i_{48}} f_23[i_{48}] * (grad(v_1))[i_{47}, i_{48}]  })[i_{49}] * 2.0 * circumradius })[i_{52}] * v_0[i_{52}] " == str(a4_sep._form_with_placeholders[1].integrals()[0].integrand())
-assert "f_24 * (sum_{i_{53}} v_0[i_{53}] * v_1[i_{53}] )" == str(a4_sep._form_with_placeholders[2].integrals()[0].integrand())
+assert "sum_{i_{51}} sum_{i_{50}} ({ A | A_{i_{44}, i_{45}} = sum_{i_{46}} f_35[i_{44}, i_{46}] * (grad(v_1))[i_{46}, i_{45}]  })[i_{50}, i_{51}] * (grad(v_0))[i_{50}, i_{51}]  " == str(a4_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{52}} ({ A | A_{i_{49}} = ({ A | A_{i_{47}} = sum_{i_{48}} f_36[i_{48}] * (grad(v_1))[i_{47}, i_{48}]  })[i_{49}] * 2.0 * circumradius })[i_{52}] * v_0[i_{52}] " == str(a4_sep._form_with_placeholders[1].integrals()[0].integrand())
+assert "f_37 * (sum_{i_{53}} v_0[i_{53}] * v_1[i_{53}] )" == str(a4_sep._form_with_placeholders[2].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a4_sep._form_unchanged)) + "\n"
 )
@@ -256,17 +262,17 @@ log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a5_sep._placeholders[1][0]) + "\n" +
     "\t\t" + str(a5_sep._placeholders[2][0]) + "\n"
 )
-assert "f_25" == str(a5_sep._placeholders[0][0])
-assert "f_26" == str(a5_sep._placeholders[1][0])
-assert "f_27" == str(a5_sep._placeholders[2][0])
+assert "f_38" == str(a5_sep._placeholders[0][0])
+assert "f_39" == str(a5_sep._placeholders[1][0])
+assert "f_40" == str(a5_sep._placeholders[2][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a5_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a5_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n" +
     "\t\t" + str(a5_sep._form_with_placeholders[2].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{63}} sum_{i_{62}} ({ A | A_{i_{56}, i_{57}} = sum_{i_{58}} f_25[i_{56}, i_{58}] * (grad(v_1))[i_{58}, i_{57}]  })[i_{62}, i_{63}] * (grad(v_0))[i_{62}, i_{63}]  " == str(a5_sep._form_with_placeholders[0].integrals()[0].integrand())
-assert "sum_{i_{64}} ({ A | A_{i_{60}} = sum_{i_{61}} f_26[i_{61}] * (grad(v_1))[i_{60}, i_{61}]  })[i_{64}] * v_0[i_{64}] " == str(a5_sep._form_with_placeholders[1].integrals()[0].integrand())
-assert "f_27 * (sum_{i_{65}} v_0[i_{65}] * v_1[i_{65}] )" == str(a5_sep._form_with_placeholders[2].integrals()[0].integrand())
+assert "sum_{i_{63}} sum_{i_{62}} ({ A | A_{i_{56}, i_{57}} = sum_{i_{58}} f_38[i_{56}, i_{58}] * (grad(v_1))[i_{58}, i_{57}]  })[i_{62}, i_{63}] * (grad(v_0))[i_{62}, i_{63}]  " == str(a5_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{64}} ({ A | A_{i_{60}} = sum_{i_{61}} f_39[i_{61}] * (grad(v_1))[i_{60}, i_{61}]  })[i_{64}] * v_0[i_{64}] " == str(a5_sep._form_with_placeholders[1].integrals()[0].integrand())
+assert "f_40 * (sum_{i_{65}} v_0[i_{65}] * v_1[i_{65}] )" == str(a5_sep._form_with_placeholders[2].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a5_sep._form_unchanged)) + "\n"
 )
@@ -314,11 +320,11 @@ assert "{ A | A_{i_{75}, i_{76}} = sum_{i_{77}} f_6[i_{75}, i_{77}] * f_7[i_{77}
 log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a7_sep._placeholders[0][0]) + "\n"
 )
-assert "f_28" == str(a7_sep._placeholders[0][0])
+assert "f_41" == str(a7_sep._placeholders[0][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a7_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{87}} sum_{i_{86}} ({ A | A_{i_{81}, i_{82}} = sum_{i_{83}} ({ A | A_{i_{78}, i_{79}} = sum_{i_{80}} f_10[i_{78}, i_{80}] * f_28[i_{80}, i_{79}]  })[i_{81}, i_{83}] * (grad(v_1))[i_{83}, i_{82}]  })[i_{86}, i_{87}] * (grad(v_0))[i_{86}, i_{87}]  " == str(a7_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{87}} sum_{i_{86}} ({ A | A_{i_{81}, i_{82}} = sum_{i_{83}} ({ A | A_{i_{78}, i_{79}} = sum_{i_{80}} f_10[i_{78}, i_{80}] * f_41[i_{80}, i_{79}]  })[i_{81}, i_{83}] * (grad(v_1))[i_{83}, i_{82}]  })[i_{86}, i_{87}] * (grad(v_0))[i_{86}, i_{87}]  " == str(a7_sep._form_with_placeholders[0].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a7_sep._form_unchanged)) + "\n"
 )
@@ -350,11 +356,11 @@ assert "{ A | A_{i_{93}, i_{94}} = sum_{i_{95}} ({ A | A_{i_{90}, i_{91}} = sum_
 log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a8_sep._placeholders[0][0]) + "\n"
 )
-assert "f_29" == str(a8_sep._placeholders[0][0])
+assert "f_42" == str(a8_sep._placeholders[0][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a8_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{102}} sum_{i_{101}} ({ A | A_{i_{96}, i_{97}} = sum_{i_{98}} f_29[i_{96}, i_{98}] * (grad(v_1))[i_{98}, i_{97}]  })[i_{101}, i_{102}] * (grad(v_0))[i_{101}, i_{102}]  " == str(a8_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{102}} sum_{i_{101}} ({ A | A_{i_{96}, i_{97}} = sum_{i_{98}} f_42[i_{96}, i_{98}] * (grad(v_1))[i_{98}, i_{97}]  })[i_{101}, i_{102}] * (grad(v_0))[i_{101}, i_{102}]  " == str(a8_sep._form_with_placeholders[0].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a8_sep._form_unchanged)) + "\n"
 )
@@ -386,11 +392,11 @@ assert "{ A | A_{i_{105}, i_{106}} = sum_{i_{107}} f_6[i_{105}, i_{107}] * f_7[i
 log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a9_sep._placeholders[0][0]) + "\n"
 )
-assert "f_30" == str(a9_sep._placeholders[0][0])
+assert "f_43" == str(a9_sep._placeholders[0][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a9_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{117}} sum_{i_{116}} ({ A | A_{i_{111}, i_{112}} = sum_{i_{113}} ({ A | A_{i_{108}, i_{109}} = sum_{i_{110}} f_12[i_{108}, i_{110}] * f_30[i_{110}, i_{109}]  })[i_{111}, i_{113}] * (grad(v_1))[i_{113}, i_{112}]  })[i_{116}, i_{117}] * (grad(v_0))[i_{116}, i_{117}]  " == str(a9_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{117}} sum_{i_{116}} ({ A | A_{i_{111}, i_{112}} = sum_{i_{113}} ({ A | A_{i_{108}, i_{109}} = sum_{i_{110}} f_12[i_{108}, i_{110}] * f_43[i_{110}, i_{109}]  })[i_{111}, i_{113}] * (grad(v_1))[i_{113}, i_{112}]  })[i_{116}, i_{117}] * (grad(v_0))[i_{116}, i_{117}]  " == str(a9_sep._form_with_placeholders[0].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a9_sep._form_unchanged)) + "\n"
 )
@@ -422,11 +428,11 @@ assert "{ A | A_{i_{123}, i_{124}} = sum_{i_{125}} ({ A | A_{i_{120}, i_{121}} =
 log(PROGRESS, "\tPlaceholders:\n" +
     "\t\t" + str(a10_sep._placeholders[0][0]) + "\n"
 )
-assert "f_31" == str(a10_sep._placeholders[0][0])
+assert "f_44" == str(a10_sep._placeholders[0][0])
 log(PROGRESS, "\tForms with placeholders:\n" +
     "\t\t" + str(a10_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n"
 )
-assert "sum_{i_{132}} sum_{i_{131}} ({ A | A_{i_{126}, i_{127}} = sum_{i_{128}} f_31[i_{126}, i_{128}] * (grad(v_1))[i_{128}, i_{127}]  })[i_{131}, i_{132}] * (grad(v_0))[i_{131}, i_{132}]  " == str(a10_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{132}} sum_{i_{131}} ({ A | A_{i_{126}, i_{127}} = sum_{i_{128}} f_44[i_{126}, i_{128}] * (grad(v_1))[i_{128}, i_{127}]  })[i_{131}, i_{132}] * (grad(v_0))[i_{131}, i_{132}]  " == str(a10_sep._form_with_placeholders[0].integrals()[0].integrand())
 log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a10_sep._form_unchanged)) + "\n"
 )
@@ -437,3 +443,49 @@ log(PROGRESS, "\tUnchanged forms:\n" +
 )
 assert "sum_{i_{133}} ({ A | A_{i_{129}} = sum_{i_{130}} f_9[i_{130}] * (grad(v_1))[i_{129}, i_{130}]  })[i_{133}] * v_0[i_{133}] " == str(a10_sep._form_unchanged[0].integrals()[0].integrand())
 assert "f_8 * (sum_{i_{134}} v_0[i_{134}] * v_1[i_{134}] )" == str(a10_sep._form_unchanged[1].integrals()[0].integrand())
+
+a11 = inner(expr12*grad(u), grad(v))*dx + inner(grad(u)*expr11, v)*dx + expr10*inner(u, v)*dx
+a11_sep = SeparatedParametrizedForm(a11)
+log(PROGRESS, "*** ###              FORM 11             ### ***")
+log(PROGRESS, "This form is similar to form 1, but each term is multiplied by a Function, which could result from a nonlinear problem")
+a11_sep.separate()
+log(PROGRESS, "\tLen coefficients:\n" +
+    "\t\t" + str(len(a11_sep.coefficients)) + "\n"
+)
+assert 3 == len(a11_sep.coefficients)
+log(PROGRESS, "\tSublen coefficients:\n" +
+    "\t\t" + str(len(a11_sep.coefficients[0])) + "\n" +
+    "\t\t" + str(len(a11_sep.coefficients[1])) + "\n" +
+    "\t\t" + str(len(a11_sep.coefficients[2])) + "\n"
+)
+assert 1 == len(a11_sep.coefficients[0])
+assert 1 == len(a11_sep.coefficients[1])
+assert 1 == len(a11_sep.coefficients[2])
+log(PROGRESS, "\tCoefficients:\n" +
+    "\t\t" + str(a11_sep.coefficients[0][0]) + "\n" +
+    "\t\t" + str(a11_sep.coefficients[1][0]) + "\n" +
+    "\t\t" + str(a11_sep.coefficients[2][0]) + "\n"
+)
+assert "f_23" == str(a11_sep.coefficients[0][0])
+assert "f_20" == str(a11_sep.coefficients[1][0])
+assert "f_17" == str(a11_sep.coefficients[2][0])
+log(PROGRESS, "\tPlaceholders:\n" +
+    "\t\t" + str(a11_sep._placeholders[0][0]) + "\n" +
+    "\t\t" + str(a11_sep._placeholders[1][0]) + "\n" +
+    "\t\t" + str(a11_sep._placeholders[2][0]) + "\n"
+)
+assert "f_45" == str(a11_sep._placeholders[0][0])
+assert "f_46" == str(a11_sep._placeholders[1][0])
+assert "f_47" == str(a11_sep._placeholders[2][0])
+log(PROGRESS, "\tForms with placeholders:\n" +
+    "\t\t" + str(a11_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
+    "\t\t" + str(a11_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n" +
+    "\t\t" + str(a11_sep._form_with_placeholders[2].integrals()[0].integrand()) + "\n"
+)
+assert "sum_{i_{141}} sum_{i_{140}} ({ A | A_{i_{135}, i_{136}} = sum_{i_{137}} f_45[i_{135}, i_{137}] * (grad(v_1))[i_{137}, i_{136}]  })[i_{140}, i_{141}] * (grad(v_0))[i_{140}, i_{141}]  " == str(a11_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "sum_{i_{142}} ({ A | A_{i_{138}} = sum_{i_{139}} f_46[i_{139}] * (grad(v_1))[i_{138}, i_{139}]  })[i_{142}] * v_0[i_{142}] " == str(a11_sep._form_with_placeholders[1].integrals()[0].integrand())
+assert "f_47 * (sum_{i_{143}} v_0[i_{143}] * v_1[i_{143}] )" == str(a11_sep._form_with_placeholders[2].integrals()[0].integrand())
+log(PROGRESS, "\tLen unchanged forms:\n" +
+    "\t\t" + str(len(a11_sep._form_unchanged)) + "\n"
+)
+assert 0 == len(a11_sep._form_unchanged)
