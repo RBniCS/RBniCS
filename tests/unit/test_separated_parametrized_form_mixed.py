@@ -46,9 +46,16 @@ expr10 = Function(scalar_V) # f_19
 expr11 = Function(vector_V) # f_22
 expr12 = Function(tensor_V) # f_25
 expr13 = Function(V) # f_28
+expr13_split = split(expr13)
+expr13_split_0_split = split(expr13_split[0])
 
 u, p = split(TrialFunction(V))
 v, q = split(TestFunction(V))
+
+scalar_trial = TrialFunction(scalar_V)
+scalar_test = TestFunction(scalar_V)
+vector_trial = TrialFunction(vector_V)
+vector_test = TestFunction(vector_V)
 
 log(PROGRESS, "*** ### @@@       MIXED FORMS      @@@ ### ***")
 
@@ -668,3 +675,41 @@ log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a11_sep._form_unchanged)) + "\n"
 )
 assert 0 == len(a11_sep._form_unchanged)
+
+a12 = expr13_split_0_split[0]*scalar_trial*scalar_test*dx + expr13_split_0_split[1]*scalar_trial.dx(0)*scalar_test*dx
+a12_sep = SeparatedParametrizedForm(a12)
+log(PROGRESS, "*** ###              FORM 12             ### ***")
+log(PROGRESS, "Test usage of Indexed components of a nonlinear function defined on a mixed function space in a form on a scalar function space.")
+a12_sep.separate()
+log(PROGRESS, "\tLen coefficients:\n" +
+    "\t\t" + str(len(a12_sep.coefficients)) + "\n"
+)
+assert 2 == len(a12_sep.coefficients)
+log(PROGRESS, "\tSublen coefficients:\n" +
+    "\t\t" + str(len(a12_sep.coefficients[0])) + "\n" +
+    "\t\t" + str(len(a12_sep.coefficients[1])) + "\n"
+)
+assert 1 == len(a12_sep.coefficients[0])
+assert 1 == len(a12_sep.coefficients[1])
+log(PROGRESS, "\tCoefficients:\n" +
+    "\t\t" + str(a12_sep.coefficients[0][0]) + "\n" +
+    "\t\t" + str(a12_sep.coefficients[1][0]) + "\n"
+)
+assert "f_28[0]" == str(a12_sep.coefficients[0][0])
+assert "f_28[1]" == str(a12_sep.coefficients[1][0])
+log(PROGRESS, "\tPlaceholders:\n" +
+    "\t\t" + str(a12_sep._placeholders[0][0]) + "\n" +
+    "\t\t" + str(a12_sep._placeholders[1][0]) + "\n"
+)
+assert "f_71" == str(a12_sep._placeholders[0][0])
+assert "f_72" == str(a12_sep._placeholders[1][0])
+log(PROGRESS, "\tForms with placeholders:\n" +
+    "\t\t" + str(a12_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
+    "\t\t" + str(a12_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n"
+)
+assert "v_0 * v_1 * f_71" == str(a12_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "v_0 * (grad(v_1))[0] * f_72" == str(a12_sep._form_with_placeholders[1].integrals()[0].integrand())
+log(PROGRESS, "\tLen unchanged forms:\n" +
+    "\t\t" + str(len(a12_sep._form_unchanged)) + "\n"
+)
+assert 0 == len(a12_sep._form_unchanged)
