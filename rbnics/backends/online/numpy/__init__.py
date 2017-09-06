@@ -33,15 +33,9 @@ from rbnics.backends.online.numpy.import_ import import_
 from rbnics.backends.online.numpy.linear_solver import LinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.max import max
-#from rbnics.backends.online.numpy.mesh_motion import MeshMotion
 from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver
-#from rbnics.backends.online.numpy.parametrized_expression_factory import ParametrizedExpressionFactory
-#from rbnics.backends.online.numpy.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.online.numpy.product import product
 from rbnics.backends.online.numpy.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
-#from rbnics.backends.online.numpy.reduced_mesh import ReducedMesh
-#from rbnics.backends.online.numpy.reduced_vertices import ReducedVertices
-#from rbnics.backends.online.numpy.separated_parametrized_form import SeparatedParametrizedForm
 from rbnics.backends.online.numpy.snapshots_matrix import SnapshotsMatrix
 from rbnics.backends.online.numpy.sum import sum
 from rbnics.backends.online.numpy.tensor_basis_list import TensorBasisList
@@ -70,15 +64,9 @@ __all__ = [
     'LinearSolver',
     'Matrix',
     'max',
-#    'MeshMotion',
     'NonlinearSolver',
-#    'ParametrizedExpressionFactory',
-#    'ParametrizedTensorFactory',
     'product',
     'ProperOrthogonalDecomposition',
-#    'ReducedMesh',
-#    'ReducedVertices',
-#    'SeparatedParametrizedForm',
     'SnapshotsMatrix',
     'sum',
     'TensorBasisList',
