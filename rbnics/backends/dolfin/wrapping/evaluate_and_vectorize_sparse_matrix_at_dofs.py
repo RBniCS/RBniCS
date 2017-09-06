@@ -18,13 +18,13 @@
 
 from mpi4py.MPI import MAX
 from dolfin import as_backend_type
-from rbnics.backends.online import OnlineVector
+import rbnics.backends.online
 
 def evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_matrix, dofs_list):
     mat = as_backend_type(sparse_matrix).mat()
     row_start, row_end = mat.getOwnershipRange()
     out_size = len(dofs_list)
-    out = OnlineVector(out_size)
+    out = rbnics.backends.online.OnlineVector(out_size)
     mpi_comm = mat.comm.tompi4py()
     for (index, dofs) in enumerate(dofs_list):
         assert len(dofs) == 2

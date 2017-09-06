@@ -18,10 +18,10 @@
 
 from rbnics.backends.dolfin.wrapping.tensor_copy import tensor_copy
 import rbnics.backends.dolfin
-from rbnics.backends.online import OnlineFunction
+import rbnics.backends.online
 
 def tensors_list_mul_online_function(tensors_list, online_function):
-    assert isinstance(online_function, OnlineFunction.Type())
+    assert isinstance(online_function, rbnics.backends.online.OnlineFunction.Type())
     online_vector = online_function.vector()
     
     output = tensor_copy(tensors_list._list[0])
