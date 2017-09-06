@@ -24,8 +24,8 @@ from rbnics.backends.abstract import TimeDependentProblem1Wrapper
 from rbnics.backends.dolfin import TimeStepping as SparseTimeStepping
 
 # Additional command line options for PETSc TS
-args = "--petsc.ts_bdf_order 3 --petsc.ts_bdf_adapt true"
-parameters.parse(argv = sys.argv[0:1] + args.split())
+PETScOptions().set("ts_bdf_order", "3")
+PETScOptions().set("ts_bdf_adapt", "true")
 
 """
 Solve
