@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends.online.basic.assign import assign as basic_assign
+import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
@@ -23,28 +25,4 @@ from rbnics.utils.decorators import backend_for, list_of
 
 @backend_for("numpy", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), (Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type())))
 def assign(object_to, object_from):
-    if object_from is not object_to:
-        assert (
-            (isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()))
-                or
-            (isinstance(object_to, list) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()))
-                or
-            (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))
-                or
-            (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type()))
-        )
-        if isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()):
-            assert object_to.vector().N == object_from.vector().N
-            object_to.vector()[:] = object_from.vector()
-        elif isinstance(object_to, list) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()):
-            del object_to[:]
-            object_to.extend(object_from)
-        elif (
-            (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))
-                or
-            (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type()))
-        ):
-            object_to[:] = object_from
-        else:
-            raise AssertionError("Invalid arguments to assign")
-            
+    basic_assign(object_to, object_from, rbnics.backends.online.numpy)
