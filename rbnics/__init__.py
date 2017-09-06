@@ -33,6 +33,7 @@ from rbnics.eim import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
 from rbnics.problems.elliptic_optimal_control import EllipticOptimalControlProblem
 from rbnics.problems.navier_stokes import NavierStokesProblem
+from rbnics.problems.navier_stokes_unsteady import NavierStokesUnsteadyProblem
 from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
 from rbnics.problems.nonlinear_parabolic import NonlinearParabolicProblem
 from rbnics.problems.parabolic_coercive import ParabolicCoerciveProblem
@@ -54,6 +55,7 @@ __all__ += [
     'EllipticCoerciveProblem',
     'EllipticOptimalControlProblem',
     'NavierStokesProblem',
+    'NavierStokesUnsteadyProblem',
     'NonlinearEllipticProblem',
     'NonlinearParabolicProblem',
     'ParabolicCoerciveProblem',
