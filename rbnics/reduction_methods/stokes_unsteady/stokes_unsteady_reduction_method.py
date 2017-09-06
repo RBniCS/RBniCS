@@ -19,27 +19,23 @@
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
 from rbnics.utils.decorators import Extends, override
 
-# Base class containing the interface of a projection based ROM
-# for saddle point problems.
-def StokesUnsteadyReductionMethod(StokesReductionMethod_DerivedClass):
+def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
     
-    StokesUnsteadyReductionMethod_Base = TimeDependentReductionMethod(StokesReductionMethod_DerivedClass)
-    
-    @Extends(StokesUnsteadyReductionMethod_Base)
-    class StokesUnsteadyReductionMethod_Class(StokesUnsteadyReductionMethod_Base):
+    @Extends(AbstractCFDUnsteadyReductionMethod_Base)
+    class AbstractCFDUnsteadyReductionMethod_Class(AbstractCFDUnsteadyReductionMethod_Base):
         
         ## Default initialization of members
         @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
-            StokesUnsteadyReductionMethod_Base.__init__(self, truth_problem, **kwargs)
+            AbstractCFDUnsteadyReductionMethod_Base.__init__(self, truth_problem, **kwargs)
             # I/O
             self._print_supremizer_solve_message_previous_mu = None
         
         ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
         def postprocess_snapshot(self, snapshot_over_time, snapshot_index):
             # Call parent: this will solve for supremizers at each time step
-            snapshot_and_supremizer_over_time = StokesUnsteadyReductionMethod_Base.postprocess_snapshot(self, snapshot_over_time, snapshot_index)
+            snapshot_and_supremizer_over_time = AbstractCFDUnsteadyReductionMethod_Base.postprocess_snapshot(self, snapshot_over_time, snapshot_index)
             # Convert from a list (over time) of tuple (snapshot, supremizer) to a tuple of two lists (snapshot over time, supremizer over time)
             assert isinstance(snapshot_and_supremizer_over_time, list)
             snapshot_over_time = list()
@@ -55,8 +51,21 @@ def StokesUnsteadyReductionMethod(StokesReductionMethod_DerivedClass):
         @override
         def _print_supremizer_solve_message(self):
             if self.truth_problem.mu != self._print_supremizer_solve_message_previous_mu:
-                StokesUnsteadyReductionMethod_Base._print_supremizer_solve_message(self)
+                AbstractCFDUnsteadyReductionMethod_Base._print_supremizer_solve_message(self)
                 self._print_supremizer_solve_message_previous_mu = self.truth_problem.mu
+    
+    # return value (a class) for the decorator
+    return AbstractCFDUnsteadyReductionMethod_Class
+
+# Base class containing the interface of a projection based ROM
+# for saddle point problems.
+def StokesUnsteadyReductionMethod(StokesReductionMethod_DerivedClass):
+    
+    StokesUnsteadyReductionMethod_Base = AbstractCFDUnsteadyReductionMethod(TimeDependentReductionMethod(StokesReductionMethod_DerivedClass))
+    
+    @Extends(StokesUnsteadyReductionMethod_Base)
+    class StokesUnsteadyReductionMethod_Class(StokesUnsteadyReductionMethod_Base):
+        pass
     
     # return value (a class) for the decorator
     return StokesUnsteadyReductionMethod_Class

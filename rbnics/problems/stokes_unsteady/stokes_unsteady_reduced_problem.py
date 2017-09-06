@@ -23,9 +23,12 @@ from rbnics.backends.online import OnlineFunction
 from rbnics.utils.decorators import Extends, override
 from rbnics.utils.mpi import print
 
+def AbstractCFDUnsteadyReducedProblem(AbstractCFDUnsteadyReducedProblem_Base):
+    return AbstractCFDUnsteadyReducedProblem_Base
+
 def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
 
-    StokesUnsteadyReducedProblem_Base = LinearTimeDependentReducedProblem(StokesReducedProblem_DerivedClass)
+    StokesUnsteadyReducedProblem_Base = AbstractCFDUnsteadyReducedProblem(LinearTimeDependentReducedProblem(StokesReducedProblem_DerivedClass))
 
     @Extends(StokesUnsteadyReducedProblem_Base)
     class StokesUnsteadyReducedProblem_Class(StokesUnsteadyReducedProblem_Base):
@@ -45,11 +48,8 @@ def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
                         raise AssertionError("Invalid value for order of term " + term)
                 return (
                       assembled_operator["m"]*solution_dot
-                    + assembled_operator["a"]*solution
-                    + assembled_operator["b"]*solution
-                    + assembled_operator["bt"]*solution
-                    - assembled_operator["f"]
-                    - assembled_operator["g"]        
+                    +(assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
+                    - assembled_operator["f"] - assembled_operator["g"]
                 )
                 
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
@@ -60,9 +60,7 @@ def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return (
                       assembled_operator["m"]*solution_dot_coefficient
-                    + assembled_operator["a"]
-                    + assembled_operator["b"]
-                    + assembled_operator["bt"]
+                    + assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
                 )
         
     # return value (a class) for the decorator

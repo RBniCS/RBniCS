@@ -23,7 +23,10 @@ from rbnics.problems.stokes_unsteady.stokes_unsteady_problem import StokesUnstea
 from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
 from rbnics.reduction_methods.stokes_unsteady import StokesUnsteadyPODGalerkinReduction
 
-StokesUnsteadyPODGalerkinReducedProblem_Base = LinearTimeDependentPODGalerkinReducedProblem(StokesUnsteadyReducedProblem(StokesPODGalerkinReducedProblem))
+def AbstractCFDUnsteadyPODGalerkinReducedProblem(AbstractCFDUnsteadyPODGalerkinReducedProblem_Base):
+    return AbstractCFDUnsteadyPODGalerkinReducedProblem_Base
+
+StokesUnsteadyPODGalerkinReducedProblem_Base = AbstractCFDUnsteadyPODGalerkinReducedProblem(LinearTimeDependentPODGalerkinReducedProblem(StokesUnsteadyReducedProblem(StokesPODGalerkinReducedProblem)))
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
