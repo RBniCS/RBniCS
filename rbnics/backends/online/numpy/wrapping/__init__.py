@@ -16,18 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.numpy.wrapping.DirichletBC import DirichletBC
 from rbnics.backends.online.numpy.wrapping.function_copy import function_copy
-from rbnics.backends.online.numpy.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.online.numpy.wrapping.function_load import function_load
 from rbnics.backends.online.numpy.wrapping.function_save import function_save
 from rbnics.backends.online.numpy.wrapping.functions_list_basis_functions_matrix_mul import functions_list_basis_functions_matrix_mul_online_matrix, functions_list_basis_functions_matrix_mul_online_vector, functions_list_basis_functions_matrix_mul_online_function
-from rbnics.backends.online.numpy.wrapping.get_function_subspace import get_function_subspace
 from rbnics.backends.online.numpy.wrapping.get_mpi_comm import get_mpi_comm
 from rbnics.backends.online.numpy.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from rbnics.backends.online.numpy.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
-from rbnics.backends.online.numpy.wrapping.slice_to_array import slice_to_array
-from rbnics.backends.online.numpy.wrapping.slice_to_size import slice_to_size
+from rbnics.backends.online.numpy.wrapping.slicer import Slicer
 from rbnics.backends.online.numpy.wrapping.tensor_copy import tensor_copy
 from rbnics.backends.online.numpy.wrapping.tensor_load import tensor_load
 from rbnics.backends.online.numpy.wrapping.tensor_save import tensor_save
@@ -35,20 +31,16 @@ from rbnics.backends.online.numpy.wrapping.tensors_list_mul import tensors_list_
 from rbnics.backends.online.numpy.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
-    'DirichletBC',
     'function_copy',
-    'function_extend_or_restrict',
     'function_load',
     'function_save',
     'functions_list_basis_functions_matrix_mul_online_matrix', 
     'functions_list_basis_functions_matrix_mul_online_vector', 
     'functions_list_basis_functions_matrix_mul_online_function',
-    'get_function_subspace',
     'get_mpi_comm',
     'gram_schmidt_projection_step',
     'matrix_mul_vector',
-    'slice_to_array',
-    'slice_to_size',
+    'Slicer',
     'tensor_copy',
     'tensor_load',
     'tensor_save',
