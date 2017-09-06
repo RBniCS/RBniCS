@@ -65,6 +65,7 @@ from rbnics.backends.dolfin.wrapping.is_time_dependent import is_time_dependent
 from rbnics.backends.dolfin.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, ParametrizedConstant, parametrized_constant_to_float
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
+from rbnics.backends.dolfin.wrapping.petsc_ts_integrator import PETScTSIntegrator
 from rbnics.backends.dolfin.wrapping.plot import plot
 from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
@@ -134,6 +135,7 @@ __all__ = [
     'ParametrizedConstant',
     'parametrized_constant_to_float',
     'ParametrizedExpression',
+    'PETScTSIntegrator',
     'plot',
     'solution_identify_component',
     'solution_iterator',
