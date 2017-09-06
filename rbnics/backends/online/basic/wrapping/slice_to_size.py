@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.numpy.wrapping.slice_to_array import _check_key, _check_length_dict
+from rbnics.backends.online.basic.wrapping.slice_to_array import _check_key, _check_length_dict
 
 def slice_to_size(obj, key, length_dict=None):
     key = _check_key(obj, key)

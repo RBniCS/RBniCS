@@ -64,10 +64,10 @@ def slice_to_array(obj, key, length_dict=None, index_dict=None):
     return slices
     
 def _check_key(obj, key):
-    if isinstance(key, slice):
+    if not isinstance(key, tuple):
         key = (key,)
     assert isinstance(key, tuple)
-    assert isinstance(key[0], slice)
+    assert all([isinstance(key_i, slice) for key_i in key])
     converted_key = list()
     for (slice_index, slice_) in enumerate(key):
         assert slice_.start is None or slice_.start == 0
@@ -77,8 +77,12 @@ def _check_key(obj, key):
             start = slice_.start
         assert slice_.step is None
         step = slice_.step
-        assert isinstance(slice_.stop, (int, dict))
-        if isinstance(slice_.stop, int) and slice_.stop == sys.maxsize:
+        assert isinstance(slice_.stop, (int, dict)) or slice_.stop is None
+        if (
+            (isinstance(slice_.stop, int) and slice_.stop == sys.maxsize)
+                or
+            slice_.stop is None
+        ):
             stop = obj.shape[slice_index]
         else:
             stop = slice_.stop
@@ -92,7 +96,7 @@ def _check_length_dict(key, length_dict):
     elif isinstance(length_dict, dict):
         length_dict = (length_dict, )
     assert isinstance(length_dict, tuple)
-    assert isinstance(length_dict[0], dict) or length_dict[0] is None
+    assert all([isinstance(length_dict_i, dict) or length_dict_i is None for length_dict_i in length_dict])
     assert len(key) == len(length_dict)
     return length_dict
     
@@ -102,7 +106,7 @@ def _check_index_dict(key, index_dict):
     elif isinstance(index_dict, dict):
         index_dict = (index_dict, )
     assert isinstance(index_dict, tuple)
-    assert isinstance(index_dict[0], dict) or index_dict[0] is None
+    assert all([isinstance(index_dict_i, dict) or index_dict_i is None for index_dict_i in index_dict])
     assert len(key) == len(index_dict)
     return index_dict
     
