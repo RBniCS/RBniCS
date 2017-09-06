@@ -52,17 +52,19 @@ def read_config(config):
     # Read from file
     config_files_list = list()
     config_files_list.append(os.path.join(rbnics_directory, ".rbnicsrc"))
-    if hasattr(sys.modules["__main__"], "__file__"):
+    if hasattr(sys.modules["__main__"], "__file__"): # from script
         main_directory = os.path.dirname(os.path.realpath(sys.modules["__main__"].__file__))
-        main_directory_split = main_directory.split(os.path.sep)
-        for p in range(len(main_directory_split), 0, -1):
-            new_config_file_list = list()
-            new_config_file_list.append(os.path.sep)
-            new_config_file_list.extend(main_directory_split[:p])
-            new_config_file_list.append(".rbnicsrc")
-            new_config_file = os.path.join(*new_config_file_list)
-            if new_config_file not in config_files_list:
-                config_files_list.append(new_config_file)
+    else: # interactive
+        main_directory = os.getcwd()
+    main_directory_split = main_directory.split(os.path.sep)
+    for p in range(len(main_directory_split), 0, -1):
+        new_config_file_list = list()
+        new_config_file_list.append(os.path.sep)
+        new_config_file_list.extend(main_directory_split[:p])
+        new_config_file_list.append(".rbnicsrc")
+        new_config_file = os.path.join(*new_config_file_list)
+        if new_config_file not in config_files_list:
+            config_files_list.append(new_config_file)
     config.read(config_files_list)
     
     # Convert list of string options
