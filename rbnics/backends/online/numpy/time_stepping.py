@@ -27,13 +27,14 @@ except ImportError:
 else:
     has_IDA = True
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
+from rbnics.backends.online.basic.wrapping import DirichletBC
 from rbnics.backends.online.numpy.assign import assign
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.linear_solver import LinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.numpy.vector import Vector
-from rbnics.backends.online.numpy.wrapping import DirichletBC, function_copy
+from rbnics.backends.online.numpy.wrapping import function_copy
 from rbnics.utils.decorators import BackendFor, Extends, override
 from rbnics.utils.mpi import print
 
@@ -129,8 +130,8 @@ class _ScipyImplicitEuler(object):
                     minus_solution_previous_over_dt.vector()[:] /= - self._time_step_size
                     lhs = self.jacobian_eval(t, self.zero, self.zero, 1./self._time_step_size)
                     rhs = - self.residual_eval(t, self.zero, minus_solution_previous_over_dt)
-                    bcs_t = DirichletBC(self.bc_eval(t))
-                    LinearSolver.__init__(self_, lhs, self.solution, rhs, bcs_t.bcs)
+                    bcs_t = self.bc_eval(t)
+                    LinearSolver.__init__(self_, lhs, self.solution, rhs, bcs_t)
                 
             self.solver_generator = _LinearSolver
         elif problem_type == "nonlinear":
@@ -242,9 +243,14 @@ if has_IDA:
                 self.solution_dot.vector()[:] = solution_dot.reshape((-1, 1))
                 # Update current bc
                 if self.bc_eval is not None:
-                    self.current_bc = DirichletBC(self.bc_eval(t))
-                    self.current_bc.apply_to_vector(self.solution.vector())
-                    solution[:] = asarray(self.solution.vector()).reshape(-1)
+                    bcs_t = self.bc_eval(t)
+                    assert isinstance(bcs_t, (tuple, dict))
+                    if isinstance(bcs_t, tuple):
+                        self.current_bc = DirichletBC(bcs_t)
+                    elif isinstance(bcs_t, dict):
+                        self.current_bc = DirichletBC(bcs_t, self.solution.vector()._basis_component_index_to_component_name, self.solution.vector().N)
+                    else:
+                        raise AssertionError("Invalid bc in _LinearSolver.__init__().")
             def _assimulo_residual_eval(t, solution, solution_dot):
                 # Store current time
                 self.set_time(t)
@@ -254,7 +260,7 @@ if has_IDA:
                 residual_vector = self.residual_eval(t, self.solution, self.solution_dot)
                 # Apply BCs, if necessary
                 if self.bc_eval is not None:
-                    self.current_bc.homogeneous_apply_to_vector(residual_vector)
+                    self.current_bc.apply_to_vector(residual_vector, self.solution.vector())
                 # Convert to an array, rather than a matrix with one column, and return
                 return asarray(residual_vector).reshape(-1)
             def _assimulo_jacobian_eval(solution_dot_coefficient, t, solution, solution_dot):
@@ -353,10 +359,6 @@ if has_IDA:
             all_solutions_dot_as_functions = list()
             for (t, solution) in zip(all_times, all_solutions):
                 self.solution.vector()[:] = solution.reshape((-1, 1))
-                # Fix bcs
-                if self.bc_eval is not None:
-                    self.current_bc = DirichletBC(self.bc_eval(t))
-                    self.current_bc.apply_to_vector(self.solution.vector())
                 all_solutions_as_functions.append(function_copy(self.solution))
                 if len(all_solutions_as_functions) > 1: # monitor is being called at t > 0.
                     self.solution_dot.vector()[:] = (all_solutions_as_functions[-1].vector() - all_solutions_as_functions[-2].vector())/self._time_step_size

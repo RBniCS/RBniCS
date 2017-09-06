@@ -21,8 +21,8 @@ from numpy import asarray, dot
 from numpy.linalg import solve
 from scipy.optimize.nonlin import Jacobian, nonlin_solve
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
+from rbnics.backends.online.basic.wrapping import DirichletBC
 from rbnics.backends.online.numpy.function import Function
-from rbnics.backends.online.numpy.wrapping import DirichletBC
 from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
 @Extends(AbstractNonlinearSolver)
@@ -83,9 +83,13 @@ class _NonlinearProblem(object):
         assert sample_jacobian.N == sample_residual.N
         # Prepare storage for BCs, if necessary
         if bcs is not None:
-            self.bcs = DirichletBC(bcs)
-            # Apply BCs to initial guess
-            self.bcs.apply_to_vector(self.solution.vector())
+            assert isinstance(bcs, (tuple, dict))
+            if isinstance(bcs, tuple):
+                self.bcs = DirichletBC(bcs)
+            elif isinstance(bcs, dict):
+                self.bcs = DirichletBC(bcs, self.solution.vector()._basis_component_index_to_component_name, self.solution.vector().N)
+            else:
+                raise AssertionError("Invalid bc in _NonlinearProblem.__init__().")
         else:
             self.bcs = None
         
@@ -96,7 +100,7 @@ class _NonlinearProblem(object):
         residual_vector = self.residual_eval(self.solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
-            self.bcs.homogeneous_apply_to_vector(residual_vector)
+            self.bcs.apply_to_vector(residual_vector, self.solution.vector())
         # Convert to an array, rather than a matrix with one column, and return
         return asarray(residual_vector).reshape(-1)
         
