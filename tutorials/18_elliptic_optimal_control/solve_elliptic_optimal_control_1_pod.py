@@ -19,6 +19,10 @@
 from dolfin import *
 from rbnics import *
 
+@ShapeParametrization(
+    ("x[0]", "x[1]"), # subdomain 1
+    ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
+)
 class EllipticOptimalControl(EllipticOptimalControlProblem):
     
     ## Default initialization of members
@@ -37,40 +41,42 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         self.ds = Measure("ds")(subdomain_data=boundaries)
         # Regularization coefficient
         self.alpha = 0.01
-        # Store the velocity expression
-        self.vel = Expression("x[1]*(1-x[1])", element=self.V.sub(0).ufl_element())
         
     ## Return custom problem name
     def name(self):
-        return "EllipticOptimalControl2"
+        return "EllipticOptimalControl1POD"
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
-        mu3 = self.mu[2]
-        if term in ("a", "a*"):
-            theta_a0 = 1.0/mu1
-            theta_a1 = 1.0
-            return (theta_a0, theta_a1)
+        if term  in ("a", "a*"):
+            theta_a0 = 1.0
+            theta_a1 = 1.0/mu1
+            theta_a2 = mu1
+            return (theta_a0, theta_a1, theta_a2)
         elif term in ("c", "c*"):
             theta_c0 = 1.0
-            return (theta_c0,)
+            theta_c1 = mu1
+            return (theta_c0, theta_c1)
         elif term == "m":
             theta_m0 = 1.0
-            return (theta_m0,)
+            theta_m1 = mu1
+            return (theta_m0, theta_m1)
         elif term == "n":
-            theta_n0 = self.alpha
-            return (theta_n0,)
+            alpha = self.alpha
+            theta_n0 = alpha
+            theta_n1 = alpha*mu1
+            return (theta_n0, theta_n1)
         elif term == "f":
             theta_f0 = 1.0
             return (theta_f0,)
         elif term == "g":
-            theta_g0 = mu2
-            theta_g1 = mu3
+            theta_g0 = 1.0
+            theta_g1 = mu1*mu2
             return (theta_g0, theta_g1)
         elif term == "h":
-            theta_h0 = 0.24*mu2**2 + 0.52*mu3**2
+            theta_h0 = 1.0 + mu1*mu2**2
             return (theta_h0,)
         elif term == "dirichlet_bc_y":
             theta_bc0 = 1.
@@ -84,37 +90,41 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         if term == "a":
             y = self.y
             q = self.q
-            vel = self.vel
-            a0 = inner(grad(y),grad(q))*dx
-            a1 = vel*y.dx(0)*q*dx
-            return (a0, a1)
+            a0 = inner(grad(y),grad(q))*dx(1)
+            a1 = y.dx(0)*q.dx(0)*dx(2)
+            a2 = y.dx(1)*q.dx(1)*dx(2)
+            return (a0, a1, a2)
         elif term == "a*":
             z = self.z
             p = self.p
-            vel = self.vel
-            as0 = inner(grad(z),grad(p))*dx
-            as1 = - vel*p.dx(0)*z*dx
-            return (as0, as1)
+            as0 = inner(grad(z),grad(p))*dx(1)
+            as1 = z.dx(0)*p.dx(0)*dx(2)
+            as2 = z.dx(1)*p.dx(1)*dx(2)
+            return (as0, as1, as2)
         elif term == "c":
             u = self.u
             q = self.q
-            c0 = u*q*dx
-            return (c0,)
+            c0 = u*q*dx(1)
+            c1 = u*q*dx(2)
+            return (c0, c1)
         elif term == "c*":
             v = self.v
             p = self.p
-            cs0 = v*p*dx
-            return (cs0,)
+            cs0 = v*p*dx(1)
+            cs1 = v*p*dx(2)
+            return (cs0, cs1)
         elif term == "m":
             y = self.y
             z = self.z
-            m0 = y*z*dx(1) + y*z*dx(2)
-            return (m0,)
+            m0 = y*z*dx(1)
+            m1 = y*z*dx(2)
+            return (m0, m1)
         elif term == "n":
             u = self.u
             v = self.v
-            n0 = u*v*dx
-            return (n0,)
+            n0 = u*v*dx(1)
+            n1 = u*v*dx(2)
+            return (n0, n1)
         elif term == "f":
             q = self.q
             f0 = Constant(0.0)*q*dx
@@ -128,10 +138,10 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             h0 = 1.0
             return (h0,)
         elif term == "dirichlet_bc_y":
-            bc0 = [DirichletBC(self.V.sub(0), Constant(i), self.boundaries, i) for i in (1, 2)]
+            bc0 = [DirichletBC(self.V.sub(0), Constant(1.0), self.boundaries, i) for i in range(1, 9)]
             return (bc0,)
         elif term == "dirichlet_bc_p":
-            bc0 = [DirichletBC(self.V.sub(2), Constant(0.0), self.boundaries, i) for i in (1, 2)]
+            bc0 = [DirichletBC(self.V.sub(2), Constant(0.0), self.boundaries, i) for i in range(1, 9)]
             return (bc0,)
         elif term == "inner_product_y":
             y = self.y
@@ -152,9 +162,9 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             raise ValueError("Invalid term for assemble_operator().")
         
 # 1. Read the mesh for this problem
-mesh = Mesh("data/mesh2.xml")
-subdomains = MeshFunction("size_t", mesh, "data/mesh2_physical_region.xml")
-boundaries = MeshFunction("size_t", mesh, "data/mesh2_facet_region.xml")
+mesh = Mesh("data/mesh1.xml")
+subdomains = MeshFunction("size_t", mesh, "data/mesh1_physical_region.xml")
+boundaries = MeshFunction("size_t", mesh, "data/mesh1_facet_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1)
 scalar_element = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
@@ -163,24 +173,24 @@ V = FunctionSpace(mesh, element, components=["y", "u", "p"])
 
 # 3. Allocate an object of the EllipticOptimalControl class
 elliptic_optimal_control = EllipticOptimalControl(V, subdomains=subdomains, boundaries=boundaries)
-mu_range = [(3.0, 20.0), (0.5, 1.5), (1.5, 2.5)]
+mu_range = [(1.0, 3.5), (0.5, 2.5)]
 elliptic_optimal_control.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 pod_galerkin_method = PODGalerkin(elliptic_optimal_control)
-pod_galerkin_method.set_Nmax(20)
+pod_galerkin_method.set_Nmax(10)
 
 # 5. Perform the offline phase
-first_mu = (3.0, 1.0, 2.0)
+first_mu = (1.0, 1.0)
 elliptic_optimal_control.set_mu(first_mu)
 pod_galerkin_method.initialize_training_set(100)
 reduced_elliptic_optimal_control = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = (15.0, 0.6, 1.8)
+online_mu = (3.0, 0.6)
 reduced_elliptic_optimal_control.set_mu(online_mu)
 reduced_elliptic_optimal_control.solve()
-reduced_elliptic_optimal_control.export_solution("EllipticOptimalControl2", "online_solution")
+reduced_elliptic_optimal_control.export_solution("EllipticOptimalControl1POD", "online_solution")
 print "Reduced output for mu =", online_mu, "is", reduced_elliptic_optimal_control.compute_output()
 
 # 7. Perform an error analysis
