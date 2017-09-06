@@ -5,6 +5,17 @@
 !.gitignore
 # ... __init__ file of this package ...
 !__init__.py
+# ... basic subpackage ...
+!basic/
+!basic/*
+basic/*~
+basic/*.bak
+basic/*.pyc
+!basic/*/
+!basic/*/*
+basic/*/*~
+basic/*/*.bak
+basic/*/*.pyc
 # ... numpy subpackage ...
 !numpy/
 !numpy/*
