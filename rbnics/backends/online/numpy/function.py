@@ -19,65 +19,26 @@
 from itertools import imap
 from numpy import matrix
 from rbnics.utils.decorators import backend_for, OnlineSizeType
+from rbnics.backends.online.basic import Function as BasicFunction
 from rbnics.backends.online.numpy.vector import Vector
 
-class _Function_Type(object):
+_Function_Type_Base = BasicFunction(Vector)
+
+class _Function_Type(_Function_Type_Base):
     def __init__(self, arg):
         assert isinstance(arg, (int, dict, Vector.Type(), matrix))
-        if isinstance(arg, (int, dict)):
-            self._v = Vector(arg)
-            self.N = arg
-        elif isinstance(arg, Vector.Type()):
-            self._v = arg
-            self.N = arg.N
+        if isinstance(arg, (int, dict, Vector.Type())):
+            _Function_Type_Base.__init__(self, arg)
         elif isinstance(arg, matrix): # for internal usage in EigenSolver, not exposed to the backends
             assert arg.shape[1] == 1 # column vector
-            self._v = Vector(arg.shape[0])
-            self._v[:] = arg
-            self.N = arg.shape[0]
+            vec = Vector(arg.shape[0])
+            vec[:] = arg
+            _Function_Type_Base.__init__(self, vec)
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in Function")
-    
-    def vector(self):
-        return self._v
-        
+                    
     def __iter__(self):
         return imap(float, self._v.flat)
-        
-    def __abs__(self):
-        return Function(self._v.__abs__())
-        
-    def __add__(self, other):
-        if isinstance(other, _Function_Type):
-            return Function(self._v.__add__(other._v))
-        elif isinstance(other, Vector.Type()):
-            return Function(self._v.__add__(other))
-        else:
-            return NotImplemented
-        
-    def __sub__(self, other):
-        if isinstance(other, _Function_Type):
-            return Function(self._v.__sub__(other._v))
-        elif isinstance(other, Vector.Type()):
-            return Function(self._v.__sub__(other))
-        else:
-            return NotImplemented
-        
-    def __mul__(self, other):
-        if isinstance(other, (float, int)):
-            return Function(self._v.__mul__(other))
-        else:
-            return NotImplemented
-        
-    def __rmul__(self, other):
-        if isinstance(other, (float, int)):
-            return Function(self._v.__rmul__(other))
-        else:
-            return NotImplemented
-        
-    def __neg__(self):
-        return Function(self._v.neg())
-
         
 @backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)
 def Function(arg):
