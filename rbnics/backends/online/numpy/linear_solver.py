@@ -17,34 +17,23 @@
 #
 
 from numpy.linalg import solve
-from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
+from rbnics.backends.online.basic import LinearSolver as BasicLinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.function import Function
-from rbnics.backends.online.numpy.wrapping import DirichletBC
 from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
 
-@Extends(AbstractLinearSolver)
+@Extends(BasicLinearSolver)
 @BackendFor("numpy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), ThetaType + DictOfThetaType + (None,)))
-class LinearSolver(AbstractLinearSolver):
+class LinearSolver(BasicLinearSolver):
     @override
     def __init__(self, lhs, solution, rhs, bcs=None):
-        self.lhs = lhs
-        self.solution = solution
-        self.rhs = rhs
-        # We should be solving a square system
-        assert self.lhs.M == self.lhs.N
-        assert self.lhs.N == self.rhs.N
-        # Apply BCs, if necessary
-        if bcs is not None:
-            self.bcs = DirichletBC(bcs)
-            self.bcs.apply_to_vector(self.rhs)
-            self.bcs.apply_to_matrix(self.lhs)
+        BasicLinearSolver.__init__(self, lhs, solution, rhs, bcs)
                 
     @override
     def set_parameters(self, parameters):
         assert len(parameters) == 0, "NumPy linear solver does not accept parameters yet"
-                
+        
     @override
     def solve(self):
         solution = solve(self.lhs, self.rhs)
