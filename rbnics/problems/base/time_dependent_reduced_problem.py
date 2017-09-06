@@ -317,17 +317,17 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             lifting_over_time = self.truth_problem.solve(cache_key="lifting_" + component + "_" + str(i))
             theta_over_time = list()
             for k in range(len(lifting_over_time)):
-                self.set_time(k*self.dt)
-                theta_over_time.append(self.compute_theta(term)[i])
+                self.truth_problem.set_time(k*self.truth_problem.dt)
+                theta_over_time.append(self.truth_problem.compute_theta(term)[i])
             # We average the time dependent solution to be used as time independent lifting.
             # Do not even bother adding the initial condition if it is zero
             if component != "":
-                assert component in self.components
-                has_non_homogeneous_initial_condition = self.initial_condition[component] and not self.initial_condition_is_homogeneous[component]
+                assert component in self.truth_problem.components
+                has_non_homogeneous_initial_condition = self.truth_problem.initial_condition[component] and not self.truth_problem.initial_condition_is_homogeneous[component]
             else:
-                assert len(self.components) == 1
+                assert len(self.truth_problem.components) == 1
                 component = None
-                has_non_homogeneous_initial_condition = self.initial_condition and not self.initial_condition_is_homogeneous
+                has_non_homogeneous_initial_condition = self.truth_problem.initial_condition and not self.truth_problem.initial_condition_is_homogeneous
             if has_non_homogeneous_initial_condition:
                 time_interval = (0., self.truth_problem.T)
             else:
