@@ -18,6 +18,7 @@
 
 from numpy import isclose
 from dolfin import *
+from math import sqrt
 from rbnics.backends.dolfin import EigenSolver as SparseEigenSolver
 from rbnics.backends.online.numpy import EigenSolver as DenseEigenSolver, Matrix as DenseMatrix
 
@@ -80,14 +81,14 @@ print "Sparse inf-sup constant: ", sqrt(r)
 # ~~~ Dense case ~~~ #
 if mesh.mpi_comm().size == 1: # dense solver is not partitioned    
     # Extract constrained matrices from sparse eigensolver
-    dense_LHS_array = sparse_solver.A.array()
-    dense_RHS_array = sparse_solver.B.array()
+    dense_LHS_array = sparse_solver.condensed_A.array()
+    dense_RHS_array = sparse_solver.condensed_B.array()
     
     # Convert to dense format
     dense_LHS = DenseMatrix(*dense_LHS_array.shape)
     dense_RHS = DenseMatrix(*dense_RHS_array.shape)
-    dense_LHS[:] = dense_LHS_array
-    dense_RHS[:] = dense_RHS_array
+    dense_LHS[:, :] = dense_LHS_array
+    dense_RHS[:, :] = dense_RHS_array
     
     # Solve the eigenproblem
     dense_solver = DenseEigenSolver(None, dense_LHS, dense_RHS)

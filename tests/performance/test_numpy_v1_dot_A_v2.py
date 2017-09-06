@@ -45,7 +45,7 @@ class Test(TestBase):
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                v1_dot_A_v2_builtin = float(v1.T*(A*v2))
+                v1_dot_A_v2_builtin = float(v1.T.dot(A*v2))
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using transpose() method
                 v1_dot_A_v2_transpose = transpose(v1)*A*v2

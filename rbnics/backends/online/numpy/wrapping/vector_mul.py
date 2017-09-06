@@ -23,7 +23,7 @@ def vector_mul_vector(vector1, vector2):
         vector1 = vector1.vector()
     if isinstance(vector2, rbnics.backends.online.numpy.Function.Type()):
         vector2 = vector2.vector()
-    output = vector1.T*vector2
+    output = vector1.T.dot(vector2)
     assert output.shape == (1, 1)
     return output.item(0, 0)
 

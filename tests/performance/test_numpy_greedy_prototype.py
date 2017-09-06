@@ -104,10 +104,10 @@ class Test(TestBase):
                 # Time using sum(product()) method
                 all_error_estimator_sum_product = []
                 for t in range(Ntrain):
-                    all_error_estimator_sum_product.append( \
-                        transpose(u[t])*sum(product(theta_a[t], aa_product[:N, :N], theta_a[t]))*v[t] + \
-                        transpose(u[t])*sum(product(theta_a[t], af_product[:N], theta_f[t])) + \
-                        sum(product(theta_f[t], ff_product, theta_f[t])) \
+                    all_error_estimator_sum_product.append(
+                        transpose(u[t])*sum(product(theta_a[t], aa_product[:N, :N], theta_a[t]))*v[t] +
+                        transpose(u[t])*sum(product(theta_a[t], af_product[:N], theta_f[t])) +
+                        sum(product(theta_f[t], ff_product, theta_f[t]))
                     )
         if test_id >= 2:
             average_relative_error = 0.

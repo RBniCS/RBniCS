@@ -177,7 +177,7 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
             dense_jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = dense_jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
             dense_jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             dense_jacobian = DenseMatrix(*dense_jacobian_array.shape)
-            dense_jacobian[:] = dense_jacobian_array
+            dense_jacobian[:, :] = dense_jacobian_array
             return dense_jacobian
         
         # Define boundary condition
@@ -249,13 +249,13 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
         dense_error = DenseFunction(*exact_solution.vector().array().shape)
         dense_error.vector()[:] = exact_solution.vector().array().reshape((-1, 1))
         dense_error.vector()[:] -= dense_solution_array
-        dense_error_norm = dense_error.vector().T*(X.array()*dense_error.vector())
+        dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
         assert dense_error_norm.shape == (1, 1)
         dense_error_norm = dense_error_norm[0, 0]
         dense_error_dot = DenseFunction(*exact_solution_dot.vector().array().shape)
         dense_error_dot.vector()[:] = exact_solution_dot.vector().array().reshape((-1, 1))
         dense_error_dot.vector()[:] -= dense_solution_dot_array
-        dense_error_dot_norm = dense_error_dot.vector().T*(X.array()*dense_error_dot.vector())
+        dense_error_dot_norm = dense_error_dot.vector().T.dot(X.array().dot(dense_error_dot.vector()))
         assert dense_error_dot_norm.shape == (1, 1)
         dense_error_dot_norm = dense_error_dot_norm[0, 0]
         print "DenseTimeStepping error:", dense_error_norm, dense_error_dot_norm

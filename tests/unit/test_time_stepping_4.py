@@ -75,7 +75,7 @@ r_u = inner((1+u**2)*grad(u), grad(v))*dx
 j_u = derivative(r_u, u, du)
 r_u_dot_dot = inner(u_dot_dot, v)*dx
 j_u_dot_dot = derivative(r_u_dot_dot, u_dot_dot, du_dot_dot)
-r = r_u_dot_dot + r_u  - g*v*dx
+r = r_u_dot_dot + r_u - g*v*dx
 x = inner(du, v)*dx
 bc = [DirichletBC(V, exact_solution_expression, boundary)]
 

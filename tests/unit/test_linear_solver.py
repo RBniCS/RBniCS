@@ -111,7 +111,7 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
     # Assemble matrix and vector
     dense_A = DenseMatrix(*dense_A_array.shape)
     dense_F = DenseVector(*dense_F_array.shape)
-    dense_A[:] = dense_A_array
+    dense_A[:, :] = dense_A_array
     dense_F[:] = dense_F_array.reshape((-1, 1))
     
     # Solve the linear problem
@@ -125,7 +125,7 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
     dense_error = DenseFunction(*dense_F_array.shape)
     dense_error.vector()[:] = exact_solution.vector().array().reshape((-1, 1))
     dense_error.vector()[:] -= dense_solution_array
-    dense_error_norm = dense_error.vector().T*(X.array()*dense_error.vector())
+    dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
     assert dense_error_norm.shape == (1, 1)
     dense_error_norm = dense_error_norm[0, 0]
     print "DenseLinearSolver error:", dense_error_norm

@@ -54,6 +54,8 @@ class Test(TestBase):
                 for i in range(1, self.Q):
                     assembled_vector_builtin += theta[i]*F[i]
                 assembled_vector_builtin.N = N
+                assembled_vector_builtin.backend = F[0].backend
+                assembled_vector_builtin.wrapping = F[0].wrapping
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
                 assembled_vector_sum_product = sum(product(theta, F))

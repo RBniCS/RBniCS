@@ -76,7 +76,7 @@ def RandomNumber():
 
 def RandomNumpyMatrix(N, M):
     m = NumpyMatrix(N, M)
-    m[:] = _rand(N, M)
+    m[:, :] = _rand(N, M)
     return m
     
 def RandomNumpyVector(N):

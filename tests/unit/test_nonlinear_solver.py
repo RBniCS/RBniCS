@@ -60,11 +60,7 @@ bc = [DirichletBC(V, exact_solution_expression, boundary)]
 # Define initial guess
 def sparse_initial_guess():
     initial_guess_expression = Expression("0.1 + 0.9*x[0]", element=V.ufl_element())
-    # The Dense solver modifies the guess to that BCs are fulfilled. Do it also here
-    # to have the same convergence history
-    initial_guess = project(initial_guess_expression, V)
-    bc[0].apply(initial_guess.vector())
-    return initial_guess
+    return project(initial_guess_expression, V)
 
 # ::: Callbacks return forms :: #
 class SparseFormProblemWrapper(NonlinearProblemWrapper):
@@ -172,7 +168,7 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
             dense_jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = dense_jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
             dense_jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             dense_jacobian = DenseMatrix(*dense_jacobian_array.shape)
-            dense_jacobian[:] = dense_jacobian_array
+            dense_jacobian[:, :] = dense_jacobian_array
             return dense_jacobian
             
         def bc_eval(self):
@@ -205,7 +201,7 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
     dense_error = DenseFunction(*exact_solution.vector().array().shape)
     dense_error.vector()[:] = exact_solution.vector().array().reshape((-1, 1))
     dense_error.vector()[:] -= dense_solution_array
-    dense_error_norm = dense_error.vector().T*(X.array()*dense_error.vector())
+    dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
     assert dense_error_norm.shape == (1, 1)
     dense_error_norm = dense_error_norm[0, 0]
     print "DenseNonlinearSolver error:", dense_error_norm
