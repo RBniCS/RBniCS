@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends.online.basic import evaluate as basic_evaluate
+import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import backend_for, tuple_of
@@ -23,12 +25,4 @@ from rbnics.utils.decorators import backend_for, tuple_of
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("numpy", inputs=((Matrix.Type(), Vector.Type()), (tuple_of((tuple_of(int), int)), None)))
 def evaluate(expression, at=None):
-    assert isinstance(expression, (Matrix.Type(), Vector.Type()))
-    if isinstance(expression, (Matrix.Type(), Vector.Type())):
-        if at is None:
-            return expression
-        else:
-            return expression[at]
-    else: # impossible to arrive here anyway thanks to the assert
-        raise AssertionError("Invalid argument to evaluate")
-    
+    return basic_evaluate(expression, at, rbnics.backends.online.numpy)
