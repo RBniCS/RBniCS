@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends.basic import import_ as basic_import_
+import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
@@ -25,5 +27,5 @@ from rbnics.utils.io import Folders
 # Export a solution to file
 @backend_for("numpy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
 def import_(solution, directory, filename, suffix=None, component=None):
-    pass # TODO
+    return basic_import_(solution, directory, filename, suffix, component, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
     

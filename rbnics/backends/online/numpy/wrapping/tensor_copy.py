@@ -22,10 +22,10 @@ def tensor_copy(tensor):
     assert isinstance(tensor, (rbnics.backends.online.numpy.Matrix.Type(), rbnics.backends.online.numpy.Vector.Type()))
     if isinstance(tensor, rbnics.backends.online.numpy.Matrix.Type()):
         m = rbnics.backends.online.numpy.Matrix(*tensor.shape)
-        m[:] = tensor
+        m[:, :] = tensor
         return m
     elif isinstance(tensor, rbnics.backends.online.numpy.Vector.Type()):
-        V = rbnics.backends.online.numpy.Vector(tensor.size)
+        v = rbnics.backends.online.numpy.Vector(tensor.size)
         v[:] = tensor
         return v
     else: # impossible to arrive here anyway, thanks to the assert
