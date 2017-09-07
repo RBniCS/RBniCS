@@ -207,7 +207,7 @@ class ReducedMesh(AbstractReducedMesh):
                 dof_to_cells = self._compute_dof_to_cells(V_component)
                 # Debugging
                 log(DEBUG, "DOFs to cells map (component " + str(component) +") on processor " + str(self.mpi_comm.rank) + ":")
-                for (global_dof, cells_) in dof_to_cells.iteritems():
+                for (global_dof, cells_) in dof_to_cells.items():
                     log(DEBUG, "\t" + str(global_dof) + ": " + str([cell.global_index() for cell in cells_]))
                 # Add to storage
                 self.dof_to_cells.append(dof_to_cells)
@@ -250,7 +250,7 @@ class ReducedMesh(AbstractReducedMesh):
         # Nmax
         self._save_Nmax(directory, filename)
         # reduced_mesh
-        for (index, reduced_mesh) in self.reduced_mesh.iteritems():
+        for (index, reduced_mesh) in self.reduced_mesh.items():
             mesh_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index)
             if not has_hdf5() or not has_hdf5_parallel():
                 assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
@@ -271,9 +271,9 @@ class ReducedMesh(AbstractReducedMesh):
         # cannot save reduced_function_spaces to file
         # reduced_subdomain_data
         if self.subdomain_data is not None:
-            for (index, reduced_subdomain_data) in self.reduced_subdomain_data.iteritems():
+            for (index, reduced_subdomain_data) in self.reduced_subdomain_data.items():
                 subdomain_index = 0
-                for (subdomain, reduced_subdomain) in reduced_subdomain_data.iteritems():
+                for (subdomain, reduced_subdomain) in reduced_subdomain_data.items():
                     subdomain_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index)
                     if not has_hdf5() or not has_hdf5_parallel():
                         assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
@@ -293,7 +293,7 @@ class ReducedMesh(AbstractReducedMesh):
                             output_file.close()
                     subdomain_index += 1
         # reduced_mesh_markers
-        for (index, reduced_mesh_markers) in self.reduced_mesh_markers.iteritems():
+        for (index, reduced_mesh_markers) in self.reduced_mesh_markers.items():
             marker_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_markers"
             if not has_hdf5() or not has_hdf5_parallel():
                 assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
@@ -320,7 +320,7 @@ class ReducedMesh(AbstractReducedMesh):
                 exportable_reduced_mesh_dofs_list.append(self.reduced_mesh_dofs_list__dof_map_writer_mapping[component][reduced_mesh_dof__component])
         exportable_reduced_mesh_dofs_list.save(full_directory, "dofs")
         # reduced_mesh_reduced_dofs_list
-        for (index, reduced_mesh_reduced_dofs_list) in self.reduced_mesh_reduced_dofs_list.iteritems():
+        for (index, reduced_mesh_reduced_dofs_list) in self.reduced_mesh_reduced_dofs_list.items():
             exportable_reduced_mesh_reduced_dofs_list = ExportableList("pickle")
             for reduced_mesh_reduced_dof in reduced_mesh_reduced_dofs_list:
                 for (component, reduced_mesh_reduced_dof__component) in enumerate(reduced_mesh_reduced_dof):
@@ -395,7 +395,7 @@ class ReducedMesh(AbstractReducedMesh):
             
     def _init_for_auxiliary_save_if_needed(self):
         # Initialize auxiliary dof map mappings and auxiliary reduced dof map mappings for output
-        for (key, auxiliary_reduced_V) in self._auxiliary_reduced_function_space.iteritems():
+        for (key, auxiliary_reduced_V) in self._auxiliary_reduced_function_space.items():
             # auxiliary dof map mappings
             auxiliary_problem = key[0]
             if auxiliary_problem not in self._auxiliary_dofs__dof_map_writer_mapping:
@@ -534,7 +534,7 @@ class ReducedMesh(AbstractReducedMesh):
             
     def _init_for_auxiliary_load_if_needed(self):
         # Initialize auxiliary dof map mappings and auxiliary reduced dof map mappings for input
-        for (key, auxiliary_reduced_V) in self._auxiliary_reduced_function_space.iteritems():
+        for (key, auxiliary_reduced_V) in self._auxiliary_reduced_function_space.items():
             # auxiliary dof map mappings
             auxiliary_problem = key[0]
             if auxiliary_problem not in self._auxiliary_dofs__dof_map_reader_mapping:

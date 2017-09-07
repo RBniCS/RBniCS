@@ -152,10 +152,10 @@ def DEIMDecoratedProblem(
             def _assemble_operator_DEIM(self, term):
                 deim_forms = list()
                 # Append forms computed with DEIM, if applicable
-                for (_, deim_approximation) in self.DEIM_approximations[term].iteritems():
+                for (_, deim_approximation) in self.DEIM_approximations[term].items():
                     deim_forms.extend(deim_approximation.Z)
                 # Append forms which did not require DEIM, if applicable
-                for (_, non_deim_form) in self.non_DEIM_forms[term].iteritems():
+                for (_, non_deim_form) in self.non_DEIM_forms[term].items():
                     deim_forms.append(non_deim_form)
                 return tuple(deim_forms)
             
@@ -177,7 +177,7 @@ def DEIMDecoratedProblem(
                     assert term in self._N_DEIM 
                     assert len(self.DEIM_approximations[term]) == len(self._N_DEIM[term])
                 # Append forms computed with DEIM, if applicable
-                for (q, deim_approximation) in self.DEIM_approximations[term].iteritems():
+                for (q, deim_approximation) in self.DEIM_approximations[term].items():
                     N_DEIM = None
                     if self._N_DEIM is not None:
                         N_DEIM = self._N_DEIM[term][q]

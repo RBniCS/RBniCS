@@ -35,14 +35,14 @@ def slice_to_array(obj, key, length_dict=None, index_dict=None):
             slices_stop.append(slice_.stop)
         else:
             current_slice_length = [0]*len(index_dict[slice_index])
-            for (component_name, basis_component_index) in index_dict[slice_index].iteritems():
+            for (component_name, basis_component_index) in index_dict[slice_index].items():
                 current_slice_length[basis_component_index] = length_dict[slice_index][component_name]
             current_slice_length_cumsum = cumsum(current_slice_length).tolist()
             del current_slice_length_cumsum[-1]
             current_slice_start = [0]
             current_slice_start.extend(current_slice_length_cumsum)
             current_slice_stop  = [0]*len(index_dict[slice_index])
-            for (component_name, basis_component_index) in index_dict[slice_index].iteritems():
+            for (component_name, basis_component_index) in index_dict[slice_index].items():
                 current_slice_stop[basis_component_index]  = current_slice_start[basis_component_index] + slice_.stop[component_name]
             assert len(current_slice_start) == len(current_slice_stop)
             slices_start.append(current_slice_start)

@@ -34,7 +34,7 @@ class DirichletBC(object):
                 # Fill in storage
                 bcs_base_index = dict() # from component name to first index
                 current_bcs_base_index = 0
-                for (basis_component_index, component_name) in sorted(basis_component_index_to_component_name.iteritems()):
+                for (basis_component_index, component_name) in sorted(basis_component_index_to_component_name.items()):
                     bcs_base_index[component_name] = current_bcs_base_index
                     current_bcs_base_index += N[component_name]
                 self.bcs_base_index = bcs_base_index
@@ -50,7 +50,7 @@ class DirichletBC(object):
                     for (i, bc_i) in enumerate(self.bcs):
                         vector[i] = bc_i
                 elif isinstance(self.bcs, dict):
-                    for (component_name, component_bc) in self.bcs.iteritems():
+                    for (component_name, component_bc) in self.bcs.items():
                         for (i, bc_i) in enumerate(component_bc):
                             block_i = self.bcs_base_index[component_name] + i
                             vector[block_i] = bc_i
@@ -61,7 +61,7 @@ class DirichletBC(object):
                     for (i, bc_i) in enumerate(self.bcs):
                         vector[i] = float(solution[i]) - bc_i
                 elif isinstance(self.bcs, dict):
-                    for (component_name, component_bc) in self.bcs.iteritems():
+                    for (component_name, component_bc) in self.bcs.items():
                         for (i, bc_i) in enumerate(component_bc):
                             block_i = self.bcs_base_index[component_name] + i
                             vector[block_i] = float(solution[block_i]) - bc_i
@@ -74,7 +74,7 @@ class DirichletBC(object):
                 for (i, _) in enumerate(self.bcs):
                     vector[i] = 0.
             elif isinstance(self.bcs, dict):
-                for (component_name, component_bc) in self.bcs.iteritems():
+                for (component_name, component_bc) in self.bcs.items():
                     for (i, _) in enumerate(component_bc):
                         block_i = self.bcs_base_index[component_name] + i
                         vector[block_i] = 0.
@@ -88,7 +88,7 @@ class DirichletBC(object):
                     matrix[i, :] = 0.
                     matrix[i, i] = 1.
             elif isinstance(self.bcs, dict):
-                for (component_name, component_bc) in self.bcs.iteritems():
+                for (component_name, component_bc) in self.bcs.items():
                     for (i, _) in enumerate(component_bc):
                         block_i = self.bcs_base_index[component_name] + i
                         matrix[block_i, :] = 0.

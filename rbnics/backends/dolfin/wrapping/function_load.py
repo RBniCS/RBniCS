@@ -30,7 +30,7 @@ def function_load(fun, directory, filename, suffix=None):
     else:
         fun_V = fun.function_space()
         if hasattr(fun_V, "_component_to_index") and len(fun_V._component_to_index) > 1:
-            for (component, index) in fun_V._component_to_index.iteritems():
+            for (component, index) in fun_V._component_to_index.items():
                 sub_fun_V = get_function_subspace(fun_V, component)
                 sub_fun = Function(sub_fun_V)
                 if not _read_from_xdmf_file(sub_fun, directory, filename, suffix, component, component):

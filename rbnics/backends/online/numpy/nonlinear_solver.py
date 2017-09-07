@@ -42,7 +42,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
                         
     @override
     def set_parameters(self, parameters):
-        for (key, value) in parameters.iteritems():
+        for (key, value) in parameters.items():
             if key == "absolute_tolerance":
                 self._absolute_tolerance = value
             elif key == "line_search":

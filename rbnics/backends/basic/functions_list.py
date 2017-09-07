@@ -79,10 +79,9 @@ class FunctionsList(AbstractFunctionsList):
         if component is None or isinstance(component, str):
             self._list.append(self.wrapping.function_extend_or_restrict(function, component, self.V_or_Z, component, weight, copy))
         else:
-            assert len(component.keys()) == 1
-            component_from = component.keys()[0]
-            assert len(component.values()) == 1
-            component_to = component.values()[0]
+            assert len(component) == 1
+            for (component_from, component_to) in component.items():
+                break
             self._list.append(self.wrapping.function_extend_or_restrict(function, component_from, self.V_or_Z, component_to, weight, copy))
         
     @override

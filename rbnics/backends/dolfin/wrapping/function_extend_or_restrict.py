@@ -78,7 +78,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         else:
             extended_function = extended_or_restricted_function
             assert extended_function.function_space() == V
-        for (index_V_as_tuple, index_function_V_as_tuple) in V_to_function_V_mapping.iteritems():
+        for (index_V_as_tuple, index_function_V_as_tuple) in V_to_function_V_mapping.items():
             assign(_sub_from_tuple(extended_function, index_V_as_tuple), _sub_from_tuple(function, index_function_V_as_tuple))
         if weight is not None:
             extended_function.vector()[:] *= weight
@@ -94,7 +94,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         else:
             restricted_function = extended_or_restricted_function
             assert restricted_function.function_space() == V
-        for (index_function_V_as_tuple, index_V_as_tuple) in function_V_to_V_mapping.iteritems():
+        for (index_function_V_as_tuple, index_V_as_tuple) in function_V_to_V_mapping.items():
             assign(_sub_from_tuple(restricted_function, index_V_as_tuple), _sub_from_tuple(function, index_function_V_as_tuple))
         if weight is not None:
             restricted_function.vector()[:] *= weight
@@ -115,8 +115,8 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
     W_sub_elements = _get_sub_elements(W, index_W)
     W_sub_elements_used = dict.fromkeys(W_sub_elements.keys(), False)
     should_return_False = False
-    for (index_V, element_V) in V_sub_elements.iteritems():
-        for (index_W, element_W) in W_sub_elements.iteritems():
+    for (index_V, element_V) in V_sub_elements.items():
+        for (index_W, element_W) in W_sub_elements.items():
             if (
                 element_W == element_V 
                     and
@@ -140,9 +140,9 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
     
     # Avoid ambiguity that may arise if there were sub elements of W that were not used but had 
     # the same element type of used elements
-    for (index_W_used, element_W_was_used) in W_sub_elements_used.iteritems():
+    for (index_W_used, element_W_was_used) in W_sub_elements_used.items():
         if element_W_was_used:
-            for (index_W, element_W) in W_sub_elements.iteritems():
+            for (index_W, element_W) in W_sub_elements.items():
                 if (
                     len(index_W_used) == len(index_W)
                         and
@@ -164,7 +164,7 @@ def _get_sub_elements(V, index_V):
     # Re-order sub elements for increasing tuple length to help
     # avoiding ambiguities
     sub_elements__sorted_by_index_length = dict()
-    for (index, element) in sub_elements.iteritems():
+    for (index, element) in sub_elements.items():
         index_length = len(index)
         if index_length not in sub_elements__sorted_by_index_length:
             sub_elements__sorted_by_index_length[index_length] = OrderedDict()

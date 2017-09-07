@@ -52,7 +52,7 @@ class PETScTSIntegrator(object):
         self.set_parameters(default_parameters)
              
     def set_parameters(self, parameters):
-        for (key, value) in parameters.iteritems():
+        for (key, value) in parameters.items():
             if key == "exact_final_time":
                 self.ts.setExactFinalTime(getattr(self.ts.ExactFinalTime, value.upper()))
             elif key == "final_time":
@@ -98,7 +98,7 @@ class PETScTSIntegrator(object):
                 self._report = value
             elif key == "snes_solver":
                 snes_tolerances = [1.e-10, 1.e-9, 1.e-16, 50]
-                for (key_snes, value_snes) in value.iteritems():
+                for (key_snes, value_snes) in value.items():
                     snes = self.ts.getSNES()
                     if key_snes == "absolute_tolerance":
                         snes_tolerances[0] = value_snes

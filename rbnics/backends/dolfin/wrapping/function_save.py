@@ -29,7 +29,7 @@ def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
     if not has_hdf5() or not has_hdf5_parallel():
         if hasattr(fun_V, "_component_to_index") and len(fun_V._component_to_index) > 1:
-            for (component, index) in fun_V._component_to_index.iteritems():
+            for (component, index) in fun_V._component_to_index.items():
                 sub_fun = function_extend_or_restrict(fun, component, get_function_subspace(fun_V, component), None, weight=None, copy=True)
                 _write_to_pvd_file(sub_fun, directory, filename, suffix, component)
         else:
@@ -37,7 +37,7 @@ def function_save(fun, directory, filename, suffix=None):
         _write_to_xml_file(fun, directory, filename, suffix)
     else:
         if hasattr(fun_V, "_component_to_index") and len(fun_V._component_to_index) > 1:
-            for (component, index) in fun_V._component_to_index.iteritems():
+            for (component, index) in fun_V._component_to_index.items():
                 sub_fun = function_extend_or_restrict(fun, component, get_function_subspace(fun_V, component), None, weight=None, copy=True)
                 _write_to_xdmf_file(sub_fun, directory, filename, suffix, component, component)
         else:

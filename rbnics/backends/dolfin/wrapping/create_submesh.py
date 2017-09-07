@@ -191,12 +191,12 @@ def create_submesh(mesh, markers):
         assert submesh_facet.index() not in submesh_facets_to_submesh_vertices
         submesh_facets_to_submesh_vertices[submesh_facet.index()] = submesh_facet_vertices
     mesh_to_submesh_facets_local_indices = dict()
-    for (mesh_facet_index, mesh_vertices) in mesh_facets_to_mesh_vertices.iteritems():
+    for (mesh_facet_index, mesh_vertices) in mesh_facets_to_mesh_vertices.items():
         submesh_vertices = tuple(sorted([submesh.mesh_to_submesh_vertex_local_indices[mesh_vertex] for mesh_vertex in mesh_vertices]))
         submesh_facet_index = submesh_vertices_to_submesh_facets[submesh_vertices]
         mesh_to_submesh_facets_local_indices[mesh_facet_index] = submesh_facet_index
     submesh_to_mesh_facets_local_indices = dict()
-    for (submesh_facet_index, submesh_vertices) in submesh_facets_to_submesh_vertices.iteritems():
+    for (submesh_facet_index, submesh_vertices) in submesh_facets_to_submesh_vertices.items():
         mesh_vertices = tuple(sorted([submesh.submesh_to_mesh_vertex_local_indices[submesh_vertex] for submesh_vertex in submesh_vertices]))
         mesh_facet_index = mesh_vertices_to_mesh_facets[mesh_vertices]
         submesh_to_mesh_facets_local_indices[submesh_facet_index] = mesh_facet_index
@@ -274,7 +274,7 @@ def create_submesh(mesh, markers):
             # ... and finally popuplate shared entities dict, which is the same as the dict above except that
             # the current processor rank is removed and a local indexing is used
             submesh_shared_entities = dict() # from local index to list of integers
-            for (global_entity_index, processors) in submesh_shared_entities__global.iteritems():
+            for (global_entity_index, processors) in submesh_shared_entities__global.items():
                 if (
                     mpi_comm.rank in processors  # only local entities
                         and 
@@ -297,10 +297,10 @@ def create_submesh(mesh, markers):
                 }
             """
             set_shared_entities = compile_extension_module(cpp_code).set_shared_entities
-            for (submesh_entity_local_index, other_processors) in submesh_shared_entities.iteritems():
+            for (submesh_entity_local_index, other_processors) in submesh_shared_entities.items():
                 set_shared_entities(submesh, submesh_entity_local_index, other_processors, dim)
                 
-            log(DEBUG, "Local indices of shared entities for dimension " + str(dim) + ": " + str(submesh.topology().shared_entities(0).keys()))
+            log(DEBUG, "Local indices of shared entities for dimension " + str(dim) + ": " + str(list(submesh.topology().shared_entities(0).keys())))
             log(DEBUG, "Global indices of shared entities for dimension " + str(dim) + ": " + str([class_(submesh, local_index).global_index() for local_index in submesh.topology().shared_entities(dim).keys()]))
     
     ## 5. Restore backup_first_marker_id and return ##
@@ -350,7 +350,7 @@ def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, fun
         assert functionspace_on_mesh.num_sub_spaces() == functionspace_on_submesh.num_sub_spaces()
         for i in range(functionspace_on_mesh.num_sub_spaces()):
             (mesh_dofs_to_submesh_dofs_i, submesh_dofs_to_mesh_dofs_i) = map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh.sub(i), mesh, functionspace_on_submesh.sub(i), submesh, global_indices)
-            for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs_i.iteritems():
+            for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs_i.items():
                 assert mesh_dof not in mesh_dofs_to_submesh_dofs
                 assert submesh_dof not in submesh_dofs_to_mesh_dofs
             mesh_dofs_to_submesh_dofs.update(mesh_dofs_to_submesh_dofs_i)

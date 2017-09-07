@@ -39,9 +39,9 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             self.DEIM_reductions = dict() # from term to dict of DEIMApproximationReductionMethod
             
             # Preprocess each term in the affine expansions
-            for (term, DEIM_approximations_term) in self.truth_problem.DEIM_approximations.iteritems():
+            for (term, DEIM_approximations_term) in self.truth_problem.DEIM_approximations.items():
                 self.DEIM_reductions[term] = dict()
-                for (q, DEIM_approximations_term_q) in DEIM_approximations_term.iteritems():
+                for (q, DEIM_approximations_term_q) in DEIM_approximations_term.items():
                     assert isinstance(DEIM_approximations_term_q, (DEIMApproximation, TimeDependentDEIMApproximation))
                     if isinstance(DEIM_approximations_term_q, TimeDependentDEIMApproximation):
                         DEIMApproximationReductionMethodType = TimeDependentDEIMApproximationReductionMethod
@@ -94,7 +94,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             kwarg_DEIM = kwargs["DEIM"]
             return_value = True # will be either a bool or None
             if isinstance(kwarg_DEIM, dict):
-                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
                     if len(self.DEIM_reductions[term]) > 0:
                         assert term in kwarg_DEIM, "Please provide a value for term " + str(term)
                         assert isinstance(kwarg_DEIM[term], (int, tuple))
@@ -102,14 +102,14 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                             kwarg_DEIM[term] = [kwarg_DEIM[term]]*len(self.DEIM_reductions[term])
                         else:
                             assert max(self.DEIM_reductions[term].keys()) == len(kwarg_DEIM[term]) - 1
-                        for (q, DEIM_reductions_term_q) in self.DEIM_reductions[term].iteritems():
+                        for (q, DEIM_reductions_term_q) in self.DEIM_reductions[term].items():
                             assert isinstance(kwarg_DEIM[term][q], Type)
                             current_return_value = setter(DEIM_reductions_term_q, kwarg_DEIM[term][q])
                             return_value = current_return_value and return_value
             else:
                 assert isinstance(kwarg_DEIM, Type)
-                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
                         current_return_value = setter(DEIM_reduction_term_q, kwarg_DEIM)
                         return_value = current_return_value and return_value
             return return_value # an "and" with a None results in None, so this method returns only if necessary
@@ -121,8 +121,8 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 assert hasattr(self.truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
                 assert "offline" in self.truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
             bak_first_mu = self.truth_problem.mu
-            for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+            for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
+                for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
                     DEIM_reduction_term_q.offline()
             self.truth_problem.set_mu(bak_first_mu)
             return DifferentialProblemReductionMethod_DerivedClass.offline(self)
@@ -144,8 +144,8 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                     ("DEIM" in kwargs and kwargs["DEIM"] is not None) # shorthand to disable DEIM error analysis
                 )
             ):
-                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
                         DEIM_reduction_term_q.error_analysis(N)
             # ..., and then call the parent method.
             if "DEIM" in kwargs and kwargs["DEIM"] is None:
@@ -169,8 +169,8 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                     ("DEIM" in kwargs and kwargs["DEIM"] is not None) # shorthand to disable DEIM speedup analysis
                 )
             ):
-                for (term, DEIM_reductions_term) in self.DEIM_reductions.iteritems():
-                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.iteritems():
+                for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
+                    for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
                         DEIM_reduction_term_q.speedup_analysis(N)
             # ..., and then call the parent method.
             if "DEIM" in kwargs and kwargs["DEIM"] is None:

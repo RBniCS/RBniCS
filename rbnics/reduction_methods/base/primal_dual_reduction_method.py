@@ -42,7 +42,7 @@ def PrimalDualReductionMethod(DualProblem):
                 
                 # Change the folder names in dual reduction method
                 new_folder_prefix = self.dual_truth_problem.folder_prefix
-                for (key, name) in self.dual_reduction_method.folder.iteritems():
+                for (key, name) in self.dual_reduction_method.folder.items():
                     self.dual_reduction_method.folder[key] = name.replace(self.dual_reduction_method.folder_prefix, new_folder_prefix)
                 self.dual_reduction_method.folder_prefix = new_folder_prefix
                 

@@ -38,7 +38,7 @@ def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
             
             # Change the folder names in Parent
             new_folder_prefix = primal_problem.folder_prefix + "/" + "dual"
-            for (key, name) in self.folder.iteritems():
+            for (key, name) in self.folder.items():
                 self.folder[key] = name.replace(self.folder_prefix, new_folder_prefix)
             self.folder_prefix = new_folder_prefix
             

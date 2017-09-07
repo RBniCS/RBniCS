@@ -163,8 +163,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                         initial_condition[component] = operator_ic
                         initial_condition_is_homogeneous[component] = False
                 if n_components == 1:
-                    self.initial_condition = initial_condition.values()[0]
-                    self.initial_condition_is_homogeneous = initial_condition_is_homogeneous.values()[0]
+                    self.initial_condition = initial_condition[self.components[0]]
+                    self.initial_condition_is_homogeneous = initial_condition_is_homogeneous[self.components[0]]
                 else:
                     self.initial_condition = initial_condition
                     self.initial_condition_is_homogeneous = initial_condition_is_homogeneous

@@ -61,11 +61,11 @@ for backend in required_backends:
     if hasattr(sys.modules["rbnics.backends." + backend + ".wrapping"], "__overridden__"):
         wrapping_overridden = sys.modules["rbnics.backends." + backend + ".wrapping"].__overridden__
         assert isinstance(wrapping_overridden, dict)
-        for (module_name, classes_or_functions) in wrapping_overridden.iteritems():
+        for (module_name, classes_or_functions) in wrapping_overridden.items():
             assert isinstance(classes_or_functions, (list, dict))
             if isinstance(classes_or_functions, list):
                 classes_or_functions = dict((class_or_function, class_or_function) for class_or_function in classes_or_functions)
-            for (class_or_function_name, class_or_function_impl) in classes_or_functions.iteritems():
+            for (class_or_function_name, class_or_function_impl) in classes_or_functions.items():
                 setattr(sys.modules[module_name], class_or_function_name, getattr(sys.modules["rbnics.backends." + backend + ".wrapping"], class_or_function_impl))
                 if class_or_function_name not in sys.modules[module_name].__all__:
                     sys.modules[module_name].__all__.append(class_or_function_name)

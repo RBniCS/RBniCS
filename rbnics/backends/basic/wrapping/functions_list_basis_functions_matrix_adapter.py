@@ -24,7 +24,7 @@ def functions_list_basis_functions_matrix_adapter(functions, backend):
         return (output, len(output))
     elif isinstance(functions, backend.BasisFunctionsMatrix):
         output = list()
-        for (basis_component_index, component_name) in sorted(functions._basis_component_index_to_component_name.iteritems()):
+        for (basis_component_index, component_name) in sorted(functions._basis_component_index_to_component_name.items()):
             for function in functions._components[component_name]:
                 output.append(function)
         return (output, functions._component_name_to_basis_component_length)

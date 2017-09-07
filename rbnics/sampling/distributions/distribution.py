@@ -25,9 +25,8 @@ class Distribution(object, metaclass=ABCMeta):
         
     ## Override the following methods to use a Distribution as a dict key
     def __hash__(self):
-        dict_values_for_hash = self.__dict__.values()
         dict_for_hash = list()
-        for v in dict_values_for_hash:
+        for (k, v) in self.__dict__.items():
             if isinstance(v, dict):
                 dict_for_hash.append( tuple(v.values()) )
             elif isinstance(v, list):

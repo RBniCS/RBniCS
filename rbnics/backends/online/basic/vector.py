@@ -125,10 +125,14 @@ def Vector(VectorBaseType):
             if other_is_vector:
                 if isinstance(self.N, int) and isinstance(other.N, dict):
                     assert len(other.N) == 1
-                    assert other.N.values()[0] == self.N
+                    for (_, other_N) in other.N.items():
+                        break
+                    assert other_N == self.N
                 elif isinstance(self.N, dict) and isinstance(other.N, int):
                     assert len(self.N) == 1
-                    assert self.N.values()[0] == other.N
+                    for (_, self_N) in self.N.items():
+                        break
+                    assert self_N == other.N
                 else:
                     assert self.N == other.N
             output.N = self.N

@@ -62,7 +62,8 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         assert copy is True
         if component is None:
             assert len(self._components) == 1
-            component_0 = self._components.keys()[0]
+            assert len(self._components_name) == 1
+            component_0 = self._components_name[0]
             self._components[component_0].enrich(functions, weights=weights)
             self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
         else:
@@ -72,11 +73,10 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
                 self._components[component].enrich(functions, component=component, weights=weights)
                 self._component_name_to_basis_component_length[component] = len(self._components[component])
             else:
-                assert len(component.keys()) == 1
-                component_from = component.keys()[0]
+                assert len(component) == 1
+                for (component_from, component_to) in component.items():
+                    break
                 assert component_from is None or component_from in self._components
-                assert len(component.values()) == 1
-                component_to = component.values()[0]
                 assert component_to in self._components
                 if component_from is None:
                     self._components[component_to].enrich(functions, weights=weights)
@@ -91,11 +91,12 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         self._precomputed_slices.clear()
         # Prepare trivial precomputed slice
         if len(self._components) == 1:
-            component_0 = self._components.keys()[0]
+            assert len(self._components_name) == 1
+            component_0 = self._components_name[0]
             precomputed_slice_key = self._component_name_to_basis_component_length[component_0]
         else:
             precomputed_slice_key = list()
-            for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.iteritems()):
+            for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()):
                 precomputed_slice_key.append(self._component_name_to_basis_component_length[component_name])
             precomputed_slice_key = tuple(precomputed_slice_key)
         self._precomputed_slices[precomputed_slice_key] = self
@@ -110,27 +111,29 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
     @override
     def save(self, directory, filename):
         if len(self._components) > 1:
-            for (component_name, basis_functions) in self._components.iteritems():
-                basis_functions.save(directory, filename + "_" + component_name)
+            def filename_and_component(component_name):
+                return filename + "_" + component_name
         else:
-            component_0 = self._components.keys()[0]
-            self._components[component_0].save(directory, filename)
+            def filename_and_component(component_name):
+                return filename
+        for (component_name, basis_functions) in self._components.items():
+            basis_functions.save(directory, filename_and_component(component_name))
         
     @override
     def load(self, directory, filename):
         return_value = True
         assert len(self._components) > 0
         if len(self._components) > 1:
-            for (component_name, basis_functions) in self._components.iteritems():
-                return_value_component = basis_functions.load(directory, filename + "_" + component_name)
-                return_value = return_value and return_value_component
-                # Also populate component length
-                self._component_name_to_basis_component_length[component_name] = len(basis_functions)
+            def filename_and_component(component_name):
+                return filename + "_" + component_name
         else:
-            component_0 = self._components.keys()[0]
-            return_value = self._components[component_0].load(directory, filename)
+            def filename_and_component(component_name):
+                return filename
+        for (component_name, basis_functions) in self._components.items():
+            return_value_component = basis_functions.load(directory, filename_and_component(component_name))
+            return_value = return_value and return_value_component
             # Also populate component length
-            self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
+            self._component_name_to_basis_component_length[component_name] = len(basis_functions)
         # Reset and prepare precomputed slices
         self._prepare_trivial_precomputed_slice()
         # Return
@@ -154,9 +157,9 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         
     @override
     def __len__(self):
+        assert len(self._components_name) == 1
         assert len(self._component_name_to_basis_component_length) == 1
-        component_0 = self._component_name_to_basis_component_length.keys()[0]
-        return self._component_name_to_basis_component_length[component_0]
+        return self._component_name_to_basis_component_length[self._components_name[0]]
 
     @override
     def __getitem__(self, key):
@@ -167,7 +170,8 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             return self._precompute_slice(key.stop)
         else:
             if len(self._components) == 1: # spare the user an obvious extraction of the first component return basis function number key
-                component_0 = self._components.keys()[0]
+                assert len(self._components_name) == 1
+                component_0 = self._components_name[0]
                 return self._components[component_0][key]
             else: # return all basis functions for each component, then the user may use __getitem__ of FunctionsList to extract a single basis function
                 return self._components[key]
@@ -176,14 +180,14 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
     def __setitem__(self, key, item):
         assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
         assert len(self._components) == 1, "Cannot set components, only single functions. Did you mean to call __getitem__ to extract a component and __setitem__ of a single function on that component?"
-        component_0 = self._components.keys()[0]
-        self._components[component_0][key] = item
+        assert len(self._components_name) == 1
+        self._components[self._components_name[0]][key] = item
             
     def _precompute_slice(self, N):
         assert isinstance(N, (int, dict))
         if isinstance(N, dict):
             N_key = list()
-            for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.iteritems()):
+            for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()):
                 N_key.append(N[component_name])
             N_key = tuple(N_key)
         else:
@@ -192,7 +196,7 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         if not N_key in self._precomputed_slices:
             self._precomputed_slices[N_key] = self.backend.BasisFunctionsMatrix(self.V_or_Z)
             self._precomputed_slices[N_key].init(self._components_name)
-            for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.iteritems()):
+            for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()):
                 if isinstance(N, dict):
                     N_component = N[component_name]
                 else:

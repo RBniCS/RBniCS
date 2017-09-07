@@ -66,7 +66,7 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     assert len(TypesList) > 0
     
     # Look if any customizer has been defined
-    for (Problem, customizer) in CustomizeReducedProblemFor._all_reduced_problems_customizers.iteritems():
+    for (Problem, customizer) in CustomizeReducedProblemFor._all_reduced_problems_customizers.items():
         if isinstance(truth_problem, Problem):
             TypesList.append(customizer)
     

@@ -204,7 +204,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 else:
                     dirichlet_bc[component] = True
             if n_components == 1:
-                self.dirichlet_bc = dirichlet_bc.values()[0]
+                self.dirichlet_bc = dirichlet_bc[self.components[0]]
             else:
                 self.dirichlet_bc = dirichlet_bc
             self.dirichlet_bc_are_homogeneous = self.truth_problem.dirichlet_bc_are_homogeneous
@@ -229,8 +229,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 assert len(N) == len(N_bc)
                 assert len(N) > 0
                 if len(N) == 1:
-                    self.N = N.values()[0]
-                    self.N_bc = N_bc.values()[0]
+                    self.N = N[self.components[0]]
+                    self.N_bc = N_bc[self.components[0]]
                 else:
                     self.N = OnlineSizeDict(N)
                     self.N_bc = OnlineSizeDict(N_bc)

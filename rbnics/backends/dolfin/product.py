@@ -69,7 +69,7 @@ def product(thetas, operators, thetas2=None):
                 combined[key].append((bc, op_index))
         # Sum them
         output = ProductOutputDirichletBC()
-        for (key, item) in combined.iteritems():
+        for (key, item) in combined.items():
             value = 0
             for addend in item:
                 theta = float(thetas[ addend[1] ])

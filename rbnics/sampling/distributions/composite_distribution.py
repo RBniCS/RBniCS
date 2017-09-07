@@ -36,12 +36,12 @@ class CompositeDistribution(Distribution):
     def sample(self, box, n):
         # Divide box among the different distributions
         distribution_to_sub_box = dict()
-        for (distribution, components) in self.distribution_to_components.iteritems():
+        for (distribution, components) in self.distribution_to_components.items():
             distribution_to_sub_box[distribution] = [box[p] for p in components]
         # Prepare a dict that will store the map from components to subset sub_set
         components_to_sub_set = dict()
         # Consider first equispaced distributions, because they may change the value of n
-        for (distribution, sub_box) in distribution_to_sub_box.iteritems():
+        for (distribution, sub_box) in distribution_to_sub_box.items():
             if isinstance(distribution, EquispacedDistribution):
                 sub_box = distribution_to_sub_box[distribution]
                 sub_set = distribution.sample(sub_box, n)
@@ -50,13 +50,13 @@ class CompositeDistribution(Distribution):
                 components_to_sub_set[tuple(components)] = sub_set
         assert len(components_to_sub_set) in (0, 1)
         # ... and the consider all the remaining distributions
-        for (distribution, sub_box) in distribution_to_sub_box.iteritems():
+        for (distribution, sub_box) in distribution_to_sub_box.items():
             if not isinstance(distribution, EquispacedDistribution):
                 components = self.distribution_to_components[distribution]
                 components_to_sub_set[tuple(components)] = distribution.sample(sub_box, n)
         # Prepare a list that will store the set [mu_1, ... mu_n] ...
         set_as_list = [[None]*len(box) for _ in range(n)]
-        for (components, sub_set) in components_to_sub_set.iteritems():
+        for (components, sub_set) in components_to_sub_set.items():
             assert len(sub_set) == n
             for (index, sub_mu) in enumerate(sub_set):
                 assert len(components) == len(sub_mu)

@@ -33,14 +33,16 @@ def slice_to_size(obj, key, length_dict=None):
                 size.append(slice_.stop)
             else:
                 assert len(length_dict[slice_index]) == 1
+                for (component_name, _) in length_dict[slice_index].items():
+                    break
                 current_size = dict()
-                current_size[length_dict[slice_index].keys()[0]] = slice_.stop
+                current_size[component_name] = slice_.stop
                 size.append(current_size)
         else:
             assert isinstance(length_dict[slice_index], dict)
             assert length_dict[slice_index].keys() == slice_.stop.keys()
             current_size = dict()
-            for (component_name, component_size) in slice_.stop.iteritems():
+            for (component_name, component_size) in slice_.stop.items():
                 current_size[component_name] = component_size
             size.append(current_size)
     return size

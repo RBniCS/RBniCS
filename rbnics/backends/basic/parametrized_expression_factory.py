@@ -71,7 +71,7 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):
         as_list = [str(arg0) + ",", "where"]
-        as_list.extend([str(key) + " = " + value for key, value in arg1.iteritems()])
+        as_list.extend([str(key) + " = " + value for key, value in arg1.items()])
         as_list.append("with id " + str(arg2))
         return tuple.__new__(cls, tuple(as_list))
         

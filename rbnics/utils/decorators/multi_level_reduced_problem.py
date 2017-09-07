@@ -53,7 +53,7 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             
             # Change the folder names in Parent
             self.folder_prefix = self.additional_folder_prefix[self._reduction_level] + self.folder_prefix
-            for (key, name) in self.folder.iteritems():
+            for (key, name) in self.folder.items():
                 self.folder[key] = self.additional_folder_prefix[self._reduction_level] + name
                             
     # return value (a class) for the decorator

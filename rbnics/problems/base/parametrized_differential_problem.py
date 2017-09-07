@@ -98,7 +98,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             for component in self.components:
                 inner_product[component] = AffineExpansionStorage(self.assemble_operator(inner_product_string.format(c=component)))
             if n_components == 1:
-                self.inner_product = inner_product.values()[0]
+                self.inner_product = inner_product[self.components[0]]
             else:
                 self.inner_product = inner_product
             assert self._combined_inner_product is None
@@ -112,7 +112,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 except ValueError: # no projection_inner_product specified, revert to inner_product
                     projection_inner_product[component] = AffineExpansionStorage(self.assemble_operator(inner_product_string.format(c=component)))
             if n_components == 1:
-                self.projection_inner_product = projection_inner_product.values()[0]
+                self.projection_inner_product = projection_inner_product[self.components[0]]
             else:
                 self.projection_inner_product = projection_inner_product
             assert self._combined_projection_inner_product is None
@@ -199,8 +199,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                     else:
                         dirichlet_bc_are_homogeneous[component] = False
             if n_components == 1:
-                self.dirichlet_bc = dirichlet_bc.values()[0]
-                self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous.values()[0]
+                self.dirichlet_bc = dirichlet_bc[self.components[0]]
+                self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous[self.components[0]]
             else:
                 self.dirichlet_bc = dirichlet_bc
                 self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous

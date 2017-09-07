@@ -52,11 +52,11 @@ class Replacer(MultiFunction):
                 not isinstance(k, (Indexed, ListTensor))
             ):
                 error("This implementation can only replace Terminal objects or non terminal Indexed and ListTensor objects.")
-        if not all(k.ufl_shape == v.ufl_shape for k, v in mapping.iteritems()):
+        if not all(k.ufl_shape == v.ufl_shape for k, v in mapping.items()):
             error("Replacement expressions must have the same shape as what they replace.")
         # Prepare the mapping extracting each Indexed from any ListTensor
         self._mapping = dict()
-        for (k, v) in mapping.iteritems():
+        for (k, v) in mapping.items():
             if isinstance(k, ListTensor):
                 split_k = k.ufl_operands
                 split_v = split(v)
@@ -118,7 +118,7 @@ def replace(e, mapping):
     @param mapping:
         A dict with from:to replacements to perform.
     """
-    mapping2 = dict((k, as_ufl(v)) for (k, v) in mapping.iteritems())
+    mapping2 = dict((k, as_ufl(v)) for (k, v) in mapping.items())
     
     # We have expanded derivative evaluation in ParametrizedTensorFactory
     assert not has_exact_type(e, CoefficientDerivative)

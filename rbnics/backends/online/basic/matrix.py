@@ -140,20 +140,28 @@ def Matrix(MatrixBaseType):
                 assert isinstance(self.N, (int, dict))
                 if isinstance(self.N, int) and isinstance(other.N, dict):
                     assert len(other.N) == 1
-                    assert other.N.values()[0] == self.N
+                    for (_, other_N) in other.N.items():
+                        break
+                    assert other_N == self.N
                 elif isinstance(self.N, dict) and isinstance(other.N, int):
                     assert len(self.N) == 1
-                    assert self.N.values()[0] == other.N
+                    for (_, self_N) in self.N.items():
+                        break
+                    assert self_N == other.N
                 else:
                     assert self.N == other.N
             if other_order is 2:
                 assert isinstance(self.M, (int, dict))
                 if isinstance(self.M, int) and isinstance(other.M, dict):
                     assert len(other.M) == 1
-                    assert other.M.values()[0] == self.M
+                    for (_, other_M) in other.M.items():
+                        break
+                    assert other_M == self.M
                 elif isinstance(self.M, dict) and isinstance(other.M, int):
                     assert len(self.M) == 1
-                    assert self.M.values()[0] == other.M
+                    for (_, self_M) in self.M.items():
+                        break
+                    assert self_M == other.M
                 else:
                     assert self.M == other.M
             output.M = self.M

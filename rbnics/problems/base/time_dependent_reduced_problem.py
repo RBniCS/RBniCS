@@ -133,9 +133,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         else:
                             raise AssertionError("Invalid stage in _init_initial_condition().")
                 if n_components == 1:
-                    self.initial_condition = initial_condition.values()[0]
-                    self.initial_condition_is_homogeneous = initial_condition_is_homogeneous.values()[0]
-                    self.Q_ic = Q_ic.values()[0]
+                    self.initial_condition = initial_condition[self.components[0]]
+                    self.initial_condition_is_homogeneous = initial_condition_is_homogeneous[self.components[0]]
+                    self.Q_ic = Q_ic[self.components[0]]
                 else:
                     self.initial_condition = initial_condition
                     self.initial_condition_is_homogeneous = initial_condition_is_homogeneous
@@ -410,8 +410,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             assert isinstance(error_over_time[0], (dict, float))
             if isinstance(error_over_time[0], dict):
                 assert all([isinstance(error, dict) for error in error_over_time])
-                components = error_over_time[0].keys()
-                assert all([error.keys() == components for error in error_over_time])
+                components = list(error_over_time[0].keys())
+                assert all([list(error.keys()) == components for error in error_over_time])
                 output = dict()
                 for component in components:
                     output[component] = list()
@@ -434,7 +434,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             assert isinstance(converted_error_over_time, (dict, list))
             if isinstance(converted_error_over_time, dict):
                 output = dict()
-                for (component, error_over_time_for_component) in converted_error_over_time.iteritems():
+                for (component, error_over_time_for_component) in converted_error_over_time.items():
                     assert all([isinstance(error, float) for error in error_over_time_for_component])
                     output[component] = error_over_time_for_component[k]
                 return output

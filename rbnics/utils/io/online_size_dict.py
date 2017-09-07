@@ -51,14 +51,14 @@ class OnlineSizeDict(dict):
         
     # Override N += N_bc so that it is possible to increment online size due to boundary conditions
     def __iadd__(self, other):
-        for key in self.keys():
+        for key in self:
             self[key] += other[key]
         return self
         
     # Override __eq__ so that it is possible to check equality of dictionary with an int
     def __eq__(self, other):
         if isinstance(other, int):
-            for (key, value) in self.iteritems():
+            for (key, value) in self.items():
                 if value != other:
                     return False
             return True
@@ -68,7 +68,7 @@ class OnlineSizeDict(dict):
     # Override __eq__ so that it is possible to check not equality of dictionary with an int
     def __ne__(self, other):
         if isinstance(other, int):
-            for (key, value) in self.iteritems():
+            for (key, value) in self.items():
                 if value == other:
                     return False
             return True
@@ -78,7 +78,7 @@ class OnlineSizeDict(dict):
     # Override __lt__ so that it is possible to check if dictionary is less than an int
     def __lt__(self, other):
         if isinstance(other, int):
-            for (key, value) in self.iteritems():
+            for (key, value) in self.items():
                 if value >= other:
                     return False
             return True

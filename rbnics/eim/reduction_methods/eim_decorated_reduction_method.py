@@ -39,7 +39,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self.EIM_reductions = dict() # from coefficients to _EIMReductionMethod
             
             # Preprocess each term in the affine expansions
-            for (coeff, EIM_approximation_coeff) in self.truth_problem.EIM_approximations.iteritems():
+            for (coeff, EIM_approximation_coeff) in self.truth_problem.EIM_approximations.items():
                 assert isinstance(EIM_approximation_coeff, (EIMApproximation, TimeDependentEIMApproximation))
                 if isinstance(EIM_approximation_coeff, TimeDependentEIMApproximation):
                     EIMApproximationReductionMethodType = TimeDependentEIMApproximationReductionMethod
@@ -109,7 +109,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                                     return_value = current_return_value and return_value
             else:
                 assert isinstance(kwarg_EIM, Type)
-                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                     current_return_value = setter(EIM_reduction_coeff, kwarg_EIM)
                     return_value = current_return_value and return_value
             return return_value # an "and" with a None results in None, so this method returns only if necessary
@@ -121,7 +121,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 assert hasattr(self.truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
                 assert "offline" in self.truth_problem._apply_exact_approximation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
             bak_first_mu = self.truth_problem.mu
-            for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+            for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                 EIM_reduction_coeff.offline()
             self.truth_problem.set_mu(bak_first_mu)
             return DifferentialProblemReductionMethod_DerivedClass.offline(self)
@@ -143,7 +143,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     ("EIM" in kwargs and kwargs["EIM"] is not None) # shorthand to disable EIM error analysis
                 )
             ):
-                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                     EIM_reduction_coeff.error_analysis(N)
             # ..., and then call the parent method.
             if "EIM" in kwargs and kwargs["EIM"] is None:
@@ -167,7 +167,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     ("EIM" in kwargs and kwargs["EIM"] is not None) # shorthand to disable EIM error analysis
                 )
             ):
-                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.iteritems():
+                for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                     EIM_reduction_coeff.speedup_analysis(N)
             # ..., and then call the parent method.
             if "EIM" in kwargs and kwargs["EIM"] is None:

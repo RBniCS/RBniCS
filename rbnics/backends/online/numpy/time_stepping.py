@@ -163,7 +163,7 @@ class _ScipyImplicitEuler(object):
         self._time_step_size = None
     
     def set_parameters(self, parameters):
-        for (key, value) in parameters.iteritems():
+        for (key, value) in parameters.items():
             if key == "final_time":
                 self._final_time = value
             elif key == "initial_time":
@@ -288,7 +288,7 @@ if has_IDA:
             self._time_step_size = None
             
         def set_parameters(self, parameters):
-            for (key, value) in parameters.iteritems():
+            for (key, value) in parameters.items():
                 if key == "absolute_tolerance":
                     self.solver.atol = value
                 elif key == "final_time":
@@ -303,7 +303,7 @@ if has_IDA:
                 elif key == "monitor":
                     self._monitor = value
                 elif key == "nonlinear_solver":
-                    for (key_nonlinear, value_nonlinear) in value.iteritems():
+                    for (key_nonlinear, value_nonlinear) in value.items():
                         if key_nonlinear == "absolute_tolerance":
                             self.solver.atol = value_nonlinear
                         elif key_nonlinear == "line_search":

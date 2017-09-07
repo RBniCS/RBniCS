@@ -63,7 +63,7 @@ def expression_name(expression, backend=None):
         else:
             str_repr += repr(n)
             visited.add(n)
-    for key, value in coefficients_replacement.iteritems():
+    for key, value in coefficients_replacement.items():
         str_repr = str_repr.replace(key, value)
     hash_code = hashlib.sha1(
                     (str_repr + dolfin_version).encode("utf-8")

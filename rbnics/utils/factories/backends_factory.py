@@ -58,12 +58,12 @@ def backends_factory(backends_module):
                     "\tprovided inputs = " + str(input_types)
                 )
                 eligible_backends = dict() # from name to backend input types
-                for (backend_input_types, corresponding_backend) in input_map[class_or_function_name].iteritems():
+                for (backend_input_types, corresponding_backend) in input_map[class_or_function_name].items():
                     if are_subclass(input_types, backend_input_types):
                         if corresponding_backend in backends_factory._enabled_backends:
                             eligible_backends[corresponding_backend] = backend_input_types
                 if len(eligible_backends) > 0:
-                    eligible_backends_keys = eligible_backends.keys()
+                    eligible_backends_keys = list(eligible_backends.keys())
                     if len(eligible_backends) > 1: # get the closest possible match, i.e. with children preferred to parents
                         pairs = itertools.combinations(eligible_backends_keys, 2)
                         for (corresponding_backend_1, corresponding_backend_2) in pairs:
@@ -90,7 +90,7 @@ def backends_factory(backends_module):
                 else:
                     error_message = "No backend found for return type " + str(class_or_function_name) + " with input arguments " + str(input_types) + ".\n"
                     error_message += "Available input types for " + str(class_or_function_name) + " are:\n"
-                    for (backend_input_types, corresponding_backend) in input_map[class_or_function_name].iteritems():
+                    for (backend_input_types, corresponding_backend) in input_map[class_or_function_name].items():
                         if corresponding_backend in backends_factory._enabled_backends:
                             error_message += "\t" + str(backend_input_types) + ": " + corresponding_backend + "\n"
                     error_message += "\n"

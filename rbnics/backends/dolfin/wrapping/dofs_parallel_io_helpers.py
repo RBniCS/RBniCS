@@ -42,7 +42,7 @@ def build_dof_map_writer_mapping(V, local_dofmap=None):
             local_dofmap = _get_local_dofmap(V)
         dof_map_writer_mapping_original = _build_dof_map_writer_mapping(V, local_dofmap)
         dof_map_writer_mapping_storage = dict()
-        for (key, value) in dof_map_writer_mapping_original.iteritems():
+        for (key, value) in dof_map_writer_mapping_original.items():
             dof_map_writer_mapping_storage[key] = extract_first_cell(value)
         build_dof_map_writer_mapping._storage[V] = dof_map_writer_mapping_storage
     return build_dof_map_writer_mapping._storage[V]
