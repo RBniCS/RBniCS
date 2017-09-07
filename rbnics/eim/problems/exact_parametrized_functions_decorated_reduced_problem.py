@@ -16,11 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 import types
 import rbnics.backends
 from rbnics.backends import assign, copy, NonlinearProblemWrapper, TimeDependentProblem1Wrapper
-from rbnics.utils.mpi import log, print, PROGRESS
+from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
 from rbnics.eim.problems.eim import EIM
 from rbnics.eim.problems.deim import DEIM

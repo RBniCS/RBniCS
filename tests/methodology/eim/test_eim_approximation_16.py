@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from dolfin import *
 from rbnics import EquispacedDistribution, ExactParametrizedFunctions
 from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
@@ -25,7 +25,6 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
-from rbnics.utils.mpi import print
 
 """
 This test is the version of test 15 where high fidelity solution is used in place of reduced order one.

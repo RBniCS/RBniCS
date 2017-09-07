@@ -16,13 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
 from abc import ABCMeta, abstractmethod
 from math import sqrt
 from rbnics.backends import GramSchmidt
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
-from rbnics.utils.mpi import log, DEBUG, print
+from rbnics.utils.mpi import log, DEBUG
 
 @RequiredBaseDecorators(None)
 def RBReduction(DifferentialProblemReductionMethod_DerivedClass):    

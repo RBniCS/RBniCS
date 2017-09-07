@@ -16,11 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.utils.decorators import Extends, override
-from rbnics.utils.mpi import print
 
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.

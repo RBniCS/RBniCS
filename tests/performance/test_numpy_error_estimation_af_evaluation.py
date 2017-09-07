@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from numpy import zeros as legacy_tensor
 from numpy.linalg import norm
 from rbnics.backends import product, sum, transpose

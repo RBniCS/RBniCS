@@ -162,12 +162,12 @@ C2 = A[1]
 g21 = A[4]
 g22 = A[5]
 
-print 'C1 =', A[0]
-print 'g11 =', A[2]
-print 'g12 =', A[3]
-print 'C2 =', A[1]
-print 'g21 =', A[4]
-print 'g22 =', A[5]
+print('C1 =', A[0])
+print('g11 =', A[2])
+print('g12 =', A[3])
+print('C2 =', A[1])
+print('g21 =', A[4])
+print('g22 =', A[5])
 
 
 
@@ -182,11 +182,8 @@ Gg = Matrix([[D[0,0], D[0,1], 0], [D[1,0],D[1,1], 0], [0, 0, 1]])
 
 K1 = J*Gg*K0*Transpose(Gg);
 
-print 'K11 =', simplify(K1[0,0])
-print 'K22 =', simplify(K1[1,1])
-print 'K33 =', simplify(K1[2,2])
-print 'K12 =', simplify(K1[0,1])                        
-print 'K21 =', simplify(K1[1,0])
-
-
- 
+print('K11 =', simplify(K1[0,0]))
+print('K22 =', simplify(K1[1,1]))
+print('K33 =', simplify(K1[2,2]))
+print('K12 =', simplify(K1[0,1]))
+print('K21 =', simplify(K1[1,0]))

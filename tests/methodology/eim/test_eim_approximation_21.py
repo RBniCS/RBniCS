@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from dolfin import *
 from rbnics import EquispacedDistribution
 from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
@@ -27,7 +27,6 @@ from rbnics.problems.base import ParametrizedProblem
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
 from rbnics.utils.io import Folders
-from rbnics.utils.mpi import print
 
 """
 This test is similar to test 19. The difference with test 19 is a partial derivative of the solution is requested, rather than the whole gradient.

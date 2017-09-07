@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from abc import ABCMeta, abstractmethod
 import types
 from math import sqrt
@@ -27,7 +27,7 @@ from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction,
 from rbnics.utils.config import config
 from rbnics.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
 from rbnics.utils.io import OnlineSizeDict
-from rbnics.utils.mpi import log, print, PROGRESS
+from rbnics.utils.mpi import log, PROGRESS
 
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 @StoreMapFromProblemToReducedProblem

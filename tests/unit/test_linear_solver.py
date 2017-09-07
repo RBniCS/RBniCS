@@ -69,7 +69,7 @@ sparse_error.vector().add_local(+ sparse_solution.vector().array())
 sparse_error.vector().add_local(- exact_solution.vector().array())
 sparse_error.vector().apply("")
 sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-print "SparseLinearSolver error (tensor callbacks):", sparse_error_norm
+print("SparseLinearSolver error (tensor callbacks):", sparse_error_norm)
 assert isclose(sparse_error_norm, 0., atol=1.e-5)
 
 # ::: Callbacks return forms :: #
@@ -84,7 +84,7 @@ sparse_error.vector().add_local(+ sparse_solution.vector().array())
 sparse_error.vector().add_local(- exact_solution.vector().array())
 sparse_error.vector().apply("")
 sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-print "SparseLinearSolver error (form callbacks):", sparse_error_norm
+print("SparseLinearSolver error (form callbacks):", sparse_error_norm)
 assert isclose(sparse_error_norm, 0., atol=1.e-5)
 
 # ~~~ Dense case ~~~ #
@@ -128,9 +128,9 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
     dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
     assert dense_error_norm.shape == (1, 1)
     dense_error_norm = dense_error_norm[0, 0]
-    print "DenseLinearSolver error:", dense_error_norm
+    print("DenseLinearSolver error:", dense_error_norm)
     assert isclose(dense_error_norm, 0., atol=1.e-5)
 else:
-    print "DenseLinearSolver error: skipped in parallel"
+    print("DenseLinearSolver error: skipped in parallel")
     
 

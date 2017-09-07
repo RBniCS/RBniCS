@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
-from rbnics.utils.mpi import print
+
 from rbnics.backends import GramSchmidt
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem

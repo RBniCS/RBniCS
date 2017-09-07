@@ -140,7 +140,7 @@ for integrator_type in ("beuler", "bdf"):
     sparse_error_dot.vector().add_local(- exact_solution_dot.vector().array())
     sparse_error_dot.vector().apply("")
     sparse_error_dot_norm = sparse_error_dot.vector().inner(X*sparse_error_dot.vector())
-    print "SparseTimeStepping error (" + integrator_type + "):", sparse_error_norm, sparse_error_dot_norm
+    print("SparseTimeStepping error (" + integrator_type + "):", sparse_error_norm, sparse_error_dot_norm)
     assert isclose(sparse_error_norm, 0., atol=1.e-4)
     assert isclose(sparse_error_dot_norm, 0., atol=1.e-4)
 

@@ -16,14 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
 from rbnics.utils.decorators import Extends, override
 from rbnics.reduction_methods.stokes import StokesReductionMethod
-from rbnics.utils.mpi import print
 
 def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

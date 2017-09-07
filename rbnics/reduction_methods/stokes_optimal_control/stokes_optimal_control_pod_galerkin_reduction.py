@@ -16,9 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from rbnics.backends import FunctionsList, ProperOrthogonalDecomposition
-from rbnics.utils.mpi import print
 from rbnics.utils.decorators import Extends, override, ReductionMethodFor
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction

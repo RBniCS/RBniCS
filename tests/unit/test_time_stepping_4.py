@@ -156,7 +156,7 @@ sparse_error_dot_dot.vector().add_local(+ sparse_solution_dot_dot.vector().array
 sparse_error_dot_dot.vector().add_local(- exact_solution_dot_dot.vector().array())
 sparse_error_dot_dot.vector().apply("")
 sparse_error_dot_dot_norm = sparse_error_dot_dot.vector().inner(X*sparse_error_dot_dot.vector())
-print "SparseTimeStepping error:", sparse_error_norm, sparse_error_dot_norm, sparse_error_dot_dot_norm
+print("SparseTimeStepping error:", sparse_error_norm, sparse_error_dot_norm, sparse_error_dot_dot_norm)
 assert isclose(sparse_error_norm, 0., atol=1.e-5)
 assert isclose(sparse_error_dot_norm, 0., atol=1.e-5)
 assert isclose(sparse_error_dot_dot_norm, 0., atol=1.e-4)

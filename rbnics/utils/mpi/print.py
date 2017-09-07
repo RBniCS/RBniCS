@@ -16,12 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
-import __builtin__
+import builtins
 from rbnics.utils.mpi.mpi import is_io_process
 
 # Override the print() method to print only from process 0 of MPI_COMM_WORLD in parallel
+builtin_print = builtins.print
 def print(*args, **kwargs):
     if is_io_process():
-        return __builtin__.print(*args, **kwargs)
-        
+        return builtin_print(*args, **kwargs)
+builtins.print = print

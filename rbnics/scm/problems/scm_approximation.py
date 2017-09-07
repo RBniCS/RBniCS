@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 import hashlib
 import operator # to find closest parameters
 from math import sqrt
@@ -27,7 +27,7 @@ from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.config import config
 from rbnics.utils.decorators import sync_setters, Extends, override
 from rbnics.utils.io import GreedySelectedParametersList
-from rbnics.utils.mpi import log, print, PROGRESS
+from rbnics.utils.mpi import log, PROGRESS
 from rbnics.scm.utils.io import BoundingBoxSideList, UpperBoundsList
 from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from numpy import arange, asarray, linspace
 try:
     from assimulo.solvers import IDA
@@ -36,7 +36,6 @@ from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver, Nonli
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.wrapping import function_copy
 from rbnics.utils.decorators import BackendFor, Extends, override
-from rbnics.utils.mpi import print
 
 @Extends(AbstractTimeStepping)
 @BackendFor("numpy", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))

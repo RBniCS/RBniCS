@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from dolfin import *
 from rbnics.backends import BasisFunctionsMatrix, transpose
 from test_utils import RandomDolfinFunction, RandomNumpyVector, TestBase

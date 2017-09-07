@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from rbnics.utils.mpi.log import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG
 from rbnics.utils.mpi.mpi import is_io_process, parallel_max
 from rbnics.utils.mpi.print import print

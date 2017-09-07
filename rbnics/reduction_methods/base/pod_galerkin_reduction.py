@@ -16,11 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
 from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
-from rbnics.utils.mpi import print
 
 @RequiredBaseDecorators(None)
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):

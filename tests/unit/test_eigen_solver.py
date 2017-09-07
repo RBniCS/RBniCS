@@ -76,7 +76,7 @@ sparse_solver.solve(1)
 r, c = sparse_solver.get_eigenvalue(0)
 assert abs(c) < 1.e-10
 assert r > 0., "r = " + str(r) + " is not positive"
-print "Sparse inf-sup constant: ", sqrt(r)
+print("Sparse inf-sup constant: ", sqrt(r))
 
 # ~~~ Dense case ~~~ #
 if mesh.mpi_comm().size == 1: # dense solver is not partitioned    
@@ -100,13 +100,13 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
     dense_r, dense_c = dense_solver.get_eigenvalue(0)
     assert abs(dense_c) < 1.e-10
     assert dense_r > 0., "dense_r = " + str(dense_r) + " is not positive"
-    print "Dense inf-sup constant: ", sqrt(dense_r)
+    print("Dense inf-sup constant: ", sqrt(dense_r))
     
     # Compute the error
     dense_sqrt_r_error = abs(sqrt(r) - sqrt(dense_r))
-    print "DenseEigenSolver error:", dense_sqrt_r_error
+    print("DenseEigenSolver error:", dense_sqrt_r_error)
     assert isclose(dense_sqrt_r_error, 0., atol=1.e-5)
 else:
-    print "DenseEigenSolver error: skipped in parallel"
+    print("DenseEigenSolver error: skipped in parallel")
     
 

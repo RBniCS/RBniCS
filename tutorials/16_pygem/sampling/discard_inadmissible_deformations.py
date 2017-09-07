@@ -16,12 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from numpy import array_equal
 from dolfin import cells
 from rbnics.sampling.distributions import Distribution, EquispacedDistribution
 from rbnics.utils.decorators import Extends, override
-from rbnics.utils.mpi import print
 
 def DiscardInadmissibleDeformations(Distribution_DerivedClass):
     assert not issubclass(Distribution_DerivedClass, EquispacedDistribution) # we would have no way to replace inadmissible parameters

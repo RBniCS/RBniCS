@@ -16,11 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from numpy import isclose
 from petsc4py import PETSc
 from dolfin import as_backend_type
-from rbnics.utils.mpi import print
 
 class PETScTSIntegrator(object):
     def __init__(self, problem, solution, solution_dot, solution_dot_dot=None):

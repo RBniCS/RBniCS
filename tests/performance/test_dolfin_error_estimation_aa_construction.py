@@ -16,5 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 print("Please see test_truth_Z_T_dot_A_Z.py")

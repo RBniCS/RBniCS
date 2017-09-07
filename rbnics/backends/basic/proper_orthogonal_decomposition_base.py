@@ -16,13 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
+
 from math import sqrt
 from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 import rbnics.backends.online
 from rbnics.utils.decorators import Extends, override
-from rbnics.utils.mpi import is_io_process, print
+from rbnics.utils.mpi import is_io_process
 
 # Class containing the implementation of the POD
 def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
