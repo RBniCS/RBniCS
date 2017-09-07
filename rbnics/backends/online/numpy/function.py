@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from itertools import imap
 from numpy import matrix
 from rbnics.utils.decorators import backend_for, OnlineSizeType
 from rbnics.backends.online.basic import Function as BasicFunction
@@ -38,7 +37,7 @@ class _Function_Type(_Function_Type_Base):
             raise AssertionError("Invalid arguments in Function")
                     
     def __iter__(self):
-        return imap(float, self._v.flat)
+        return map(float, self._v.flat)
         
 @backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)
 def Function(arg):
