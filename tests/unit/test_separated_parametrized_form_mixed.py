@@ -713,3 +713,43 @@ log(PROGRESS, "\tLen unchanged forms:\n" +
     "\t\t" + str(len(a12_sep._form_unchanged)) + "\n"
 )
 assert 0 == len(a12_sep._form_unchanged)
+
+a13 = inner(expr13_split[0], grad(scalar_trial))*scalar_test*dx
+a13_sep = SeparatedParametrizedForm(a13)
+log(PROGRESS, "*** ###              FORM 13             ### ***")
+log(PROGRESS, "Test usage of ListTensor components of a nonlinear function defined on a mixed function space in a form on a scalar function space.")
+a13_sep.separate()
+"""
+log(PROGRESS, "\tLen coefficients:\n" +
+    "\t\t" + str(len(a13_sep.coefficients)) + "\n"
+)
+assert 2 == len(a13_sep.coefficients)
+log(PROGRESS, "\tSublen coefficients:\n" +
+    "\t\t" + str(len(a13_sep.coefficients[0])) + "\n" +
+    "\t\t" + str(len(a13_sep.coefficients[1])) + "\n"
+)
+assert 1 == len(a13_sep.coefficients[0])
+assert 1 == len(a13_sep.coefficients[1])
+log(PROGRESS, "\tCoefficients:\n" +
+    "\t\t" + str(a13_sep.coefficients[0][0]) + "\n" +
+    "\t\t" + str(a13_sep.coefficients[1][0]) + "\n"
+)
+assert "f_28[0]" == str(a13_sep.coefficients[0][0])
+assert "f_28[1]" == str(a13_sep.coefficients[1][0])
+log(PROGRESS, "\tPlaceholders:\n" +
+    "\t\t" + str(a13_sep._placeholders[0][0]) + "\n" +
+    "\t\t" + str(a13_sep._placeholders[1][0]) + "\n"
+)
+assert "f_71" == str(a13_sep._placeholders[0][0])
+assert "f_72" == str(a13_sep._placeholders[1][0])
+log(PROGRESS, "\tForms with placeholders:\n" +
+    "\t\t" + str(a13_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
+    "\t\t" + str(a13_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n"
+)
+assert "v_0 * v_1 * f_71" == str(a13_sep._form_with_placeholders[0].integrals()[0].integrand())
+assert "v_0 * (grad(v_1))[0] * f_72" == str(a13_sep._form_with_placeholders[1].integrals()[0].integrand())
+log(PROGRESS, "\tLen unchanged forms:\n" +
+    "\t\t" + str(len(a13_sep._form_unchanged)) + "\n"
+)
+assert 0 == len(a13_sep._form_unchanged)
+"""

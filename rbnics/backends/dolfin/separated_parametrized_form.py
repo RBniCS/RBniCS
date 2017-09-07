@@ -25,6 +25,7 @@ from ufl.algorithms.traversal import iter_expressions
 from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
+from ufl.tensors import ComponentTensor, ListTensor
 from rbnics.utils.io import ExportableList
 from rbnics.utils.decorators import BackendFor, Extends, override
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
@@ -152,6 +153,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                 else:
                                     raise AssertionError("Invalid index")
                             else:
+                                assert not isinstance(candidate, (ListTensor, ComponentTensor))
                                 self._coefficients[-1].append(candidate)
                                 log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
                     else:
