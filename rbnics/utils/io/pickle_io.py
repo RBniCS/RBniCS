@@ -16,10 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-try:
-   import cPickle as pickle
-except:
-   import pickle
+import pickle
 import os # for path
 from rbnics.utils.mpi import is_io_process
 
