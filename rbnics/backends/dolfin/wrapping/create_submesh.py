@@ -118,9 +118,9 @@ def create_submesh(mesh, markers):
         allgathered_mesh_to_submesh_cell_global_indices[mesh_cell_global_index] = _submesh_cell_global_index
         _submesh_cell_global_index += 1
     # Also create a mapping from mesh local vertex index to submesh local vertex index.
-    mesh_to_submesh_vertex_local_indices = dict(zip(mesh_vertex_indices, range(len(mesh_vertex_indices))))
+    mesh_to_submesh_vertex_local_indices = dict(zip(mesh_vertex_indices, list(range(len(mesh_vertex_indices)))))
     # Also create a mapping from mesh local cell index to submesh local cell index.
-    mesh_to_submesh_cell_local_indices = dict(zip(mesh_cell_indices, range(len(mesh_cell_indices))))
+    mesh_to_submesh_cell_local_indices = dict(zip(mesh_cell_indices, list(range(len(mesh_cell_indices)))))
     # Now, define submesh cells
     submesh_cells = list()
     for i, c in enumerate(mesh_cells):

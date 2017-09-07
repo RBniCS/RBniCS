@@ -73,9 +73,9 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         if postprocessor is None:
             postprocessor = lambda value: value
         if self.distributed_max:
-            local_list_indices = range(self.mpi_comm.rank, len(self._list), self.mpi_comm.size) # start from index rank and take steps of length equal to size
+            local_list_indices = list(range(self.mpi_comm.rank, len(self._list), self.mpi_comm.size)) # start from index rank and take steps of length equal to size
         else:
-            local_list_indices = range(len(self._list))
+            local_list_indices = list(range(len(self._list)))
         values = array(len(local_list_indices))
         values_with_postprocessing = array(len(local_list_indices))
         for i in range(len(local_list_indices)):

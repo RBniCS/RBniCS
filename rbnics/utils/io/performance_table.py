@@ -124,7 +124,7 @@ class PerformanceTable(object):
             # First column should be the reduced space dimension
             table_index.append("N")
             table_header["N"] = "N"
-            table_content["N"] = range(self._Nmin, self._Nmax + 1)
+            table_content["N"] = list(range(self._Nmin, self._Nmax + 1))
             column_size["N"] = max([max([len(str(x)) for x in table_content["N"]]), len("N")])
             # Then fill in with postprocessed data
             for column in columns:

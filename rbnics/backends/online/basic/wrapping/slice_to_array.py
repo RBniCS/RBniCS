@@ -57,7 +57,7 @@ def slice_to_array(obj, key, length_dict=None, index_dict=None):
         else:
             current_slice = list()
             for (current_slice_start_component, current_slice_stop_component) in zip(current_slice_start, current_slice_stop):
-                current_slice.extend(range(current_slice_start_component, current_slice_stop_component))
+                current_slice.extend(list(range(current_slice_start_component, current_slice_stop_component)))
             slices.append(tuple(current_slice))
     slices = tuple(slices)
     

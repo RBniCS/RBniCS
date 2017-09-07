@@ -52,7 +52,7 @@ class EigenSolver(AbstractEigenSolver):
         for bc in bcs:
             dofmap = bc.function_space().dofmap()
             local_range = dofmap.ownership_range()
-            local_dofs.update(range(local_range[0], local_range[1]))
+            local_dofs.update(list(range(local_range[0], local_range[1])))
             constrained_local_dofs.update([
                 dofmap.local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()
             ])
