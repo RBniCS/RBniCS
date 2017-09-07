@@ -24,9 +24,7 @@ from rbnics.utils.decorators import AbstractBackend, abstractmethod
 # and a FunctionsList Z, overriding __mul__ and __rmul__ operators
 # allow to write expressions like transpose(Z)*A*Z and transpose(Z)*F
 @AbstractBackend
-class FunctionsList(object):
-    __metaclass__ = ABCMeta
-    
+class FunctionsList(object, metaclass=ABCMeta):
     def __init__(self, V_or_Z, component=None):
         pass
     

@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractclassmethod, abstractmethod
 
 @AbstractBackend
-class LinearProgramSolver(object):
-    __metaclass__ = ABCMeta
-    
+class LinearProgramSolver(object, metaclass=ABCMeta):
     def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):
         pass
         

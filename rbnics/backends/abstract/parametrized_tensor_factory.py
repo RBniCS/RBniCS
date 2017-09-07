@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class ParametrizedTensorFactory(object):
-    __metaclass__ = ABCMeta
-    
+class ParametrizedTensorFactory(object, metaclass=ABCMeta):
     def __init__(self, tensor):
         pass
     

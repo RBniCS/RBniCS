@@ -27,9 +27,7 @@ from rbnics.utils.mpi import log, DEBUG
 def RBReduction(DifferentialProblemReductionMethod_DerivedClass):    
     
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
-    class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
-        __metaclass__ = ABCMeta
-        
+    class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass, metaclass=ABCMeta):
         """
         Abstract class. The folders used to store the snapshots and for the post processing data, the parameters for the greedy algorithm and the error estimator evaluations are initialized.
         

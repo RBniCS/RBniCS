@@ -31,9 +31,7 @@ from rbnics.utils.mpi import log, PROGRESS
 
 @Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 @StoreMapFromProblemToReducedProblem
-class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
-    __metaclass__ = ABCMeta
-    
+class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
     Base class containing the interface of a projection based ROM for elliptic coercive problems.
     Initialization of dimension of reduced problem N, boundary conditions, terms and their order, number of terms in the affine expansion Q, reduced operators and inner products, reduced solution, reduced basis functions matrix.
@@ -303,9 +301,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem):
                 self._solution_cache[cache_key] = copy(self._solution)
         return self._solution
         
-    class ProblemSolver(object):
-        __metaclass__ = ABCMeta
-        
+    class ProblemSolver(object, metaclass=ABCMeta):
         def __init__(self, problem, N):
             self.problem = problem
             self.N = N

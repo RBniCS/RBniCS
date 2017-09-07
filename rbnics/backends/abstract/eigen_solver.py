@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class EigenSolver(object):
-    __metaclass__ = ABCMeta
-    
+class EigenSolver(object, metaclass=ABCMeta):
     def __init__(self, V_or_Z, A, B=None, bcs=None):
         pass
         

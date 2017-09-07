@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class LinearSolver(object):
-    __metaclass__ = ABCMeta
-    
+class LinearSolver(object, metaclass=ABCMeta):
     def __init__(self, lhs, solution, rhs, bcs=None):
         pass
         
@@ -34,9 +32,7 @@ class LinearSolver(object):
     def solve(self):
         pass
         
-class LinearProblemWrapper(object):
-    __metaclass__ = ABCMeta
-    
+class LinearProblemWrapper(object, metaclass=ABCMeta):
     @abstractmethod
     def matrix_eval(self):
         pass

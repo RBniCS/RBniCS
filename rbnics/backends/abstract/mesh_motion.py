@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class MeshMotion(object):
-    __metaclass__ = ABCMeta
-    
+class MeshMotion(object, metaclass=ABCMeta):
     def __init__(self, V_or_Z, subdomains, shape_parametrization_expression):
         pass
         

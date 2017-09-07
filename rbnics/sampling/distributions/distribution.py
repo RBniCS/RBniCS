@@ -18,10 +18,7 @@
 
 from abc import ABCMeta, abstractmethod
 
-class Distribution(object):
-    __metaclass__ = ABCMeta
-    
-    ## Sample n points from the distribution
+class Distribution(object, metaclass=ABCMeta):
     @abstractmethod
     def sample(self, box, n):
         raise NotImplementedError("The method sample is distribution-specific and needs to be overridden.")

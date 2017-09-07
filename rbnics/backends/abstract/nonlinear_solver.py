@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class NonlinearSolver(object):
-    __metaclass__ = ABCMeta
-    
+class NonlinearSolver(object, metaclass=ABCMeta):
     def __init__(self, jacobian, solution, residual, bcs=None):
         pass
         
@@ -34,9 +32,7 @@ class NonlinearSolver(object):
     def solve(self):
         pass
         
-class NonlinearProblemWrapper(object):
-    __metaclass__ = ABCMeta
-    
+class NonlinearProblemWrapper(object, metaclass=ABCMeta):
     @abstractmethod
     def jacobian_eval(self, solution):
         pass

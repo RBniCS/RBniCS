@@ -30,9 +30,7 @@ from rbnics.utils.mpi import log, PROGRESS
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem
-class ParametrizedDifferentialProblem(ParametrizedProblem):
-    __metaclass__ = ABCMeta
-    
+class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
     Abstract class describing a parametrized differential problem.
     Inizialization of the solution space V, forms terms and their order, number of terms in the affine expansion Q, inner products and boundary conditions, truth solution.
@@ -252,9 +250,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem):
             self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
         return self._solution
     
-    class ProblemSolver(object):
-        __metaclass__ = ABCMeta
-        
+    class ProblemSolver(object, metaclass=ABCMeta):
         def __init__(self, problem):
             self.problem = problem
             

@@ -21,9 +21,7 @@ from rbnics.backends.abstract.functions_list import FunctionsList
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class BasisFunctionsMatrix(object):
-    __metaclass__ = ABCMeta
-    
+class BasisFunctionsMatrix(object, metaclass=ABCMeta):
     def __init__(self, V_or_Z):
         pass
     

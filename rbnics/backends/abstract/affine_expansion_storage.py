@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod, abstractonlinemethod
 
 @AbstractBackend
-class AffineExpansionStorage(object):
-    __metaclass__ = ABCMeta
-    
+class AffineExpansionStorage(object, metaclass=ABCMeta):
     def __init__(self):
         pass
         

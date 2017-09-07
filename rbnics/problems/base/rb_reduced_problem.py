@@ -25,9 +25,7 @@ from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
 def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
-    class RBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        __metaclass__ = ABCMeta
-        
+    class RBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass, metaclass=ABCMeta):
         """
         Abstract class. All the terms for error estimator are initialized.
         

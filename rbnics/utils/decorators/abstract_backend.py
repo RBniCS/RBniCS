@@ -17,7 +17,7 @@
 #
 
 # Declare abstract vector type
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import abstractmethod, abstractproperty
 import inspect
 from functools import wraps
 from rbnics.utils.decorators.backend_for import BackendFor, backend_for
@@ -25,8 +25,7 @@ from rbnics.utils.decorators.extends import Extends
 
 def AbstractBackend(Class):
     assert inspect.isclass(Class)
-    assert hasattr(Class, "__metaclass__")
-    assert Class.__metaclass__ is ABCMeta
+    assert hasattr(Class, "__abstractmethods__") # this means that ABCMeta was used as metaclass, see PEP 3119
     
     @BackendFor("Abstract")
     @Extends(Class, preserve_class_name=True)

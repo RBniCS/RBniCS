@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod, abstractproperty
 
 @AbstractBackend
-class SeparatedParametrizedForm(object):
-    __metaclass__ = ABCMeta
-    
+class SeparatedParametrizedForm(object, metaclass=ABCMeta):
     def __init__(self, form):
         pass
         

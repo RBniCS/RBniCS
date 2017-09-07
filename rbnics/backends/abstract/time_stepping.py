@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class TimeStepping(object):
-    __metaclass__ = ABCMeta
-    
+class TimeStepping(object, metaclass=ABCMeta):
     def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):
         pass
         
@@ -34,9 +32,7 @@ class TimeStepping(object):
     def solve(self):
         pass
 
-class TimeDependentProblemWrapper(object):
-    __metaclass__ = ABCMeta
-    
+class TimeDependentProblemWrapper(object, metaclass=ABCMeta):
     def set_time(self, t):
         pass
     

@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class ParametrizedExpressionFactory(object):
-    __metaclass__ = ABCMeta
-    
+class ParametrizedExpressionFactory(object, metaclass=ABCMeta):
     def __init__(self, expression):
         pass
     

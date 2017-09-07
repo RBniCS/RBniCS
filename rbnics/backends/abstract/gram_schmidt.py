@@ -20,9 +20,7 @@ from abc import ABCMeta
 from rbnics.utils.decorators import AbstractBackend, abstractmethod
 
 @AbstractBackend
-class GramSchmidt(object):
-    __metaclass__ = ABCMeta
-    
+class GramSchmidt(object, metaclass=ABCMeta):
     def __init__(self, X):
         pass
         
