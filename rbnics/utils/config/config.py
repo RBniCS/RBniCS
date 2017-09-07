@@ -90,7 +90,7 @@ def _convert_list_str_options(config, section, option):
     value = config.get(section, option)
     assert isinstance(value, (list, str))
     if isinstance(value, str):
-        config.set(section, option, map(str.strip, value.replace("\n", ",").split(",")))
+        config.set(section, option, list(map(str.strip, value.replace("\n", ",").split(","))))
     assert isinstance(config.get(section, option), list)
         
 config = configparser.ConfigParser()
