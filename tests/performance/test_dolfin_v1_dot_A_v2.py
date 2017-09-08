@@ -18,7 +18,10 @@
 
 
 from dolfin import *
-from rbnics.backends import transpose
+from rbnics.backends import transpose as factory_transpose
+from rbnics.backends.dolfin import transpose as dolfin_transpose
+transpose = None
+all_transpose = {"dolfin": dolfin_transpose, "factory": factory_transpose}
 from test_utils import RandomDolfinFunction, TestBase
 
 class Test(TestBase):
@@ -71,13 +74,16 @@ for i in range(1, 9):
     usec_1a = test.timeit()
     print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
     
-    test.init_test(1, "b")
-    usec_1b = test.timeit()
-    print("transpose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-    
-    print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
-    
-    test.init_test(2)
-    error = test.average()
-    print("Relative error:", error)
-    
+    for backend in ("dolfin", "factory"):
+        print("Testing", backend, "backend")
+        transpose = all_transpose[backend]
+        
+        test.init_test(1, "b")
+        usec_1b = test.timeit()
+        print("\ttranspose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+        
+        print("\tRelative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
+        
+        test.init_test(2)
+        error = test.average()
+        print("\tRelative error:", error)

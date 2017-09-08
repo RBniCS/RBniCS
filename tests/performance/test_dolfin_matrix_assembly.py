@@ -18,7 +18,13 @@
 
 
 from dolfin import *
-from rbnics.backends import AffineExpansionStorage, product, sum
+from rbnics.backends import AffineExpansionStorage
+from rbnics.backends import product as factory_product, sum as factory_sum
+from rbnics.backends.dolfin import product as dolfin_product, sum as dolfin_sum
+product = None
+sum = None
+all_product = {"dolfin": dolfin_product, "factory": factory_product}
+all_sum = {"dolfin": dolfin_sum, "factory": factory_sum}
 from test_utils import RandomDolfinFunction, RandomTuple, TestBase
 
 class Test(TestBase):
@@ -80,13 +86,16 @@ for i in range(3, 7):
         usec_1a = test.timeit()
         print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        test.init_test(1, "b")
-        usec_1b = test.timeit()
-        print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        print("Relative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
-        
-        test.init_test(2)
-        error = test.average()
-        print("Relative error:", error)
-    
+        for backend in ("dolfin", "factory"):
+            print("Testing", backend, "backend")
+            product, sum = all_product[backend], all_sum[backend]
+            
+            test.init_test(1, "b")
+            usec_1b = test.timeit()
+            print("\tsum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+            
+            print("\tRelative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
+            
+            test.init_test(2)
+            error = test.average()
+            print("\tRelative error:", error)

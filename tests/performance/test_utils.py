@@ -85,7 +85,7 @@ def RandomNumpyVector(N):
     return v
     
 def RandomTuple(Q):
-    return tuple(_rand(Q))
+    return tuple(float(v) for v in _rand(Q))
         
 class _Timer(object):
     def __init__(self, test):

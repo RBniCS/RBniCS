@@ -18,7 +18,7 @@
 
 
 from dolfin import *
-from rbnics.backends import BasisFunctionsMatrix, transpose
+from rbnics.backends import BasisFunctionsMatrix
 from test_utils import RandomDolfinFunction, RandomNumpyVector, TestBase
 
 class Test(TestBase):
@@ -80,7 +80,7 @@ for i in range(3, 7):
         usec_1b = test.timeit()
         print("mul method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        print("Relative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
+        print("Relative overhead of the __mul__ method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
         
         test.init_test(2)
         error = test.average()

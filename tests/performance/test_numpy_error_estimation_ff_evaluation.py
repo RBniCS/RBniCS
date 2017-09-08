@@ -19,8 +19,13 @@
 
 from numpy import zeros as legacy_tensor
 from numpy.linalg import norm
-from rbnics.backends import product, sum
-from rbnics.backends.online import OnlineAffineExpansionStorage
+from rbnics.backends import product as factory_product, sum as factory_sum
+from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum
+from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum
+product = None
+sum = None
+all_product = {"numpy": numpy_product, "online": online_product, "factory": factory_product}
+all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
 from test_utils import RandomNumber, RandomTuple, TestBase
 
 class Test(TestBase):
@@ -80,13 +85,16 @@ for i in range(4, 9):
         usec_1a = test.timeit()
         print("Legacy method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        test.init_test(1, "b")
-        usec_1b = test.timeit()
-        print("sum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        print("Speed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
-        
-        test.init_test(2)
-        error = test.average()
-        print("Relative error:", error)
-    
+        for backend in ("numpy", "online", "factory"):
+            print("Testing", backend, "backend")
+            product, sum = all_product[backend], all_sum[backend]
+            
+            test.init_test(1, "b")
+            usec_1b = test.timeit()
+            print("\tsum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+            
+            print("\tSpeed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
+            
+            test.init_test(2)
+            error = test.average()
+            print("\tRelative error:", error)
