@@ -49,7 +49,7 @@ def preserve_generator_attribute(operator):
             return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)
     
-for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__div__", "__rdiv__", "__idiv__", "__truediv__", "__itruediv__"):
+for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__rtruediv__", "__itruediv__"):
     preserve_generator_attribute(operator)
 
 # Allow sum and sub between matrix and form by assemblying the form. This is required because

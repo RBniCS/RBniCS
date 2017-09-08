@@ -195,16 +195,13 @@ class CustomNotImplementedAfterDivType(CustomNotImplementedType):
     def __init__(self):
         pass
     
-    def __div__(self, other):
-        return CustomNotImplemented
-        
-    def __rdiv__(self, other):
-        return CustomNotImplemented
-        
     def __truediv__(self, other):
         return CustomNotImplemented
         
     def __rtruediv__(self, other):
+        return CustomNotImplemented
+        
+    def __itruediv__(self, other):
         return CustomNotImplemented
 CustomNotImplementedAfterDiv = CustomNotImplementedAfterDivType()
 
