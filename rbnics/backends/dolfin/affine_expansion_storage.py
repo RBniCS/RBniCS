@@ -34,7 +34,7 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         self._content = None
         self._type = None
         # Get config value
-        delay_assembly = config.getboolean("backends", "delay assembly")
+        delay_assembly = config.get("backends", "delay assembly")
         # Type checking
         first_is_Form = self._is_Form(args[0])
         first_is_Tensor = self._is_Tensor(args[0])

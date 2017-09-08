@@ -16,8 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.config.config import config
+from rbnics.utils.config.config import Config, config
 
 __all__ = [
+    'Config',
     'config'
 ]

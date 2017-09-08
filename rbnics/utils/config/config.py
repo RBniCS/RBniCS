@@ -19,82 +19,135 @@
 import os
 import sys
 import configparser
+from rbnics.utils.mpi import is_io_process
 
-rbnics_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
-
-def init_config(config):
-    """
-    Set default options
-    """
+class Config(object):
+    rbnics_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
     
-    config.add_section("backends")
-    config.set("backends", "delay assembly", "False")
-    config.set("backends", "online backend", "numpy")
-    config.set("backends", "required backends", []) # will be filled in automatically
-
-    config.add_section("EIM")
-    config.set("EIM", "cache", ["Disk", "RAM"])
+    # Set class defaults
+    defaults = {
+        "backends": {
+            "delay assembly": False,
+            "online backend": "numpy",
+            "required backends": None
+        },
+        "EIM": {
+            "cache": {"Disk", "RAM"}
+        },
+        "problems": {
+            "cache": {"Disk", "RAM"}
+        },
+        "reduced problems": {
+            "cache": {"RAM"}
+        },
+        "SCM": {
+            "cache": {"Disk", "RAM"}
+        },
+    }
     
-    config.add_section("problems")
-    config.set("problems", "cache", ["Disk", "RAM"])
-    
-    config.add_section("reduced problems")
-    config.set("reduced problems", "cache", ["RAM"])
-    
-    config.add_section("SCM")
-    config.set("SCM", "cache", ["Disk", "RAM"])
-
-def read_config(config):
-    """
-    Possibly read customized options from file
-    """
-    
-    # Read from file
-    config_files_list = list()
-    config_files_list.append(os.path.join(rbnics_directory, ".rbnicsrc"))
-    if hasattr(sys.modules["__main__"], "__file__"): # from script
-        main_directory = os.path.dirname(os.path.realpath(sys.modules["__main__"].__file__))
-    else: # interactive
-        main_directory = os.getcwd()
-    main_directory_split = main_directory.split(os.path.sep)
-    for p in range(len(main_directory_split), 0, -1):
-        new_config_file_list = list()
-        new_config_file_list.append(os.path.sep)
-        new_config_file_list.extend(main_directory_split[:p])
-        new_config_file_list.append(".rbnicsrc")
-        new_config_file = os.path.join(*new_config_file_list)
-        if new_config_file not in config_files_list:
-            config_files_list.append(new_config_file)
-    config.read(config_files_list)
-    
-    # Convert list of string options
-    _convert_list_str_options(config, "EIM", "cache")
-    assert set(config.get("EIM", "cache")).issubset(["Disk", "RAM"])
-    _convert_list_str_options(config, "problems", "cache")
-    assert set(config.get("problems", "cache")).issubset(["Disk", "RAM"])
-    _convert_list_str_options(config, "reduced problems", "cache")
-    assert set(config.get("reduced problems", "cache")).issubset(["RAM"])
-    _convert_list_str_options(config, "SCM", "cache")
-    assert set(config.get("SCM", "cache")).issubset(["Disk", "RAM"])
-    
-    # Fill in ("backends", "required backends")
+    # Read in required backends
     required_backends = set()
     for root, dirs, files in os.walk(os.path.join(rbnics_directory, "backends")):
         for dir_ in dirs:
             if dir_ in sys.modules:
                 required_backends.add(dir_)
         break # prevent recursive exploration
-    config.set("backends", "required backends", required_backends)
+    defaults["backends"]["required backends"] = required_backends
+    del required_backends
     
-def _convert_list_str_options(config, section, option):
-    value = config.get(section, option)
-    assert isinstance(value, (list, str))
-    if isinstance(value, str):
-        config.set(section, option, list(map(str.strip, value.replace("\n", ",").split(","))))
-    assert isinstance(config.get(section, option), list)
+    def __init__(self):
+        # Setup configparser from defaults
+        self._config_as_parser = configparser.ConfigParser()
+        for (section, options_and_values) in self.defaults.items():
+            self._config_as_parser.add_section(section)
+            for (option, value) in options_and_values.items():
+                self._config_as_parser.set(section, option, self._value_to_parser(section, option, value))
+        # Setup dict
+        self._config_as_dict = dict()
+        self._parser_to_dict()
         
-config = configparser.ConfigParser()
-init_config(config)
-read_config(config)
-
-del rbnics_directory
+    def read(self):
+        # Read from configparser
+        config_files_list = list()
+        config_files_list.append(os.path.join(self.rbnics_directory, ".rbnicsrc"))
+        if hasattr(sys.modules["__main__"], "__file__"): # from script
+            main_directory = os.path.dirname(os.path.realpath(sys.modules["__main__"].__file__))
+        else: # interactive
+            main_directory = os.getcwd()
+        main_directory_split = main_directory.split(os.path.sep)
+        for p in range(len(main_directory_split), 0, -1):
+            new_config_file_list = list()
+            new_config_file_list.append(os.path.sep)
+            new_config_file_list.extend(main_directory_split[:p])
+            new_config_file_list.append(".rbnicsrc")
+            new_config_file = os.path.join(*new_config_file_list)
+            if new_config_file not in config_files_list:
+                config_files_list.append(new_config_file)
+        self._config_as_parser.read(config_files_list)
+        # Update dict
+        self._parser_to_dict()
+        
+    def write(self, filename):
+        if is_io_process():
+            self._config_as_parser.write(filename)
+        
+    def get(self, section, option):
+        return self._config_as_dict[section][option]
+        
+    def set(self, section, option, value):
+        self._config_as_parser.set(section, option, self._value_to_parser(section, option, value))
+        self._config_as_dict[section][option] = value
+        
+    def _value_to_parser(self, section, option, value):
+        if isinstance(value, set):
+            default = self.defaults[section][option]
+            assert isinstance(default, set)
+            assert value.issubset(default)
+            value_str =  ", ".join(str(v) for v in value)
+            if len(value) is 1:
+                value_str += "," # to differentiate between str and a set with one element
+            return value_str
+        elif isinstance(value, bool):
+            assert isinstance(self.defaults[section][option], bool)
+            return str(value)
+        elif isinstance(value, str):
+            assert isinstance(self.defaults[section][option], str)
+            return value
+        else:
+            raise ValueError("Invalid value to parser")
+        
+    def _value_from_parser(self, section, option, value):
+        if value.strip() == "":
+            return set()
+        elif "," in value:
+            assert isinstance(self.defaults[section][option], set)
+            value = value.strip(",") # strip trailing comma which has been possibly added to differentiate between str and set
+            return set([v.strip() for v in value.split(",")])
+        elif isinstance(value, str):
+            if value.lower() in ("yes", "true", "on"):
+                assert isinstance(self.defaults[section][option], bool)
+                return True
+            elif value.lower() in ("no", "false", "off"):
+                assert isinstance(self.defaults[section][option], bool)
+                return False
+            else:
+                assert isinstance(self.defaults[section][option], str)
+                return value
+        else:
+            raise ValueError("Invalid value from parser")
+            
+    def _parser_to_dict(self):
+        for section in self._config_as_parser.sections():
+            self._config_as_dict[section] = dict()
+            for (option, value) in self._config_as_parser.items(section):
+                self._config_as_dict[section][option] = self._value_from_parser(section, option, value)
+                
+    def __eq__(self, other):
+        return (
+            self._config_as_parser == other._config_as_parser 
+                and 
+            self._config_as_dict == other._config_as_dict
+        )
+        
+config = Config()
+config.read()
