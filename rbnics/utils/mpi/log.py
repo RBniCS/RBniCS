@@ -16,9 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-try:
-    from dolfin import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG # easier to read in parallel
-except ImportError:
-    from logging import log, CRITICAL, ERROR, WARNING, INFO, DEBUG
-    PROGRESS = 16
-    TRACE = 13
+from logging import log, CRITICAL, ERROR, WARNING, INFO, DEBUG
+PROGRESS = 16 # compatability with DOLFIN
+TRACE = 13 # compatability with DOLFIN

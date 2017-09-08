@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from dolfin import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG # easier to read in parallel
 from rbnics.backends.dolfin.wrapping.assemble import assemble
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_derivative import assemble_operator_for_derivative
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_restriction import assemble_operator_for_restriction
@@ -155,5 +156,8 @@ __overridden__ = {
         'compute_theta_for_derivative',
         'compute_theta_for_restriction',
         'ParametrizedExpression'
+    ],
+    'rbnics.utils.mpi': [
+        'log', 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'PROGRESS', 'TRACE', 'DEBUG'
     ]
 }
