@@ -62,11 +62,10 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             assert "SCM" in kwargs
             ntrain_SCM = kwargs["SCM"]
             import_successful_SCM = self.SCM_reduction.initialize_training_set(ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
-            if LinearProgramSolver.solve_can_raise():
-                # In an exception is raised we will fall back to exact evaluation is required, 
-                # and thus we cannot use a distributed training set
-                self.training_set.distributed_max = False
-                self.SCM_reduction.training_set.distributed_max = False
+            # If an exception is raised we will fall back to exact evaluation, 
+            # and thus we cannot use a distributed training set
+            self.training_set.distributed_max = False
+            self.SCM_reduction.training_set.distributed_max = False
             # Return
             return import_successful and import_successful_SCM
             
