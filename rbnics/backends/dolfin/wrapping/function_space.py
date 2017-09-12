@@ -17,6 +17,7 @@
 #
 
 import types
+import ufl
 from dolfin import FunctionSpace
 
 original_FunctionSpace__init__ = FunctionSpace.__init__
@@ -30,6 +31,10 @@ def custom_FunctionSpace__init__(self, *args, **kwargs):
     if components is not None:
         _enable_string_components(components, self)
 FunctionSpace.__init__ = custom_FunctionSpace__init__
+
+def custom_FunctionSpace__hash__(self):
+    return ufl.FunctionSpace.__hash__(self)
+FunctionSpace.__hash__ = custom_FunctionSpace__hash__
     
 def _enable_string_components(components, function_space):
     _init_component_to_index(components, function_space)
