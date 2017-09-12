@@ -18,12 +18,12 @@
 
 from rbnics.reduction_methods.base.linear_reduction_method import LinearReductionMethod
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(LinearReductionMethod, RBReduction)
 def LinearRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class LinearRBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 

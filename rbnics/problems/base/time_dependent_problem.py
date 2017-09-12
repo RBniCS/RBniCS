@@ -18,13 +18,13 @@
 
 import types
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.mpi import log, PROGRESS
 
 @RequiredBaseDecorators(None)
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class TimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         def __init__(self, V, **kwargs):

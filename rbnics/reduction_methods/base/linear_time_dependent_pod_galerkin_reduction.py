@@ -18,12 +18,12 @@
 
 from rbnics.reduction_methods.base.linear_pod_galerkin_reduction import LinearPODGalerkinReduction
 from rbnics.reduction_methods.base.time_dependent_pod_galerkin_reduction import TimeDependentPODGalerkinReduction
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(LinearPODGalerkinReduction, TimeDependentPODGalerkinReduction)
 def LinearTimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class LinearTimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 

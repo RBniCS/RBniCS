@@ -17,12 +17,12 @@
 #
 
 from rbnics.backends import assign, NonlinearProblemWrapper, NonlinearSolver
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class NonlinearReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         ## Default initialization of members.

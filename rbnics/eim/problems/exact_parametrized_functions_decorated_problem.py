@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import SymbolicParameters
-from rbnics.utils.decorators import Extends, ProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 
 def ExactParametrizedFunctions_OfflineAndOnline(**kwargs):
     # Enable exact parametrized functions evaluation both offline and online
@@ -39,7 +39,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
     )
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
-        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        @PreserveClassName
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
             ## Default initialization of members

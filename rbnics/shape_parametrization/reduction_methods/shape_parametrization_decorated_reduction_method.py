@@ -16,13 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.shape_parametrization.problems import ShapeParametrization
 
 @ReductionMethodDecoratorFor(ShapeParametrization)
 def ShapeParametrizationDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class ShapeParametrizationDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization

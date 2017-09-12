@@ -19,12 +19,12 @@
 from abc import ABCMeta, abstractmethod
 from rbnics.backends import AffineExpansionStorage, BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class RBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass, metaclass=ABCMeta):
         """
         Abstract class. All the terms for error estimator are initialized.

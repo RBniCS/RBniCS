@@ -19,12 +19,12 @@
 
 from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class PODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         """
         Abstract class. The folders used to store the snapshots and for the post processing data, the data stracture for the POD algorithm are initialized.

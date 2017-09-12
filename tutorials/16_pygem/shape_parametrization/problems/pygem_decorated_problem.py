@@ -17,7 +17,7 @@
 #
 
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
-from rbnics.utils.decorators import Extends, ProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from shape_parametrization.utils import PyGeMWrapper
 import backends.dolfin # make sure that dolfin backend is overridden
 
@@ -58,7 +58,7 @@ rather than
     @PyGeM(...)
 because DEIM (or ExactParametrizedFunctions) have to be applied first."""
         
-        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        @PreserveClassName
         class PyGeMDecoratedProblem_BaseClass(ParametrizedDifferentialProblem_DerivedClass):
         
             def __init__(self, V, **kwargs):
@@ -87,7 +87,7 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
                 self.pygem_wrapper.update(mu)
                  
         if ExactParametrizedFunctions in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators:
-            @Extends(PyGeMDecoratedProblem_BaseClass, preserve_class_name=True)
+            @PreserveClassName
             class PyGeMDecoratedProblem_ExactParametrizedFunctionsClass(PyGeMDecoratedProblem_BaseClass):
                 def set_mu(self, mu):
                     PyGeMDecoratedProblem_BaseClass.set_mu(self, mu)
@@ -98,7 +98,7 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
             return PyGeMDecoratedProblem_ExactParametrizedFunctionsClass
             
         elif DEIM in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators:
-            @Extends(PyGeMDecoratedProblem_BaseClass, preserve_class_name=True)
+            @PreserveClassName
             class PyGeMDecoratedProblem_DEIMClass(PyGeMDecoratedProblem_BaseClass):
                 ## Deform the mesh as a function of the geometrical parameters and then export solution to file
                 def export_solution(self, folder, filename, solution=None, component=None, suffix=None):

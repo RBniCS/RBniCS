@@ -17,7 +17,7 @@
 #
 
 from rbnics.problems.base import ParametrizedProblem
-from rbnics.utils.decorators import Extends, ProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
 def ExactCoercivityConstantDecoratedProblem(
@@ -35,7 +35,7 @@ def ExactCoercivityConstantDecoratedProblem(
     )
     def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
-        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        @PreserveClassName
         class ExactCoercivityConstantDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             ## Default initialization of members
             def __init__(self, V, **kwargs):

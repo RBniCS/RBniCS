@@ -16,17 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base.nonlinear_rb_reduced_problem import NonlinearRBReducedProblem
-from rbnics.problems.base.time_dependent_rb_reduced_problem import TimeDependentRBReducedProblem
-from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
+import inspect
 
-@RequiredBaseDecorators(NonlinearRBReducedProblem, TimeDependentRBReducedProblem)
-def NonlinearTimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
-    @PreserveClassName
-    class NonlinearTimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        pass
-                
-    # return value (a class) for the decorator
-    return NonlinearTimeDependentRBReducedProblem_Class
-    
+def PreserveClassName(Derived):
+    Parents = Derived.__bases__
+    assert len(Parents) == 1
+    Parent = Parents[0]
+    setattr(Derived, "__name__", Parent.__name__)
+    setattr(Derived, "__module__", Parent.__module__)
+    return Derived

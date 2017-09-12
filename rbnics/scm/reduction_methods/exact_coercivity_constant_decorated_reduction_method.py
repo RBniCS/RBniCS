@@ -16,13 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.scm.problems import ExactCoercivityConstant, SCM
 
 @ReductionMethodDecoratorFor(ExactCoercivityConstant, replaces=SCM)
 def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class ExactCoercivityConstantDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization

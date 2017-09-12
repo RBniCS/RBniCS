@@ -19,13 +19,13 @@
 from math import sqrt
 from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators, sync_setters
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, sync_setters
 from rbnics.utils.mpi import log, PROGRESS
 
 @RequiredBaseDecorators(None)
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class TimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         ## Default initialization of members

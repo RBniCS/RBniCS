@@ -18,12 +18,12 @@
 
 import inspect
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
-from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators import PreserveClassName
 
 def PrimalDualReductionMethod(DualProblem):
     def PrimalDualReductionMethod_Decorator(DifferentialProblemReductionMethod_DerivedClass):
                 
-        @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+        @PreserveClassName
         class PrimalDualReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
     
             ## Default initialization of members

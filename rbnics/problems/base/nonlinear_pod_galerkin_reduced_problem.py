@@ -18,12 +18,12 @@
 
 from rbnics.problems.base.nonlinear_reduced_problem import NonlinearReducedProblem
 from rbnics.problems.base.pod_galerkin_reduced_problem import PODGalerkinReducedProblem
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(NonlinearReducedProblem, PODGalerkinReducedProblem)
 def NonlinearPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class NonlinearPODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
                 

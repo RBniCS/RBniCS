@@ -21,14 +21,14 @@ from math import sqrt
 from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature, transpose
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.io import ErrorAnalysisTable
 from rbnics.utils.mpi import log, DEBUG
 
 @RequiredBaseDecorators(RBReduction, TimeDependentReductionMethod)
 def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class TimeDependentRBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ## Default initialization of members

@@ -17,12 +17,12 @@
 #
 
 from rbnics.eim.problems import DEIM, ExactParametrizedFunctions
-from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from shape_parametrization.problems.pygem_decorated_problem import PyGeM
 
 @ReducedProblemDecoratorFor(PyGeM)
 def PyGeMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class PyGeMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
     
         def __init__(self, truth_problem, **kwargs):

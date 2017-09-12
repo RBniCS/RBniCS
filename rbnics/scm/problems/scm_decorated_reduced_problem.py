@@ -16,13 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.scm.problems.scm import SCM
 
 @ReducedProblemDecoratorFor(SCM)
 def SCMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class SCMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         def __init__(self, truth_problem, **kwargs):

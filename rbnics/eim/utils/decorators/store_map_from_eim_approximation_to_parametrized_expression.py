@@ -16,11 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends
+from rbnics.utils.decorators import PreserveClassName
 
 def StoreMapFromParametrizedExpressionToEIMApproximation(EIMApproximation_DerivedClass):
             
-    @Extends(EIMApproximation_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class StoreMapFromParametrizedExpressionToEIMApproximation_Class(EIMApproximation_DerivedClass):
         
         def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):

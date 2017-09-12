@@ -18,7 +18,7 @@
 
 from itertools import product as cartesian_product
 from rbnics.backends import ParametrizedTensorFactory, SeparatedParametrizedForm, SymbolicParameters
-from rbnics.utils.decorators import Extends, ProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 
@@ -41,7 +41,7 @@ def DEIMDecoratedProblem(
     )
     def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
                 
-        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        @PreserveClassName
         class DEIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
             ## Default initialization of members

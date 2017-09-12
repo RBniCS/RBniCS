@@ -19,12 +19,12 @@
 from rbnics.backends import assign
 from rbnics.problems.base.nonlinear_problem import NonlinearProblem
 from rbnics.problems.base.time_dependent_problem import TimeDependentProblem
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(NonlinearProblem, TimeDependentProblem)
 def NonlinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class NonlinearTimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         def __init__(self, V, **kwargs):
             # Call the parent initialization

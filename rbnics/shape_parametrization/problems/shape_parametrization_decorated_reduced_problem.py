@@ -16,14 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization
 
 @ReducedProblemDecoratorFor(ShapeParametrization)
 def ShapeParametrizationDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class ShapeParametrizationDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
     
         def __init__(self, truth_problem, **kwargs):

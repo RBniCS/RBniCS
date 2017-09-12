@@ -20,13 +20,13 @@ from math import sqrt
 from rbnics.backends import ProperOrthogonalDecomposition, TimeQuadrature
 from rbnics.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.io import ErrorAnalysisTable
 
 @RequiredBaseDecorators(PODGalerkinReduction, TimeDependentReductionMethod)
 def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class TimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ## Default initialization of members

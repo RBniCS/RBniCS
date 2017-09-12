@@ -21,7 +21,7 @@ import types
 import rbnics.backends
 from rbnics.backends import assign, copy, NonlinearProblemWrapper, TimeDependentProblem1Wrapper
 from rbnics.utils.mpi import log, PROGRESS
-from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.eim.problems.eim import EIM
 from rbnics.eim.problems.deim import DEIM
 from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
@@ -35,7 +35,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
     def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):
         if hasattr(ReducedParametrizedProblem_DecoratedClass, "assemble_error_estimation_operators"):
         
-            @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
+            @PreserveClassName
             class _AlsoDecorateErrorEstimationOperators_Class(ReducedParametrizedProblem_DecoratedClass):
                 def __init__(self, truth_problem, **kwargs):
                     # Call the parent initialization
@@ -115,7 +115,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
     def _AlsoDecorateNonlinearSolutionStorage(ReducedParametrizedProblem_DecoratedClass):
         if issubclass(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, NonlinearProblemWrapper):
             if issubclass(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, TimeDependentProblem1Wrapper):
-                @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
+                @PreserveClassName
                 class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
                 
                     class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
@@ -146,7 +146,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 
                 return _AlsoDecorateNonlinearSolutionStorage_Class
             else:
-                @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
+                @PreserveClassName
                 class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
                 
                     class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
@@ -176,9 +176,9 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
         else:
             return ReducedParametrizedProblem_DecoratedClass
            
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True) # needs to be first in order to override for last the methods
     @_AlsoDecorateErrorEstimationOperators
     @_AlsoDecorateNonlinearSolutionStorage
+    @PreserveClassName
     class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         def __init__(self, truth_problem, **kwargs):

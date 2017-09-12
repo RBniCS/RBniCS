@@ -17,14 +17,14 @@
 #
 
 from rbnics.sampling.distributions import UniformDistribution
-from rbnics.utils.decorators import Extends, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from sampling import DiscardInadmissibleDeformations
 from shape_parametrization.problems import PyGeM
 
 @ReductionMethodDecoratorFor(PyGeM)
 def PyGeMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class PyGeMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization

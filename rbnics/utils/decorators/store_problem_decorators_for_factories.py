@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
 def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, enabled_if=None, replaces=None, replaces_if=None, **kwargs):
     def StoreProblemDecoratorsForFactories_Decorator(DecoratedProblem_Base):
@@ -40,7 +40,7 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
             ProblemExactDecorators = list()
         
         # Also store **kwargs as passed to init
-        @Extends(DecoratedProblem_Base, preserve_class_name=True)
+        @PreserveClassName
         class DecoratedProblem(DecoratedProblem_Base):
             def __init__(self, V, **kwargs):
                 # Call the parent initialization

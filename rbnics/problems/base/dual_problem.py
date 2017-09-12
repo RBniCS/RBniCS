@@ -16,12 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.sync_setters import sync_setters
+from rbnics.utils.decorators import PreserveClassName, sync_setters
 
 def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
             
-    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class DualProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         
         ## Default initialization of members.

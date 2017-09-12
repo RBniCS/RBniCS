@@ -19,14 +19,14 @@
 import types
 import inspect
 from rbnics.backends.common.linear_program_solver import LinearProgramSolver
-from rbnics.utils.decorators import Extends, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.scm.problems import SCM
 from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod
 
 @ReductionMethodDecoratorFor(SCM)
 def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class SCMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization

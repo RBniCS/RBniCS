@@ -19,7 +19,7 @@
 from rbnics.backends import AffineExpansionStorage
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.eim.problems.eim import EIM
-from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 
 @ReducedProblemDecoratorFor(EIM)
 def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -27,7 +27,7 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
     def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):
         if hasattr(ReducedParametrizedProblem_DecoratedClass, "assemble_error_estimation_operators"):
         
-            @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
+            @PreserveClassName
             class _AlsoDecorateErrorEstimationOperators_Class(ReducedParametrizedProblem_DecoratedClass):
                 
                 def compute_riesz(self, term):
@@ -64,8 +64,8 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
         else:
             return ReducedParametrizedProblem_DecoratedClass
     
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     @_AlsoDecorateErrorEstimationOperators
+    @PreserveClassName
     class EIMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
         def __init__(self, truth_problem, **kwargs):

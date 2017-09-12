@@ -16,12 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):    
     
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class PODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
         

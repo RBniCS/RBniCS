@@ -18,12 +18,12 @@
 
 from rbnics.problems.base.nonlinear_reduced_problem import NonlinearReducedProblem
 from rbnics.problems.base.rb_reduced_problem import RBReducedProblem
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(NonlinearReducedProblem, RBReducedProblem)
 def NonlinearRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class NonlinearRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
                 

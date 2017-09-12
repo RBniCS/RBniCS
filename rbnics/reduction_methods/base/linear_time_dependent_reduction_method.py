@@ -18,12 +18,12 @@
 
 from rbnics.reduction_methods.base.linear_reduction_method import LinearReductionMethod
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(LinearReductionMethod, TimeDependentReductionMethod)
 def LinearTimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class LinearTimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
                 

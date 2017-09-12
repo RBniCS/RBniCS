@@ -16,11 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
 def StoreMapFromProblemToTrainingStatus(ParametrizedDifferentialProblem_DerivedClass):
             
-    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class StoreMapFromProblemToTrainingStatus_Class(ParametrizedDifferentialProblem_DerivedClass):
         
         def __init__(self, V, **kwargs):
@@ -35,7 +35,7 @@ def StoreMapFromProblemToTrainingStatus(ParametrizedDifferentialProblem_DerivedC
 
 def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_DerivedClass):
             
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class UpdateMapFromProblemToTrainingStatus_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         def __init__(self, truth_problem, **kwargs):

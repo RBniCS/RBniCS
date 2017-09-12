@@ -16,11 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators import PreserveClassName
 
 def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
-    @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class PrimalDualReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members.
         def __init__(self, truth_problem, **kwargs):

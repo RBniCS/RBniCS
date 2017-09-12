@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import MeshMotion
-from rbnics.utils.decorators import Extends, ProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs):
     @ProblemDecoratorFor(ShapeParametrization,
@@ -26,7 +26,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
     def ShapeParametrizationDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
         # A decorator class that allows to overload methods related to shape parametrization and mesh motion
-        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        @PreserveClassName
         class ShapeParametrizationDecoratedProblem_Class_Base(ParametrizedDifferentialProblem_DerivedClass):
         
             ## Default initialization of members
@@ -51,7 +51,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                 self.mesh_motion.init(self)
                 
         if hasattr(ParametrizedDifferentialProblem_DerivedClass, "set_time"):
-            @Extends(ShapeParametrizationDecoratedProblem_Class_Base, preserve_class_name=True)
+            @PreserveClassName
             class ShapeParametrizationDecoratedProblem_Class(ShapeParametrizationDecoratedProblem_Class_Base):
                 
                 ## Deform the mesh as a function of the geometrical parameters and then export solution to file
@@ -60,7 +60,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                     ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution_over_time, solution_dot_over_time, component, suffix)
                     self.mesh_motion.reset_reference()
         else:
-            @Extends(ShapeParametrizationDecoratedProblem_Class_Base, preserve_class_name=True)
+            @PreserveClassName
             class ShapeParametrizationDecoratedProblem_Class(ShapeParametrizationDecoratedProblem_Class_Base):
                 
                 ## Deform the mesh as a function of the geometrical parameters and then export solution to file

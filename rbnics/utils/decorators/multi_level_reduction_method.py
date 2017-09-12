@@ -18,11 +18,11 @@
 
 import types
 import inspect
-from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
 def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class MultiLevelReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         additional_folder_prefix = dict({

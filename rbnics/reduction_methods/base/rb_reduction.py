@@ -20,13 +20,13 @@ from abc import ABCMeta, abstractmethod
 from math import sqrt
 from rbnics.backends import GramSchmidt
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.mpi import log, DEBUG
 
 @RequiredBaseDecorators(None)
 def RBReduction(DifferentialProblemReductionMethod_DerivedClass):    
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass, metaclass=ABCMeta):
         """
         Abstract class. The folders used to store the snapshots and for the post processing data, the parameters for the greedy algorithm and the error estimator evaluations are initialized.

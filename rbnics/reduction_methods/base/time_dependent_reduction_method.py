@@ -18,12 +18,12 @@
 
 import types
 from numpy import isclose
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class TimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ## Default initialization of members

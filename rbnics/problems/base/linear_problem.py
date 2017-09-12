@@ -17,12 +17,12 @@
 #
 
 from rbnics.backends import assign, LinearProblemWrapper, LinearSolver
-from rbnics.utils.decorators import Extends, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def LinearProblem(ParametrizedDifferentialProblem_DerivedClass):
     
-    @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+    @PreserveClassName
     class LinearProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         
         class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, LinearProblemWrapper):

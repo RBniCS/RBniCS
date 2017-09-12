@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators.extends import Extends
+from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 from rbnics.utils.decorators.sync_setters import sync_setters
 
 def exact_problem(decorated_problem, preserve_class_name=True):
@@ -24,7 +24,7 @@ def exact_problem(decorated_problem, preserve_class_name=True):
         DecoratedProblem = type(decorated_problem)
         if hasattr(DecoratedProblem, "ProblemDecorators"):
             assert hasattr(DecoratedProblem, "UndecoratedProblemClass")
-            @Extends(DecoratedProblem.UndecoratedProblemClass, preserve_class_name=True)
+            @PreserveClassName
             class ExactProblem_Class(DecoratedProblem.UndecoratedProblemClass):
                 @sync_setters(decorated_problem, "set_mu", "mu")
                 @sync_setters(decorated_problem, "set_mu_range", "mu_range")
@@ -35,7 +35,7 @@ def exact_problem(decorated_problem, preserve_class_name=True):
                     DecoratedProblem.UndecoratedProblemClass.__init__(self, V, **kwargs)
             
             if hasattr(decorated_problem, "set_time"):
-                @Extends(ExactProblem_Class, preserve_class_name=True)
+                @PreserveClassName
                 class ExactProblem_Class(ExactProblem_Class):
                     @sync_setters(decorated_problem, "set_time", "t")
                     @sync_setters(decorated_problem, "set_initial_time", "t0")
@@ -46,7 +46,7 @@ def exact_problem(decorated_problem, preserve_class_name=True):
             
             if not preserve_class_name:
                 setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
-                @Extends(ExactProblem_Class, preserve_class_name=True)
+                @PreserveClassName
                 class ExactProblem_Class(ExactProblem_Class):
                     def name(self):
                         return "Exact" + decorated_problem.name()

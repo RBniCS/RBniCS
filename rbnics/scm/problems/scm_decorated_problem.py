@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.scm.problems.scm_approximation import SCMApproximation
 
 def SCMDecoratedProblem(
@@ -46,7 +46,7 @@ def SCMDecoratedProblem(
     )
     def SCMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
     
-        @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
+        @PreserveClassName
         class SCMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             ## Default initialization of members
             def __init__(self, V, **kwargs):
