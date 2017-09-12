@@ -20,7 +20,7 @@
 from numpy import array_equal
 from dolfin import cells
 from rbnics.sampling.distributions import Distribution, EquispacedDistribution
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 def DiscardInadmissibleDeformations(Distribution_DerivedClass):
     assert not issubclass(Distribution_DerivedClass, EquispacedDistribution) # we would have no way to replace inadmissible parameters
@@ -32,7 +32,6 @@ def DiscardInadmissibleDeformations(Distribution_DerivedClass):
             self.mesh = self.truth_problem.V.mesh()
             self.cells_orientation = [c.orientation() for c in cells(self.mesh)]
             
-        @override
         def sample(self, box, n):
             print("Generating parameter space subset discarding inadmissible deformations.")
             # Backup truth problem mu

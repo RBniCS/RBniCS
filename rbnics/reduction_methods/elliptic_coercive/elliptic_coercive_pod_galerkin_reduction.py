@@ -19,7 +19,7 @@
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 
 EllipticCoercivePODGalerkinReduction_Base = LinearPODGalerkinReduction(EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod))
 

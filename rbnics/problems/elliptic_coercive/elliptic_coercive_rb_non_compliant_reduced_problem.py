@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.backends import product, sum, transpose
 from rbnics.problems.base import PrimalDualReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
@@ -31,7 +31,6 @@ EllipticCoerciveRBNonCompliantReducedProblem_Base = PrimalDualReducedProblem(Ell
 class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBNonCompliantReducedProblem_Base):
     
     # Perform an online evaluation of the non compliant output
-    @override
     def _compute_output(self, N):
         self._output = transpose(self._solution)*sum(product(self.compute_theta("s"), self.operator["s"][:N]))
             

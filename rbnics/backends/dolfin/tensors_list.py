@@ -19,12 +19,11 @@
 from dolfin import FunctionSpace
 from rbnics.backends.basic import TensorsList as BasicTensorsList
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(BasicTensorsList)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class TensorsList(BasicTensorsList):
-    @override
     def __init__(self, V, empty_tensor):
         BasicTensorsList.__init__(self, V, empty_tensor, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
         

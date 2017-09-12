@@ -18,11 +18,10 @@
 
 from numpy import random
 from rbnics.sampling.distributions.distribution import Distribution
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(Distribution)
 class UniformDistribution(Distribution):
-    @override
     def sample(self, box, n):
         set_ = list() # of tuples
         for i in range(n):

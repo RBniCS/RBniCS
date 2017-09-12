@@ -21,11 +21,10 @@ from numpy import nditer as AffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.io import Folders, PickleIO as ContentItemShapeIO, PickleIO as ContentItemTypeIO, PickleIO as ContentShapeIO, PickleIO as DictIO, PickleIO as ScalarContentIO
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(AbstractAffineExpansionStorage)
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
-    @override
     def __init__(self, arg1, arg2, backend, wrapping):
         self.backend = backend
         self.wrapping = wrapping
@@ -71,7 +70,6 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             for (i, arg1i) in enumerate(arg1):
                 self[i] = arg1i
         
-    @override
     def save(self, directory, filename):
         assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
         # Get full directory name
@@ -123,7 +121,6 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         DictIO.save_file(self._component_name_to_basis_component_index, full_directory, "component_name_to_basis_component_index")
         DictIO.save_file(self._component_name_to_basis_component_length, full_directory, "component_name_to_basis_component_length")
     
-    @override
     def load(self, directory, filename):
         assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
         if self._content is not None: # avoid loading multiple times
@@ -210,7 +207,6 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
             slice_0 = tuple(range(item.shape[0]))
             self._precomputed_slices[(slice_0, )] = self
         
-    @override
     def __getitem__(self, key):
         if (
             isinstance(key, slice)
@@ -245,7 +241,6 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         else: # return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
             return self._content[key]
         
-    @override
     def __setitem__(self, key, item):
         assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
         assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
@@ -283,11 +278,9 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
         if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
             self._prepare_trivial_precomputed_slice(item)
         
-    @override
     def __iter__(self):
         return AffineExpansionStorageContent_Iterator(self._content, flags=["refs_ok"], op_flags=["readonly"])
         
-    @override
     def __len__(self):
         assert self.order() == 1
         return self._content.size

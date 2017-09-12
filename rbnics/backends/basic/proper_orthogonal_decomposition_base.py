@@ -21,7 +21,7 @@ from math import sqrt
 from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 import rbnics.backends.online
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import is_io_process
 
 # Class containing the implementation of the POD
@@ -29,7 +29,6 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
     @Extends(ParentProperOrthogonalDecomposition)
     class ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
 
-        @override
         def __init__(self, V_or_Z, X, container_type_second_argument, backend, wrapping, SnapshotsContainerType, BasisContainerType):
             self.X = X
             self.backend = backend
@@ -49,7 +48,6 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             # Store inner product
             self.X = X
             
-        @override
         def clear(self):
             self.snapshots_matrix.clear()
             self.eigenvalues = zeros(0)
@@ -58,7 +56,6 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
         # it has different interface for the standard POD and
         # the tensor one.
                 
-        @override
         def apply(self, Nmax, tol):
             X = self.X
             snapshots_matrix = self.snapshots_matrix
@@ -113,14 +110,12 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
             
             return (self.eigenvalues[:N], Z, N)
                 
-        @override
         def print_eigenvalues(self, N=None):
             if N is None:
                 N = len(self.snapshots_matrix)
             for i in range(N):
                 print("lambda_" + str(i) + " = " + str(self.eigenvalues[i]))
             
-        @override
         def save_eigenvalues_file(self, output_directory, eigenvalues_file):
             if is_io_process(self.mpi_comm):
                 N = len(self.snapshots_matrix)
@@ -129,7 +124,6 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
                         outfile.write(str(i) + " " + str(self.eigenvalues[i]) + "\n")
             self.mpi_comm.barrier()
             
-        @override
         def save_retained_energy_file(self, output_directory, retained_energy_file):
             if is_io_process(self.mpi_comm):
                 N = len(self.snapshots_matrix)

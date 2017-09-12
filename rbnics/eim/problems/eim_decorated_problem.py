@@ -18,7 +18,7 @@
 
 from itertools import product as cartesian_product
 from rbnics.backends import ParametrizedExpressionFactory, SeparatedParametrizedForm, SymbolicParameters
-from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ProblemDecoratorFor
 from rbnics.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
@@ -46,7 +46,6 @@ def EIMDecoratedProblem(
         class EIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
             ## Default initialization of members
-            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -119,7 +118,6 @@ def EIMDecoratedProblem(
                     # Restore float parameters
                     self.mu = mu_float
                 
-            @override
             def _solve(self, **kwargs):
                 self._update_N_EIM(**kwargs)
                 ParametrizedDifferentialProblem_DerivedClass._solve(self, **kwargs)
@@ -144,7 +142,6 @@ def EIMDecoratedProblem(
                         self._N_EIM = None
                     self._update_N_EIM__previous_kwargs = kwargs
                 
-            @override
             def assemble_operator(self, term):
                 if term in self.terms:
                     if "offline" in self._apply_EIM_at_stages:
@@ -172,7 +169,6 @@ def EIMDecoratedProblem(
                         eim_forms.append(unchanged_form)
                 return tuple(eim_forms)
                     
-            @override
             def compute_theta(self, term):
                 if term in self.terms:
                     if "offline" in self._apply_EIM_at_stages:

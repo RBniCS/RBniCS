@@ -21,7 +21,7 @@ from rbnics.problems.base import ParametrizedProblem
 from rbnics.backends import abs, copy, evaluate, export, import_, max
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
 from rbnics.utils.config import config
-from rbnics.utils.decorators import Extends, override, sync_setters
+from rbnics.utils.decorators import Extends, sync_setters
 from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMApproximation
 
 # Empirical interpolation method for the interpolation of parametrized functions
@@ -30,7 +30,6 @@ from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMA
 class EIMApproximation(ParametrizedProblem):
 
     ## Default initialization of members
-    @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):        

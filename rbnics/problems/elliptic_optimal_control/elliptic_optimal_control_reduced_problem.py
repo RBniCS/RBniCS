@@ -21,7 +21,7 @@ from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlReductionMethod
 
 def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -59,7 +59,6 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                 )
                             
         # Perform an online evaluation of the cost functional
-        @override
         def _compute_output(self, N):
             assembled_operator = dict()
             for term in ("g", "h", "m", "n"):
@@ -81,7 +80,6 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
         
         # If a value of N was provided, make sure to double it when dealing with y and p, due to
         # the aggregated component approach
-        @override
         def _online_size_from_kwargs(self, N, **kwargs):
             all_components_in_kwargs = all([c in kwargs for c in self.components])
             if N is None:

@@ -19,14 +19,13 @@
 from rbnics.backends import assign
 from rbnics.problems.base.nonlinear_reduced_problem import NonlinearReducedProblem
 from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
 @RequiredBaseDecorators(NonlinearReducedProblem, TimeDependentReducedProblem)
 def NonlinearTimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class NonlinearTimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

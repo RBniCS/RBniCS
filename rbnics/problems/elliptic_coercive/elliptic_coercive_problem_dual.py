@@ -19,7 +19,7 @@
 from rbnics.backends import adjoint, Function
 from rbnics.problems.base import DualProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 EllipticCoerciveProblem_Dual_Base = DualProblem(EllipticCoerciveProblem)
 
@@ -27,7 +27,6 @@ EllipticCoerciveProblem_Dual_Base = DualProblem(EllipticCoerciveProblem)
 class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem_Dual_Base):
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
-    @override
     def compute_theta(self, term):
         if term == "a":
             return self.primal_problem.compute_theta("a")
@@ -39,7 +38,6 @@ class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem_Dual_Base):
             raise ValueError("Invalid term for compute_theta().")
                     
     ## Return forms resulting from the discretization of the affine expansion of the problem operators.
-    @override
     def assemble_operator(self, term):
         if term == "a":
             return tuple(adjoint(f) for f in self.primal_problem.assemble_operator("a"))
@@ -58,7 +56,6 @@ class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem_Dual_Base):
             raise ValueError("Invalid term for assemble_operator().")
             
     ## Return a lower bound for the coercivity constant
-    @override
     def get_stability_factor(self):
         return self.primal_problem.get_stability_factor()
         

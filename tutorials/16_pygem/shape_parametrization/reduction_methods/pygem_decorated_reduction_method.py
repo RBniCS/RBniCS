@@ -17,7 +17,7 @@
 #
 
 from rbnics.sampling.distributions import UniformDistribution
-from rbnics.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import Extends, ReductionMethodDecoratorFor
 from sampling import DiscardInadmissibleDeformations
 from shape_parametrization.problems import PyGeM
 
@@ -26,18 +26,15 @@ def PyGeMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClas
     
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class PyGeMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
         
-        @override
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             if sampling is None:
                 sampling = DiscardInadmissibleDeformations(UniformDistribution)(self.truth_problem)
             return DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
             
-        @override
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             if sampling is None:
                 sampling = DiscardInadmissibleDeformations(UniformDistribution)(self.truth_problem)

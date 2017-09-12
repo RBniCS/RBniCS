@@ -19,13 +19,12 @@
 from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, log, MeshFunctionSizet, VectorFunctionSpace
 from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
-from rbnics.utils.decorators import BackendFor, Extends, override, tuple_of
+from rbnics.utils.decorators import BackendFor, Extends, tuple_of
 from mpi4py.MPI import MAX, MIN
 
 @Extends(AbstractMeshMotion)
 @BackendFor("dolfin", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
 class MeshMotion(AbstractMeshMotion):
-    @override
     def __init__(self, V, subdomains, shape_parametrization_expression):
         # Store dolfin data structure related to the geometrical parametrization
         self.mesh = subdomains.mesh()
@@ -62,7 +61,6 @@ class MeshMotion(AbstractMeshMotion):
         self.shape_parametrization_expression = shape_parametrization_expression
         assert len(self.shape_parametrization_expression) == len(self.subdomain_id_to_deformation_dofs.keys())
         
-    @override
     def init(self, problem):
         # Preprocess the shape parametrization expression to convert it in the displacement expression
         # This cannot be done during __init__ because at construction time the number
@@ -86,13 +84,11 @@ class MeshMotion(AbstractMeshMotion):
                 )
             )
         
-    @override
     def move_mesh(self):
         log(PROGRESS, "moving mesh")
         displacement = self.compute_displacement()
         ALE.move(self.mesh, displacement)
         
-    @override
     def reset_reference(self):
         log(PROGRESS, "back to the reference mesh")
         self.mesh.coordinates()[:] = self.reference_coordinates

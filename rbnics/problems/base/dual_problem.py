@@ -17,7 +17,6 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 from rbnics.utils.decorators.sync_setters import sync_setters
 
 def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
@@ -26,7 +25,6 @@ def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
     class DualProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         
         ## Default initialization of members.
-        @override
         @sync_setters("primal_problem", "set_mu", "mu")
         @sync_setters("primal_problem", "set_mu_range", "mu_range")
         def __init__(self, primal_problem):

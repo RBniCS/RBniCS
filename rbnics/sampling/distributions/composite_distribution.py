@@ -18,7 +18,7 @@
 
 from rbnics.sampling.distributions.distribution import Distribution
 from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(Distribution)
 class CompositeDistribution(Distribution):
@@ -32,7 +32,6 @@ class CompositeDistribution(Distribution):
                 self.distribution_to_components[distribution] = list()
             self.distribution_to_components[distribution].append(p)
         
-    @override
     def sample(self, box, n):
         # Divide box among the different distributions
         distribution_to_sub_box = dict()

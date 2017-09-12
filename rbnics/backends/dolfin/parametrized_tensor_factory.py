@@ -22,7 +22,7 @@ from dolfin import assemble
 from rbnics.backends.basic import ParametrizedTensorFactory as BasicParametrizedTensorFactory
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.wrapping import form_argument_space
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(BasicParametrizedTensorFactory)
 @BackendFor("dolfin", inputs=(Form, ))
@@ -49,7 +49,6 @@ class ParametrizedTensorFactory(BasicParametrizedTensorFactory):
         # Call Parent
         BasicParametrizedTensorFactory.__init__(self, form, spaces, empty_snapshot, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
     
-    @override
     def create_interpolation_locations_container(self):
         # Populate subdomain data
         subdomain_data = list()

@@ -18,7 +18,7 @@
 
 from rbnics.problems.stokes import StokesPODGalerkinReducedProblem
 from rbnics.problems.navier_stokes.navier_stokes_reduced_problem import NavierStokesReducedProblem
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.base import NonlinearPODGalerkinReducedProblem
 from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
 from rbnics.reduction_methods.navier_stokes import NavierStokesPODGalerkinReduction

@@ -18,13 +18,12 @@
 
 from dolfin import Function
 from rbnics.problems.navier_stokes import NavierStokesProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(NavierStokesProblem)
 class NavierStokesTensor3Problem(NavierStokesProblem):
     
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         NavierStokesProblem.__init__(self, V, **kwargs)

@@ -19,7 +19,7 @@
 
 from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 def StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
@@ -29,7 +29,6 @@ def StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod_Deriv
     class StokesOptimalControlReductionMethod_Class(StokesOptimalControlReductionMethod_Base):
         
         ## Default initialization of members
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             StokesOptimalControlReductionMethod_Base.__init__(self, truth_problem, **kwargs)

@@ -35,12 +35,11 @@ from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.wrapping import function_copy
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(AbstractTimeStepping)
 @BackendFor("numpy", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
-    @override
     def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):
         assert problem_wrapper.time_order() in (1, 2)
         if problem_wrapper.time_order() == 1:
@@ -63,11 +62,9 @@ class TimeStepping(AbstractTimeStepping):
         else:
             raise AssertionError("Invalid time order in TimeStepping.__init__().")
                         
-    @override
     def set_parameters(self, parameters):
         self.solver = self.problem.create_solver(parameters)
                 
-    @override
     def solve(self):
         return self.solver.solve()
         

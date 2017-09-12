@@ -25,7 +25,7 @@ from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, BasisFunctionsMatrix, copy, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
 from rbnics.utils.config import config
-from rbnics.utils.decorators import Extends, override, StoreMapFromProblemToReducedProblem, sync_setters
+from rbnics.utils.decorators import Extends, StoreMapFromProblemToReducedProblem, sync_setters
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -39,7 +39,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
     :param truth_problem: class of the truth problem to be solved. 
     """
     
-    @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, **kwargs):
@@ -275,7 +274,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 all_dirichlet_bcs_thetas = None
         return all_dirichlet_bcs_thetas
             
-    @override
     def solve(self, N=None, **kwargs):
         """
         Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
@@ -327,7 +325,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             pass
         
     # Perform an online solve (internal)
-    @override
     def _solve(self, N, **kwargs):
         problem_solver = self.ProblemSolver(self, N)
         problem_solver.solve()
@@ -623,7 +620,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 else:
                     return float("NaN")
         
-    @override
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         """
         It exports reduced solution to file.

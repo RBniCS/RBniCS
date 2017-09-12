@@ -21,14 +21,13 @@ from numpy import isclose
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.backends import adjoint, AffineExpansionStorage, assign, copy, EigenSolver, export, Function, import_, product, sum
 from rbnics.utils.config import config
-from rbnics.utils.decorators import sync_setters, Extends, override
+from rbnics.utils.decorators import sync_setters, Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 @Extends(ParametrizedProblem)
 class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
 
     ## Default initialization of members
-    @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, term, multiply_by_theta, spectrum, eigensolver_parameters, folder_prefix):

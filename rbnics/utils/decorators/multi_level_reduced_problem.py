@@ -17,7 +17,6 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 
 def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
@@ -32,7 +31,6 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             5: "QuadrupleReduced"   # ... you can go on if needed ...
         })
         
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Get the truth_problem recursion level: indeed a truth problem itself
             # can be a reduced problem! In the standard case (truth_problem is actually

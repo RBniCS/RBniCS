@@ -20,7 +20,7 @@ from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from rbnics.problems.base.rb_reduced_problem import RBReducedProblem
 from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
 @RequiredBaseDecorators(RBReducedProblem, TimeDependentReducedProblem)
 def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -29,7 +29,6 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
     class TimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
     
         ## Default initialization of members.
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -77,7 +76,6 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "offline")
         
         ## Assemble operators for error estimation
-        @override
         def assemble_error_estimation_operators(self, term, current_stage="online"):
             if term[0].startswith("initial_condition") and term[1].startswith("initial_condition"):
                 component0 = term[0].replace("initial_condition", "").replace("_", "")

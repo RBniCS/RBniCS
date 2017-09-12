@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
 from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
 from rbnics.scm.problems.scm import SCM
 
@@ -26,7 +26,6 @@ def ExactCoercivityConstantDecoratedReducedProblem(ParametrizedReducedDifferenti
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class ExactCoercivityConstantDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

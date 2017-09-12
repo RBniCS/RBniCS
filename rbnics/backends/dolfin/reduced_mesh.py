@@ -24,7 +24,7 @@ import rbnics.backends.dolfin
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
 from rbnics.backends.dolfin.wrapping import FunctionSpace
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
-from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_problem_name, override
+from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_problem_name
 from rbnics.utils.io import ExportableList, Folders
 from rbnics.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
@@ -134,7 +134,6 @@ class ReducedMesh(AbstractReducedMesh):
             self._auxiliary_io_directory = copy_from._auxiliary_io_directory
             self._auxiliary_io_filename = copy_from._auxiliary_io_filename
         
-    @override
     def append(self, global_dofs):
         self._init_for_append_if_needed()
         # Consistency checks
@@ -241,7 +240,6 @@ class ReducedMesh(AbstractReducedMesh):
         else:
             return FunctionSpace
     
-    @override
     def save(self, directory, filename):
         self._assert_dict_lengths()
         # Get full directory name
@@ -404,7 +402,6 @@ class ReducedMesh(AbstractReducedMesh):
             if key not in self._auxiliary_reduced_dofs__dof_map_writer_mapping:
                 self._auxiliary_reduced_dofs__dof_map_writer_mapping[key] = self.backend.wrapping.build_dof_map_writer_mapping(auxiliary_reduced_V)
     
-    @override
     def load(self, directory, filename):
         if len(self.reduced_mesh) > 0: # avoid loading multiple times
             self._assert_dict_lengths()

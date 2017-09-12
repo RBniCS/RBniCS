@@ -27,7 +27,7 @@ from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
 from ufl.tensors import ComponentTensor, ListTensor
 from rbnics.utils.io import ExportableList
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 from rbnics.backends.dolfin.wrapping import expression_name
 
@@ -46,7 +46,6 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         # Internal usage
         self._NaN = float('NaN')
     
-    @override
     def separate(self):
         class _SeparatedParametrizedForm_Replacer(Transformer):
             def __init__(self, mapping):
@@ -212,23 +211,19 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         log(PROGRESS, "*** DONE - SEPARATE FORM COEFFICIENTS - DONE ***")
         log(PROGRESS, "")
 
-    @override        
     @property
     def coefficients(self):
         return self._coefficients
         
-    @override
     @property
     def unchanged_forms(self):
         return self._form_unchanged
 
-    @override        
     def replace_placeholders(self, i, new_coefficients):
         assert len(new_coefficients) == len(self._placeholders[i])
         replacements = dict((placeholder, new_coefficient) for (placeholder, new_coefficient) in zip(self._placeholders[i], new_coefficients))
         return replace(self._form_with_placeholders[i], replacements)
         
-    @override
     def placeholders_names(self, i):
         return self._placeholder_names[i]
 

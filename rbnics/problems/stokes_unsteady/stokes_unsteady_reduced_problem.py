@@ -20,7 +20,7 @@
 from rbnics.problems.base import LinearTimeDependentReducedProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 def AbstractCFDUnsteadyReducedProblem(AbstractCFDUnsteadyReducedProblem_Base):
     return AbstractCFDUnsteadyReducedProblem_Base

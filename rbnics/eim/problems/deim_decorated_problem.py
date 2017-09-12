@@ -18,7 +18,7 @@
 
 from itertools import product as cartesian_product
 from rbnics.backends import ParametrizedTensorFactory, SeparatedParametrizedForm, SymbolicParameters
-from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ProblemDecoratorFor
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 
@@ -45,7 +45,6 @@ def DEIMDecoratedProblem(
         class DEIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
             ## Default initialization of members
-            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -115,7 +114,6 @@ def DEIMDecoratedProblem(
                     # Restore float parameters
                     self.mu = mu_float
                 
-            @override
             def _solve(self, **kwargs):
                 self._update_N_DEIM(**kwargs)
                 ParametrizedDifferentialProblem_DerivedClass._solve(self, **kwargs)
@@ -139,7 +137,6 @@ def DEIMDecoratedProblem(
                     self._update_N_DEIM__previous_kwargs = kwargs
                 
                 
-            @override
             def assemble_operator(self, term):
                 if term in self.terms:
                     if "offline" in self._apply_DEIM_at_stages:
@@ -159,7 +156,6 @@ def DEIMDecoratedProblem(
                     deim_forms.append(non_deim_form)
                 return tuple(deim_forms)
             
-            @override
             def compute_theta(self, term):
                 if term in self.terms:
                     if "offline" in self._apply_DEIM_at_stages:

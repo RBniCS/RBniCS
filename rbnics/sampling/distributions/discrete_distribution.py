@@ -17,16 +17,14 @@
 #
 
 from rbnics.sampling.distributions.distribution import Distribution
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(Distribution)
 class DiscreteDistribution(Distribution):
-    @override
     def __init__(self, distribution, box_step_size):
         self.distribution = distribution
         self.box_step_size = box_step_size
             
-    @override
     def sample(self, box, n):
         assert len(box) == len(self.box_step_size)
         set_ = self.distribution.sample(box, n)

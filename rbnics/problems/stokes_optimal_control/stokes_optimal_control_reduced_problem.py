@@ -21,7 +21,7 @@ from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.reduction_methods.stokes_optimal_control import StokesOptimalControlReductionMethod
 
 def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -73,7 +73,6 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 return bcs
             
         # Perform an online evaluation of the cost functional
-        @override
         def _compute_output(self, N):
             assembled_operator = dict()
             for term in ("m", "n", "g", "h"):
@@ -95,7 +94,6 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
         
         # If a value of N was provided, make sure to double it when dealing with y and p, due to
         # the aggregated component approach
-        @override
         def _online_size_from_kwargs(self, N, **kwargs):
             all_components_in_kwargs = all([c in kwargs for c in self.components])
             if N is None:
@@ -112,7 +110,6 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 return N, kwargs
         
         # Internal method for error computation
-        @override
         def _compute_error(self, **kwargs):
             components = ["v", "p", "u", "w", "q"] # but not supremizers
             if "components" not in kwargs:
@@ -122,7 +119,6 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
             return StokesOptimalControlReducedProblem_Base._compute_error(self, **kwargs)
             
         # Internal method for relative error computation
-        @override
         def _compute_relative_error(self, absolute_error, **kwargs):
             components = ["v", "p", "u", "w", "q"] # but not supremizers
             if "components" not in kwargs:

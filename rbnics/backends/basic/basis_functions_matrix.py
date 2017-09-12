@@ -18,12 +18,11 @@
 
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
 import rbnics.backends.online
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import is_io_process
 
 @Extends(AbstractBasisFunctionsMatrix)
 class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
-    @override
     def __init__(self, V_or_Z, backend, wrapping):
         self.V_or_Z = V_or_Z
         self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
@@ -57,7 +56,6 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             # Reset precomputed slices
             self._precomputed_slices.clear()
             
-    @override
     def enrich(self, functions, component=None, weights=None, copy=True):
         assert copy is True
         if component is None:
@@ -101,14 +99,12 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             precomputed_slice_key = tuple(precomputed_slice_key)
         self._precomputed_slices[precomputed_slice_key] = self
         
-    @override
     def clear(self):
         components_name = self._components_name
         # Trick _init into re-initializing everything
         self._components_name = None
         self.init(components_name)
         
-    @override
     def save(self, directory, filename):
         if len(self._components) > 1:
             def filename_and_component(component_name):
@@ -119,7 +115,6 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         for (component_name, basis_functions) in self._components.items():
             basis_functions.save(directory, filename_and_component(component_name))
         
-    @override
     def load(self, directory, filename):
         return_value = True
         assert len(self._components) > 0
@@ -139,7 +134,6 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         # Return
         return return_value
         
-    @override
     def __mul__(self, other):
         assert isinstance(other, (rbnics.backends.online.OnlineMatrix.Type(), rbnics.backends.online.OnlineVector.Type(), tuple, rbnics.backends.online.OnlineFunction.Type()))
         if isinstance(other, rbnics.backends.online.OnlineMatrix.Type()):
@@ -155,13 +149,11 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.__mul__.")
         
-    @override
     def __len__(self):
         assert len(self._components_name) == 1
         assert len(self._component_name_to_basis_component_length) == 1
         return self._component_name_to_basis_component_length[self._components_name[0]]
 
-    @override
     def __getitem__(self, key):
         if isinstance(key, slice): # e.g. key = :N, return the first N functions
             assert key.start is None 
@@ -176,7 +168,6 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
             else: # return all basis functions for each component, then the user may use __getitem__ of FunctionsList to extract a single basis function
                 return self._components[key]
                 
-    @override
     def __setitem__(self, key, item):
         assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
         assert len(self._components) == 1, "Cannot set components, only single functions. Did you mean to call __getitem__ to extract a component and __setitem__ of a single function on that component?"
@@ -205,7 +196,6 @@ class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
                 self._precomputed_slices[N_key]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N_key]._components[component_name])
         return self._precomputed_slices[N_key]
         
-    @override
     def __iter__(self):
         raise NotImplementedError("BasisFunctionsMatrix.iter() has not been implemented yet")
         

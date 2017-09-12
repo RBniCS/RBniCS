@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import ProperOrthogonalDecomposition
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
@@ -31,7 +31,6 @@ StokesPODGalerkinReduction_Base = LinearPODGalerkinReduction(StokesReductionMeth
 class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):    
     
     ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
-    @override
     def _init_offline(self):
         # We cannot use the standard initialization provided by PODGalerkinReduction because
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code
@@ -66,7 +65,6 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
     # over the testing set.
     # Note that we cannot move this method to the parent class because error analysis is defined
     # by the PODGalerkinReduction decorator
-    @override
     def error_analysis(self, N=None, **kwargs):
         components = ["u", "p"] # but not "s"
         kwargs["components"] = components

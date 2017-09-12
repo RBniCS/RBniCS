@@ -19,12 +19,11 @@
 from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
 import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(BasicGramSchmidt)
 @BackendFor("numpy", inputs=(Matrix.Type(), ))
 class GramSchmidt(BasicGramSchmidt):
-    @override
     def __init__(self, X):
         BasicGramSchmidt.__init__(self, X, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
         

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 from rbnics.reduction_methods.base import NonlinearPODGalerkinReduction
 from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
 from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization
 
 @ReducedProblemDecoratorFor(ShapeParametrization)
@@ -26,7 +26,6 @@ def ShapeParametrizationDecoratedReducedProblem(ParametrizedReducedDifferentialP
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class ShapeParametrizationDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the standard initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

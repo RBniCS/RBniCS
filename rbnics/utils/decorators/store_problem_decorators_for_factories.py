@@ -17,7 +17,6 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 
 def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, enabled_if=None, replaces=None, replaces_if=None, **kwargs):
     def StoreProblemDecoratorsForFactories_Decorator(DecoratedProblem_Base):
@@ -43,7 +42,6 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
         # Also store **kwargs as passed to init
         @Extends(DecoratedProblem_Base, preserve_class_name=True)
         class DecoratedProblem(DecoratedProblem_Base):
-            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 DecoratedProblem_Base.__init__(self, V, **kwargs)

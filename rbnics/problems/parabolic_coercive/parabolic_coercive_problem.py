@@ -19,7 +19,7 @@
 from rbnics.problems.base import LinearTimeDependentProblem
 from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
 from rbnics.backends import product, sum
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 ParabolicCoerciveProblem_Base = LinearTimeDependentProblem(EllipticCoerciveProblem)
 
@@ -28,7 +28,6 @@ ParabolicCoerciveProblem_Base = LinearTimeDependentProblem(EllipticCoerciveProbl
 class ParabolicCoerciveProblem(ParabolicCoerciveProblem_Base):
     
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         ParabolicCoerciveProblem_Base.__init__(self, V, **kwargs)

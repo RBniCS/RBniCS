@@ -17,11 +17,10 @@
 #
 
 from rbnics.utils.io import ExportableList
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(ExportableList)
 class BoundingBoxSideList(ExportableList):
-    @override
     def __init__(self, size=None):
         ExportableList.__init__(self, "pickle")
         if size is not None:

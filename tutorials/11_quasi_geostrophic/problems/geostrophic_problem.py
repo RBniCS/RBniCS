@@ -18,14 +18,13 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import product, sum
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 GeostrophicProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
 @Extends(GeostrophicProblem_Base)
 class GeostrophicProblem(GeostrophicProblem_Base):
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         GeostrophicProblem_Base.__init__(self, V, **kwargs)

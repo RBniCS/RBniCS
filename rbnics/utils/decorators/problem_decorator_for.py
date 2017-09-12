@@ -17,7 +17,6 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 from rbnics.utils.decorators.store_problem_decorators_for_factories import StoreProblemDecoratorsForFactories
 
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, enabled_if=None, replaces=None, replaces_if=None, **kwargs):

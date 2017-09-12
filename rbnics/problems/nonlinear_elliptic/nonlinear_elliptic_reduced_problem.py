@@ -21,7 +21,7 @@ from rbnics.problems.base import ParametrizedReducedDifferentialProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from rbnics.backends import product, sum
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
     
@@ -45,13 +45,11 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                 return sum(product(problem.compute_theta("da"), problem.operator["da"][:N, :N]))
         
         # Internal method for error computation. Unlike the linear case, do not use the energy norm.
-        @override
         def _compute_error(self, **kwargs):
             # Call parent of parent (!), in order not to use the energy norm
             return ParametrizedReducedDifferentialProblem._compute_error(self, **kwargs)
             
         # Internal method for relative error computation. Unlike the linear case, do not use the energy norm.
-        @override
         def _compute_relative_error(self, absolute_error, **kwargs):
             # Call parent of parent (!), in order not to use the energy norm
             return ParametrizedReducedDifferentialProblem._compute_relative_error(self, absolute_error, **kwargs)

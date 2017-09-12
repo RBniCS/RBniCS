@@ -17,14 +17,12 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 
 def DualReducedProblem(ParametrizedDifferentialReducedProblem_DerivedClass):
             
     @Extends(ParametrizedDifferentialReducedProblem_DerivedClass, preserve_class_name=True)
     class DualReducedProblem_Class(ParametrizedDifferentialReducedProblem_DerivedClass):
         ## Default initialization of members.
-        @override
         def __init__(self, dual_problem, **kwargs):
             # Call to parent
             ParametrizedDifferentialReducedProblem_DerivedClass.__init__(self, dual_problem, **kwargs)

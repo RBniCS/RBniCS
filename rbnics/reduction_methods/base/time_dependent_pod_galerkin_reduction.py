@@ -20,7 +20,7 @@ from math import sqrt
 from rbnics.backends import ProperOrthogonalDecomposition, TimeQuadrature
 from rbnics.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 from rbnics.utils.io import ErrorAnalysisTable
 
 @RequiredBaseDecorators(PODGalerkinReduction, TimeDependentReductionMethod)
@@ -30,7 +30,6 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
     class TimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ## Default initialization of members
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -50,7 +49,6 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 self.tol1 = 0.
                 
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-        @override
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set nested POD sizes
@@ -59,7 +57,6 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 self.N1 = kwargs["nested_POD"]
                 
         ## OFFLINE: set tolerance (stopping criterion)
-        @override
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set nested POD tolerance
@@ -90,7 +87,6 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             return tol
             
         ## Initialize data structures required for the offline phase
-        @override
         def _init_offline(self):
             # Call parent to initialize inner product
             output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
@@ -148,7 +144,6 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
-        @override
         def error_analysis(self, N=None, **kwargs):
             if "components" in kwargs:
                 components = kwargs["components"]

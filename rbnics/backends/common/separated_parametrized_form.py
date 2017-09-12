@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 
 @Extends(AbstractSeparatedParametrizedForm)
@@ -29,25 +29,20 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form_unchanged = list() # will contain a single float or int
         self._form_unchanged.append(form)
     
-    @override
     def separate(self):
         pass
 
-    @override        
     @property
     def coefficients(self):
         return self._coefficients
         
-    @override
     @property
     def unchanged_forms(self):
         return self._form_unchanged
 
-    @override        
     def replace_placeholders(self, i, new_coefficients):
         raise RuntimeError("This method should have never been called.")
         
-    @override
     def placeholders_names(self, i):
         raise RuntimeError("This method should have never been called.")
 

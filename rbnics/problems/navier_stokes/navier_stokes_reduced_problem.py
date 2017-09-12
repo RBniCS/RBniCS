@@ -21,7 +21,7 @@ from rbnics.problems.base import ParametrizedReducedDifferentialProblem
 from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
 from rbnics.backends import product, sum
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
     

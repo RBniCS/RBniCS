@@ -21,7 +21,7 @@ from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.reduction_methods.stokes import StokesReductionMethod
 
 def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -63,7 +63,6 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 return bcs
         
         # Internal method for error computation
-        @override
         def _compute_error(self, **kwargs):
             components = ["u", "p"] # but not "s"
             if "components" not in kwargs:
@@ -73,7 +72,6 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             return StokesReducedProblem_Base._compute_error(self, **kwargs)
             
         # Internal method for relative error computation
-        @override
         def _compute_relative_error(self, absolute_error, **kwargs):
             components = ["u", "p"] # but not "s"
             if "components" not in kwargs:

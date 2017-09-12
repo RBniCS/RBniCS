@@ -17,14 +17,12 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 
 def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class PrimalDualReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members.
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -35,7 +33,6 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             self._dual_solve_latest_kwargs = None
 
         # Perform an online solve. Overridden to also solve the dual problem for output correction and error estimation.
-        @override
         def solve(self, N=None, **kwargs):
             # Solve primal problem
             primal_solution = ParametrizedReducedDifferentialProblem_DerivedClass.solve(self, N, **kwargs)
@@ -51,7 +48,6 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             return primal_solution
             
         # Perform an online evaluation of the non compliant output. Overridden to add output correction.
-        @override
         def compute_output(self):
             # Solve dual problem for output correction and its error estimation
             self.dual_reduced_problem.solve(self._dual_solve_latest_N, **self._dual_solve_latest_kwargs)

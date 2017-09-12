@@ -23,12 +23,11 @@ from scipy.optimize.nonlin import Jacobian, nonlin_solve
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.basic.wrapping import DirichletBC
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, ThetaType
 
 @Extends(AbstractNonlinearSolver)
 @BackendFor("numpy", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
-    @override
     def __init__(self, problem_wrapper, solution):
         self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
         # Additional storage which will be setup by set_parameters
@@ -40,7 +39,6 @@ class NonlinearSolver(AbstractNonlinearSolver):
         self._report = False
         self._solution_tolerance = None
                         
-    @override
     def set_parameters(self, parameters):
         for (key, value) in parameters.items():
             if key == "absolute_tolerance":
@@ -58,7 +56,6 @@ class NonlinearSolver(AbstractNonlinearSolver):
             else:
                 raise ValueError("Invalid paramater passed to scipy object.")
                 
-    @override
     def solve(self):
         residual = self.problem.residual
         initial_guess_vector = asarray(self.problem.solution.vector()).reshape(-1)

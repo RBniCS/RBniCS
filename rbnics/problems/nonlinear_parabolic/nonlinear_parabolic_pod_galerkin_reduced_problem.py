@@ -18,7 +18,7 @@
 
 from rbnics.problems.nonlinear_elliptic import NonlinearEllipticPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_reduced_problem import NonlinearParabolicReducedProblem
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.base import NonlinearTimeDependentPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_problem import NonlinearParabolicProblem
 from rbnics.reduction_methods.nonlinear_parabolic import NonlinearParabolicPODGalerkinReduction

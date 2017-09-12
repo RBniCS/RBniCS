@@ -21,12 +21,11 @@ from dolfin import FunctionSpace
 from rbnics.backends.basic import FunctionsList as BasicFunctionsList
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.wrapping import function_from_ufl_operators
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(BasicFunctionsList)
 @BackendFor("dolfin", inputs=(FunctionSpace, (str, None)))
 class FunctionsList(BasicFunctionsList):
-    @override
     def __init__(self, V, component=None):
         def AdditionalIsFunction(arg):
             return isinstance(arg, Operator)
@@ -35,12 +34,10 @@ class FunctionsList(BasicFunctionsList):
             return function_from_ufl_operators(arg)
         BasicFunctionsList.__init__(self, V, component, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes)
         
-    @override
     def _enrich(self, function, component=None, weight=None, copy=True):
         function = function_from_ufl_operators(function)
         BasicFunctionsList._enrich(self, function, component, weight, copy)
         
-    @override
     def __setitem__(self, key, item):
         item = function_from_ufl_operators(item)
         BasicFunctionsList.__setitem__(self, key, item)

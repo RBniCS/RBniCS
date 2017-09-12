@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import assign, LinearProblemWrapper, LinearSolver
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):

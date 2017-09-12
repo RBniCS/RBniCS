@@ -18,12 +18,11 @@
 
 from ufl import Form
 from rbnics.backends.dolfin import ParametrizedTensorFactory as DolfinParametrizedTensorFactory
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(DolfinParametrizedTensorFactory)
 @BackendFor("dolfin", inputs=(Form, ), overrides=DolfinParametrizedTensorFactory)
 class ParametrizedTensorFactory(DolfinParametrizedTensorFactory):
-    @override
     def is_parametrized(self):
         return True # Tensors are always parametrized due to geometrical parameters
         

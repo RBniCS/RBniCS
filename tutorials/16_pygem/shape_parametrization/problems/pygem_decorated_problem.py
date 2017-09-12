@@ -17,7 +17,7 @@
 #
 
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
-from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ProblemDecoratorFor
 from shape_parametrization.utils import PyGeMWrapper
 import backends.dolfin # make sure that dolfin backend is overridden
 
@@ -61,7 +61,6 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
         class PyGeMDecoratedProblem_BaseClass(ParametrizedDifferentialProblem_DerivedClass):
         
-            @override
             def __init__(self, V, **kwargs):
                 # Call the standard initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -74,7 +73,6 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
                 self.pygem_wrapper.init(V.mesh())
 
             ## Initialize data structures required for the offline phase
-            @override
             def init(self):
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Check consistency between self.mu and parameters related to deformation.
@@ -83,7 +81,6 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
                 assert min(pygem_index_and_component_to_mu_index_map.values()) >= 0
                 assert max(pygem_index_and_component_to_mu_index_map.values()) < len(self.mu)
                                 
-            @override
             def set_mu(self, mu):
                 ParametrizedDifferentialProblem_DerivedClass.set_mu(self, mu)
                 # Update pygem parameters and data structures
@@ -92,7 +89,6 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
         if ExactParametrizedFunctions in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators:
             @Extends(PyGeMDecoratedProblem_BaseClass, preserve_class_name=True)
             class PyGeMDecoratedProblem_ExactParametrizedFunctionsClass(PyGeMDecoratedProblem_BaseClass):
-                @override
                 def set_mu(self, mu):
                     PyGeMDecoratedProblem_BaseClass.set_mu(self, mu)
                     # Deform mesh
@@ -105,7 +101,6 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
             @Extends(PyGeMDecoratedProblem_BaseClass, preserve_class_name=True)
             class PyGeMDecoratedProblem_DEIMClass(PyGeMDecoratedProblem_BaseClass):
                 ## Deform the mesh as a function of the geometrical parameters and then export solution to file
-                @override
                 def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
                     self.pygem_wrapper.move_mesh()
                     PyGeMDecoratedProblem_BaseClass.export_solution(self, folder, filename, solution, component, suffix)

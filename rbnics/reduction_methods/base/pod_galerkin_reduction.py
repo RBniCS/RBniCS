@@ -19,7 +19,7 @@
 
 from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
@@ -34,7 +34,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
         """
 
         
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -92,7 +91,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.tol = tol
         
        
-        @override
         def _init_offline(self):
             # Call parent to initialize inner product and reduced problem
             output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
@@ -112,7 +110,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Return
             return output
             
-        @override
         def offline(self):
             """
             It performs the offline phase of the reduced order model.
@@ -200,7 +197,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
             
        
-        @override
         def error_analysis(self, N=None, **kwargs):
             """
             It computes the error of the reduced order approximation with respect to the full order one
@@ -265,7 +261,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._finalize_error_analysis(**kwargs)
             
         
-        @override
         def speedup_analysis(self, N=None, **kwargs):
             """
             It computes the speedup of the reduced order approximation with respect to the full order one

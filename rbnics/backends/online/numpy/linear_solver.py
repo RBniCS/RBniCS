@@ -21,20 +21,17 @@ from rbnics.backends.online.basic import LinearSolver as BasicLinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, ThetaType
 
 @Extends(BasicLinearSolver)
 @BackendFor("numpy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), ThetaType + DictOfThetaType + (None,)))
 class LinearSolver(BasicLinearSolver):
-    @override
     def __init__(self, lhs, solution, rhs, bcs=None):
         BasicLinearSolver.__init__(self, lhs, solution, rhs, bcs)
                 
-    @override
     def set_parameters(self, parameters):
         assert len(parameters) == 0, "NumPy linear solver does not accept parameters yet"
         
-    @override
     def solve(self):
         solution = solve(self.lhs, self.rhs)
         self.solution.vector()[:] = solution

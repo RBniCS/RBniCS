@@ -19,7 +19,7 @@
 import types
 from rbnics.reduction_methods.base.reduction_method import ReductionMethod
 from rbnics.utils.io import Folders
-from rbnics.utils.decorators import Extends, override, UpdateMapFromProblemToTrainingStatus
+from rbnics.utils.decorators import Extends, UpdateMapFromProblemToTrainingStatus
 from rbnics.utils.factories import ReducedProblemFactory
 
 # Base class containing the interface of a projection based ROM
@@ -29,7 +29,6 @@ from rbnics.utils.factories import ReducedProblemFactory
 class DifferentialProblemReductionMethod(ReductionMethod):
     
     ## Default initialization of members
-    @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         ReductionMethod.__init__(self, truth_problem.name(), truth_problem.mu_range)
@@ -44,7 +43,6 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.truth_problem = truth_problem
     
     ## Initialize data structures required for the offline phase
-    @override
     def _init_offline(self):
         # Initialize the affine expansion in the truth problem
         self.truth_problem.init()
@@ -96,12 +94,10 @@ class DifferentialProblemReductionMethod(ReductionMethod):
                 return snapshot
             
     ## Finalize data structures required after the offline phase
-    @override
     def _finalize_offline(self):
         self.reduced_problem.init("online")
     
     ## Initialize data structures required for the error analysis phase
-    @override
     def _init_error_analysis(self, **kwargs): 
         # Initialize the affine expansion in the truth problem
         self.truth_problem.init()
@@ -110,7 +106,6 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.reduced_problem.init("online")
         
     ## Initialize data structures required for the speedup analysis phase
-    @override
     def _init_speedup_analysis(self, **kwargs): 
         # Initialize the affine expansion in the truth problem
         self.truth_problem.init()
@@ -135,7 +130,6 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.truth_problem.export_solution = types.MethodType(disabled_export_solution, self.truth_problem)
         
     ## Finalize data structures required after the speedup analysis phase
-    @override
     def _finalize_speedup_analysis(self, **kwargs):
         # Restore the capability to import/export truth solutions
         self.truth_problem.import_solution = self._speedup_analysis__original_import_solution

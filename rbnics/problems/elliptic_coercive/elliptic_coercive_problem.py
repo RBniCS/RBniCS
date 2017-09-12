@@ -18,7 +18,7 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import product, sum, transpose
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 EllipticCoerciveProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
@@ -27,7 +27,6 @@ EllipticCoerciveProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 class EllipticCoerciveProblem(EllipticCoerciveProblem_Base):
     
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         EllipticCoerciveProblem_Base.__init__(self, V, **kwargs)
@@ -47,7 +46,6 @@ class EllipticCoerciveProblem(EllipticCoerciveProblem_Base):
             return sum(product(problem.compute_theta("f"), problem.operator["f"]))
             
     ## Perform a truth evaluation of the (compliant) output
-    @override
     def _compute_output(self):
         self._output = transpose(self._solution)*sum(product(self.compute_theta("f"), self.operator["f"]))
     

@@ -20,18 +20,16 @@ from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
 import rbnics.backends.online.numpy
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
 
 @Extends(HighOrderProperOrthogonalDecompositionBase)
 @BackendFor("numpy", inputs=(AbstractFunctionsList, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
-    @override
     def __init__(self, Z, empty_tensor):
         HighOrderProperOrthogonalDecompositionBase.__init__(self, Z, None, empty_tensor, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping, rbnics.backends.online.numpy.TensorSnapshotsList, rbnics.backends.online.numpy.TensorBasisList)
         
-    @override
     def store_snapshot(self, snapshot):
         self.snapshots_matrix.enrich(snapshot)
         

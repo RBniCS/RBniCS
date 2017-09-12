@@ -17,14 +17,12 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 
 def StoreMapFromProblemToReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class StoreMapFromProblemToReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

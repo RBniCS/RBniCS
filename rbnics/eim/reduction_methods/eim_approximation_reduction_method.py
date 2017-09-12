@@ -22,14 +22,13 @@ from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.backends import abs, evaluate, max
 from rbnics.backends.online import OnlineMatrix
 from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 # Empirical interpolation method for the interpolation of parametrized functions
 @Extends(ReductionMethod)
 class EIMApproximationReductionMethod(ReductionMethod):
     
     ## Default initialization of members
-    @override
     def __init__(self, EIM_approximation):
         # Call the parent initialization
         ReductionMethod.__init__(self, EIM_approximation.folder_prefix, EIM_approximation.mu_range)
@@ -50,7 +49,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # stop greedy iterations in trivial cases by default
         self.tol = 1e-15
     
-    @override
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
         # Since exact evaluation is required, we cannot use a distributed training set
@@ -60,7 +58,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         return import_successful
     
     ## Initialize data structures required for the offline phase
-    @override
     def _init_offline(self):
         # Prepare folders and init EIM approximation
         all_folders = Folders()
@@ -75,12 +72,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
             return True # offline construction should be carried out
             
     ## Finalize data structures required after the offline phase
-    @override
     def _finalize_offline(self):
         self.EIM_approximation.init("online")
     
     ## Perform the offline phase of EIM
-    @override
     def offline(self):
         need_to_do_offline_stage = self._init_offline()
         if not need_to_do_offline_stage:
@@ -278,7 +273,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
     
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the testing set
-    @override
     def error_analysis(self, N=None, **kwargs):
         if N is None:
             N = self.EIM_approximation.N
@@ -327,7 +321,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
     # Compute the speedup of the empirical interpolation approximation with respect to the
     # exact function over the testing set
-    @override
     def speedup_analysis(self, N=None, **kwargs):
         if N is None:
             N = self.EIM_approximation.N
@@ -381,7 +374,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self._finalize_speedup_analysis(**kwargs)
         
     ## Initialize data structures required for the speedup analysis phase
-    @override
     def _init_speedup_analysis(self, **kwargs): 
         # Make sure to clean up snapshot cache to ensure that parametrized
         # expression evaluation is actually carried out
@@ -397,7 +389,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.EIM_approximation.export_solution = types.MethodType(disabled_export_solution, self.EIM_approximation)
         
     ## Finalize data structures required after the speedup analysis phase
-    @override
     def _finalize_speedup_analysis(self, **kwargs):
         # Restore the capability to import/export truth solutions
         self.EIM_approximation.import_solution = self._speedup_analysis__original_import_solution

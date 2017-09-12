@@ -19,12 +19,11 @@
 from dolfin import FunctionSpace
 from rbnics.backends.basic import BasisFunctionsMatrix as BasicBasisFunctionsMatrix
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(BasicBasisFunctionsMatrix)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
-    @override
     def __init__(self, V):
         BasicBasisFunctionsMatrix.__init__(self, V, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
         

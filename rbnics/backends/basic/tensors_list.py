@@ -18,12 +18,11 @@
 
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 import rbnics.backends.online
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import is_io_process
 
 @Extends(AbstractTensorsList)
 class TensorsList(AbstractTensorsList):
-    @override
     def __init__(self, V_or_Z, empty_tensor, backend, wrapping):
         self.V_or_Z = V_or_Z
         self.empty_tensor = empty_tensor
@@ -33,7 +32,6 @@ class TensorsList(AbstractTensorsList):
         self._list = list() # of tensors
         self._precomputed_slices = dict() # from tuple to TensorsList
     
-    @override
     def enrich(self, tensors):
         # Append to storage
         assert isinstance(tensors, (TensorsList, self.backend.Matrix.Type(), self.backend.Vector.Type()))
@@ -49,13 +47,11 @@ class TensorsList(AbstractTensorsList):
         # Prepare trivial precomputed slice
         self._precomputed_slices[len(self._list)] = self
         
-    @override
     def clear(self):
         self._list = list()
         # Reset precomputed slices
         self._precomputed_slices = dict()
         
-    @override
     def save(self, directory, filename):
         self._save_Nmax(directory, filename)
         for (index, tensor) in enumerate(self._list):
@@ -66,7 +62,6 @@ class TensorsList(AbstractTensorsList):
             with open(str(directory) + "/" + filename + ".length", "w") as length:
                 length.write(str(len(self._list)))
         
-    @override
     def load(self, directory, filename):
         if len(self._list) > 0: # avoid loading multiple times
             return False
@@ -86,16 +81,13 @@ class TensorsList(AbstractTensorsList):
         Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
         return Nmax
     
-    @override
     def __mul__(self, other):
         assert isinstance(other, rbnics.backends.online.OnlineFunction.Type())
         return self.wrapping.tensors_list_mul_online_function(self, other)
     
-    @override
     def __len__(self):
         return len(self._list)
 
-    @override
     def __getitem__(self, key):
         if isinstance(key, slice): # e.g. key = :N, return the first N tensors
             assert key.start is None 
@@ -113,7 +105,6 @@ class TensorsList(AbstractTensorsList):
         else: # return the element at position "key" in the storage
             return self._list[key]
             
-    @override
     def __iter__(self):
         return self._list.__iter__()
         

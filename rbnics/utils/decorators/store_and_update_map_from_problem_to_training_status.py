@@ -17,14 +17,12 @@
 #
 
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 
 def StoreMapFromProblemToTrainingStatus(ParametrizedDifferentialProblem_DerivedClass):
             
     @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class StoreMapFromProblemToTrainingStatus_Class(ParametrizedDifferentialProblem_DerivedClass):
         
-        @override
         def __init__(self, V, **kwargs):
             # Call the parent initialization
             ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -40,12 +38,10 @@ def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_Deri
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class UpdateMapFromProblemToTrainingStatus_Class(DifferentialProblemReductionMethod_DerivedClass):
         
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
-        @override
         def _finalize_offline(self):
             # Call the parent finalization
             DifferentialProblemReductionMethod_DerivedClass._finalize_offline(self)

@@ -24,12 +24,11 @@ from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping import form_iterator, is_parametrized
 from rbnics.utils.config import config
-from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
+from rbnics.utils.decorators import BackendFor, Extends, list_of, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
 @BackendFor("dolfin", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type()), tuple_of((Form, Matrix.Type())), tuple_of((Form, Vector.Type()))), ))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
-    @override
     def __init__(self, args):
         self._content = None
         self._type = None
@@ -119,15 +118,12 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def type(self):
         return self._type
         
-    @override
     def __getitem__(self, key):
         return self._content[key]
         
-    @override
     def __iter__(self):
         return self._content.__iter__()
         
-    @override
     def __len__(self):
         assert self._content is not None
         return len(self._content)

@@ -18,7 +18,7 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import Function, LinearSolver, product, sum, transpose
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 EllipticOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
@@ -48,7 +48,6 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
     """
     
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         EllipticOptimalControlProblem_Base.__init__(self, V, **kwargs)
@@ -88,7 +87,6 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
             )
                     
     ## Perform a truth evaluation of the cost functional
-    @override
     def _compute_output(self):
         assembled_operator = dict()
         for term in ("g", "h", "m", "n"):

@@ -18,7 +18,7 @@
 
 from rbnics.problems.elliptic_coercive import EllipticCoercivePODGalerkinReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.parabolic_coercive import ParabolicCoercivePODGalerkinReduction

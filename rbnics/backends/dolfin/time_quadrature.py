@@ -20,7 +20,7 @@ from scipy.integrate import simps
 from rbnics.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping import function_copy
-from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
+from rbnics.utils.decorators import BackendFor, Extends, list_of, tuple_of
 
 @Extends(AbstractTimeQuadrature)
 @BackendFor("dolfin", inputs=(tuple_of(float), list_of(Function.Type())))

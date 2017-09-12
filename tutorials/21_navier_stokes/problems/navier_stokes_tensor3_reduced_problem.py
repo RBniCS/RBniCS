@@ -21,7 +21,7 @@ from dolfin import TestFunction, TrialFunction
 from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.problems.navier_stokes.navier_stokes_reduced_problem import NavierStokesReducedProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
     
@@ -29,14 +29,12 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
     
     @Extends(NavierStokesTensor3ReducedProblem_Base)
     class NavierStokesTensor3ReducedProblem_Class(NavierStokesTensor3ReducedProblem_Base):
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call Parent
             NavierStokesTensor3ReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             # Store value of N passed to solve
             self._N_solve = None
             
-        @override
         def _init_operators(self, current_stage="online"):
             assert current_stage in ("online", "offline")
             if current_stage == "online":
@@ -52,7 +50,6 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
             else:
                 raise AssertionError("Invalid stage in _init_operators().")
                 
-        @override
         def _solve(self, N, **kwargs):
             self._update_N_solve(N)
             NavierStokesTensor3ReducedProblem_Base._solve(self, N, **kwargs)
@@ -60,7 +57,6 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
         def _update_N_solve(self, N):
             self._N_solve = N
             
-        @override
         def compute_theta(self, term):
             if term in ("c", "dc"):
                 truth_Q = self.truth_problem.Q[term]
@@ -92,7 +88,6 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
             else:
                 return NavierStokesTensor3ReducedProblem_Base.compute_theta(self, term)
         
-        @override
         def assemble_operator(self, term, current_stage="online"):
             assert current_stage in ("online", "offline")
             if current_stage == "online": # load from file

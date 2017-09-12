@@ -21,7 +21,7 @@ from numpy import isclose
 from rbnics.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
@@ -35,7 +35,6 @@ EllipticCoerciveRBReducedProblem_Base = LinearRBReducedProblem(EllipticCoerciveR
 class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
     
     ## Default initialization of members.
-    @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         EllipticCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
@@ -45,7 +44,6 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         self.riesz_product_terms = [("f", "f"), ("a", "f"), ("a", "a")]
     
     ## Return an error bound for the current solution
-    @override
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -54,17 +52,14 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         return sqrt(abs(eps2)/alpha)
         
     ## Return a relative error bound for the current solution
-    @override
     def estimate_relative_error(self):
         return NotImplemented
     
     ## Return an error bound for the current output
-    @override
     def estimate_error_output(self):
         return self.estimate_error()**2
         
     ## Return a relative error bound for the current output
-    @override
     def estimate_relative_error_output(self):
         return NotImplemented
         

@@ -22,18 +22,16 @@ from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
 
 @Extends(ProperOrthogonalDecompositionBase)
 @BackendFor("dolfin", inputs=(FunctionSpace, (Form, Matrix.Type()), (str, None)))
 class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
-    @override
     def __init__(self, V, X, component=None):
         ProperOrthogonalDecompositionBase.__init__(self, V, X, component, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, rbnics.backends.dolfin.SnapshotsMatrix, rbnics.backends.dolfin.FunctionsList)
         
-    @override
     def store_snapshot(self, snapshot, component=None, weight=None):
         self.snapshots_matrix.enrich(snapshot, component, weight)
         

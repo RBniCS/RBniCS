@@ -20,7 +20,7 @@ from math import sqrt
 from numpy import isclose
 from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
 from rbnics.backends import product, sum, transpose
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.stokes import StokesRBReduction
@@ -34,7 +34,6 @@ StokesRBReducedProblem_Base = LinearRBReducedProblem(StokesReducedProblem(Parame
 class StokesRBReducedProblem(StokesRBReducedProblem_Base):
 
     ## Default initialization of members.
-    @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         StokesRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
@@ -44,7 +43,6 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         self.riesz_product_terms = [("f", "f"), ("g", "g"), ("a", "f"), ("bt", "f"), ("b", "g"), ("a", "a"), ("a", "bt"), ("bt", "bt"), ("b", "b")]
     
     ## Return an error bound for the current solution
-    @override
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -53,17 +51,14 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         return sqrt(abs(eps2)/alpha)
         
     ## Return a relative error bound for the current solution
-    @override
     def estimate_relative_error(self):
         return NotImplemented
     
     ## Return an error bound for the current output
-    @override
     def estimate_error_output(self):
         return NotImplemented
         
     ## Return a relative error bound for the current output
-    @override
     def estimate_relative_error_output(self):
         return NotImplemented
         

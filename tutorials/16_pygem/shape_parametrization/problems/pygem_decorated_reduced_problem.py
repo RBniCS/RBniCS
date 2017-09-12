@@ -17,7 +17,7 @@
 #
 
 from rbnics.eim.problems import DEIM, ExactParametrizedFunctions
-from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
 from shape_parametrization.problems.pygem_decorated_problem import PyGeM
 
 @ReducedProblemDecoratorFor(PyGeM)
@@ -25,7 +25,6 @@ def PyGeMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedC
     @Extends(ParametrizedReducedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class PyGeMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the standard initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

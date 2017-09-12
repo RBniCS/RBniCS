@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import SymbolicParameters
-from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ProblemDecoratorFor
 
 def ExactParametrizedFunctions_OfflineAndOnline(**kwargs):
     # Enable exact parametrized functions evaluation both offline and online
@@ -43,7 +43,6 @@ def ExactParametrizedFunctionsDecoratedProblem(
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
             ## Default initialization of members
-            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -66,7 +65,6 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 else:
                     raise AssertionError("Invalid value for stages")
             
-            @override
             def init(self):
                 # Initialize symbolic parameters only once
                 if self.mu_symbolic is None:

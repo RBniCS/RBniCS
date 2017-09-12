@@ -19,7 +19,7 @@
 from math import sqrt
 from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators, sync_setters
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators, sync_setters
 from rbnics.utils.mpi import log, PROGRESS
 
 @RequiredBaseDecorators(None)
@@ -29,7 +29,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
     class TimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         ## Default initialization of members
-        @override
         @sync_setters("truth_problem", "set_time", "t")
         @sync_setters("truth_problem", "set_initial_time", "t0")
         @sync_setters("truth_problem", "set_time_step_size", "dt")
@@ -192,7 +191,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             else:
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
                 
-        @override
         def solve(self, N=None, **kwargs):
             N, kwargs = self._online_size_from_kwargs(N, **kwargs)
             N += self.N_bc
@@ -279,7 +277,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assign(problem._solution_dot, problem._solution_dot_over_time[-1])
                 
         # Perform an online evaluation of the output
-        @override
         def compute_output(self):
             cache_key = self._output_cache__current_cache_key
             assert (
@@ -301,12 +298,10 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             return self._output_over_time
             
         # Perform an online evaluation of the output. Internal method
-        @override
         def _compute_output(self, N):
             self._output_over_time = [NotImplemented]*len(self._solution_over_time)
             self._output = NotImplemented
             
-        @override
         def _lifting_truth_solve(self, term, i):
             assert term.startswith("dirichlet_bc")
             component = term.replace("dirichlet_bc", "").replace("_", "")
@@ -348,7 +343,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             return projected_snapshot_N_over_time
             
         # Internal method for error computation
-        @override
         def _compute_error(self, **kwargs):
             error_over_time = list()
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
@@ -361,7 +355,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             return error_over_time
             
         # Internal method for relative error computation
-        @override
         def _compute_relative_error(self, absolute_error_over_time, **kwargs):
             relative_error_over_time = list()
             for (k, truth_solution) in enumerate(self.truth_problem._solution_over_time):
@@ -374,7 +367,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             return relative_error_over_time
             
         # Internal method for output error computation
-        @override
         def _compute_error_output(self, **kwargs):
             error_output_over_time = list()
             for (k, (truth_output, reduced_output)) in enumerate(zip(self.truth_problem._output_over_time, self._output_over_time)):
@@ -386,7 +378,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             return error_output_over_time
             
         # Internal method for output relative error computation
-        @override
         def _compute_relative_error_output(self, absolute_error_output_over_time, **kwargs):
             relative_error_output_over_time = list()
             for (k, (truth_output, absolute_error_output)) in enumerate(zip(self.truth_problem._output_over_time, absolute_error_output_over_time)):
@@ -442,7 +433,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 return converted_error_over_time[k]
         
         ## Export solution to file
-        @override
         def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time

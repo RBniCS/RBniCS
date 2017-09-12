@@ -22,7 +22,7 @@ from rbnics.backends import transpose
 from rbnics.backends.online import OnlineVector
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.scm.problems import ParametrizedCoercivityConstantEigenProblem
 
 # Empirical interpolation method for the interpolation of parametrized functions
@@ -30,7 +30,6 @@ from rbnics.scm.problems import ParametrizedCoercivityConstantEigenProblem
 class SCMApproximationReductionMethod(ReductionMethod):
     
     ## Default initialization of members
-    @override
     def __init__(self, SCM_approximation, folder_prefix):
         # Call the parent initialization
         ReductionMethod.__init__(self, folder_prefix, SCM_approximation.mu_range)
@@ -49,7 +48,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         del self.SCM_approximation._input_storage_for_SCM_reduction
 
     ## OFFLINE: set the elements in the training set.
-    @override
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         assert enable_import
         import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
@@ -57,7 +55,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         return import_successful
     
     ## Initialize data structures required for the offline phase
-    @override
     def _init_offline(self):
         # Prepare folders and init SCM approximation
         all_folders = Folders()
@@ -72,12 +69,10 @@ class SCMApproximationReductionMethod(ReductionMethod):
             return True # offline construction should be carried out
             
     ## Finalize data structures required after the offline phase
-    @override
     def _finalize_offline(self):
         self.SCM_approximation.init("online")
     
     ## Perform the offline phase of SCM
-    @override
     def offline(self):
         need_to_do_offline_stage = self._init_offline()
         if not need_to_do_offline_stage:
@@ -198,7 +193,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
         
     ## Initialize data structures required for the error analysis phase
-    @override
     def _init_error_analysis(self, **kwargs):
         # Initialize the exact coercivity constant object
         self.SCM_approximation.exact_coercivity_constant_calculator.init()
@@ -208,7 +202,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
     
     # Compute the error of the scm approximation with respect to the
     # exact coercivity over the testing set
-    @override
     def error_analysis(self, N=None, **kwargs):
         if N is None:
             N = self.SCM_approximation.N
@@ -258,7 +251,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
     # Compute the speedup of the scm approximation with respect to the
     # exact coercivity over the testing set
-    @override
     def speedup_analysis(self, N=None, **kwargs):
         if N is None:
             N = self.SCM_approximation.N
@@ -307,7 +299,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self._finalize_speedup_analysis(**kwargs)
         
     ## Initialize data structures required for the speedup analysis phase
-    @override
     def _init_speedup_analysis(self, **kwargs): 
         # Make sure to clean up snapshot cache to ensure that parametrized
         # expression evaluation is actually carried out

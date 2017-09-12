@@ -18,7 +18,7 @@
 
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems.

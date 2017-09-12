@@ -23,12 +23,11 @@ from dolfin import as_backend_type, assemble, DirichletBC, Function, FunctionSpa
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
-from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
+from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of
 
 @Extends(AbstractEigenSolver)
 @BackendFor("dolfin", inputs=(FunctionSpace, (Matrix.Type(), Form), (Matrix.Type(), Form, None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class EigenSolver(AbstractEigenSolver):
-    @override
     def __init__(self, V, A, B=None, bcs=None):
         self.V = V
         if bcs is not None:
@@ -92,20 +91,16 @@ class EigenSolver(AbstractEigenSolver):
 
         return mat, PETScMatrix(condensed_mat)
     
-    @override
     def set_parameters(self, parameters):
         self.eigen_solver.parameters.update(parameters)
         
-    @override
     def solve(self, n_eigs=None):
         assert n_eigs is not None
         self.eigen_solver.solve(n_eigs)
     
-    @override
     def get_eigenvalue(self, i):
         return self.eigen_solver.get_eigenvalue(i)
     
-    @override
     def get_eigenvector(self, i):
         # Get number of computed eigenvectors/values
         num_computed_eigenvalues = self.eigen_solver.eps().getConverged()

@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import MeshMotion
-from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ProblemDecoratorFor
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs):
     @ProblemDecoratorFor(ShapeParametrization,
@@ -33,7 +33,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             # The shape parametrization expression is a list of tuples. The i-th list element
             # corresponds to shape parametrization of the i-th subdomain, the j-th tuple element
             # corresponds to the expression of the j-th component of the shape parametrization
-            @override
             def __init__(self, V, **kwargs):
                 # Call the standard initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -46,7 +45,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
                 self.mesh_motion = MeshMotion(V, kwargs["subdomains"], shape_parametrization_expression__from_decorator)
             
             ## Initialize data structures required for the offline phase
-            @override
             def init(self):
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Also init mesh motion object
@@ -57,7 +55,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             class ShapeParametrizationDecoratedProblem_Class(ShapeParametrizationDecoratedProblem_Class_Base):
                 
                 ## Deform the mesh as a function of the geometrical parameters and then export solution to file
-                @override
                 def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
                     self.mesh_motion.move_mesh()
                     ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution_over_time, solution_dot_over_time, component, suffix)
@@ -67,7 +64,6 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             class ShapeParametrizationDecoratedProblem_Class(ShapeParametrizationDecoratedProblem_Class_Base):
                 
                 ## Deform the mesh as a function of the geometrical parameters and then export solution to file
-                @override
                 def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
                     self.mesh_motion.move_mesh()
                     ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component, suffix)

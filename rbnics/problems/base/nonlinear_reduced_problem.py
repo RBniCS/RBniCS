@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import assign, NonlinearProblemWrapper, NonlinearSolver
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -26,7 +26,6 @@ def NonlinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
     class NonlinearReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
         ## Default initialization of members.
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

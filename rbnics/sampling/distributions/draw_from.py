@@ -17,7 +17,7 @@
 #
 
 from rbnics.sampling.distributions.distribution import Distribution
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(Distribution)
 class DrawFrom(Distribution):
@@ -26,7 +26,6 @@ class DrawFrom(Distribution):
         self.args = args
         self.kwargs = kwargs
         
-    @override
     def sample(self, box, n):
         set_ = list() # of tuples
         for i in range(n):

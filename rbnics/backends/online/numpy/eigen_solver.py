@@ -22,12 +22,11 @@ from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, override, ThetaType
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, ThetaType
 
 @Extends(AbstractEigenSolver)
 @BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
 class EigenSolver(AbstractEigenSolver):
-    @override
     def __init__(self, Z, A, B=None, bcs=None):
         assert A.shape[0] == A.shape[1]
         if B is not None:
@@ -41,11 +40,9 @@ class EigenSolver(AbstractEigenSolver):
         self.eigv = None
         assert bcs is None # the case bcs != None has not been implemented yet
         
-    @override
     def set_parameters(self, parameters):
         self.parameters.update(parameters)
         
-    @override
     def solve(self, n_eigs=None):
         if self.parameters["problem_type"] == "hermitian":
             eigs, eigv = eigh(self.A, self.B)
@@ -66,11 +63,9 @@ class EigenSolver(AbstractEigenSolver):
         self.eigs = eigs[idx]
         self.eigv = eigv[:, idx]
     
-    @override
     def get_eigenvalue(self, i):
         return real(self.eigs[i]), imag(self.eigs[i])
     
-    @override
     def get_eigenvector(self, i):
         eigv_i = matrix(self.eigv[:, i]).transpose() # as column vector
         eigv_i_real = real(eigv_i)

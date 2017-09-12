@@ -47,7 +47,7 @@ else:
     linear_programming_backends["scipy"] = True
     
 from rbnics.backends.abstract import LinearProgramSolver as AbstractLinearProgramSolver
-from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
+from rbnics.utils.decorators import BackendFor, Extends, list_of, tuple_of
 
 # Helper classes for linear pogram
 from numpy import eye, hstack, matrix as numpy_matrix, ndarray as numpy_vector, vstack, zeros
@@ -61,7 +61,6 @@ class Error(RuntimeError):
 if linear_programming_backends["cvxopt"]:
     @Extends(AbstractLinearProgramSolver)
     class CVXOPTLinearProgramSolver(AbstractLinearProgramSolver):
-        @override
         def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):
             self.Q = len(cost)
             # Store cost
@@ -88,7 +87,6 @@ if linear_programming_backends["cvxopt"]:
 if linear_programming_backends["python-glpk"]:
     @Extends(AbstractLinearProgramSolver)
     class PythonGLPKLinearProgramSolver(AbstractLinearProgramSolver):
-        @override
         def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):
             self.cost = cost
             self.inequality_constraints_matrix = inequality_constraints_matrix
@@ -157,7 +155,6 @@ if linear_programming_backends["python-glpk"]:
 if linear_programming_backends["scipy"]:
     @Extends(AbstractLinearProgramSolver)
     class SciPyLinearProgramSolver(AbstractLinearProgramSolver):
-        @override
         def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):
             self.cost = cost
             self.inequality_constraints_matrix = - inequality_constraints_matrix

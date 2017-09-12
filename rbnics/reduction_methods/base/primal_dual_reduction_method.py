@@ -19,7 +19,6 @@
 import inspect
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
 from rbnics.utils.decorators.extends import Extends
-from rbnics.utils.decorators.override import override
 
 def PrimalDualReductionMethod(DualProblem):
     def PrimalDualReductionMethod_Decorator(DifferentialProblemReductionMethod_DerivedClass):
@@ -28,7 +27,6 @@ def PrimalDualReductionMethod(DualProblem):
         class PrimalDualReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
     
             ## Default initialization of members
-            @override
             def __init__(self, truth_problem, **kwargs):
                 # Call the parent initialization
                 DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -52,7 +50,6 @@ def PrimalDualReductionMethod(DualProblem):
             # Propagate the values of all setters also to the dual object
             
             ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-            @override
             def set_Nmax(self, Nmax, **kwargs):
                 DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
                 # Set Nmax of dual reduction
@@ -60,7 +57,6 @@ def PrimalDualReductionMethod(DualProblem):
                 self.dual_reduction_method.set_Nmax(kwargs["dual"], **kwargs)
                 
             ## OFFLINE: set tolerance (stopping criterion)
-            @override
             def set_tolerance(self, tol, **kwargs):
                 DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
                 # Set tolerance of dual reduction
@@ -68,7 +64,6 @@ def PrimalDualReductionMethod(DualProblem):
                 self.dual_reduction_method.set_tolerance(kwargs["dual"], **kwargs)
                 
             ## OFFLINE: set the elements in the training set.
-            @override
             def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
                 import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
                 # Initialize training set of dual reduction
@@ -77,7 +72,6 @@ def PrimalDualReductionMethod(DualProblem):
                 return import_successful and import_successful_dual
                 
             ## ERROR ANALYSIS: set the elements in the testing set.
-            @override
             def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
                 import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
                 # Initialize testing set of dual reduction
@@ -86,7 +80,6 @@ def PrimalDualReductionMethod(DualProblem):
                 return import_successful and import_successful_dual
                 
             ## Perform the offline phase of the reduced order model
-            @override
             def offline(self):
                 # Carry out primal offline stage ...
                 bak_first_mu = self.truth_problem.mu
@@ -104,7 +97,6 @@ def PrimalDualReductionMethod(DualProblem):
                 
             # Compute the error of the reduced order approximation with respect to the full order one
             # over the testing set
-            @override
             def error_analysis(self, N=None, **kwargs):
                 # Carry out primal error analysis ...
                 DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
@@ -118,7 +110,6 @@ def PrimalDualReductionMethod(DualProblem):
                 
             # Compute the speedup of the reduced order approximation with respect to the full order one
             # over the testing set
-            @override
             def speedup_analysis(self, N=None, **kwargs):
                 # Carry out primal speedup analysis ...
                 DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)

@@ -19,7 +19,7 @@
 from rbnics.problems.base import NonlinearTimeDependentProblem
 from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
 from rbnics.backends import product, sum
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 NonlinearParabolicProblem_Base = NonlinearTimeDependentProblem(NonlinearEllipticProblem)
 
@@ -28,7 +28,6 @@ NonlinearParabolicProblem_Base = NonlinearTimeDependentProblem(NonlinearElliptic
 class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
     
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         NonlinearParabolicProblem_Base.__init__(self, V, **kwargs)

@@ -17,7 +17,7 @@
 #
 
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 from problems import GeostrophicProblem
 from geostrophic_reduction_method import GeostrophicReductionMethod
 

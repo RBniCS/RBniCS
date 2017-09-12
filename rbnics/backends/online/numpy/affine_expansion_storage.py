@@ -23,12 +23,11 @@ import rbnics.backends.online.numpy
 import rbnics.backends.online.numpy.wrapping
 from rbnics.backends.online.numpy.matrix import Matrix as OnlineMatrix
 from rbnics.backends.online.numpy.vector import Vector as OnlineVector
-from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
+from rbnics.utils.decorators import BackendFor, Extends, list_of, tuple_of
 
 @Extends(BasicAffineExpansionStorage)
 @BackendFor("numpy", inputs=((int, tuple_of(OnlineMatrix.Type()), tuple_of(OnlineVector.Type()), AbstractAffineExpansionStorage), (int, None)))
 class AffineExpansionStorage(BasicAffineExpansionStorage):
-    @override
     def __init__(self, arg1, arg2=None):
         BasicAffineExpansionStorage.__init__(self, arg1, arg2, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
         # Additional storage
@@ -36,13 +35,11 @@ class AffineExpansionStorage(BasicAffineExpansionStorage):
         if isinstance(arg1, AbstractAffineExpansionStorage):
             self._content_as_matrix = arg1._content_as_matrix
             
-    @override
     def __setitem__(self, key, item):
         BasicAffineExpansionStorage.__setitem__(self, key, item)
         # Reset internal copies
         self._content_as_matrix = None
             
-    @override
     def load(self, directory, filename):
         BasicAffineExpansionStorage.load(self, directory, filename)
         # Create internal copy as matrix

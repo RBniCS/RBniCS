@@ -18,7 +18,7 @@
 
 from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.

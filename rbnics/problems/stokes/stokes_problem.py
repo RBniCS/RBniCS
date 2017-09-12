@@ -18,7 +18,7 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
@@ -28,7 +28,6 @@ StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 class StokesProblem(StokesProblem_Base):
     
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         StokesProblem_Base.__init__(self, V, **kwargs)
@@ -131,13 +130,11 @@ class StokesProblem(StokesProblem_Base):
         return import_(supremizer, folder, filename + "_" + component, suffix, component)
         
     ## Export solution to file
-    @override
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
         StokesProblem_Base.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
         
-    @override
     def import_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"

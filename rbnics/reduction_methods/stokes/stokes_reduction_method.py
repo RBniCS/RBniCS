@@ -19,7 +19,7 @@
 
 from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.stokes.stokes_problem import StokesProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
@@ -31,7 +31,6 @@ def StokesReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     class StokesReductionMethod_Class(StokesReductionMethod_Base):
         
         ## Default initialization of members
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             StokesReductionMethod_Base.__init__(self, truth_problem, **kwargs)

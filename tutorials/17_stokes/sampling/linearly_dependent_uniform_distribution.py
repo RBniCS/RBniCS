@@ -18,14 +18,13 @@
 
 from numpy import pi, random
 from rbnics.sampling.distributions.distribution import Distribution
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(Distribution)
 class LinearlyDependentUniformDistribution(Distribution):
     def __init__(self):
         self.aux_box = [(0.5, 1.5), (0.5, 1.5), (0, pi/6.)]
         
-    @override
     def sample(self, _, n):
         set_ = list() # of tuples
         for i in range(n):

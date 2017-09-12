@@ -22,7 +22,7 @@ import hashlib
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
 from rbnics.utils.config import config
-from rbnics.utils.decorators import Extends, override, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
+from rbnics.utils.decorators import Extends, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import log, PROGRESS
 
 # Base class containing the definition of elliptic coercive problems
@@ -38,7 +38,6 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     :param V: functional solution space.
     """
     
-    @override
     def __init__(self, V, **kwargs):
     
         # Call to parent
@@ -288,7 +287,6 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             pass
     
     ## Perform a truth solve
-    @override
     def _solve(self, **kwargs):
         problem_solver = self.ProblemSolver(self)
         problem_solver.solve()

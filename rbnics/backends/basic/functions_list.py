@@ -18,7 +18,7 @@
 
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 import rbnics.backends.online
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import is_io_process
 
 # Type for storing a list of functions. From the user point of view this is
@@ -27,7 +27,6 @@ from rbnics.utils.mpi import is_io_process
 # allows to write expressions like transpose(Z)*A*Z and transpose(Z)*F
 @Extends(AbstractFunctionsList)
 class FunctionsList(AbstractFunctionsList):
-    @override
     def __init__(self, V_or_Z, component, backend, wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
         if component is None:
             self.V_or_Z = V_or_Z
@@ -51,7 +50,6 @@ class FunctionsList(AbstractFunctionsList):
         self._list = list() # of functions
         self._precomputed_slices = dict() # from tuple to FunctionsList
     
-    @override
     def enrich(self, functions, component=None, weights=None, copy=True):
         # Append to storage
         assert isinstance(functions, (tuple, list, FunctionsList, self.backend.Function.Type())) or self.AdditionalIsFunction(functions)
@@ -84,13 +82,11 @@ class FunctionsList(AbstractFunctionsList):
                 break
             self._list.append(self.wrapping.function_extend_or_restrict(function, component_from, self.V_or_Z, component_to, weight, copy))
         
-    @override
     def clear(self):
         self._list = list()
         # Reset precomputed slices
         self._precomputed_slices = dict()
         
-    @override
     def save(self, directory, filename):
         self._save_Nmax(directory, filename)
         for (index, function) in enumerate(self._list):
@@ -101,7 +97,6 @@ class FunctionsList(AbstractFunctionsList):
             with open(str(directory) + "/" + filename + ".length", "w") as length:
                 length.write(str(len(self._list)))
         
-    @override
     def load(self, directory, filename):
         if len(self._list) > 0: # avoid loading multiple times
             return False
@@ -121,7 +116,6 @@ class FunctionsList(AbstractFunctionsList):
         Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
         return Nmax
     
-    @override
     def __mul__(self, other):
         assert isinstance(other, (rbnics.backends.online.OnlineMatrix.Type(), rbnics.backends.online.OnlineVector.Type(), tuple, rbnics.backends.online.OnlineFunction.Type()))
         if isinstance(other, rbnics.backends.online.OnlineMatrix.Type()):
@@ -133,11 +127,9 @@ class FunctionsList(AbstractFunctionsList):
         else: # impossible to arrive here anyway, thanks to the assert
             raise AssertionError("Invalid arguments in FunctionsList.__mul__.")
     
-    @override
     def __len__(self):
         return len(self._list)
 
-    @override
     def __getitem__(self, key):
         if isinstance(key, slice): # e.g. key = :N, return the first N functions
             assert key.start is None 
@@ -155,12 +147,10 @@ class FunctionsList(AbstractFunctionsList):
         else: # return the element at position "key" in the storage
             return self._list[key]
             
-    @override
     def __setitem__(self, key, item):
         assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
         self._list[key] = item
             
-    @override
     def __iter__(self):
         return self._list.__iter__()
         

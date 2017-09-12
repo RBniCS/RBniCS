@@ -17,12 +17,11 @@
 #
 
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
-from rbnics.utils.decorators import BackendFor, Extends, override, tuple_of
+from rbnics.utils.decorators import BackendFor, Extends, tuple_of
 
 @Extends(AbstractAffineExpansionStorage)
 @BackendFor("common", inputs=(tuple_of(float),))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
-    @override
     def __init__(self, args):
         self._content = args
         self._type = "Scalar"
@@ -30,15 +29,12 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def type(self):
         return self._type
         
-    @override
     def __getitem__(self, key):
         return self._content[key]
         
-    @override
     def __iter__(self):
         return self._content.__iter__()
         
-    @override
     def __len__(self):
         assert self._content is not None
         return len(self._content)

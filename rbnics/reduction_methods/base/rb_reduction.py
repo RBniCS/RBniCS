@@ -20,7 +20,7 @@ from abc import ABCMeta, abstractmethod
 from math import sqrt
 from rbnics.backends import GramSchmidt
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 from rbnics.utils.mpi import log, DEBUG
 
 @RequiredBaseDecorators(None)
@@ -36,7 +36,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
        
         """
         
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -50,7 +49,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.greedy_error_estimators = GreedyErrorEstimatorsList()
             self.label = "RB"
             
-        @override
         def _init_offline(self):
             # Call parent to initialize inner product and reduced problem
             output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
@@ -95,7 +93,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Return
             return output
             
-        @override
         def offline(self):
             """
             It performs the offline phase of the reduced order model.
@@ -204,7 +201,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("find next mu")
             return self.training_set.max(solve_and_estimate_error)
             
-        @override
         def error_analysis(self, N=None, **kwargs):
             """
             It computes the error of the reduced order approximation with respect to the full order one over the testing set.
@@ -310,7 +306,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             self._finalize_error_analysis(**kwargs)
             
-        @override
         def speedup_analysis(self, N=None, **kwargs):
             """
             It computes the speedup of the reduced order approximation with respect to the full order one over the testing set.

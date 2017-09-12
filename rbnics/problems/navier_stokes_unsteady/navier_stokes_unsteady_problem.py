@@ -20,7 +20,7 @@ from rbnics.problems.base import NonlinearTimeDependentProblem
 from rbnics.problems.navier_stokes import NavierStokesProblem
 from rbnics.problems.stokes_unsteady.stokes_unsteady_problem import AbstractCFDUnsteadyProblem
 from rbnics.backends import product, sum
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 NavierStokesUnsteadyProblem_Base = AbstractCFDUnsteadyProblem(NonlinearTimeDependentProblem(NavierStokesProblem))
 

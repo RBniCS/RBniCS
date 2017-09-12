@@ -18,18 +18,16 @@
 
 from math import sqrt
 from rbnics.backends.abstract import GramSchmidt as AbstractGramSchmidt
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(AbstractGramSchmidt)
 class GramSchmidt(AbstractGramSchmidt):
-    @override
     def __init__(self, X, backend, wrapping):
         # Inner product
         self.X = X
         self.backend = backend
         self.wrapping = wrapping
         
-    @override
     def apply(self, Z, N_bc):
         X = self.X
         

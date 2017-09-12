@@ -18,7 +18,7 @@
 
 import types
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 from rbnics.utils.mpi import log, PROGRESS
 
 @RequiredBaseDecorators(None)
@@ -27,7 +27,6 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
     class TimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         ## Default initialization of members
-        @override
         def __init__(self, V, **kwargs):
             # Call the parent initialization
             ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -81,7 +80,6 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._time_stepping_parameters["final_time"] = T
             
         ## Export solution to file
-        @override
         def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
@@ -93,7 +91,6 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution_dot", solution_dot, component=component, suffix=k)
                 
         ## Import solution from file
-        @override
         def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution = self._solution
@@ -131,7 +128,6 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             return True
                 
         ## Initialize data structures required for the offline phase
-        @override
         def init(self):
             ParametrizedDifferentialProblem_DerivedClass.init(self)
             self._init_initial_condition()
@@ -214,7 +210,6 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     else:
                         raise RuntimeError("Impossible to arrive here.")
         
-        @override
         def solve(self, **kwargs):
             (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
             assert (
@@ -302,7 +297,6 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assign(problem._solution_dot, problem._solution_dot_over_time[-1])
         
         ## Perform a truth evaluation of the output
-        @override
         def compute_output(self):
             """
             
@@ -327,7 +321,6 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             return self._output_over_time
             
         ## Perform a truth evaluation of the output
-        @override
         def _compute_output(self):
             self._output_over_time = [NotImplemented]*len(self._solution_over_time)
             self._output = NotImplemented

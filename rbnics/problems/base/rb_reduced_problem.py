@@ -19,7 +19,7 @@
 from abc import ABCMeta, abstractmethod
 from rbnics.backends import AffineExpansionStorage, BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -33,7 +33,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         """
         
         ## Default initialization of members.
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -59,7 +58,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             self.riesz_terms = [term for term in self.terms]
             self.riesz_product_terms = [(term1, term2) for term1 in self.terms for term2 in self.terms if self.terms_order[term1] >= self.terms_order[term2]]
         
-        @override
         def init(self, current_stage="online"):
             """
             Initialize data structures required for the online phase.

@@ -25,7 +25,7 @@ from rbnics.backends import export, import_, LinearProgramSolver, product, sum
 from rbnics.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.config import config
-from rbnics.utils.decorators import sync_setters, Extends, override
+from rbnics.utils.decorators import sync_setters, Extends
 from rbnics.utils.io import GreedySelectedParametersList
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.scm.utils.io import BoundingBoxSideList, UpperBoundsList
@@ -36,7 +36,6 @@ from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import Pa
 class SCMApproximation(ParametrizedProblem):
 
     ## Default initialization of members
-    @override
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, folder_prefix, **kwargs):

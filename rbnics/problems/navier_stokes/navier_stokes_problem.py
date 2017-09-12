@@ -19,7 +19,7 @@
 from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.backends import LinearSolver, product, sum
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 NavierStokesProblem_Base = NonlinearProblem(StokesProblem)
@@ -28,7 +28,6 @@ NavierStokesProblem_Base = NonlinearProblem(StokesProblem)
 class NavierStokesProblem(NavierStokesProblem_Base):
     
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         NavierStokesProblem_Base.__init__(self, V, **kwargs)

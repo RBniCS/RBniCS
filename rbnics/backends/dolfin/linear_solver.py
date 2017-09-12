@@ -23,12 +23,11 @@ from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
-from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of, override
+from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of
 
 @Extends(AbstractLinearSolver)
 @BackendFor("dolfin", inputs=((Matrix.Type(), Form), Function.Type(), (Vector.Type(), Form), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class LinearSolver(AbstractLinearSolver):
-    @override
     def __init__(self, lhs, solution, rhs, bcs=None):
         self.solution = solution
         # Store lhs
@@ -74,11 +73,9 @@ class LinearSolver(AbstractLinearSolver):
             else:
                 raise AssertionError("Invalid type for bcs.")
             
-    @override
     def set_parameters(self, parameters):
         assert len(parameters) == 0, "dolfin linear solver does not accept parameters yet"
         
-    @override
     def solve(self):
         solver = PETScLUSolver("mumps")
         solver.solve(self.lhs, self.solution.vector(), self.rhs)

@@ -19,7 +19,7 @@
 from rbnics.backends import AffineExpansionStorage
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.eim.problems.deim import DEIM
-from rbnics.utils.decorators import Extends, override, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ReducedProblemDecoratorFor
 
 @ReducedProblemDecoratorFor(DEIM)
 def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -30,7 +30,6 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             @Extends(ReducedParametrizedProblem_DecoratedClass, preserve_class_name=True)
             class _AlsoDecorateErrorEstimationOperators_Class(ReducedParametrizedProblem_DecoratedClass):
                 
-                @override                
                 def compute_riesz(self, term):
                     assert term in self.terms
                     # Temporarily swap truth problem exact operator with DEIM operators
@@ -42,7 +41,6 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     if "offline" not in self.truth_problem_for_DEIM._apply_DEIM_at_stages:
                         self._set_truth_problem_operator_without_DEIM(term)
                     
-                @override
                 def assemble_error_estimation_operators(self, term, current_stage="online"):
                     if current_stage == "offline":
                         if term in self.terms:
@@ -70,7 +68,6 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
     @_AlsoDecorateErrorEstimationOperators
     class DEIMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         ## Default initialization of members
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -119,7 +116,6 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self.truth_problem_for_DEIM.operator[term] = self.truth_problem_operator_without_DEIM[term]
             self.truth_problem_for_DEIM.Q[term] = self.truth_problem_Q_without_DEIM[term]
             
-        @override
         def _solve(self, N, **kwargs):
             self._update_N_DEIM(**kwargs)
             ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
@@ -127,7 +123,6 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def _update_N_DEIM(self, **kwargs):
             self.truth_problem_for_DEIM._update_N_DEIM(**kwargs)
             
-        @override
         def assemble_operator(self, term, current_stage="online"):
             if current_stage == "offline":
                 if term in self.terms:
@@ -147,7 +142,6 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             else:
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
         
-        @override
         def compute_theta(self, term):
             if term in self.terms:
                 return self.truth_problem_for_DEIM._compute_theta_DEIM(term)

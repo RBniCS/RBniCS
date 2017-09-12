@@ -20,7 +20,7 @@ from math import sqrt
 from numpy import isclose
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_reduced_problem import EllipticOptimalControlReducedProblem
 from rbnics.backends import product, sum, transpose
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlRBReduction
@@ -33,7 +33,6 @@ EllipticOptimalControlRBReducedProblem_Base = LinearRBReducedProblem(EllipticOpt
 @ReducedProblemFor(EllipticOptimalControlProblem, EllipticOptimalControlRBReduction)
 class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProblem_Base):
 
-    @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         EllipticOptimalControlRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
@@ -43,7 +42,6 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
         self.riesz_product_terms = [("g", "g"), ("f", "f"), ("m", "g"), ("a*", "g"), ("a", "f"), ("c", "f"), ("m", "a*"), ("n", "c*"), ("a", "c"), ("m", "m"), ("a*", "a*"), ("n", "n"), ("c*", "c*"), ("a", "a"), ("c", "c")]
         
     ## Return an error bound for the current solution
-    @override
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -52,17 +50,14 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
         return sqrt(abs(eps2)/alpha)
         
     ## Return a relative error bound for the current solution
-    @override
     def estimate_relative_error(self):
         return NotImplemented
     
     ## Return an error bound for the current output
-    @override
     def estimate_error_output(self):
         return NotImplemented
         
     ## Return a relative error bound for the current output
-    @override
     def estimate_relative_error_output(self):
         return NotImplemented
         

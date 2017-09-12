@@ -19,12 +19,11 @@
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 from rbnics.backends.basic import TensorsList as BasicTensorsList
 import rbnics.backends.online.numpy
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(BasicTensorsList)
 @BackendFor("numpy", inputs=(AbstractTensorsList, ))
 class TensorsList(BasicTensorsList):
-    @override
     def __init__(self, Z, empty_tensor):
         BasicTensorsList.__init__(self, Z, empty_tensor, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
         

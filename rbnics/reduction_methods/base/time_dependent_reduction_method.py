@@ -18,7 +18,7 @@
 
 import types
 from numpy import isclose
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -27,7 +27,6 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
     class TimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ## Default initialization of members
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -68,7 +67,6 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             return postprocessed_snapshot
         
         ## Initialize data structures required for the speedup analysis phase
-        @override
         def _init_speedup_analysis(self, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             
@@ -94,7 +92,6 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             
         
         ## Finalize data structures required after the speedup analysis phase
-        @override
         def _finalize_speedup_analysis(self, **kwargs):
             # Restore the capability to import/export truth solutions
             self.truth_problem.import_solution = self._speedup_analysis__original_import_solution

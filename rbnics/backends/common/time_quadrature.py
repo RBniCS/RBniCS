@@ -18,7 +18,7 @@
 
 from scipy.integrate import simps
 from rbnics.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
-from rbnics.utils.decorators import BackendFor, Extends, list_of, override, tuple_of
+from rbnics.utils.decorators import BackendFor, Extends, list_of, tuple_of
 
 @Extends(AbstractTimeQuadrature)
 @BackendFor("common", inputs=(tuple_of(float), list_of(float)))

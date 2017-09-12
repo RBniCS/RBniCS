@@ -19,7 +19,7 @@
 import types
 import inspect
 from rbnics.backends.common.linear_program_solver import LinearProgramSolver
-from rbnics.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import Extends, ReductionMethodDecoratorFor
 from rbnics.scm.problems import SCM
 from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod
 
@@ -28,7 +28,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
     
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class SCMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -37,7 +36,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, self.truth_problem.name() + "/scm")
             
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-        @override
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             assert "SCM" in kwargs
@@ -46,7 +44,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self.SCM_reduction.set_Nmax(Nmax_SCM) # kwargs are not needed
 
         ## OFFLINE: set tolerance (stopping criterion)
-        @override
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             assert "SCM" in kwargs
@@ -55,7 +52,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self.SCM_reduction.set_tolerance(tol_SCM) # kwargs are not needed
             
         ## OFFLINE: set the elements in the training set.
-        @override
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
             # Initialize training set of SCM reduction
@@ -70,7 +66,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             return import_successful and import_successful_SCM
             
         ## ERROR ANALYSIS: set the elements in the testing set.
-        @override
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
             # Initialize testing set of SCM reduction
@@ -81,7 +76,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             return import_successful and import_successful_SCM
             
         ## Perform the offline phase of the reduced order model
-        @override
         def offline(self):
             # Perform first the SCM offline phase, ...
             bak_first_mu = self.truth_problem.mu
@@ -92,7 +86,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
-        @override
         def error_analysis(self, N=None, **kwargs):
             # Perform first the SCM error analysis, ...
             if (
@@ -107,14 +100,12 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
             
-        @override
         def _init_error_analysis(self, **kwargs):
             # Replace stability factor computation, if needed
             self._replace_stability_factor_computation(**kwargs)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
             
-        @override
         def _finalize_error_analysis(self, **kwargs):
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
@@ -123,7 +114,6 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
-        @override
         def speedup_analysis(self, N=None, **kwargs):
             # Perform first the SCM speedup analysis, ...
             if (
@@ -138,14 +128,12 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
             
-        @override
         def _init_speedup_analysis(self, **kwargs):
             # Replace stability factor computation, if needed
             self._replace_stability_factor_computation(**kwargs)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             
-        @override
         def _finalize_speedup_analysis(self, **kwargs):
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)

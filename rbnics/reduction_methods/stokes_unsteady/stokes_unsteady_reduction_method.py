@@ -17,7 +17,7 @@
 #
 
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
     
@@ -25,7 +25,6 @@ def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
     class AbstractCFDUnsteadyReductionMethod_Class(AbstractCFDUnsteadyReductionMethod_Base):
         
         ## Default initialization of members
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             AbstractCFDUnsteadyReductionMethod_Base.__init__(self, truth_problem, **kwargs)
@@ -48,7 +47,6 @@ def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
             # Return a tuple
             return (snapshot_over_time, supremizer_over_time)
         
-        @override
         def _print_supremizer_solve_message(self):
             if self.truth_problem.mu != self._print_supremizer_solve_message_previous_mu:
                 AbstractCFDUnsteadyReductionMethod_Base._print_supremizer_solve_message(self)

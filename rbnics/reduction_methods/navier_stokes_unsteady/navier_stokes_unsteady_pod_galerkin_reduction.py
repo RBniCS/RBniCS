@@ -21,7 +21,7 @@ from rbnics.reduction_methods.base import NonlinearTimeDependentPODGalerkinReduc
 from rbnics.reduction_methods.navier_stokes_unsteady.navier_stokes_unsteady_reduction_method import NavierStokesUnsteadyReductionMethod
 from rbnics.reduction_methods.navier_stokes import NavierStokesPODGalerkinReduction
 from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_pod_galerkin_reduction import AbstractCFDUnsteadyPODGalerkinReduction
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 
 NavierStokesUnsteadyPODGalerkinReduction_Base = AbstractCFDUnsteadyPODGalerkinReduction(
     NavierStokesPODGalerkinReduction,

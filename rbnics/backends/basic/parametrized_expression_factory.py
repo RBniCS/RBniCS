@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(AbstractParametrizedExpressionFactory)
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
@@ -31,40 +31,31 @@ class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
         self.backend = backend
         self.wrapping = wrapping
             
-    @override
     def create_interpolation_locations_container(self):
         return self.backend.ReducedVertices(self._space)
         
-    @override
     def create_snapshots_container(self):
         return self.backend.SnapshotsMatrix(self._space)
         
-    @override
     def create_empty_snapshot(self):
         return self.backend.Function(self._space)
         
-    @override
     def create_basis_container(self):
         # We use FunctionsList instead of BasisFunctionsMatrix since we are not interested in storing multiple components
         return self.backend.FunctionsList(self._space)
         
-    @override
     def create_POD_container(self):
         return self.backend.ProperOrthogonalDecomposition(self._space, self._inner_product)
         
-    @override
     def name(self):
         return self._name
         
-    @override
     def description(self):
         return self._description
         
-    @override
     def is_parametrized(self):
         return self.wrapping.is_parametrized(self._expression, self.wrapping.expression_iterator) or self.is_time_dependent()
         
-    @override
     def is_time_dependent(self):
         return self.wrapping.is_time_dependent(self._expression, self.wrapping.expression_iterator)
         

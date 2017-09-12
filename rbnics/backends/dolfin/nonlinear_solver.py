@@ -21,12 +21,11 @@ from ufl import Form
 from dolfin import as_backend_type, assemble, GenericMatrix, GenericVector, NonlinearProblem, PETScSNESSolver
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.dolfin.function import Function
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(AbstractNonlinearSolver)
 @BackendFor("dolfin", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
-    @override
     def __init__(self, problem_wrapper, solution):
         self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
         self.solver  = PETScSNESSolver(solution.vector().mpi_comm())
@@ -39,11 +38,9 @@ class NonlinearSolver(AbstractNonlinearSolver):
             self.solver.snes().setJacobian(None, jacobian_matrix)
         # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
             
-    @override
     def set_parameters(self, parameters):
         self.solver.parameters.update(parameters)
         
-    @override
     def solve(self):
         self.solver.solve(self.problem, self.problem.solution.vector())
         return self.problem.solution

@@ -20,7 +20,7 @@ from ufl.core.operator import Operator
 from dolfin import assemble, dx, Expression, Function, FunctionSpace, inner, TensorFunctionSpace, TestFunction, TrialFunction, VectorFunctionSpace
 from rbnics.backends.basic import ParametrizedExpressionFactory as BasicParametrizedExpressionFactory
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 @Extends(BasicParametrizedExpressionFactory)
 @BackendFor("dolfin", inputs=((Expression, Function, Operator), ))

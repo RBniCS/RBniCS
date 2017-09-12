@@ -18,7 +18,7 @@
 
 from rbnics.backends import product, transpose, sum
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.base import DualReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
@@ -34,7 +34,6 @@ EllipticCoerciveRBReducedProblem_Dual_Base = DualReducedProblem(EllipticCoercive
 class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dual_Base):
     
     ## Default initialization of members.
-    @override
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         EllipticCoerciveRBReducedProblem_Dual_Base.__init__(self, truth_problem, **kwargs)
@@ -43,7 +42,6 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
         self.output_correction_and_estimation = dict() # from string to OnlineAffineExpansionStorage
         
     ## Initialize data structures required for the online phase
-    @override
     def init(self, current_stage="online"):
         EllipticCoerciveRBReducedProblem_Dual_Base.init(self, current_stage)
         self._init_output_correction_and_estimation_operators(current_stage)
@@ -64,7 +62,6 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
             raise AssertionError("Invalid stage in _init_output_correction_and_estimation_operators().")
         
     # Perform an online evaluation of the output correction
-    @override
     def _compute_output(self, dual_N):
         primal_solution = self.primal_reduced_problem._solution
         primal_N = primal_solution.N

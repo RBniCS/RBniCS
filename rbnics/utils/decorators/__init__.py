@@ -24,7 +24,6 @@ from rbnics.utils.decorators.extends import Extends
 from rbnics.utils.decorators.exact_problem import exact_problem
 from rbnics.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
 from rbnics.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
-from rbnics.utils.decorators.override import override
 from rbnics.utils.decorators.problem_decorator_for import ProblemDecoratorFor
 from rbnics.utils.decorators.reduced_problem_decorator_for import ReducedProblemDecoratorFor
 from rbnics.utils.decorators.reduced_problem_for import ReducedProblemFor
@@ -65,7 +64,6 @@ __all__ = [
     'MultiLevelReducedProblem',
     'MultiLevelReductionMethod',
     'OnlineSizeType',
-    'override',
     'ParametersType',
     'ProblemDecoratorFor',
     'ReducedProblemDecoratorFor',

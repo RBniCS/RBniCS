@@ -21,18 +21,16 @@ from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractPr
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
 import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
 
 @Extends(ProperOrthogonalDecompositionBase)
 @BackendFor("numpy", inputs=(AbstractFunctionsList, Matrix.Type(), (str, None)))
 class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
-    @override
     def __init__(self, Z, X, component=None):
         ProperOrthogonalDecompositionBase.__init__(self, Z, X, component, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping, rbnics.backends.online.numpy.SnapshotsMatrix, rbnics.backends.online.numpy.FunctionsList)
         
-    @override
     def store_snapshot(self, snapshot, component=None, weight=None):
         self.snapshots_matrix.enrich(snapshot, component, weight)
         

@@ -18,7 +18,7 @@
 
 
 from rbnics.backends import FunctionsList, ProperOrthogonalDecomposition
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
@@ -30,7 +30,6 @@ StokesOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(Stoke
 class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):    
     
     ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
-    @override
     def _init_offline(self):
         # We cannot use the standard initialization provided by PODGalerkinReduction because
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code
@@ -94,7 +93,6 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
-    @override
     def error_analysis(self, N=None, **kwargs):        
         components = ["v", "p", "u", "w", "q"] # but not supremizers
         kwargs["components"] = components

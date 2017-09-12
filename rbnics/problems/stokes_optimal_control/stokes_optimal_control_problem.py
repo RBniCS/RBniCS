@@ -18,7 +18,7 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum, transpose
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 StokesOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
@@ -52,7 +52,6 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
     """
     
     ## Default initialization of members
-    @override
     def __init__(self, V, **kwargs):
         # Call to parent
         StokesOptimalControlProblem_Base.__init__(self, V, **kwargs)
@@ -194,7 +193,6 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         return self._cache_key_and_file_from_kwargs()
         
     ## Perform a truth evaluation of the cost functional
-    @override
     def _compute_output(self):
         assembled_operator = dict()
         for term in ("m", "n", "g", "h"):
@@ -218,13 +216,11 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         assert isinstance(component, str)
         return import_(supremizer, folder, filename + "_" + component, suffix, component)
         
-    @override
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if component is None:
             component = ["v", "p", "u", "w", "q"] # but not "s" and "r"
         StokesOptimalControlProblem_Base.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
         
-    @override
     def import_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if component is None:
             component = ["v", "p", "u", "w", "q"] # but not "s" and "r"

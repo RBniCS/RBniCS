@@ -21,7 +21,7 @@ from numpy.linalg import norm
 from dolfin import Cell, FunctionSpace, Point
 import rbnics.backends.dolfin
 from rbnics.backends.abstract import ReducedVertices as AbstractReducedVertices
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 from rbnics.utils.io import ExportableList, Folders
 
 @Extends(AbstractReducedVertices)
@@ -58,7 +58,6 @@ class ReducedVertices(AbstractReducedVertices):
         else:
             self._reduced_mesh = self.backend.ReducedMesh((V, ), copy_from=copy_from._reduced_mesh, key_as_slice=key_as_slice, key_as_int=key_as_int)
         
-    @override
     def append(self, vertex_and_component_and_dof):
         assert isinstance(vertex_and_component_and_dof, tuple)
         assert len(vertex_and_component_and_dof) == 3
@@ -69,7 +68,6 @@ class ReducedVertices(AbstractReducedVertices):
         # Update reduced mesh
         self._reduced_mesh.append((global_dof, ))
         
-    @override
     def save(self, directory, filename):
         # Get full directory name
         full_directory = Folders.Folder(directory + "/" + filename)
@@ -77,14 +75,12 @@ class ReducedVertices(AbstractReducedVertices):
         # Save reduced mesh
         self._reduced_mesh.save(directory, filename)
         
-    @override
     def load(self, directory, filename):
         # Get full directory name
         full_directory = directory + "/" + filename
         # Load reduced mesh
         return self._reduced_mesh.load(directory, filename)
         
-    @override
     def __getitem__(self, key):
         assert isinstance(key, slice)
         assert key.start is None 

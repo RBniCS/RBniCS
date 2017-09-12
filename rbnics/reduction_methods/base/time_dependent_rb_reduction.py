@@ -21,7 +21,7 @@ from math import sqrt
 from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature, transpose
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
-from rbnics.utils.decorators import Extends, override, RequiredBaseDecorators
+from rbnics.utils.decorators import Extends, RequiredBaseDecorators
 from rbnics.utils.io import ErrorAnalysisTable
 from rbnics.utils.mpi import log, DEBUG
 
@@ -32,7 +32,6 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     class TimeDependentRBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
         ## Default initialization of members
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -58,7 +57,6 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.tol2 = 0.
                 
         ## OFFLINE: set maximum reduced space dimension (stopping criterion)
-        @override
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set POD-Greedy sizes
@@ -78,7 +76,6 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.N1 = kwargs["POD_Greedy"]
                 
         ## OFFLINE: set tolerance (stopping criterion)
-        @override
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set POD-Greedy tolerance
@@ -124,7 +121,6 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             return tol
         
         ## Initialize data structures required for the offline phase
-        @override
         def _init_offline(self):
             # Call parent to initialize inner product
             output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
@@ -258,7 +254,6 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             return (Z2, N_plus_N2)
         
         ## Choose the next parameter in the offline stage in a greedy fashion
-        @override
         def _greedy(self):
             
             # Print some additional information related to the current value of the parameter
@@ -289,7 +284,6 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
-        @override
         def error_analysis(self, N=None, **kwargs):
             if "components" in kwargs:
                 components = kwargs["components"]

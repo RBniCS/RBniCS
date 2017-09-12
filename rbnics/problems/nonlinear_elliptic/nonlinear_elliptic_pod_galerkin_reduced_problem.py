@@ -18,7 +18,7 @@
 
 from rbnics.problems.elliptic_coercive import EllipticCoercivePODGalerkinReducedProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_reduced_problem import NonlinearEllipticReducedProblem
-from rbnics.utils.decorators import Extends, override, ReducedProblemFor
+from rbnics.utils.decorators import Extends, ReducedProblemFor
 from rbnics.problems.base import NonlinearPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from rbnics.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGalerkinReduction

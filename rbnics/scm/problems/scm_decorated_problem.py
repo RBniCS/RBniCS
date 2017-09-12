@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, ProblemDecoratorFor
+from rbnics.utils.decorators import Extends, ProblemDecoratorFor
 from rbnics.scm.problems.scm_approximation import SCMApproximation
 
 def SCMDecoratedProblem(
@@ -49,7 +49,6 @@ def SCMDecoratedProblem(
         @Extends(ParametrizedDifferentialProblem_DerivedClass, preserve_class_name=True)
         class SCMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             ## Default initialization of members
-            @override
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -64,7 +63,6 @@ def SCMDecoratedProblem(
                 self.SCM_approximation = SCMApproximation(self, self.name() + "/scm", **decorator_inputs)
                 
             ## Return the alpha_lower bound.
-            @override
             def get_stability_factor(self):
                 return self.SCM_approximation.get_stability_factor_lower_bound()
 

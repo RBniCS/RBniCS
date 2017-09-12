@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 @Extends(AbstractParametrizedTensorFactory)
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
@@ -31,39 +31,30 @@ class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
         self.backend = backend
         self.wrapping = wrapping
     
-    @override
     def create_interpolation_locations_container(self, **kwargs):
         return self.backend.ReducedMesh(self._spaces, **kwargs)
         
-    @override
     def create_snapshots_container(self):
         return self.backend.TensorSnapshotsList(self._spaces, self._empty_snapshot)
         
-    @override
     def create_empty_snapshot(self):
         return self.backend.copy(self._empty_snapshot)
         
-    @override
     def create_basis_container(self):
         return self.backend.TensorBasisList(self._spaces, self._empty_snapshot)
         
-    @override
     def create_POD_container(self):
         return self.backend.HighOrderProperOrthogonalDecomposition(self._spaces, self._empty_snapshot)
         
-    @override
     def name(self):
         return self._name
         
-    @override
     def description(self):
         return self._description
         
-    @override
     def is_parametrized(self):
         return self.wrapping.is_parametrized(self._form, self.wrapping.form_iterator) or self.is_time_dependent()
         
-    @override
     def is_time_dependent(self):
         return self.wrapping.is_time_dependent(self._form, self.wrapping.form_iterator)
         

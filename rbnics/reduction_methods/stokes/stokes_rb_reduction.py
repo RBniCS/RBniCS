@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import GramSchmidt
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearRBReduction
 from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
@@ -31,7 +31,6 @@ StokesRBReduction_Base = LinearRBReduction(StokesReductionMethod(DifferentialPro
 class StokesRBReduction(StokesRBReduction_Base):    
     
     ## Initialize data structures required for the offline phase: overridden version because supremizer GS is different from a standard component
-    @override
     def _init_offline(self):
         # We cannot use the standard initialization provided by RBReduction because
         # supremizer GS requires a custom initialization. We thus duplicate here part of its code
@@ -70,7 +69,6 @@ class StokesRBReduction(StokesRBReduction_Base):
     # over the testing set.
     # Note that we cannot move this method to the parent class because error analysis is defined
     # by the RBReduction decorator
-    @override
     def error_analysis(self, N=None, **kwargs):
         components = ["u", "p"] # but not "s"
         kwargs["components"] = components

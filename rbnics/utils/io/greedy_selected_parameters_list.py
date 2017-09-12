@@ -17,11 +17,9 @@
 #
 
 from rbnics.utils.io.exportable_list import ExportableList
-from rbnics.utils.decorators import Extends, override
 
 @Extends(ExportableList)
 class GreedySelectedParametersList(ExportableList):
-    @override
     def __init__(self):
         ExportableList.__init__(self, "pickle")
         

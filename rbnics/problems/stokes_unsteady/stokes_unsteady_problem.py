@@ -20,7 +20,7 @@
 from rbnics.problems.base import LinearTimeDependentProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.backends import copy, product, sum
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
@@ -28,7 +28,6 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
     class AbstractCFDUnsteadyProblem_Class(AbstractCFDUnsteadyProblem_Base):
         
         ## Default initialization of members
-        @override
         def __init__(self, V, **kwargs):
             # Call to parent
             AbstractCFDUnsteadyProblem_Base.__init__(self, V, **kwargs)
@@ -60,13 +59,11 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             assert suffix is None
             return AbstractCFDUnsteadyProblem_Base.import_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=int(round(self.t/self.dt)))
 
-        @override
         def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if component is None:
                 component = ["u", "p"] # but not "s"
             AbstractCFDUnsteadyProblem_Base.export_solution(self, folder, filename, solution_over_time, solution_dot_over_time, component, suffix)
             
-        @override
         def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if component is None:
                 component = ["u", "p"] # but not "s"

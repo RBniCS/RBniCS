@@ -20,13 +20,12 @@
 from rbnics.sampling.distributions import CompositeDistribution, UniformDistribution
 from rbnics.utils.io import ExportableList
 from rbnics.utils.mpi import is_io_process, parallel_max
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 from numpy import zeros as array
 from numpy import argmax
 
 @Extends(ExportableList)
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
-    @override
     def __init__(self, box):
         ExportableList.__init__(self, "pickle")
         self.box = box
@@ -48,13 +47,11 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             for i in range(n):
                 self._list.append(tuple())
         
-    @override
     def save(self, directory, filename):
         ExportableList.save(self, directory, filename)
         # Also save box
         self._FileIO.save_file(self.box, directory, filename + "_box")
         
-    @override
     def load(self, directory, filename):
         result = ExportableList.load(self, directory, filename)
         if not result:

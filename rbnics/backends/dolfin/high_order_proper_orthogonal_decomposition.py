@@ -20,18 +20,16 @@ from dolfin import FunctionSpace
 from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends, override
+from rbnics.utils.decorators import BackendFor, Extends
 
 HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
 
 @Extends(HighOrderProperOrthogonalDecompositionBase)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
-    @override
     def __init__(self, V, empty_tensor):
         HighOrderProperOrthogonalDecompositionBase.__init__(self, V, None, empty_tensor, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, rbnics.backends.dolfin.TensorSnapshotsList, rbnics.backends.dolfin.TensorBasisList)
         
-    @override
     def store_snapshot(self, snapshot):
         self.snapshots_matrix.enrich(snapshot)
         

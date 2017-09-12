@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_problem import NonlinearParabolicProblem
 from rbnics.reduction_methods.base import NonlinearTimeDependentPODGalerkinReduction
 from rbnics.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGalerkinReduction

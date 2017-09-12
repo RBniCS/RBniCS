@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, override, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import Extends, ReductionMethodDecoratorFor
 from rbnics.scm.problems import ExactCoercivityConstant, SCM
 
 @ReductionMethodDecoratorFor(ExactCoercivityConstant, replaces=SCM)
@@ -24,12 +24,10 @@ def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReduction
     
     @Extends(DifferentialProblemReductionMethod_DerivedClass, preserve_class_name=True)
     class ExactCoercivityConstantDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
-        @override
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
-        @override
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
             # Since exact evaluation is required, we cannot use a distributed training set

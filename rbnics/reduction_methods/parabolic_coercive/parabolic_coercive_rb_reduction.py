@@ -17,7 +17,7 @@
 #
 
 from math import sqrt
-from rbnics.utils.decorators import Extends, override, ReductionMethodFor
+from rbnics.utils.decorators import Extends, ReductionMethodFor
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.base import LinearTimeDependentRBReduction
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction

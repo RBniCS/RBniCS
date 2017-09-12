@@ -18,7 +18,7 @@
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
-from rbnics.utils.decorators import Extends, override
+from rbnics.utils.decorators import Extends
 
 def NonlinearEllipticReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
     
