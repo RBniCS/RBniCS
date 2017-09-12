@@ -17,9 +17,7 @@
 #
 
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
-from rbnics.utils.decorators import Extends
 
-@Extends(AbstractParametrizedTensorFactory)
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     def __init__(self, form, spaces, empty_snapshot, backend, wrapping):
         AbstractParametrizedTensorFactory.__init__(self, form)

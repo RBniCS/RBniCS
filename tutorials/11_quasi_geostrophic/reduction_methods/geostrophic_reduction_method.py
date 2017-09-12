@@ -17,7 +17,6 @@
 #
 
 from rbnics.reduction_methods.base import LinearReductionMethod
-from rbnics.utils.decorators import Extends
 from problems import GeostrophicProblem
 
 # Base class containing the interface of a projection based ROM
@@ -26,7 +25,6 @@ def GeostrophicReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
     GeostrophicReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
 
-    @Extends(GeostrophicReductionMethod_Base)
     class GeostrophicReductionMethod_Class(GeostrophicReductionMethod_Base):
         pass
     

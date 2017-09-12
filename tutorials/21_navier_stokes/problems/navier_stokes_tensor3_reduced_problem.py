@@ -21,13 +21,11 @@ from dolfin import TestFunction, TrialFunction
 from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.problems.navier_stokes.navier_stokes_reduced_problem import NavierStokesReducedProblem
-from rbnics.utils.decorators import Extends
 
 def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
     
     NavierStokesTensor3ReducedProblem_Base = NavierStokesReducedProblem(NavierStokesReducedProblem_DerivedClass)
     
-    @Extends(NavierStokesTensor3ReducedProblem_Base)
     class NavierStokesTensor3ReducedProblem_Class(NavierStokesTensor3ReducedProblem_Base):
         def __init__(self, truth_problem, **kwargs):
             # Call Parent

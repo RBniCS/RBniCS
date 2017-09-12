@@ -21,11 +21,10 @@ from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractPr
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
 import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
 ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
 
-@Extends(ProperOrthogonalDecompositionBase)
 @BackendFor("numpy", inputs=(AbstractFunctionsList, Matrix.Type(), (str, None)))
 class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
     def __init__(self, Z, X, component=None):

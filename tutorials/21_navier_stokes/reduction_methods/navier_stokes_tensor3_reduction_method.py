@@ -17,13 +17,11 @@
 #
 
 from rbnics.reduction_methods.navier_stokes import NavierStokesReductionMethod
-from rbnics.utils.decorators import Extends
 
 def NavierStokesTensor3ReductionMethod(NavierStokesReductionMethod_DerivedClass):
     
     NavierStokesTensor3ReductionMethod_Base = NavierStokesReductionMethod_DerivedClass
     
-    @Extends(NavierStokesTensor3ReductionMethod_Base)
     class NavierStokesTensor3ReductionMethod_Class(NavierStokesTensor3ReductionMethod_Base):
         pass
         

@@ -18,14 +18,13 @@
 
 from rbnics.problems.nonlinear_elliptic import NonlinearEllipticPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_reduced_problem import NonlinearParabolicReducedProblem
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import NonlinearTimeDependentPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_problem import NonlinearParabolicProblem
 from rbnics.reduction_methods.nonlinear_parabolic import NonlinearParabolicPODGalerkinReduction
 
 NonlinearParabolicPODGalerkinReducedProblem_Base = NonlinearTimeDependentPODGalerkinReducedProblem(NonlinearParabolicReducedProblem(NonlinearEllipticPODGalerkinReducedProblem))
 
-@Extends(NonlinearParabolicPODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(NonlinearParabolicProblem, NonlinearParabolicPODGalerkinReduction)
 class NonlinearParabolicPODGalerkinReducedProblem(NonlinearParabolicPODGalerkinReducedProblem_Base):
     pass

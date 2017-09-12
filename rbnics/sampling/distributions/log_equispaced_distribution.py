@@ -19,9 +19,7 @@
 from math import exp, log
 from rbnics.sampling.distributions.distribution import Distribution
 from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution
-from rbnics.utils.decorators import Extends
 
-@Extends(Distribution)
 class LogEquispacedDistribution(Distribution):
     def __init__(self):
         self.equispaced_distribution = EquispacedDistribution()

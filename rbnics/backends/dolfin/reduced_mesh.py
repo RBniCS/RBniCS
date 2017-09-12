@@ -24,12 +24,11 @@ import rbnics.backends.dolfin
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
 from rbnics.backends.dolfin.wrapping import FunctionSpace
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
-from rbnics.utils.decorators import BackendFor, Extends, get_problem_from_problem_name
+from rbnics.utils.decorators import BackendFor, get_problem_from_problem_name
 from rbnics.utils.io import ExportableList, Folders
 from rbnics.utils.mpi import is_io_process
 from mpi4py.MPI import MAX, SUM
 
-@Extends(AbstractReducedMesh)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class ReducedMesh(AbstractReducedMesh):
     def __init__(self, V, subdomain_data=None, **kwargs):

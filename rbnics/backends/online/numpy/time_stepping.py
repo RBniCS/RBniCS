@@ -35,9 +35,8 @@ from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.wrapping import function_copy
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(AbstractTimeStepping)
 @BackendFor("numpy", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
     def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):

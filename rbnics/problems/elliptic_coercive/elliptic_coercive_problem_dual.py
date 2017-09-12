@@ -19,11 +19,9 @@
 from rbnics.backends import adjoint, Function
 from rbnics.problems.base import DualProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.utils.decorators import Extends
 
 EllipticCoerciveProblem_Dual_Base = DualProblem(EllipticCoerciveProblem)
 
-@Extends(EllipticCoerciveProblem_Dual_Base)
 class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem_Dual_Base):
         
     ## Return theta multiplicative terms of the affine expansion of the problem.

@@ -17,9 +17,7 @@
 #
 
 from rbnics.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
-from rbnics.utils.decorators import Extends
 
-@Extends(AbstractParametrizedExpressionFactory)
 class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
     def __init__(self, expression, space, inner_product, backend, wrapping):
         AbstractParametrizedExpressionFactory.__init__(self, expression)

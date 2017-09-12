@@ -47,7 +47,7 @@ else:
     linear_programming_backends["scipy"] = True
     
 from rbnics.backends.abstract import LinearProgramSolver as AbstractLinearProgramSolver
-from rbnics.utils.decorators import BackendFor, Extends, list_of, tuple_of
+from rbnics.utils.decorators import BackendFor, list_of, tuple_of
 
 # Helper classes for linear pogram
 from numpy import eye, hstack, matrix as numpy_matrix, ndarray as numpy_vector, vstack, zeros
@@ -59,7 +59,6 @@ class Error(RuntimeError):
     pass
 
 if linear_programming_backends["cvxopt"]:
-    @Extends(AbstractLinearProgramSolver)
     class CVXOPTLinearProgramSolver(AbstractLinearProgramSolver):
         def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):
             self.Q = len(cost)
@@ -85,7 +84,6 @@ if linear_programming_backends["cvxopt"]:
                 return result["primal objective"]
     
 if linear_programming_backends["python-glpk"]:
-    @Extends(AbstractLinearProgramSolver)
     class PythonGLPKLinearProgramSolver(AbstractLinearProgramSolver):
         def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):
             self.cost = cost
@@ -153,7 +151,6 @@ if linear_programming_backends["python-glpk"]:
             return min_f
             
 if linear_programming_backends["scipy"]:
-    @Extends(AbstractLinearProgramSolver)
     class SciPyLinearProgramSolver(AbstractLinearProgramSolver):
         def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):
             self.cost = cost
@@ -169,17 +166,14 @@ if linear_programming_backends["scipy"]:
                 return result.fun
             
 if linear_programming_backends["cvxopt"]:
-    @Extends(CVXOPTLinearProgramSolver)
     @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(float))))
     class LinearProgramSolver(CVXOPTLinearProgramSolver):
         pass
 elif linear_programming_backends["python-glpk"]:
-    @Extends(PythonGLPKLinearProgramSolver)
     @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(float))))
     class LinearProgramSolver(PythonGLPKLinearProgramSolver):
         pass
 elif linear_programming_backends["scipy"]:
-    @Extends(SciPyLinearProgramSolver)
     @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(float))))
     class LinearProgramSolver(SciPyLinearProgramSolver):
         pass

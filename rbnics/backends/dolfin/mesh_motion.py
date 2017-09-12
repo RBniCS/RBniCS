@@ -19,10 +19,9 @@
 from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, log, MeshFunctionSizet, VectorFunctionSpace
 from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
-from rbnics.utils.decorators import BackendFor, Extends, tuple_of
+from rbnics.utils.decorators import BackendFor, tuple_of
 from mpi4py.MPI import MAX, MIN
 
-@Extends(AbstractMeshMotion)
 @BackendFor("dolfin", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
 class MeshMotion(AbstractMeshMotion):
     def __init__(self, V, subdomains, shape_parametrization_expression):

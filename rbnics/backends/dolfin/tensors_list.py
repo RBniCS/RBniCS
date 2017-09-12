@@ -19,9 +19,8 @@
 from dolfin import FunctionSpace
 from rbnics.backends.basic import TensorsList as BasicTensorsList
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(BasicTensorsList)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class TensorsList(BasicTensorsList):
     def __init__(self, V, empty_tensor):

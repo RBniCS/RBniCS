@@ -17,9 +17,7 @@
 #
 
 from rbnics.utils.io import ExportableList
-from rbnics.utils.decorators import Extends
 
-@Extends(ExportableList)
 class UpperBoundsList(ExportableList):
     def __init__(self):
         ExportableList.__init__(self, "pickle")

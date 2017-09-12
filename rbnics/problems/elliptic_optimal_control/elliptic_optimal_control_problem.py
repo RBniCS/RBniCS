@@ -18,12 +18,10 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import Function, LinearSolver, product, sum, transpose
-from rbnics.utils.decorators import Extends
 
 EllipticOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
 # Base class containing the definition of saddle point problems
-@Extends(EllipticOptimalControlProblem_Base)
 class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
     """
     The problem to be solved is 

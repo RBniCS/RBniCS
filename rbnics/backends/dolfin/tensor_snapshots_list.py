@@ -18,9 +18,8 @@
 
 from dolfin import FunctionSpace
 from rbnics.backends.dolfin.tensors_list import TensorsList
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(TensorsList)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class TensorSnapshotsList(TensorsList):
     pass

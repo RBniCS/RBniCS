@@ -18,7 +18,7 @@
 
 import hashlib
 from rbnics.eim.problems.eim_approximation import EIMApproximation
-from rbnics.utils.decorators import Extends, sync_setters
+from rbnics.utils.decorators import sync_setters
 
 def set_mu_decorator(set_mu):
     def decorated_set_mu(self, mu):
@@ -35,7 +35,6 @@ def set_mu_decorator(set_mu):
             self.set_time(mu["t"])
     return decorated_set_mu
 
-@Extends(EIMApproximation)
 class TimeDependentEIMApproximation(EIMApproximation):
     
     @sync_setters("truth_problem", "set_mu", "mu", set_mu_decorator)

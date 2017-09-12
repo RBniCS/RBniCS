@@ -20,7 +20,6 @@
 from rbnics.problems.base import LinearTimeDependentReducedProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends
 
 def AbstractCFDUnsteadyReducedProblem(AbstractCFDUnsteadyReducedProblem_Base):
     return AbstractCFDUnsteadyReducedProblem_Base
@@ -29,7 +28,6 @@ def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
 
     StokesUnsteadyReducedProblem_Base = AbstractCFDUnsteadyReducedProblem(LinearTimeDependentReducedProblem(StokesReducedProblem_DerivedClass))
 
-    @Extends(StokesUnsteadyReducedProblem_Base)
     class StokesUnsteadyReducedProblem_Class(StokesUnsteadyReducedProblem_Base):
             
         class ProblemSolver(StokesUnsteadyReducedProblem_Base.ProblemSolver):

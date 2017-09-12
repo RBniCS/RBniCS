@@ -19,9 +19,8 @@
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 from rbnics.backends.basic import TensorsList as BasicTensorsList
 import rbnics.backends.online.numpy
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(BasicTensorsList)
 @BackendFor("numpy", inputs=(AbstractTensorsList, ))
 class TensorsList(BasicTensorsList):
     def __init__(self, Z, empty_tensor):

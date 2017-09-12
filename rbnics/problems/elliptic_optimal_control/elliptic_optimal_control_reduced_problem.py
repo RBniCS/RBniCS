@@ -21,7 +21,6 @@ from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends
 from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlReductionMethod
 
 def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -30,7 +29,6 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
 
     # Base class containing the interface of a projection based ROM
     # for saddle point problems.
-    @Extends(EllipticOptimalControlReducedProblem_Base)
     class EllipticOptimalControlReducedProblem_Class(EllipticOptimalControlReducedProblem_Base):
         
         class ProblemSolver(EllipticOptimalControlReducedProblem_Base.ProblemSolver):

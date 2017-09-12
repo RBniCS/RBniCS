@@ -20,11 +20,10 @@ from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
 import rbnics.backends.online.numpy
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
 HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
 
-@Extends(HighOrderProperOrthogonalDecompositionBase)
 @BackendFor("numpy", inputs=(AbstractFunctionsList, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
     def __init__(self, Z, empty_tensor):

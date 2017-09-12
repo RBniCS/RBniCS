@@ -16,10 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 
-@Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("common", inputs=((float, int), ))
 class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     def __init__(self, form):

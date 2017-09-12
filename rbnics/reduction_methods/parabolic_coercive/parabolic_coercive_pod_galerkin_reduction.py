@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.base import LinearTimeDependentPODGalerkinReduction
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
@@ -26,7 +26,6 @@ ParabolicCoercivePODGalerkinReduction_Base = LinearTimeDependentPODGalerkinReduc
 
 # Base class containing the interface of a POD-Galerkin ROM
 # for parabolic coercive problems
-@Extends(ParabolicCoercivePODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(ParabolicCoerciveProblem, "PODGalerkin")
 class ParabolicCoercivePODGalerkinReduction(ParabolicCoercivePODGalerkinReduction_Base):
     pass

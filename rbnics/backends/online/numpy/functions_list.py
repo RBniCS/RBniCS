@@ -19,9 +19,8 @@
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.basic import FunctionsList as BasicFunctionsList
 import rbnics.backends.online.numpy
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(BasicFunctionsList)
 @BackendFor("numpy", inputs=(AbstractFunctionsList, (str, None)))
 class FunctionsList(BasicFunctionsList):
     def __init__(self, Z, component=None):

@@ -19,9 +19,7 @@
 from math import exp, log
 from rbnics.sampling.distributions.distribution import Distribution
 from rbnics.sampling.distributions.uniform_distribution import UniformDistribution
-from rbnics.utils.decorators import Extends
 
-@Extends(Distribution)
 class LogUniformDistribution(Distribution):
     def __init__(self):
         self.uniform_distribution = UniformDistribution()

@@ -22,11 +22,9 @@ from rbnics.backends import transpose
 from rbnics.backends.online import OnlineVector
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends
 from rbnics.scm.problems import ParametrizedCoercivityConstantEigenProblem
 
 # Empirical interpolation method for the interpolation of parametrized functions
-@Extends(ReductionMethod)
 class SCMApproximationReductionMethod(ReductionMethod):
     
     ## Default initialization of members

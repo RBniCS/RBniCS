@@ -22,11 +22,10 @@ import hashlib
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
 from rbnics.utils.config import config
-from rbnics.utils.decorators import Extends, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
+from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import log, PROGRESS
 
 # Base class containing the definition of elliptic coercive problems
-@Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem

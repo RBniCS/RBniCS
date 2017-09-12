@@ -17,10 +17,9 @@
 #
 
 from rbnics.backends.abstract import SymbolicParameters as AbstractSymbolicParameters
-from rbnics.utils.decorators import BackendFor, Extends, tuple_of
+from rbnics.utils.decorators import BackendFor, tuple_of
 
 # Handle the trivial case of a non-parametric problem, that is mu = ()
-@Extends((AbstractSymbolicParameters, tuple))
 @BackendFor("common", inputs=(object, object, tuple_of(())))
 class SymbolicParameters(AbstractSymbolicParameters, tuple):
     def __new__(cls, problem, V, mu):

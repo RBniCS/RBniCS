@@ -17,11 +17,9 @@
 #
 
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
-from rbnics.utils.decorators import Extends
 
 def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
     
-    @Extends(AbstractCFDUnsteadyReductionMethod_Base)
     class AbstractCFDUnsteadyReductionMethod_Class(AbstractCFDUnsteadyReductionMethod_Base):
         
         ## Default initialization of members
@@ -61,7 +59,6 @@ def StokesUnsteadyReductionMethod(StokesReductionMethod_DerivedClass):
     
     StokesUnsteadyReductionMethod_Base = AbstractCFDUnsteadyReductionMethod(TimeDependentReductionMethod(StokesReductionMethod_DerivedClass))
     
-    @Extends(StokesUnsteadyReductionMethod_Base)
     class StokesUnsteadyReductionMethod_Class(StokesUnsteadyReductionMethod_Base):
         pass
     

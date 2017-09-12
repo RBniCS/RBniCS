@@ -22,9 +22,8 @@ from dolfin import assemble
 from rbnics.backends.basic import ParametrizedTensorFactory as BasicParametrizedTensorFactory
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.wrapping import form_argument_space
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(BasicParametrizedTensorFactory)
 @BackendFor("dolfin", inputs=(Form, ))
 class ParametrizedTensorFactory(BasicParametrizedTensorFactory):
     def __init__(self, form):

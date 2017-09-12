@@ -21,9 +21,8 @@ from dolfin import FunctionSpace
 from rbnics.backends.basic import FunctionsList as BasicFunctionsList
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.wrapping import function_from_ufl_operators
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(BasicFunctionsList)
 @BackendFor("dolfin", inputs=(FunctionSpace, (str, None)))
 class FunctionsList(BasicFunctionsList):
     def __init__(self, V, component=None):

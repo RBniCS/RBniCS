@@ -17,13 +17,12 @@
 #
 
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 from problems import GeostrophicProblem
 from geostrophic_reduction_method import GeostrophicReductionMethod
 
 GeostrophicPODGalerkinReduction_Base = LinearPODGalerkinReduction(GeostrophicReductionMethod(DifferentialProblemReductionMethod))
 
-@Extends(GeostrophicPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(GeostrophicProblem, "PODGalerkin")
 class GeostrophicPODGalerkinReduction(GeostrophicPODGalerkinReduction_Base):
     pass 

@@ -23,9 +23,8 @@ import rbnics.backends.online.numpy
 import rbnics.backends.online.numpy.wrapping
 from rbnics.backends.online.numpy.matrix import Matrix as OnlineMatrix
 from rbnics.backends.online.numpy.vector import Vector as OnlineVector
-from rbnics.utils.decorators import BackendFor, Extends, list_of, tuple_of
+from rbnics.utils.decorators import BackendFor, list_of, tuple_of
 
-@Extends(BasicAffineExpansionStorage)
 @BackendFor("numpy", inputs=((int, tuple_of(OnlineMatrix.Type()), tuple_of(OnlineVector.Type()), AbstractAffineExpansionStorage), (int, None)))
 class AffineExpansionStorage(BasicAffineExpansionStorage):
     def __init__(self, arg1, arg2=None):

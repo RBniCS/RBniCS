@@ -17,7 +17,7 @@
 #
 
 from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
@@ -26,7 +26,6 @@ StokesPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(StokesRed
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(StokesPODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(StokesProblem, StokesPODGalerkinReduction)
 class StokesPODGalerkinReducedProblem(StokesPODGalerkinReducedProblem_Base):
     pass

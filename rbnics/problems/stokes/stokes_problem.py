@@ -18,13 +18,11 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum
-from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
 # Base class containing the definition of saddle point problems
-@Extends(StokesProblem_Base)
 class StokesProblem(StokesProblem_Base):
     
     ## Default initialization of members

@@ -17,10 +17,9 @@
 #
 
 from rbnics.backends.abstract.tensors_list import TensorsList
-from rbnics.utils.decorators import AbstractBackend, Extends
+from rbnics.utils.decorators import AbstractBackend
 
 @AbstractBackend
-@Extends(TensorsList)
 class TensorBasisList(TensorsList):
     pass
 

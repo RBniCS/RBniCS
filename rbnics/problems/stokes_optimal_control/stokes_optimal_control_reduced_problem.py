@@ -21,14 +21,12 @@ from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends
 from rbnics.reduction_methods.stokes_optimal_control import StokesOptimalControlReductionMethod
 
 def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
     StokesOptimalControlReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
 
-    @Extends(StokesOptimalControlReducedProblem_Base)
     class StokesOptimalControlReducedProblem_Class(StokesOptimalControlReducedProblem_Base):
         
         class ProblemSolver(StokesOptimalControlReducedProblem_Base.ProblemSolver):

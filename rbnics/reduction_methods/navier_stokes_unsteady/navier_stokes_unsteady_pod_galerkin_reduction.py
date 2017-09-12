@@ -21,14 +21,13 @@ from rbnics.reduction_methods.base import NonlinearTimeDependentPODGalerkinReduc
 from rbnics.reduction_methods.navier_stokes_unsteady.navier_stokes_unsteady_reduction_method import NavierStokesUnsteadyReductionMethod
 from rbnics.reduction_methods.navier_stokes import NavierStokesPODGalerkinReduction
 from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_pod_galerkin_reduction import AbstractCFDUnsteadyPODGalerkinReduction
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 
 NavierStokesUnsteadyPODGalerkinReduction_Base = AbstractCFDUnsteadyPODGalerkinReduction(
     NavierStokesPODGalerkinReduction,
     NonlinearTimeDependentPODGalerkinReduction(NavierStokesUnsteadyReductionMethod(NavierStokesPODGalerkinReduction))
 )
 
-@Extends(NavierStokesUnsteadyPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(NavierStokesUnsteadyProblem, "PODGalerkin")
 class NavierStokesUnsteadyPODGalerkinReduction(NavierStokesUnsteadyPODGalerkinReduction_Base):
     pass

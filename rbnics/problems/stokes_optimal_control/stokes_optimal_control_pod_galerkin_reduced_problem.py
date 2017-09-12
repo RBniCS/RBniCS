@@ -17,14 +17,13 @@
 #
 
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_reduced_problem import StokesOptimalControlReducedProblem
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
 from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.stokes_optimal_control import StokesOptimalControlPODGalerkinReduction
 
 StokesOptimalControlPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem))
 
-@Extends(StokesOptimalControlPODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(StokesOptimalControlProblem, StokesOptimalControlPODGalerkinReduction)
 class StokesOptimalControlPODGalerkinReducedProblem(StokesOptimalControlPODGalerkinReducedProblem_Base):
     pass

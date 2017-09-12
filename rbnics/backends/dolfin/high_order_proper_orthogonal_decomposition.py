@@ -20,11 +20,10 @@ from dolfin import FunctionSpace
 from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
 HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
 
-@Extends(HighOrderProperOrthogonalDecompositionBase)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
     def __init__(self, V, empty_tensor):

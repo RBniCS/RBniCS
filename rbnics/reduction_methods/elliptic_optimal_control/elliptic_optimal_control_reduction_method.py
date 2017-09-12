@@ -18,7 +18,6 @@
 
 from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
-from rbnics.utils.decorators import Extends
 
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
@@ -26,7 +25,6 @@ def EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod_Der
     
     EllipticOptimalControlReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         
-    @Extends(EllipticOptimalControlReductionMethod_Base)
     class EllipticOptimalControlReductionMethod_Class(EllipticOptimalControlReductionMethod_Base):
         pass
     

@@ -20,11 +20,9 @@
 from rbnics.sampling.distributions import CompositeDistribution, UniformDistribution
 from rbnics.utils.io import ExportableList
 from rbnics.utils.mpi import is_io_process, parallel_max
-from rbnics.utils.decorators import Extends
 from numpy import zeros as array
 from numpy import argmax
 
-@Extends(ExportableList)
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     def __init__(self, box):
         ExportableList.__init__(self, "pickle")

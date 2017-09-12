@@ -18,14 +18,13 @@
 
 
 from rbnics.backends import FunctionsList, ProperOrthogonalDecomposition
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
 
 StokesOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
-@Extends(StokesOptimalControlPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(StokesOptimalControlProblem, "PODGalerkin")
 class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):    
     

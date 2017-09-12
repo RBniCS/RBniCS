@@ -22,11 +22,10 @@ from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
 ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
 
-@Extends(ProperOrthogonalDecompositionBase)
 @BackendFor("dolfin", inputs=(FunctionSpace, (Form, Matrix.Type()), (str, None)))
 class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
     def __init__(self, V, X, component=None):

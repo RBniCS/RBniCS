@@ -18,9 +18,7 @@
 
 from math import sqrt
 from rbnics.backends.abstract import GramSchmidt as AbstractGramSchmidt
-from rbnics.utils.decorators import Extends
 
-@Extends(AbstractGramSchmidt)
 class GramSchmidt(AbstractGramSchmidt):
     def __init__(self, X, backend, wrapping):
         # Inner product

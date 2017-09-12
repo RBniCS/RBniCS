@@ -18,10 +18,8 @@
 
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
 import rbnics.backends.online
-from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import is_io_process
 
-@Extends(AbstractBasisFunctionsMatrix)
 class BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
     def __init__(self, V_or_Z, backend, wrapping):
         self.V_or_Z = V_or_Z

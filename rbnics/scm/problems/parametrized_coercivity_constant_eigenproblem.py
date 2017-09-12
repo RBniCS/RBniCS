@@ -21,10 +21,9 @@ from numpy import isclose
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.backends import adjoint, AffineExpansionStorage, assign, copy, EigenSolver, export, Function, import_, product, sum
 from rbnics.utils.config import config
-from rbnics.utils.decorators import sync_setters, Extends
+from rbnics.utils.decorators import sync_setters
 from rbnics.utils.mpi import log, PROGRESS
 
-@Extends(ParametrizedProblem)
 class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
 
     ## Default initialization of members

@@ -18,7 +18,7 @@
 
 
 from rbnics.backends import GramSchmidt
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearRBReduction
 from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_reduction_method import EllipticOptimalControlReductionMethod
@@ -27,7 +27,6 @@ EllipticOptimalControlRBReduction_Base = LinearRBReduction(EllipticOptimalContro
 
 # Base class containing the interface of a RB ROM
 # for elliptic coercive problems
-@Extends(EllipticOptimalControlRBReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(EllipticOptimalControlProblem, "ReducedBasis")
 class EllipticOptimalControlRBReduction(EllipticOptimalControlRBReduction_Base):
     def update_basis_matrix(self, snapshot):

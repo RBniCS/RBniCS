@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.backends import product, sum, transpose
 from rbnics.problems.base import PrimalDualReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
@@ -26,7 +26,6 @@ from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_complia
 
 EllipticCoerciveRBNonCompliantReducedProblem_Base = PrimalDualReducedProblem(EllipticCoerciveRBReducedProblem)
 
-@Extends(EllipticCoerciveRBNonCompliantReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction, replaces=EllipticCoerciveRBReducedProblem, replaces_if=_problem_is_noncompliant)
 class EllipticCoerciveRBNonCompliantReducedProblem(EllipticCoerciveRBNonCompliantReducedProblem_Base):
     

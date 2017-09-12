@@ -18,12 +18,10 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import product, sum, transpose
-from rbnics.utils.decorators import Extends
 
 EllipticCoerciveProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
 # Base class containing the definition of elliptic coercive problems
-@Extends(EllipticCoerciveProblem_Base)
 class EllipticCoerciveProblem(EllipticCoerciveProblem_Base):
     
     ## Default initialization of members

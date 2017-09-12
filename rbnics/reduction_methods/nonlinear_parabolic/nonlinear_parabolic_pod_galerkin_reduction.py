@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_problem import NonlinearParabolicProblem
 from rbnics.reduction_methods.base import NonlinearTimeDependentPODGalerkinReduction
 from rbnics.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGalerkinReduction
@@ -24,7 +24,6 @@ from rbnics.reduction_methods.nonlinear_parabolic.nonlinear_parabolic_reduction_
 
 NonlinearParabolicPODGalerkinReduction_Base = NonlinearTimeDependentPODGalerkinReduction(NonlinearParabolicReductionMethod(NonlinearEllipticPODGalerkinReduction))
 
-@Extends(NonlinearParabolicPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(NonlinearParabolicProblem, "PODGalerkin")
 class NonlinearParabolicPODGalerkinReduction(NonlinearParabolicPODGalerkinReduction_Base):
     pass

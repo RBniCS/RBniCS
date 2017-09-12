@@ -19,7 +19,6 @@
 from rbnics.problems.base import NonlinearTimeDependentReducedProblem
 from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_problem import NonlinearParabolicProblem
 from rbnics.backends import product, sum
-from rbnics.utils.decorators import Extends
 
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems.
@@ -27,7 +26,6 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
     
     NonlinearParabolicReducedProblem_Base = NonlinearTimeDependentReducedProblem(NonlinearEllipticReducedProblem_DerivedClass)
     
-    @Extends(NonlinearParabolicReducedProblem_Base)
     class NonlinearParabolicReducedProblem_Class(NonlinearParabolicReducedProblem_Base):
             
         class ProblemSolver(NonlinearParabolicReducedProblem_Base.ProblemSolver):

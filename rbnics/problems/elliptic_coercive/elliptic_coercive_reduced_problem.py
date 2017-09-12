@@ -20,7 +20,6 @@ from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.backends import product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveReductionMethod
 
 def EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -29,7 +28,6 @@ def EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem_Derive
 
     # Base class containing the interface of a projection based ROM
     # for elliptic coercive problems.
-    @Extends(EllipticCoerciveReducedProblem_Base)
     class EllipticCoerciveReducedProblem_Class(EllipticCoerciveReducedProblem_Base):
         
         class ProblemSolver(EllipticCoerciveReducedProblem_Base.ProblemSolver):

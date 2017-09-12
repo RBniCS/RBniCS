@@ -18,9 +18,7 @@
 
 from dolfin import Function
 from rbnics.problems.navier_stokes import NavierStokesProblem
-from rbnics.utils.decorators import Extends
 
-@Extends(NavierStokesProblem)
 class NavierStokesTensor3Problem(NavierStokesProblem):
     
     ## Default initialization of members

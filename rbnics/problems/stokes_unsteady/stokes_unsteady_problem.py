@@ -20,11 +20,9 @@
 from rbnics.problems.base import LinearTimeDependentProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.backends import copy, product, sum
-from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
-    @Extends(AbstractCFDUnsteadyProblem_Base)
     class AbstractCFDUnsteadyProblem_Class(AbstractCFDUnsteadyProblem_Base):
         
         ## Default initialization of members
@@ -74,7 +72,6 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
 # Base class containing the definition of saddle point problems
 StokesUnsteadyProblem_Base = AbstractCFDUnsteadyProblem(LinearTimeDependentProblem(StokesProblem))
 
-@Extends(StokesUnsteadyProblem_Base)
 class StokesUnsteadyProblem(StokesUnsteadyProblem_Base):
     class ProblemSolver(StokesUnsteadyProblem_Base.ProblemSolver):
         def residual_eval(self, t, solution, solution_dot):

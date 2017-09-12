@@ -22,9 +22,8 @@ from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, ThetaType
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 
-@Extends(AbstractEigenSolver)
 @BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
 class EigenSolver(AbstractEigenSolver):
     def __init__(self, Z, A, B=None, bcs=None):

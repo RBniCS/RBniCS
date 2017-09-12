@@ -20,7 +20,7 @@ from math import sqrt
 from numpy import isclose
 from rbnics.problems.elliptic_coercive import EllipticCoerciveRBReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import LinearTimeDependentRBReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.parabolic_coercive import ParabolicCoerciveRBReduction
@@ -31,7 +31,6 @@ ParabolicCoerciveRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(Par
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(ParabolicCoerciveRBReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(ParabolicCoerciveProblem, ParabolicCoerciveRBReduction)
 class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
     

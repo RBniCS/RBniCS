@@ -19,13 +19,11 @@
 
 from rbnics.reduction_methods.base import LinearReductionMethod
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from rbnics.utils.decorators import Extends
 
 def StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
     StokesOptimalControlReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
     
-    @Extends(StokesOptimalControlReductionMethod_Base)
     class StokesOptimalControlReductionMethod_Class(StokesOptimalControlReductionMethod_Base):
         
         ## Default initialization of members

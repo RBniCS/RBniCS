@@ -27,11 +27,10 @@ from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
 from ufl.tensors import ComponentTensor, ListTensor
 from rbnics.utils.io import ExportableList
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 from rbnics.backends.dolfin.wrapping import expression_name
 
-@Extends(AbstractSeparatedParametrizedForm)
 @BackendFor("dolfin", inputs=(Form, ))
 class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     def __init__(self, form):

@@ -19,11 +19,9 @@
 from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
 from rbnics.backends import product, sum
-from rbnics.utils.decorators import Extends
 
 NonlinearEllipticProblem_Base = NonlinearProblem(EllipticCoerciveProblem)
 
-@Extends(NonlinearEllipticProblem_Base)
 class NonlinearEllipticProblem(NonlinearEllipticProblem_Base):
     
     ## Default initialization of members

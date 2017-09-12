@@ -18,9 +18,7 @@
 
 from numpy import random
 from rbnics.sampling.distributions.distribution import Distribution
-from rbnics.utils.decorators import Extends
 
-@Extends(Distribution)
 class UniformDistribution(Distribution):
     def sample(self, box, n):
         set_ = list() # of tuples

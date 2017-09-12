@@ -18,13 +18,12 @@
 
 from rbnics.problems.navier_stokes import NavierStokesPODGalerkinReducedProblem
 from navier_stokes_tensor3_reduced_problem import NavierStokesTensor3ReducedProblem
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from navier_stokes_tensor3_problem import NavierStokesTensor3Problem
 from reduction_methods import NavierStokesTensor3PODGalerkinReduction
 
 NavierStokesTensor3PODGalerkinReducedProblem_Base = NavierStokesTensor3ReducedProblem(NavierStokesPODGalerkinReducedProblem)
 
-@Extends(NavierStokesTensor3PODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(NavierStokesTensor3Problem, NavierStokesTensor3PODGalerkinReduction)
 class NavierStokesTensor3PODGalerkinReducedProblem(NavierStokesTensor3PODGalerkinReducedProblem_Base):
     pass

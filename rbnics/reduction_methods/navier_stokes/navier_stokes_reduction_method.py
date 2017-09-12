@@ -18,13 +18,11 @@
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
 from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
-from rbnics.utils.decorators import Extends
 
 def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
     
     NavierStokesReductionMethod_Base = NonlinearReductionMethod(StokesReductionMethod_DerivedClass)
     
-    @Extends(NavierStokesReductionMethod_Base)
     class NavierStokesReductionMethod_Class(NavierStokesReductionMethod_Base):
         pass
         

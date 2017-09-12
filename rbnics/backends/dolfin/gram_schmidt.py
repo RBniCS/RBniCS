@@ -20,9 +20,8 @@ from ufl import Form
 from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
 import rbnics.backends.dolfin
 from rbnics.backends.dolfin.matrix import Matrix
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(BasicGramSchmidt)
 @BackendFor("dolfin", inputs=((Form, Matrix.Type()), ))
 class GramSchmidt(BasicGramSchmidt):
     def __init__(self, X):

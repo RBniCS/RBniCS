@@ -21,9 +21,7 @@ from numpy import nditer as AffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.io import Folders, PickleIO as ContentItemShapeIO, PickleIO as ContentItemTypeIO, PickleIO as ContentShapeIO, PickleIO as DictIO, PickleIO as ScalarContentIO
-from rbnics.utils.decorators import Extends
 
-@Extends(AbstractAffineExpansionStorage)
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def __init__(self, arg1, arg2, backend, wrapping):
         self.backend = backend

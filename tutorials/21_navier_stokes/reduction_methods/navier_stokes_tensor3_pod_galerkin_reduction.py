@@ -19,11 +19,10 @@
 from rbnics.reduction_methods.navier_stokes import NavierStokesPODGalerkinReduction
 from problems.navier_stokes_tensor3_problem import NavierStokesTensor3Problem
 from navier_stokes_tensor3_reduction_method import NavierStokesTensor3ReductionMethod
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 
 NavierStokesTensor3PODGalerkinReduction_Base = NavierStokesTensor3ReductionMethod(NavierStokesPODGalerkinReduction)
 
-@Extends(NavierStokesTensor3PODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(NavierStokesTensor3Problem, "PODGalerkin")
 class NavierStokesTensor3PODGalerkinReduction(NavierStokesTensor3PODGalerkinReduction_Base):
     pass

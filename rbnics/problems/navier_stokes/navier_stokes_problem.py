@@ -19,12 +19,10 @@
 from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.backends import LinearSolver, product, sum
-from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 NavierStokesProblem_Base = NonlinearProblem(StokesProblem)
 
-@Extends(StokesProblem)
 class NavierStokesProblem(NavierStokesProblem_Base):
     
     ## Default initialization of members

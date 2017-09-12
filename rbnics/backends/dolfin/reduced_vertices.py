@@ -21,10 +21,9 @@ from numpy.linalg import norm
 from dolfin import Cell, FunctionSpace, Point
 import rbnics.backends.dolfin
 from rbnics.backends.abstract import ReducedVertices as AbstractReducedVertices
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 from rbnics.utils.io import ExportableList, Folders
 
-@Extends(AbstractReducedVertices)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class ReducedVertices(AbstractReducedVertices):
     def __init__(self, V, **kwargs):

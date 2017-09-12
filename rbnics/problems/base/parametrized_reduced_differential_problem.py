@@ -25,11 +25,10 @@ from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, BasisFunctionsMatrix, copy, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
 from rbnics.utils.config import config
-from rbnics.utils.decorators import Extends, StoreMapFromProblemToReducedProblem, sync_setters
+from rbnics.utils.decorators import StoreMapFromProblemToReducedProblem, sync_setters
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
 
-@Extends(ParametrizedProblem) # needs to be first in order to override for last the methods.
 @StoreMapFromProblemToReducedProblem
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """

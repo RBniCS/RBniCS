@@ -19,9 +19,8 @@
 from dolfin import FunctionSpace
 from rbnics.backends.abstract import SymbolicParameters as AbstractSymbolicParameters
 from rbnics.backends.dolfin.wrapping import ParametrizedConstant
-from rbnics.utils.decorators import BackendFor, Extends, ParametersType
+from rbnics.utils.decorators import BackendFor, ParametersType
 
-@Extends((AbstractSymbolicParameters, tuple))
 @BackendFor("dolfin", inputs=(object, FunctionSpace, ParametersType))
 class SymbolicParameters(AbstractSymbolicParameters, tuple):
     def __new__(cls, problem, V, mu):

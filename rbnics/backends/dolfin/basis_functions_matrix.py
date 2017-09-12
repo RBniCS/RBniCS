@@ -19,9 +19,8 @@
 from dolfin import FunctionSpace
 from rbnics.backends.basic import BasisFunctionsMatrix as BasicBasisFunctionsMatrix
 import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(BasicBasisFunctionsMatrix)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
     def __init__(self, V):

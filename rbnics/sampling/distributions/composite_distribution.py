@@ -18,9 +18,7 @@
 
 from rbnics.sampling.distributions.distribution import Distribution
 from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution
-from rbnics.utils.decorators import Extends
 
-@Extends(Distribution)
 class CompositeDistribution(Distribution):
     def __init__(self, distributions):
         self.distributions = distributions

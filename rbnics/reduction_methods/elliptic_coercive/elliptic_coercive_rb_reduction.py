@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearRBReduction
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
@@ -25,7 +25,6 @@ EllipticCoerciveRBReduction_Base = LinearRBReduction(EllipticCoerciveReductionMe
 
 # Base class containing the interface of the RB method
 # for (compliant) elliptic coercive problems
-@Extends(EllipticCoerciveRBReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(EllipticCoerciveProblem, "ReducedBasis")
 class EllipticCoerciveRBReduction(EllipticCoerciveRBReduction_Base):
     pass

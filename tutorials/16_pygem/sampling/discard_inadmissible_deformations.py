@@ -20,12 +20,10 @@
 from numpy import array_equal
 from dolfin import cells
 from rbnics.sampling.distributions import Distribution, EquispacedDistribution
-from rbnics.utils.decorators import Extends
 
 def DiscardInadmissibleDeformations(Distribution_DerivedClass):
     assert not issubclass(Distribution_DerivedClass, EquispacedDistribution) # we would have no way to replace inadmissible parameters
     
-    @Extends(Distribution_DerivedClass)
     class DiscardInadmissibleDeformations_Class(Distribution_DerivedClass):
         def __init__(self, truth_problem):
             self.truth_problem = truth_problem

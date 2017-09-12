@@ -19,13 +19,12 @@
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 
 EllipticCoercivePODGalerkinReduction_Base = LinearPODGalerkinReduction(EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod))
 
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
-@Extends(EllipticCoercivePODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(EllipticCoerciveProblem, "PODGalerkin")
 class EllipticCoercivePODGalerkinReduction(EllipticCoercivePODGalerkinReduction_Base):
     pass 

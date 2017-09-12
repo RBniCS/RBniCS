@@ -18,7 +18,7 @@
 
 from rbnics.problems.stokes import StokesPODGalerkinReducedProblem
 from rbnics.problems.stokes_unsteady.stokes_unsteady_reduced_problem import StokesUnsteadyReducedProblem
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.stokes_unsteady.stokes_unsteady_problem import StokesUnsteadyProblem
 from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
 from rbnics.reduction_methods.stokes_unsteady import StokesUnsteadyPODGalerkinReduction
@@ -30,7 +30,6 @@ StokesUnsteadyPODGalerkinReducedProblem_Base = AbstractCFDUnsteadyPODGalerkinRed
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(StokesUnsteadyPODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(StokesUnsteadyProblem, StokesUnsteadyPODGalerkinReduction)
 class StokesUnsteadyPODGalerkinReducedProblem(StokesUnsteadyPODGalerkinReducedProblem_Base):
     pass

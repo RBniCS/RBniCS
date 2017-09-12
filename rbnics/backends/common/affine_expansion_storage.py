@@ -17,9 +17,8 @@
 #
 
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
-from rbnics.utils.decorators import BackendFor, Extends, tuple_of
+from rbnics.utils.decorators import BackendFor, tuple_of
 
-@Extends(AbstractAffineExpansionStorage)
 @BackendFor("common", inputs=(tuple_of(float),))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def __init__(self, args):

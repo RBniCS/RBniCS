@@ -18,7 +18,6 @@
 
 from rbnics.utils.io.exportable_list import ExportableList
 
-@Extends(ExportableList)
 class GreedyErrorEstimatorsList(ExportableList):
     def __init__(self):
         ExportableList.__init__(self, "text")

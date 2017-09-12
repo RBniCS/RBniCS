@@ -21,12 +21,10 @@ from math import sqrt
 from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 import rbnics.backends.online
-from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import is_io_process
 
 # Class containing the implementation of the POD
 def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
-    @Extends(ParentProperOrthogonalDecomposition)
     class ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
 
         def __init__(self, V_or_Z, X, container_type_second_argument, backend, wrapping, SnapshotsContainerType, BasisContainerType):

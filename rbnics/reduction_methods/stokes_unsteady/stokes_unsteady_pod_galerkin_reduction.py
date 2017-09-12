@@ -18,14 +18,13 @@
 
 from math import sqrt
 from rbnics.backends import ProperOrthogonalDecomposition
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.stokes_unsteady.stokes_unsteady_problem import StokesUnsteadyProblem
 from rbnics.reduction_methods.base import LinearTimeDependentPODGalerkinReduction
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_reduction_method import StokesUnsteadyReductionMethod
 
 def AbstractCFDUnsteadyPODGalerkinReduction(AbstractCFDPODGalerkinReduction, AbstractCFDUnsteadyPODGalerkinReduction_Base):
-    @Extends(AbstractCFDUnsteadyPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
     class AbstractCFDUnsteadyPODGalerkinReduction_Class(AbstractCFDUnsteadyPODGalerkinReduction_Base):
         
         ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
@@ -75,7 +74,6 @@ StokesUnsteadyPODGalerkinReduction_Base = AbstractCFDUnsteadyPODGalerkinReductio
     LinearTimeDependentPODGalerkinReduction(StokesUnsteadyReductionMethod(StokesPODGalerkinReduction))
 )
 
-@Extends(StokesUnsteadyPODGalerkinReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(StokesUnsteadyProblem, "PODGalerkin")
 class StokesUnsteadyPODGalerkinReduction(StokesUnsteadyPODGalerkinReduction_Base):
     pass

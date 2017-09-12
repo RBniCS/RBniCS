@@ -18,9 +18,8 @@
 
 from dolfin import FunctionSpace
 from rbnics.backends.dolfin.functions_list import FunctionsList
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(FunctionsList)
 @BackendFor("dolfin", inputs=(FunctionSpace, (str, None)))
 class SnapshotsMatrix(FunctionsList):
     pass

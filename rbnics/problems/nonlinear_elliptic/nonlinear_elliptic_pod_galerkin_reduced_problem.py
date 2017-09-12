@@ -18,14 +18,13 @@
 
 from rbnics.problems.elliptic_coercive import EllipticCoercivePODGalerkinReducedProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_reduced_problem import NonlinearEllipticReducedProblem
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import NonlinearPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from rbnics.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGalerkinReduction
 
 NonlinearEllipticPODGalerkinReducedProblem_Base = NonlinearPODGalerkinReducedProblem(NonlinearEllipticReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
 
-@Extends(NonlinearEllipticPODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(NonlinearEllipticProblem, NonlinearEllipticPODGalerkinReduction)
 class NonlinearEllipticPODGalerkinReducedProblem(NonlinearEllipticPODGalerkinReducedProblem_Base):
     pass

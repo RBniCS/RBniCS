@@ -20,7 +20,7 @@ from math import sqrt
 from numpy import isclose
 from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
 from rbnics.backends import product, sum, transpose
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.stokes import StokesRBReduction
@@ -29,7 +29,6 @@ StokesRBReducedProblem_Base = LinearRBReducedProblem(StokesReducedProblem(Parame
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(StokesRBReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(StokesProblem, StokesRBReduction)
 class StokesRBReducedProblem(StokesRBReducedProblem_Base):
 

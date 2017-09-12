@@ -17,9 +17,7 @@
 #
 
 from rbnics.utils.io import ExportableList
-from rbnics.utils.decorators import Extends
 
-@Extends(ExportableList)
 class BoundingBoxSideList(ExportableList):
     def __init__(self, size=None):
         ExportableList.__init__(self, "pickle")

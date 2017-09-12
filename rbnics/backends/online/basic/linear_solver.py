@@ -18,9 +18,7 @@
 
 from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
 from rbnics.backends.online.basic.wrapping import DirichletBC
-from rbnics.utils.decorators import Extends
 
-@Extends(AbstractLinearSolver)
 class LinearSolver(AbstractLinearSolver):
     def __init__(self, lhs, solution, rhs, bcs=None):
         self.lhs = lhs

@@ -18,7 +18,7 @@
 
 import types
 from rbnics.backends import product, sum, transpose
-from rbnics.utils.decorators import Extends, ReductionMethodFor
+from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
 from rbnics.reduction_methods.base import PrimalDualReductionMethod
@@ -52,7 +52,6 @@ EllipticCoerciveRBNonCompliantReduction_Base = PrimalDualReductionMethod(Ellipti
 
 # Base class containing the interface of the RB method
 # for non compliant elliptic coercive problems
-@Extends(EllipticCoerciveRBNonCompliantReduction_Base) # needs to be first in order to override for last the methods
 @ReductionMethodFor(EllipticCoerciveProblem, "ReducedBasis", replaces=EllipticCoerciveRBReduction, replaces_if=_problem_is_noncompliant)
 class EllipticCoerciveRBNonCompliantReduction(EllipticCoerciveRBNonCompliantReduction_Base):
     pass

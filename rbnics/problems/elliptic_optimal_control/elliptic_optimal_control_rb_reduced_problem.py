@@ -20,7 +20,7 @@ from math import sqrt
 from numpy import isclose
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_reduced_problem import EllipticOptimalControlReducedProblem
 from rbnics.backends import product, sum, transpose
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlRBReduction
@@ -29,7 +29,6 @@ EllipticOptimalControlRBReducedProblem_Base = LinearRBReducedProblem(EllipticOpt
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(EllipticOptimalControlRBReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(EllipticOptimalControlProblem, EllipticOptimalControlRBReduction)
 class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProblem_Base):
 

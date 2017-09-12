@@ -17,9 +17,7 @@
 #
 
 from rbnics.sampling.distributions.distribution import Distribution
-from rbnics.utils.decorators import Extends
 
-@Extends(Distribution)
 class DrawFrom(Distribution):
     def __init__(self, generator, *args, **kwargs):
         self.generator = generator # of a distribution in [0, 1]

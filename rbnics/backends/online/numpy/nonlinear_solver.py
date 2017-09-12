@@ -23,9 +23,8 @@ from scipy.optimize.nonlin import Jacobian, nonlin_solve
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.basic.wrapping import DirichletBC
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, ThetaType
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 
-@Extends(AbstractNonlinearSolver)
 @BackendFor("numpy", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):

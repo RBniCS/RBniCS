@@ -17,9 +17,7 @@
 #
 
 from rbnics.sampling.distributions.distribution import Distribution
-from rbnics.utils.decorators import Extends
 
-@Extends(Distribution)
 class DiscreteDistribution(Distribution):
     def __init__(self, distribution, box_step_size):
         self.distribution = distribution

@@ -21,13 +21,11 @@ from rbnics.problems.base import ParametrizedReducedDifferentialProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from rbnics.backends import product, sum
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends
 
 def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
     
     NonlinearEllipticReducedProblem_Base = NonlinearReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
     
-    @Extends(NonlinearEllipticReducedProblem_Base)
     class NonlinearEllipticReducedProblem_Class(NonlinearEllipticReducedProblem_Base):
         
         class ProblemSolver(NonlinearEllipticReducedProblem_Base.ProblemSolver):

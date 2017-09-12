@@ -22,10 +22,8 @@ from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.backends import abs, evaluate, max
 from rbnics.backends.online import OnlineMatrix
 from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
-from rbnics.utils.decorators import Extends
 
 # Empirical interpolation method for the interpolation of parametrized functions
-@Extends(ReductionMethod)
 class EIMApproximationReductionMethod(ReductionMethod):
     
     ## Default initialization of members

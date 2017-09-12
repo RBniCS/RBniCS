@@ -18,7 +18,7 @@
 
 from rbnics.problems.elliptic_coercive import EllipticCoercivePODGalerkinReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
-from rbnics.utils.decorators import Extends, ReducedProblemFor
+from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.parabolic_coercive import ParabolicCoercivePODGalerkinReduction
@@ -27,7 +27,6 @@ ParabolicCoercivePODGalerkinReducedProblem_Base = LinearTimeDependentPODGalerkin
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@Extends(ParabolicCoercivePODGalerkinReducedProblem_Base) # needs to be first in order to override for last the methods
 @ReducedProblemFor(ParabolicCoerciveProblem, ParabolicCoercivePODGalerkinReduction)
 class ParabolicCoercivePODGalerkinReducedProblem(ParabolicCoercivePODGalerkinReducedProblem_Base):
     pass

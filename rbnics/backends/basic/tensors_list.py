@@ -18,10 +18,8 @@
 
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 import rbnics.backends.online
-from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import is_io_process
 
-@Extends(AbstractTensorsList)
 class TensorsList(AbstractTensorsList):
     def __init__(self, V_or_Z, empty_tensor, backend, wrapping):
         self.V_or_Z = V_or_Z

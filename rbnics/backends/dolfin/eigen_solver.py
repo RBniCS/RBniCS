@@ -23,9 +23,8 @@ from dolfin import as_backend_type, assemble, DirichletBC, Function, FunctionSpa
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
-from rbnics.utils.decorators import BackendFor, dict_of, Extends, list_of
+from rbnics.utils.decorators import BackendFor, dict_of, list_of
 
-@Extends(AbstractEigenSolver)
 @BackendFor("dolfin", inputs=(FunctionSpace, (Matrix.Type(), Form), (Matrix.Type(), Form, None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class EigenSolver(AbstractEigenSolver):
     def __init__(self, V, A, B=None, bcs=None):

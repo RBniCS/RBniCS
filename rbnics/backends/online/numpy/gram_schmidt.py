@@ -19,9 +19,8 @@
 from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
 import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(BasicGramSchmidt)
 @BackendFor("numpy", inputs=(Matrix.Type(), ))
 class GramSchmidt(BasicGramSchmidt):
     def __init__(self, X):

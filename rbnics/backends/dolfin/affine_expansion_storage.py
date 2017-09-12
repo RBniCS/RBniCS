@@ -24,9 +24,8 @@ from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping import form_iterator, is_parametrized
 from rbnics.utils.config import config
-from rbnics.utils.decorators import BackendFor, Extends, list_of, tuple_of
+from rbnics.utils.decorators import BackendFor, list_of, tuple_of
 
-@Extends(AbstractAffineExpansionStorage)
 @BackendFor("dolfin", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type()), tuple_of((Form, Matrix.Type())), tuple_of((Form, Vector.Type()))), ))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def __init__(self, args):

@@ -18,12 +18,10 @@
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum, transpose
-from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import log, PROGRESS
 
 StokesOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
-@Extends(StokesOptimalControlProblem_Base)
 class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
     """
     The problem to be solved is 

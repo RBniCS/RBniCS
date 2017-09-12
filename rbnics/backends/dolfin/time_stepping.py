@@ -23,9 +23,8 @@ from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeD
 from rbnics.backends.dolfin.assign import assign
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping import PETScTSIntegrator
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(AbstractTimeStepping)
 @BackendFor("dolfin", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
     def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):

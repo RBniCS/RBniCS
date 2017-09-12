@@ -18,14 +18,12 @@
 
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 import rbnics.backends.online
-from rbnics.utils.decorators import Extends
 from rbnics.utils.mpi import is_io_process
 
 # Type for storing a list of functions. From the user point of view this is
 # the same as a matrix. Indeed, given a Matrix A, a Vector F 
 # and a FunctionsList Z, overriding __mul__ and __rmul__ operators
 # allows to write expressions like transpose(Z)*A*Z and transpose(Z)*F
-@Extends(AbstractFunctionsList)
 class FunctionsList(AbstractFunctionsList):
     def __init__(self, V_or_Z, component, backend, wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
         if component is None:

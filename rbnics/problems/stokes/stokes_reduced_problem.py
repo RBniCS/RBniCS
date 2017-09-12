@@ -21,7 +21,6 @@ from rbnics.problems.base import LinearReducedProblem
 from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.backends import LinearSolver, product, sum, transpose
 from rbnics.backends.online import OnlineFunction
-from rbnics.utils.decorators import Extends
 from rbnics.reduction_methods.stokes import StokesReductionMethod
 
 def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -30,7 +29,6 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
     # Base class containing the interface of a projection based ROM
     # for saddle point problems.
-    @Extends(StokesReducedProblem_Base)
     class StokesReducedProblem_Class(StokesReducedProblem_Base):
             
         class ProblemSolver(StokesReducedProblem_Base.ProblemSolver):

@@ -17,14 +17,12 @@
 #
 
 from rbnics.backends import product, sum
-from rbnics.utils.decorators import Extends
 from rbnics.problems.base import LinearReducedProblem
 
 def GeostrophicReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     GeostrophicReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
     
-    @Extends(GeostrophicReducedProblem_Base)
     class GeostrophicReducedProblem_Class(GeostrophicReducedProblem_Base):
     
         class ProblemSolver(GeostrophicReducedProblem_Base.ProblemSolver):

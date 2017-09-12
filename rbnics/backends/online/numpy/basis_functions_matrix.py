@@ -19,10 +19,9 @@
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.basic import BasisFunctionsMatrix as BasicBasisFunctionsMatrix
 import rbnics.backends.online.numpy
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
 @BackendFor("numpy", inputs=(AbstractFunctionsList, ))
-@Extends(BasicBasisFunctionsMatrix)
 class BasisFunctionsMatrix(BasicBasisFunctionsMatrix):
     def __init__(self, Z):
         BasicBasisFunctionsMatrix.__init__(self, Z, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)

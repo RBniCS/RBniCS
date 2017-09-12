@@ -21,9 +21,8 @@ from ufl import Form
 from dolfin import as_backend_type, assemble, GenericMatrix, GenericVector, NonlinearProblem, PETScSNESSolver
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.dolfin.function import Function
-from rbnics.utils.decorators import BackendFor, Extends
+from rbnics.utils.decorators import BackendFor
 
-@Extends(AbstractNonlinearSolver)
 @BackendFor("dolfin", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):

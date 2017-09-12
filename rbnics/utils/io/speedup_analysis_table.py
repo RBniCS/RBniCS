@@ -17,8 +17,6 @@
 #
 
 from rbnics.utils.io.performance_table import PerformanceTable
-from rbnics.utils.decorators import Extends
 
-@Extends(PerformanceTable)
 class SpeedupAnalysisTable(PerformanceTable):
     pass

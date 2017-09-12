@@ -21,9 +21,8 @@ from rbnics.backends.online.basic import LinearSolver as BasicLinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, Extends, ThetaType
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 
-@Extends(BasicLinearSolver)
 @BackendFor("numpy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), ThetaType + DictOfThetaType + (None,)))
 class LinearSolver(BasicLinearSolver):
     def __init__(self, lhs, solution, rhs, bcs=None):
