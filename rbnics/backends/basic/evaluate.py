@@ -16,85 +16,82 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends.online
+from rbnics.utils.decorators import overload
 
-def evaluate(expression_, at, backend, wrapping):
-    assert isinstance(expression_, (backend.Matrix.Type(), backend.Vector.Type(), backend.Function.Type(), backend.TensorsList, backend.FunctionsList, backend.ParametrizedTensorFactory, backend.ParametrizedExpressionFactory))
-    assert at is None or isinstance(at, (backend.ReducedMesh, backend.ReducedVertices))
-    if isinstance(expression_, (backend.Function.Type(), backend.FunctionsList, backend.ParametrizedExpressionFactory)):
-        assert at is None or isinstance(at, backend.ReducedVertices)
-        if isinstance(expression_, backend.Function.Type()):
-            assert at is not None
-            return wrapping.evaluate_sparse_function_at_dofs(expression_, at.get_dofs_list())
-        elif isinstance(expression_, backend.FunctionsList):
-            functions_list = expression_
-            assert at is not None
+def evaluate(backend, wrapping, online_backend, online_wrapping):
+    class _Evaluate(object):
+        @overload(backend.Function.Type(), (backend.ReducedMesh, backend.ReducedVertices))
+        def __call__(self, function, at):
+            return wrapping.evaluate_sparse_function_at_dofs(function, at.get_dofs_list())
+        
+        @overload(backend.FunctionsList, (backend.ReducedMesh, backend.ReducedVertices))    
+        def __call__(self, functions_list, at):
             out_size = len(at.get_dofs_list())
-            out = rbnics.backends.online.OnlineMatrix(out_size, out_size)
+            out = online_backend.OnlineMatrix(out_size, out_size)
             for (j, fun_j) in enumerate(functions_list):
-                evaluate_fun_j = backend.evaluate(fun_j, at)
+                evaluate_fun_j = self.__call__(fun_j, at)
                 for (i, out_ij) in enumerate(evaluate_fun_j):
                     out[i, j] = out_ij
             return out
-        elif isinstance(expression_, backend.ParametrizedExpressionFactory):
-            if at is None:
-                return wrapping.expression_on_truth_mesh(expression_)
-            else:
-                # Efficient version, interpolating only on the reduced mesh
-                interpolated_expression = wrapping.expression_on_reduced_mesh(expression_, at)
-                return wrapping.evaluate_sparse_function_at_dofs(interpolated_expression, at.get_reduced_dofs_list())
-                """
-                # Inefficient version, interpolating on the entire high fidelity mesh
-                interpolated_expression = wrapping.expression_on_truth_mesh(expression_)
-                return wrapping.evaluate_sparse_function_at_dofs(interpolated_expression, at.get_dofs_list())
-                """
-        else: # impossible to arrive here anyway thanks to the assert
-            raise AssertionError("Invalid argument to evaluate")
-    elif isinstance(expression_, (backend.Matrix.Type(), backend.Vector.Type(), backend.TensorsList, backend.ParametrizedTensorFactory)):
-        assert at is None or isinstance(at, backend.ReducedMesh)
-        if isinstance(expression_, backend.Matrix.Type()):
-            assert at is not None
-            return wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs(expression_, at.get_dofs_list())
-        elif isinstance(expression_, backend.Vector.Type()):
-            assert at is not None
-            return wrapping.evaluate_sparse_vector_at_dofs(expression_, at.get_dofs_list())
-        elif isinstance(expression_, backend.TensorsList):
-            tensors_list = expression_
-            assert at is not None
+        
+        @overload(backend.ParametrizedExpressionFactory, None)
+        def __call__(self, parametrized_expression, at):
+            return wrapping.expression_on_truth_mesh(parametrized_expression)
+        
+        @overload(backend.ParametrizedExpressionFactory, (backend.ReducedMesh, backend.ReducedVertices))    
+        def __call__(self, parametrized_expression, at):
+            # Efficient version, interpolating only on the reduced mesh
+            interpolated_expression = wrapping.expression_on_reduced_mesh(parametrized_expression, at)
+            return wrapping.evaluate_sparse_function_at_dofs(interpolated_expression, at.get_reduced_dofs_list())
+            """
+            # Inefficient version, interpolating on the entire high fidelity mesh
+            interpolated_expression = wrapping.expression_on_truth_mesh(parametrized_expression)
+            return wrapping.evaluate_sparse_function_at_dofs(interpolated_expression, at.get_dofs_list())
+            """
+        
+        @overload(backend.Matrix.Type(), backend.ReducedMesh)    
+        def __call__(self, matrix, at):
+            return wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs(matrix, at.get_dofs_list())
+        
+        @overload(backend.Vector.Type(), backend.ReducedMesh)    
+        def __call__(self, vector, at):
+            return wrapping.evaluate_sparse_vector_at_dofs(vector, at.get_dofs_list())
+        
+        @overload(backend.TensorsList, backend.ReducedMesh)    
+        def __call__(self, tensors_list, at):
             out_size = len(at.get_dofs_list())
-            out = rbnics.backends.online.OnlineMatrix(out_size, out_size)
+            out = online_backend.OnlineMatrix(out_size, out_size)
             for (j, tensor_j) in enumerate(tensors_list):
-                evaluate_tensor_j = backend.evaluate(tensor_j, at)
+                evaluate_tensor_j = self.__call__(tensor_j, at)
                 for (i, out_ij) in enumerate(evaluate_tensor_j):
                     out[i, j] = out_ij
             return out
-        elif isinstance(expression_, backend.ParametrizedTensorFactory):
-            if at is None:
-                (assembled_form, _) = wrapping.form_on_truth_function_space(expression_)
-                return assembled_form
-            else:
-                # Efficient version, assemblying only on the reduced mesh
-                (assembled_form, form_rank) = wrapping.form_on_reduced_function_space(expression_, at)
-                assert form_rank in (1, 2)
-                if form_rank is 2:
-                    return wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs(assembled_form, at.get_reduced_dofs_list())
-                elif form_rank is 1:
-                    return wrapping.evaluate_sparse_vector_at_dofs(assembled_form, at.get_reduced_dofs_list())
-                else: # impossible to arrive here anyway thanks to the assert
-                    raise AssertionError("Invalid form rank")
-                """
-                # Inefficient version, assemblying on the entire high fidelity mesh
-                (assembled_form, form_rank) = wrapping.form_on_truth_function_space(expression_)
-                assert form_rank in (1, 2)
-                if form_rank is 2:
-                    return wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs(assembled_form, at.get_dofs_list())
-                elif form_rank is 1:
-                    return wrapping.evaluate_sparse_vector_at_dofs(assembled_form, at.get_dofs_list())
-                else: # impossible to arrive here anyway thanks to the assert
-                    raise AssertionError("Invalid form rank")
-                """
-        else: # impossible to arrive here anyway thanks to the assert
-            raise AssertionError("Invalid argument to evaluate")
-    else: # impossible to arrive here anyway thanks to the assert
-        raise AssertionError("Invalid argument to evaluate")
         
+        @overload(backend.ParametrizedTensorFactory, None)    
+        def __call__(self, parametrized_tensor, at):
+            (assembled_form, _) = wrapping.form_on_truth_function_space(parametrized_tensor)
+            return assembled_form
+        
+        @overload(backend.ParametrizedTensorFactory, backend.ReducedMesh)    
+        def __call__(self, parametrized_tensor, at):
+            # Efficient version, assemblying only on the reduced mesh
+            (assembled_form, form_rank) = wrapping.form_on_reduced_function_space(parametrized_tensor, at)
+            assert form_rank in (1, 2)
+            if form_rank is 2:
+                return wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs(assembled_form, at.get_reduced_dofs_list())
+            elif form_rank is 1:
+                return wrapping.evaluate_sparse_vector_at_dofs(assembled_form, at.get_reduced_dofs_list())
+            else: # impossible to arrive here anyway thanks to the assert
+                raise AssertionError("Invalid form rank")
+            """
+            # Inefficient version, assemblying on the entire high fidelity mesh
+            (assembled_form, form_rank) = wrapping.form_on_truth_function_space(parametrized_tensor)
+            assert form_rank in (1, 2)
+            if form_rank is 2:
+                return wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs(assembled_form, at.get_dofs_list())
+            elif form_rank is 1:
+                return wrapping.evaluate_sparse_vector_at_dofs(assembled_form, at.get_dofs_list())
+            else: # impossible to arrive here anyway thanks to the assert
+                raise AssertionError("Invalid form rank")
+            """
+    return _Evaluate()

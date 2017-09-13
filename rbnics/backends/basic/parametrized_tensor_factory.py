@@ -18,43 +18,43 @@
 
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 
-class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
-    def __init__(self, form, spaces, empty_snapshot, backend, wrapping):
-        AbstractParametrizedTensorFactory.__init__(self, form)
-        self._form = form
-        self._name = wrapping.form_name(form)
-        self._description = PrettyTuple(self._form, wrapping.form_description(self._form), self._name)
-        self._spaces = spaces
-        self._empty_snapshot = empty_snapshot
-        self.backend = backend
-        self.wrapping = wrapping
-    
-    def create_interpolation_locations_container(self, **kwargs):
-        return self.backend.ReducedMesh(self._spaces, **kwargs)
+def ParametrizedTensorFactory(backend, wrapping):
+    class _ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
+        def __init__(self, form, spaces, empty_snapshot):
+            AbstractParametrizedTensorFactory.__init__(self, form)
+            self._form = form
+            self._name = wrapping.form_name(form)
+            self._description = PrettyTuple(self._form, wrapping.form_description(self._form), self._name)
+            self._spaces = spaces
+            self._empty_snapshot = empty_snapshot
         
-    def create_snapshots_container(self):
-        return self.backend.TensorSnapshotsList(self._spaces, self._empty_snapshot)
-        
-    def create_empty_snapshot(self):
-        return self.backend.copy(self._empty_snapshot)
-        
-    def create_basis_container(self):
-        return self.backend.TensorBasisList(self._spaces, self._empty_snapshot)
-        
-    def create_POD_container(self):
-        return self.backend.HighOrderProperOrthogonalDecomposition(self._spaces, self._empty_snapshot)
-        
-    def name(self):
-        return self._name
-        
-    def description(self):
-        return self._description
-        
-    def is_parametrized(self):
-        return self.wrapping.is_parametrized(self._form, self.wrapping.form_iterator) or self.is_time_dependent()
-        
-    def is_time_dependent(self):
-        return self.wrapping.is_time_dependent(self._form, self.wrapping.form_iterator)
+        def create_interpolation_locations_container(self, **kwargs):
+            return backend.ReducedMesh(self._spaces, **kwargs)
+            
+        def create_snapshots_container(self):
+            return backend.TensorSnapshotsList(self._spaces, self._empty_snapshot)
+            
+        def create_empty_snapshot(self):
+            return backend.copy(self._empty_snapshot)
+            
+        def create_basis_container(self):
+            return backend.TensorBasisList(self._spaces, self._empty_snapshot)
+            
+        def create_POD_container(self):
+            return backend.HighOrderProperOrthogonalDecomposition(self._spaces, self._empty_snapshot)
+            
+        def name(self):
+            return self._name
+            
+        def description(self):
+            return self._description
+            
+        def is_parametrized(self):
+            return wrapping.is_parametrized(self._form, wrapping.form_iterator) or self.is_time_dependent()
+            
+        def is_time_dependent(self):
+            return wrapping.is_time_dependent(self._form, wrapping.form_iterator)
+    return _ParametrizedTensorFactory
         
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):

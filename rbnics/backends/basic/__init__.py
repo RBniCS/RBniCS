@@ -26,6 +26,7 @@ from rbnics.backends.basic.import_ import import_
 from rbnics.backends.basic.parametrized_expression_factory import ParametrizedExpressionFactory
 from rbnics.backends.basic.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
+from rbnics.backends.basic.snapshots_matrix import SnapshotsMatrix
 from rbnics.backends.basic.tensors_list import TensorsList
 from rbnics.backends.basic.transpose import transpose
 
@@ -40,6 +41,7 @@ __all__ = [
     'ParametrizedExpressionFactory',
     'ParametrizedTensorFactory',
     'ProperOrthogonalDecompositionBase',
+    'SnapshotsMatrix',
     'TensorsList',
     'transpose'
 ]

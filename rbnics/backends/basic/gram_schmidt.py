@@ -19,24 +19,23 @@
 from math import sqrt
 from rbnics.backends.abstract import GramSchmidt as AbstractGramSchmidt
 
-class GramSchmidt(AbstractGramSchmidt):
-    def __init__(self, X, backend, wrapping):
-        # Inner product
-        self.X = X
-        self.backend = backend
-        self.wrapping = wrapping
-        
-    def apply(self, Z, N_bc):
-        X = self.X
-        
-        transpose = self.backend.transpose
+def GramSchmidt(backend, wrapping):
+    class _GramSchmidt(AbstractGramSchmidt):
+        def __init__(self, X):
+            # Inner product
+            self.X = X
+            
+        def apply(self, Z, N_bc):
+            X = self.X
+            
+            transpose = backend.transpose
 
-        n_basis = len(Z)
-        b = Z[n_basis - 1]
-        for i in range(N_bc, n_basis - 1):
-            b = self.wrapping.gram_schmidt_projection_step(b, X, Z[i], self.backend.transpose)
-        norm_b = sqrt(transpose(b)*X*b)
-        if norm_b != 0.:
-            b /= norm_b
-        Z[n_basis - 1] = b
-        
+            n_basis = len(Z)
+            b = Z[n_basis - 1]
+            for i in range(N_bc, n_basis - 1):
+                b = wrapping.gram_schmidt_projection_step(b, X, Z[i], transpose)
+            norm_b = sqrt(transpose(b)*X*b)
+            if norm_b != 0.:
+                b /= norm_b
+            Z[n_basis - 1] = b
+    return _GramSchmidt

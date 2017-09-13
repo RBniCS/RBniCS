@@ -16,22 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import list_of, overload
+def functions_list_mul_online_matrix(functions_list_basis_functions_matrix, online_matrix, FunctionsListType):
+    pass
 
-def copy(backend, wrapping):
-    class _Copy(object):
-        @overload(backend.Function.Type(), )
-        def __call__(self, arg):
-            return wrapping.function_copy(arg)
-            
-        @overload(list_of(backend.Function.Type()), )
-        def __call__(self, arg):
-            output = list()
-            for fun in arg:
-                output.append(wrapping.function_copy(fun))
-            return output
-            
-        @overload((backend.Matrix.Type(), backend.Vector.Type()), )
-        def __call__(self, arg):
-            return wrapping.tensor_copy(arg)
-    return _Copy()
+def functions_list_mul_online_vector(functions_list_basis_functions_matrix, online_vector):
+    pass

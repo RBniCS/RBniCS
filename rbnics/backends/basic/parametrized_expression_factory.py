@@ -18,44 +18,44 @@
 
 from rbnics.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
 
-class ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
-    def __init__(self, expression, space, inner_product, backend, wrapping):
-        AbstractParametrizedExpressionFactory.__init__(self, expression)
-        self._expression = expression
-        self._name = wrapping.expression_name(expression)
-        self._description = PrettyTuple(self._expression, wrapping.expression_description(self._expression), self._name)
-        self._space = space
-        self._inner_product = inner_product
-        self.backend = backend
-        self.wrapping = wrapping
+def ParametrizedExpressionFactory(backend, wrapping):
+    class _ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
+        def __init__(self, expression, space, inner_product):
+            AbstractParametrizedExpressionFactory.__init__(self, expression)
+            self._expression = expression
+            self._name = wrapping.expression_name(expression)
+            self._description = PrettyTuple(self._expression, wrapping.expression_description(self._expression), self._name)
+            self._space = space
+            self._inner_product = inner_product
+                
+        def create_interpolation_locations_container(self):
+            return backend.ReducedVertices(self._space)
             
-    def create_interpolation_locations_container(self):
-        return self.backend.ReducedVertices(self._space)
-        
-    def create_snapshots_container(self):
-        return self.backend.SnapshotsMatrix(self._space)
-        
-    def create_empty_snapshot(self):
-        return self.backend.Function(self._space)
-        
-    def create_basis_container(self):
-        # We use FunctionsList instead of BasisFunctionsMatrix since we are not interested in storing multiple components
-        return self.backend.FunctionsList(self._space)
-        
-    def create_POD_container(self):
-        return self.backend.ProperOrthogonalDecomposition(self._space, self._inner_product)
-        
-    def name(self):
-        return self._name
-        
-    def description(self):
-        return self._description
-        
-    def is_parametrized(self):
-        return self.wrapping.is_parametrized(self._expression, self.wrapping.expression_iterator) or self.is_time_dependent()
-        
-    def is_time_dependent(self):
-        return self.wrapping.is_time_dependent(self._expression, self.wrapping.expression_iterator)
+        def create_snapshots_container(self):
+            return backend.SnapshotsMatrix(self._space)
+            
+        def create_empty_snapshot(self):
+            return backend.Function(self._space)
+            
+        def create_basis_container(self):
+            # We use FunctionsList instead of BasisFunctionsMatrix since we are not interested in storing multiple components
+            return backend.FunctionsList(self._space)
+            
+        def create_POD_container(self):
+            return backend.ProperOrthogonalDecomposition(self._space, self._inner_product)
+            
+        def name(self):
+            return self._name
+            
+        def description(self):
+            return self._description
+            
+        def is_parametrized(self):
+            return wrapping.is_parametrized(self._expression, wrapping.expression_iterator) or self.is_time_dependent()
+            
+        def is_time_dependent(self):
+            return wrapping.is_time_dependent(self._expression, wrapping.expression_iterator)
+    return _ParametrizedExpressionFactory
         
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):
@@ -63,4 +63,3 @@ class PrettyTuple(tuple):
         as_list.extend([str(key) + " = " + value for key, value in arg1.items()])
         as_list.append("with id " + str(arg2))
         return tuple.__new__(cls, tuple(as_list))
-        

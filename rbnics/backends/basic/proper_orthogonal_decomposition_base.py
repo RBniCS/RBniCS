@@ -20,26 +20,20 @@
 from math import sqrt
 from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
-import rbnics.backends.online
 from rbnics.utils.mpi import is_io_process
 
 # Class containing the implementation of the POD
-def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
-    class ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
+def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_wrapping, ParentProperOrthogonalDecomposition, SnapshotsContainerType, BasisContainerType):
+    class _ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
 
-        def __init__(self, V_or_Z, X, container_type_second_argument, backend, wrapping, SnapshotsContainerType, BasisContainerType):
+        def __init__(self, V_or_Z, X, *args):
             self.X = X
-            self.backend = backend
-            self.BasisContainerType = BasisContainerType
             self.V_or_Z = V_or_Z
-            self.container_type_second_argument = container_type_second_argument
+            self.args = args
             self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
             
             # Declare a matrix to store the snapshots
-            if self.container_type_second_argument is None:
-                self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z)
-            else:
-                self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z, self.container_type_second_argument)
+            self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z, *args)
             # Declare a list to store eigenvalues
             self.eigenvalues = zeros(0) # correct size will be assigned later
             self.retained_energy = zeros(0) # correct size will be assigned later
@@ -57,19 +51,16 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
         def apply(self, Nmax, tol):
             X = self.X
             snapshots_matrix = self.snapshots_matrix
-            transpose = self.backend.transpose
+            transpose = backend.transpose
             
             if X is not None:
                 correlation = transpose(snapshots_matrix)*X*snapshots_matrix
             else:
                 correlation = transpose(snapshots_matrix)*snapshots_matrix
             
-            if self.container_type_second_argument is None:
-                Z = self.BasisContainerType(self.V_or_Z)
-            else:
-                Z = self.BasisContainerType(self.V_or_Z, self.container_type_second_argument)
+            Z = BasisContainerType(self.V_or_Z, *self.args)
                             
-            eigensolver = rbnics.backends.online.OnlineEigenSolver(Z, correlation) 
+            eigensolver = online_backend.OnlineEigenSolver(Z, correlation) 
             parameters = {
                 "problem_type": "hermitian",
                 "spectrum": "largest real"
@@ -130,5 +121,4 @@ def ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
                         outfile.write(str(i) + " " + str(self.retained_energy[i]) + "\n") 
             self.mpi_comm.barrier()
     
-    return ProperOrthogonalDecompositionBase
-    
+    return _ProperOrthogonalDecompositionBase
