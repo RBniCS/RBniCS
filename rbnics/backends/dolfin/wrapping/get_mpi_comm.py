@@ -16,9 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def get_mpi_comm(V):
-    if isinstance(V, tuple):
-        assert len(V) in (1, 2)
-        V = V[0]
-    return V.mesh().mpi_comm().tompi4py()
+from dolfin import FunctionSpace
+from rbnics.utils.decorators import overload, tuple_of
 
+@overload
+def get_mpi_comm(V: FunctionSpace):
+    return V.mesh().mpi_comm().tompi4py()
+    
+@overload
+def get_mpi_comm(V: tuple_of(FunctionSpace)):
+    assert len(V) in (1, 2)
+    return V[0].mesh().mpi_comm().tompi4py()

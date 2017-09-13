@@ -17,16 +17,24 @@
 #
 
 from ufl.core.operator import Operator
-from dolfin import assemble, dx, Expression, Function, FunctionSpace, inner, TensorFunctionSpace, TestFunction, TrialFunction, VectorFunctionSpace
+from dolfin import assemble, dx, Expression, FunctionSpace, inner, TensorFunctionSpace, TestFunction, TrialFunction, VectorFunctionSpace
 from rbnics.backends.basic import ParametrizedExpressionFactory as BasicParametrizedExpressionFactory
-import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.dolfin.function import Function
+from rbnics.backends.dolfin.functions_list import FunctionsList
+from rbnics.backends.dolfin.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
+from rbnics.backends.dolfin.reduced_vertices import ReducedVertices
+from rbnics.backends.dolfin.snapshots_matrix import SnapshotsMatrix
+from rbnics.backends.dolfin.wrapping import expression_description, expression_iterator, expression_name, is_parametrized, is_time_dependent
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
-@BackendFor("dolfin", inputs=((Expression, Function, Operator), ))
-class ParametrizedExpressionFactory(BasicParametrizedExpressionFactory):
+backend = ModuleWrapper(Function, FunctionsList, ProperOrthogonalDecomposition, ReducedVertices, SnapshotsMatrix)
+wrapping = ModuleWrapper(expression_iterator, expression_description=expression_description, expression_name=expression_name, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
+ParametrizedExpressionFactory_Base = BasicParametrizedExpressionFactory(backend, wrapping)
+
+@BackendFor("dolfin", inputs=((Expression, Function.Type(), Operator), ))
+class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
     def __init__(self, expression):
         # Extract mesh from expression
-        assert isinstance(expression, (Expression, Function, Operator))
         mesh = expression.ufl_domain().ufl_cargo() # from dolfin/fem/projection.py, _extract_function_space function
         # The EIM algorithm will evaluate the expression at vertices. It is thus enough
         # to use a CG1 space.
@@ -45,5 +53,5 @@ class ParametrizedExpressionFactory(BasicParametrizedExpressionFactory):
         g = TestFunction(space)
         inner_product = assemble(inner(f, g)*dx)
         # Call Parent
-        BasicParametrizedExpressionFactory.__init__(self, expression, space, inner_product, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
+        ParametrizedExpressionFactory_Base.__init__(self, expression, space, inner_product)
                 

@@ -18,10 +18,10 @@
 
 import dolfin
 from dolfin import plot as original_plot
-import rbnics.backends.online
+from rbnics.backends.online import OnlineFunction
 
 def plot(obj, *args, **kwargs):
-    if isinstance(obj, rbnics.backends.online.OnlineFunction.Type()):
+    if isinstance(obj, OnlineFunction.Type()):
         assert "reduced_problem" in kwargs, "Please use this method as plot(reduced_solution, reduced_problem=my_reduced_problem) when plotting a reduced solution"
         N = obj.N
         Z = kwargs["reduced_problem"].Z[:N]

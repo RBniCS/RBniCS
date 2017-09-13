@@ -16,19 +16,22 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends.dolfin
-
-def form_description(form, backend=None):
-    if backend is None:
-        backend = rbnics.backends.dolfin
+def basic_form_description(backend, wrapping):
+    def _basic_form_description(form):
+        coefficients_repr = {}
+        for integral in form.integrals():
+            coefficients_repr_integral = wrapping.expression_description(integral.integrand())
+            # Check consistency
+            intersection = set(coefficients_repr_integral.keys()).intersection(set(coefficients_repr.keys()))
+            for key in intersection:
+                assert coefficients_repr_integral[key] == coefficients_repr[key]
+            # Update
+            coefficients_repr.update(coefficients_repr_integral)
+        return coefficients_repr
+    return _basic_form_description
     
-    coefficients_repr = {}
-    for integral in form.integrals():
-        coefficients_repr_integral = backend.wrapping.expression_description(integral.integrand(), backend)
-        # Check consistency
-        intersection = set(coefficients_repr_integral.keys()).intersection(set(coefficients_repr.keys()))
-        for key in intersection:
-            assert coefficients_repr_integral[key] == coefficients_repr[key]
-        # Update
-        coefficients_repr.update(coefficients_repr_integral)
-    return coefficients_repr
+from rbnics.backends.dolfin.wrapping.expression_description import expression_description
+from rbnics.utils.decorators import ModuleWrapper
+backend = ModuleWrapper()
+wrapping = ModuleWrapper(expression_description=expression_description)
+form_description = basic_form_description(backend, wrapping)

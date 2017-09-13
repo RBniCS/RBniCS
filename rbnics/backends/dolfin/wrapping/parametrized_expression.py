@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 import types
 from dolfin import Expression
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
@@ -67,8 +68,8 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     # Prepare a dictionary of mu
     mu_dict = {}
     for (p, mu_p) in enumerate(mu):
-        assert isinstance(mu_p, (Expression, float))
-        if isinstance(mu_p, float):
+        assert isinstance(mu_p, (Expression, Number))
+        if isinstance(mu_p, Number):
             mu_dict[ "mu_" + str(p) ] = mu_p
         elif isinstance(mu_p, Expression):
             assert is_parametrized_constant(mu_p)

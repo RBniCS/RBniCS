@@ -18,19 +18,16 @@
 
 from ufl import Form
 from dolfin import adjoint as dolfin_adjoint
-from rbnics.utils.decorators import backend_for, tuple_of
+from rbnics.utils.decorators import backend_for, overload, tuple_of
 
 @backend_for("dolfin", inputs=((Form, tuple_of(Form)), ))
 def adjoint(arg):
-    assert isinstance(arg, (Form, tuple))
-    if isinstance(arg, Form):
-        return dolfin_adjoint(arg)
-    elif isinstance(arg, tuple):
-        output = list()
-        for a in arg:
-            assert isinstance(a, Form)
-            output.append(dolfin_adjoint(a))
-        return tuple(output)
-    else: # impossible to arrive here anyway thanks to the assert
-        raise AssertionError("Invalid argument to adjoint")
+    return _adjoint(arg)
+    
+@overload
+def _adjoint(arg: Form):
+    return dolfin_adjoint(arg)
         
+@overload
+def _adjoint(arg: tuple_of(Form)):
+    return tuple(dolfin_adjoint(a) for a in arg)

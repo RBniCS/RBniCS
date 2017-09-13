@@ -18,17 +18,20 @@
 
 from dolfin import __version__ as dolfin_version
 import hashlib
-import rbnics.backends.dolfin
 
-def form_name(form, backend=None):
-    if backend is None:
-        backend = rbnics.backends.dolfin
+def basic_form_name(backend, wrapping):
+    def _basic_form_name(form):
+        str_repr = ""
+        for integral in form.integrals():
+            str_repr += wrapping.expression_name(integral.integrand())
+        hash_code = hashlib.sha1(
+                        (str_repr + dolfin_version).encode("utf-8")
+                    ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
+        return hash_code
+    return _basic_form_name
     
-    str_repr = ""
-    for integral in form.integrals():
-        str_repr += backend.wrapping.expression_name(integral.integrand(), backend)
-    hash_code = hashlib.sha1(
-                    (str_repr + dolfin_version).encode("utf-8")
-                ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
-    return hash_code
-    
+from rbnics.utils.decorators import ModuleWrapper
+from rbnics.backends.dolfin.wrapping.expression_name import expression_name
+backend = ModuleWrapper()
+wrapping = ModuleWrapper(expression_name=expression_name)
+form_name = basic_form_name(backend, wrapping)

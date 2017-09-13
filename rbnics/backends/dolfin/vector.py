@@ -22,9 +22,10 @@ from dolfin import assemble, GenericVector
 def Vector():
     raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
     
-def _Vector_Type():
+# Attach a Type() function
+def Type():
     return GenericVector
-Vector.Type = _Vector_Type
+Vector.Type = Type
 
 # Preserve generator attribute in algebraic operators, as required by DEIM
 def preserve_generator_attribute(operator):

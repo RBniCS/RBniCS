@@ -24,9 +24,10 @@ from rbnics.backends.dolfin.wrapping.dirichlet_bc import InvertProductOutputDiri
 def Matrix():
     raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
     
-def _Matrix_Type():
+# Attach a Type() function
+def Type():
     return GenericMatrix
-Matrix.Type = _Matrix_Type
+Matrix.Type = Type
 
 # Enable matrix*function product (i.e. matrix*function.vector())
 original__mul__ = GenericMatrix.__mul__

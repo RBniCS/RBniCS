@@ -40,7 +40,9 @@ def _prepare_solution_split_storage():
                 
 def _remove_mute_indices(node):
     if isinstance(node, Indexed):
-        assert len(node.ufl_operands) == 2 and isinstance(node.ufl_operands[0], Function) and isinstance(node.ufl_operands[1], MultiIndex)
+        assert len(node.ufl_operands) == 2
+        assert isinstance(node.ufl_operands[0], Function)
+        assert isinstance(node.ufl_operands[1], MultiIndex)
         indices = node.ufl_operands[1].indices()
         is_fixed = isinstance(indices[0], FixedIndex)
         assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])

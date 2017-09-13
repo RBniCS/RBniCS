@@ -18,25 +18,12 @@
 
 from petsc4py import PETSc
 from dolfin import as_backend_type
-import rbnics.backends.dolfin
 
 def matrix_mul_vector(matrix, vector):
-    FunctionType = rbnics.backends.dolfin.Function.Type()
-    VectorType = rbnics.backends.dolfin.Vector.Type()
-    assert isinstance(vector, (FunctionType, VectorType))
-    if isinstance(vector, FunctionType):
-        vector = vector.vector()
-    assert isinstance(vector, VectorType)
-    MatrixType = rbnics.backends.dolfin.Matrix.Type()
-    assert isinstance(matrix, MatrixType)
     return matrix*vector
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    MatrixType = rbnics.backends.dolfin.Matrix.Type()
-    assert isinstance(matrix, MatrixType)
-    assert isinstance(other_matrix, MatrixType)
     matrix = as_backend_type(matrix).mat()
     other_matrix = as_backend_type(other_matrix).mat()
-    mat = matrix.transposeMatMult(other_matrix)
     # petsc4py does not expose MatGetTrace, we do this by hand
-    return mat.getDiagonal().sum()
+    return matrix.transposeMatMult(other_matrix).getDiagonal().sum()

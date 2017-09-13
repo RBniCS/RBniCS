@@ -19,16 +19,24 @@
 from dolfin import FunctionSpace
 from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
-import rbnics.backends.dolfin
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.dolfin.eigen_solver import EigenSolver
+from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
+from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
+from rbnics.backends.dolfin.transpose import transpose
+from rbnics.backends.dolfin.wrapping import get_mpi_comm
+from rbnics.backends.online import OnlineEigenSolver
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
-HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
+backend = ModuleWrapper(transpose)
+wrapping = ModuleWrapper(get_mpi_comm)
+online_backend = ModuleWrapper(OnlineEigenSolver=OnlineEigenSolver)
+online_wrapping = ModuleWrapper()
+HighOrderProperOrthogonalDecomposition_Base = BasicHighOrderProperOrthogonalDecomposition(backend, wrapping, online_backend, online_wrapping, AbstractHighOrderProperOrthogonalDecomposition, TensorSnapshotsList, TensorBasisList)
 
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
-class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
+class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecomposition_Base):
     def __init__(self, V, empty_tensor):
-        HighOrderProperOrthogonalDecompositionBase.__init__(self, V, None, empty_tensor, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping, rbnics.backends.dolfin.TensorSnapshotsList, rbnics.backends.dolfin.TensorBasisList)
+        HighOrderProperOrthogonalDecomposition_Base.__init__(self, V, None, empty_tensor)
         
     def store_snapshot(self, snapshot):
         self.snapshots_matrix.enrich(snapshot)
-        

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from numpy import zeros
 from dolfin import Constant, DirichletBC
 
@@ -79,7 +80,7 @@ DirichletBC.identifier = custom_DirichletBC_identifier
 
 # Add a multiplication operator by a scalar
 def custom_DirichletBC_mul_by_scalar(self, other):
-    if isinstance(other, (float, int)):
+    if isinstance(other, Number):
         args = list()
         args.append(self.function_space())
         args.append(Constant(other)*self.value())
@@ -89,7 +90,7 @@ def custom_DirichletBC_mul_by_scalar(self, other):
     else:
         return NotImplemented
 DirichletBC.__mul__ = custom_DirichletBC_mul_by_scalar
-DirichletBC__rmul__ = custom_DirichletBC_mul_by_scalar
+DirichletBC.__rmul__ = custom_DirichletBC_mul_by_scalar
 
 class ProductOutputDirichletBC(list):
     # Define the __invert__ operator to be used in combination with __and__ operator of Matrix

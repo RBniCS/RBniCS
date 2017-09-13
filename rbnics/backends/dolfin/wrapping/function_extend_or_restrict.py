@@ -18,7 +18,7 @@
 
 from collections import OrderedDict
 from dolfin import assign
-import rbnics.backends.dolfin
+from rbnics.backends.dolfin.function import Function
 
 def function_extend_or_restrict(function, function_components, V, V_components, weight, copy, extended_or_restricted_function=None):
     function_V = function.function_space()
@@ -59,7 +59,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
             return function
         else:
             if extended_or_restricted_function is None:
-                output = rbnics.backends.dolfin.Function(V) # zero by default
+                output = Function(V) # zero by default
             else:
                 output = extended_or_restricted_function
                 assert output.function_space() == V
@@ -74,7 +74,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         # (i.e. extended to zero on pressure DOFs) when defining basis functions for enriched velocity space
         assert copy is True, "It is not possible to extend functions without copying the vector"
         if extended_or_restricted_function is None:
-            extended_function = rbnics.backends.dolfin.Function(V) # zero by default
+            extended_function = Function(V) # zero by default
         else:
             extended_function = extended_or_restricted_function
             assert extended_function.function_space() == V
@@ -90,7 +90,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         # interested in storing snapshots of y or p components because of an aggregrated approach
         assert copy is True, "It is not possible to restrict functions without copying the vector"
         if extended_or_restricted_function is None:
-            restricted_function = rbnics.backends.dolfin.Function(V) # zero by default
+            restricted_function = Function(V) # zero by default
         else:
             restricted_function = extended_or_restricted_function
             assert restricted_function.function_space() == V

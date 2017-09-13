@@ -16,11 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from ufl import Form
 
 original__mul__ = Form.__mul__
 def custom__mul__(self, other):
-    if isinstance(other, float):
+    if isinstance(other, Number):
         return self.__rmul__(other)
     else:
         return original__mul__(self, other)

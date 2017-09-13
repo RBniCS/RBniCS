@@ -17,31 +17,37 @@
 #
 
 from dolfin import Expression, Function
-import rbnics.backends.dolfin
 from rbnics.utils.decorators import get_problem_from_solution
 
-def is_time_dependent(expression_or_form, iterator, backend=None):
-    if backend is None:
-        backend = rbnics.backends.dolfin
-        
-    visited = set()
-    for node in iterator(expression_or_form):
-        # ... parametrized expressions
-        if isinstance(node, Expression) and "t" in node.user_parameters:
-            return True
-        # ... problem solutions related to nonlinear terms
-        elif backend.wrapping.is_problem_solution_or_problem_solution_component_type(node):
-            if backend.wrapping.is_problem_solution_or_problem_solution_component(node):
-                (preprocessed_node, component, truth_solution) = backend.wrapping.solution_identify_component(node)
-                truth_problem = get_problem_from_solution(truth_solution)
-                if hasattr(truth_problem, "set_time"):
-                    return True
-            else:
-                preprocessed_node = node
-            # Make sure to skip any parent solution related to this one
-            visited.add(node)
-            visited.add(preprocessed_node)
-            for parent_node in backend.wrapping.solution_iterator(preprocessed_node):
-                visited.add(parent_node)
-    return False
+def basic_is_time_dependent(backend, wrapping):
+    def _basic_is_time_dependent(expression_or_form, iterator):
+        visited = set()
+        for node in iterator(expression_or_form):
+            # ... parametrized expressions
+            if isinstance(node, Expression) and "t" in node.user_parameters:
+                return True
+            # ... problem solutions related to nonlinear terms
+            elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
+                if wrapping.is_problem_solution_or_problem_solution_component(node):
+                    (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
+                    truth_problem = get_problem_from_solution(truth_solution)
+                    if hasattr(truth_problem, "set_time"):
+                        return True
+                else:
+                    preprocessed_node = node
+                # Make sure to skip any parent solution related to this one
+                visited.add(node)
+                visited.add(preprocessed_node)
+                for parent_node in wrapping.solution_iterator(preprocessed_node):
+                    visited.add(parent_node)
+        return False
+    return _basic_is_time_dependent
     
+from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import is_problem_solution_or_problem_solution_component
+from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component_type import is_problem_solution_or_problem_solution_component_type
+from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
+from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
+from rbnics.utils.decorators import ModuleWrapper
+backend = ModuleWrapper()
+wrapping = ModuleWrapper(is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, solution_identify_component, solution_iterator)
+is_time_dependent = basic_is_time_dependent(backend, wrapping)

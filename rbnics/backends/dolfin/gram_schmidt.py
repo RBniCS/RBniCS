@@ -18,12 +18,15 @@
 
 from ufl import Form
 from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
-import rbnics.backends.dolfin
 from rbnics.backends.dolfin.matrix import Matrix
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.dolfin.transpose import transpose
+from rbnics.backends.dolfin.wrapping import gram_schmidt_projection_step
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
+
+backend = ModuleWrapper(transpose)
+wrapping = ModuleWrapper(gram_schmidt_projection_step)
+GramSchmidt_Base = BasicGramSchmidt(backend, wrapping)
 
 @BackendFor("dolfin", inputs=((Form, Matrix.Type()), ))
-class GramSchmidt(BasicGramSchmidt):
-    def __init__(self, X):
-        BasicGramSchmidt.__init__(self, X, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
-        
+class GramSchmidt(GramSchmidt_Base):
+    pass

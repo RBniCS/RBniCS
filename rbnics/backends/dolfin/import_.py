@@ -17,15 +17,22 @@
 #
 
 from rbnics.backends.basic import import_ as basic_import_
-import rbnics.backends.dolfin
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
-from rbnics.utils.decorators import backend_for
+from rbnics.backends.dolfin.wrapping import build_dof_map_reader_mapping, form_argument_space, function_extend_or_restrict, function_load, get_function_space, get_function_subspace
+from rbnics.backends.dolfin.wrapping.tensor_load import basic_tensor_load
+from rbnics.utils.decorators import backend_for, ModuleWrapper
 from rbnics.utils.io import Folders
+
+backend = ModuleWrapper(Function, Matrix, Vector)
+wrapping = ModuleWrapper(build_dof_map_reader_mapping, form_argument_space) # temporarily
+tensor_load = basic_tensor_load(backend, wrapping)
+wrapping = ModuleWrapper(function_extend_or_restrict, function_load, get_function_space, get_function_subspace, tensor_load=tensor_load)
+import_base = basic_import_(backend, wrapping)
 
 # Export a solution to file
 @backend_for("dolfin", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
 def import_(solution, directory, filename, suffix=None, component=None):
-    return basic_import_(solution, directory, filename, suffix, component, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
+    return import_base(solution, directory, filename, suffix, component)
     

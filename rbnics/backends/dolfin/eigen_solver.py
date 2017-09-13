@@ -23,7 +23,7 @@ from dolfin import as_backend_type, assemble, DirichletBC, Function, FunctionSpa
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
-from rbnics.utils.decorators import BackendFor, dict_of, list_of
+from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
 @BackendFor("dolfin", inputs=(FunctionSpace, (Matrix.Type(), Form), (Matrix.Type(), Form, None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class EigenSolver(AbstractEigenSolver):
@@ -31,17 +31,24 @@ class EigenSolver(AbstractEigenSolver):
         self.V = V
         if bcs is not None:
             self._set_boundary_conditions(bcs)
-        assert isinstance(A, (Matrix.Type(), Form))
-        if isinstance(A, Form):
-            A = assemble(A, keep_diagonal=True)
-        assert isinstance(B, (Matrix.Type(), Form)) or B is None
-        if isinstance(B, Form):
-            B = assemble(B, keep_diagonal=True)
+        A = self._assemble_if_form(A)
+        if B is not None:
+            B = self._assemble_if_form(B)
         self._set_operators(A, B)
         if self.B is not None:
             self.eigen_solver = SLEPcEigenSolver(self.condensed_A, self.condensed_B)
         else:
             self.eigen_solver = SLEPcEigenSolver(self.condensed_A)
+    
+    @staticmethod
+    @overload
+    def _assemble_if_form(mat: Form):
+        return assemble(mat, keep_diagonal=True)
+        
+    @staticmethod
+    @overload
+    def _assemble_if_form(mat: Matrix.Type()):
+        return mat
     
     def _set_boundary_conditions(self, bcs):
         # List all local and constrained local dofs

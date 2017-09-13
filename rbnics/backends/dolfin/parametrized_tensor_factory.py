@@ -20,12 +20,20 @@ from ufl import Form
 from ufl.algorithms import expand_derivatives
 from dolfin import assemble
 from rbnics.backends.basic import ParametrizedTensorFactory as BasicParametrizedTensorFactory
-import rbnics.backends.dolfin
-from rbnics.backends.dolfin.wrapping import form_argument_space
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.dolfin.copy import copy
+from rbnics.backends.dolfin.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
+from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
+from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
+from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, is_parametrized, is_time_dependent
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
+
+backend = ModuleWrapper(copy, HighOrderProperOrthogonalDecomposition, ReducedMesh, TensorBasisList, TensorSnapshotsList)
+wrapping = ModuleWrapper(form_iterator, form_description=form_description, form_name=form_name, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
+ParametrizedTensorFactory_Base = BasicParametrizedTensorFactory(backend, wrapping)
 
 @BackendFor("dolfin", inputs=(Form, ))
-class ParametrizedTensorFactory(BasicParametrizedTensorFactory):
+class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
     def __init__(self, form):
         # Preprocess form
         form = expand_derivatives(form)
@@ -46,7 +54,7 @@ class ParametrizedTensorFactory(BasicParametrizedTensorFactory):
         empty_snapshot.zero()
         empty_snapshot.generator = self
         # Call Parent
-        BasicParametrizedTensorFactory.__init__(self, form, spaces, empty_snapshot, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
+        ParametrizedTensorFactory_Base.__init__(self, form, spaces, empty_snapshot)
     
     def create_interpolation_locations_container(self):
         # Populate subdomain data
@@ -56,7 +64,7 @@ class ParametrizedTensorFactory(BasicParametrizedTensorFactory):
                 subdomain_data.append(integral.subdomain_data())
         # Create reduced mesh
         if len(subdomain_data) > 0:
-            return BasicParametrizedTensorFactory.create_interpolation_locations_container(self, subdomain_data=subdomain_data)
+            return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self, subdomain_data=subdomain_data)
         else:
-            return BasicParametrizedTensorFactory.create_interpolation_locations_container(self)
+            return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self)
                     

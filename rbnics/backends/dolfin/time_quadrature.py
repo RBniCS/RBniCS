@@ -16,13 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from scipy.integrate import simps
 from rbnics.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping import function_copy
 from rbnics.utils.decorators import BackendFor, list_of, tuple_of
 
-@BackendFor("dolfin", inputs=(tuple_of(float), list_of(Function.Type())))
+@BackendFor("dolfin", inputs=(tuple_of(Number), list_of(Function.Type())))
 class TimeQuadrature(AbstractTimeQuadrature):
     def __init__(self, time_interval, function_over_time):
         assert len(function_over_time) > 1

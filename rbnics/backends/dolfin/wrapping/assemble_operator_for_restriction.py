@@ -17,9 +17,10 @@
 #
 
 from numpy import zeros
-from dolfin import Constant, split, TestFunction, TrialFunction
+from dolfin import Constant, FunctionSpace, split, TestFunction, TrialFunction
 from rbnics.backends.dolfin.wrapping.expression_replace import replace
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC
+from rbnics.utils.decorators import overload
 
 def assemble_operator_for_restriction(restricted_term_to_original_term, test=None, trial=None):
     def assemble_operator_for_restriction_decorator(assemble_operator):
@@ -80,10 +81,12 @@ def assemble_operator_for_restriction(restricted_term_to_original_term, test=Non
             
         return assemble_operator_for_restriction_decorator_impl
     return assemble_operator_for_restriction_decorator
-    
+
+@overload(FunctionSpace, (int, None))
 def _to_int(V, restrict_to):
-    if isinstance(restrict_to, str):
-        assert hasattr(V, "_component_to_index")
-        return V._component_to_index[restrict_to]
-    else:
-        return restrict_to
+    return restrict_to
+    
+@overload(FunctionSpace, str)
+def _to_int(V, restrict_to):
+    assert hasattr(V, "_component_to_index")
+    return V._component_to_index[restrict_to]

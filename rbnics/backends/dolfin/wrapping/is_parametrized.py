@@ -17,19 +17,23 @@
 #
 
 from dolfin import Expression, Function
-import rbnics.backends.dolfin
 
-def is_parametrized(expression_or_form, iterator, backend=None):
-    if backend is None:
-        backend = rbnics.backends.dolfin
-        
-    for node in iterator(expression_or_form):
-        # ... parametrized expressions
-        if isinstance(node, Expression) and "mu_0" in node.user_parameters:
-            return True
-        # ... problem solutions related to nonlinear terms
-        elif backend.wrapping.is_problem_solution_or_problem_solution_component_type(node):
-            if backend.wrapping.is_problem_solution_or_problem_solution_component(node):
+def basic_is_parametrized(backend, wrapping):
+    def _basic_is_parametrized(expression_or_form, iterator):
+        for node in iterator(expression_or_form):
+            # ... parametrized expressions
+            if isinstance(node, Expression) and "mu_0" in node.user_parameters:
                 return True
-    return False
+            # ... problem solutions related to nonlinear terms
+            elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
+                if wrapping.is_problem_solution_or_problem_solution_component(node):
+                    return True
+        return False
+    return _basic_is_parametrized
     
+from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import is_problem_solution_or_problem_solution_component
+from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component_type import is_problem_solution_or_problem_solution_component_type
+from rbnics.utils.decorators import ModuleWrapper
+backend = ModuleWrapper()
+wrapping = ModuleWrapper(is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type)
+is_parametrized = basic_is_parametrized(backend, wrapping)

@@ -20,29 +20,29 @@ from dolfin import assign as dolfin_assign
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
-from rbnics.utils.decorators import backend_for, list_of
+from rbnics.utils.decorators import backend_for, list_of, overload
 
 @backend_for("dolfin", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), (Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type())))
 def assign(object_to, object_from):
+    _assign(object_to, object_from)
+    
+@overload
+def _assign(object_to: Function.Type(), object_from: Function.Type()):
     if object_from is not object_to:
-        assert (
-            (isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()))
-                or
-            (isinstance(object_to, list) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()))
-                or
-            (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type()))
-                or
-            (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type()))
-        )
-        if isinstance(object_to, Function.Type()) and isinstance(object_from, Function.Type()):
-            dolfin_assign(object_to, object_from)
-        elif isinstance(object_to, list) and isinstance(object_from, list) and isinstance(object_from[0], Function.Type()):
-            del object_to[:]
-            object_to.extend(object_from)
-        elif (isinstance(object_to, Matrix.Type()) and isinstance(object_from, Matrix.Type())):
-            as_backend_type(object_from).mat().copy(as_backend_type(object_to).mat(), as_backend_type(object_to).mat().Structure.SAME_NONZERO_PATTERN)
-        elif (isinstance(object_to, Vector.Type()) and isinstance(object_from, Vector.Type())):
-            as_backend_type(object_from).vec().copy(as_backend_type(object_to).vec())
-        else:
-            raise AssertionError("Invalid arguments to assign")
-            
+        dolfin_assign(object_to, object_from)
+        
+@overload
+def _assign(object_to: list_of(Function.Type()), object_from: list_of(Function.Type())):
+    if object_from is not object_to:
+        del object_to[:]
+        object_to.extend(object_from)
+        
+@overload
+def _assign(object_to: Matrix.Type(), object_from: Matrix.Type()):
+    if object_from is not object_to:
+        as_backend_type(object_from).mat().copy(as_backend_type(object_to).mat(), as_backend_type(object_to).mat().Structure.SAME_NONZERO_PATTERN)
+        
+@overload
+def _assign(object_to: Vector.Type(), object_from: Vector.Type()):
+    if object_from is not object_to:
+        as_backend_type(object_from).vec().copy(as_backend_type(object_to).vec())

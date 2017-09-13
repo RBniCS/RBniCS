@@ -18,45 +18,54 @@
 
 from numpy import zeros
 from dolfin import Constant, Function
-import rbnics.backends.dolfin
 from rbnics.utils.decorators import get_problem_from_solution
 
-def expression_description(expression, backend=None):
-    if backend is None:
-        backend = rbnics.backends.dolfin
-    
-    visited = set()
-    coefficients_repr = dict()
-    for n in backend.wrapping.expression_iterator(expression):
-        if n in visited:
-            continue
-        if hasattr(n, "cppcode"):
-            coefficients_repr[n] = str(n.cppcode)
-            visited.add(n)
-        elif backend.wrapping.is_problem_solution_or_problem_solution_component_type(n):
-            if backend.wrapping.is_problem_solution_or_problem_solution_component(n):
-                (preprocessed_n, component, truth_solution) = backend.wrapping.solution_identify_component(n)
-                problem = get_problem_from_solution(truth_solution)
-            else:
-                (problem, component) = backend.wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
-                preprocessed_n = n
-            coefficients_repr[preprocessed_n] = "solution of " + str(problem.name())
-            if len(component) is 1 and component[0] is not None:
-                coefficients_repr[preprocessed_n] += ", component " + str(component[0])
-            elif len(component) > 1:
-                coefficients_repr[preprocessed_n] += ", component " + str(component)
-            # Make sure to skip any parent solution related to this one
-            visited.add(n)
-            visited.add(preprocessed_n)
-            for parent_n in backend.wrapping.solution_iterator(preprocessed_n):
-                visited.add(parent_n)
-        elif isinstance(n, Constant):
-            x = zeros(1)
-            vals = zeros(n.value_size())
-            n.eval(vals, x)
-            if len(vals) == 1:
-                coefficients_repr[n] = str(vals[0])
-            else:
-                coefficients_repr[n] = str(vals.reshape(n.ufl_shape))
-            visited.add(n)
-    return coefficients_repr
+def basic_expression_description(backend, wrapping):
+    def _basic_expression_description(expression):
+        visited = set()
+        coefficients_repr = dict()
+        for n in wrapping.expression_iterator(expression):
+            if n in visited:
+                continue
+            if hasattr(n, "cppcode"):
+                coefficients_repr[n] = str(n.cppcode)
+                visited.add(n)
+            elif wrapping.is_problem_solution_or_problem_solution_component_type(n):
+                if wrapping.is_problem_solution_or_problem_solution_component(n):
+                    (preprocessed_n, component, truth_solution) = wrapping.solution_identify_component(n)
+                    problem = get_problem_from_solution(truth_solution)
+                else:
+                    (problem, component) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
+                    preprocessed_n = n
+                coefficients_repr[preprocessed_n] = "solution of " + str(problem.name())
+                if len(component) is 1 and component[0] is not None:
+                    coefficients_repr[preprocessed_n] += ", component " + str(component[0])
+                elif len(component) > 1:
+                    coefficients_repr[preprocessed_n] += ", component " + str(component)
+                # Make sure to skip any parent solution related to this one
+                visited.add(n)
+                visited.add(preprocessed_n)
+                for parent_n in wrapping.solution_iterator(preprocessed_n):
+                    visited.add(parent_n)
+            elif isinstance(n, Constant):
+                x = zeros(1)
+                vals = zeros(n.value_size())
+                n.eval(vals, x)
+                if len(vals) == 1:
+                    coefficients_repr[n] = str(vals[0])
+                else:
+                    coefficients_repr[n] = str(vals.reshape(n.ufl_shape))
+                visited.add(n)
+        return coefficients_repr
+    return _basic_expression_description
+
+from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
+from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
+from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import is_problem_solution_or_problem_solution_component
+from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component_type import is_problem_solution_or_problem_solution_component_type
+from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
+from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
+from rbnics.utils.decorators import ModuleWrapper
+backend = ModuleWrapper()
+wrapping = ModuleWrapper(expression_iterator, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, solution_identify_component, solution_iterator, get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function)
+expression_description = basic_expression_description(backend, wrapping)

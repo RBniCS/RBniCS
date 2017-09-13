@@ -16,18 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends.dolfin
-
 def vector_mul_vector(vector1, vector2):
-    FunctionType = rbnics.backends.dolfin.Function.Type()
-    VectorType = rbnics.backends.dolfin.Vector.Type()
-    assert isinstance(vector1, (FunctionType, VectorType))
-    assert isinstance(vector2, (FunctionType, VectorType))
-    if isinstance(vector1, FunctionType):
-        vector1 = vector1.vector()
-    if isinstance(vector2, FunctionType):
-        vector2 = vector2.vector()
-    assert isinstance(vector1, VectorType)
-    assert isinstance(vector2, VectorType)
     return vector1.inner(vector2)
-

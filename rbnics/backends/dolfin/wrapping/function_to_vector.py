@@ -16,17 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Function, FunctionSpace
-from rbnics.utils.decorators import overload, tuple_of
-
-@overload
-def get_function_subspace(function: Function, component: (int, str, tuple_of(int))):
-    return get_function_subspace(function.function_space(), component)
-
-@overload
-def get_function_subspace(function_space: FunctionSpace, component: (int, str)):
-    return function_space.sub(component).collapse()
-    
-@overload
-def get_function_subspace(function_space: FunctionSpace, component: tuple_of(int)):
-    return function_space.extract_sub_space(component).collapse()
+def function_to_vector(function):
+    return function.vector()
+        

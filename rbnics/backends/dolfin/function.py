@@ -22,7 +22,7 @@ from rbnics.backends.dolfin.wrapping.function_space import _convert_component_to
 
 _Function_Type = Function
 
-@backend_for("dolfin", inputs=(FunctionSpace, (str, None)), output=_Function_Type)
+@backend_for("dolfin", inputs=(FunctionSpace, (str, None)))
 def Function(V, component=None):
     if component is None:
         return _Function_Type(V)
@@ -30,6 +30,11 @@ def Function(V, component=None):
         V = V.sub(component).collapse()
         return _Function_Type(V)
     return output
+    
+# Attach a Type() function
+def Type():
+    return _Function_Type
+Function.Type = Type
     
 # Make sure that _Function_Type.function_space() preserves component to index map
 original__init__ = _Function_Type.__init__
@@ -63,4 +68,3 @@ def custom_sub(self, i, deepcopy=False):
     else:
         return original_sub(self, i, deepcopy)
 _Function_Type.sub = custom_sub
-    

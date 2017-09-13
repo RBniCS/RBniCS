@@ -16,10 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends.dolfin
-
 def tensor_copy(tensor):
-    assert isinstance(tensor, (rbnics.backends.dolfin.Matrix.Type(), rbnics.backends.dolfin.Vector.Type()))
     output = tensor.copy()
     # Preserve generator for I/O
     if hasattr(tensor, "generator"):

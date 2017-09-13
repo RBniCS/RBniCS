@@ -16,27 +16,35 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.dolfin.wrapping.tensor_copy import tensor_copy
-import rbnics.backends.dolfin
-import rbnics.backends.online
+from rbnics.backends.abstract import TensorsList as AbstractTensorsList # used in place of concrete TensorsList to avoid unsolvable circular dependency
+from rbnics.backends.online import OnlineFunction
+from rbnics.utils.decorators import overload
 
-def tensors_list_mul_online_function(tensors_list, online_function):
-    assert isinstance(online_function, rbnics.backends.online.OnlineFunction.Type())
-    online_vector = online_function.vector()
-    
-    output = tensor_copy(tensors_list._list[0])
-    output.zero()
-    assert isinstance(output, (rbnics.backends.dolfin.Matrix.Type(), rbnics.backends.dolfin.Vector.Type()))
-    if isinstance(output, rbnics.backends.dolfin.Matrix.Type()):
+def basic_tensors_list_mul_online_function(backend, wrapping):
+    def _basic_tensors_list_mul_online_function(tensors_list, online_function):
+        online_vector = online_function.vector()
+        
+        output = wrapping.tensor_copy(tensors_list._list[0])
+        _multiply(tensors_list, online_function, output)
+        return output
+        
+    @overload
+    def _multiply(tensors_list: AbstractTensorsList, online_function: OnlineFunction.Type(), output: backend.Matrix.Type()):
+        output.zero()
         for (i, matrix_i) in enumerate(tensors_list._list):
-            online_vector_i = float(online_vector[i])
+            online_vector_i = float(online_function.vector()[i])
             output += matrix_i*online_vector_i
-    elif isinstance(output, rbnics.backends.dolfin.Vector.Type()):
+            
+    @overload
+    def _multiply(tensors_list: AbstractTensorsList, online_function: OnlineFunction.Type(), output: backend.Vector.Type()):
+        output.zero()
         for (i, vector_i) in enumerate(tensors_list._list):
-            online_vector_i = float(online_vector[i])
+            online_vector_i = float(online_function.vector()[i])
             output.add_local(vector_i.array()*online_vector_i)
         output.apply("add")
-    else: # impossible to arrive here anyway, thanks to the assert
-        raise AssertionError("Invalid arguments in tensors_list_mul_online_function.")
-    return output
+        
+    return _basic_tensors_list_mul_online_function
     
+# No explicit instantiation for backend = rbnics.backends.dolfin to avoid
+# circular dependencies. The concrete instatiation will be carried out in
+# rbnics.backends.dolfin.tensors_list

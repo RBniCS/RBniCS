@@ -18,12 +18,13 @@
 
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import as_backend_type, assemble, GenericMatrix, GenericVector, PETScMatrix, PETScVector
+from dolfin import as_backend_type, assemble, DirichletBC, GenericMatrix, GenericVector, PETScMatrix, PETScVector
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
 from rbnics.backends.dolfin.assign import assign
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping import PETScTSIntegrator
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
+from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
 @BackendFor("dolfin", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
@@ -187,62 +188,62 @@ class _TimeDependentProblem_Base(object):
             self.output_t += self.output_dt
             # Disable final timestep workaround
             at_final_time_step = False
-            
-    def _residual_vector_assemble(self, residual_form_or_vector, overwrite):
-        assert isinstance(residual_form_or_vector, (Form, GenericVector))
-        if isinstance(residual_form_or_vector, Form):
-            assemble(residual_form_or_vector, tensor=self.residual_vector)
-        elif isinstance(residual_form_or_vector, GenericVector):
-            if overwrite:
-                self.residual_vector = residual_form_or_vector
-            else:
-                as_backend_type(residual_form_or_vector).vec().swap(as_backend_type(self.residual_vector).vec())
-        else:
-            raise AssertionError("Invalid time order in _TimeDependentProblem_Base._residual_vector_assemble.")
-            
-    def _residual_bcs_apply(self, bcs):
-        assert isinstance(bcs, (dict, list)) or bcs is None
-        if bcs is None:
-            pass
-        elif isinstance(bcs, list):
-            for bc in bcs:
-                bc.apply(self.residual_vector, self.solution.vector())
-        elif isinstance(bcs, dict):
-            for key in bcs:
-                for bc in bcs[key]:
-                    bc.apply(self.residual_vector, self.solution.vector())
-        else:
-            raise AssertionError("Invalid type for bcs.")
         
-    def _jacobian_matrix_assemble(self, jacobian_form_or_matrix, overwrite):
-        assert isinstance(jacobian_form_or_matrix, (Form, GenericMatrix))
-        if isinstance(jacobian_form_or_matrix, Form):
-            assemble(jacobian_form_or_matrix, tensor=self.jacobian_matrix)
-        elif isinstance(jacobian_form_or_matrix, GenericMatrix):
-            if overwrite:
-                self.jacobian_matrix = jacobian_form_or_matrix
-            else:
-                self.jacobian_matrix.zero()
-                self.jacobian_matrix += jacobian_form_or_matrix
-            # Make sure to keep nonzero pattern, as dolfin does by default, because this option is apparently
-            # not preserved by the sum
-            as_backend_type(self.jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+    @overload
+    def _residual_vector_assemble(self, residual_form: Form, overwrite: bool):
+        assemble(residual_form, tensor=self.residual_vector)
+        
+    @overload
+    def _residual_vector_assemble(self, residual_vector_input: GenericVector, overwrite: bool):
+        if overwrite:
+            self.residual_vector = residual_vector_input
         else:
-            raise AssertionError("Invalid time order in _TimeDependentProblem_Base._jacobian_matrix_assemble.")
+            as_backend_type(residual_vector_input).vec().swap(as_backend_type(self.residual_vector).vec())
             
-    def _jacobian_bcs_apply(self, bcs):
-        assert isinstance(bcs, (dict, list)) or bcs is None
-        if bcs is None:
-            pass
-        elif isinstance(bcs, list):
-            for bc in bcs:
-                bc.apply(self.jacobian_matrix)
-        elif isinstance(bcs, dict):
-            for key in bcs:
-                for bc in bcs[key]:
-                    bc.apply(self.jacobian_matrix)
+    @overload
+    def residual_bcs_apply(self, bcs: None):
+        pass
+        
+    @overload
+    def residual_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
+        for bc in bcs:
+            bc.apply(self.residual_vector, self.solution.vector())
+            
+    @overload
+    def residual_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+        for key in bcs:
+            for bc in bcs[key]:
+                bc.apply(self.residual_vector, self.solution.vector())
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_form: Form, overwrite: bool):
+        assemble(jacobian_form, tensor=self.jacobian_matrix)
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_matrix_input: GenericMatrix, overwrite: bool):
+        if overwrite:
+            self.jacobian_matrix = jacobian_matrix_input
         else:
-            raise AssertionError("Invalid type for bcs.")
+            self.jacobian_matrix.zero()
+            self.jacobian_matrix += jacobian_matrix_input
+        # Make sure to keep nonzero pattern, as dolfin does by default, because this option is apparently
+        # not preserved by the sum
+        as_backend_type(self.jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+    
+    @overload
+    def jacobian_bcs_apply(self, bcs: None):
+        pass
+        
+    @overload
+    def jacobian_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
+        for bc in bcs:
+            bc.apply(self.jacobian_matrix)
+            
+    @overload
+    def jacobian_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+        for key in bcs:
+            for bc in bcs[key]:
+                bc.apply(self.jacobian_matrix)
         
     def update_solution(self, solution):
         solution.ghostUpdate()
@@ -297,7 +298,7 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         self.residual_vector_assemble(t, self.solution, self.solution_dot)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        self._residual_bcs_apply(bcs)
+        self.residual_bcs_apply(bcs)
         
     def residual_vector_assemble(self, t, solution, solution_dot, overwrite=False):
         residual_form_or_vector = self.residual_eval(t, solution, solution_dot)
@@ -352,7 +353,7 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         self.jacobian_matrix_assemble(t, self.solution, self.solution_dot, solution_dot_coefficient)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        self._jacobian_bcs_apply(bcs)
+        self.jacobian_bcs_apply(bcs)
         
     def jacobian_matrix_assemble(self, t, solution, solution_dot, solution_dot_coefficient, overwrite=False):
         jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_coefficient)
@@ -405,7 +406,7 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         self.residual_vector_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        self._residual_bcs_apply(bcs)
+        self.residual_bcs_apply(bcs)
             
     def residual_vector_assemble(self, t, solution, solution_dot, solution_dot_dot, overwrite=False):
         residual_form_or_vector = self.residual_eval(t, solution, solution_dot, solution_dot_dot)
@@ -456,7 +457,7 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         self.jacobian_matrix_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        self._jacobian_bcs_apply(bcs)
+        self.jacobian_bcs_apply(bcs)
             
     def jacobian_matrix_assemble(self, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient, overwrite=False):
         jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)

@@ -17,15 +17,21 @@
 #
 
 from rbnics.backends.basic import export as basic_export
-import rbnics.backends.dolfin
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
-from rbnics.utils.decorators import backend_for
+from rbnics.backends.dolfin.wrapping import build_dof_map_writer_mapping, form_argument_space, form_name, function_extend_or_restrict, function_save, get_function_subspace
+from rbnics.backends.dolfin.wrapping.tensor_save import basic_tensor_save
+from rbnics.utils.decorators import backend_for, ModuleWrapper
 from rbnics.utils.io import Folders
+
+backend = ModuleWrapper(Function, Matrix, Vector)
+wrapping = ModuleWrapper(build_dof_map_writer_mapping, form_argument_space, form_name=form_name) # temporarily
+tensor_save = basic_tensor_save(backend, wrapping)
+wrapping = ModuleWrapper(function_extend_or_restrict, function_save, get_function_subspace, tensor_save=tensor_save)
+export_base = basic_export(backend, wrapping)
 
 # Export a solution to file
 @backend_for("dolfin", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
 def export(solution, directory, filename, suffix=None, component=None):
-    basic_export(solution, directory, filename, suffix, component, rbnics.backends.dolfin, rbnics.backends.dolfin.wrapping)
-    
+    export_base(solution, directory, filename, suffix, component)

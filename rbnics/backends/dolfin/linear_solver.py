@@ -23,55 +23,59 @@ from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
-from rbnics.utils.decorators import BackendFor, dict_of, list_of
+from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
 @BackendFor("dolfin", inputs=((Matrix.Type(), Form), Function.Type(), (Vector.Type(), Form), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class LinearSolver(AbstractLinearSolver):
     def __init__(self, lhs, solution, rhs, bcs=None):
         self.solution = solution
-        # Store lhs
-        assert isinstance(lhs, (Matrix.Type(), Form))
-        if isinstance(lhs, Matrix.Type()):
-            if bcs is not None:
-                # Create a copy of lhs, in order not to change
-                # the original references when applying bcs
-                self.lhs = lhs.copy()
-            else:
-                self.lhs = lhs
-        elif isinstance(lhs, Form):
-            self.lhs = assemble(lhs, keep_diagonal=True)
-        else:
-            raise AssertionError("Invalid lhs provided to dolfin LinearSolver")
-        # Store rhs
-        assert isinstance(rhs, (Vector.Type(), Form))
-        if isinstance(rhs, Vector.Type()):
-            if bcs is not None:
-                # Create a copy of rhs, in order not to change
-                # the original references when applying bcs
-                self.rhs = rhs.copy()
-            else:
-                self.rhs = rhs
-        elif isinstance(rhs, Form):
-            self.rhs = assemble(rhs)
-        else:
-            raise AssertionError("Invalid rhs provided to dolfin LinearSolver")
-        # Store and apply BCs
-        self.bcs = bcs
-        if bcs is not None:
-            # Apply BCs
-            assert isinstance(self.bcs, (dict, list))
-            if isinstance(self.bcs, list):
-                for bc in self.bcs:
-                    assert isinstance(bc, DirichletBC)
-                    bc.apply(self.lhs, self.rhs)
-            elif isinstance(self.bcs, dict):
-                for key in self.bcs:
-                    for bc in self.bcs[key]:
-                        assert isinstance(bc, DirichletBC)
-                        bc.apply(self.lhs, self.rhs)
-            else:
-                raise AssertionError("Invalid type for bcs.")
+        self._init_lhs(lhs, bcs)
+        self._init_rhs(rhs, bcs)
+        self._apply_bcs(bcs)
+    
+    @overload
+    def _init_lhs(self, lhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
+        self.lhs = assemble(lhs, keep_diagonal=True)
+        
+    @overload
+    def _init_lhs(self, lhs: Matrix.Type(), bcs: None):
+        self.lhs = lhs
+        
+    @overload
+    def _init_lhs(self, lhs: Matrix.Type(), bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+        # Create a copy of lhs, in order not to change
+        # the original references when applying bcs
+        self.lhs = lhs.copy()
+        
+    @overload
+    def _init_rhs(self, rhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
+        self.rhs = assemble(rhs)
+        
+    @overload
+    def _init_rhs(self, rhs: Vector.Type(), bcs: None):
+        self.rhs = rhs
+        
+    @overload
+    def _init_rhs(self, rhs: Vector.Type(), bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+        # Create a copy of rhs, in order not to change
+        # the original references when applying bcs
+        self.rhs = rhs.copy()
+        
+    @overload
+    def _apply_bcs(self, bcs: None):
+        pass
+        
+    @overload
+    def _apply_bcs(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
+        for bc in bcs:
+            bc.apply(self.lhs, self.rhs)
             
+    @overload
+    def _apply_bcs(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+        for key in bcs:
+            for bc in bcs[key]:
+                bc.apply(self.lhs, self.rhs)
+                
     def set_parameters(self, parameters):
         assert len(parameters) == 0, "dolfin linear solver does not accept parameters yet"
         
