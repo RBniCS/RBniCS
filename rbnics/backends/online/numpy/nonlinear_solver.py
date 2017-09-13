@@ -23,7 +23,7 @@ from scipy.optimize.nonlin import Jacobian, nonlin_solve
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.basic.wrapping import DirichletBC
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, overload, ThetaType
 
 @BackendFor("numpy", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
@@ -78,16 +78,19 @@ class _NonlinearProblem(object):
         assert sample_jacobian.M == sample_jacobian.N
         assert sample_jacobian.N == sample_residual.N
         # Prepare storage for BCs, if necessary
-        if bcs is not None:
-            assert isinstance(bcs, (tuple, dict))
-            if isinstance(bcs, tuple):
-                self.bcs = DirichletBC(bcs)
-            elif isinstance(bcs, dict):
-                self.bcs = DirichletBC(bcs, self.solution.vector()._basis_component_index_to_component_name, self.solution.vector().N)
-            else:
-                raise AssertionError("Invalid bc in _NonlinearProblem.__init__().")
-        else:
-            self.bcs = None
+        self._init_bcs(bcs)
+    
+    @overload
+    def _init_bcs(self, bcs: None):
+        self.bcs = None
+        
+    @overload
+    def _init_bcs(self, bcs: ThetaType):
+        self.bcs = DirichletBC(bcs)
+        
+    @overload
+    def _init_bcs(self, bcs: DictOfThetaType):
+        self.bcs = DirichletBC(bcs, self.solution.vector()._basis_component_index_to_component_name, self.solution.vector().N)
         
     def residual(self, solution):
         # Convert to a matrix with one column, rather than an array

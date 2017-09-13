@@ -19,17 +19,24 @@
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
-import rbnics.backends.online.numpy
+from rbnics.backends.online.numpy.eigen_solver import EigenSolver
+from rbnics.backends.online.numpy.functions_list import FunctionsList
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.online.numpy.snapshots_matrix import SnapshotsMatrix
+from rbnics.backends.online.numpy.transpose import transpose
+from rbnics.backends.online.numpy.wrapping import get_mpi_comm
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
-ProperOrthogonalDecompositionBase = BasicProperOrthogonalDecomposition(AbstractProperOrthogonalDecomposition)
+backend = ModuleWrapper(transpose)
+wrapping = ModuleWrapper(get_mpi_comm)
+online_backend = ModuleWrapper(OnlineEigenSolver=EigenSolver)
+online_wrapping = ModuleWrapper()
+ProperOrthogonalDecomposition_Base = BasicProperOrthogonalDecomposition(backend, wrapping, online_backend, online_wrapping, AbstractProperOrthogonalDecomposition, SnapshotsMatrix, FunctionsList)
 
 @BackendFor("numpy", inputs=(AbstractFunctionsList, Matrix.Type(), (str, None)))
-class ProperOrthogonalDecomposition(ProperOrthogonalDecompositionBase):
+class ProperOrthogonalDecomposition(ProperOrthogonalDecomposition_Base):
     def __init__(self, Z, X, component=None):
-        ProperOrthogonalDecompositionBase.__init__(self, Z, X, component, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping, rbnics.backends.online.numpy.SnapshotsMatrix, rbnics.backends.online.numpy.FunctionsList)
+        ProperOrthogonalDecomposition_Base.__init__(self, Z, X, component)
         
     def store_snapshot(self, snapshot, component=None, weight=None):
         self.snapshots_matrix.enrich(snapshot, component, weight)
-        

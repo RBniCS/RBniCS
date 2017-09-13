@@ -17,16 +17,12 @@
 #
 
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
-from rbnics.backends.basic.wrapping import functions_list_basis_functions_matrix_adapter
-from rbnics.backends.online.numpy.wrapping.function_copy import function_copy
-import rbnics.backends.online
 
-def functions_list_basis_functions_matrix_mul_online_matrix(functions_list_basis_functions_matrix, online_matrix, FunctionsListType, backend):
-    Z = functions_list_basis_functions_matrix.V_or_Z
-    (functions, _) = functions_list_basis_functions_matrix_adapter(functions_list_basis_functions_matrix, backend)
+def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matrix, BasisFunctionsMatrixType):
+    Z = basis_functions_matrix.V_or_Z
     assert isinstance(Z, AbstractFunctionsList)
-    assert isinstance(online_matrix, rbnics.backends.online.OnlineMatrix.Type())
     
+    raise RuntimeError("TODO") # TODO
     output = FunctionsListType(Z)
     dim = online_matrix.shape[1]
     for j in range(dim):
@@ -39,19 +35,11 @@ def functions_list_basis_functions_matrix_mul_online_matrix(functions_list_basis
         output.enrich(output_j)
     return output
 
-def functions_list_basis_functions_matrix_mul_online_vector(functions_list_basis_functions_matrix, online_vector, backend):
-    (functions, _) = functions_list_basis_functions_matrix_adapter(functions_list_basis_functions_matrix, backend)
-    assert isinstance(online_vector, (rbnics.backends.online.OnlineVector.Type(), tuple))
-    
+def basis_functions_matrix_mul_online_vector(basis_functions_matrix, online_vector):
+    raise RuntimeError("TODO") # TODO
     output = function_copy(functions[0])
     output.vector()[:] = 0.
     for (i, fun_i) in enumerate(functions):
         online_vector_i = float(online_vector[i])
         output.vector()[:] += fun_i.vector()*online_vector_i
     return output
-    
-def functions_list_basis_functions_matrix_mul_online_function(functions_list_basis_functions_matrix, online_function, backend):
-    assert isinstance(online_function, rbnics.backends.online.OnlineFunction.Type())
-    
-    return functions_list_basis_functions_matrix_mul_online_vector(functions_list_basis_functions_matrix, online_function.vector(), backend)
-    

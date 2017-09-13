@@ -17,12 +17,15 @@
 #
 
 from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
-import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.online.numpy.transpose import transpose
+from rbnics.backends.online.numpy.wrapping import gram_schmidt_projection_step
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
+
+backend = ModuleWrapper(transpose)
+wrapping = ModuleWrapper(gram_schmidt_projection_step)
+GramSchmidt_Base = BasicGramSchmidt(backend, wrapping)
 
 @BackendFor("numpy", inputs=(Matrix.Type(), ))
-class GramSchmidt(BasicGramSchmidt):
-    def __init__(self, X):
-        BasicGramSchmidt.__init__(self, X, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
-        
+class GramSchmidt(GramSchmidt_Base):
+    pass

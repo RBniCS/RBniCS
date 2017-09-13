@@ -16,11 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends.online.numpy
+def basic_function_copy(backend, wrapping):
+    def _basic_function_copy(function):
+        original_vector = function.vector()
+        v = backend.Vector(original_vector.N)
+        v[:] = original_vector
+        return backend.Function(v)
+    return _basic_function_copy
 
-def function_copy(function):
-    original_vector = function.vector()
-    v = rbnics.backends.online.numpy.Vector(original_vector.N)
-    v[:] = original_vector
-    return rbnics.backends.online.numpy.Function(v)
-
+# No explicit instantiation for backend = rbnics.backends.online.numpy to avoid
+# circular dependencies. The concrete instatiation will be carried out in
+# rbnics.backends.online.numpy.copy

@@ -17,12 +17,14 @@
 #
 
 from rbnics.backends.online.basic.assign import assign as basic_assign
-import rbnics.backends.online.numpy
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
-from rbnics.utils.decorators import backend_for, list_of
+from rbnics.utils.decorators import backend_for, list_of, ModuleWrapper
+
+backend = ModuleWrapper(Function, Matrix, Vector)
+assign_base = basic_assign(backend)
 
 @backend_for("numpy", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), (Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type())))
 def assign(object_to, object_from):
-    basic_assign(object_to, object_from, rbnics.backends.online.numpy)
+    assign_base(object_to, object_from)

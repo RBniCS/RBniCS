@@ -18,9 +18,10 @@
 
 from numpy import matrix as MatrixBaseType, zeros as _MatrixContent_Base
 from rbnics.backends.online.basic import Matrix as BasicMatrix
-import rbnics.backends.online.numpy
+from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.vector import Vector
-from rbnics.utils.decorators import backend_for, OnlineSizeType
+from rbnics.backends.online.numpy.wrapping import Slicer
+from rbnics.utils.decorators import backend_for, ModuleWrapper, OnlineSizeType
 
 class _Matrix_Type_Base(MatrixBaseType):
     def __mul__(self, other):
@@ -32,14 +33,19 @@ class _Matrix_Type_Base(MatrixBaseType):
         else:
             return MatrixBaseType.__mul__(self, other)
             
-_Matrix_Type = BasicMatrix(_Matrix_Type_Base)
+backend = ModuleWrapper(Function, Vector)
+wrapping = ModuleWrapper(Slicer=Slicer)
+_Matrix_Type = BasicMatrix(backend, wrapping, _Matrix_Type_Base)
     
-@backend_for("numpy", inputs=(OnlineSizeType, OnlineSizeType), output=_Matrix_Type)
+@backend_for("numpy", inputs=(OnlineSizeType, OnlineSizeType))
 def Matrix(M, N):
     (M_sum, N_sum) = _Matrix_Type.convert_matrix_sizes_from_dicts(M, N)
     output = _Matrix_Type(_MatrixContent_Base((M_sum, N_sum)))
     output.M = M
     output.N = N
-    output.backend = rbnics.backends.online.numpy
-    output.wrapping = rbnics.backends.online.numpy.wrapping
     return output
+    
+# Attach a Type() function
+def Type():
+    return _Matrix_Type
+Matrix.Type = Type

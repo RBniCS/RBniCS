@@ -23,11 +23,10 @@ from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.function import Function
 from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 
+LinearSolver_Base = BasicLinearSolver
+
 @BackendFor("numpy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), ThetaType + DictOfThetaType + (None,)))
-class LinearSolver(BasicLinearSolver):
-    def __init__(self, lhs, solution, rhs, bcs=None):
-        BasicLinearSolver.__init__(self, lhs, solution, rhs, bcs)
-                
+class LinearSolver(LinearSolver_Base):
     def set_parameters(self, parameters):
         assert len(parameters) == 0, "NumPy linear solver does not accept parameters yet"
         
@@ -35,4 +34,3 @@ class LinearSolver(BasicLinearSolver):
         solution = solve(self.lhs, self.rhs)
         self.solution.vector()[:] = solution
         return self.solution
-        

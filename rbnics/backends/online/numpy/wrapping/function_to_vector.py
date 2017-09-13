@@ -16,8 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def vector_mul_vector(vector1, vector2):
-    output = vector1.T.dot(vector2)
-    assert output.shape == (1, 1)
-    return output.item(0, 0)
-
+def function_to_vector(function):
+    return function.vector()
+        

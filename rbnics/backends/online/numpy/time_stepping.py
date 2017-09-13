@@ -29,12 +29,12 @@ else:
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
 from rbnics.backends.online.basic.wrapping import DirichletBC
 from rbnics.backends.online.numpy.assign import assign
+from rbnics.backends.online.numpy.copy import function_copy
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.linear_solver import LinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.numpy.vector import Vector
-from rbnics.backends.online.numpy.wrapping import function_copy
 from rbnics.utils.decorators import BackendFor
 
 @BackendFor("numpy", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))

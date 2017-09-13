@@ -18,16 +18,21 @@
 
 from numpy import matrix as VectorBaseType, zeros as _VectorContent_Base
 from rbnics.backends.online.basic import Vector as BasicVector
-import rbnics.backends.online.numpy
-from rbnics.utils.decorators import backend_for, OnlineSizeType
+from rbnics.backends.online.numpy.wrapping import Slicer
+from rbnics.utils.decorators import backend_for, ModuleWrapper, OnlineSizeType
 
-_Vector_Type = BasicVector(VectorBaseType)
+backend = ModuleWrapper()
+wrapping = ModuleWrapper(Slicer=Slicer)
+_Vector_Type = BasicVector(backend, wrapping, VectorBaseType)
 
-@backend_for("numpy", inputs=(OnlineSizeType, ), output=_Vector_Type)
+@backend_for("numpy", inputs=(OnlineSizeType, ))
 def Vector(N):
     N_sum = _Vector_Type.convert_vector_size_from_dict(N)
     output = _Vector_Type(_VectorContent_Base(N_sum)).transpose() # as column vector
     output.N = N
-    output.backend = rbnics.backends.online.numpy
-    output.wrapping = rbnics.backends.online.numpy.wrapping
     return output
+    
+# Attach a Type() function
+def Type():
+    return _Vector_Type
+Vector.Type = Type

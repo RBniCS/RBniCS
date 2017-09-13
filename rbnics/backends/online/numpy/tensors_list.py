@@ -18,11 +18,22 @@
 
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 from rbnics.backends.basic import TensorsList as BasicTensorsList
-import rbnics.backends.online.numpy
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.online.numpy.copy import tensor_copy
+from rbnics.backends.online.numpy.function import Function
+from rbnics.backends.online.numpy.matrix import Matrix
+from rbnics.backends.online.numpy.vector import Vector
+from rbnics.backends.online.numpy.wrapping import get_mpi_comm, tensor_load, tensor_save
+from rbnics.backends.online.numpy.wrapping.tensors_list_mul import basic_tensors_list_mul_online_function
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
+
+backend = ModuleWrapper(Function, Matrix, Vector)
+wrapping = ModuleWrapper() # temporarily
+tensors_list_mul_online_function = basic_tensors_list_mul_online_function(backend, wrapping)
+wrapping = ModuleWrapper(get_mpi_comm, tensor_load, tensor_save, tensor_copy=tensor_copy, tensors_list_mul_online_function=tensors_list_mul_online_function)
+online_backend = ModuleWrapper(OnlineFunction=Function)
+online_wrapping = ModuleWrapper()
+TensorsList_Base = BasicTensorsList(backend, wrapping, online_backend, online_wrapping)
 
 @BackendFor("numpy", inputs=(AbstractTensorsList, ))
-class TensorsList(BasicTensorsList):
-    def __init__(self, Z, empty_tensor):
-        BasicTensorsList.__init__(self, Z, empty_tensor, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping)
-        
+class TensorsList(TensorsList_Base):
+    pass

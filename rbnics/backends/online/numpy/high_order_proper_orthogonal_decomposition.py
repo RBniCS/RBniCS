@@ -19,17 +19,23 @@
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
-import rbnics.backends.online.numpy
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.online.numpy.eigen_solver import EigenSolver
+from rbnics.backends.online.numpy.tensor_snapshots_list import TensorSnapshotsList
+from rbnics.backends.online.numpy.tensor_basis_list import TensorBasisList
+from rbnics.backends.online.numpy.transpose import transpose
+from rbnics.backends.online.numpy.wrapping import get_mpi_comm
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
-HighOrderProperOrthogonalDecompositionBase = BasicHighOrderProperOrthogonalDecomposition(AbstractHighOrderProperOrthogonalDecomposition)
+backend = ModuleWrapper(transpose)
+wrapping = ModuleWrapper(get_mpi_comm)
+online_backend = ModuleWrapper(OnlineEigenSolver=EigenSolver)
+online_wrapping = ModuleWrapper()
+HighOrderProperOrthogonalDecomposition_Base = BasicHighOrderProperOrthogonalDecomposition(backend, wrapping, online_backend, online_wrapping, AbstractHighOrderProperOrthogonalDecomposition, TensorSnapshotsList, TensorBasisList)
 
 @BackendFor("numpy", inputs=(AbstractFunctionsList, ))
-class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecompositionBase):
+class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecomposition_Base):
     def __init__(self, Z, empty_tensor):
-        HighOrderProperOrthogonalDecompositionBase.__init__(self, Z, None, empty_tensor, rbnics.backends.online.numpy, rbnics.backends.online.numpy.wrapping, rbnics.backends.online.numpy.TensorSnapshotsList, rbnics.backends.online.numpy.TensorBasisList)
+        HighOrderProperOrthogonalDecomposition_Base.__init__(self, Z, None, empty_tensor)
         
     def store_snapshot(self, snapshot):
         self.snapshots_matrix.enrich(snapshot)
-        
-        

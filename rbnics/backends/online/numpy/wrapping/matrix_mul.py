@@ -16,15 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends.online.numpy
-
 def matrix_mul_vector(matrix, vector):
-    if isinstance(vector, rbnics.backends.online.numpy.Function.Type()):
-        vector = vector.vector()
     return matrix*vector
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    assert isinstance(matrix, rbnics.backends.online.numpy.Matrix.Type())
-    assert isinstance(other_matrix, rbnics.backends.online.numpy.Matrix.Type())
     return (matrix*other_matrix).sum()
     

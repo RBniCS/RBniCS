@@ -18,30 +18,29 @@
 
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
-from rbnics.utils.decorators import backend_for
+from rbnics.utils.decorators import backend_for, overload
 from numpy import argmax, abs as numpy_abs, unravel_index
 
 # abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max,
 # even though here we actually carry out both the max and the abs!
 @backend_for("numpy", inputs=((Matrix.Type(), Vector.Type()), ))
 def abs(expression):
-    assert isinstance(expression, (Matrix.Type(), Vector.Type()))
-    if isinstance(expression, Matrix.Type()):
-        matrix = expression
-        abs_matrix = numpy_abs(matrix)
-        ij_max = unravel_index(argmax(abs_matrix), abs_matrix.shape)
-        return AbsOutput(float(matrix[ij_max]), ij_max)
-    elif isinstance(expression, Vector.Type()):
-        vector = expression
-        abs_vector = numpy_abs(vector)
-        i_max = (argmax(abs_vector), )
-        return AbsOutput(float(vector[i_max]), i_max)
-    else: # impossible to arrive here anyway thanks to the assert
-        raise AssertionError("Invalid argument to abs")
+    return _abs(expression)
+    
+@overload
+def _abs(matrix: Matrix.Type()):
+    abs_matrix = numpy_abs(matrix)
+    ij_max = unravel_index(argmax(abs_matrix), abs_matrix.shape)
+    return AbsOutput(float(matrix[ij_max]), ij_max)
+    
+@overload
+def _abs(vector: Vector.Type()):
+    abs_vector = numpy_abs(vector)
+    i_max = (argmax(abs_vector), )
+    return AbsOutput(float(vector[i_max]), i_max)
     
 # Auxiliary class to signal to the max() function that it is dealing with an output of the abs() method
 class AbsOutput(object):
     def __init__(self, max_abs_return_value, max_abs_return_location):
         self.max_abs_return_value = max_abs_return_value
         self.max_abs_return_location = max_abs_return_location
-        

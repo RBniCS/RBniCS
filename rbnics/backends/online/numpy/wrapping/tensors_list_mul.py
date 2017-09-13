@@ -16,26 +16,33 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.numpy.wrapping.tensor_copy import tensor_copy
-import rbnics.backends.online
-import rbnics.backends.online.numpy
+from rbnics.backends.abstract import TensorsList as AbstractTensorsList # used in place of concrete TensorsList to avoid unsolvable circular dependency
+from rbnics.utils.decorators import overload
 
-def tensors_list_mul_online_function(tensors_list, online_function):
-    assert isinstance(online_function, rbnics.backends.online.OnlineFunction.Type())
-    online_vector = online_function.vector()
-    
-    output = tensor_copy(tensors_list._list[0])
-    assert isinstance(output, (rbnics.backends.online.numpy.Matrix.Type(), rbnics.backends.online.numpy.Vector.Type()))
-    if isinstance(output, rbnics.backends.online.numpy.Matrix.Type()):
+def basic_tensors_list_mul_online_function(backend, wrapping):
+    def _basic_tensors_list_mul_online_function(tensors_list, online_function):
+        online_vector = online_function.vector()
+        
+        output = wrapping.tensor_copy(tensors_list._list[0])
+        _multiply(tensors_list, online_function, output)
+        return output
+        
+    @overload
+    def _multiply(tensors_list: AbstractTensorsList, online_function: backend.Function.Type(), output: backend.Matrix.Type()):
         output[:, :] = 0.
         for (i, tensor_i) in enumerate(tensors_list._list):
             online_vector_i = float(online_vector[i])
             output[:, :] += tensor_i*online_vector_i
-    elif isinstance(output, rbnics.backends.online.numpy.Vector.Type()):
+            
+    @overload
+    def _multiply(tensors_list: AbstractTensorsList, online_function: backend.Function.Type(), output: backend.Vector.Type()):
         output[:] = 0.
         for (i, tensor_i) in enumerate(tensors_list._list):
             online_vector_i = float(online_vector[i])
             output[:] += tensor_i*online_vector_i
-    else: # impossible to arrive here anyway, thanks to the assert
-        raise AssertionError("Invalid arguments in tensors_list_mul_online_function.")
-    return output
+            
+    return _basic_tensors_list_mul_online_function
+    
+# No explicit instantiation for backend = rbnics.backends.online.numpy to avoid
+# circular dependencies. The concrete instatiation will be carried out in
+# rbnics.backends.online.numpy.tensors_list

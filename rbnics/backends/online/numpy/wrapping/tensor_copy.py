@@ -16,17 +16,23 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.backends.online.numpy
+from rbnics.utils.decorators import overload
 
-def tensor_copy(tensor):
-    assert isinstance(tensor, (rbnics.backends.online.numpy.Matrix.Type(), rbnics.backends.online.numpy.Vector.Type()))
-    if isinstance(tensor, rbnics.backends.online.numpy.Matrix.Type()):
-        m = rbnics.backends.online.numpy.Matrix(*tensor.shape)
+def basic_tensor_copy(backend, wrapping):
+    @overload
+    def _basic_tensor_copy(tensor: backend.Matrix.Type()):
+        m = backend.Matrix(tensor.M, tensor.N)
         m[:, :] = tensor
         return m
-    elif isinstance(tensor, rbnics.backends.online.numpy.Vector.Type()):
-        v = rbnics.backends.online.numpy.Vector(tensor.size)
+        
+    @overload
+    def _basic_tensor_copy(tensor: backend.Vector.Type()):
+        v = backend.Vector(tensor.N)
         v[:] = tensor
         return v
-    else: # impossible to arrive here anyway, thanks to the assert
-        raise AssertionError("Invalid arguments in tensor_copy.")
+        
+    return _basic_tensor_copy
+    
+# No explicit instantiation for backend = rbnics.backends.online.numpy to avoid
+# circular dependencies. The concrete instatiation will be carried out in
+# rbnics.backends.online.numpy.copy

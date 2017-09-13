@@ -17,10 +17,13 @@
 #
 
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
+from rbnics.backends.basic import SnapshotsMatrix as BasicSnapshotsMatrix
 from rbnics.backends.online.numpy.functions_list import FunctionsList
 from rbnics.utils.decorators import BackendFor
 
+SnapshotsMatrix_Base = BasicSnapshotsMatrix(FunctionsList)
+
 @BackendFor("numpy", inputs=(AbstractFunctionsList, (str, None)))
-class SnapshotsMatrix(FunctionsList):
+class SnapshotsMatrix(SnapshotsMatrix_Base):
     pass
 

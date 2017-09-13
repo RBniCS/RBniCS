@@ -17,19 +17,16 @@
 #
 
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.utils.decorators import backend_for, tuple_of
+from rbnics.utils.decorators import backend_for, overload, tuple_of
 
 @backend_for("numpy", inputs=((Matrix.Type(), tuple_of(Matrix.Type())), ))
 def adjoint(arg):
-    assert isinstance(arg, (Matrix.Type(), tuple))
-    if isinstance(arg, Matrix.Type()):
-        return arg.T
-    elif isinstance(arg, tuple):
-        output = list()
-        for a in arg:
-            assert isinstance(a, Matrix.Type())
-            output.append(a.T)
-        return tuple(output)
-    else: # impossible to arrive here anyway thanks to the assert
-        raise AssertionError("Invalid argument to adjoint")
-        
+    return _adjoint(arg)
+    
+@overload
+def _adjoint(arg: Matrix.Type()):
+    return arg.T
+    
+@overload
+def _adjoint(arg: tuple_of(Matrix.Type())):
+    return tuple(a.T for a in arg)

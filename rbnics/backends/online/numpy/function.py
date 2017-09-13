@@ -39,7 +39,11 @@ class _Function_Type(_Function_Type_Base):
     def __iter__(self):
         return map(float, self._v.flat)
         
-@backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ), output=_Function_Type)
+@backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ))
 def Function(arg):
     return _Function_Type(arg)
     
+# Attach a Type() function
+def Type():
+    return _Function_Type
+Function.Type = Type

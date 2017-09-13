@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from numpy import asmatrix
 from rbnics.backends.online.numpy.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.online.numpy.matrix import Matrix
@@ -32,7 +33,7 @@ def product(thetas, operators, thetas2=None):
     assert order in (1, 2)
     if order == 1: # vector storage of affine expansion online data structures (e.g. reduced matrix/vector expansions)
         first_operator = operators[0]
-        assert isinstance(first_operator, (Matrix.Type(), Vector.Type(), Function.Type(), float))
+        assert isinstance(first_operator, (Matrix.Type(), Vector.Type(), Function.Type(), Number))
         assert thetas2 is None
         assert len(thetas) == len(operators)
         # Single for loop version:
@@ -51,7 +52,7 @@ def product(thetas, operators, thetas2=None):
         '''
     elif order == 2: # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
         first_operator = operators[0, 0]
-        assert isinstance(first_operator, (Matrix.Type(), Vector.Type(), float))
+        assert isinstance(first_operator, (Matrix.Type(), Vector.Type(), Number))
         assert thetas2 is not None
         # no checks here on the first dimension of operators should be equal to len(thetas), and
         # similarly that the second dimension should be equal to len(thetas2), because the
@@ -85,7 +86,7 @@ def product(thetas, operators, thetas2=None):
         output.N = first_operator.N
     elif isinstance(first_operator, Vector.Type()):
         output.N = first_operator.N
-    elif isinstance(first_operator, float):
+    elif isinstance(first_operator, Number):
         pass # nothing to be done
     elif isinstance(first_operator, Function.Type()):
         output.vector().N = first_operator.vector().N
