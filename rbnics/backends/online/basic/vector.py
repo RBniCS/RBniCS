@@ -16,10 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from numpy import isscalar
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
 
-def Vector(VectorBaseType):
+def Vector(backend, wrapping, VectorBaseType):
     class Vector_Class(VectorBaseType):
         @staticmethod
         def convert_vector_size_from_dict(N):
@@ -39,21 +40,18 @@ def Vector(VectorBaseType):
                 if isinstance(key, slice): # direct call of vector[:5]
                     # Prepare output
                     if hasattr(self, "_component_name_to_basis_component_length"):
-                        output = VectorBaseType.__getitem__(self, self.wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
+                        output = VectorBaseType.__getitem__(self, wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
                         output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
                     else:
-                        output = VectorBaseType.__getitem__(self, self.wrapping.Slicer(*slice_to_array(self, key)))
+                        output = VectorBaseType.__getitem__(self, wrapping.Slicer(*slice_to_array(self, key)))
                         output_size = slice_to_size(self, key)
                 elif isinstance(key, (list, tuple)): # indirect call through AffineExpansionStorage
                     assert len(key) == 1
-                    output = VectorBaseType.__getitem__(self, self.wrapping.Slicer(*key))
+                    output = VectorBaseType.__getitem__(self, wrapping.Slicer(*key))
                     output_size = (len(key[0]), )
                 # Preserve N
                 assert len(output_size) == 1
                 output.N = output_size[0]
-                # Preserve backend and wrapping
-                output.backend = self.backend
-                output.wrapping = self.wrapping
                 # Preserve auxiliary attributes related to basis functions matrix
                 assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
                 assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")
@@ -76,9 +74,9 @@ def Vector(VectorBaseType):
             ):
                 # Convert slices
                 if hasattr(self, "_component_name_to_basis_component_length"):
-                    converted_key = self.wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
+                    converted_key = wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
                 else:
-                    converted_key = self.wrapping.Slicer(*slice_to_array(self, key))
+                    converted_key = wrapping.Slicer(*slice_to_array(self, key))
                 # Set item
                 VectorBaseType.__setitem__(self, converted_key, value)
             else:
@@ -100,7 +98,7 @@ def Vector(VectorBaseType):
             return output
             
         def __mul__(self, other):
-            if isinstance(other, (float, int)):
+            if isinstance(other, Number):
                 output = VectorBaseType.__mul__(self, other)
                 self._arithmetic_operations_preserve_attributes(other, output, other_is_vector=False)
                 return output
@@ -108,7 +106,7 @@ def Vector(VectorBaseType):
                 return NotImplemented
             
         def __rmul__(self, other):
-            if isinstance(other, (float, int)):
+            if isinstance(other, Number):
                 output = VectorBaseType.__rmul__(self, other)
                 self._arithmetic_operations_preserve_attributes(other, output, other_is_vector=False)
                 return output
@@ -136,9 +134,6 @@ def Vector(VectorBaseType):
                 else:
                     assert self.N == other.N
             output.N = self.N
-            # Preserve backend and wrapping
-            output.backend = self.backend
-            output.wrapping = self.wrapping
             # Preserve auxiliary attributes related to basis functions matrix
             assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
             assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")

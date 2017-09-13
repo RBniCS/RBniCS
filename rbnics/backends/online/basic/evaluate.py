@@ -16,22 +16,25 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Evaluate a parametrized expression, possibly at a specific location
-def evaluate(expression, at, backend):
-    assert isinstance(expression, (backend.Matrix.Type(), backend.Vector.Type()))
-    assert isinstance(at, tuple) or at is None
-    for at_i in at:
-        assert isinstance(at_i, (int, tuple))
-        if isinstance(at_i, tuple):
-            assert all([isinstance(at_ij, int) for at_ij in at_i])
-            assert isinstance(expression, backend.Matrix.Type())
-        else:
-            assert isinstance(expression, backend.Vector.Type())
-    if isinstance(expression, (backend.Matrix.Type(), backend.Vector.Type())):
-        if at is None:
-            return expression
-        else:
-            return expression[at]
-    else: # impossible to arrive here anyway thanks to the assert
-        raise AssertionError("Invalid argument to evaluate")
-    
+from rbnics.utils.decorators import overload, tuple_of
+
+def evaluate(backend):
+    class _Evaluate(object):
+        @overload(backend.Matrix.Type(), None)
+        def __call__(self, matrix, at):
+            return matrix
+        
+        @overload(backend.Matrix.Type(), tuple_of(int))    
+        def __call__(self, matrix, at):
+            assert len(at) == 2
+            return matrix[at]
+        
+        @overload(backend.Vector.Type(), None)    
+        def __call__(self, vector, at):
+            return vector
+        
+        @overload(backend.Vector.Type(), tuple_of(int))    
+        def __call__(self, vector, at):
+            assert len(at) == 1
+            return vector
+    return _Evaluate()

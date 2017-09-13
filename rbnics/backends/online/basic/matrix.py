@@ -16,9 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
 
-def Matrix(MatrixBaseType):
+def Matrix(backend, wrapping, MatrixBaseType):
     class _Matrix_Type(MatrixBaseType):
         @staticmethod
         def convert_matrix_sizes_from_dicts(M, N):
@@ -47,21 +48,18 @@ def Matrix(MatrixBaseType):
                 if key_is_tuple_of_slices: # direct call of matrix[:5, :5]
                     # Prepare output
                     if hasattr(self, "_component_name_to_basis_component_length"):
-                        output = MatrixBaseType.__getitem__(self, self.wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
+                        output = MatrixBaseType.__getitem__(self, wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
                         output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
                     else:
-                        output = MatrixBaseType.__getitem__(self, self.wrapping.Slicer(*slice_to_array(self, key)))
+                        output = MatrixBaseType.__getitem__(self, wrapping.Slicer(*slice_to_array(self, key)))
                         output_size = slice_to_size(self, key)
                 elif key_is_tuple_of_tuples_or_lists: # indirect call through AffineExpansionStorage
-                    output = MatrixBaseType.__getitem__(self, self.wrapping.Slicer(*key))
+                    output = MatrixBaseType.__getitem__(self, wrapping.Slicer(*key))
                     output_size = (len(key[0]), len(key[1]))
                 # Preserve M and N
                 assert len(output_size) == 2
                 output.M = output_size[0]
                 output.N = output_size[1]
-                # Preserve backend and wrapping
-                output.backend = self.backend
-                output.wrapping = self.wrapping
                 # Preserve auxiliary attributes related to basis functions matrix
                 assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
                 assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")
@@ -79,9 +77,9 @@ def Matrix(MatrixBaseType):
             if all([isinstance(key_i, slice) for key_i in key]): # direct call of matrix[:5, :5]
                 # Convert slices
                 if hasattr(self, "_component_name_to_basis_component_length"):
-                    converted_key = self.wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
+                    converted_key = wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
                 else:
-                    converted_key = self.wrapping.Slicer(*slice_to_array(self, key))
+                    converted_key = wrapping.Slicer(*slice_to_array(self, key))
                 # Set item
                 MatrixBaseType.__setitem__(self, converted_key, value)
             else:
@@ -103,26 +101,26 @@ def Matrix(MatrixBaseType):
             return output
             
         def __mul__(self, other):
-            if isinstance(other, (self.backend.Function.Type(), self.backend.Vector.Type(), float, int)):  
-                if isinstance(other, (self.backend.Function.Type(), self.backend.Vector.Type())):
-                    if isinstance(other, self.backend.Function.Type()):
+            if isinstance(other, (backend.Function.Type(), backend.Vector.Type(), Number)):  
+                if isinstance(other, (backend.Function.Type(), backend.Vector.Type())):
+                    if isinstance(other, backend.Function.Type()):
                         output = MatrixBaseType.__mul__(self, other.vector())
                     else:
                         output = MatrixBaseType.__mul__(self, other)
                 else:
                     output = MatrixBaseType.__mul__(self, other)
-                if isinstance(other, (float, int)):
+                if isinstance(other, Number):
                     self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
-                elif isinstance(other, self.backend.Function.Type()):
+                elif isinstance(other, backend.Function.Type()):
                     self._arithmetic_operations_preserve_attributes(other.vector(), output, other_order=1)
-                elif isinstance(other, self.backend.Vector.Type()):
+                elif isinstance(other, backend.Vector.Type()):
                     self._arithmetic_operations_preserve_attributes(other, output, other_order=1)
                 return output
             else:
                 return NotImplemented
             
         def __rmul__(self, other):
-            if isinstance(other, (float, int)):
+            if isinstance(other, Number):
                 output = MatrixBaseType.__rmul__(self, other)
                 self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
                 return output
@@ -166,9 +164,6 @@ def Matrix(MatrixBaseType):
                     assert self.M == other.M
             output.M = self.M
             output.N = self.N
-            # Preserve backend and wrapping
-            output.backend = self.backend
-            output.wrapping = self.wrapping
             # Preserve auxiliary attributes related to basis functions matrix
             assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
             assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")

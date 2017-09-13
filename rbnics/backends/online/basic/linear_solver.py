@@ -18,28 +18,35 @@
 
 from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
 from rbnics.backends.online.basic.wrapping import DirichletBC
+from rbnics.utils.decorators import DictOfThetaType, overload, ThetaType
 
 class LinearSolver(AbstractLinearSolver):
     def __init__(self, lhs, solution, rhs, bcs=None):
         self.lhs = lhs
         self.solution = solution
         self.rhs = rhs
+        self._apply_bcs(bcs)
         # We should be solving a square system
         assert self.lhs.M == self.lhs.N
         assert self.lhs.N == self.rhs.N
-        # Apply BCs, if necessary
-        if bcs is not None:
-            assert isinstance(bcs, (tuple, dict))
-            if isinstance(bcs, tuple):
-                self.bcs = DirichletBC(bcs)
-            elif isinstance(bcs, dict):
-                # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
-                assert self.rhs._basis_component_index_to_component_name == self.lhs._basis_component_index_to_component_name[1]
-                assert self.rhs._component_name_to_basis_component_index == self.lhs._component_name_to_basis_component_index[1]
-                assert self.rhs._component_name_to_basis_component_length == self.lhs._component_name_to_basis_component_length[1]
-                # Provide auxiliary dicts to DirichletBC constructor
-                self.bcs = DirichletBC(bcs, self.rhs._basis_component_index_to_component_name, self.rhs.N)
-            else:
-                raise AssertionError("Invalid bc in LinearSolver.__init__().")
-            self.bcs.apply_to_vector(self.rhs)
-            self.bcs.apply_to_matrix(self.lhs)
+        
+    @overload
+    def _apply_bcs(self, bcs: None):
+        pass
+        
+    @overload
+    def _apply_bcs(self, bcs: ThetaType):
+        bcs = DirichletBC(bcs)
+        bcs.apply_to_vector(self.rhs)
+        bcs.apply_to_matrix(self.lhs)
+        
+    @overload
+    def _apply_bcs(self, bcs: DictOfThetaType):
+        # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
+        assert self.rhs._basis_component_index_to_component_name == self.lhs._basis_component_index_to_component_name[1]
+        assert self.rhs._component_name_to_basis_component_index == self.lhs._component_name_to_basis_component_index[1]
+        assert self.rhs._component_name_to_basis_component_length == self.lhs._component_name_to_basis_component_length[1]
+        # Provide auxiliary dicts to DirichletBC constructor, and apply
+        bcs = DirichletBC(bcs, self.rhs._basis_component_index_to_component_name, self.rhs.N)
+        bcs.apply_to_vector(self.rhs)
+        bcs.apply_to_matrix(self.lhs)

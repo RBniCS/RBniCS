@@ -52,13 +52,13 @@ def Function(Vector):
                 return NotImplemented
             
         def __mul__(self, other):
-            if isinstance(other, (float, int)):
+            if isinstance(other, Number):
                 return _Function_Type(self._v.__mul__(other))
             else:
                 return NotImplemented
             
         def __rmul__(self, other):
-            if isinstance(other, (float, int)):
+            if isinstance(other, Number):
                 return _Function_Type(self._v.__rmul__(other))
             else:
                 return NotImplemented
