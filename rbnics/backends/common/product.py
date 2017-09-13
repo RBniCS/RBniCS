@@ -17,28 +17,30 @@
 #
 
 from rbnics.backends.common.affine_expansion_storage import AffineExpansionStorage
-from rbnics.utils.decorators import backend_for, ThetaType
+from rbnics.utils.decorators import backend_for, overload, ThetaType
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
 @backend_for("common", inputs=(ThetaType, AffineExpansionStorage, ThetaType + (None,)))
 def product(thetas, operators, thetas2=None):
-    if thetas2 is None:
-        output = 0.
-        for (theta, operator) in zip(thetas, operators):
-            output += theta*operator
-    else:
-        output = 0.
-        for i, theta_i in enumerate(thetas):
-            for j, theta2_j in enumerate(thetas2):
-                output += theta_i*operators[i, j]*theta2_j
+    return _product(thetas, operators, thetas2)
     
-    # Return
+@overload
+def _product(thetas: ThetaType, operators: AffineExpansionStorage, thetas2: None):
+    output = 0.
+    for (theta, operator) in zip(thetas, operators):
+        output += theta*operator
     return ProductOutput(output)
     
-        
+@overload
+def _product(thetas: ThetaType, operators: AffineExpansionStorage, thetas2: ThetaType):
+    output = 0.
+    for i, theta_i in enumerate(thetas):
+        for j, theta2_j in enumerate(thetas2):
+            output += theta_i*operators[i, j]*theta2_j
+    return ProductOutput(output)
+    
 # Auxiliary class to signal to the sum() function that it is dealing with an output of the product() method
 class ProductOutput(object):
     def __init__(self, sum_product_return_value):
         self.sum_product_return_value = sum_product_return_value
-    

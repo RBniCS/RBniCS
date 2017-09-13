@@ -252,7 +252,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     N_bc[component] = len(self.Z[component])
                 self.N = OnlineSizeDict(N)
                 self.N_bc = OnlineSizeDict(N_bc)
-                total_N_bc = sum(N_bc.values())
+                total_N_bc = sum(tuple(N_bc.values()))
             # Note that, however, self.N is not increased, so it will actually contain the number
             # of basis functions without the lifting ones.
         else:

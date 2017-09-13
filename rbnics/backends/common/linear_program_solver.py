@@ -165,16 +165,17 @@ if linear_programming_backends["scipy"]:
             else:
                 return result.fun
             
+from numbers import Number
 if linear_programming_backends["cvxopt"]:
-    @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(float))))
+    @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(Number))))
     class LinearProgramSolver(CVXOPTLinearProgramSolver):
         pass
 elif linear_programming_backends["python-glpk"]:
-    @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(float))))
+    @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(Number))))
     class LinearProgramSolver(PythonGLPKLinearProgramSolver):
         pass
 elif linear_programming_backends["scipy"]:
-    @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(float))))
+    @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(Number))))
     class LinearProgramSolver(SciPyLinearProgramSolver):
         pass
 else:

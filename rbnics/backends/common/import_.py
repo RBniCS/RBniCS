@@ -16,10 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from rbnics.utils.decorators import backend_for, list_of
 from rbnics.utils.io import Folders, PickleIO
 
-@backend_for("common", inputs=((list_of(float), list_of(int)), (Folders.Folder, str), str, None, None))
+@backend_for("common", inputs=(list_of(Number), (Folders.Folder, str), str, None, None))
 def import_(solution, directory, filename, suffix=None, component=None):
     if PickleIO.exists_file(directory, filename):
         loaded_solution = PickleIO.load_file(directory, filename)

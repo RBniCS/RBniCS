@@ -16,10 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
 from rbnics.utils.decorators import BackendFor, tuple_of
 
-@BackendFor("common", inputs=(tuple_of(float),))
+@BackendFor("common", inputs=(tuple_of(Number),))
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def __init__(self, args):
         self._content = args

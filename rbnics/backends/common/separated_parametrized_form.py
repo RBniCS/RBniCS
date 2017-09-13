@@ -16,16 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from rbnics.utils.decorators import BackendFor
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 
-@BackendFor("common", inputs=((float, int), ))
+@BackendFor("common", inputs=(Number, ))
 class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     def __init__(self, form):
         AbstractSeparatedParametrizedForm.__init__(self, form)
         self._form = form
         self._coefficients = list() # empty
-        self._form_unchanged = list() # will contain a single float or int
+        self._form_unchanged = list() # will contain a single number
         self._form_unchanged.append(form)
     
     def separate(self):
