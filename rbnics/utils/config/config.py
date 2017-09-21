@@ -20,6 +20,7 @@ import os
 import sys
 import configparser
 from rbnics.utils.mpi import is_io_process
+from rbnics.utils.decorators import overload, set_of
 
 class Config(object):
     rbnics_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
@@ -98,32 +99,33 @@ class Config(object):
         self._config_as_parser.set(section, option, self._value_to_parser(section, option, value))
         self._config_as_dict[section][option] = value
         
+    @overload(str, str, str)
     def _value_to_parser(self, section, option, value):
-        if isinstance(value, set):
-            default = self.defaults[section][option]
-            assert isinstance(default, set)
-            assert value.issubset(default)
-            value_str =  ", ".join(str(v) for v in value)
-            if len(value) is 1:
-                value_str += "," # to differentiate between str and a set with one element
-            return value_str
-        elif isinstance(value, bool):
-            assert isinstance(self.defaults[section][option], bool)
-            return str(value)
-        elif isinstance(value, str):
-            assert isinstance(self.defaults[section][option], str)
-            return value
-        else:
-            raise ValueError("Invalid value to parser")
+        assert isinstance(self.defaults[section][option], str)
+        return value
+        
+    @overload(str, str, bool)
+    def _value_to_parser(self, section, option, value):
+        assert isinstance(self.defaults[section][option], bool)
+        return str(value)
+        
+    @overload(str, str, set_of(str))
+    def _value_to_parser(self, section, option, value):
+        default = self.defaults[section][option]
+        assert isinstance(default, set)
+        assert value.issubset(default)
+        value_str =  ", ".join(str(v) for v in value)
+        if len(value) < 2:
+            value_str += "," # to differentiate between str and a set with one element
+        return value_str
         
     def _value_from_parser(self, section, option, value):
-        if value.strip() == "":
-            return set()
-        elif "," in value:
+        assert isinstance(value, str)
+        if "," in value:
             assert isinstance(self.defaults[section][option], set)
             value = value.strip(",") # strip trailing comma which has been possibly added to differentiate between str and set
-            return set([v.strip() for v in value.split(",")])
-        elif isinstance(value, str):
+            return set([v.strip() for v in value.split(",")]).difference(("", ))
+        else:
             if value.lower() in ("yes", "true", "on"):
                 assert isinstance(self.defaults[section][option], bool)
                 return True
@@ -133,8 +135,6 @@ class Config(object):
             else:
                 assert isinstance(self.defaults[section][option], str)
                 return value
-        else:
-            raise ValueError("Invalid value from parser")
             
     def _parser_to_dict(self):
         for section in self._config_as_parser.sections():

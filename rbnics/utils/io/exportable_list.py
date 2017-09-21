@@ -19,6 +19,7 @@
 from rbnics.utils.io.numpy_io import NumpyIO
 from rbnics.utils.io.pickle_io import PickleIO
 from rbnics.utils.io.text_io import TextIO
+from rbnics.utils.decorators import list_of, overload, tuple_of
 
 class ExportableList(object):
     def __init__(self, import_export_backend, original_list=None):
@@ -36,12 +37,14 @@ class ExportableList(object):
     
     def append(self, element):
         self._list.append(element)
-        
+    
+    @overload(list_of(object))
     def extend(self, other_list):
-        if isinstance(other_list, ExportableList):
-            self._list.extend(other_list._list)
-        else:
-            self._list.extend(other_list)
+        self._list.extend(other_list)
+        
+    @overload(lambda cls: cls)
+    def extend(self, other_list):
+        self._list.extend(other_list._list)
             
     def save(self, directory, filename):
         self._FileIO.save_file(self._list, directory, filename)

@@ -18,19 +18,19 @@
 
 import os # for path and makedir
 from rbnics.utils.mpi import is_io_process
+from rbnics.utils.decorators import overload
 
 class Folders(dict): # dict from string to string
     
     # Auxiliary class
     class Folder(object):
+        @overload(str)
         def __init__(self, name):
-            assert isinstance(name, (str, Folders.Folder))
-            if isinstance(name, str):
-                self.name = name
-            elif isinstance(name, Folders.Folder):
-                self.name = name.name
-            else:
-                raise AssertionError("Invalid name in Folder construction")                
+            self.name = name
+            
+        @overload(lambda cls: cls)
+        def __init__(self, name):
+            self.name = name.name
             
         # Returns True if it was necessary to create the folder
         # or if the folder was already created before, but it is
