@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 import types
 import inspect
 from rbnics.backends.common.linear_program_solver import LinearProgramSolver
@@ -48,7 +49,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             assert "SCM" in kwargs
             tol_SCM = kwargs["SCM"]
-            assert isinstance(tol_SCM, float)
+            assert isinstance(tol_SCM, Number)
             self.SCM_reduction.set_tolerance(tol_SCM) # kwargs are not needed
             
         ## OFFLINE: set the elements in the training set.

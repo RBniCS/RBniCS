@@ -17,6 +17,7 @@
 #
 
 from math import sqrt
+from numbers import Number
 from rbnics.backends import ProperOrthogonalDecomposition, TimeQuadrature
 from rbnics.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
@@ -66,18 +67,18 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 
         def _preprocess_nested_POD_tolerance(self, tol):
             if len(self.truth_problem.components) > 1:
-                assert isinstance(tol, (dict, float))
+                assert isinstance(tol, (dict, Number))
                 if isinstance(tol, dict):
                     for component in self.truth_problem.components:
                         if all_components_in_dict:
                             assert component in tol, "You need to specify the tolerance of all components in tolerance dictionary" 
                 else:
-                    tol_float = tol
+                    tol_number = tol
                     tol = dict()
                     for component in self.truth_problem.components:
-                        tol[component] = tol_float
+                        tol[component] = tol_number
             else:
-                assert isinstance(tol, (dict, float))
+                assert isinstance(tol, (dict, Number))
                 if isinstance(tol, dict):
                     assert len(self.truth_problem.components) == 1
                     component_0 = self.truth_problem.components[0]

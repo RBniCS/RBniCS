@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+from numbers import Number
 from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
@@ -73,12 +73,12 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                         tol[component] = kwargs[component]
                         del kwargs[component]
                 else:
-                    assert isinstance(tol, float)
-                    tol_float = tol
+                    assert isinstance(tol, Number)
+                    tol_number = tol
                     tol = dict()
                     for component in self.truth_problem.components:
-                        tol[component] = tol_float
-                        assert component not in kwargs, "You cannot provide both a float and kwargs for components"
+                        tol[component] = tol_number
+                        assert component not in kwargs, "You cannot provide both a number and kwargs for components"
             else:
                 if tol is None:
                     assert len(self.truth_problem.components) == 1
@@ -86,7 +86,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     assert component_0 in kwargs
                     tol = kwargs[component_0]
                 else:
-                    assert isinstance(tol, float)
+                    assert isinstance(tol, Number)
             
             self.tol = tol
         

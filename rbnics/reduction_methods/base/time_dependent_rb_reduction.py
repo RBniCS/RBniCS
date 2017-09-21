@@ -16,8 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 from math import sqrt
+from numbers import Number
 from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature, transpose
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
@@ -80,7 +80,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set POD-Greedy tolerance
             assert "POD_Greedy" in kwargs
-            assert isinstance(kwargs["POD_Greedy"], (dict, float, list, tuple))
+            assert isinstance(kwargs["POD_Greedy"], (dict, Number, list, tuple))
             if isinstance(kwargs["POD_Greedy"], (list, tuple)):
                 assert self.POD_greedy_basis_extension is None or self.POD_greedy_basis_extension == "POD"
                 if self.POD_greedy_basis_extension is None:
@@ -92,7 +92,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                         assert self.tol1[component] < self.tol2[component]
                 else:
                     assert self.tol1 < self.tol2
-            elif isinstance(kwargs["POD_Greedy"], (dict, float)):
+            elif isinstance(kwargs["POD_Greedy"], (dict, Number)):
                 assert self.POD_greedy_basis_extension is None or self.POD_greedy_basis_extension == "orthogonal"
                 if self.POD_greedy_basis_extension is None:
                     self.POD_greedy_basis_extension = "orthogonal"
@@ -100,18 +100,18 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
         
         def _preprocess_POD_greedy_tolerance(self, tol):
             if len(self.truth_problem.components) > 1:
-                assert isinstance(tol, (dict, float))
+                assert isinstance(tol, (dict, Number))
                 if isinstance(tol, dict):
                     for component in self.truth_problem.components:
                         if all_components_in_dict:
                             assert component in tol, "You need to specify the tolerance of all components in tolerance dictionary" 
                 else:
-                    tol_float = tol
+                    tol_number = tol
                     tol = dict()
                     for component in self.truth_problem.components:
-                        tol[component] = tol_float
+                        tol[component] = tol_number
             else:
-                assert isinstance(tol, (dict, float))
+                assert isinstance(tol, (dict, Number))
                 if isinstance(tol, dict):
                     assert len(self.truth_problem.components) == 1
                     component_0 = self.truth_problem.components[0]

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 import types
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
@@ -49,33 +50,29 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._solution_dot_over_time = list() # of Functions
             self._solution_over_time_cache = dict() # of list of Functions
             self._solution_dot_over_time_cache = dict() # of list of Functions
-            self._output_over_time = list() # of floats
-            self._output_over_time_cache = dict() # of list of floats
+            self._output_over_time = list() # of numbers
+            self._output_over_time_cache = dict() # of list of numbers
 
         ## Set current time
         def set_time(self, t):
-            assert isinstance(t, (float, int))
-            t = float(t)
+            assert isinstance(t, Number)
             self.t = t
             
         ## Set initial time
         def set_initial_time(self, t0):
-            assert isinstance(t0, (float, int))
-            t0 = float(t0)
+            assert isinstance(t0, Number)
             self.t0 = t0
             self._time_stepping_parameters["initial_time"] = t0
                     
         ## Set time step size
         def set_time_step_size(self, dt):
-            assert isinstance(dt, (float, int))
-            dt = float(dt)
+            assert isinstance(dt, Number)
             self.dt = dt
             self._time_stepping_parameters["time_step_size"] = dt
             
         ## Set final time
         def set_final_time(self, T):
-            assert isinstance(T, (float, int))
-            T = float(T)
+            assert isinstance(T, Number)
             self.T = T
             self._time_stepping_parameters["final_time"] = T
             

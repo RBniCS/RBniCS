@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 import types
 from numpy import isclose
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
@@ -38,23 +39,20 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             
         ## Set reduction initial time
         def set_reduction_initial_time(self, t0):
-            assert isinstance(t0, (float, int))
-            t0 = float(t0)
+            assert isinstance(t0, Number)
             assert t0 >= self.truth_problem.t0
             self.reduction_first_index = int(t0/self.truth_problem.dt)
                     
         ## Set reduction time step size
         def set_reduction_time_step_size(self, dt):
-            assert isinstance(dt, (float, int))
-            dt = float(dt)
+            assert isinstance(dt, Number)
             assert dt >= self.truth_problem.dt
             self.reduction_delta_index = int(dt/self.truth_problem.dt)
             assert isclose(self.reduction_delta_index*self.truth_problem.dt, dt), "Reduction time step size should be a multiple of discretization time step size"
             
         ## Set reduction final time
         def set_reduction_final_time(self, T):
-            assert isinstance(T, (float, int))
-            T = float(T)
+            assert isinstance(T, Number)
             assert T <= self.truth_problem.T
             self.reduction_last_index = int(T/self.truth_problem.dt)
             

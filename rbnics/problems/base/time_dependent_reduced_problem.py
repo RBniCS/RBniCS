@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from math import sqrt
 from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
@@ -62,8 +63,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._solution_dot_over_time = list() # of Functions
             self._solution_over_time_cache = dict() # of list of Functions
             self._solution_dot_over_time_cache = dict() # of list of Functions
-            self._output_over_time = list() # of floats
-            self._output_over_time_cache = dict() # of list of floats
+            self._output_over_time = list() # of numbers
+            self._output_over_time_cache = dict() # of list of numbers
             
         ## Set current time
         def set_time(self, t):
@@ -71,22 +72,19 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         ## Set initial time
         def set_initial_time(self, t0):
-            assert isinstance(t0, (float, int))
-            t0 = float(t0)
+            assert isinstance(t0, Number)
             self.t0 = t0
             self._time_stepping_parameters["initial_time"] = t0
             
         ## Set time step size
         def set_time_step_size(self, dt):
-            assert isinstance(dt, (float, int))
-            dt = float(dt)
+            assert isinstance(dt, Number)
             self.dt = dt
             self._time_stepping_parameters["time_step_size"] = dt
             
         ## Set final time
         def set_final_time(self, T):
-            assert isinstance(T, (float, int))
-            T = float(T)
+            assert isinstance(T, Number)
             self.T = T
             self._time_stepping_parameters["final_time"] = T
             
@@ -397,7 +395,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                a list (over time) of dicts (over components)
             """
             assert isinstance(error_over_time, list)
-            assert isinstance(error_over_time[0], (dict, float))
+            assert isinstance(error_over_time[0], (dict, Number))
             if isinstance(error_over_time[0], dict):
                 assert all([isinstance(error, dict) for error in error_over_time])
                 components = list(error_over_time[0].keys())
@@ -409,7 +407,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         output[component].append(error[component])
                 return output
             else:
-                assert all([isinstance(error, float) for error in error_over_time])
+                assert all([isinstance(error, Number) for error in error_over_time])
                 return error_over_time
         
         @staticmethod
@@ -425,11 +423,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             if isinstance(converted_error_over_time, dict):
                 output = dict()
                 for (component, error_over_time_for_component) in converted_error_over_time.items():
-                    assert all([isinstance(error, float) for error in error_over_time_for_component])
+                    assert all([isinstance(error, Number) for error in error_over_time_for_component])
                     output[component] = error_over_time_for_component[k]
                 return output
             else:
-                assert all([isinstance(error, float) for error in converted_error_over_time])
+                assert all([isinstance(error, Number) for error in converted_error_over_time])
                 return converted_error_over_time[k]
         
         ## Export solution to file

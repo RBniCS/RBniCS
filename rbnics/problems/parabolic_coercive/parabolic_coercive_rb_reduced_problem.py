@@ -75,7 +75,7 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
 
     ## Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
-        residual_norm_squared_over_time = list() # of float
+        residual_norm_squared_over_time = list() # of numbers
         for (k, (solution, solution_dot)) in enumerate(zip(self._solution_over_time, self._solution_dot_over_time)):
             if k > 0:
                 # Set current time
