@@ -63,8 +63,6 @@ class Test(TestBase):
                     assembled_matrix_builtin += theta[i]*A[i][:N, :N]
                 assembled_matrix_builtin.M = N
                 assembled_matrix_builtin.N = N
-                assembled_matrix_builtin.backend = A[0].backend
-                assembled_matrix_builtin.wrapping = A[0].wrapping
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
                 # Time using sum(product()) method
                 assembled_matrix_sum_product = sum(product(theta, A[:N, :N]))

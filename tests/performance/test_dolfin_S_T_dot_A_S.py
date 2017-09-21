@@ -17,60 +17,66 @@
 #
 
 
+from dolfin import *
 from numpy.linalg import norm
-from rbnics.backends import product as factory_product, sum as factory_sum
-from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum
-from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum
-product = None
-sum = None
-all_product = {"numpy": numpy_product, "online": online_product, "factory": factory_product}
-all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
-from test_utils import RandomNumpyVector, RandomTuple, TestBase
+from rbnics.backends import FunctionsList
+from rbnics.backends import transpose as factory_transpose
+from rbnics.backends.dolfin import transpose as dolfin_transpose
+transpose = None
+all_transpose = {"dolfin": dolfin_transpose, "factory": factory_transpose}
+from rbnics.backends.online.numpy import Matrix as NumpyMatrix
+from test_utils import RandomDolfinFunction, TestBase
 
 class Test(TestBase):
-    def __init__(self, N, Q):
+    def __init__(self, Nh, N):
         self.N = N
-        self.Q = Q
+        mesh = UnitSquareMesh(Nh, Nh)
+        self.V = FunctionSpace(mesh, "Lagrange", 1)
+        u = TrialFunction(self.V)
+        v = TestFunction(self.V)
+        self.a = lambda k: k*inner(grad(u), grad(v))*dx
         # Call parent init
         TestBase.__init__(self)
             
     def run(self):
         N = self.N
-        Q = self.Q
         test_id = self.test_id
         test_subid = self.test_subid
         if test_id >= 0:
             if not self.index in self.storage:
-                F = OnlineAffineExpansionStorage(self.Q)
-                for i in range(self.Q):
-                    # Generate random vector
-                    F[i] = RandomNumpyVector(N)
-                # Genereate random theta
-                theta = RandomTuple(Q)
+                # Generate random vectors
+                S = FunctionsList(self.V)
+                for _ in range(self.N):
+                    b = RandomDolfinFunction(self.V)
+                    S.enrich(b)
+                k = RandomDolfinFunction(self.V)
+                # Generate random matrix
+                A = assemble(self.a(k))
                 # Store
-                self.storage[self.index] = (theta, F)
+                self.storage[self.index] = (S, A)
             else:
-                (theta, F) = self.storage[self.index]
+                (S, A) = self.storage[self.index]
             self.index += 1
         if test_id >= 1:
             if test_id > 1 or (test_id == 1 and test_subid == "a"):
                 # Time using built in methods
-                assembled_vector_builtin = theta[0]*F[0]
-                for i in range(1, self.Q):
-                    assembled_vector_builtin += theta[i]*F[i]
-                assembled_vector_builtin.N = N
+                S_T_dot_A_S_builtin = NumpyMatrix(self.N, self.N)
+                for j in range(self.N):
+                    A_S_j = A*S[j].vector()
+                    for i in range(self.N):
+                        S_T_dot_A_S_builtin[i, j] = S[i].vector().inner(A_S_j)
             if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using sum(product()) method
-                assembled_vector_sum_product = sum(product(theta, F))
+                # Time using transpose() method
+                S_T_dot_A_S_transpose = transpose(S)*A*S
         if test_id >= 2:
-            return norm(assembled_vector_builtin - assembled_vector_sum_product)/norm(assembled_vector_builtin)
+            return norm(S_T_dot_A_S_builtin - S_T_dot_A_S_transpose)/norm(S_T_dot_A_S_builtin)
 
-for i in range(4, 9):
-    N = 2**i
+for i in range(3, 7):
+    Nh = 2**i
     for j in range(1, 4):
-        Q = 10 + 4*j
-        test = Test(N, Q)
-        print("N =", N, "and Q =", Q)
+        N = 10 + 4*j
+        test = Test(Nh, N)
+        print("Nh =", test.V.dim(), "and N =", N)
         
         test.init_test(0)
         (usec_0_build, usec_0_access) = test.timeit()
@@ -81,15 +87,15 @@ for i in range(4, 9):
         usec_1a = test.timeit()
         print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
         
-        for backend in ("numpy", "online", "factory"):
+        for backend in ("dolfin", "factory"):
             print("Testing", backend, "backend")
-            product, sum = all_product[backend], all_sum[backend]
+            transpose = all_transpose[backend]
             
             test.init_test(1, "b")
             usec_1b = test.timeit()
-            print("\tsum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+            print("\ttranspose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
             
-            print("\tRelative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
+            print("\tRelative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
             
             test.init_test(2)
             error = test.average()
