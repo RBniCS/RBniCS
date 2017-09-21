@@ -16,23 +16,26 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 import hashlib
 from rbnics.eim.problems.eim_approximation import EIMApproximation
-from rbnics.utils.decorators import sync_setters
+from rbnics.utils.decorators import overload, sync_setters, tuple_of
 
 def set_mu_decorator(set_mu):
+    @overload(tuple_of(Number))
     def decorated_set_mu(self, mu):
-        assert isinstance(mu, (tuple, EnlargedMu))
-        if isinstance(mu, tuple):
-            set_mu(self, mu)
-        else:
-            assert len(mu) == 2
-            assert "mu" in mu
-            assert isinstance(mu["mu"], tuple)
-            set_mu(self, mu["mu"])
-            assert "t" in mu
-            assert isinstance(mu["t"], float)
-            self.set_time(mu["t"])
+        set_mu(self, mu)
+        
+    @overload(EnlargedMu)
+    def decorated_set_mu(self, mu):
+        assert len(mu) == 2
+        assert "mu" in mu
+        assert isinstance(mu["mu"], tuple)
+        set_mu(self, mu["mu"])
+        assert "t" in mu
+        assert isinstance(mu["t"], Number)
+        self.set_time(mu["t"])
+        
     return decorated_set_mu
 
 class TimeDependentEIMApproximation(EIMApproximation):
@@ -54,26 +57,22 @@ class TimeDependentEIMApproximation(EIMApproximation):
         
     ## Set initial time
     def set_initial_time(self, t0):
-        assert isinstance(t0, (float, int))
-        t0 = float(t0)
+        assert isinstance(t0, Number)
         self.t0 = t0
         
     ## Set current time
     def set_time(self, t):
-        assert isinstance(t, (float, int))
-        t = float(t)
+        assert isinstance(t, Number)
         self.t = t
         
     ## Set time step size
     def set_time_step_size(self, dt):
-        assert isinstance(dt, (float, int))
-        dt = float(dt)
+        assert isinstance(dt, Number)
         self.dt = dt
         
     ## Set final time
     def set_final_time(self, T):
-        assert isinstance(T, (float, int))
-        T = float(T)
+        assert isinstance(T, Number)
         self.T = T
             
     def _cache_key_and_file(self):
@@ -87,7 +86,7 @@ class EnlargedMu(dict):
         assert "mu" in self
         assert isinstance(self["mu"], tuple)
         assert "t" in self
-        assert isinstance(self["t"], float)
+        assert isinstance(self["t"], Number)
         output = str(self["mu"]) + " and t = " + str(self["t"])
         return output
         

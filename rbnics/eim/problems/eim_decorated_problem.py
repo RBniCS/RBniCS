@@ -18,7 +18,7 @@
 
 from itertools import product as cartesian_product
 from rbnics.backends import ParametrizedExpressionFactory, SeparatedParametrizedForm, SymbolicParameters
-from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
+from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
@@ -58,23 +58,24 @@ def EIMDecoratedProblem(
                 # Store value of N_EIM passed to solve
                 self._N_EIM = None
                 # Store values passed to decorator
-                assert isinstance(stages, (str, tuple))
-                if isinstance(stages, tuple):
-                    assert len(stages) in (1, 2)
-                    assert stages[0] in ("offline", "online")
-                    if len(stages) > 1:
-                        assert stages[1] in ("offline", "online")
-                        assert stages[0] != stages[1]
-                    self._apply_EIM_at_stages = stages
-                elif isinstance(stages, str):
-                    assert stages != "offline", "This choice does not make any sense because it requires an EIM offline stage which then is not used online"
-                    assert stages == "online"
-                    self._apply_EIM_at_stages = (stages, )
-                else:
-                    raise AssertionError("Invalid value for stages")
-                
+                self._store_stages(stages)
                 # Avoid useless assignments
                 self._update_N_EIM__previous_kwargs = None
+                
+            @overload(str)
+            def _store_stages(self, stage):
+                assert stages != "offline", "This choice does not make any sense because it requires an EIM offline stage which then is not used online"
+                assert stages == "online"
+                self._apply_EIM_at_stages = (stages, )
+                
+            @overload(tuple_of(str))
+            def _store_stages(self, stage):
+                assert len(stages) in (1, 2)
+                assert stages[0] in ("offline", "online")
+                if len(stages) > 1:
+                    assert stages[1] in ("offline", "online")
+                    assert stages[0] != stages[1]
+                self._apply_EIM_at_stages = stages
                 
             def _init_EIM_approximations(self):
                 # Preprocess each term in the affine expansions.

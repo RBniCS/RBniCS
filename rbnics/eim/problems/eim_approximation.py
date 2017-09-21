@@ -47,7 +47,7 @@ class EIMApproximation(ParametrizedProblem):
         self.interpolation_locations = parametrized_expression.create_interpolation_locations_container() # interpolation locations selected by the greedy (either a ReducedVertices or ReducedMesh)
         self.interpolation_matrix = OnlineAffineExpansionStorage(1) # interpolation matrix
         # Solution
-        self._interpolation_coefficients = OnlineFunction()
+        self._interpolation_coefficients = None # OnlineFunction
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         self.snapshot = None # will be filled in by Function, Vector or Matrix as appropriate in the EIM preprocessing
@@ -124,7 +124,7 @@ class EIMApproximation(ParametrizedProblem):
                 solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
                 solver.solve()
         else:
-            self._interpolation_coefficients = OnlineFunction()
+            self._interpolation_coefficients = None # OnlineFunction
         
     ## Call online_solve and then convert the result of online solve from OnlineVector to a tuple
     def compute_interpolated_theta(self, N=None):

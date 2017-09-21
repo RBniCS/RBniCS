@@ -18,7 +18,7 @@
 
 from itertools import product as cartesian_product
 from rbnics.backends import ParametrizedTensorFactory, SeparatedParametrizedForm, SymbolicParameters
-from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
+from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 
@@ -57,24 +57,25 @@ def DEIMDecoratedProblem(
                 # Store value of N_DEIM passed to solve
                 self._N_DEIM = None
                 # Store values passed to decorator
-                assert isinstance(stages, (str, tuple))
-                if isinstance(stages, tuple):
-                    assert len(stages) in (1, 2)
-                    assert stages[0] in ("offline", "online")
-                    if len(stages) > 1:
-                        assert stages[1] in ("offline", "online")
-                        assert stages[0] != stages[1]
-                    self._apply_DEIM_at_stages = stages
-                elif isinstance(stages, str):
-                    assert stages != "offline", "This choice does not make any sense because it requires a DEIM offline stage which then is not used online"
-                    assert stages == "online"
-                    self._apply_DEIM_at_stages = (stages, )
-                else:
-                    raise AssertionError("Invalid value for stages")
-                
+                self._store_stages(stages)
                 # Avoid useless assignments
                 self._update_N_DEIM__previous_kwargs = None
                 
+            @overload(str)
+            def _store_stages(self, stage):
+                assert stages != "offline", "This choice does not make any sense because it requires a DEIM offline stage which then is not used online"
+                assert stages == "online"
+                self._apply_DEIM_at_stages = (stages, )
+                
+            @overload(tuple_of(str))
+            def _store_stages(self, stage):
+                assert len(stages) in (1, 2)
+                assert stages[0] in ("offline", "online")
+                if len(stages) > 1:
+                    assert stages[1] in ("offline", "online")
+                    assert stages[0] != stages[1]
+                self._apply_DEIM_at_stages = stages
+            
             def _init_DEIM_approximations(self):
                 # Preprocess each term in the affine expansions.
                 # Note that this cannot be done in __init__, because operators may depend on self.mu,

@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends import SymbolicParameters
-from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
+from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 
 def ExactParametrizedFunctions_OfflineAndOnline(**kwargs):
     # Enable exact parametrized functions evaluation both offline and online
@@ -50,20 +50,22 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 self.mu_symbolic = None
                 
                 # Store values passed to decorator
-                assert isinstance(stages, (str, tuple))
-                if isinstance(stages, tuple):
-                    assert len(stages) in (1, 2)
-                    assert stages[0] in ("offline", "online")
-                    if len(stages) > 1:
-                        assert stages[1] in ("offline", "online")
-                        assert stages[0] != stages[1]
-                    self._apply_exact_approximation_at_stages = stages
-                elif isinstance(stages, str):
-                    assert stages != "online", "This choice does not make any sense because it requires an EIM/DEIM offline stage which then is not used online"
-                    assert stages == "offline"
-                    self._apply_exact_approximation_at_stages = (stages, )
-                else:
-                    raise AssertionError("Invalid value for stages")
+                self._store_stages(stages)
+            
+            @overload(str)
+            def _store_stages(self, stage):
+                assert stages != "online", "This choice does not make any sense because it requires an EIM/DEIM offline stage which then is not used online"
+                assert stages == "offline"
+                self._apply_exact_approximation_at_stages = (stages, )
+                
+            @overload(tuple_of(str))
+            def _store_stages(self, stage):
+                assert len(stages) in (1, 2)
+                assert stages[0] in ("offline", "online")
+                if len(stages) > 1:
+                    assert stages[1] in ("offline", "online")
+                    assert stages[0] != stages[1]
+                self._apply_exact_approximation_at_stages = stages
             
             def init(self):
                 # Initialize symbolic parameters only once

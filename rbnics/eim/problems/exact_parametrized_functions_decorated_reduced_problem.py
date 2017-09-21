@@ -18,7 +18,6 @@
 
 
 import types
-import rbnics.backends
 from rbnics.backends import assign, copy, NonlinearProblemWrapper, TimeDependentProblem1Wrapper
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
