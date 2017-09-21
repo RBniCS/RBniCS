@@ -40,7 +40,7 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                     elif problem.terms_order[term] == 1:
                         assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                     else:
-                        raise AssertionError("Invalid value for order of term " + term)
+                        raise ValueError("Invalid value for order of term " + term)
                 return (
                      (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
                     + assembled_operator["c"]

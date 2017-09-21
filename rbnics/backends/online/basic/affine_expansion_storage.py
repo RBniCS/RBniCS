@@ -199,7 +199,7 @@ def AffineExpansionStorage(backend, wrapping):
             elif content_item_type == "empty":
                 return None
             else: # impossible to arrive here anyway thanks to the assert
-                raise AssertionError("Invalid content item type.")
+                raise ValueError("Invalid content item type.")
         
         @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)        
         def _load_content(self, item, it, full_directory):

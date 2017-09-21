@@ -38,5 +38,5 @@ class Timer(object):
         elif self._mode == "parallel":
             return self._comm.allreduce(elapsed, op=SUM)
         else:
-            raise AssertionError("Invalid mode for timer")
+            raise ValueError("Invalid mode for timer")
         

@@ -48,7 +48,7 @@ class TimeStepping(AbstractTimeStepping):
             self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
             self.solver  = PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy(), self.problem.solution_dot_dot.vector().copy()) # create copies to avoid internal storage overwriting
         else:
-            raise AssertionError("Invalid time order in TimeStepping.__init__().")
+            raise ValueError("Invalid time order in TimeStepping.__init__().")
         # Store solution input
         self.solution = solution
         self.solution_dot = solution_dot
@@ -65,7 +65,7 @@ class TimeStepping(AbstractTimeStepping):
         elif self.time_order == 2:
             (all_solutions_time, all_solutions, all_solutions_dot, all_solutions_dot_dot) = self.solver.solve()
         else:
-            raise AssertionError("Invalid time order in TimeStepping.solve().")
+            raise ValueError("Invalid time order in TimeStepping.solve().")
         self.solution.vector().zero()
         self.solution.vector().add_local(all_solutions[-1].vector().array())
         self.solution.vector().apply("add")
@@ -81,7 +81,7 @@ class TimeStepping(AbstractTimeStepping):
         elif self.time_order == 2:
             return (all_solutions_time, all_solutions, all_solutions_dot, all_solutions_dot_dot)
         else:
-            raise AssertionError("Invalid time order in TimeStepping.solve().")
+            raise ValueError("Invalid time order in TimeStepping.solve().")
         
 class _TimeDependentProblem_Base(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):

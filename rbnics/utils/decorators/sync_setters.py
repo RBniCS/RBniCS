@@ -117,7 +117,7 @@ def sync_setters(other_object, method__name, private_attribute__name, method__de
             method__decorator = set_mu_range__decorator
         return sync_setters__internal(other_object, method__name, private_attribute__name, method__decorator)
     else:
-        raise AssertionError("Invalid method in sync_setters.")
+        raise ValueError("Invalid method in sync_setters.")
         
 def set_mu_range__decorator(set_mu_range__method):
     def set_mu_range__decorated(self_, mu_range):

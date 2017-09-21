@@ -47,7 +47,7 @@ class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
         elif len(shape) == 2:
             space = TensorFunctionSpace(mesh, "Lagrange", 1, shape=shape)
         else:
-            raise AssertionError("Invalid expression in ParametrizedExpressionFactory.__init__().")
+            raise ValueError("Invalid expression in ParametrizedExpressionFactory.__init__().")
         # Define inner product for POD
         f = TrialFunction(space)
         g = TestFunction(space)

@@ -65,7 +65,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self.projection_inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
         self._combined_projection_inner_product = None
         # Solution
-        self._solution = OnlineFunction()
+        self._solution = None # OnlineFunction
         self._solution_cache = dict() # of Functions
         self._output = 0
         self._output_cache = dict() # of floats
@@ -138,7 +138,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 self.Q[term] = self.truth_problem.Q[term]
                 self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
         else:
-            raise AssertionError("Invalid stage in _init_operators().")
+            raise ValueError("Invalid stage in _init_operators().")
             
     def _combine_all_inner_products(self):
         if len(self.components) > 1:
@@ -256,7 +256,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             # Note that, however, self.N is not increased, so it will actually contain the number
             # of basis functions without the lifting ones.
         else:
-            raise AssertionError("Invalid stage in _init_basis_functions().")
+            raise ValueError("Invalid stage in _init_basis_functions().")
             
     def _combine_and_homogenize_all_dirichlet_bcs(self):
         if len(self.components) > 1:
@@ -717,7 +717,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     elif self.terms_order[term] == 0:
                         self.operator[term][q] = self.truth_problem.operator[term][q]
                     else:
-                        raise AssertionError("Invalid value for order of term " + term)
+                        raise ValueError("Invalid value for order of term " + term)
                 if "reduced_operators" in self.folder:
                     self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
@@ -800,7 +800,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             else:
                 raise ValueError("Invalid term for assemble_operator().")
         else:
-            raise AssertionError("Invalid stage in assemble_operator().")
+            raise ValueError("Invalid stage in assemble_operator().")
     
     def _lifting_truth_solve(self, term, i):
         # Since lifting solves for different values of i are associated to the same parameter 

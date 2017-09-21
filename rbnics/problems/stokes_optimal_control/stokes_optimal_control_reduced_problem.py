@@ -82,7 +82,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 elif self.terms_order[term] == 0:
                     assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
                 else:
-                    raise AssertionError("Invalid value for order of term " + term)
+                    raise ValueError("Invalid value for order of term " + term)
             self._output = (
                 0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 
                 0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) - 

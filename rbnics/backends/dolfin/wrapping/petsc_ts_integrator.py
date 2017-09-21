@@ -38,7 +38,7 @@ class PETScTSIntegrator(object):
             self.ts.setI2Function(problem.residual_vector_eval, as_backend_type(problem.residual_vector).vec())
             self.ts.setI2Jacobian(problem.jacobian_matrix_eval, as_backend_type(problem.jacobian_matrix).mat())
         else:
-            raise AssertionError("Invalid time order in PETScTSIntegrator.__init__().")
+            raise ValueError("Invalid time order in PETScTSIntegrator.__init__().")
         # ... and monitor
         self.ts.setMonitor(problem.monitor)
         # Set sensible default values to parameters
@@ -141,7 +141,7 @@ class PETScTSIntegrator(object):
             self.ts.setSolution2(petsc_solution, petsc_solution_dot)
             self.ts.solve(petsc_solution)
         else:
-            raise AssertionError("Invalid time order in PETScTSIntegrator.solve().")
+            raise ValueError("Invalid time order in PETScTSIntegrator.solve().")
         petsc_solution.ghostUpdate()
         if self.problem.time_order == 2:
             petsc_solution_dot.ghostUpdate()
@@ -159,4 +159,4 @@ class PETScTSIntegrator(object):
         elif self.problem.time_order == 2:
             return self.problem.all_solutions_time, self.problem.all_solutions, self.problem.all_solutions_dot, self.problem.all_solutions_dot_dot
         else:
-            raise AssertionError("Invalid time order in PETScTSIntegrator.solve().")
+            raise ValueError("Invalid time order in PETScTSIntegrator.solve().")

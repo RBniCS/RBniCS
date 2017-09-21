@@ -73,7 +73,7 @@ class EIMApproximation(ParametrizedProblem):
             # Nothing to be done
             pass
         else:
-            raise AssertionError("Invalid stage in init().")
+            raise ValueError("Invalid stage in init().")
 
     def evaluate_parametrized_expression(self):
         (cache_key, cache_file) = self._cache_key_and_file()

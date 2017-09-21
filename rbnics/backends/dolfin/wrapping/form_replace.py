@@ -37,5 +37,5 @@ def form_replace(form, replacements, replacement_type="nodes"):
             replaced_form += integral.integrand()*measure
         return replaced_form
     else:
-        raise AssertionError("Invalid replacement type")
+        raise ValueError("Invalid replacement type")
 

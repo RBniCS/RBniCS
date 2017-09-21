@@ -58,7 +58,7 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
             self.output_correction_and_estimation["a"].save(self.folder["error_estimation"], "output_correction_and_estimation_a")
             self.output_correction_and_estimation["f"].save(self.folder["error_estimation"], "output_correction_and_estimation_f")
         else:
-            raise AssertionError("Invalid stage in _init_output_correction_and_estimation_operators().")
+            raise ValueError("Invalid stage in _init_output_correction_and_estimation_operators().")
         
     # Perform an online evaluation of the output correction
     def _compute_output(self, dual_N):
@@ -102,5 +102,5 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
                 raise ValueError("Invalid term for assemble_output_correction_and_estimation_operators().")
             return self.output_correction_and_estimation[short_term]
         else:
-            raise AssertionError("Invalid stage in assemble_output_correction_and_estimation_operators().")
+            raise ValueError("Invalid stage in assemble_output_correction_and_estimation_operators().")
     

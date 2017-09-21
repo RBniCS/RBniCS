@@ -34,7 +34,7 @@ class _Function_Type(_Function_Type_Base):
             vec[:] = arg
             _Function_Type_Base.__init__(self, vec)
         else: # impossible to arrive here anyway, thanks to the assert
-            raise AssertionError("Invalid arguments in Function")
+            raise TypeError("Invalid arguments in Function")
                     
     def __iter__(self):
         return map(float, self._v.flat)

@@ -59,7 +59,7 @@ class TimeStepping(AbstractTimeStepping):
             self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
             self.solver  = self.problem.create_solver({"problem_type": "nonlinear"})
         else:
-            raise AssertionError("Invalid time order in TimeStepping.__init__().")
+            raise ValueError("Invalid time order in TimeStepping.__init__().")
                         
     def set_parameters(self, parameters):
         self.solver = self.problem.create_solver(parameters)
@@ -103,7 +103,7 @@ class _TimeDependentProblem1(object):
             solver.set_parameters(parameters)
             return solver
         else:
-            raise AssertionError("Invalid integrator type in _TimeDependentProblem_Base.create_solver().")
+            raise ValueError("Invalid integrator type in _TimeDependentProblem_Base.create_solver().")
         
 class _ScipyImplicitEuler(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time, problem_type):
@@ -245,7 +245,7 @@ if has_IDA:
                     elif isinstance(bcs_t, dict):
                         self.current_bc = DirichletBC(bcs_t, self.solution.vector()._basis_component_index_to_component_name, self.solution.vector().N)
                     else:
-                        raise AssertionError("Invalid bc in _LinearSolver.__init__().")
+                        raise TypeError("Invalid bc in _LinearSolver.__init__().")
             def _assimulo_residual_eval(t, solution, solution_dot):
                 # Store current time
                 self.set_time(t)

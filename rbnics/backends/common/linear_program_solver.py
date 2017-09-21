@@ -108,7 +108,7 @@ if linear_programming_backends["python-glpk"]:
                 elif bounds_q[0] == bounds_q[1]: # unlikely, but possible
                     glpk.glp_set_col_bnds(lp, q + 1, glpk.GLP_FX, bounds_q[0], bounds_q[1])
                 else: # there is something wrong in the bounding box: set as unconstrained variable
-                    raise AssertionError("bounds_min > bounds_max")
+                    raise ValueError("bounds_min > bounds_max")
                     
             # C. Add inequality constraints
             assert self.inequality_constraints_vector.size == self.inequality_constraints_matrix.shape[0]

@@ -344,7 +344,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 assert isinstance(c, str)
                 export(solution, folder, filename + "_" + c, suffix, c)
         else:
-            raise AssertionError("Invalid component in export_solution()")
+            raise TypeError("Invalid component in export_solution()")
             
     def import_solution(self, folder, filename, solution=None, component=None, suffix=None):
         """
@@ -366,7 +366,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                     return False
             return True
         else:
-            raise AssertionError("Invalid component in import_solution()")
+            raise TypeError("Invalid component in import_solution()")
     
     @abstractmethod
     def compute_theta(self, term):

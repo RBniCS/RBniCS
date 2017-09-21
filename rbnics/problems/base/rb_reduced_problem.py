@@ -97,7 +97,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 else:
                     self._riesz_product_inner_product = self._riesz_solve_inner_product
             else:
-                raise AssertionError("Invalid stage in _init_error_estimation_operators().")
+                raise ValueError("Invalid stage in _init_error_estimation_operators().")
                 
         @abstractmethod
         def estimate_error(self):
@@ -193,7 +193,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                             solver.solve()
                             self.riesz[term][q].enrich(self._riesz_solve_storage)
             else:
-                raise AssertionError("Invalid value for order of term " + term)
+                raise ValueError("Invalid value for order of term " + term)
         
         def assemble_error_estimation_operators(self, term, current_stage="online"):
             """
@@ -234,7 +234,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     self.riesz_product[term].save(self.folder["error_estimation"], "riesz_product_" + term[0] + "_" + term[1])
                 return self.riesz_product[term]
             else:
-                raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
+                raise ValueError("Invalid stage in assemble_error_estimation_operators().")
         
     # return value (a class) for the decorator
     return RBReducedProblem_Class

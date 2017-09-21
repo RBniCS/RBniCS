@@ -54,7 +54,7 @@ def _remove_mute_indices(node):
         elif is_mute:
             return node.ufl_operands[0]
         else:
-            raise AssertionError("Invalid index")
+            raise TypeError("Invalid index")
     else:
         return node
     

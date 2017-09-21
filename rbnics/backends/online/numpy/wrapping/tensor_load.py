@@ -27,7 +27,7 @@ def tensor_load(tensor, directory, filename):
         elif len(loaded.shape) is 2:
             tensor[:, :] = loaded
         else:
-            raise AssertionError("Invalid tensor shape")
+            raise ValueError("Invalid tensor shape")
         return True
     else:
         return False

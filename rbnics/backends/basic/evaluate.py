@@ -82,7 +82,7 @@ def evaluate(backend, wrapping, online_backend, online_wrapping):
             elif form_rank is 1:
                 return wrapping.evaluate_sparse_vector_at_dofs(assembled_form, at.get_reduced_dofs_list())
             else: # impossible to arrive here anyway thanks to the assert
-                raise AssertionError("Invalid form rank")
+                raise ValueError("Invalid form rank")
             """
             # Inefficient version, assemblying on the entire high fidelity mesh
             (assembled_form, form_rank) = wrapping.form_on_truth_function_space(parametrized_tensor)
@@ -92,6 +92,6 @@ def evaluate(backend, wrapping, online_backend, online_wrapping):
             elif form_rank is 1:
                 return wrapping.evaluate_sparse_vector_at_dofs(assembled_form, at.get_dofs_list())
             else: # impossible to arrive here anyway thanks to the assert
-                raise AssertionError("Invalid form rank")
+                raise ValueError("Invalid form rank")
             """
     return _Evaluate()

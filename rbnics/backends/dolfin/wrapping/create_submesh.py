@@ -325,7 +325,7 @@ def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
             for submesh_facet in facets(submesh):
                 submesh_subdomain.array()[submesh_facet.index()] = mesh_subdomain.array()[submesh.submesh_to_mesh_facet_local_indices[submesh_facet.index()]]
         else: # impossible to arrive here anyway, thanks to the assert
-            raise AssertionError("Invalid arguments in convert_meshfunctions_to_submesh.")
+            raise TypeError("Invalid arguments in convert_meshfunctions_to_submesh.")
         meshfunctions_on_submesh.append(submesh_subdomain)
     return meshfunctions_on_submesh
     

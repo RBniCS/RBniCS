@@ -78,7 +78,7 @@ def product(thetas, operators, thetas2=None):
         assert output.shape == (1, 1)
         output = output.item(0, 0)
     else:
-        raise AssertionError("product(): invalid operands.")
+        raise ValueError("product(): invalid operands.")
     
     # Store N (and M) in the output, since it is not preserved by sum operators
     if isinstance(first_operator, Matrix.Type()):
@@ -91,7 +91,7 @@ def product(thetas, operators, thetas2=None):
     elif isinstance(first_operator, Function.Type()):
         output.vector().N = first_operator.vector().N
     else:
-        raise AssertionError("product(): invalid operands.")
+        raise TypeError("product(): invalid operands.")
     # Store dicts also in the product output
     assert (operators._basis_component_index_to_component_name is None) == (operators._component_name_to_basis_component_index is None)
     assert (operators._component_name_to_basis_component_index is None) == (operators._component_name_to_basis_component_length is None)

@@ -49,7 +49,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                         elif current_stage == "offline":
                             initial_condition_product[component, component] = OnlineAffineExpansionStorage(self.Q_ic[component], self.Q_ic[component])
                         else:
-                            raise AssertionError("Invalid stage in _init_error_estimation_operators().")
+                            raise ValueError("Invalid stage in _init_error_estimation_operators().")
                 if len(initial_condition_product) > 0:
                     self.initial_condition_product = initial_condition_product
             else:
@@ -60,7 +60,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     elif current_stage == "offline":
                         self.initial_condition_product = OnlineAffineExpansionStorage(self.Q_ic, self.Q_ic)
                     else:
-                        raise AssertionError("Invalid stage in _init_error_estimation_operators().")
+                        raise ValueError("Invalid stage in _init_error_estimation_operators().")
                     
         ## Build operators for error estimation
         def build_error_estimation_operators(self):
@@ -117,7 +117,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                             self.initial_condition_product.save(self.folder["error_estimation"], "initial_condition_product")
                         return self.initial_condition_product
                 else:
-                    raise AssertionError("Invalid stage in assemble_error_estimation_operators().")
+                    raise ValueError("Invalid stage in assemble_error_estimation_operators().")
             else:
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_error_estimation_operators(self, term, current_stage)
                 

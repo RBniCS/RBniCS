@@ -99,7 +99,7 @@ class SCMApproximation(ParametrizedProblem):
             # Init exact coercivity constant computations
             self.exact_coercivity_constant_calculator.init()
         else:
-            raise AssertionError("Invalid stage in init().")
+            raise ValueError("Invalid stage in init().")
     
     def evaluate_stability_factor(self):
         return self.exact_coercivity_constant_calculator.solve()

@@ -27,7 +27,7 @@ def Function(Vector):
                 self._v = arg
                 self.N = arg.N
             else: # impossible to arrive here anyway, thanks to the assert
-                raise AssertionError("Invalid arguments in Function")
+                raise TypeError("Invalid arguments in Function")
         
         def vector(self):
             return self._v

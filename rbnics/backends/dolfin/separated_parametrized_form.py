@@ -149,7 +149,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                     self._coefficients[-1].append(candidate.ufl_operands[0])
                                     log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with mute index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
                                 else:
-                                    raise AssertionError("Invalid index")
+                                    raise TypeError("Invalid index")
                             else:
                                 assert not isinstance(candidate, (ListTensor, ComponentTensor))
                                 self._coefficients[-1].append(candidate)

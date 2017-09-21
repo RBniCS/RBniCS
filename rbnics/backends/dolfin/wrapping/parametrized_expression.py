@@ -57,7 +57,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         elif isinstance(parametrized_expression_code, str):
             parametrized_expression_code = parametrized_expression_code.replace("mu[" + str(p) + "]", "mu_" + str(p))
         else:
-            raise AssertionError("Invalid expression type in ParametrizedExpression")
+            raise TypeError("Invalid expression type in ParametrizedExpression")
     
     # Detect mesh
     if "domain" in kwargs:

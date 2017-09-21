@@ -56,7 +56,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             # Number of terms in the affine expansion
             self.Q_ic = None # integer (for problems with one component) or dict of integers (for problem with several components)
             # Time derivative of the solution, at the current time
-            self._solution_dot = OnlineFunction()
+            self._solution_dot = None # OnlineFunction
             self._solution_dot_cache = dict() # of Functions
             # Solution and output over time
             self._solution_over_time = list() # of Functions
@@ -127,7 +127,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         elif current_stage == "offline":
                             initial_condition[component] = OnlineAffineExpansionStorage(Q_ic[component])
                         else:
-                            raise AssertionError("Invalid stage in _init_initial_condition().")
+                            raise ValueError("Invalid stage in _init_initial_condition().")
                 if n_components == 1:
                     self.initial_condition = initial_condition[self.components[0]]
                     self.initial_condition_is_homogeneous = initial_condition_is_homogeneous[self.components[0]]
@@ -176,7 +176,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     if "reduced_operators" in self.folder:
                         initial_condition.save(self.folder["reduced_operators"], term)
                 else:
-                    raise AssertionError("Invalid stage in assemble_operator().")
+                    raise ValueError("Invalid stage in assemble_operator().")
                 # Assign
                 if component != "":
                     assert component in self.components
