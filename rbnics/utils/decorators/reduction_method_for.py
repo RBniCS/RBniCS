@@ -16,44 +16,31 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators.for_decorators_helper import ForDecoratorsStore, ForDecoratorsLogging
-from rbnics.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
-from rbnics.utils.mpi import log, DEBUG
+import inspect
+import types
+from functools import lru_cache
+from rbnics.utils.decorators.dispatch import dispatch
 
-def ReductionMethodFor(Problem, category, enabled_if=None, replaces=None, replaces_if=None):
-    impl = ReductionMethodFor_Impl(Problem, category, enabled_if, replaces, replaces_if)
+def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
+    # Convert replaces into a reduction method generator
+    if replaces is not None:
+        assert inspect.isclass(replaces)
+        replaces = _ReductionMethodGenerator(replaces)
+    # Prepare decorator
     def ReductionMethodFor_Decorator(ReductionMethod):
-        output = impl(ReductionMethod)
-        return output
-    return ReductionMethodFor_Decorator
-    
-def ReductionMethodFor_Impl(Problem, category, enabled_if=None, replaces=None, replaces_if=None):
-    def ReductionMethodFor_ImplDecorator(ReductionMethod):
-        # Decorate with multilevel reduction method
-        ReductionMethod = MultiLevelReductionMethod(ReductionMethod)
-        # Add to local storage
-        log(DEBUG,
-            "In ReductionMethodFor with\n" +
-            "\tProblem = " + str(Problem) + "\n" +
-            "\tReductionMethod = " + str(ReductionMethod) + "\n" +
-            "\tcategory = " + str(category) + "\n" +
-            "\tenabled_if = " + str(enabled_if) + "\n" +
-            "\treplaces = " + str(replaces) + "\n" +
-            "\treplaces_if = " + str(replaces_if)
-        )
-        def go_to_next_level(Key, StoredKey):
-            # List the keys in order of inheritance: base classes will come first
-            # in the list, then their children, and then children of their children.
-            return Key is not StoredKey and issubclass(Key, StoredKey)
-        ForDecoratorsStore(Problem, ReductionMethodFor._all_reduction_methods, (ReductionMethod, category, enabled_if, replaces, replaces_if), go_to_next_level)
-        log(DEBUG, "ReductionMethodFor storage now contains:")
-        ForDecoratorsLogging(ReductionMethodFor._all_reduction_methods, "Problem", "ReductionMethod", "category")
-        log(DEBUG, "")
-        # Moreover also add to storage the category to generate recursively reduction methods in ReducedProblemFor
-        ReductionMethodFor._all_reduction_methods_categories[ReductionMethod] = category
-        # Done with the storage, return
+        # Prepare a reduction method generator
+        assert inspect.isclass(ReductionMethod)
+        ReductionMethodGenerator = _ReductionMethodGenerator(ReductionMethod)
+        # Add to cache
+        dispatch(Problem, name=category, module=_cache, replaces=replaces, replaces_if=replaces_if)(ReductionMethodGenerator)
+        # Return unchanged reduction method
         return ReductionMethod
-    return ReductionMethodFor_ImplDecorator
+    return ReductionMethodFor_Decorator
 
-ReductionMethodFor._all_reduction_methods = list() # (over inheritance level) of dicts from Problem to list of (ReductionMethod, category, enabled_if, replaces, replaces_if)
-ReductionMethodFor._all_reduction_methods_categories = dict() # from reduction method to category
+@lru_cache(maxsize=None)
+def _ReductionMethodGenerator(ReductionMethod):
+    def _ReductionMethodGenerator_Function(truth_problem, **kwargs):
+        return ReductionMethod
+    return _ReductionMethodGenerator_Function
+    
+_cache = types.ModuleType("reduction methods", "Storage for reduction methods")

@@ -21,8 +21,9 @@ import inspect
 def CustomizeReductionMethodFor(Problem):
     assert inspect.isabstract(Problem), "It is suggested to use this customizer for abstract classes (e.g., before specifying theta terms and operators, or decorating with EIM or SCM), because otherwise the customization would not be preserved with a call to exact_problem."
     def CustomizeReductionMethodFor_Decorator(customizer):
-        CustomizeReductionMethodFor._all_reduction_method_customizers[Problem] = customizer
+        assert Problem not in _cache
+        _cache[Problem] = customizer
         return customizer
     return CustomizeReductionMethodFor_Decorator
 
-CustomizeReductionMethodFor._all_reduction_method_customizers = dict() # dicts from Problem to decorator
+_cache = dict() # dicts from Problem to decorator

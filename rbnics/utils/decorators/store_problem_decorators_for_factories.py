@@ -18,7 +18,7 @@
 
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
-def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, enabled_if=None, replaces=None, replaces_if=None, **kwargs):
+def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, **kwargs):
     def StoreProblemDecoratorsForFactories_Decorator(DecoratedProblem_Base):
         assert issubclass(DecoratedProblem_Base, Problem)
         
@@ -66,7 +66,7 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
             assert kwargs in DecoratedProblem.ProblemDecoratorsKwargs, "You have decorated twice the problem with same decorator but different kwargs"
             assert ExactAlgorithm in DecoratedProblem.ProblemExactDecorators, "You have decorated twice the problem with same decorator but different exact decorator"
         else:
-            DecoratedProblem.ProblemDecorators.append(Algorithm) # enabled_if, replaces and replaces_if are not used, but will be passed also to reduction methods and reduced problem as well.
+            DecoratedProblem.ProblemDecorators.append(Algorithm)
             DecoratedProblem.ProblemDecoratorsKwargs.append(kwargs)
             DecoratedProblem.ProblemExactDecorators.append(ExactAlgorithm)
         

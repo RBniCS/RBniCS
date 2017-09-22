@@ -22,7 +22,30 @@ from rbnics.problems.base import PrimalDualReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
-from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_non_compliant_reduction import _problem_is_noncompliant
+
+def _problem_is_noncompliant(truth_problem, reduction_method, **kwargs):
+    try:
+        theta_s = truth_problem.compute_theta("s")
+    except ValueError:
+        return False
+    else:
+        # Make sure to add "s" to available terms
+        assert (
+            ("s" in truth_problem.terms)
+                ==
+            ("s" in truth_problem.terms_order)
+        )
+        if not "s" in truth_problem.terms:
+            truth_problem.terms.append("s")
+            truth_problem.terms_order["s"] = 1
+            # Change the computation of the output to use "s"
+            def _compute_output(self_):
+                assembled_output_operator = sum(product(self_.compute_theta("s"), self_.operator["s"]))
+                self_._output = transpose(assembled_output_operator)*self_._solution
+                return self_._output
+            truth_problem._compute_output = types.MethodType(_compute_output, truth_problem)
+        #
+        return True
 
 EllipticCoerciveRBNonCompliantReducedProblem_Base = PrimalDualReducedProblem(EllipticCoerciveRBReducedProblem)
 

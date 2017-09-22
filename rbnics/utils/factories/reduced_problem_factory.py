@@ -16,8 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import CustomizeReducedProblemFor, ReducedProblemFor, ReducedProblemDecoratorFor
-from rbnics.utils.factories.factory_helper import FactoryGenerateTypes
+from rbnics.utils.decorators import MultiLevelReducedProblem
+from rbnics.utils.decorators.customize_reduced_problem_for import _cache as customize_reduced_problem_cache
+from rbnics.utils.decorators.reduced_problem_for import _cache as reduced_problem_cache
+from rbnics.utils.decorators.reduced_problem_decorator_for import _cache as reduced_problem_decorator_cache
 from rbnics.utils.mpi import log, DEBUG
 
 # Factory to generate a reduced problem corresponding to a given reduction method and truth problem
@@ -38,59 +40,22 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
 
     TypesList = list()
     
-    # Generate ReducedProblem types based on Problem type
-    def ReducedProblem_condition_on_dict_key(Problem):
-        return isinstance(truth_problem, Problem)
-    def ReducedProblem_condition_for_valid_candidate(tuple_):
-        ReductionMethodType = tuple_[1] # 1-th entry stores the reduction method type
-        enabled_if = tuple_[2] # 2-th entry stores the condition for enabling this reduced problem
-        return (
-            isinstance(reduction_method, ReductionMethodType)
-                and
-            (
-                enabled_if is None # enable in any case
-                    or
-                enabled_if(truth_problem, **kwargs)
-            )
-        )
-    def ReducedProblem_condition_for_candidate_replacement(candidate_replaces_if):
-        return (
-            candidate_replaces_if is None # replace in any case
-                or
-            candidate_replaces_if(truth_problem, **kwargs)
-        )
-    log(DEBUG, "Generate ReducedProblem types based on Problem type")
-    TypesList.extend(
-        FactoryGenerateTypes(ReducedProblemFor._all_reduced_problems, ReducedProblem_condition_on_dict_key, ReducedProblem_condition_for_valid_candidate, ReducedProblem_condition_for_candidate_replacement)
-    )
-    assert len(TypesList) > 0
+    # Generate ReducedProblem types based on Problem and ReductionMethod type
+    log(DEBUG, "Generate ReducedProblem types based on Problem and ReductionMethod type")
+    ReducedProblemGenerator = getattr(reduced_problem_cache, "ReducedProblem")
+    TypesList.append(ReducedProblemGenerator(truth_problem, reduction_method))
     
     # Look if any customizer has been defined
-    for (Problem, customizer) in CustomizeReducedProblemFor._all_reduced_problems_customizers.items():
+    for (Problem, customizer) in customize_reduced_problem_cache.items():
         if isinstance(truth_problem, Problem):
             TypesList.append(customizer)
     
     # Append ReducedProblemDecorator types based on Algorithm type
     if hasattr(type(truth_problem), "ProblemDecorators"):
-        def ReducedProblemDecorator_condition_on_dict_key(Algorithm):
-            return Algorithm in type(truth_problem).ProblemDecorators
-        def ReducedProblemDecorator_condition_for_valid_candidate(tuple_):
-            enabled_if = tuple_[2] # 2-th entry stores the condition for enabling this reduced problem decorator
-            return (
-                enabled_if is None # enable in any case
-                    or
-                enabled_if(truth_problem, **kwargs)
-            )
-        def ReducedProblemDecorator_condition_for_candidate_replacement(candidate_replaces_if):
-            return (
-                candidate_replaces_if is None # replace in any case
-                    or
-                candidate_replaces_if(truth_problem, **kwargs)
-            )
         log(DEBUG, "Append ReducedProblemDecorator types based on Algorithm type")
-        TypesList.extend(
-            FactoryGenerateTypes(ReducedProblemDecoratorFor._all_reduced_problems_decorators, ReducedProblemDecorator_condition_on_dict_key, ReducedProblemDecorator_condition_for_valid_candidate, ReducedProblemDecorator_condition_for_candidate_replacement)
-        )
+        for Decorator in type(truth_problem).ProblemDecorators:
+            ReducedProblemDecoratorGenerator = getattr(reduced_problem_decorator_cache, Decorator.__name__)
+            TypesList.append(ReducedProblemDecoratorGenerator(truth_problem, reduction_method, **kwargs))
     
     # Log
     log(DEBUG, "The reduced problem is a composition of the following types:")
@@ -104,6 +69,8 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     for t in range(1, len(TypesList)):
         ComposedType = TypesList[t](ComposedType)
         
+    # Decorate with multilevel reduced problem
+    ComposedType = MultiLevelReducedProblem(ComposedType)
+    
     # Finally, return an instance of the generated class
     return ComposedType(truth_problem, **kwargs)
-    

@@ -16,13 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import CustomizeReductionMethodFor, ReductionMethodFor, ReductionMethodDecoratorFor
-from rbnics.utils.factories.factory_helper import FactoryGenerateTypes
+from rbnics.utils.decorators import MultiLevelReductionMethod
+from rbnics.utils.decorators.customize_reduction_method_for import _cache as customize_reduction_method_cache
+from rbnics.utils.decorators.reduction_method_for import _cache as reduction_method_cache
+from rbnics.utils.decorators.reduction_method_decorator_for import _cache as reduction_method_decorator_cache
 from rbnics.utils.mpi import log, DEBUG
 
 # Factory to generate a reduction method corresponding to a category (e.g. RB or POD) and a given truth problem
 def ReductionMethodFactory(truth_problem, category, **kwargs):
-
+    
     log(DEBUG,
         "In ReductionMethodFactory with\n" +
         "\ttruth problem = " + str(type(truth_problem)) + "\n" +
@@ -39,59 +41,22 @@ def ReductionMethodFactory(truth_problem, category, **kwargs):
     TypesList = list()
     
     # Generate ReductionMethod type based on Problem type
-    def ReductionMethod_condition_on_dict_key(Problem):
-        return isinstance(truth_problem, Problem)
-    def ReductionMethod_condition_for_valid_candidate(tuple_):
-        input_category = tuple_[1] # 1-th entry stores the reduction method category
-        enabled_if = tuple_[2] # 2-th entry stores the condition for enabling this reduction method
-        return (
-            category == input_category
-                and
-            (
-                enabled_if is None # enable in any case
-                    or
-                enabled_if(truth_problem, **kwargs)
-            )
-        )
-    def ReductionMethod_condition_for_candidate_replacement(candidate_replaces_if):
-        return (
-            candidate_replaces_if is None # replace in any case
-                or
-            candidate_replaces_if(truth_problem, **kwargs)
-        )
     log(DEBUG, "Generate ReductionMethod type based on Problem type")
-    TypesList.extend(
-        FactoryGenerateTypes(ReductionMethodFor._all_reduction_methods, ReductionMethod_condition_on_dict_key, ReductionMethod_condition_for_valid_candidate, ReductionMethod_condition_for_candidate_replacement)
-    )
-    assert len(TypesList) > 0
+    ReductionMethodGenerator = getattr(reduction_method_cache, category)
+    TypesList.append(ReductionMethodGenerator(truth_problem))
     
     # Look if any customizer has been defined
-    for (Problem, customizer) in CustomizeReductionMethodFor._all_reduction_method_customizers.items():
+    for (Problem, customizer) in customize_reduction_method_cache.items():
         if isinstance(truth_problem, Problem):
             TypesList.append(customizer)
     
     # Append ReductionMethodDecorator types based on Algorithm type
     if hasattr(type(truth_problem), "ProblemDecorators"):
-        def ReductionMethodDecorator_condition_on_dict_key(Algorithm):
-            return Algorithm in type(truth_problem).ProblemDecorators
-        def ReductionMethodDecorator_condition_for_valid_candidate(tuple_):
-            enabled_if = tuple_[2] # 2-th entry stores the condition for enabling this reduction method decorator
-            return (
-                enabled_if is None # enable in any case
-                    or
-                enabled_if(truth_problem, **kwargs)
-            )
-        def ReductionMethodDecorator_condition_for_candidate_replacement(candidate_replaces_if):
-            return (
-                candidate_replaces_if is None # replace in any case
-                    or
-                candidate_replaces_if(truth_problem, **kwargs)
-            )
         log(DEBUG, "Append ReductionMethodDecorator types based on Algorithm type")
-        TypesList.extend(
-            FactoryGenerateTypes(ReductionMethodDecoratorFor._all_reduction_method_decorators, ReductionMethodDecorator_condition_on_dict_key, ReductionMethodDecorator_condition_for_valid_candidate, ReductionMethodDecorator_condition_for_candidate_replacement)
-        )
-    
+        for Decorator in type(truth_problem).ProblemDecorators:
+            ReductionMethodDecoratorGenerator = getattr(reduction_method_decorator_cache, Decorator.__name__)
+            TypesList.append(ReductionMethodDecoratorGenerator(truth_problem, **kwargs))
+                
     # Log
     log(DEBUG, "The reduction method is a composition of the following types:")
     for t in range(len(TypesList) - 1, -1, -1):
@@ -104,6 +69,10 @@ def ReductionMethodFactory(truth_problem, category, **kwargs):
     for t in range(1, len(TypesList)):
         ComposedType = TypesList[t](ComposedType)
         
+    # Decorate with multilevel reduction method
+    ComposedType = MultiLevelReductionMethod(ComposedType)
+    
+    # Finally, return an instance of the generated class
     return ComposedType(truth_problem, **kwargs)
     
 def ReducedBasis(truth_problem, **kwargs):
@@ -111,4 +80,3 @@ def ReducedBasis(truth_problem, **kwargs):
 
 def PODGalerkin(truth_problem, **kwargs):
     return ReductionMethodFactory(truth_problem, "PODGalerkin", **kwargs)
-    

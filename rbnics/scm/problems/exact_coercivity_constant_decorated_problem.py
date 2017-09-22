@@ -30,7 +30,7 @@ def ExactCoercivityConstantDecoratedProblem(
     from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
     from rbnics.scm.problems.scm import SCM
     
-    @ProblemDecoratorFor(ExactCoercivityConstant, replaces=SCM,
+    @ProblemDecoratorFor(ExactCoercivityConstant,
         eigensolver_parameters = eigensolver_parameters
     )
     def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):

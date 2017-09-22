@@ -16,31 +16,31 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators.for_decorators_helper import ForDecoratorsStore, ForDecoratorsLogging
-from rbnics.utils.mpi import log, DEBUG
+import inspect
+import types
+from functools import lru_cache
+from rbnics.utils.decorators.dispatch import dispatch
 
-def ReductionMethodDecoratorFor(Algorithm, enabled_if=None, replaces=None, replaces_if=None):
+def ReductionMethodDecoratorFor(Algorithm, replaces=None, replaces_if=None, exact_decorator_for=None):
+    # Convert replaces into a reduction method decorator generator
+    if replaces is not None:
+        assert inspect.isfunction(replaces)
+        replaces = _ReductionMethodDecoratorGenerator(replaces)
+    # Prepare decorator
     def ReductionMethodDecoratorFor_Decorator(ReductionMethodDecorator):
-        # Add to local storage
-        log(DEBUG,
-            "In ReductionMethodDecoratorFor with\n" +
-            "\tAlgorithm = " + str(Algorithm) + "\n" +
-            "\tReductionMethodDecorator = " + str(ReductionMethodDecorator) + "\n" +
-            "\tenabled_if = " + str(enabled_if) + "\n" +
-            "\treplaces = " + str(replaces) + "\n" +
-            "\treplaces_if = " + str(replaces_if) + "\n"
-        )
-        def go_to_next_level(Key, StoredKey):
-            # Algorithms are functions (decorators) so it is not possible
-            # to define inheritance levels. Flatten the storage levels
-            # and thus rely only on explicit replaces provided by the user
-            return False
-        ForDecoratorsStore(Algorithm, ReductionMethodDecoratorFor._all_reduction_method_decorators, (ReductionMethodDecorator, None, enabled_if, replaces, replaces_if), go_to_next_level)
-        log(DEBUG, "ReductionMethodDecoratorFor storage now contains:")
-        ForDecoratorsLogging(ReductionMethodDecoratorFor._all_reduction_method_decorators, "Algorithm", "ReductionMethodDecorator", None)
-        log(DEBUG, "")
-        # Done with the storage, return the unchanged reduction method decorator
+        # Prepare a reduction method decorator generator
+        assert inspect.isfunction(ReductionMethodDecorator)
+        ReductionMethodDecoratorGenerator = _ReductionMethodDecoratorGenerator(ReductionMethodDecorator)
+        # Add to cache (object is a placeholder for Problem type)
+        dispatch(object, name=Algorithm.__name__, module=_cache, replaces=replaces, replaces_if=replaces_if)(ReductionMethodDecoratorGenerator)
+        # Return unchanged reduction method decorator
         return ReductionMethodDecorator
     return ReductionMethodDecoratorFor_Decorator
+
+@lru_cache(maxsize=None)
+def _ReductionMethodDecoratorGenerator(ReductionMethodDecorator):
+    def _ReductionMethodDecoratorGenerator_Function(truth_problem, **kwargs):
+        return ReductionMethodDecorator
+    return _ReductionMethodDecoratorGenerator_Function
     
-ReductionMethodDecoratorFor._all_reduction_method_decorators = list() # (over inheritance level) of dicts from Algorithm to list of (ReductionMethodDecorator, None, enabled_if, replaces, replaces_if)
+_cache = types.ModuleType("reduction method decorators", "Storage for reduction method decorators")

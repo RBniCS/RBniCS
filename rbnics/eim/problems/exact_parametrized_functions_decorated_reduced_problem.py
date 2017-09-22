@@ -25,10 +25,14 @@ from rbnics.eim.problems.eim import EIM
 from rbnics.eim.problems.deim import DEIM
 from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
 
-def _problem_is_online_exact(truth_problem, **kwargs):
+def _problem_is_online_exact(truth_problem, reduction_method, **kwargs):
     return "online" in truth_problem._apply_exact_approximation_at_stages
 
-@ReducedProblemDecoratorFor(ExactParametrizedFunctions, enabled_if=_problem_is_online_exact, replaces=(DEIM, EIM))
+@ReducedProblemDecoratorFor(ExactParametrizedFunctions) # if problem is only offline exact
+def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+    return ParametrizedReducedDifferentialProblem_DerivedClass
+
+@ReducedProblemDecoratorFor(ExactParametrizedFunctions, replaces=ExactParametrizedFunctionsDecoratedReducedProblem, replaces_if=_problem_is_online_exact) # if problem is also online exact
 def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):
