@@ -16,16 +16,32 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearRBReduction
+from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
+from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearRBReduction, PrimalDualReductionMethod
 from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
+from rbnics.utils.decorators import ReductionMethodFor
 
 EllipticCoerciveRBReduction_Base = LinearRBReduction(EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod))
 
 # Base class containing the interface of the RB method
 # for (compliant) elliptic coercive problems
+# The following implementation will be retained if no output is provided in the "s" term
 @ReductionMethodFor(EllipticCoerciveProblem, "ReducedBasis")
 class EllipticCoerciveRBReduction(EllipticCoerciveRBReduction_Base):
     pass
+
+# Add dual reduction method if an output is provided in the term "s"
+def _problem_has_output(truth_problem, **kwargs):
+    try:
+        theta_s = truth_problem.compute_theta("s")
+    except ValueError:
+        return False
+    else:
+        return True
         
+EllipticCoerciveRBReduction_PrimalDual_Base = PrimalDualReductionMethod(EllipticCoerciveProblem_Dual)(EllipticCoerciveRBReduction)
+
+@ReductionMethodFor(EllipticCoerciveProblem, "ReducedBasis", replaces=EllipticCoerciveRBReduction, replaces_if=_problem_has_output)
+class EllipticCoerciveRBReduction_PrimalDual(EllipticCoerciveRBReduction_PrimalDual_Base):
+    pass

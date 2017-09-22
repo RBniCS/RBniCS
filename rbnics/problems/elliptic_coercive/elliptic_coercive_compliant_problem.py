@@ -16,16 +16,21 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
+from rbnics.backends import product, sum, transpose
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from rbnics.reduction_methods.elliptic_coercive import EllipticCoercivePODGalerkinReduction
-from rbnics.utils.decorators import ReducedProblemFor
 
-EllipticCoercivePODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem))
-
-# Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
-@ReducedProblemFor(EllipticCoerciveProblem, EllipticCoercivePODGalerkinReduction)
-class EllipticCoercivePODGalerkinReducedProblem(EllipticCoercivePODGalerkinReducedProblem_Base):
-    pass
+# Base class containing the definition of elliptic coercive compliant problems
+class EllipticCoerciveCompliantProblem(EllipticCoerciveProblem):
+    
+    ## Default initialization of members
+    def __init__(self, V, **kwargs):
+        # Call to parent
+        EllipticCoerciveProblem.__init__(self, V, **kwargs)
+        
+        # Remove "s" from both terms and terms_order
+        self.terms.remove("s")
+        del self.terms_order["s"]
+    
+    ## Perform a truth evaluation of the compliant output
+    def _compute_output(self):
+        self._output = transpose(self._solution)*sum(product(self.compute_theta("f"), self.operator["f"]))

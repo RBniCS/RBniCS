@@ -30,7 +30,7 @@ from rbnics.utils.config import config
 
 # Import the minimum subset of RBniCS required to run tutorials
 from rbnics.eim import DEIM, EIM, ExactParametrizedFunctions
-from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
+from rbnics.problems.elliptic_coercive import EllipticCoerciveCompliantProblem, EllipticCoerciveProblem
 from rbnics.problems.elliptic_optimal_control import EllipticOptimalControlProblem
 from rbnics.problems.navier_stokes import NavierStokesProblem
 from rbnics.problems.navier_stokes_unsteady import NavierStokesUnsteadyProblem
@@ -52,6 +52,7 @@ __all__ += [
     'EIM',
     'ExactParametrizedFunctions',
     # rbnics.problems
+    'EllipticCoerciveCompliantProblem',
     'EllipticCoerciveProblem',
     'EllipticOptimalControlProblem',
     'NavierStokesProblem',

@@ -310,7 +310,10 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     elapsed_reduced_output = reduced_timer.stop()
                     
                     speedup_analysis_table["speedup_solve", n, run] = elapsed_truth_solve/elapsed_reduced_solve
-                    speedup_analysis_table["speedup_output", n, run] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
+                    if self.reduced_problem._output is not NotImplemented:
+                        speedup_analysis_table["speedup_output", n, run] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
+                    else:
+                        speedup_analysis_table["speedup_output", n, run] = NotImplemented
             
             # Print
             print("")

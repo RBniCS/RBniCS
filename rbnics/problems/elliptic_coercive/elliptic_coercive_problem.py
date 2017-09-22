@@ -30,8 +30,8 @@ class EllipticCoerciveProblem(EllipticCoerciveProblem_Base):
         EllipticCoerciveProblem_Base.__init__(self, V, **kwargs)
         
         # Form names for elliptic problems
-        self.terms = ["a", "f"]
-        self.terms_order = {"a": 2, "f": 1}
+        self.terms = ["a", "f", "s"]
+        self.terms_order = {"a": 2, "f": 1, "s": 1}
         self.components = ["u"]
     
     class ProblemSolver(EllipticCoerciveProblem_Base.ProblemSolver):
@@ -43,7 +43,6 @@ class EllipticCoerciveProblem(EllipticCoerciveProblem_Base):
             problem = self.problem
             return sum(product(problem.compute_theta("f"), problem.operator["f"]))
             
-    ## Perform a truth evaluation of the (compliant) output
+    ## Perform a truth evaluation of the output
     def _compute_output(self):
-        self._output = transpose(self._solution)*sum(product(self.compute_theta("f"), self.operator["f"]))
-    
+        self._output = transpose(self._solution)*sum(product(self.compute_theta("s"), self.operator["s"]))

@@ -118,9 +118,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         # Assemble operators
         for term in self.terms:
             if term not in self.operator: # init was not called already
-                self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
-            if term not in self.Q: # init was not called already
-                self.Q[term] = len(self.operator[term])
+                try:
+                    self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
+                except ValueError: # raised by compute_theta if output computation is optional
+                    self.operator[term] = None
+                    self.Q[term] = 0
+                else:
+                    if term not in self.Q: # init was not called already
+                        self.Q[term] = len(self.operator[term])
             
     def _combine_all_inner_products(self):
         if len(self.components) > 1:
@@ -301,7 +306,10 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             self._output = self._output_cache[cache_key]
         else: # No precomputed output available. Truth output is performed.
             log(PROGRESS, "Computing truth output")
-            self._compute_output()
+            try:
+                self._compute_output()
+            except ValueError: # raised by compute_theta if output computation is optional
+                self._output = NotImplemented
             if "RAM" in self.cache_config:
                 self._output_cache[cache_key] = self._output
         return self._output

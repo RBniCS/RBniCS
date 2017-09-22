@@ -362,7 +362,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         else:
             log(PROGRESS, "Computing reduced output")
             N = self._solution.N
-            self._compute_output(N)
+            try:
+                self._compute_output(N)
+            except ValueError: # raised by compute_theta if output computation is optional
+                self._output = NotImplemented
             if "RAM" in self.cache_config:
                 self._output_cache[cache_key] = self._output
         return self._output

@@ -19,7 +19,7 @@
 from dolfin import *
 from rbnics import *
 
-class ThermalBlock(EllipticCoerciveProblem):
+class ThermalBlock(EllipticCoerciveCompliantProblem):
     
     ## Default initialization of members
     def __init__(self, V, **kwargs):
