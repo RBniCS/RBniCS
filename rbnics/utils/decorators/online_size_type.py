@@ -15,12 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
+from rbnics.utils.decorators.dispatch import dict_of
+from rbnics.utils.io import OnlineSizeDict
 
-from rbnics.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from rbnics.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
-
-__all__ = [
-    'PODGalerkin'
-    'ReducedBasis',
-    'ReducedProblemFactory',
-]
+OnlineSizeType = (int, dict_of(str, int), OnlineSizeDict)

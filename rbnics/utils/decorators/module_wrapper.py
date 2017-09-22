@@ -16,11 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from rbnics.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
+from collections import namedtuple
 
-__all__ = [
-    'PODGalerkin'
-    'ReducedBasis',
-    'ReducedProblemFactory',
-]
+def ModuleWrapper(*args, **kwargs):
+    names = list()
+    names.extend(arg.__name__ for arg in args)
+    names.extend(kwarg_key for kwarg_key in kwargs)
+    BackendWrapperType = namedtuple("ModuleWrapper", names)
+    values = list()
+    values.extend(arg for arg in args)
+    values.extend(kwarg_value for (kwarg_key, kwarg_value) in kwargs.items())
+    return BackendWrapperType(*values)

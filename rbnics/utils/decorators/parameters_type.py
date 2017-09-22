@@ -15,12 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
+    
+from rbnics.utils.decorators.theta_type import ThetaType
 
-from rbnics.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from rbnics.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
-
-__all__ = [
-    'PODGalerkin'
-    'ReducedBasis',
-    'ReducedProblemFactory',
-]
+ParametersType = ThetaType

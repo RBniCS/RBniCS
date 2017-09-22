@@ -17,6 +17,7 @@
 #
 
 from functools import total_ordering
+from rbnics.utils.decorators import dict_of, overload
 
 @total_ordering
 class OnlineSizeDict(dict):
@@ -50,38 +51,44 @@ class OnlineSizeDict(dict):
         return super(OnlineSizeDict, self).__contains__(k)
         
     # Override N += N_bc so that it is possible to increment online size due to boundary conditions
+    @overload(lambda cls: cls)
     def __iadd__(self, other):
         for key in self:
             self[key] += other[key]
         return self
         
     # Override __eq__ so that it is possible to check equality of dictionary with an int
+    @overload(int)
     def __eq__(self, other):
-        if isinstance(other, int):
-            for (key, value) in self.items():
-                if value != other:
-                    return False
-            return True
-        else:
-            return super(OnlineSizeDict, self).__eq__(other)
+        for (key, value) in self.items():
+            if value != other:
+                return False
+        return True
+        
+    @overload((lambda cls: cls, dict_of(str, int)))
+    def __eq__(self, other):
+        return super(OnlineSizeDict, self).__eq__(other)
             
-    # Override __eq__ so that it is possible to check not equality of dictionary with an int
+    # Override __ne__ so that it is possible to check not equality of dictionary with an int
+    @overload(int)
     def __ne__(self, other):
-        if isinstance(other, int):
-            for (key, value) in self.items():
-                if value == other:
-                    return False
-            return True
-        else:
-            return super(OnlineSizeDict, self).__ne__(other)
+        for (key, value) in self.items():
+            if value == other:
+                return False
+        return True
+        
+    @overload((lambda cls: cls, dict_of(str, int)))
+    def __ne__(self, other):
+        return super(OnlineSizeDict, self).__ne__(other)
             
     # Override __lt__ so that it is possible to check if dictionary is less than an int
+    @overload(int)
     def __lt__(self, other):
-        if isinstance(other, int):
-            for (key, value) in self.items():
-                if value >= other:
-                    return False
-            return True
-        else:
-            return super(OnlineSizeDict, self).__lt__(other)
-            
+        for (key, value) in self.items():
+            if value >= other:
+                return False
+        return True
+        
+    @overload((lambda cls: cls, dict_of(str, int)))
+    def __lt__(self, other):
+        return super(OnlineSizeDict, self).__lt__(other)

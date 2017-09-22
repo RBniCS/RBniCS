@@ -17,13 +17,16 @@
 #
 
 from rbnics.utils.decorators.abstract_backend import AbstractBackend, abstract_backend, abstract_online_backend, abstractclassmethod, abstractmethod, abstractonlinemethod, abstractproperty
-from rbnics.utils.decorators.backend_for import array_of, BackendFor, backend_for, ComputeThetaType, dict_of, DictOfThetaType, list_of, OnlineSizeType, ParametersType, ThetaType, tuple_of
+from rbnics.utils.decorators.backend_for import BackendFor, backend_for
 from rbnics.utils.decorators.customize_reduction_method_for import CustomizeReductionMethodFor
 from rbnics.utils.decorators.customize_reduced_problem_for import CustomizeReducedProblemFor
 from rbnics.utils.decorators.dispatch import array_of, dict_of, dispatch, list_of, overload, set_of, tuple_of
 from rbnics.utils.decorators.exact_problem import exact_problem
+from rbnics.utils.decorators.module_wrapper import ModuleWrapper
 from rbnics.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
 from rbnics.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
+from rbnics.utils.decorators.online_size_type import OnlineSizeType
+from rbnics.utils.decorators.parameters_type import ParametersType
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 from rbnics.utils.decorators.problem_decorator_for import ProblemDecoratorFor
 from rbnics.utils.decorators.reduced_problem_decorator_for import ReducedProblemDecoratorFor
@@ -37,6 +40,7 @@ from rbnics.utils.decorators.store_and_update_map_from_problem_to_training_statu
 from rbnics.utils.decorators.store_map_from_solution_to_problem import add_to_map_from_solution_to_problem, get_problem_from_solution, StoreMapFromSolutionToProblem
 from rbnics.utils.decorators.store_problem_decorators_for_factories import StoreProblemDecoratorsForFactories
 from rbnics.utils.decorators.sync_setters import sync_setters
+from rbnics.utils.decorators.theta_type import ComputeThetaType, DictOfThetaType, ThetaType
 
 __all__ = [
     'AbstractBackend',
@@ -63,6 +67,7 @@ __all__ = [
     'get_reduced_problem_from_problem',
     'is_training_finished',
     'list_of',
+    'ModuleWrapper',
     'MultiLevelReducedProblem',
     'MultiLevelReductionMethod',
     'OnlineSizeType',

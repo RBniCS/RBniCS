@@ -16,11 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from rbnics.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
+from numbers import Number
+from rbnics.utils.decorators.dispatch import dict_of, powerset, tuple_of
 
-__all__ = [
-    'PODGalerkin'
-    'ReducedBasis',
-    'ReducedProblemFactory',
-]
+def ComputeThetaType(additional_types=None):
+    all_types = [Number]
+    if additional_types is not None:
+        all_types.extend(additional_types)
+    all_types = tuple(all_types)
+    return (tuple_of(all_types), )
+ThetaType = ComputeThetaType()
+DictOfThetaType = (dict_of(str, ThetaType), )
