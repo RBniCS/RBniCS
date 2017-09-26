@@ -29,4 +29,3 @@ def LinearRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 
     # return value (a class) for the decorator
     return LinearRBReducedProblem_Class
-    

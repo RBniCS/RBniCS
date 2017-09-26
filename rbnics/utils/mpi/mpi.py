@@ -36,7 +36,8 @@ is_io_process.mpi_comm = _default_io_mpi_comm
 # Get max in parallel
 def parallel_max(mpi_comm, local_value_max, local_args=None, postprocessor=None):
     if postprocessor is None:
-        postprocessor = lambda value: value
+        def postprocessor(value):
+            return value
     local_value_max_with_postprocessing = postprocessor(local_value_max)
     global_value_max_with_postprocessing = mpi_comm.allreduce(local_value_max_with_postprocessing, op=MAX)
     global_value_processor_argmax = -1
@@ -56,4 +57,3 @@ def parallel_max(mpi_comm, local_value_max, local_args=None, postprocessor=None)
         return (global_value_max, tuple(global_args))
     else:
         return global_value_max
-        

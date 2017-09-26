@@ -17,10 +17,7 @@
 #
 
 from rbnics.problems.base import NonlinearReducedProblem
-from rbnics.problems.base import ParametrizedReducedDifferentialProblem
-from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
 from rbnics.backends import product, sum
-from rbnics.backends.online import OnlineFunction
 
 def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
     
@@ -61,4 +58,3 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
         
     # return value (a class) for the decorator
     return NavierStokesReducedProblem_Class
-

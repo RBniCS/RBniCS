@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
 import inspect
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
@@ -92,4 +91,3 @@ def MultiLevelReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             
     # return value (a class) for the decorator
     return MultiLevelReductionMethod_Class
-    

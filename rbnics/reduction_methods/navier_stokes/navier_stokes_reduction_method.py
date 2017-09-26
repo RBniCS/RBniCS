@@ -17,7 +17,6 @@
 #
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
-from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProblem
 
 def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
     
@@ -28,4 +27,3 @@ def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
         
     # return value (a class) for the decorator
     return NavierStokesReductionMethod_Class
-        

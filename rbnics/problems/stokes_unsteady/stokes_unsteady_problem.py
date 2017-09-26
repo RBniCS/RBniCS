@@ -20,12 +20,11 @@
 from rbnics.problems.base import LinearTimeDependentProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.backends import copy, product, sum
-from rbnics.utils.mpi import log, PROGRESS
 
 def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
     class AbstractCFDUnsteadyProblem_Class(AbstractCFDUnsteadyProblem_Base):
         
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, V, **kwargs):
             # Call to parent
             AbstractCFDUnsteadyProblem_Base.__init__(self, V, **kwargs)
@@ -81,7 +80,7 @@ class StokesUnsteadyProblem(StokesUnsteadyProblem_Base):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
                   assembled_operator["m"]*solution_dot
-                +(assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
+                + (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
                 - assembled_operator["f"] - assembled_operator["g"]
             )
             

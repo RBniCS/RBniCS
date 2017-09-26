@@ -17,7 +17,7 @@
 #
 
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
-from rbnics.scm.problems import ExactCoercivityConstant, SCM
+from rbnics.scm.problems import ExactCoercivityConstant
 
 @ReductionMethodDecoratorFor(ExactCoercivityConstant)
 def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):

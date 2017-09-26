@@ -17,18 +17,21 @@
 #
 
 from rbnics.scm.problems.scm import SCM
-#from rbnics.scm.problems.scm_approximation import SCMApproximation # not needed
-#from rbnics.scm.problems.scm_decorated_problem import SCMDecoratedProblem # not needed
+from rbnics.scm.problems.scm_approximation import SCMApproximation
+from rbnics.scm.problems.scm_decorated_problem import SCMDecoratedProblem
 from rbnics.scm.problems.scm_decorated_reduced_problem import SCMDecoratedReducedProblem
 from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
-#from rbnics.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstantDecoratedProblem # not needed
+from rbnics.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstantDecoratedProblem
 from rbnics.scm.problems.exact_coercivity_constant_decorated_reduced_problem import ExactCoercivityConstantDecoratedReducedProblem
 from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
 __all__ = [
     'SCM',
+    'SCMApproximation',
+    'SCMDecoratedProblem',
     'SCMDecoratedReducedProblem',
     'ExactCoercivityConstant',
+    'ExactCoercivityConstantDecoratedProblem',
     'ExactCoercivityConstantDecoratedReducedProblem',
     'ParametrizedCoercivityConstantEigenProblem'
 ]

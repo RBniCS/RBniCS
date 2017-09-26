@@ -17,17 +17,14 @@
 #
 
 from ufl import Form
-from ufl.algebra import Division, Product, Sum
 from ufl.core.operator import Operator
 from dolfin import assemble, Constant, Expression, project
 from rbnics.backends.dolfin.affine_expansion_storage import AffineExpansionStorage_Base, AffineExpansionStorage_DirichletBC, AffineExpansionStorage_Form, AffineExpansionStorage_Function
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
-from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping import function_copy, tensor_copy
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC, ProductOutputDirichletBC
 from rbnics.utils.decorators import backend_for, ComputeThetaType, list_of, overload
-from rbnics.utils.mpi import log, PROGRESS
 
 # Need to customize ThetaType in order to also include dolfin' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator
 ThetaType = ComputeThetaType((Expression, Operator))
@@ -46,7 +43,7 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
     for (op_index, op) in enumerate(operators):
         for bc in op:
             key = bc.identifier()
-            if not key in combined:
+            if key not in combined:
                 combined[key] = list()
             combined[key].append((bc, op_index))
     # Sum them
@@ -54,7 +51,7 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
     for (key, item) in combined.items():
         value = 0
         for addend in item:
-            theta = float(thetas[ addend[1] ])
+            theta = float(thetas[addend[1]])
             fun = addend[0].value()
             value += Constant(theta)*fun
         V = item[0][0].function_space()

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Expression, Function
+from dolfin import Expression
 
 def basic_is_parametrized(backend, wrapping):
     def _basic_is_parametrized(expression_or_form, iterator):

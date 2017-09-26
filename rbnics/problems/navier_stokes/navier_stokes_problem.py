@@ -18,14 +18,13 @@
 
 from rbnics.problems.base import NonlinearProblem
 from rbnics.problems.stokes import StokesProblem
-from rbnics.backends import LinearSolver, product, sum
-from rbnics.utils.mpi import log, PROGRESS
+from rbnics.backends import product, sum
 
 NavierStokesProblem_Base = NonlinearProblem(StokesProblem)
 
 class NavierStokesProblem(NavierStokesProblem_Base):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         NavierStokesProblem_Base.__init__(self, V, **kwargs)
@@ -59,4 +58,3 @@ class NavierStokesProblem(NavierStokesProblem_Base):
                   assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
                 + assembled_operator["dc"]
             )
-    

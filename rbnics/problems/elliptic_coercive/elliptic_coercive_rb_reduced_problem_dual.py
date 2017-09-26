@@ -20,7 +20,6 @@ from rbnics.backends import product, transpose, sum
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import DualReducedProblem
-from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
 from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
@@ -32,7 +31,7 @@ EllipticCoerciveRBReducedProblem_Dual_Base = DualReducedProblem(EllipticCoercive
 @ReducedProblemFor(EllipticCoerciveProblem_Dual, EllipticCoerciveRBReduction)
 class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dual_Base):
     
-    ## Default initialization of members.
+    # Default initialization of members.
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         EllipticCoerciveRBReducedProblem_Dual_Base.__init__(self, truth_problem, **kwargs)
@@ -40,7 +39,7 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
         # Residual terms
         self.output_correction_and_estimation = dict() # from string to OnlineAffineExpansionStorage
         
-    ## Initialize data structures required for the online phase
+    # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
         EllipticCoerciveRBReducedProblem_Dual_Base.init(self, current_stage)
         self._init_output_correction_and_estimation_operators(current_stage)
@@ -70,17 +69,17 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
         assembled_output_correction_and_estimation_operator["f"] = sum(product(self.primal_reduced_problem.compute_theta("f"), self.output_correction_and_estimation["f"][:dual_N]))
         self._output = transpose(dual_solution)*assembled_output_correction_and_estimation_operator["f"] - transpose(dual_solution)*assembled_output_correction_and_estimation_operator["a"]*primal_solution
     
-    ## Build operators for output correction and error estimation
+    # Build operators for output correction and error estimation
     def build_output_correction_and_estimation_operators(self):
         self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_a", "offline")
         self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_f", "offline")
     
-    ## Assemble operators for output correction and error estimation
+    # Assemble operators for output correction and error estimation
     def assemble_output_correction_and_estimation_operators(self, term, current_stage="online"):
         assert current_stage in ("online", "offline")
         short_term = term.replace("output_correction_and_estimation_", "")
         if current_stage == "online": # load from file
-            if not term in self.output_correction_and_estimation:
+            if term not in self.output_correction_and_estimation:
                 self.output_correction_and_estimation[short_term] = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
             if term == "output_correction_and_estimation_a":
                 self.output_correction_and_estimation["a"].load(self.folder["error_estimation"], "output_correction_and_estimation_a")
@@ -103,4 +102,3 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
             return self.output_correction_and_estimation[short_term]
         else:
             raise ValueError("Invalid stage in assemble_output_correction_and_estimation_operators().")
-    

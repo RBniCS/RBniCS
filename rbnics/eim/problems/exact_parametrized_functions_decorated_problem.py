@@ -30,19 +30,15 @@ def ExactParametrizedFunctionsDecoratedProblem(
     **decorator_kwargs
 ):
 
-    from rbnics.eim.problems.deim import DEIM
-    from rbnics.eim.problems.eim import EIM
     from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     
-    @ProblemDecoratorFor(ExactParametrizedFunctions, ExactAlgorithm=ExactParametrizedFunctions_OfflineAndOnline,
-        stages=stages
-    )
+    @ProblemDecoratorFor(ExactParametrizedFunctions, ExactAlgorithm=ExactParametrizedFunctions_OfflineAndOnline, stages=stages)
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
         @PreserveClassName
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
-            ## Default initialization of members
+            # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)

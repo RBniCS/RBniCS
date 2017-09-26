@@ -24,4 +24,3 @@ from rbnics.utils.decorators import backend_for
 @backend_for("numpy", inputs=(AbsOutput, ))
 def max(abs_output):
     return (abs_output.max_abs_return_value, abs_output.max_abs_return_location)
-        

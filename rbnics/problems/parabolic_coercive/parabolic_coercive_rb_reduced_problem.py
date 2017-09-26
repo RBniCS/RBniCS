@@ -24,8 +24,7 @@ from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import LinearTimeDependentRBReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.parabolic_coercive import ParabolicCoerciveRBReduction
-from rbnics.backends import Function, FunctionsList, LinearSolver, product, sum, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage
+from rbnics.backends import product, sum, transpose
 
 ParabolicCoerciveRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoerciveRBReducedProblem))
 
@@ -34,7 +33,7 @@ ParabolicCoerciveRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(Par
 @ReducedProblemFor(ParabolicCoerciveProblem, ParabolicCoerciveRBReduction)
 class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
     
-    ## Default initialization of members.
+    # Default initialization of members.
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         ParabolicCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
@@ -43,7 +42,7 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
         self.riesz_terms.append("m")
         self.riesz_product_terms.extend([("m", "f"), ("m", "a"), ("m", "m")])
         
-    ## Return an error bound for the current solution
+    # Return an error bound for the current solution
     def estimate_error(self):
         eps2_over_time = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -61,19 +60,19 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
         #
         return error_bound_over_time
         
-    ## Return an error bound for the current solution
+    # Return an error bound for the current solution
     def estimate_relative_error(self):
         return NotImplemented
     
-    ## Return an error bound for the current output
+    # Return an error bound for the current output
     def estimate_error_output(self):
         return NotImplemented
         
-    ## Return a relative error bound for the current output
+    # Return a relative error bound for the current output
     def estimate_relative_error_output(self):
         return NotImplemented
 
-    ## Return the numerator of the error bound for the current solution
+    # Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
         residual_norm_squared_over_time = list() # of numbers
         for (k, (solution, solution_dot)) in enumerate(zip(self._solution_over_time, self._solution_dot_over_time)):
@@ -101,4 +100,3 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
                 # Error estimator on initial condition does not use the residual
                 residual_norm_squared_over_time.append(0.)
         return residual_norm_squared_over_time
-        

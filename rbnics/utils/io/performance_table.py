@@ -80,7 +80,7 @@ class PerformanceTable(object):
         run = args[2]
         assert self._columns_not_implemented[column_name] in (True, False)
         if not self._columns_not_implemented[column_name]:
-            return self._columns[args[0]][args[1] - self._Nmin, args[2]]
+            return self._columns[column_name][N - self._Nmin, run]
         else:
             return CustomNotImplementedAfterDiv
         
@@ -204,4 +204,3 @@ class CustomNotImplementedAfterDivType(CustomNotImplementedType):
     def __itruediv__(self, other):
         return CustomNotImplemented
 CustomNotImplementedAfterDiv = CustomNotImplementedAfterDivType()
-

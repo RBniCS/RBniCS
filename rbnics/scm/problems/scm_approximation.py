@@ -20,8 +20,7 @@
 import hashlib
 import operator # to find closest parameters
 from math import sqrt
-from numpy import isclose
-from rbnics.backends import export, import_, LinearProgramSolver, product, sum
+from rbnics.backends import export, import_, LinearProgramSolver, sum
 from rbnics.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.config import config
@@ -34,7 +33,7 @@ from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import Pa
 # Successive constraint method for the approximation of the coercivity constant
 class SCMApproximation(ParametrizedProblem):
 
-    ## Default initialization of members
+    # Default initialization of members
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, folder_prefix, **kwargs):
@@ -58,7 +57,8 @@ class SCMApproximation(ParametrizedProblem):
         self.folder["cache"] = self.folder_prefix + "/" + "reduced_cache"
         self.cache_config = config.get("SCM", "cache")
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
-        # 
+        
+        # Coercivity constant eigen problem
         self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(truth_problem, "a", True, "smallest", kwargs["coercivity_eigensolver_parameters"], self.folder_prefix)
         
         # Store here input parameters provided by the user that are needed by the reduction method
@@ -72,7 +72,7 @@ class SCMApproximation(ParametrizedProblem):
         self._alpha_UB = 0.
         self._alpha_UB_cache = dict()
     
-    ## Initialize data structures required for the online phase
+    # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
         assert current_stage in ("online", "offline")
         # Read/Initialize reduced order data structures
@@ -104,7 +104,7 @@ class SCMApproximation(ParametrizedProblem):
     def evaluate_stability_factor(self):
         return self.exact_coercivity_constant_calculator.solve()
     
-    ## Get a lower bound for alpha
+    # Get a lower bound for alpha
     def get_stability_factor_lower_bound(self, N=None):
         if N is None:
             N = self.N
@@ -153,7 +153,7 @@ class SCMApproximation(ParametrizedProblem):
                 (constraints_vector[j], _) = self.evaluate_stability_factor() # note that computations for this call may be already cached
             self.set_mu(mu_bak)
             
-            # 2b. Add constraints: also constrain the closest point in the complement of selected parameters, 
+            # 2b. Add constraints: also constrain the closest point in the complement of selected parameters,
             #                      with RHS depending on previously computed lower bounds
             mu_bak = self.mu
             closest_selected_parameters_complement = self._closest_unselected_parameters(M_p, N, self.mu)
@@ -207,7 +207,7 @@ class SCMApproximation(ParametrizedProblem):
             self.export_stability_factor_lower_bound(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
         return self._alpha_LB
 
-    ## Get an upper bound for alpha
+    # Get an upper bound for alpha
     def get_stability_factor_upper_bound(self, N=None):
         if N is None:
             N = self.N
@@ -251,7 +251,7 @@ class SCMApproximation(ParametrizedProblem):
         cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
         return (cache_key, cache_file)
 
-    ## Auxiliary function: M parameters in the set xi closest to mu
+    # Auxiliary function: M parameters in the set xi closest to mu
     @staticmethod
     def _closest_parameters(M, xi, mu):
         assert M <= len(xi)
@@ -300,4 +300,3 @@ class SCMApproximation(ParametrizedProblem):
             assert len(eigenvalue_storage) == 1
             self._alpha_UB = eigenvalue_storage[0]
         return import_successful
-        

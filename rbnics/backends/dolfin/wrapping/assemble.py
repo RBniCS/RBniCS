@@ -20,4 +20,3 @@ from dolfin import assemble as dolfin_assemble
 
 def assemble(form):
     return dolfin_assemble(form)
-        

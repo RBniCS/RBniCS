@@ -16,9 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 from rbnics.reduction_methods.base import LinearReductionMethod
-from rbnics.problems.stokes.stokes_problem import StokesProblem
 
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
@@ -28,14 +26,14 @@ def StokesReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
     class StokesReductionMethod_Class(StokesReductionMethod_Base):
         
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             StokesReductionMethod_Base.__init__(self, truth_problem, **kwargs)
             # I/O
             self.folder["supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
             
-        ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
+        # Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
         def postprocess_snapshot(self, snapshot, snapshot_index):
             # Compute supremizer
             self._print_supremizer_solve_message()

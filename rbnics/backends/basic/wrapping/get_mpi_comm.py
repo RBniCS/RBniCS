@@ -18,4 +18,3 @@
 
 def get_mpi_comm(V_or_Z):
     pass
-

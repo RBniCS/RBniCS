@@ -28,7 +28,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
     @PreserveClassName
     class TimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-        ## Default initialization of members.
+        # Default initialization of members.
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -62,7 +62,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     else:
                         raise ValueError("Invalid stage in _init_error_estimation_operators().")
                     
-        ## Build operators for error estimation
+        # Build operators for error estimation
         def build_error_estimation_operators(self):
             # Call Parent
             ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self)
@@ -75,7 +75,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                 if self.initial_condition and not self.initial_condition_is_homogeneous:
                     self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "offline")
         
-        ## Assemble operators for error estimation
+        # Assemble operators for error estimation
         def assemble_error_estimation_operators(self, term, current_stage="online"):
             if term[0].startswith("initial_condition") and term[1].startswith("initial_condition"):
                 component0 = term[0].replace("initial_condition", "").replace("_", "")
@@ -121,12 +121,11 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
             else:
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_error_estimation_operators(self, term, current_stage)
                 
-        ## Return the error bound for the initial condition    
+        # Return the error bound for the initial condition
         def get_initial_error_estimate_squared(self):
             self._solution = self._solution_over_time[0]
             N = self._solution.N
             
-            initial_error_estimate_squared = 0.
             at_least_one_non_homogeneous_initial_condition = False
             
             addend_0 = 0.
@@ -138,7 +137,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                         at_least_one_non_homogeneous_initial_condition = True
                         theta_ic_component = self.compute_theta("initial_condition_" + component)
                         addend_0 += sum(product(theta_ic_component, self.initial_condition_product[component, component], theta_ic_component))
-                        addend_1_right += sum(product(theta_ic, self.initial_condition[:N]))
+                        addend_1_right += sum(product(theta_ic_component, self.initial_condition[:N]))
             else:
                 if self.initial_condition and not self.initial_condition_is_homogeneous:
                     at_least_one_non_homogeneous_initial_condition = True
@@ -156,4 +155,3 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                 
     # return value (a class) for the decorator
     return TimeDependentRBReducedProblem_Class
-    

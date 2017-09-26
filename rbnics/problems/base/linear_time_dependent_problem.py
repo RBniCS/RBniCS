@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends import assign
 from rbnics.problems.base.linear_problem import LinearProblem
 from rbnics.problems.base.time_dependent_problem import TimeDependentProblem
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
@@ -34,4 +33,3 @@ def LinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             
     # return value (a class) for the decorator
     return LinearTimeDependentProblem_Class
-    

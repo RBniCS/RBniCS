@@ -23,4 +23,3 @@ from rbnics.utils.io import Folders, PickleIO
 @backend_for("common", inputs=(list_of(Number), (Folders.Folder, str), str, None, None))
 def export(solution, directory, filename, suffix=None, component=None):
     PickleIO.save_file(solution, directory, filename)
-        

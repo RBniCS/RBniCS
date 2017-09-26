@@ -17,11 +17,11 @@
 #
 
 from rbnics.reduction_methods.navier_stokes.navier_stokes_pod_galerkin_reduction import NavierStokesPODGalerkinReduction
-#from rbnics.reduction_methods.navier_stokes.navier_stokes_rb_reduction import NavierStokesRBReduction
+# from rbnics.reduction_methods.navier_stokes.navier_stokes_rb_reduction import NavierStokesRBReduction
 from rbnics.reduction_methods.navier_stokes.navier_stokes_reduction_method import NavierStokesReductionMethod
 
 __all__ = [
     'NavierStokesPODGalerkinReduction',
-#    'NavierStokesRBReduction',
+    # 'NavierStokesRBReduction',
     'NavierStokesReductionMethod'
 ]

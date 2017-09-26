@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
+
 def Function(Vector):
     class _Function_Type(object):
         def __init__(self, arg):

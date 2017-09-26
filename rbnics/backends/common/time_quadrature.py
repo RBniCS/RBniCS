@@ -30,4 +30,3 @@ class TimeQuadrature(AbstractTimeQuadrature):
         
     def integrate(self):
         return simps(self._function_over_time, dx=self._time_step_size)
-        

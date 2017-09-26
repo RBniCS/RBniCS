@@ -26,10 +26,9 @@ class EquispacedDistribution(Distribution):
         n_P_root = int(ceil(n**(1./len(box))))
         grid = list() # of linspaces
         for box_p in box:
-            grid.append( linspace(box_p[0], box_p[1], num=n_P_root).tolist() )
+            grid.append(linspace(box_p[0], box_p[1], num=n_P_root).tolist())
         set_itertools = itertools.product(*grid)
         set_ = list() # of tuples
         for mu in set_itertools:
             set_.append(mu)
         return set_
-        

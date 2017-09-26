@@ -17,7 +17,6 @@
 #
 
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
-from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_problem import NonlinearParabolicProblem
 
 def NonlinearParabolicReductionMethod(NonlinearEllipticReductionMethod_DerivedClass):
     
@@ -28,4 +27,3 @@ def NonlinearParabolicReductionMethod(NonlinearEllipticReductionMethod_DerivedCl
         
     # return value (a class) for the decorator
     return NonlinearParabolicReductionMethod_Class
-        

@@ -103,7 +103,7 @@ def load_backends(required_backends):
 from rbnics.utils.config import config
 load_backends(config.get("backends", "required backends"))
 
-# Store some additional classes, defined in the abstract module, which are base classes but not backends, 
+# Store some additional classes, defined in the abstract module, which are base classes but not backends,
 # and thus have not been processed by @BackendFor and @backend_for decorators
 from rbnics.backends.abstract import LinearProblemWrapper, NonlinearProblemWrapper, TimeDependentProblemWrapper, TimeDependentProblem1Wrapper, TimeDependentProblem2Wrapper
 __all__ += ['LinearProblemWrapper', 'NonlinearProblemWrapper', 'TimeDependentProblemWrapper', 'TimeDependentProblem1Wrapper', 'TimeDependentProblem2Wrapper']

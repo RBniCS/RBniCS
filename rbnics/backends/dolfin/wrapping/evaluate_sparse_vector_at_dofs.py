@@ -38,4 +38,3 @@ def evaluate_sparse_vector_at_dofs(sparse_vector, dofs_list):
         assert vec_i_processor >= 0
         out[index] = mpi_comm.bcast(out_index, root=vec_i_processor)
     return out
-    

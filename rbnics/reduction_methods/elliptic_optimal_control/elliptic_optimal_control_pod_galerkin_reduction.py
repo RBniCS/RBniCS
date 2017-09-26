@@ -17,7 +17,6 @@
 #
 
 
-from rbnics.backends import FunctionsList
 from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
@@ -30,7 +29,7 @@ EllipticOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(Ell
 @ReductionMethodFor(EllipticOptimalControlProblem, "PODGalerkin")
 class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerkinReduction_Base):
     
-    ## Compute basis functions performing POD: overridden to handle aggregated spaces
+    # Compute basis functions performing POD: overridden to handle aggregated spaces
     def compute_basis_functions(self):
         # Carry out POD
         Z = dict()
@@ -57,4 +56,3 @@ class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerk
         
         # Save
         self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
-    

@@ -40,7 +40,7 @@ def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
                         raise ValueError("Invalid value for order of term " + term)
                 return (
                       assembled_operator["m"]*solution_dot
-                    +(assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
+                    + (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
                     + assembled_operator["c"]
                     - assembled_operator["f"] - assembled_operator["g"]
                 )

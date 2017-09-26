@@ -53,24 +53,24 @@ class TimeDependentEIMApproximation(EIMApproximation):
         self.t0 = 0.
         self.t = 0.
         self.dt = None
-        self.T  = None
+        self.T = None
         
-    ## Set initial time
+    # Set initial time
     def set_initial_time(self, t0):
         assert isinstance(t0, Number)
         self.t0 = t0
         
-    ## Set current time
+    # Set current time
     def set_time(self, t):
         assert isinstance(t, Number)
         self.t = t
         
-    ## Set time step size
+    # Set time step size
     def set_time_step_size(self, dt):
         assert isinstance(dt, Number)
         self.dt = dt
         
-    ## Set final time
+    # Set final time
     def set_final_time(self, T):
         assert isinstance(T, Number)
         self.T = T
@@ -89,4 +89,3 @@ class EnlargedMu(dict):
         assert isinstance(self["t"], Number)
         output = str(self["mu"]) + " and t = " + str(self["t"])
         return output
-        

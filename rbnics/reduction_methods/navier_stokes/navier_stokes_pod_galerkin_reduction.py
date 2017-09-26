@@ -27,4 +27,3 @@ NavierStokesPODGalerkinReduction_Base = NonlinearPODGalerkinReduction(NavierStok
 @ReductionMethodFor(NavierStokesProblem, "PODGalerkin")
 class NavierStokesPODGalerkinReduction(NavierStokesPODGalerkinReduction_Base):
     pass
-    

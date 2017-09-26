@@ -28,7 +28,7 @@ from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.backends.dolfin.reduced_vertices import ReducedVertices
 from rbnics.backends.dolfin.tensors_list import TensorsList
 from rbnics.backends.dolfin.vector import Vector
-from rbnics.backends.dolfin.wrapping import assemble, assert_lagrange_1, evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs, expression_iterator, expression_on_reduced_mesh, expression_replace, expression_on_truth_mesh, form_argument_replace, form_iterator, form_on_reduced_function_space, form_on_truth_function_space, form_replace, function_from_ufl_operators, get_auxiliary_problem_for_non_parametrized_function, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, solution_identify_component, solution_iterator, ufl_lagrange_interpolation
+from rbnics.backends.dolfin.wrapping import assemble, assert_lagrange_1, evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs, expression_iterator, expression_replace, form_argument_replace, form_iterator, form_replace, function_from_ufl_operators, get_auxiliary_problem_for_non_parametrized_function, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, solution_identify_component, solution_iterator, ufl_lagrange_interpolation
 from rbnics.backends.dolfin.wrapping.expression_on_reduced_mesh import basic_expression_on_reduced_mesh
 from rbnics.backends.dolfin.wrapping.expression_on_truth_mesh import basic_expression_on_truth_mesh
 from rbnics.backends.dolfin.wrapping.form_on_reduced_function_space import basic_form_on_reduced_function_space
@@ -55,17 +55,17 @@ def evaluate(expression, at=None):
 @overload
 def _evaluate(
     expression: (
-        Matrix.Type(), 
-        Vector.Type(), 
-        Function.Type(), 
-        TensorsList, 
-        FunctionsList, 
-        ParametrizedTensorFactory, 
+        Matrix.Type(),
+        Vector.Type(),
+        Function.Type(),
+        TensorsList,
+        FunctionsList,
+        ParametrizedTensorFactory,
         ParametrizedExpressionFactory
     ),
     at: (
-        ReducedMesh, 
-        ReducedVertices, 
+        ReducedMesh,
+        ReducedVertices,
         None
     ) = None
 ):
@@ -73,10 +73,10 @@ def _evaluate(
     
 @overload
 def _evaluate(
-    expression: Operator, 
+    expression: Operator,
     at: (
-        ReducedMesh, 
-        ReducedVertices, 
+        ReducedMesh,
+        ReducedVertices,
         None
     ) = None
 ):

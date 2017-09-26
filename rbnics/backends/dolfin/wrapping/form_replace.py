@@ -38,4 +38,3 @@ def form_replace(form, replacements, replacement_type="nodes"):
         return replaced_form
     else:
         raise ValueError("Invalid replacement type")
-

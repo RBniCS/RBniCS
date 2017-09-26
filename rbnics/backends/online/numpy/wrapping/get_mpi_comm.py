@@ -18,4 +18,3 @@
 
 def get_mpi_comm(Z):
     return Z.mpi_comm
-

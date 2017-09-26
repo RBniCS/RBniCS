@@ -18,4 +18,3 @@
 
 def function_load(fun, directory, filename, suffix=None):
     pass
-

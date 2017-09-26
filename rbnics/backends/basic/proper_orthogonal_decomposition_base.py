@@ -19,7 +19,6 @@
 
 from math import sqrt
 from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
-from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from rbnics.utils.mpi import is_io_process
 
 # Class containing the implementation of the POD
@@ -59,8 +58,8 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
                 correlation = transpose(snapshots_matrix)*snapshots_matrix
             
             Z = BasisContainerType(self.V_or_Z, *self.args)
-                            
-            eigensolver = online_backend.OnlineEigenSolver(Z, correlation) 
+            
+            eigensolver = online_backend.OnlineEigenSolver(Z, correlation)
             parameters = {
                 "problem_type": "hermitian",
                 "spectrum": "largest real"
@@ -118,7 +117,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
                 N = len(self.snapshots_matrix)
                 with open(str(output_directory) + "/" + retained_energy_file, "w") as outfile:
                     for i in range(N):
-                        outfile.write(str(i) + " " + str(self.retained_energy[i]) + "\n") 
+                        outfile.write(str(i) + " " + str(self.retained_energy[i]) + "\n")
             self.mpi_comm.barrier()
     
     return _ProperOrthogonalDecompositionBase

@@ -28,7 +28,7 @@ from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):
         self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
-        self.solver  = PETScSNESSolver(solution.vector().mpi_comm())
+        self.solver = PETScSNESSolver(solution.vector().mpi_comm())
         # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
         # Make sure to use a matrix with proper sparsity pattern if matrix_eval returns a matrix (rather than a Form)
         jacobian_form_or_matrix = self.problem.jacobian_eval(self.problem.solution)

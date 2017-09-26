@@ -23,7 +23,7 @@ __all__ = []
 from rbnics.utils.config import config
 
 # Import the minimum subset of RBniCS required to run tutorials
-from rbnics.eim import DEIM, EIM, ExactParametrizedFunctions
+from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.elliptic_coercive import EllipticCoerciveCompliantProblem, EllipticCoerciveProblem
 from rbnics.problems.elliptic_optimal_control import EllipticOptimalControlProblem
 from rbnics.problems.navier_stokes import NavierStokesProblem
@@ -34,9 +34,9 @@ from rbnics.problems.parabolic_coercive import ParabolicCoerciveProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
 from rbnics.problems.stokes_unsteady import StokesUnsteadyProblem
-from rbnics.sampling import DrawFrom, EquispacedDistribution, LogEquispacedDistribution, LogUniformDistribution, UniformDistribution
-from rbnics.scm import SCM, ExactCoercivityConstant
-from rbnics.shape_parametrization import ShapeParametrization
+from rbnics.sampling.distributions import DrawFrom, EquispacedDistribution, LogEquispacedDistribution, LogUniformDistribution, UniformDistribution
+from rbnics.scm.problems import SCM, ExactCoercivityConstant
+from rbnics.shape_parametrization.problems import ShapeParametrization
 from rbnics.utils.decorators import CustomizeReducedProblemFor, CustomizeReductionMethodFor, exact_problem
 from rbnics.utils.factories import ReducedBasis, PODGalerkin
 

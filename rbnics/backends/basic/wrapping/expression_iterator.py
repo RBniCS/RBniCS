@@ -18,4 +18,3 @@
 
 def expression_iterator(expression):
     pass
-

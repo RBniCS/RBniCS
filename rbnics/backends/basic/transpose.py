@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
-from rbnics.utils.decorators import list_of, overload
+from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import log, PROGRESS
 
 def transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None, AdditionalIsVector=None, ConvertAdditionalVectorTypes=None, AdditionalIsMatrix=None, ConvertAdditionalMatrixTypes=None):
@@ -192,7 +191,7 @@ def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping, 
             log(PROGRESS, "Begin S^T w")
             output = online_backend.OnlineVector(len(self.functions_list))
             for (i, fun_i) in enumerate(self.functions_list):
-                output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), wrapping.function_to_vector(vector))
+                output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
             log(PROGRESS, "End S^T w")
             return output
         
@@ -276,7 +275,7 @@ def FunctionsList_Transpose__times__Matrix(backend, wrapping, online_backend, on
                 raise RuntimeError("Invalid arguments in transpose.")
     return _FunctionsList_Transpose__times__Matrix
 
-# Auxiliary: transpose of a BasisFunctionsMatrix    
+# Auxiliary: transpose of a BasisFunctionsMatrix
 def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes, _BasisFunctionsMatrix_Transpose__times__Matrix):
     class _BasisFunctionsMatrix_Transpose(object):
         @overload(backend.BasisFunctionsMatrix, )
@@ -341,7 +340,7 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
                 raise RuntimeError("Invalid arguments in transpose.")
     return _BasisFunctionsMatrix_Transpose
     
-# Auxiliary: multiplication of the transpose of a BasisFunctionsMatrix with a Matrix    
+# Auxiliary: multiplication of the transpose of a BasisFunctionsMatrix with a Matrix
 def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes):
     class _BasisFunctionsMatrix_Transpose__times__Matrix(object):
         @overload(backend.BasisFunctionsMatrix, backend.Matrix.Type())

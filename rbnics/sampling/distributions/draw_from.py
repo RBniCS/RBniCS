@@ -32,4 +32,3 @@ class DrawFrom(Distribution):
                 mu.append(box_p[0] + self.generator(*self.args, **self.kwargs)*(box_p[1] - box_p[0]))
             set_.append(tuple(mu))
         return set_
-        

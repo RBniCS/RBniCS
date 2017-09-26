@@ -22,4 +22,3 @@ from rbnics.utils.decorators import abstract_backend
 @abstract_backend
 def import_(solution, directory, filename, suffix=None, component=None):
     pass
-    

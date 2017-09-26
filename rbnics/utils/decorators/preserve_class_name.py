@@ -16,8 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import inspect
-
 def PreserveClassName(Derived):
     Parents = Derived.__bases__
     assert len(Parents) == 1

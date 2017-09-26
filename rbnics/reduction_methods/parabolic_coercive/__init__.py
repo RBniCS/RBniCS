@@ -17,7 +17,6 @@
 #
 
 from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_pod_galerkin_reduction import ParabolicCoercivePODGalerkinReduction
-#from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_rb_non_compliant import # TODO enable
 from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_rb_reduction import ParabolicCoerciveRBReduction
 from rbnics.reduction_methods.parabolic_coercive.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
 

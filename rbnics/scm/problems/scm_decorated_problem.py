@@ -20,11 +20,11 @@ from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.scm.problems.scm_approximation import SCMApproximation
 
 def SCMDecoratedProblem(
-    M_e = None,
-    M_p = None,
-    bounding_box_minimum_eigensolver_parameters = None,
-    bounding_box_maximum_eigensolver_parameters = None,
-    coercivity_eigensolver_parameters = None,
+    M_e=None,
+    M_p=None,
+    bounding_box_minimum_eigensolver_parameters=None,
+    bounding_box_maximum_eigensolver_parameters=None,
+    coercivity_eigensolver_parameters=None,
     **decorator_kwargs
 ):
     if bounding_box_minimum_eigensolver_parameters is None:
@@ -37,18 +37,20 @@ def SCMDecoratedProblem(
     from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
     from rbnics.scm.problems.scm import SCM
     
-    @ProblemDecoratorFor(SCM, ExactAlgorithm=ExactCoercivityConstant,
-        M_e = M_e,
-        M_p = M_p,
-        bounding_box_minimum_eigensolver_parameters = bounding_box_minimum_eigensolver_parameters,
-        bounding_box_maximum_eigensolver_parameters = bounding_box_maximum_eigensolver_parameters,
-        coercivity_eigensolver_parameters = coercivity_eigensolver_parameters
+    @ProblemDecoratorFor(
+        SCM,
+        ExactAlgorithm=ExactCoercivityConstant,
+        M_e=M_e,
+        M_p=M_p,
+        bounding_box_minimum_eigensolver_parameters=bounding_box_minimum_eigensolver_parameters,
+        bounding_box_maximum_eigensolver_parameters=bounding_box_maximum_eigensolver_parameters,
+        coercivity_eigensolver_parameters=coercivity_eigensolver_parameters
     )
     def SCMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
     
         @PreserveClassName
         class SCMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
-            ## Default initialization of members
+            # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -62,7 +64,7 @@ def SCMDecoratedProblem(
                 # Storage for SCM reduced problems
                 self.SCM_approximation = SCMApproximation(self, self.name() + "/scm", **decorator_inputs)
                 
-            ## Return the alpha_lower bound.
+            # Return the alpha_lower bound.
             def get_stability_factor(self):
                 return self.SCM_approximation.get_stability_factor_lower_bound()
 

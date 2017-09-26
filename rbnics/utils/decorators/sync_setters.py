@@ -70,7 +70,7 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                     all_synced_setters_for_method.add((other_object, getattr(other_object, method__name)))
                     _synced_setters[method__name][self] = all_synced_setters_for_method
                     _synced_setters[method__name][other_object] = all_synced_setters_for_method
-                # Now both storage and local variable should be consistent between self and other_object, 
+                # Now both storage and local variable should be consistent between self and other_object,
                 # and pointing to the same memory location
                 assert _synced_setters[method__name][self] is _synced_setters[method__name][other_object]
                 # Override both self and other_object setters to propagate to all synced setters
@@ -99,7 +99,7 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                     setattr(self, method__name, types.MethodType(overridden_method, self))
                 if all_synced_setters_for_method_other_object is None or method__decorator__changed:
                     setattr(other_object, method__name, types.MethodType(overridden_method, other_object))
-                # Make sure that the value of my attribute is in sync with the value that is currently 
+                # Make sure that the value of my attribute is in sync with the value that is currently
                 # stored in other_object, because it was set before overriding was carried out
                 getattr(self, method__name)(getattr(other_object, private_attribute__name))
         
@@ -124,7 +124,7 @@ def set_mu_range__decorator(set_mu_range__method):
         # set_mu_range by defaults calls set_mu. Since set_mu
         # (1) requires a properly initialized mu range, but
         # (2) it has been overridden to be kept in sync, also
-        #     for object which have not been initialized yet, 
+        #     for object which have not been initialized yet,
         # we first disable set_mu
         _synced_setters__disabled_methods.add("set_mu")
         # We set (and sync) the mu range

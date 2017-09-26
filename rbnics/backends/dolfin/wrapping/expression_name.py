@@ -17,7 +17,7 @@
 #
 
 from numpy import zeros
-from dolfin import __version__ as dolfin_version, Constant, Function
+from dolfin import __version__ as dolfin_version, Constant
 from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.indexed import Indexed
 import hashlib

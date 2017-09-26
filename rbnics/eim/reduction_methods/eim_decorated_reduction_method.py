@@ -21,7 +21,7 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
-from rbnics.utils.decorators import exact_problem, PreserveClassName, ReductionMethodDecoratorFor, set_map_from_problem_to_training_status_on
+from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 
 @ReductionMethodDecoratorFor(EIM)
 def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -44,9 +44,9 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     EIMApproximationReductionMethodType = TimeDependentEIMApproximationReductionMethod
                 else:
                     EIMApproximationReductionMethodType = EIMApproximationReductionMethod
-                self.EIM_reductions[coeff] = EIMApproximationReductionMethod(EIM_approximation_coeff)
+                self.EIM_reductions[coeff] = EIMApproximationReductionMethodType(EIM_approximation_coeff)
             
-        ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+        # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set Nmax of EIM reductions
@@ -54,7 +54,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 EIM_reduction.set_Nmax(max(EIM_reduction.Nmax, Nmax_EIM)) # kwargs are not needed
             self._propagate_setter_from_kwargs_to_EIM_reductions(setter, int, **kwargs)
             
-        ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+        # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set tolerance of EIM reductions
@@ -62,7 +62,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 EIM_reduction.set_tolerance(max(EIM_reduction.tol, tol_EIM)) # kwargs are not needed
             self._propagate_setter_from_kwargs_to_EIM_reductions(setter, float, **kwargs)
             
-        ## OFFLINE: set the elements in the training set.
+        # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
             # Since exact evaluation is required, we cannot use a distributed training set
@@ -73,7 +73,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_EIM
             
-        ## ERROR ANALYSIS: set the elements in the testing set.
+        # ERROR ANALYSIS: set the elements in the testing set.
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
             # Initialize testing set of EIM reductions
@@ -109,7 +109,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     return_value = current_return_value and return_value
             return return_value # an "and" with a None results in None, so this method returns only if necessary
             
-        ## Perform the offline phase of the reduced order model
+        # Perform the offline phase of the reduced order model
         def offline(self):
             if "offline" not in self.truth_problem._apply_EIM_at_stages:
                 assert hasattr(self.truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
@@ -125,8 +125,8 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def error_analysis(self, N=None, **kwargs):
             # Perform first the EIM error analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t. 
-                                                # an exact parametrized functions, 
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
+                                                # an exact parametrized functions,
                                                 # so he probably is not interested in the error analysis of EIM
                     and
                 (
@@ -148,8 +148,8 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def speedup_analysis(self, N=None, **kwargs):
             # Perform first the EIM speedup analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t. 
-                                                # an exact parametrized functions, 
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
+                                                # an exact parametrized functions,
                                                 # so he probably is not interested in the speedup analysis of EIM
                     and
                 (
@@ -168,4 +168,3 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         
     # return value (a class) for the decorator
     return EIMDecoratedReductionMethod_Class
-    

@@ -22,4 +22,3 @@ from rbnics.utils.decorators import AbstractBackend
 @AbstractBackend
 class SnapshotsMatrix(FunctionsList):
     pass
-

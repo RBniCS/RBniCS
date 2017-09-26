@@ -54,4 +54,3 @@ class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
         inner_product = assemble(inner(f, g)*dx)
         # Call Parent
         ParametrizedExpressionFactory_Base.__init__(self, expression, space, inner_product)
-                

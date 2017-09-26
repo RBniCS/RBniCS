@@ -32,7 +32,7 @@ StokesRBReducedProblem_Base = LinearRBReducedProblem(StokesReducedProblem(Parame
 @ReducedProblemFor(StokesProblem, StokesRBReduction)
 class StokesRBReducedProblem(StokesRBReducedProblem_Base):
 
-    ## Default initialization of members.
+    # Default initialization of members.
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         StokesRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
@@ -41,7 +41,7 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         self.riesz_terms = ["a", "b", "bt", "f", "g"]
         self.riesz_product_terms = [("f", "f"), ("g", "g"), ("a", "f"), ("bt", "f"), ("b", "g"), ("a", "a"), ("a", "bt"), ("bt", "bt"), ("b", "b")]
     
-    ## Return an error bound for the current solution
+    # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -49,19 +49,19 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         assert alpha >= 0.
         return sqrt(abs(eps2)/alpha)
         
-    ## Return a relative error bound for the current solution
+    # Return a relative error bound for the current solution
     def estimate_relative_error(self):
         return NotImplemented
     
-    ## Return an error bound for the current output
+    # Return an error bound for the current output
     def estimate_error_output(self):
         return NotImplemented
         
-    ## Return a relative error bound for the current output
+    # Return a relative error bound for the current output
     def estimate_relative_error_output(self):
         return NotImplemented
         
-    ## Return the numerator of the error bound for the current solution
+    # Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
         N = self._solution.N
         theta_a = self.compute_theta("a")
@@ -80,4 +80,3 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
             + transpose(self._solution)*sum(product(theta_bt, self.riesz_product["bt", "bt"][:N, :N], theta_bt))*self._solution
             + transpose(self._solution)*sum(product(theta_b, self.riesz_product["b", "b"][:N, :N], theta_b))*self._solution
         )
-        

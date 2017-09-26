@@ -32,7 +32,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
         :param truth_problem: the class of the truth problem to be solved.
         :return: PODGalerkinReduction_Class where all the offline data are stored.
         """
-
         
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
@@ -48,11 +47,10 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Since we use a POD for each component, it makes sense to possibly have
             # different tolerances for each component.
             if len(self.truth_problem.components) > 1:
-                self.tol = {component:0. for component in self.truth_problem.components}
+                self.tol = {component: 0. for component in self.truth_problem.components}
             else:
                 self.tol = 0.
                 
-        
         def set_tolerance(self, tol, **kwargs):
             """
             It sets tolerance to be used as stopping criterion.
@@ -64,7 +62,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     all_components_in_kwargs = self.truth_problem.components[0] in kwargs
                     for component in self.truth_problem.components:
                         if all_components_in_kwargs:
-                            assert component in kwargs, "You need to specify the tolerance of all components in kwargs" 
+                            assert component in kwargs, "You need to specify the tolerance of all components in kwargs"
                         else:
                             assert component not in kwargs, "You need to specify the tolerance of all components in kwargs"
                     assert all_components_in_kwargs
@@ -90,7 +88,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             self.tol = tol
         
-       
         def _init_offline(self):
             # Call parent to initialize inner product and reduced problem
             output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
@@ -158,7 +155,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._finalize_offline()
             return self.reduced_problem
 
-        
         def update_snapshots_matrix(self, snapshot):
             """
             It updates the snapshots matrix.
@@ -171,7 +167,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             else:
                 self.POD.store_snapshot(snapshot)
             
-        
         def compute_basis_functions(self):
             """
             It computes basis functions performing POD solving an eigenvalue problem.
@@ -195,7 +190,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
                 self.POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
                 self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
-            
        
         def error_analysis(self, N=None, **kwargs):
             """
@@ -259,14 +253,13 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
             
             self._finalize_error_analysis(**kwargs)
-            
         
         def speedup_analysis(self, N=None, **kwargs):
             """
             It computes the speedup of the reduced order approximation with respect to the full order one
             over the testing set
             
-            :param N: 
+            :param N: dimension of the reduced problem.
             """
             N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
             if isinstance(N, dict):
@@ -329,4 +322,3 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
         
     # return value (a class) for the decorator
     return PODGalerkinReduction_Class
-    

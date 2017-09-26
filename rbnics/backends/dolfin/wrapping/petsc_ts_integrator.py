@@ -85,7 +85,7 @@ class PETScTSIntegrator(object):
                 else:
                     raise ValueError("Invalid paramater passed as problem type.")
             elif key == "report":
-                if value == True:
+                if value is True:
                     def print_time(ts):
                         t = ts.getTime()
                         dt = ts.getTimeStep()

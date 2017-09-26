@@ -42,4 +42,3 @@ def get_problem_from_solution(solution):
     return _solution_to_problem_map[solution]
     
 _solution_to_problem_map = dict()
-

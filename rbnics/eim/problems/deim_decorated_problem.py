@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from itertools import product as cartesian_product
-from rbnics.backends import ParametrizedTensorFactory, SeparatedParametrizedForm, SymbolicParameters
+from rbnics.backends import ParametrizedTensorFactory, SymbolicParameters
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
@@ -35,16 +34,13 @@ def DEIMDecoratedProblem(
 ):
     from rbnics.eim.problems.deim import DEIM
     
-    @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactDEIMAlgorithm,
-        stages=stages,
-        basis_generation=basis_generation
-    )
+    @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactDEIMAlgorithm, stages=stages, basis_generation=basis_generation)
     def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
                 
         @PreserveClassName
         class DEIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
-            ## Default initialization of members
+            # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -79,7 +75,7 @@ def DEIMDecoratedProblem(
             def _init_DEIM_approximations(self):
                 # Preprocess each term in the affine expansions.
                 # Note that this cannot be done in __init__, because operators may depend on self.mu,
-                # which is not defined at __init__ time. Moreover, it cannot be done either by init, 
+                # which is not defined at __init__ time. Moreover, it cannot be done either by init,
                 # because the init method is called by offline stage of the reduction method instance,
                 # but we need to DEIM approximations need to be already set up at the time the reduction
                 # method instance is built. Thus, we will call this method in the reduction method instance
@@ -137,7 +133,6 @@ def DEIMDecoratedProblem(
                         self._N_DEIM = None
                     self._update_N_DEIM__previous_kwargs = kwargs
                 
-                
             def assemble_operator(self, term):
                 if term in self.terms:
                     if "offline" in self._apply_DEIM_at_stages:
@@ -171,7 +166,7 @@ def DEIMDecoratedProblem(
                 deim_thetas = list()
                 assert len(self.DEIM_approximations[term]) + len(self.non_DEIM_forms[term]) == len(original_thetas)
                 if self._N_DEIM is not None:
-                    assert term in self._N_DEIM 
+                    assert term in self._N_DEIM
                     assert len(self.DEIM_approximations[term]) == len(self._N_DEIM[term])
                 # Append forms computed with DEIM, if applicable
                 for (q, deim_approximation) in self.DEIM_approximations[term].items():

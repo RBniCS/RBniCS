@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends import assign, LinearProblemWrapper, LinearSolver
+from rbnics.backends import LinearProblemWrapper, LinearSolver
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
@@ -33,4 +33,3 @@ def LinearProblem(ParametrizedDifferentialProblem_DerivedClass):
                 
     # return value (a class) for the decorator
     return LinearProblem_Class
-    

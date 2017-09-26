@@ -40,7 +40,7 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
         self.riesz_terms = ["a", "a*", "c", "c*", "m", "n", "g", "f"]
         self.riesz_product_terms = [("g", "g"), ("f", "f"), ("m", "g"), ("a*", "g"), ("a", "f"), ("c", "f"), ("m", "a*"), ("n", "c*"), ("a", "c"), ("m", "m"), ("a*", "a*"), ("n", "n"), ("c*", "c*"), ("a", "a"), ("c", "c")]
         
-    ## Return an error bound for the current solution
+    # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -48,19 +48,19 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
         assert alpha >= 0.
         return sqrt(abs(eps2)/alpha)
         
-    ## Return a relative error bound for the current solution
+    # Return a relative error bound for the current solution
     def estimate_relative_error(self):
         return NotImplemented
     
-    ## Return an error bound for the current output
+    # Return an error bound for the current output
     def estimate_error_output(self):
         return NotImplemented
         
-    ## Return a relative error bound for the current output
+    # Return a relative error bound for the current output
     def estimate_relative_error_output(self):
         return NotImplemented
         
-    ## Return the numerator of the error bound for the current solution
+    # Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
         N = self._solution.N
         theta_a = self.compute_theta("a")

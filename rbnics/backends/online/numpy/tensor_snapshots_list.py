@@ -23,4 +23,3 @@ from rbnics.utils.decorators import BackendFor
 @BackendFor("numpy", inputs=(AbstractTensorsList, ))
 class TensorSnapshotsList(TensorsList):
     pass
-

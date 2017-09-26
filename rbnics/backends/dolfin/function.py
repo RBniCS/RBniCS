@@ -29,7 +29,6 @@ def Function(V, component=None):
     else:
         V = V.sub(component).collapse()
         return _Function_Type(V)
-    return output
     
 # Attach a Type() function
 def Type():
@@ -52,7 +51,7 @@ def custom_function_space(self):
     return output
 _Function_Type.function_space = custom_function_space
 
-# Also make _Function_Type.sub() aware of string components    
+# Also make _Function_Type.sub() aware of string components
 original_sub = _Function_Type.sub
 def custom_sub(self, i, deepcopy=False):
     if hasattr(self, "_component_to_index"):

@@ -19,7 +19,6 @@
 from numbers import Number
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType
-from rbnics.utils.mpi import is_io_process
 from rbnics.utils.io import OnlineSizeDict
 
 def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
@@ -189,7 +188,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
         
         @overload(int)
         def _precompute_slice(self, N):
-            if not N in self._precomputed_slices:
+            if N not in self._precomputed_slices:
                 assert len(self._components) == 1
                 self._precomputed_slices[N] = _BasisFunctionsMatrix.__new__(type(self), self.V_or_Z)
                 self._precomputed_slices[N].__init__(self.V_or_Z)
@@ -202,7 +201,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
         @overload((dict_of(str, int), OnlineSizeDict))
         def _precompute_slice(self, N):
             N_key = tuple(N[component_name] for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()))
-            if not N_key in self._precomputed_slices:
+            if N_key not in self._precomputed_slices:
                 self._precomputed_slices[N_key] = _BasisFunctionsMatrix.__new__(type(self), self.V_or_Z)
                 self._precomputed_slices[N_key].__init__(self.V_or_Z)
                 self._precomputed_slices[N_key].init(self._components_name)

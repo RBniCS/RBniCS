@@ -27,7 +27,7 @@ from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_reduction_method i
 def AbstractCFDUnsteadyPODGalerkinReduction(AbstractCFDPODGalerkinReduction, AbstractCFDUnsteadyPODGalerkinReduction_Base):
     class AbstractCFDUnsteadyPODGalerkinReduction_Class(AbstractCFDUnsteadyPODGalerkinReduction_Base):
         
-        ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
+        # Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
         def _init_offline(self):
             # Call parent to initialize
             output = AbstractCFDUnsteadyPODGalerkinReduction_Base._init_offline(self)
@@ -45,7 +45,7 @@ def AbstractCFDUnsteadyPODGalerkinReduction(AbstractCFDPODGalerkinReduction, Abs
             # Return
             return output
         
-        ## Update the snapshots matrix: overridden version because supremizer POD is different from a standard component
+        # Update the snapshots matrix: overridden version because supremizer POD is different from a standard component
         def update_snapshots_matrix(self, snapshot_and_supremizer_over_time):
             assert isinstance(snapshot_and_supremizer_over_time, tuple)
             assert len(snapshot_and_supremizer_over_time) == 2

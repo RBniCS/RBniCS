@@ -28,7 +28,7 @@ EllipticCoerciveCompliantRBReducedProblem_Base = EllipticCoerciveCompliantReduce
 
 @ReducedProblemFor(EllipticCoerciveCompliantProblem, EllipticCoerciveRBReduction)
 class EllipticCoerciveCompliantRBReducedProblem(EllipticCoerciveCompliantRBReducedProblem_Base):
-    ## Return an error bound for the current solution
+    # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -36,6 +36,6 @@ class EllipticCoerciveCompliantRBReducedProblem(EllipticCoerciveCompliantRBReduc
         assert alpha >= 0.
         return sqrt(abs(eps2)/alpha)
         
-    ## Return an error bound for the current compliant output
+    # Return an error bound for the current compliant output
     def estimate_error_output(self):
         return self.estimate_error()**2

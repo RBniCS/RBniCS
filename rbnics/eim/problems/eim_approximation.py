@@ -19,7 +19,7 @@
 import hashlib
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.backends import abs, copy, evaluate, export, import_, max
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineLinearSolver, OnlineVector, OnlineFunction
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
 from rbnics.utils.config import config
 from rbnics.utils.decorators import sync_setters
 from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMApproximation
@@ -28,10 +28,10 @@ from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMA
 @StoreMapFromParametrizedExpressionToEIMApproximation
 class EIMApproximation(ParametrizedProblem):
 
-    ## Default initialization of members
+    # Default initialization of members
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
-    def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):        
+    def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix)
         # Store the parametrized expression
@@ -60,7 +60,7 @@ class EIMApproximation(ParametrizedProblem):
         self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
         self.cache_config = config.get("EIM", "cache")
         
-    ## Initialize data structures required for the online phase
+    # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
         assert current_stage in ("online", "offline")
         # Read/Initialize reduced order data structures
@@ -126,7 +126,7 @@ class EIMApproximation(ParametrizedProblem):
         else:
             self._interpolation_coefficients = None # OnlineFunction
         
-    ## Call online_solve and then convert the result of online solve from OnlineVector to a tuple
+    # Call online_solve and then convert the result of online solve from OnlineVector to a tuple
     def compute_interpolated_theta(self, N=None):
         interpolated_theta = self.solve(N)
         interpolated_theta_list = list()
@@ -156,17 +156,16 @@ class EIMApproximation(ParametrizedProblem):
         # Return
         return (error, maximum_error, maximum_location)
 
-    ## Export solution to file
+    # Export solution to file
     def export_solution(self, folder, filename, solution=None):
         if solution is None:
             solution = self.snapshot
         export(solution, folder, filename)
         
-    ## Import solution from file
+    # Import solution from file
     def import_solution(self, folder, filename, solution=None):
         if solution is None:
             if self.snapshot is None:
                 self.snapshot = self.parametrized_expression.create_empty_snapshot()
             solution = self.snapshot
         return import_(solution, folder, filename)
-        

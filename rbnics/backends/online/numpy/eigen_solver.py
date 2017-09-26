@@ -72,4 +72,3 @@ class EigenSolver(AbstractEigenSolver):
         eigv_i_real_fun = Function(eigv_i_real)
         eigv_i_imag_fun = Function(eigv_i_imag)
         return (eigv_i_real_fun, eigv_i_imag_fun)
-        

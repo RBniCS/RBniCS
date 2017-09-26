@@ -25,7 +25,7 @@ StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 # Base class containing the definition of saddle point problems
 class StokesProblem(StokesProblem_Base):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         StokesProblem_Base.__init__(self, V, **kwargs)
@@ -76,7 +76,7 @@ class StokesProblem(StokesProblem_Base):
     
     def solve_supremizer(self, solution):
         (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if "RAM" in self.cache_config and cache_key in self._supremizer_cache: 
+        if "RAM" in self.cache_config and cache_key in self._supremizer_cache:
             log(PROGRESS, "Loading supremizer from cache")
             assign(self._supremizer, self._supremizer_cache[cache_key])
         elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file):
@@ -127,7 +127,7 @@ class StokesProblem(StokesProblem_Base):
             component = "s"
         return import_(supremizer, folder, filename + "_" + component, suffix, component)
         
-    ## Export solution to file
+    # Export solution to file
     def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
@@ -170,4 +170,3 @@ class StokesProblem(StokesProblem_Base):
         # Restore and return
         self.components = components_bak
         return combined_and_homogenized_dirichlet_bcs
-            

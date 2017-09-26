@@ -21,12 +21,11 @@
 # (renamed _build_dof_map_writer_mapping).
 # These methods are going to be used when writing vectors and matrices
 # to file. Please refer to the original file for original copyright information.
-# The original implementation of _build_dof_map_reader_mapping, _build_dof_map_writer_mapping 
+# The original implementation of _build_dof_map_reader_mapping, _build_dof_map_writer_mapping
 # and _get_local_dofmap is
 # Copyright (C) 2011 Garth N. Wells
 
 from dolfin import cells
-from mpi4py.MPI import SUM
 
 def build_dof_map_writer_mapping(V, local_dofmap=None):
     def extract_first_cell(mapping_output):
@@ -37,7 +36,7 @@ def build_dof_map_writer_mapping(V, local_dofmap=None):
                 min_global_cell_index = current_global_cell_index
                 min_cell_dof = current_cell_dof
         return (min_global_cell_index, min_cell_dof)
-    if not V in build_dof_map_writer_mapping._storage:
+    if V not in build_dof_map_writer_mapping._storage:
         if local_dofmap is None:
             local_dofmap = _get_local_dofmap(V)
         dof_map_writer_mapping_original = _build_dof_map_writer_mapping(V, local_dofmap)
@@ -49,7 +48,7 @@ def build_dof_map_writer_mapping(V, local_dofmap=None):
 build_dof_map_writer_mapping._storage = dict()
 
 def build_dof_map_reader_mapping(V, local_dofmap=None):
-    if not V in build_dof_map_reader_mapping._storage:
+    if V not in build_dof_map_reader_mapping._storage:
         if local_dofmap is None:
             local_dofmap = _get_local_dofmap(V)
         build_dof_map_reader_mapping._storage[V] = _build_dof_map_reader_mapping(V, local_dofmap)
@@ -71,7 +70,7 @@ def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cel
             for j in range(num_dofs):
                 if gathered_dofmap[i] not in global_dof_to_cell_dof:
                     global_dof_to_cell_dof[gathered_dofmap[i]] = list()
-                global_dof_to_cell_dof[gathered_dofmap[i]].append( [global_cell_index, j] )
+                global_dof_to_cell_dof[gathered_dofmap[i]].append([global_cell_index, j])
                 i += 1
     global_dof_to_cell_dof = mpi_comm.bcast(global_dof_to_cell_dof, root=0)
     return global_dof_to_cell_dof
@@ -80,9 +79,6 @@ def _build_dof_map_reader_mapping(V, gathered_dofmap): # was build_dof_map in do
     mesh = V.mesh()
     mpi_comm = mesh.mpi_comm().tompi4py()
 
-    # Get global number of cells
-    num_cells = mpi_comm.allreduce(mesh.num_cells(), op=SUM)
-    
     # Build global dofmap on root process
     dof_map = dict()
     if mpi_comm.rank == 0:
@@ -119,7 +115,7 @@ def _get_local_dofmap(V):
         global_cell_index = cell.global_index()
         cell_dofs = dofmap.cell_dofs(local_cell_index)
 
-        cell_dofs_global = list();
+        cell_dofs_global = list()
         for cell_dof in cell_dofs:
             cell_dofs_global.append(local_to_global_dof[cell_dof])
         
@@ -137,4 +133,3 @@ def _get_local_dofmap(V):
         return gathered_dofmap_flattened
     else:
         return list()
-    

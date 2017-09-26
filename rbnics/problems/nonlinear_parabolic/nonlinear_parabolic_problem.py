@@ -25,7 +25,7 @@ NonlinearParabolicProblem_Base = NonlinearTimeDependentProblem(NonlinearElliptic
 # Base class containing the definition of parabolic coercive problems
 class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         NonlinearParabolicProblem_Base.__init__(self, V, **kwargs)
@@ -56,4 +56,3 @@ class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
                   assembled_operator["m"]*solution_dot_coefficient
                 + assembled_operator["da"]
             )
-                    

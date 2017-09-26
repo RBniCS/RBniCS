@@ -27,4 +27,3 @@ NonlinearParabolicPODGalerkinReduction_Base = NonlinearTimeDependentPODGalerkinR
 @ReductionMethodFor(NonlinearParabolicProblem, "PODGalerkin")
 class NonlinearParabolicPODGalerkinReduction(NonlinearParabolicPODGalerkinReduction_Base):
     pass
-    

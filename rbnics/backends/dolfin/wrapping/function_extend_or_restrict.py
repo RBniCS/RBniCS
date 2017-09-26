@@ -118,7 +118,7 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
     for (index_V, element_V) in V_sub_elements.items():
         for (index_W, element_W) in W_sub_elements.items():
             if (
-                element_W == element_V 
+                element_W == element_V
                     and
                 not W_sub_elements_used[index_W]
             ):
@@ -138,7 +138,7 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
             
     assert len(W_to_V_mapping) == len(V_sub_elements) # all elements were found
     
-    # Avoid ambiguity that may arise if there were sub elements of W that were not used but had 
+    # Avoid ambiguity that may arise if there were sub elements of W that were not used but had
     # the same element type of used elements
     for (index_W_used, element_W_was_used) in W_sub_elements_used.items():
         if element_W_was_used:
@@ -204,4 +204,3 @@ def _sub_from_tuple(input_, index_as_tuple):
         for i in index_as_tuple:
             input_ = input_.sub(i)
         return input_
-        

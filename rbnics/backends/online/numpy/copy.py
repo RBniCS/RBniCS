@@ -34,4 +34,3 @@ copy_base = basic_copy(backend, wrapping)
 @backend_for("numpy", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), ))
 def copy(arg):
     return copy_base(arg)
-    

@@ -17,7 +17,6 @@
 #
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
-from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 
 def NonlinearEllipticReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
     
@@ -28,4 +27,3 @@ def NonlinearEllipticReductionMethod(EllipticCoerciveReductionMethod_DerivedClas
         
     # return value (a class) for the decorator
     return NonlinearEllipticReductionMethod_Class
-        

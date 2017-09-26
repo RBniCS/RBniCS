@@ -33,4 +33,3 @@ class DiscreteDistribution(Distribution):
                 rounded_mu.append(round(mu[p]/step_size)*step_size)
             rounded_set.append(tuple(rounded_mu))
         return rounded_set
-        

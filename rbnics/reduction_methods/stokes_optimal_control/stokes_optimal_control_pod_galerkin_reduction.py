@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-from rbnics.backends import FunctionsList, ProperOrthogonalDecomposition
+from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
@@ -26,9 +25,9 @@ from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_redu
 StokesOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
 @ReductionMethodFor(StokesOptimalControlProblem, "PODGalerkin")
-class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):    
+class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):
     
-    ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
+    # Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
     def _init_offline(self):
         # We cannot use the standard initialization provided by PODGalerkinReduction because
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code
@@ -48,7 +47,7 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         # Return
         return output
     
-    ## Update the snapshots matrix: overridden version because supremizer POD is different from a standard component
+    # Update the snapshots matrix: overridden version because supremizer POD is different from a standard component
     def update_snapshots_matrix(self, snapshot_and_supremizers):
         assert isinstance(snapshot_and_supremizers, tuple)
         assert len(snapshot_and_supremizers) == 3
@@ -61,7 +60,7 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         for component in ("s", "r"):
             self.POD[component].store_snapshot(supremizer[component])
     
-    ## Compute basis functions performing POD: overridden to handle aggregated spaces
+    # Compute basis functions performing POD: overridden to handle aggregated spaces
     def compute_basis_functions(self):
         # Carry out POD
         Z = dict()
@@ -92,9 +91,8 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
-    def error_analysis(self, N=None, **kwargs):        
+    def error_analysis(self, N=None, **kwargs):
         components = ["v", "p", "u", "w", "q"] # but not supremizers
         kwargs["components"] = components
                 
         StokesOptimalControlPODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
-    

@@ -18,4 +18,3 @@
 
 def tensor_copy(function):
     pass
-

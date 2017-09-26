@@ -26,7 +26,7 @@ def PrimalDualReductionMethod(DualProblem):
         @PreserveClassName
         class PrimalDualReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
     
-            ## Default initialization of members
+            # Default initialization of members
             def __init__(self, truth_problem, **kwargs):
                 # Call the parent initialization
                 DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -49,21 +49,21 @@ def PrimalDualReductionMethod(DualProblem):
                 
             # Propagate the values of all setters also to the dual object
             
-            ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+            # OFFLINE: set maximum reduced space dimension (stopping criterion)
             def set_Nmax(self, Nmax, **kwargs):
                 DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
                 # Set Nmax of dual reduction
                 assert "dual" in kwargs
                 self.dual_reduction_method.set_Nmax(kwargs["dual"], **kwargs)
                 
-            ## OFFLINE: set tolerance (stopping criterion)
+            # OFFLINE: set tolerance (stopping criterion)
             def set_tolerance(self, tol, **kwargs):
                 DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
                 # Set tolerance of dual reduction
                 assert "dual" in kwargs
                 self.dual_reduction_method.set_tolerance(kwargs["dual"], **kwargs)
                 
-            ## OFFLINE: set the elements in the training set.
+            # OFFLINE: set the elements in the training set.
             def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
                 import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
                 # Initialize training set of dual reduction
@@ -71,7 +71,7 @@ def PrimalDualReductionMethod(DualProblem):
                 import_successful_dual = self.dual_reduction_method.initialize_training_set(kwargs["dual"], enable_import, sampling, **kwargs)
                 return import_successful and import_successful_dual
                 
-            ## ERROR ANALYSIS: set the elements in the testing set.
+            # ERROR ANALYSIS: set the elements in the testing set.
             def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
                 import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
                 # Initialize testing set of dual reduction
@@ -79,7 +79,7 @@ def PrimalDualReductionMethod(DualProblem):
                 import_successful_dual = self.dual_reduction_method.initialize_testing_set(kwargs["dual"], enable_import, sampling, **kwargs)
                 return import_successful and import_successful_dual
                 
-            ## Perform the offline phase of the reduced order model
+            # Perform the offline phase of the reduced order model
             def offline(self):
                 # Carry out primal offline stage ...
                 bak_first_mu = self.truth_problem.mu
@@ -141,4 +141,3 @@ def PrimalDualReductionMethod(DualProblem):
         
     # return the decorator itself
     return PrimalDualReductionMethod_Decorator
-    

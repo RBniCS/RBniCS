@@ -20,4 +20,3 @@ def vector_mul_vector(vector1, vector2):
     output = vector1.T.dot(vector2)
     assert output.shape == (1, 1)
     return output.item(0, 0)
-

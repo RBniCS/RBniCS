@@ -17,7 +17,7 @@
 #
 
 from numpy import zeros
-from dolfin import Constant, Function
+from dolfin import Constant
 from rbnics.utils.decorators import get_problem_from_solution
 
 def basic_expression_description(backend, wrapping):

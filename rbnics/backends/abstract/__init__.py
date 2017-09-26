@@ -56,6 +56,7 @@ from rbnics.backends.abstract.vector import Vector
 
 __all__ = [
     'abs',
+    'adjoint',
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',

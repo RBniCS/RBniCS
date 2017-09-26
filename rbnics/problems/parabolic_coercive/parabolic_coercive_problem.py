@@ -25,7 +25,7 @@ ParabolicCoerciveProblem_Base = LinearTimeDependentProblem(EllipticCoerciveProbl
 # Base class containing the definition of parabolic coercive problems
 class ParabolicCoerciveProblem(ParabolicCoerciveProblem_Base):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         ParabolicCoerciveProblem_Base.__init__(self, V, **kwargs)
@@ -56,4 +56,3 @@ class ParabolicCoerciveProblem(ParabolicCoerciveProblem_Base):
                   assembled_operator["m"]*solution_dot_coefficient
                 + assembled_operator["a"]
             )
-                    

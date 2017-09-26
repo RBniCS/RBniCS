@@ -86,56 +86,56 @@ def AffineExpansionStorage(backend, wrapping):
         def _save_content_shape(self, full_directory):
             ContentShapeIO.save_file(self._content.shape, full_directory, "content_shape")
         
-        @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("matrix", full_directory, "content_item_type")
             ContentItemShapeIO.save_file((item.M, item.N), full_directory, "content_item_shape")
         
-        @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("vector", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(item.N, full_directory, "content_item_shape")
         
-        @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("function", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(item.N, full_directory, "content_item_shape")
         
-        @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("scalar", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
         
-        @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("empty", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
         
-        @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 wrapping.tensor_save(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
-        @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 wrapping.tensor_save(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
-        @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 wrapping.function_save(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
-        @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 ScalarContentIO.save_file(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
-        @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             pass
             
@@ -201,7 +201,7 @@ def AffineExpansionStorage(backend, wrapping):
             else: # impossible to arrive here anyway thanks to the assert
                 raise ValueError("Invalid content item type.")
         
-        @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)        
+        @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.tensor_copy(item)
@@ -209,7 +209,7 @@ def AffineExpansionStorage(backend, wrapping):
                 assert tensor_loaded
                 it.iternext()
         
-        @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.tensor_copy(item)
@@ -217,7 +217,7 @@ def AffineExpansionStorage(backend, wrapping):
                 assert tensor_loaded
                 it.iternext()
         
-        @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.function_copy(item)
@@ -225,13 +225,13 @@ def AffineExpansionStorage(backend, wrapping):
                 assert function_loaded
                 it.iternext()
         
-        @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = ScalarContentIO.load_file(full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
-        @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)    
+        @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             pass
             
@@ -252,13 +252,13 @@ def AffineExpansionStorage(backend, wrapping):
                     self._content[it.multi_index]._component_name_to_basis_component_length = self._component_name_to_basis_component_length
                 it.iternext()
         
-        @overload(backend.Matrix.Type(), )        
+        @overload(backend.Matrix.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             slice_0 = tuple(range(item.shape[0]))
             slice_1 = tuple(range(item.shape[1]))
             self._precomputed_slices[(slice_0, slice_1)] = self
         
-        @overload(backend.Vector.Type(), )        
+        @overload(backend.Vector.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             slice_0 = tuple(range(item.shape[0]))
             self._precomputed_slices[(slice_0, )] = self
@@ -306,7 +306,7 @@ def AffineExpansionStorage(backend, wrapping):
                 self._precomputed_slices[slices] = output
                 return output
         
-        @overload((int, tuple_of(int)), )    
+        @overload((int, tuple_of(int)), )
         def __getitem__(self, key):
             """
             return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
@@ -342,7 +342,7 @@ def AffineExpansionStorage(backend, wrapping):
                 item = item.vector()
             assert hasattr(item, "_basis_component_index_to_component_name") == hasattr(item, "_component_name_to_basis_component_index")
             assert hasattr(item, "_component_name_to_basis_component_index") == hasattr(item, "_component_name_to_basis_component_length")
-            if hasattr(item, "_component_name_to_basis_component_index"): 
+            if hasattr(item, "_component_name_to_basis_component_index"):
                 assert isinstance(item, (backend.Matrix.Type(), backend.Vector.Type(), AbstractBasisFunctionsMatrix))
                 assert (self._basis_component_index_to_component_name is None) == (self._component_name_to_basis_component_index is None)
                 assert (self._component_name_to_basis_component_index is None) == (self._component_name_to_basis_component_length is None)

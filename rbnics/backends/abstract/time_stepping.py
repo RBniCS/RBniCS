@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta
-from rbnics.utils.decorators import AbstractBackend, abstractmethod
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class TimeStepping(object, metaclass=ABCMeta):
@@ -71,4 +70,3 @@ class TimeDependentProblem2Wrapper(TimeDependentProblemWrapper):
     @abstractmethod
     def residual_eval(self, t, solution, solution_dot, solution_dot_dot):
         pass
-        

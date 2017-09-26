@@ -59,11 +59,11 @@ def product(thetas, operators, thetas2=None):
         # current operator interface does not provide a 2D len method
         '''
         # Double for loop version:
-        # Profiling has revelead a sensible speedup for large values of N and Q 
+        # Profiling has revelead a sensible speedup for large values of N and Q
         # when compared to the double/triple/quadruple for loop in the legacy version.
         # Vectorized version (below) provides an additional 25%~50% speedup when dealing with
         # the (A, A) Riesz representor products (case of quadruple loop),
-        # while this version introduces overhead when for (F, F) Riesz 
+        # while this version introduces overhead when for (F, F) Riesz
         # representor products (case of double loop).
         output = 0.
         for i in range(len(thetas)):
@@ -107,4 +107,3 @@ def product(thetas, operators, thetas2=None):
 class ProductOutput(object):
     def __init__(self, sum_product_return_value):
         self.sum_product_return_value = sum_product_return_value
-    

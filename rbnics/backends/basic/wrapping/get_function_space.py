@@ -18,4 +18,3 @@
 
 def get_function_space(function_space):
     pass
-

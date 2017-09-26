@@ -34,7 +34,7 @@ class EllipticCoerciveRBReduction(EllipticCoerciveRBReduction_Base):
 # Add dual reduction method if an output is provided in the term "s"
 def _problem_has_output(truth_problem, **kwargs):
     try:
-        theta_s = truth_problem.compute_theta("s")
+        truth_problem.compute_theta("s")
     except ValueError:
         return False
     else:

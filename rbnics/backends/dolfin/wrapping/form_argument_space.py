@@ -24,4 +24,3 @@ def form_argument_space(form, number):
             number_arguments.append(argument)
     assert len(number_arguments) == 1
     return number_arguments[0].function_space()
-    

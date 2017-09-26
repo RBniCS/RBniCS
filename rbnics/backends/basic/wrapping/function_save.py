@@ -18,4 +18,3 @@
 
 def function_save(fun, directory, filename, suffix=None):
     pass
-

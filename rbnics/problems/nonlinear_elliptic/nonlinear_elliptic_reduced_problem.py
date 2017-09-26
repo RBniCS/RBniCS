@@ -18,9 +18,7 @@
 
 from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.problems.base import ParametrizedReducedDifferentialProblem
-from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from rbnics.backends import product, sum
-from rbnics.backends.online import OnlineFunction
 
 def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
     
@@ -54,4 +52,3 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
         
     # return value (a class) for the decorator
     return NonlinearEllipticReducedProblem_Class
-

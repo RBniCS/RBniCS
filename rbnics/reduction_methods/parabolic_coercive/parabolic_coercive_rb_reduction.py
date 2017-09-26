@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from math import sqrt
 from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.base import LinearTimeDependentRBReduction
@@ -30,4 +29,3 @@ ParabolicCoerciveRBReduction_Base = LinearTimeDependentRBReduction(ParabolicCoer
 @ReductionMethodFor(ParabolicCoerciveProblem, "ReducedBasis")
 class ParabolicCoerciveRBReduction(ParabolicCoerciveRBReduction_Base):
     pass
-        

@@ -29,4 +29,3 @@ def LinearTimeDependentReductionMethod(DifferentialProblemReductionMethod_Derive
                 
     # return value (a class) for the decorator
     return LinearTimeDependentReductionMethod_Class
-    

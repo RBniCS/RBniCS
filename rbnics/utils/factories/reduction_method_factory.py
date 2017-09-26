@@ -30,13 +30,13 @@ def ReductionMethodFactory(truth_problem, category, **kwargs):
         "\ttruth problem = " + str(type(truth_problem)) + "\n" +
         "\tcategory = " + str(category) + "\n" +
         "\tkwargs = " + str(kwargs)
-    )
+        )
     if hasattr(type(truth_problem), "ProblemDecorators"):
         log(DEBUG,
-            "\ttruth problem decorators = " + 
-                "\n\t\t".join([str(Decorator) for Decorator in type(truth_problem).ProblemDecorators])
-            + "\n"
-        )
+            "\ttruth problem decorators = " +
+            "\n\t\t".join([str(Decorator) for Decorator in type(truth_problem).ProblemDecorators]) +
+            "\n"
+            )
     
     TypesList = list()
     

@@ -32,4 +32,3 @@ export_base = basic_export(backend, wrapping)
 @backend_for("numpy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
 def export(solution, directory, filename, suffix=None, component=None):
     export_base(solution, directory, filename, suffix, component)
-    

@@ -26,7 +26,7 @@ from rbnics.utils.mpi import log, PROGRESS
 
 class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
 
-    ## Default initialization of members
+    # Default initialization of members
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, term, multiply_by_theta, spectrum, eigensolver_parameters, folder_prefix):
@@ -60,7 +60,7 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         # Store the symmetric part of the required term
         if self.operator is None: # init was not called already
             if isinstance(self.term, tuple):
-                forms = (self.truth_problem.assemble_operator(self.term[0])[ self.term[1] ], )
+                forms = (self.truth_problem.assemble_operator(self.term[0])[self.term[1]], )
             else:
                 assert isinstance(self.term, str)
                 forms = self.truth_problem.assemble_operator(self.term)
@@ -80,7 +80,7 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
                 ==
             (cache_key in self._eigenvector_cache)
         )
-        if "RAM" in self.cache_config and cache_key in self._eigenvalue_cache: 
+        if "RAM" in self.cache_config and cache_key in self._eigenvalue_cache:
             log(PROGRESS, "Loading coercivity constant from cache")
             self._eigenvalue = self._eigenvalue_cache[cache_key]
             assign(self._eigenvector, self._eigenvector_cache[cache_key])
@@ -139,12 +139,12 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
         return (cache_key, cache_file)
         
-    ## Export solution to file
+    # Export solution to file
     def export_solution(self, folder, filename):
         export([self._eigenvalue], folder, filename + "_eigenvalue")
         export(self._eigenvector, folder, filename + "_eigenvector")
         
-    ## Import solution from file
+    # Import solution from file
     def import_solution(self, folder, filename):
         eigenvalue_storage = [0.]
         import_successful = import_(eigenvalue_storage, folder, filename + "_eigenvalue")
@@ -153,4 +153,3 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
             self._eigenvalue = eigenvalue_storage[0]
             import_successful = import_(self._eigenvector, folder, filename + "_eigenvector")
         return import_successful
-        

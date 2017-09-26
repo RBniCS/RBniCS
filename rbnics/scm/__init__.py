@@ -15,20 +15,3 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-
-# Import the minimum subset of RBniCS required to run tutorials
-from rbnics.scm.problems import SCM, ExactCoercivityConstant
-
-__all__ = [
-    # rbnics.scm.problems
-    'SCM',
-    'ExactCoercivityConstant'
-]
-
-# Import also reduced problems and reduction methods to make sure that 
-# decorators that fill in algorithm factories are called, but do not 
-# add them to __all__ since they are not class that should be explicitely
-# used in the tutorials
-from rbnics.scm.problems import SCMDecoratedReducedProblem, ExactCoercivityConstantDecoratedReducedProblem
-from rbnics.scm.reduction_methods import SCMDecoratedReductionMethod, ExactCoercivityConstantDecoratedReductionMethod
-

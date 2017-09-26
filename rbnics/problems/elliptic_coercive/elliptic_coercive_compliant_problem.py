@@ -22,7 +22,7 @@ from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import Elliptic
 # Base class containing the definition of elliptic coercive compliant problems
 class EllipticCoerciveCompliantProblem(EllipticCoerciveProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         EllipticCoerciveProblem.__init__(self, V, **kwargs)
@@ -31,6 +31,6 @@ class EllipticCoerciveCompliantProblem(EllipticCoerciveProblem):
         self.terms.remove("s")
         del self.terms_order["s"]
     
-    ## Perform a truth evaluation of the compliant output
+    # Perform a truth evaluation of the compliant output
     def _compute_output(self):
         self._output = transpose(self._solution)*sum(product(self.compute_theta("f"), self.operator["f"]))

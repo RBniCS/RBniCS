@@ -22,7 +22,7 @@ from rbnics.utils.io.folders import Folders
 from rbnics.utils.io.greedy_error_estimators_list import GreedyErrorEstimatorsList
 from rbnics.utils.io.greedy_selected_parameters_list import GreedySelectedParametersList
 from rbnics.utils.io.numpy_io import NumpyIO
-#from rbnics.utils.io.performance_table import PerformanceTable # not needed, only used internally inside this module
+from rbnics.utils.io.performance_table import PerformanceTable
 from rbnics.utils.io.online_size_dict import OnlineSizeDict
 from rbnics.utils.io.pickle_io import PickleIO
 from rbnics.utils.io.speedup_analysis_table import SpeedupAnalysisTable
@@ -37,6 +37,7 @@ __all__ = [
     'GreedySelectedParametersList',
     'NumpyIO',
     'OnlineSizeDict',
+    'PerformanceTable',
     'PickleIO',
     'SpeedupAnalysisTable',
     'TextIO',

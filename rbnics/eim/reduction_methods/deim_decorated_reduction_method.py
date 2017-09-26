@@ -21,7 +21,7 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApprox
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod as TimeDependentDEIMApproximationReductionMethod
-from rbnics.utils.decorators import exact_problem, PreserveClassName, ReductionMethodDecoratorFor, set_map_from_problem_to_training_status_on
+from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 
 @ReductionMethodDecoratorFor(DEIM)
 def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -48,7 +48,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                         DEIMApproximationReductionMethodType = DEIMApproximationReductionMethod
                     self.DEIM_reductions[term][q] = DEIMApproximationReductionMethodType(DEIM_approximations_term_q)
             
-        ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+        # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set Nmax of DEIM reductions
@@ -56,7 +56,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 DEIM_reduction.set_Nmax(max(DEIM_reduction.Nmax, Nmax_DEIM)) # kwargs are not needed
             self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
             
-        ## OFFLINE: set tolerance (stopping criterion)
+        # OFFLINE: set tolerance (stopping criterion)
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set tolerance of DEIM reductions
@@ -64,7 +64,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 DEIM_reduction.set_tolerance(max(DEIM_reduction.tol, tol_DEIM)) # kwargs are not needed
             self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, float, **kwargs)
             
-        ## OFFLINE: set the elements in the training set.
+        # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
             # Since exact evaluation is required, we cannot use a distributed training set
@@ -75,7 +75,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_DEIM
             
-        ## ERROR ANALYSIS: set the elements in the testing set.
+        # ERROR ANALYSIS: set the elements in the testing set.
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
             # Initialize testing set of DEIM reductions
@@ -109,7 +109,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                         return_value = current_return_value and return_value
             return return_value # an "and" with a None results in None, so this method returns only if necessary
             
-        ## Perform the offline phase of the reduced order model
+        # Perform the offline phase of the reduced order model
         def offline(self):
             if "offline" not in self.truth_problem._apply_DEIM_at_stages:
                 assert hasattr(self.truth_problem, "_apply_exact_approximation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
@@ -126,10 +126,10 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         def error_analysis(self, N=None, **kwargs):
             # Perform first the DEIM error analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t. 
-                                                # an exact parametrized functions, 
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
+                                                # an exact parametrized functions,
                                                 # so he probably is not interested in the error analysis of DEIM
-                    and 
+                    and
                 (
                     "DEIM" not in kwargs        # otherwise we assume the user was interested in computing the error for a fixed number of DEIM basis
                                                 # functions, thus he has already carried out the error analysis of DEIM
@@ -150,8 +150,8 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         def speedup_analysis(self, N=None, **kwargs):
             # Perform first the DEIM speedup analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t. 
-                                                # an exact parametrized functions, 
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
+                                                # an exact parametrized functions,
                                                 # so he probably is not interested in the speedup analysis of DEIM
                     and
                 (
@@ -171,4 +171,3 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         
     # return value (a class) for the decorator
     return DEIMDecoratedReductionMethod_Class
-    

@@ -23,7 +23,7 @@ def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
     @PreserveClassName
     class DualProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         
-        ## Default initialization of members.
+        # Default initialization of members.
         @sync_setters("primal_problem", "set_mu", "mu")
         @sync_setters("primal_problem", "set_mu_range", "mu_range")
         def __init__(self, primal_problem):
@@ -41,4 +41,3 @@ def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
             
     # return value (a class) for the decorator
     return DualProblem_Class
-    

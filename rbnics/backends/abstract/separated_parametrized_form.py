@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta
-from rbnics.utils.decorators import AbstractBackend, abstractmethod, abstractproperty
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod, abstractproperty
 
 @AbstractBackend
 class SeparatedParametrizedForm(object, metaclass=ABCMeta):
@@ -28,7 +27,7 @@ class SeparatedParametrizedForm(object, metaclass=ABCMeta):
     def separate(self):
         pass
 
-    @abstractproperty        
+    @abstractproperty
     def coefficients(self):
         pass
     
@@ -36,11 +35,10 @@ class SeparatedParametrizedForm(object, metaclass=ABCMeta):
     def unchanged_forms(self):
         pass
 
-    @abstractmethod        
+    @abstractmethod
     def replace_placeholders(self, i, new_coefficients):
         pass
     
     @abstractmethod
     def placeholders_names(self, i):
         pass
-

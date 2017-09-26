@@ -18,4 +18,3 @@
 
 def function_copy(function):
     pass
-

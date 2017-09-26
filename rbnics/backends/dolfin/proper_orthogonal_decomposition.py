@@ -20,7 +20,6 @@ from ufl import Form
 from dolfin import FunctionSpace
 from rbnics.backends.abstract import ProperOrthogonalDecomposition as AbstractProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicProperOrthogonalDecomposition
-from rbnics.backends.dolfin.eigen_solver import EigenSolver
 from rbnics.backends.dolfin.functions_list import FunctionsList
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.snapshots_matrix import SnapshotsMatrix
@@ -42,4 +41,3 @@ class ProperOrthogonalDecomposition(ProperOrthogonalDecomposition_Base):
         
     def store_snapshot(self, snapshot, component=None, weight=None):
         self.snapshots_matrix.enrich(snapshot, component, weight)
-        

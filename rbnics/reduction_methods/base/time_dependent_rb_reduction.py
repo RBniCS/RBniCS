@@ -18,7 +18,7 @@
 
 from math import sqrt
 from numbers import Number
-from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature, transpose
+from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
@@ -31,7 +31,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
     @PreserveClassName
     class TimeDependentRBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -50,13 +50,13 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # POD-Greedy tolerances. Since we use a POD for each component, it makes sense to possibly have
             # different tolerances for each component.
             if len(self.truth_problem.components) > 1:
-                self.tol1 = {component:0. for component in self.truth_problem.components}
-                self.tol2 = {component:0. for component in self.truth_problem.components}
+                self.tol1 = {component: 0. for component in self.truth_problem.components}
+                self.tol2 = {component: 0. for component in self.truth_problem.components}
             else:
                 self.tol1 = 0.
                 self.tol2 = 0.
                 
-        ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+        # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set POD-Greedy sizes
@@ -75,7 +75,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     self.POD_greedy_basis_extension = "orthogonal"
                 self.N1 = kwargs["POD_Greedy"]
                 
-        ## OFFLINE: set tolerance (stopping criterion)
+        # OFFLINE: set tolerance (stopping criterion)
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set POD-Greedy tolerance
@@ -103,8 +103,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 assert isinstance(tol, (dict, Number))
                 if isinstance(tol, dict):
                     for component in self.truth_problem.components:
-                        if all_components_in_dict:
-                            assert component in tol, "You need to specify the tolerance of all components in tolerance dictionary" 
+                        assert component in tol, "You need to specify the tolerance of all components in tolerance dictionary"
                 else:
                     tol_number = tol
                     tol = dict()
@@ -120,7 +119,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
             return tol
         
-        ## Initialize data structures required for the offline phase
+        # Initialize data structures required for the offline phase
         def _init_offline(self):
             # Call parent to initialize inner product
             output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
@@ -149,7 +148,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Return
             return output
             
-        ## Update basis matrix by POD-Greedy
+        # Update basis matrix by POD-Greedy
         def update_basis_matrix(self, snapshot_over_time):
             snapshot_over_time = snapshot_over_time[self.reduction_first_index:self.reduction_last_index:self.reduction_delta_index]
             
@@ -243,7 +242,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 POD_basis.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
                 POD_basis.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
             
-            # Finally, we need to clear out previously computed Riesz representors for bilinear forms, 
+            # Finally, we need to clear out previously computed Riesz representors for bilinear forms,
             # because POD-Greedy basis are not hierarchical from one greedy iteration to the next one
             for term in self.reduced_problem.riesz_terms:
                 if self.reduced_problem.terms_order[term] > 1:
@@ -253,7 +252,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Return
             return (Z2, N_plus_N2)
         
-        ## Choose the next parameter in the offline stage in a greedy fashion
+        # Choose the next parameter in the offline stage in a greedy fashion
         def _greedy(self):
             
             # Print some additional information related to the current value of the parameter
@@ -321,4 +320,3 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
         
     # return value (a class) for the decorator
     return TimeDependentRBReduction_Class
-    

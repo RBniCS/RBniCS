@@ -18,8 +18,8 @@
 
 # Check that dolfin has been compiled with PETSc and SLEPc
 from dolfin import has_petsc, has_linear_algebra_backend, parameters, has_slepc
-assert has_petsc() 
-assert has_linear_algebra_backend("PETSc") 
+assert has_petsc()
+assert has_linear_algebra_backend("PETSc")
 assert parameters.linear_algebra_backend == "PETSc"
 assert has_slepc()
 

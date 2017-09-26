@@ -22,7 +22,7 @@ import types
 from math import sqrt
 from numpy import isclose
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
-from rbnics.backends import AffineExpansionStorage, assign, BasisFunctionsMatrix, copy, product, sum, transpose
+from rbnics.backends import assign, BasisFunctionsMatrix, copy, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
 from rbnics.utils.config import config
 from rbnics.utils.decorators import StoreMapFromProblemToReducedProblem, sync_setters
@@ -35,7 +35,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
     Base class containing the interface of a projection based ROM for elliptic coercive problems.
     Initialization of dimension of reduced problem N, boundary conditions, terms and their order, number of terms in the affine expansion Q, reduced operators and inner products, reduced solution, reduced basis functions matrix.
     
-    :param truth_problem: class of the truth problem to be solved. 
+    :param truth_problem: class of the truth problem to be solved.
     """
     
     @sync_setters("truth_problem", "set_mu", "mu")
@@ -239,11 +239,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             # Save basis functions matrix, that contains up to now only lifting functions
             self.Z.save(self.folder["basis"], "basis")
             # Properly fill in self.N_bc
-            total_N_bc = 0
             if n_components == 1:
                 self.N = 0
                 self.N_bc = len(self.Z)
-                total_N_bc = self.N_bc
             else:
                 N = dict()
                 N_bc = dict()
@@ -252,7 +250,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     N_bc[component] = len(self.Z[component])
                 self.N = OnlineSizeDict(N)
                 self.N_bc = OnlineSizeDict(N_bc)
-                total_N_bc = sum(tuple(N_bc.values()))
             # Note that, however, self.N is not increased, so it will actually contain the number
             # of basis functions without the lifting ones.
         else:
@@ -279,7 +276,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         
         :param N : Dimension of the reduced problem
         :type N : integer
-        :return: reduced solution 
+        :return: reduced solution
         """
         N, kwargs = self._online_size_from_kwargs(N, **kwargs)
         N += self.N_bc
@@ -385,7 +382,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 all_components_in_kwargs = self.components[0] in kwargs
                 for component in self.components:
                     if all_components_in_kwargs:
-                        assert component in kwargs, "You need to specify the online size of all components in kwargs" 
+                        assert component in kwargs, "You need to specify the online size of all components in kwargs"
                     else:
                         assert component not in kwargs, "You need to specify the online size of all components in kwargs"
                 if all_components_in_kwargs:
@@ -646,7 +643,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         """
         return self.truth_problem.compute_theta(term)
         
-    ## Assemble the reduced order affine expansion
+    # Assemble the reduced order affine expansion
     def assemble_operator(self, term, current_stage="online"):
         """
         Terms and respective thetas are assembled.
@@ -656,10 +653,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         """
         assert current_stage in ("online", "offline")
         if current_stage == "online": # load from file
-            # Note that it would not be needed to return the loaded operator in 
+            # Note that it would not be needed to return the loaded operator in
             # init(), since it has been already modified in-place. We do this, however,
-            # because we want this interface to be compatible with the one in 
-            # EllipticCoerciveProblem, i.e. we would like to be able to use a reduced 
+            # because we want this interface to be compatible with the one in
+            # EllipticCoerciveProblem, i.e. we would like to be able to use a reduced
             # problem also as a truth problem for a nested reduction
             if term in self.terms:
                 if term not in self.operator:
@@ -704,8 +701,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             else:
                 raise ValueError("Invalid term for assemble_operator().")
         elif current_stage == "offline":
-            # As in the previous case, there is no need to return anything because 
-            # we are still training the reduced order model, so the previous remark 
+            # As in the previous case, there is no need to return anything because
+            # we are still training the reduced order model, so the previous remark
             # (on the usage of a reduced problem as a truth one) cannot hold here.
             # However, in order to have a consistent interface we return the assembled
             # operator
@@ -772,7 +769,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 if has_non_homogeneous_dirichlet_bc:
                     # Compute lifting functions for the value of mu possibly provided by the user
                     Q_dirichlet_bcs = len(self.compute_theta(term))
-                    # Temporarily override compute_theta method to return only one nonzero 
+                    # Temporarily override compute_theta method to return only one nonzero
                     # theta term related to boundary conditions
                     standard_compute_theta = self.truth_problem.compute_theta
                     for i in range(Q_dirichlet_bcs):
@@ -806,7 +803,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             raise ValueError("Invalid stage in assemble_operator().")
     
     def _lifting_truth_solve(self, term, i):
-        # Since lifting solves for different values of i are associated to the same parameter 
+        # Since lifting solves for different values of i are associated to the same parameter
         # but with a patched call to compute_theta(), which returns the i-th component, we set
         # a custom cache_key so that they are properly differentiated when reading from cache.
         lifting = self.truth_problem.solve(cache_key="lifting_" + str(i))
@@ -818,4 +815,3 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         Return a lower bound for the coercivity constant.
         """
         return self.truth_problem.get_stability_factor()
-    

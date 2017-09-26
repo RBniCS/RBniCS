@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from petsc4py import PETSc
 from dolfin import as_backend_type
 
 def matrix_mul_vector(matrix, vector):

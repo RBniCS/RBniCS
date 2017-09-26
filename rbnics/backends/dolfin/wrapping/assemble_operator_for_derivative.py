@@ -30,4 +30,3 @@ def assemble_operator_for_derivative(jacobian_term_to_residual_term):
             
         return assemble_operator_for_derivative_decorator_impl
     return assemble_operator_for_derivative_decorator
-        

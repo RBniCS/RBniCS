@@ -30,4 +30,3 @@ def ShapeParametrizationDecoratedReductionMethod(DifferentialProblemReductionMet
         
     # return value (a class) for the decorator
     return ShapeParametrizationDecoratedReductionMethod_Class
-    

@@ -30,13 +30,13 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
     @PreserveClassName
     class TimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Compress first time trajectory (for each mu) and then parameter dependence
-            # at the end of the offline stage, or carry out only one compression at the 
+            # at the end of the offline stage, or carry out only one compression at the
             # end of the offline stage
             self.nested_POD = False # by default only one compression
             self.POD_time_trajectory = None # ProperOrthogonalDecomposition (for problems with one component) or dict of ProperOrthogonalDecomposition (for problem with several components)
@@ -45,11 +45,11 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             # POD-Greedy tolerances. Since we use a POD for each component, it makes sense to possibly have
             # different tolerances for each component.
             if len(self.truth_problem.components) > 1:
-                self.tol1 = {component:0. for component in self.truth_problem.components}
+                self.tol1 = {component: 0. for component in self.truth_problem.components}
             else:
                 self.tol1 = 0.
                 
-        ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+        # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set nested POD sizes
@@ -57,7 +57,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 self.nested_POD = True
                 self.N1 = kwargs["nested_POD"]
                 
-        ## OFFLINE: set tolerance (stopping criterion)
+        # OFFLINE: set tolerance (stopping criterion)
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set nested POD tolerance
@@ -70,8 +70,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 assert isinstance(tol, (dict, Number))
                 if isinstance(tol, dict):
                     for component in self.truth_problem.components:
-                        if all_components_in_dict:
-                            assert component in tol, "You need to specify the tolerance of all components in tolerance dictionary" 
+                        assert component in tol, "You need to specify the tolerance of all components in tolerance dictionary"
                 else:
                     tol_number = tol
                     tol = dict()
@@ -87,7 +86,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             
             return tol
             
-        ## Initialize data structures required for the offline phase
+        # Initialize data structures required for the offline phase
         def _init_offline(self):
             # Call parent to initialize inner product
             output = DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
@@ -108,7 +107,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             # Return
             return output
         
-        ## Update the snapshots matrix
+        # Update the snapshots matrix
         def update_snapshots_matrix(self, snapshot_over_time):
             snapshot_over_time = snapshot_over_time[self.reduction_first_index:self.reduction_last_index:self.reduction_delta_index]
             
@@ -173,4 +172,3 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
         
     # return value (a class) for the decorator
     return TimeDependentPODGalerkinReduction_Class
-    

@@ -19,7 +19,6 @@
 from dolfin import FunctionSpace
 from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
-from rbnics.backends.dolfin.eigen_solver import EigenSolver
 from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
 from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
 from rbnics.backends.dolfin.transpose import transpose

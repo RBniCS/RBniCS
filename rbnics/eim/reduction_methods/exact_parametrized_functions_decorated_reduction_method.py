@@ -17,7 +17,7 @@
 #
 
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
-from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
+from rbnics.eim.problems import ExactParametrizedFunctions
 
 @ReductionMethodDecoratorFor(ExactParametrizedFunctions)
 def ExactParametrizedFunctionsDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -36,4 +36,3 @@ def ExactParametrizedFunctionsDecoratedReductionMethod(DifferentialProblemReduct
             
     # return value (a class) for the decorator
     return ExactParametrizedFunctionsDecoratedReductionMethod_Class
-    

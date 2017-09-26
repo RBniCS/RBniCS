@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta, abstractmethod
 from math import sqrt
 from rbnics.backends import GramSchmidt
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
@@ -24,12 +23,12 @@ from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.mpi import log, DEBUG
 
 @RequiredBaseDecorators(None)
-def RBReduction(DifferentialProblemReductionMethod_DerivedClass):    
+def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
     
     @PreserveClassName
-    class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass, metaclass=ABCMeta):
+    class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         """
-        Abstract class. The folders used to store the snapshots and for the post processing data, the parameters for the greedy algorithm and the error estimator evaluations are initialized.
+        The folders used to store the snapshots and for the post processing data, the parameters for the greedy algorithm and the error estimator evaluations are initialized.
         
         :param truth_problem: class of the truth problem to be solved.
         :return: reduced RB class.
@@ -67,7 +66,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 
             # The current value of mu may have been already used when computing lifting functions.
             # If so, we do not want to use that value again at the first greedy iteration, because
-            # for steady linear problems with only one paremtrized BC the resulting first snapshot 
+            # for steady linear problems with only one paremtrized BC the resulting first snapshot
             # would have been already stored in the basis, being exactly equal to the lifting.
             # To this end, we arbitrarily change the current value of mu to the first parameter
             # in the training set.
@@ -150,7 +149,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             """
             It updates basis matrix.
             
-            :param snapshot: last offline solution calculated. 
+            :param snapshot: last offline solution calculated.
             """
             if len(self.truth_problem.components) > 1:
                 for component in self.truth_problem.components:
@@ -178,7 +177,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
             return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
             
-        
         def _greedy(self):
             """
             It chooses the next parameter in the offline stage in a greedy fashion. Internal method.
@@ -268,31 +266,25 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                             error_analysis_table["relative_error_" + component, n, run] = relative_error[component]
                         error_analysis_table["error_" + all_components_string, n, run] = sqrt(sum([error[component]**2 for component in components]))
                         error_analysis_table["error_estimator_" + all_components_string, n, run] = error_estimator
-                        error_analysis_table["effectivity_" + all_components_string, n, run] = \
-                            error_analysis_table["error_estimator_" + all_components_string, n, run]/error_analysis_table["error_" + all_components_string, n, run]
+                        error_analysis_table["effectivity_" + all_components_string, n, run] = error_analysis_table["error_estimator_" + all_components_string, n, run]/error_analysis_table["error_" + all_components_string, n, run]
                         error_analysis_table["relative_error_" + all_components_string, n, run] = sqrt(sum([relative_error[component]**2 for component in components]))
                         error_analysis_table["relative_error_estimator_" + all_components_string, n, run] = relative_error_estimator
-                        error_analysis_table["relative_effectivity_" + all_components_string, n, run] = \
-                            error_analysis_table["relative_error_estimator_" + all_components_string, n, run]/error_analysis_table["relative_error_" + all_components_string, n, run]
+                        error_analysis_table["relative_effectivity_" + all_components_string, n, run] = error_analysis_table["relative_error_estimator_" + all_components_string, n, run]/error_analysis_table["relative_error_" + all_components_string, n, run]
                     else:
                         component = components[0]
                         error_analysis_table["error_" + component, n, run] = error
                         error_analysis_table["error_estimator_" + component, n, run] = error_estimator
-                        error_analysis_table["effectivity_" + component, n, run] = \
-                            error_analysis_table["error_estimator_" + component, n, run]/error_analysis_table["error_" + component, n, run]
+                        error_analysis_table["effectivity_" + component, n, run] = error_analysis_table["error_estimator_" + component, n, run]/error_analysis_table["error_" + component, n, run]
                         error_analysis_table["relative_error_" + component, n, run] = relative_error
                         error_analysis_table["relative_error_estimator_" + component, n, run] = relative_error_estimator
-                        error_analysis_table["relative_effectivity_" + component, n, run] = \
-                            error_analysis_table["relative_error_estimator_" + component, n, run]/error_analysis_table["relative_error_" + component, n, run]
+                        error_analysis_table["relative_effectivity_" + component, n, run] = error_analysis_table["relative_error_estimator_" + component, n, run]/error_analysis_table["relative_error_" + component, n, run]
                     
                     error_analysis_table["error_output", n, run] = self.reduced_problem.compute_error_output(n, **kwargs)
                     error_analysis_table["error_estimator_output", n, run] = self.reduced_problem.estimate_error_output()
-                    error_analysis_table["effectivity_output", n, run] = \
-                        error_analysis_table["error_estimator_output", n, run]/error_analysis_table["error_output", n, run]
+                    error_analysis_table["effectivity_output", n, run] = error_analysis_table["error_estimator_output", n, run]/error_analysis_table["error_output", n, run]
                     error_analysis_table["relative_error_output", n, run] = self.reduced_problem.compute_relative_error_output(n, **kwargs)
                     error_analysis_table["relative_error_estimator_output", n, run] = self.reduced_problem.estimate_relative_error_output()
-                    error_analysis_table["relative_effectivity_output", n, run] =  \
-                        error_analysis_table["relative_error_estimator_output", n, run]/error_analysis_table["relative_error_output", n, run]
+                    error_analysis_table["relative_effectivity_output", n, run] = error_analysis_table["relative_error_estimator_output", n, run]/error_analysis_table["relative_error_output", n, run]
             
             # Print
             print("")
@@ -377,4 +369,3 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
         
     # return value (a class) for the decorator
     return RBReduction_Class
-    

@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta
-from rbnics.utils.decorators import AbstractBackend, abstractmethod
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class NonlinearSolver(object, metaclass=ABCMeta):
@@ -44,4 +43,3 @@ class NonlinearProblemWrapper(object, metaclass=ABCMeta):
     @abstractmethod
     def bc_eval(self):
         pass
-        

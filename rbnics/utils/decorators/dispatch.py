@@ -19,10 +19,11 @@
 import inspect
 import itertools
 from numpy import ndarray as array
+import multipledispatch.conflict
 from multipledispatch.core import dispatch as original_dispatch, ismethod
-from multipledispatch.dispatcher import Dispatcher as OriginalDispatcher, halt_ordering as original_halt_ordering, restart_ordering as original_restart_ordering, str_signature as original_str_signature
+from multipledispatch.dispatcher import Dispatcher as OriginalDispatcher, halt_ordering as original_halt_ordering, restart_ordering as original_restart_ordering
 
-## Signature to string
+# == Signature to string == #
 def str_signature(sig):
     str_sig = ", ".join(c.__name__ if isinstance(c, type) else str(c) for c in sig)
     if not bool(str_sig): # empty string
@@ -30,7 +31,7 @@ def str_signature(sig):
     else:
         return str_sig
         
-## Exception for unavailable signature
+# == Exception for unavailable signature == #
 class UnavailableSignatureError(NotImplementedError):
     def __init__(self, name, available_signatures, unavailable_signature):
         error_message = "Could not find signature for " + name + ".\n"
@@ -41,7 +42,7 @@ class UnavailableSignatureError(NotImplementedError):
         error_message += "\t" + str_signature(unavailable_signature) + "\n"
         NotImplementedError.__init__(self, error_message)
 
-## Exception for ambiguous signature
+# == Exception for ambiguous signature == #
 class AmbiguousSignatureError(NotImplementedError):
     def __init__(self, name, available_signatures, ambiguous_signatures):
         error_message = "Could not find signature for " + name + ".\n"
@@ -54,7 +55,7 @@ class AmbiguousSignatureError(NotImplementedError):
         NotImplementedError.__init__(self, error_message)
         
 def ambiguity_error(dispatcher, ambiguities):
-    """ 
+    """
     Raise error when ambiguity is detected
     Parameters
     ----------
@@ -65,7 +66,7 @@ def ambiguity_error(dispatcher, ambiguities):
     """
     raise AmbiguousSignatureError(dispatcher.name, dispatcher.funcs.keys(), ambiguities)
     
-## Exception for invalid signature
+# == Exception for invalid signature == #
 class InvalidSignatureError(TypeError):
     def __init__(self, name, invalid_signature):
         str_sig = str_signature(invalid_signature)
@@ -74,9 +75,10 @@ class InvalidSignatureError(TypeError):
         error_message += "\t" + str_sig + "\n"
         TypeError.__init__(self, error_message)
 
-## Customize Dispatcher
+# == Customize Dispatcher == #
 class Dispatcher(OriginalDispatcher):
     __slots__ = '__name__', 'name', 'funcs', 'ordering', '_cache', 'doc', 'signature_to_provided_signature' # extended with new private members
+    
     def __init__(self, name, doc=None):
         OriginalDispatcher.__init__(self, name, doc)
         self.signature_to_provided_signature = dict()
@@ -125,7 +127,7 @@ class Dispatcher(OriginalDispatcher):
                         return replaces(*args, **kwargs)
                 self.funcs[types] = conditional_func
                 self.signature_to_provided_signature[types] = provided_signature
-    add.__doc__  = OriginalDispatcher.add.__doc__ + \
+    add.__doc__ = OriginalDispatcher.add.__doc__ + \
         """
         
         This is a customization of the Dispatcher.add method provided by the multipledispatch
@@ -152,7 +154,7 @@ class Dispatcher(OriginalDispatcher):
                 raise UnavailableSignatureError(self.name, self.funcs.keys(), types)
             self._cache[types] = func
         return func
-    _get_func.__doc__  = \
+    _get_func.__doc__ = \
         """
         This is a customization required by Dispatcher.__call__ method so that:
             * get_types() function is used to get input types. This handles the case of
@@ -166,7 +168,7 @@ class Dispatcher(OriginalDispatcher):
             if supercedes(types, signature):
                 result = self.funcs[signature]
                 yield result
-    dispatch_iter.__doc__  = \
+    dispatch_iter.__doc__ = \
         """
         This is a customization of the Dispatcher.dispatch_iter method provided by the multipledispatch
         package so that the custom implementation of supercedes() is used
@@ -177,7 +179,7 @@ class Dispatcher(OriginalDispatcher):
         return OriginalDispatcher.__doc__.fget(self) # properties are not inherited
 
         
-## Customize MethodDispatcher
+# == Customize MethodDispatcher == #
 class MethodDispatcher_Wrapper(object):
     __slots__ = 'name', 'standard_funcs', 'lambda_funcs', 'dispatchers'
     
@@ -236,6 +238,7 @@ class MethodDispatcher_Wrapper(object):
         
 class MethodDispatcher(Dispatcher):
     __slots__ = '__name__', 'name', 'funcs', 'ordering', '_cache', 'doc', 'signature_to_provided_signature', 'origin', 'obj' # extended with new private members
+    
     def __init__(self, origin, cls, name, doc=None):
         Dispatcher.__init__(self, name, doc)
         self.origin = origin
@@ -288,7 +291,7 @@ class MethodDispatcher(Dispatcher):
     def __doc__(self):
         return Dispatcher.__doc__.fget(self) # properties are not inherited
 
-## Customize @dispatch
+# == Customize @dispatch == #
 def dispatch(*types, **kwargs):
     name = kwargs.get("name", None)
     module_kwarg = kwargs.get("module", None)
@@ -350,7 +353,7 @@ dispatch.__doc__ = original_dispatch.__doc__ + \
     """
     
     This is a customized version of the @dispatch decorator provided by the
-    multipledispatch package, such that an optional module kwarg is passed 
+    multipledispatch package, such that an optional module kwarg is passed
     (instead of the namespace one).
         * if the object to be dispatched is a class, then
             -> @dispatch returns the original class
@@ -359,7 +362,7 @@ dispatch.__doc__ = original_dispatch.__doc__ + \
             -> the module kwarg should not contain the module in which the
                class would define, otherwise the dispatched class would be
                overwritten by the original one
-          The typical case here is the implementation of a class of RBniCS 
+          The typical case here is the implementation of a class of RBniCS
           backends
             -> we would like the return type to be the original class,
                in order to be able to use it for inheritance
@@ -383,7 +386,7 @@ dispatch.__doc__ = original_dispatch.__doc__ + \
                   #> we would like the return type to be the dispatched function,
                      because we import the dispatched (basic) function in order
                      to properly implement the concrete backend
-                  #> we do not mind saving the dispatched (basic) function in any 
+                  #> we do not mind saving the dispatched (basic) function in any
                      module, since it will not be called from any user code and
                      so it should not be saved in rbnics.backends
             -> if the module kwarg is non empty
@@ -397,8 +400,8 @@ dispatch.__doc__ = original_dispatch.__doc__ + \
                      module
     """
     
-## Define an @overload to be used for method dispatch, in order to have a more expressive name
-## that hides the details of the implementation
+# == Define an @overload to be used for method dispatch, in order to have a more expressive name == #
+# == that hides the details of the implementation                                                == #
 def overload(*args, **kwargs):
     if len(args) == 1 and inspect.isfunction(args[0]) and not islambda(args[0]) and len(kwargs) == 0:
         # called as @overload
@@ -407,7 +410,7 @@ def overload(*args, **kwargs):
         # called as @overload(*args, **kwargs)
         return dispatch(*args, **kwargs)
 
-## Replacements for array, dict, list, tuple that allow to specify content input types
+# == Replacements for array, dict, list, tuple that allow to specify content input types == #
 class _array_or_list_or_set_of_or_tuple_of(object):
     def __init__(self, types):
         self.types = types
@@ -492,7 +495,7 @@ def tuple_of(types):
         _all_tuple_of_instances[types_set] = _tuple_of(types)
     return _all_tuple_of_instances[types_set]
     
-## Validation that no array, dict, list, tuple are provided as types to @dispatch
+# == Validation that no array, dict, list, tuple are provided as types to @dispatch == #
 def validate_types(inputs, allow_lambda):
     for input_ in inputs:
         type_input_ = type(input_)
@@ -509,10 +512,10 @@ def validate_types(inputs, allow_lambda):
             assert input_ is not set, "Please use set_of defined in this module to specify the type of each element"
             assert input_ is not tuple, "Please use tuple_of defined in this module to specify the type of each element"
             assert (
-                inspect.isclass(input_) 
-                    or 
-                isinstance(input_, (_array_of, _dict_of, _list_of, _set_of, _tuple_of)) 
-                    or 
+                inspect.isclass(input_)
+                    or
+                isinstance(input_, (_array_of, _dict_of, _list_of, _set_of, _tuple_of))
+                    or
                 input_ is None
                     or
                 (
@@ -522,7 +525,7 @@ def validate_types(inputs, allow_lambda):
                 )
             )
 
-## Get types for provided inputs
+# == Get types for provided inputs == #
 def get_types(inputs):
     inputs = remove_trailing_None(inputs)
     types = list()
@@ -565,7 +568,7 @@ def get_types(inputs):
     types = tuple(types)
     return types
     
-## Customize tuple expansion to handle array_of, dict_of, list_of, set_of, tuple_of
+# == Customize tuple expansion to handle array_of, dict_of, list_of, set_of, tuple_of == #
 def expand_tuples(L):
     if not L:
         output = {()}
@@ -600,8 +603,7 @@ _generator_of = {
     _tuple_of: tuple_of
 }
 
-## Customize conflict operators to handle array_of, dict_of, list_of, set_of, tuple_of
-import multipledispatch.conflict
+# == Customize conflict operators to handle array_of, dict_of, list_of, set_of, tuple_of == #
 def supercedes(A, B):
     """ A is consistent and strictly more specific than B """
     assert isinstance(A, (list, tuple))
@@ -693,7 +695,7 @@ def consistent(A, B):
             return True
 multipledispatch.conflict.consistent = consistent
 
-## Halt and restart ordering, possibly recursively
+# == Halt and restart ordering, possibly recursively == #
 def halt_ordering():
     global _halt_ordering_called
     if _halt_ordering_called == 0:
@@ -709,7 +711,7 @@ def restart_ordering(on_ambiguity=ambiguity_error):
     
 _halt_ordering_called = 0
 
-## Helper function to remove trailing None arguments (used as default arguments)
+# == Helper function to remove trailing None arguments (used as default arguments) == #
 def remove_trailing_None(types):
     if isinstance(types, set):
         assert None not in types
@@ -721,15 +723,15 @@ def remove_trailing_None(types):
             i -= 1
         return types[:i]
     
-## Helper function to create itertools.powerset without empty tuple
+# == Helper function to create itertools.powerset without empty tuple == #
 def powerset(types):
     if not isinstance(types, (list, tuple)):
         types = (types, )
     return itertools.chain.from_iterable(itertools.combinations(types, r) for r in range(1, len(types)+1))
     
-## Helper function to determine if function is a lambda function
+# == Helper function to determine if function is a lambda function == #
 def islambda(arg):
-  return isinstance(arg, _reference_lambda_type) and arg.__name__ == _reference_lambda_name
+    return isinstance(arg, _reference_lambda_type) and arg.__name__ == _reference_lambda_name
 _reference_lambda = lambda: 0
 _reference_lambda_type = type(_reference_lambda)
 _reference_lambda_name = _reference_lambda.__name__

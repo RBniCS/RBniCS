@@ -17,15 +17,15 @@
 #
 
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
-from rbnics.backends import Function, LinearSolver, product, sum, transpose
+from rbnics.backends import product, sum, transpose
 
 EllipticOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
 # Base class containing the definition of saddle point problems
 class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
     """
-    The problem to be solved is 
-        min {J(y, u) = 1/2 m(y - y_d, y - y_d) + 1/2 n(u, u)} 
+    The problem to be solved is
+        min {J(y, u) = 1/2 m(y - y_d, y - y_d) + 1/2 n(u, u)}
         y in Y, u in U
         s.t.
         a(y, q) = c(u, q) + <f, q>      for all q in Q = Y
@@ -45,7 +45,7 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
         h = m(y_d, y_d)
     """
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         EllipticOptimalControlProblem_Base.__init__(self, V, **kwargs)
@@ -53,7 +53,7 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
         # Form names for saddle point problems
         self.terms = ["a", "a*", "c", "c*", "m", "n", "f", "g", "h"]
         self.terms_order = {
-            "a": 2, "a*": 2, 
+            "a": 2, "a*": 2,
             "c": 2, "c*": 2,
             "m": 2, "n": 2,
             "f": 1, "g": 1,
@@ -84,15 +84,14 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
                 + assembled_operator["f"]
             )
                     
-    ## Perform a truth evaluation of the cost functional
+    # Perform a truth evaluation of the cost functional
     def _compute_output(self):
         assembled_operator = dict()
         for term in ("g", "h", "m", "n"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         self._output = (
-            0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 
-            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) - 
-            transpose(assembled_operator["g"])*self._solution + 
+            0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
+            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
+            transpose(assembled_operator["g"])*self._solution +
             0.5*assembled_operator["h"]
         )
-    

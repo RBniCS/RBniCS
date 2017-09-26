@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import isclose
 from petsc4py import PETSc
 from ufl import Form
 from dolfin import as_backend_type, assemble, DirichletBC, Function, FunctionSpace, PETScMatrix, PETScVector, SLEPcEigenSolver
@@ -89,7 +88,7 @@ class EigenSolver(AbstractEigenSolver):
     def _condense_matrix(self, mat):
         mat = as_backend_type(mat)
         
-        petsc_version = PETSc.Sys().getVersionInfo() 
+        petsc_version = PETSc.Sys().getVersionInfo()
         if petsc_version["major"] == 3 and petsc_version["minor"] <= 7 and petsc_version["release"] is True:
             condensed_mat = mat.mat().getSubMatrix(self._is, self._is)
         else:
@@ -127,7 +126,7 @@ class EigenSolver(AbstractEigenSolver):
                 condensed_imag_vector = imag_vector
 
             # Get eigenpairs
-            _ = self.eigen_solver.eps().getEigenpair(i, condensed_real_vector, condensed_imag_vector)
+            self.eigen_solver.eps().getEigenpair(i, condensed_real_vector, condensed_imag_vector)
 
             # Restore input vectors
             if hasattr(self, "_is"): # there were Dirichlet BCs
@@ -138,4 +137,3 @@ class EigenSolver(AbstractEigenSolver):
             return (Function(self.V, real_vector), Function(self.V, imag_vector))
         else:
             raise RuntimeError("Requested eigenpair has not been computed")
-            

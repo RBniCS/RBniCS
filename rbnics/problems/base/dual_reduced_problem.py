@@ -22,7 +22,7 @@ def DualReducedProblem(ParametrizedDifferentialReducedProblem_DerivedClass):
             
     @PreserveClassName
     class DualReducedProblem_Class(ParametrizedDifferentialReducedProblem_DerivedClass):
-        ## Default initialization of members.
+        # Default initialization of members.
         def __init__(self, dual_problem, **kwargs):
             # Call to parent
             ParametrizedDifferentialReducedProblem_DerivedClass.__init__(self, dual_problem, **kwargs)
@@ -40,4 +40,3 @@ def DualReducedProblem(ParametrizedDifferentialReducedProblem_DerivedClass):
             
     # return value (a class) for the decorator
     return DualReducedProblem_Class
-    

@@ -20,13 +20,12 @@
 import types
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.backends import abs, evaluate, max
-from rbnics.backends.online import OnlineMatrix
 from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 
 # Empirical interpolation method for the interpolation of parametrized functions
 class EIMApproximationReductionMethod(ReductionMethod):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, EIM_approximation):
         # Call the parent initialization
         ReductionMethod.__init__(self, EIM_approximation.folder_prefix, EIM_approximation.mu_range)
@@ -43,7 +42,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.greedy_selected_parameters = GreedySelectedParametersList()
         self.greedy_errors = GreedyErrorEstimatorsList()
         #
-        # By default set a tolerance slightly larger than zero, in order to 
+        # By default set a tolerance slightly larger than zero, in order to
         # stop greedy iterations in trivial cases by default
         self.tol = 1e-15
     
@@ -55,7 +54,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self._training_set_parameters_to_snapshots_container_index = dict((mu, mu_index) for (mu_index, mu) in enumerate(self.training_set))
         return import_successful
     
-    ## Initialize data structures required for the offline phase
+    # Initialize data structures required for the offline phase
     def _init_offline(self):
         # Prepare folders and init EIM approximation
         all_folders = Folders()
@@ -69,11 +68,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.init("offline")
             return True # offline construction should be carried out
             
-    ## Finalize data structures required after the offline phase
+    # Finalize data structures required after the offline phase
     def _finalize_offline(self):
         self.EIM_approximation.init("online")
     
-    ## Perform the offline phase of EIM
+    # Perform the offline phase of EIM
     def offline(self):
         need_to_do_offline_stage = self._init_offline()
         if not need_to_do_offline_stage:
@@ -186,11 +185,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def _print_greedy_interpolation_solve_message(self):
         print("solve interpolation for mu =", self.EIM_approximation.mu)
         
-    ## Update the snapshots container
+    # Update the snapshots container
     def add_to_snapshots(self, snapshot):
         self.snapshots_container.enrich(snapshot)
         
-    ## Update basis (greedy version)
+    # Update basis (greedy version)
     def update_basis_greedy(self, error, maximum_error):
         if abs(maximum_error) > 0.:
             self.EIM_approximation.Z.enrich(error/maximum_error)
@@ -201,7 +200,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
         self.EIM_approximation.N += 1
 
-    ## Update basis (POD version)
+    # Update basis (POD version)
     def compute_basis_POD(self):
         POD = self.EIM_approximation.parametrized_expression.create_POD_container()
         POD.store_snapshot(self.snapshots_container)
@@ -218,12 +217,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.EIM_approximation.interpolation_locations.append(maximum_location)
         self.EIM_approximation.interpolation_locations.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_locations")
     
-    ## Assemble the interpolation matrix
+    # Assemble the interpolation matrix
     def update_interpolation_matrix(self):
         self.EIM_approximation.interpolation_matrix[0] = evaluate(self.EIM_approximation.Z[:self.EIM_approximation.N], self.EIM_approximation.interpolation_locations)
         self.EIM_approximation.interpolation_matrix.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
             
-    ## Load the precomputed snapshot
+    # Load the precomputed snapshot
     def load_snapshot(self):
         assert self.EIM_approximation.basis_generation == "Greedy"
         mu = self.EIM_approximation.mu
@@ -231,7 +230,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         assert mu == self.training_set[mu_index]
         return self.snapshots_container[mu_index]
         
-    ## Choose the next parameter in the offline stage in a greedy fashion
+    # Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         assert self.EIM_approximation.basis_generation == "Greedy"
         
@@ -371,8 +370,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
         self._finalize_speedup_analysis(**kwargs)
         
-    ## Initialize data structures required for the speedup analysis phase
-    def _init_speedup_analysis(self, **kwargs): 
+    # Initialize data structures required for the speedup analysis phase
+    def _init_speedup_analysis(self, **kwargs):
         # Make sure to clean up snapshot cache to ensure that parametrized
         # expression evaluation is actually carried out
         self.EIM_approximation.snapshot_cache.clear()
@@ -386,11 +385,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
             pass
         self.EIM_approximation.export_solution = types.MethodType(disabled_export_solution, self.EIM_approximation)
         
-    ## Finalize data structures required after the speedup analysis phase
+    # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
         # Restore the capability to import/export truth solutions
         self.EIM_approximation.import_solution = self._speedup_analysis__original_import_solution
         del self._speedup_analysis__original_import_solution
         self.EIM_approximation.export_solution = self._speedup_analysis__original_export_solution
         del self._speedup_analysis__original_export_solution
-    

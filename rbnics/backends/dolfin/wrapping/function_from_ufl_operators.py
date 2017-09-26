@@ -22,11 +22,11 @@ from ufl.constantvalue import ScalarValue
 from ufl.core.multiindex import IndexBase
 from ufl.core.operator import Operator
 from ufl.tensors import as_tensor, ComponentTensor
-from dolfin import Function, GenericVector
+from dolfin import Function
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
 from rbnics.utils.decorators import overload, tuple_of
 
-# Function from Function: do nothing    
+# Function from Function: do nothing
 @overload
 def function_from_ufl_operators(input_function: Function):
     return input_function
@@ -106,4 +106,3 @@ def _function_from_ufl_component_tensor(expression: Division, indices: tuple_of(
     nominator_function = as_tensor(expression.ufl_operands[0], indices)
     denominator = expression.ufl_operands[1]
     return _function_from_ufl_division(nominator_function, denominator)
-

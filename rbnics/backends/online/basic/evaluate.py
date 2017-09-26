@@ -24,16 +24,16 @@ def evaluate(backend):
         def __call__(self, matrix, at):
             return matrix
         
-        @overload(backend.Matrix.Type(), tuple_of(int))    
+        @overload(backend.Matrix.Type(), tuple_of(int))
         def __call__(self, matrix, at):
             assert len(at) == 2
             return matrix[at]
         
-        @overload(backend.Vector.Type(), None)    
+        @overload(backend.Vector.Type(), None)
         def __call__(self, vector, at):
             return vector
         
-        @overload(backend.Vector.Type(), tuple_of(int))    
+        @overload(backend.Vector.Type(), tuple_of(int))
         def __call__(self, vector, at):
             assert len(at) == 1
             return vector

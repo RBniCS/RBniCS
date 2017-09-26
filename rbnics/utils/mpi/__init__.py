@@ -17,9 +17,11 @@
 #
 
 
-from rbnics.utils.mpi.log import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG
+from logging import log, CRITICAL, ERROR, WARNING, INFO, DEBUG
 from rbnics.utils.mpi.mpi import is_io_process, parallel_max
 from rbnics.utils.mpi.print import print
+PROGRESS = 16 # compatability with DOLFIN
+TRACE = 13 # compatability with DOLFIN
 
 __all__ = [
     'log', 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'PROGRESS', 'TRACE', 'DEBUG',

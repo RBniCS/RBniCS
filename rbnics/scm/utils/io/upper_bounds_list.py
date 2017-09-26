@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends.online import online_copy, online_export, online_import_, OnlineVector
-from rbnics.utils.decorators import list_of, overload, tuple_of
+from rbnics.utils.decorators import list_of, overload
 from rbnics.utils.io import Folders, PickleIO as ItemVectorDimensionIO, PickleIO as LenIO
 
 class UpperBoundsList(list):

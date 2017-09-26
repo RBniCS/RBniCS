@@ -29,6 +29,7 @@ __all__ = [
     'CompositeDistribution',
     'DiscreteDistribution',
     'Distribution',
+    'DrawFrom',
     'EquispacedDistribution',
     'LogEquispacedDistribution',
     'LogUniformDistribution',

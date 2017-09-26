@@ -101,7 +101,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
             return output
             
         def __mul__(self, other):
-            if isinstance(other, (backend.Function.Type(), backend.Vector.Type(), Number)):  
+            if isinstance(other, (backend.Function.Type(), backend.Vector.Type(), Number)):
                 if isinstance(other, (backend.Function.Type(), backend.Vector.Type())):
                     if isinstance(other, backend.Function.Type()):
                         output = MatrixBaseType.__mul__(self, other.vector())

@@ -24,7 +24,7 @@ StokesOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem
 
 class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
     """
-    The problem to be solved is 
+    The problem to be solved is
         min {J(y, u) = 1/2 m(v - v_d, v - v_d) + 1/2 n(u, u)}
         y = (v, p) in Y = (V, P), u in U
         s.t.
@@ -49,7 +49,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         h = m(v_d, v_d)
     """
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         StokesOptimalControlProblem_Base.__init__(self, V, **kwargs)
@@ -61,9 +61,9 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             "bt_restricted", "bt*_restricted"
         ]
         self.terms_order = {
-            "a": 2, "a*": 2, 
-            "b": 2, "b*": 2, 
-            "bt": 2, "bt*": 2, 
+            "a": 2, "a*": 2,
+            "b": 2, "b*": 2,
+            "bt": 2, "bt*": 2,
             "c": 2, "c*": 2,
             "m": 2, "n": 2,
             "f": 1, "g": 1, "l": 1,
@@ -75,9 +75,9 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         self.components = ["v", "s", "p", "u", "w", "r", "q"]
         
         # Auxiliary storage for supremizer enrichment, using a subspace of V
-        self._state_supremizer   = Function(V, "s")
+        self._state_supremizer = Function(V, "s")
         self._adjoint_supremizer = Function(V, "r")
-        self._state_supremizer_cache   = dict() # of Functions
+        self._state_supremizer_cache = dict() # of Functions
         self._adjoint_supremizer_cache = dict() # of Functions
         
     class ProblemSolver(StokesOptimalControlProblem_Base.ProblemSolver):
@@ -121,7 +121,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             
     def solve_state_supremizer(self, solution):
         (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if "RAM" in self.cache_config and cache_key in self._state_supremizer_cache: 
+        if "RAM" in self.cache_config and cache_key in self._state_supremizer_cache:
             log(PROGRESS, "Loading state supremizer from cache")
             assign(self._state_supremizer, self._state_supremizer_cache[cache_key])
         elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s"):
@@ -155,7 +155,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         
     def solve_adjoint_supremizer(self, solution):
         (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if "RAM" in self.cache_config and cache_key in self._adjoint_supremizer_cache: 
+        if "RAM" in self.cache_config and cache_key in self._adjoint_supremizer_cache:
             log(PROGRESS, "Loading adjoint supremizer from cache")
             assign(self._adjoint_supremizer, self._adjoint_supremizer_cache[cache_key])
         elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r"):
@@ -190,15 +190,15 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
     def _supremizer_cache_key_and_file(self):
         return self._cache_key_and_file_from_kwargs()
         
-    ## Perform a truth evaluation of the cost functional
+    # Perform a truth evaluation of the cost functional
     def _compute_output(self):
         assembled_operator = dict()
         for term in ("m", "n", "g", "h"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         self._output = (
-            0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 
-            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) - 
-            transpose(assembled_operator["g"])*self._solution + 
+            0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
+            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
+            transpose(assembled_operator["g"])*self._solution +
             0.5*assembled_operator["h"]
         )
         
@@ -256,4 +256,3 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         # Restore and return
         self.components = components_bak
         return combined_and_homogenized_dirichlet_bcs
-        

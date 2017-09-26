@@ -17,7 +17,6 @@
 #
 
 from rbnics.reduction_methods.base import LinearReductionMethod
-from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.

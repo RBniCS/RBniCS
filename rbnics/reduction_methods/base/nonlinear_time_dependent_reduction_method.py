@@ -29,4 +29,3 @@ def NonlinearTimeDependentReductionMethod(DifferentialProblemReductionMethod_Der
                 
     # return value (a class) for the decorator
     return NonlinearTimeDependentReductionMethod_Class
-    

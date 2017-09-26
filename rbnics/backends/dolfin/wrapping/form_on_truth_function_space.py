@@ -155,8 +155,8 @@ def basic_form_on_truth_function_space(backend, wrapping):
         form_rank = assembled_form.rank()
         return (assembled_form, form_rank)
         
-    form_on_truth_function_space__truth_problems_cache = dict()    
-    form_on_truth_function_space__truth_problem_to_components_cache = dict()    
+    form_on_truth_function_space__truth_problems_cache = dict()
+    form_on_truth_function_space__truth_problem_to_components_cache = dict()
     form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache = dict()
     form_on_truth_function_space__truth_problem_to_truth_solution_cache = dict()
     form_on_truth_function_space__reduced_problem_to_components_cache = dict()

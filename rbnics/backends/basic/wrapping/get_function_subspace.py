@@ -18,4 +18,3 @@
 
 def get_function_subspace(function_space__or__function, component):
     pass
-

@@ -21,8 +21,6 @@ import types
 from rbnics.backends import assign, copy, NonlinearProblemWrapper, TimeDependentProblem1Wrapper
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
-from rbnics.eim.problems.eim import EIM
-from rbnics.eim.problems.deim import DEIM
 from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
 
 def _problem_is_online_exact(truth_problem, reduction_method, **kwargs):
@@ -46,33 +44,33 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     # Precomputation of error estimation operators is disabled
                     self.folder.pop("error_estimation")
                     
-                ## Initialize data structures required for the online phase
+                # Initialize data structures required for the online phase
                 def init(self, current_stage="online"):
                     ReducedParametrizedProblem_DecoratedClass.init(self, current_stage)
-                    # The offline/online separation does not hold anymore, so in 
-                    # assemble_error_estimation_operators() we need to re-assemble operators. 
+                    # The offline/online separation does not hold anymore, so in
+                    # assemble_error_estimation_operators() we need to re-assemble operators.
                     # Thus, for any value of current_stage, we initialize error estimation
                     # operators of the reduced problem as if we were offline
                     ReducedParametrizedProblem_DecoratedClass._init_error_estimation_operators(self, "offline")
                     for term in self.riesz_product_terms:
                         self._disable_load_and_save_for_online_storage(self.riesz_product[term])
                                                     
-                ## Return the error estimator for the current solution
+                # Return the error estimator for the current solution
                 def estimate_error(self, **kwargs):
                     self._rebuild_error_estimation_operators()
                     return ReducedParametrizedProblem_DecoratedClass.estimate_error(self, **kwargs)
                     
-                ## Return the relative error estimator for the current solution
+                # Return the relative error estimator for the current solution
                 def estimate_relative_error(self, **kwargs):
                     self._rebuild_error_estimation_operators()
                     return ReducedParametrizedProblem_DecoratedClass.estimate_relative_error(self, **kwargs)
                     
-                ## Return the error estimator for the current output
+                # Return the error estimator for the current output
                 def estimate_error_output(self, **kwargs):
                     self._rebuild_error_estimation_operators()
                     return ReducedParametrizedProblem_DecoratedClass.estimate_error_output(self, **kwargs)
                     
-                ## Return the relative error estimator for the current output
+                # Return the relative error estimator for the current output
                 def estimate_relative_error_output(self, **kwargs):
                     self._rebuild_error_estimation_operators()
                     return ReducedParametrizedProblem_DecoratedClass.estimate_relative_error_output(self, **kwargs)
@@ -83,7 +81,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     # because the assemble_operator() *may* return parameter dependent operators.
                     self.build_error_estimation_operators("online")
                         
-                ## Build operators for error estimation
+                # Build operators for error estimation
                 def build_error_estimation_operators(self, current_stage="offline"):
                     if current_stage == "online":
                         log(PROGRESS, "build operators for error estimation (due to inefficient evaluation)")
@@ -93,15 +91,15 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         self.build_error_estimation_operators__initialized = False
                         ReducedParametrizedProblem_DecoratedClass.build_error_estimation_operators(self)
                     else:
-                        # The offline/online separation does not hold anymore, so we cannot precompute 
+                        # The offline/online separation does not hold anymore, so we cannot precompute
                         # reduced operators.
                         print("... skipped due to inefficient evaluation")
                     
-                ## Assemble operators for error estimation
+                # Assemble operators for error estimation
                 def assemble_error_estimation_operators(self, term, current_stage="online"):
                     if current_stage == "online": # *cannot* load from file
                         # The offline/online separation does not hold anymore, so we need to re-assemble operators,
-                        # because the assemble_error_estimation_operators() of the truth problem *may* 
+                        # because the assemble_error_estimation_operators() of the truth problem *may*
                         # return parameter dependent operators.
                         # Thus, call the parent method enforcing current_stage = "offline"
                         output = ReducedParametrizedProblem_DecoratedClass.assemble_error_estimation_operators(self, term, "offline")
@@ -129,7 +127,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                             reduced_problem = self.problem
                             assign(reduced_problem.truth_problem._solution, reduced_problem.Z[:solution.N]*solution)
                             assign(reduced_problem.truth_problem._solution_dot, reduced_problem.Z[:solution.N]*solution_dot)
-                            # Re-assemble 
+                            # Re-assemble
                             reduced_problem.build_reduced_operators("online")
                             # Call Parent
                             return ReducedParametrizedProblem_DecoratedClass.ProblemSolver.residual_eval(self, t, solution, solution_dot)
@@ -137,7 +135,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         # Note that jacobian evaluation is not overridden, as truth solution and truth solution dot update
                         # and operators re-assembly have been already carried out during residual evaluation
                             
-                        # Override to make sure that truth_problem solution and solution_dot are backed up 
+                        # Override to make sure that truth_problem solution and solution_dot are backed up
                         # and restored after the reduced solve
                         def solve(self):
                             reduced_problem = self.problem
@@ -159,7 +157,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                             # Update truth solution
                             reduced_problem = self.problem
                             assign(reduced_problem.truth_problem._solution, reduced_problem.Z[:solution.N]*solution)
-                            # Re-assemble 
+                            # Re-assemble
                             reduced_problem.build_reduced_operators("online")
                             # Call Parent
                             return ReducedParametrizedProblem_DecoratedClass.ProblemSolver.residual_eval(self, solution)
@@ -183,7 +181,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
     @_AlsoDecorateNonlinearSolutionStorage
     @PreserveClassName
     class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -193,7 +191,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             # Precomputation of operators is disabled
             self.folder.pop("reduced_operators")
         
-        ## Initialize data structures required for the online phase
+        # Initialize data structures required for the online phase
         def init(self, current_stage="online"):
             self._init_basis_functions(current_stage)
             # The offline/online separation does not hold anymore, so in assemble_operator()
@@ -235,7 +233,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 self._disable_load_and_save_for_online_storage(self.operator[term])
 
         def _disable_load_and_save_for_online_storage(self, online_storage):
-            # Make sure to disable the save() method of the operator, which is 
+            # Make sure to disable the save() method of the operator, which is
             # called internally by assemble_operator() since it is not possible
             # to precompute operators, and thus they should not be saved
             def disabled_save(self, folder, filename):
@@ -249,14 +247,14 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             
         # Perform an online solve (internal)
         def _solve(self, N, **kwargs):
-            # The offline/online separation does not hold anymore, so at the reduced-order level 
-            # we need to re-assemble operators, because the assemble_operator() *may* return 
+            # The offline/online separation does not hold anymore, so at the reduced-order level
+            # we need to re-assemble operators, because the assemble_operator() *may* return
             # parameter dependent operators.
             self.build_reduced_operators("online")
             # Then call Parent solve
             ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
     
-        ## Assemble the reduced order affine expansion.
+        # Assemble the reduced order affine expansion.
         def build_reduced_operators(self, current_stage="offline"):
             if current_stage == "online":
                 log(PROGRESS, "build reduced operators (due to inefficient evaluation)")
@@ -267,11 +265,11 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 for term in self.terms:
                     self.operator[term] = self.assemble_operator(term, "offline")
             else:
-                # The offline/online separation does not hold anymore, so we cannot precompute 
+                # The offline/online separation does not hold anymore, so we cannot precompute
                 # reduced operators.
                 print("... skipped due to inefficient evaluation")
             
-        ## Assemble the reduced order affine expansion
+        # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
             if current_stage == "online": # *cannot* load from file
                 # The offline/online separation does not hold anymore, so we need to re-assemble operators,

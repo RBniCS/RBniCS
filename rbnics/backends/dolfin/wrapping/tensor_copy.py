@@ -23,4 +23,3 @@ def tensor_copy(tensor):
         output.generator = tensor.generator
     #
     return output
-

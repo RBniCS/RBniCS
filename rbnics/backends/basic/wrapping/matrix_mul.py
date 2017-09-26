@@ -21,4 +21,3 @@ def matrix_mul_vector(matrix, vector):
     
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
     pass
-

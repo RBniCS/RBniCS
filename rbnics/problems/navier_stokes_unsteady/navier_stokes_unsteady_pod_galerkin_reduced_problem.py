@@ -31,4 +31,3 @@ NavierStokesUnsteadyPODGalerkinReducedProblem_Base = AbstractCFDUnsteadyPODGaler
 @ReducedProblemFor(NavierStokesUnsteadyProblem, NavierStokesUnsteadyPODGalerkinReduction)
 class NavierStokesUnsteadyPODGalerkinReducedProblem(NavierStokesUnsteadyPODGalerkinReducedProblem_Base):
     pass
-        

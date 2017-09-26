@@ -25,4 +25,3 @@ __all__ = [
     'slice_to_array',
     'slice_to_size'
 ]
-

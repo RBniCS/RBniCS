@@ -65,4 +65,3 @@ def is_training_finished(problem):
     return _problem_to_training_status[problem]
     
 _problem_to_training_status = dict()
-

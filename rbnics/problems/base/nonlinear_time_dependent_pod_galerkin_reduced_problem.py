@@ -29,4 +29,3 @@ def NonlinearTimeDependentPODGalerkinReducedProblem(ParametrizedReducedDifferent
                 
     # return value (a class) for the decorator
     return NonlinearTimeDependentPODGalerkinReducedProblem_Class
-    

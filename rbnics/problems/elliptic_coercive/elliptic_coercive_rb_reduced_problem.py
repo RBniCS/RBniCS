@@ -19,7 +19,6 @@
 from math import sqrt
 from numpy import isclose
 from rbnics.backends import product, sum, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem, PrimalDualReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
@@ -34,7 +33,7 @@ EllipticCoerciveRBReducedProblem_Base = LinearRBReducedProblem(EllipticCoerciveR
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction)
 class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
     
-    ## Default initialization of members.
+    # Default initialization of members.
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         EllipticCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
@@ -43,7 +42,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         self.riesz_terms = ["f", "a"]
         self.riesz_product_terms = [("f", "f"), ("a", "f"), ("a", "a")]
     
-    ## Return an error bound for the current solution
+    # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
@@ -51,19 +50,19 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         assert alpha >= 0.
         return sqrt(abs(eps2))/alpha
         
-    ## Return a relative error bound for the current solution
+    # Return a relative error bound for the current solution
     def estimate_relative_error(self):
         return NotImplemented
     
-    ## Return an error bound for the current output
+    # Return an error bound for the current output
     def estimate_error_output(self):
         return NotImplemented
         
-    ## Return a relative error bound for the current output
+    # Return a relative error bound for the current output
     def estimate_relative_error_output(self):
         return NotImplemented
         
-    ## Return the numerator of the error bound for the current solution
+    # Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
         N = self._solution.N
         theta_a = self.compute_theta("a")
@@ -77,7 +76,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
 # Add dual reduced problem if an output is provided in the term "s"
 def _problem_has_output(truth_problem, reduction_method, **kwargs):
     try:
-        theta_s = truth_problem.compute_theta("s")
+        truth_problem.compute_theta("s")
     except ValueError:
         return False
     else:

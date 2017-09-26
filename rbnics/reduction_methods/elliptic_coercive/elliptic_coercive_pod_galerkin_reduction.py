@@ -27,4 +27,4 @@ EllipticCoercivePODGalerkinReduction_Base = LinearPODGalerkinReduction(EllipticC
 # for elliptic coercive problems
 @ReductionMethodFor(EllipticCoerciveProblem, "PODGalerkin")
 class EllipticCoercivePODGalerkinReduction(EllipticCoercivePODGalerkinReduction_Base):
-    pass 
+    pass

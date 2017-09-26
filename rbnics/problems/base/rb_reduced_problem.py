@@ -17,7 +17,7 @@
 #
 
 from abc import ABCMeta, abstractmethod
-from rbnics.backends import AffineExpansionStorage, BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, product, sum, transpose
+from rbnics.backends import BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
@@ -32,7 +32,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         :param truth_problem: class of the truth problem to be solved.
         """
         
-        ## Default initialization of members.
+        # Default initialization of members.
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -113,14 +113,12 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             """
             raise NotImplementedError("The method estimate_relative_error() is problem-specific and needs to be overridden.")
         
-        
         def estimate_error_output(self):
             """
             It returns an error bound for the current output.
             """
             return NotImplemented
             
-        
         def estimate_relative_error_output(self):
             """
             It returns an relative error bound for the current output.
@@ -149,7 +147,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # Update the (term1, term2) Riesz representors product with the new basis function
             for term in self.riesz_product_terms:
                 self.assemble_error_estimation_operators(term, "offline")
-                
         
         def compute_riesz(self, term):
             """
@@ -162,9 +159,9 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             if self.terms_order[term] == 1:
                 for q in range(self.Q[term]):
                     solver = LinearSolver(
-                        self._riesz_solve_inner_product, 
-                        self._riesz_solve_storage, 
-                        self.truth_problem.operator[term][q], 
+                        self._riesz_solve_inner_product,
+                        self._riesz_solve_storage,
+                        self.truth_problem.operator[term][q],
                         self._riesz_solve_homogeneous_dirichlet_bc
                     )
                     solver.solve()
@@ -175,9 +172,9 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                         for component in self.components:
                             for n in range(len(self.riesz[term][q][component]), self.N[component] + self.N_bc[component]):
                                 solver = LinearSolver(
-                                    self._riesz_solve_inner_product, 
-                                    self._riesz_solve_storage, 
-                                    -1.*self.truth_problem.operator[term][q]*self.Z[component][n], 
+                                    self._riesz_solve_inner_product,
+                                    self._riesz_solve_storage,
+                                    -1.*self.truth_problem.operator[term][q]*self.Z[component][n],
                                     self._riesz_solve_homogeneous_dirichlet_bc
                                 )
                                 solver.solve()
@@ -185,8 +182,8 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     else:
                         for n in range(len(self.riesz[term][q]), self.N + self.N_bc):
                             solver = LinearSolver(
-                                self._riesz_solve_inner_product, 
-                                self._riesz_solve_storage, 
+                                self._riesz_solve_inner_product,
+                                self._riesz_solve_storage,
                                 -1.*self.truth_problem.operator[term][q]*self.Z[n],
                                 self._riesz_solve_homogeneous_dirichlet_bc
                             )
@@ -202,9 +199,8 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             assert current_stage in ("online", "offline")
             assert isinstance(term, tuple)
             assert len(term) == 2
-            # 
             if current_stage == "online": # load from file
-                if not term in self.riesz_product:
+                if term not in self.riesz_product:
                     self.riesz_product[term] = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
                 assert "error_estimation" in self.folder
                 self.riesz_product[term].load(self.folder["error_estimation"], "riesz_product_" + term[0] + "_" + term[1])
@@ -238,4 +234,3 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         
     # return value (a class) for the decorator
     return RBReducedProblem_Class
-    

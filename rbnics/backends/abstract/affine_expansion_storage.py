@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta
-from rbnics.utils.decorators import AbstractBackend, abstractmethod, abstractonlinemethod
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod, abstractonlinemethod
 
 @AbstractBackend
 class AffineExpansionStorage(object, metaclass=ABCMeta):
@@ -47,4 +46,3 @@ class AffineExpansionStorage(object, metaclass=ABCMeta):
     @abstractmethod
     def __len__(self):
         pass
-        

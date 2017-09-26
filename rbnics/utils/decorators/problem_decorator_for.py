@@ -32,4 +32,3 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
         # Done with the storage, return the new problem decorator
         return ProblemDecorator_WithStorage
     return ProblemDecoratorFor_Decorator
-    

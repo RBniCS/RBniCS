@@ -35,12 +35,11 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         # Test if can import
         time_import_successful = False
         if enable_import:
-            time_import_successful = time_training_set.load(self.folder["training_set"], "time_training_set") \
-                and (len(time_training_set) == ntrain)
+            time_import_successful = time_training_set.load(self.folder["training_set"], "time_training_set") and (len(time_training_set) == ntrain)
         if not time_import_successful:
             time_sampling = self._generate_time_sampling(**kwargs)
             time_training_set.generate(ntrain, time_sampling)
-            # Export 
+            # Export
             time_training_set.save(self.folder["training_set"], "time_training_set")
         # Combine both sets into one
         self._combine_sets(self.training_set, time_training_set)
@@ -57,12 +56,11 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         # Test if can import
         time_import_successful = False
         if enable_import:
-            time_import_successful = time_testing_set.load(self.folder["testing_set"], "time_testing_set") \
-                and  (len(time_testing_set) == ntest)
+            time_import_successful = time_testing_set.load(self.folder["testing_set"], "time_testing_set") and (len(time_testing_set) == ntest)
         if not import_successful:
             time_sampling = self._generate_time_sampling(**kwargs)
             time_testing_set.generate(ntest, time_sampling)
-            # Export 
+            # Export
             time_testing_set.save(self.folder["testing_set"], "time_testing_set")
         # Combine both sets into one
         self._combine_sets(self.testing_set, time_testing_set)
@@ -88,7 +86,7 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
     def _print_greedy_interpolation_solve_message(self):
         print("solve interpolation for mu =", self.EIM_approximation.mu, "and t =", self.EIM_approximation.t)
         
-    ## Load the precomputed snapshot. Overridden to correct the assert
+    # Load the precomputed snapshot. Overridden to correct the assert
     def load_snapshot(self):
         assert self.EIM_approximation.basis_generation == "Greedy"
         mu = self.EIM_approximation.mu
@@ -97,4 +95,3 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         assert mu == self.training_set[mu_index]["mu"]
         assert t == self.training_set[mu_index]["t"]
         return self.snapshots_container[mu_index]
-        

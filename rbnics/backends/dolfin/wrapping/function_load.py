@@ -17,8 +17,9 @@
 #
 
 import os # for path
-from dolfin import File, Function, has_hdf5, has_hdf5_parallel, XDMFFile
+from dolfin import File, Function, has_hdf5_parallel, XDMFFile
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
+from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 from rbnics.utils.mpi import is_io_process
 
 def has_hdf5():
@@ -77,7 +78,7 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, component=None, funct
                 filename_i = filename + "_component_" + str(i)
             fun_i_V = get_function_subspace(fun_V, i)
             fun_i = Function(fun_i_V)
-            if not _read_from_xdmf_file(fun_i, directory, filename, suffix, None, function_name):
+            if not _read_from_xdmf_file(fun_i, directory, filename_i, suffix, None, function_name):
                 return False
             else:
                 extended_sub_fun = function_extend_or_restrict(fun_i, None, fun_V, component, weight=None, copy=True)

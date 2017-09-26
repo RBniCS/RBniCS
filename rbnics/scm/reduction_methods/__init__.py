@@ -17,10 +17,11 @@
 #
 
 from rbnics.scm.reduction_methods.exact_coercivity_constant_decorated_reduction_method import ExactCoercivityConstantDecoratedReductionMethod
-#from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod # not needed
+from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod
 from rbnics.scm.reduction_methods.scm_decorated_reduction_method import SCMDecoratedReductionMethod
 
 __all__ = [
     'ExactCoercivityConstantDecoratedReductionMethod',
+    'SCMApproximationReductionMethod',
     'SCMDecoratedReductionMethod'
 ]

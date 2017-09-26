@@ -30,5 +30,3 @@ def import_(solution, directory, filename, suffix=None, component=None):
         return True
     else:
         return False
-        
-    

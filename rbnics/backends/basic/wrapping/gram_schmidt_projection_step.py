@@ -18,4 +18,3 @@
 
 def gram_schmidt_projection_step(new_basis, X, old_basis):
     pass
-

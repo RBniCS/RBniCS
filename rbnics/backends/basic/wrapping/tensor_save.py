@@ -18,4 +18,3 @@
 
 def tensor_save(fun, directory, filename):
     pass
-

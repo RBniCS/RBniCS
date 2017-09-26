@@ -17,15 +17,7 @@
 #
 
 from rbnics.sampling.parameter_space_subset import ParameterSpaceSubset
-from rbnics.sampling.distributions import DrawFrom, EquispacedDistribution, LogEquispacedDistribution, LogUniformDistribution, UniformDistribution
 
 __all__ = [
-    # rbnics.sampling
-    'ParameterSpaceSubset',
-    # rbnics.sampling.distributions
-    'DrawFrom',
-    'EquispacedDistribution',
-    'LogEquispacedDistribution',
-    'LogUniformDistribution',
-    'UniformDistribution'
+    'ParameterSpaceSubset'
 ]

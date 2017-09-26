@@ -24,7 +24,7 @@ EllipticCoerciveProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 # Base class containing the definition of elliptic coercive problems
 class EllipticCoerciveProblem(EllipticCoerciveProblem_Base):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         EllipticCoerciveProblem_Base.__init__(self, V, **kwargs)
@@ -43,6 +43,6 @@ class EllipticCoerciveProblem(EllipticCoerciveProblem_Base):
             problem = self.problem
             return sum(product(problem.compute_theta("f"), problem.operator["f"]))
             
-    ## Perform a truth evaluation of the output
+    # Perform a truth evaluation of the output
     def _compute_output(self):
         self._output = transpose(self._solution)*sum(product(self.compute_theta("s"), self.operator["s"]))

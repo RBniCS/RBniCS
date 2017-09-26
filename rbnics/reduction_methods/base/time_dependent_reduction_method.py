@@ -27,7 +27,7 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
     @PreserveClassName
     class TimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -37,20 +37,20 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             self.reduction_delta_index = None # keep every time step by default
             self.reduction_last_index = None # keep temporal evolution until the end by default
             
-        ## Set reduction initial time
+        # Set reduction initial time
         def set_reduction_initial_time(self, t0):
             assert isinstance(t0, Number)
             assert t0 >= self.truth_problem.t0
             self.reduction_first_index = int(t0/self.truth_problem.dt)
                     
-        ## Set reduction time step size
+        # Set reduction time step size
         def set_reduction_time_step_size(self, dt):
             assert isinstance(dt, Number)
             assert dt >= self.truth_problem.dt
             self.reduction_delta_index = int(dt/self.truth_problem.dt)
             assert isclose(self.reduction_delta_index*self.truth_problem.dt, dt), "Reduction time step size should be a multiple of discretization time step size"
             
-        ## Set reduction final time
+        # Set reduction final time
         def set_reduction_final_time(self, T):
             assert isinstance(T, Number)
             assert T <= self.truth_problem.T
@@ -64,7 +64,7 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 postprocessed_snapshot.append(postprocessed_snapshot_k)
             return postprocessed_snapshot
         
-        ## Initialize data structures required for the speedup analysis phase
+        # Initialize data structures required for the speedup analysis phase
         def _init_speedup_analysis(self, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             
@@ -87,9 +87,8 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             def disabled_export_solution(self_, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
                 pass
             self.truth_problem.export_solution = types.MethodType(disabled_export_solution, self.truth_problem)
-            
         
-        ## Finalize data structures required after the speedup analysis phase
+        # Finalize data structures required after the speedup analysis phase
         def _finalize_speedup_analysis(self, **kwargs):
             # Restore the capability to import/export truth solutions
             self.truth_problem.import_solution = self._speedup_analysis__original_import_solution
@@ -99,4 +98,3 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         
     # return value (a class) for the decorator
     return TimeDependentReductionMethod_Class
-    

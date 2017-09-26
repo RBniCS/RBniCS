@@ -17,13 +17,15 @@
 #
 
 from rbnics.eim.reduction_methods.deim_decorated_reduction_method import DEIMDecoratedReductionMethod
-#from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod # not needed
+from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.eim.reduction_methods.eim_decorated_reduction_method import EIMDecoratedReductionMethod
 from rbnics.eim.reduction_methods.exact_parametrized_functions_decorated_reduction_method import ExactParametrizedFunctionsDecoratedReductionMethod
-#from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod # not needed
+from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
 
 __all__ = [
     'DEIMDecoratedReductionMethod',
+    'EIMApproximationReductionMethod',
     'EIMDecoratedReductionMethod',
-    'ExactParametrizedFunctionsDecoratedReductionMethod'
+    'ExactParametrizedFunctionsDecoratedReductionMethod',
+    'TimeDependentEIMApproximationReductionMethod'
 ]

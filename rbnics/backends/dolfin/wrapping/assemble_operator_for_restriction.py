@@ -57,7 +57,7 @@ def assemble_operator_for_restriction(restricted_term_to_original_term, test=Non
                         for original_dirichlet_bc_i in original_dirichlet_bc:
                             V = original_dirichlet_bc_i.function_space()
                             parent_V = V
-                            assert hasattr(parent_V, "_root_space_after_sub")                            
+                            assert hasattr(parent_V, "_root_space_after_sub")
                             while parent_V._root_space_after_sub is not None:
                                 parent_V = parent_V._root_space_after_sub
                                 assert hasattr(parent_V, "_root_space_after_sub")

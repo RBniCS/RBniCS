@@ -19,7 +19,7 @@
 from rbnics.utils.io.numpy_io import NumpyIO
 from rbnics.utils.io.pickle_io import PickleIO
 from rbnics.utils.io.text_io import TextIO
-from rbnics.utils.decorators import list_of, overload, tuple_of
+from rbnics.utils.decorators import list_of, overload
 
 class ExportableList(object):
     def __init__(self, import_export_backend, original_list=None):
@@ -72,4 +72,3 @@ class ExportableList(object):
         
     def __len__(self):
         return len(self._list)
-        

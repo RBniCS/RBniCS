@@ -26,7 +26,7 @@ def import_(backend, wrapping):
         def __call__(self, solution, directory, filename, suffix, component):
             return wrapping.function_load(solution, directory, filename, suffix=suffix)
         
-        @overload(backend.Function.Type(), (Folders.Folder, str), str, (int, None), (int, str))    
+        @overload(backend.Function.Type(), (Folders.Folder, str), str, (int, None), (int, str))
         def __call__(self, solution, directory, filename, suffix, component):
             space = wrapping.get_function_space(solution)
             subspace = wrapping.get_function_subspace(solution, component)

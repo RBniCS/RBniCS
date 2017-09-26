@@ -18,4 +18,3 @@
 
 def vector_mul_vector(vector1, vector2):
     pass
-

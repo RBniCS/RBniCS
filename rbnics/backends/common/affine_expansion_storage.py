@@ -38,4 +38,3 @@ class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def __len__(self):
         assert self._content is not None
         return len(self._content)
-        

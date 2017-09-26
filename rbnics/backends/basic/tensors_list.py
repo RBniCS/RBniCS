@@ -37,11 +37,11 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             # Prepare trivial precomputed slice
             self._precomputed_slices[len(self._list)] = self
         
-        @overload((backend.Matrix.Type(), backend.Vector.Type()), )    
+        @overload((backend.Matrix.Type(), backend.Vector.Type()), )
         def _enrich(self, tensors):
             self._list.append(wrapping.tensor_copy(tensors))
         
-        @overload(lambda cls: cls, )    
+        @overload(lambda cls: cls, )
         def _enrich(self, tensors):
             for tensor in tensors:
                 self._list.append(wrapping.tensor_copy(tensor))
@@ -93,7 +93,7 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             
         @overload(slice) # e.g. key = :N, return the first N tensors
         def __getitem__(self, key):
-            assert key.start is None 
+            assert key.start is None
             assert key.step is None
             assert key.stop <= len(self._list)
             

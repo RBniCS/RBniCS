@@ -36,16 +36,13 @@ def EIMDecoratedProblem(
 ):
     from rbnics.eim.problems.eim import EIM
     
-    @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactEIMAlgorithm,
-        stages=stages,
-        basis_generation=basis_generation
-    )
+    @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactEIMAlgorithm, stages=stages, basis_generation=basis_generation)
     def EIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
                 
         @PreserveClassName
         class EIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
-            ## Default initialization of members
+            # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -80,7 +77,7 @@ def EIMDecoratedProblem(
             def _init_EIM_approximations(self):
                 # Preprocess each term in the affine expansions.
                 # Note that this cannot be done in __init__, because operators may depend on self.mu,
-                # which is not defined at __init__ time. Moreover, it cannot be done either by init, 
+                # which is not defined at __init__ time. Moreover, it cannot be done either by init,
                 # because the init method is called by offline stage of the reduction method instance,
                 # but we need to EIM approximations need to be already set up at the time the reduction
                 # method instance is built. Thus, we will call this method in the reduction method instance
@@ -184,7 +181,7 @@ def EIMDecoratedProblem(
                 eim_thetas = list()
                 assert len(self.separated_forms[term]) == len(original_thetas)
                 if self._N_EIM is not None:
-                    assert term in self._N_EIM 
+                    assert term in self._N_EIM
                     assert len(self.separated_forms[term]) == len(self._N_EIM[term])
                 for (q, (form, original_theta)) in enumerate(zip(self.separated_forms[term], original_thetas)):
                     # Append coefficients computed with EIM, if applicable

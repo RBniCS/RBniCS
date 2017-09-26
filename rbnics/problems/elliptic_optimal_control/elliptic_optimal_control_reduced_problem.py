@@ -18,10 +18,7 @@
 
 
 from rbnics.problems.base import LinearReducedProblem
-from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
-from rbnics.backends import LinearSolver, product, sum, transpose
-from rbnics.backends.online import OnlineFunction
-from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalControlReductionMethod
+from rbnics.backends import product, sum, transpose
 
 def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
@@ -70,16 +67,15 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                 else:
                     raise ValueError("Invalid value for order of term " + term)
             self._output = (
-                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 
-                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) - 
-                transpose(assembled_operator["g"])*self._solution + 
+                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
+                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
+                transpose(assembled_operator["g"])*self._solution +
                 0.5*assembled_operator["h"]
             )
         
         # If a value of N was provided, make sure to double it when dealing with y and p, due to
         # the aggregated component approach
         def _online_size_from_kwargs(self, N, **kwargs):
-            all_components_in_kwargs = all([c in kwargs for c in self.components])
             if N is None:
                 # then either,
                 # * the user has passed kwargs, so we trust that he/she has doubled y and p for us

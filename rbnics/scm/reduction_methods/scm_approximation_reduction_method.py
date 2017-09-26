@@ -21,13 +21,13 @@ from numpy import isclose
 from rbnics.backends import transpose
 from rbnics.backends.online import OnlineVector
 from rbnics.reduction_methods.base import ReductionMethod
-from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
+from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from rbnics.scm.problems import ParametrizedCoercivityConstantEigenProblem
 
 # Empirical interpolation method for the interpolation of parametrized functions
 class SCMApproximationReductionMethod(ReductionMethod):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, SCM_approximation, folder_prefix):
         # Call the parent initialization
         ReductionMethod.__init__(self, folder_prefix, SCM_approximation.mu_range)
@@ -45,14 +45,14 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.bounding_box_maximum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"]
         del self.SCM_approximation._input_storage_for_SCM_reduction
 
-    ## OFFLINE: set the elements in the training set.
+    # OFFLINE: set the elements in the training set.
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         assert enable_import
         import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
         self.SCM_approximation.training_set = self.training_set
         return import_successful
     
-    ## Initialize data structures required for the offline phase
+    # Initialize data structures required for the offline phase
     def _init_offline(self):
         # Prepare folders and init SCM approximation
         all_folders = Folders()
@@ -66,11 +66,11 @@ class SCMApproximationReductionMethod(ReductionMethod):
             self.SCM_approximation.init("offline")
             return True # offline construction should be carried out
             
-    ## Finalize data structures required after the offline phase
+    # Finalize data structures required after the offline phase
     def _finalize_offline(self):
         self.SCM_approximation.init("online")
     
-    ## Perform the offline phase of SCM
+    # Perform the offline phase of SCM
     def offline(self):
         need_to_do_offline_stage = self._init_offline()
         if not need_to_do_offline_stage:
@@ -153,7 +153,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         # Save to file
         self.SCM_approximation.greedy_selected_parameters.save(self.SCM_approximation.folder["reduced_operators"], "greedy_selected_parameters")
         
-    ## Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
+    # Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
     def compute_UB_vector(self, u):
         Q = self.SCM_approximation.truth_problem.Q["a"]
         X = self.SCM_approximation.truth_problem.inner_product[0]
@@ -168,7 +168,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.SCM_approximation.UB_vectors.append(UB_vector)
         self.SCM_approximation.UB_vectors.save(self.SCM_approximation.folder["reduced_operators"], "UB_vectors")
         
-    ## Choose the next parameter in the offline stage in a greedy fashion
+    # Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
         def solve_and_estimate_error(mu):
             self.SCM_approximation.set_mu(mu)
@@ -178,7 +178,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
             error_estimator = (UB - LB)/UB
             
             if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
-                print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) +  " < 0")
+                print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " < 0")
             if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
                 print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " > UB = " + str(UB))
                 
@@ -190,7 +190,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
         return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
         
-    ## Initialize data structures required for the error analysis phase
+    # Initialize data structures required for the error analysis phase
     def _init_error_analysis(self, **kwargs):
         # Initialize the exact coercivity constant object
         self.SCM_approximation.exact_coercivity_constant_calculator.init()
@@ -227,7 +227,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
                 UB = self.SCM_approximation.get_stability_factor_upper_bound(n)
                 
                 if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
-                    print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) +  " < 0")
+                    print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " < 0")
                 if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
                     print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " > UB = " + str(UB))
                 if LB/exact > 1 and not isclose(LB/exact, 1.): # if LB/exact >> 1
@@ -279,8 +279,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
             
             for n in range(1, N + 1): # n = 1, ... N
                 SCM_timer.start()
-                LB = self.SCM_approximation.get_stability_factor_lower_bound(n)
-                UB = self.SCM_approximation.get_stability_factor_upper_bound(n)
+                self.SCM_approximation.get_stability_factor_lower_bound(n)
+                self.SCM_approximation.get_stability_factor_upper_bound(n)
                 elapsed_SCM = SCM_timer.stop()
                 speedup_analysis_table["speedup", n, run] = elapsed_exact/elapsed_SCM
         
@@ -296,12 +296,11 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         self._finalize_speedup_analysis(**kwargs)
         
-    ## Initialize data structures required for the speedup analysis phase
-    def _init_speedup_analysis(self, **kwargs): 
+    # Initialize data structures required for the speedup analysis phase
+    def _init_speedup_analysis(self, **kwargs):
         # Make sure to clean up snapshot cache to ensure that parametrized
         # expression evaluation is actually carried out
         self.SCM_approximation._alpha_LB_cache.clear()
         self.SCM_approximation._alpha_UB_cache.clear()
         self.SCM_approximation.exact_coercivity_constant_calculator._eigenvalue_cache.clear()
         self.SCM_approximation.exact_coercivity_constant_calculator._eigenvector_cache.clear()
-        

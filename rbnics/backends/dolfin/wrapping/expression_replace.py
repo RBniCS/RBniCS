@@ -23,13 +23,13 @@ from ufl.algorithms.map_integrands import map_integrand_dags
 from ufl.algorithms.analysis import has_exact_type
 from ufl.classes import CoefficientDerivative
 from ufl.constantvalue import as_ufl
-from ufl.core.multiindex import FixedIndex, Index, MultiIndex
+from ufl.core.multiindex import MultiIndex
 from ufl.corealg.multifunction import MultiFunction
 from ufl.domain import extract_domains
 from ufl.indexed import Indexed
 from ufl.log import error
 from ufl.tensors import ComponentTensor, ListTensor
-from dolfin import Function, split
+from dolfin import split
 
 def expression_replace(expression, replacements):
     replaced_expression = replace(expression, replacements)

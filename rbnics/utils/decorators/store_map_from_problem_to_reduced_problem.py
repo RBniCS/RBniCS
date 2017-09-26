@@ -47,4 +47,3 @@ def get_reduced_problem_from_problem(problem):
     return _problem_to_reduced_problem_map[problem]
     
 _problem_to_reduced_problem_map = dict()
-

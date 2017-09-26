@@ -16,10 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization #, ShapeParametrizationDecoratedProblem # not needed
+from rbnics.shape_parametrization.problems.shape_parametrization import ShapeParametrization
+from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrizationDecoratedProblem
 from rbnics.shape_parametrization.problems.shape_parametrization_decorated_reduced_problem import ShapeParametrizationDecoratedReducedProblem
 
 __all__ = [
     'ShapeParametrization',
+    'ShapeParametrizationDecoratedProblem',
     'ShapeParametrizationDecoratedReducedProblem'
 ]

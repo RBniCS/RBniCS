@@ -114,7 +114,7 @@ class Config(object):
         default = self.defaults[section][option]
         assert isinstance(default, set)
         assert value.issubset(default)
-        value_str =  ", ".join(str(v) for v in value)
+        value_str = ", ".join(str(v) for v in value)
         if len(value) < 2:
             value_str += "," # to differentiate between str and a set with one element
         return value_str
@@ -144,8 +144,8 @@ class Config(object):
                 
     def __eq__(self, other):
         return (
-            self._config_as_parser == other._config_as_parser 
-                and 
+            self._config_as_parser == other._config_as_parser
+                and
             self._config_as_dict == other._config_as_dict
         )
         

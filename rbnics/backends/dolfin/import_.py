@@ -35,4 +35,3 @@ import_base = basic_import_(backend, wrapping)
 @backend_for("dolfin", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
 def import_(solution, directory, filename, suffix=None, component=None):
     return import_base(solution, directory, filename, suffix, component)
-    

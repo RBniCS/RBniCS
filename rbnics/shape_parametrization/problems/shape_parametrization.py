@@ -16,4 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import ix_ as Slicer
+from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrizationDecoratedProblem
+
+# For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
+ShapeParametrization = ShapeParametrizationDecoratedProblem

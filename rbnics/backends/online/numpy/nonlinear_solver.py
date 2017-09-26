@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
 from numpy import asarray, dot
 from numpy.linalg import solve
 from scipy.optimize.nonlin import Jacobian, nonlin_solve
@@ -141,4 +140,3 @@ class _Jacobian(Jacobian):
     def rmatvec(self, v):
         J = self.jacobian_eval(self.x)
         return dot(J.T, v)
-        

@@ -24,7 +24,7 @@ def SCMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
     
     @PreserveClassName
     class SCMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

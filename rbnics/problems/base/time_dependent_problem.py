@@ -27,7 +27,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
     @PreserveClassName
     class TimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, V, **kwargs):
             # Call the parent initialization
             ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
@@ -35,7 +35,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self.t = 0.
             self.t0 = 0.
             self.dt = None
-            self.T  = None
+            self.T = None
             # Additional options for time stepping may be stored in the following dict
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["initial_time"] = self.t0
@@ -53,30 +53,30 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._output_over_time = list() # of numbers
             self._output_over_time_cache = dict() # of list of numbers
 
-        ## Set current time
+        # Set current time
         def set_time(self, t):
             assert isinstance(t, Number)
             self.t = t
             
-        ## Set initial time
+        # Set initial time
         def set_initial_time(self, t0):
             assert isinstance(t0, Number)
             self.t0 = t0
             self._time_stepping_parameters["initial_time"] = t0
                     
-        ## Set time step size
+        # Set time step size
         def set_time_step_size(self, dt):
             assert isinstance(dt, Number)
             self.dt = dt
             self._time_stepping_parameters["time_step_size"] = dt
             
-        ## Set final time
+        # Set final time
         def set_final_time(self, T):
             assert isinstance(T, Number)
             self.T = T
             self._time_stepping_parameters["final_time"] = T
             
-        ## Export solution to file
+        # Export solution to file
         def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
@@ -87,7 +87,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution", solution, component=component, suffix=k)
                 ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder + "/" + filename, "solution_dot", solution_dot, component=component, suffix=k)
                 
-        ## Import solution from file
+        # Import solution from file
         def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution = self._solution
@@ -124,7 +124,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     return False
             return True
                 
-        ## Initialize data structures required for the offline phase
+        # Initialize data structures required for the offline phase
         def init(self):
             ParametrizedDifferentialProblem_DerivedClass.init(self)
             self._init_initial_condition()
@@ -170,7 +170,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 #     provided by the user is actually zero on the Dirichlet boundaries, otherwise there will
                 #     be no way to accurately recover it by projecting on a space which only has bases equal
                 #     to zero on the Dirichlet boundary.
-                # d) (non homogeneous Dirichlet BCs, non homogeneous IC): we trust that the restriction of IC 
+                # d) (non homogeneous Dirichlet BCs, non homogeneous IC): we trust that the restriction of IC
                 #     on the Dirichlet boundary is equal to the evaluation of the Dirichlet BCs at t = 0.
                 #     If that were not true, than post processing a snapshot subtracting the lifting at t = 0
                 #     would result in a postprocessed snapshot which is not zero on the Dirichlet boundary, thus
@@ -293,7 +293,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assign(problem._solution, problem._solution_over_time[-1])
                 assign(problem._solution_dot, problem._solution_dot_over_time[-1])
         
-        ## Perform a truth evaluation of the output
+        # Perform a truth evaluation of the output
         def compute_output(self):
             """
             
@@ -317,11 +317,10 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     self._output_over_time_cache[cache_key] = self._output_over_time
             return self._output_over_time
             
-        ## Perform a truth evaluation of the output
+        # Perform a truth evaluation of the output
         def _compute_output(self):
             self._output_over_time = [NotImplemented]*len(self._solution_over_time)
             self._output = NotImplemented
             
     # return value (a class) for the decorator
     return TimeDependentProblem_Class
-    

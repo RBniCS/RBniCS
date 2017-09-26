@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta
-from rbnics.utils.decorators import AbstractBackend, abstractmethod
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ParametrizedExpressionFactory(object, metaclass=ABCMeta):
@@ -62,4 +61,3 @@ class ParametrizedExpressionFactory(object, metaclass=ABCMeta):
     @abstractmethod
     def is_time_dependent(self):
         pass
-        

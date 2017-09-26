@@ -16,12 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 from rbnics.problems.base import LinearReducedProblem
-from rbnics.problems.stokes.stokes_problem import StokesProblem
-from rbnics.backends import LinearSolver, product, sum, transpose
-from rbnics.backends.online import OnlineFunction
-from rbnics.reduction_methods.stokes import StokesReductionMethod
+from rbnics.backends import product, sum
 
 def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
@@ -78,7 +74,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 assert kwargs["components"] == components
             return StokesReducedProblem_Base._compute_relative_error(self, absolute_error, **kwargs)
             
-        ## Assemble the reduced order affine expansion
+        # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
             if term == "bt_restricted":
                 self.operator["bt_restricted"] = self.operator["bt"]

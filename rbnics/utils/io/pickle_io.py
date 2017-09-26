@@ -21,7 +21,7 @@ import os # for path
 from rbnics.utils.mpi import is_io_process
 
 class PickleIO(object):
-    ## Save a variable to file
+    # Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
         if is_io_process():
@@ -29,13 +29,13 @@ class PickleIO(object):
                 pickle.dump(content, outfile, protocol=pickle.HIGHEST_PROTOCOL)
         is_io_process.mpi_comm.barrier()
         
-    ## Load a variable from file
+    # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
         with open(str(directory) + "/" + filename + ".pkl", "rb") as infile:
             return pickle.load(infile)
             
-    ## Check if the file exists
+    # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
         exists = None
@@ -43,4 +43,3 @@ class PickleIO(object):
             exists = os.path.exists(str(directory) + "/" + filename + ".pkl")
         exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists
-        

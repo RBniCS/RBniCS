@@ -32,14 +32,14 @@ def assign(backend):
                 del object_to[:]
                 object_to.extend(object_from)
         
-        @overload(backend.Matrix.Type(), backend.Matrix.Type())    
+        @overload(backend.Matrix.Type(), backend.Matrix.Type())
         def __call__(self, object_to, object_from):
             if object_from is not object_to:
                 assert object_to.N == object_from.N
                 assert object_to.M == object_from.M
                 object_to[:, :] = object_from
         
-        @overload(backend.Vector.Type(), backend.Vector.Type())    
+        @overload(backend.Vector.Type(), backend.Vector.Type())
         def __call__(self, object_to, object_from):
             if object_from is not object_to:
                 assert object_to.N == object_from.N

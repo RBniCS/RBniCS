@@ -22,14 +22,14 @@ def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
     
     class AbstractCFDUnsteadyReductionMethod_Class(AbstractCFDUnsteadyReductionMethod_Base):
         
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             AbstractCFDUnsteadyReductionMethod_Base.__init__(self, truth_problem, **kwargs)
             # I/O
             self._print_supremizer_solve_message_previous_mu = None
         
-        ## Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
+        # Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
         def postprocess_snapshot(self, snapshot_over_time, snapshot_index):
             # Call parent: this will solve for supremizers at each time step
             snapshot_and_supremizer_over_time = AbstractCFDUnsteadyReductionMethod_Base.postprocess_snapshot(self, snapshot_over_time, snapshot_index)

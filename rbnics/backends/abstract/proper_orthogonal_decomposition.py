@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta
-from rbnics.utils.decorators import AbstractBackend, abstractmethod
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 # Class containing the implementation of the POD
 @AbstractBackend
@@ -25,20 +24,20 @@ class ProperOrthogonalDecomposition(object, metaclass=ABCMeta):
     def __init__(self, V_or_Z, X, component=None):
         pass
         
-    ## Clean up
+    # Clean up
     @abstractmethod
     def clear(self):
         pass
         
-    ## Store a snapshot in the snapshot matrix
+    # Store a snapshot in the snapshot matrix
     @abstractmethod
     def store_snapshot(self, snapshot, component=None, weight=None):
         pass
             
-    ## Perform POD on the snapshots previously computed, and store the first
-    #  POD modes in the basis functions matrix.
-    #  Input arguments are: Nmax, tol
-    #  Output arguments are: POD eigenvalues, POD modes, number of POD modes
+    # Perform POD on the snapshots previously computed, and store the first
+    # POD modes in the basis functions matrix.
+    # Input arguments are: Nmax, tol
+    # Output arguments are: POD eigenvalues, POD modes, number of POD modes
     @abstractmethod
     def apply(self, Nmax, tol):
         pass
@@ -54,4 +53,3 @@ class ProperOrthogonalDecomposition(object, metaclass=ABCMeta):
     @abstractmethod
     def save_retained_energy_file(self, output_directory, retained_energy_file):
         pass
-    

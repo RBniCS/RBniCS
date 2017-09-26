@@ -41,56 +41,54 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # Testing set
         self.testing_set = ParameterSpaceSubset(mu_range)
         # I/O
-        self.folder["testing_set" ] = self.folder_prefix + "/" + "testing_set"
+        self.folder["testing_set"] = self.folder_prefix + "/" + "testing_set"
     
-    ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+    # OFFLINE: set maximum reduced space dimension (stopping criterion)
     def set_Nmax(self, Nmax, **kwargs):
         self.Nmax = Nmax
         
-    ## OFFLINE: set tolerance (stopping criterion)
+    # OFFLINE: set tolerance (stopping criterion)
     def set_tolerance(self, tol, **kwargs):
         self.tol = tol
 
-    ## OFFLINE: set the elements in the training set.
+    # OFFLINE: set the elements in the training set.
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         # Create I/O folder
         self.folder["training_set"].create()
         # Test if can import
         import_successful = False
         if enable_import:
-            import_successful = self.training_set.load(self.folder["training_set"], "training_set") \
-                and (len(self.training_set) == ntrain)
+            import_successful = self.training_set.load(self.folder["training_set"], "training_set") and (len(self.training_set) == ntrain)
         if not import_successful:
             self.training_set.generate(ntrain, sampling)
-            # Export 
+            # Export
             self.training_set.save(self.folder["training_set"], "training_set")
         return import_successful
         
-    ## ERROR ANALYSIS: set the elements in the testing set.
+    # ERROR ANALYSIS: set the elements in the testing set.
     def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
         # Create I/O folder
         self.folder["testing_set"].create()
         # Test if can import
         import_successful = False
         if enable_import:
-            import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set") \
-                and  (len(self.testing_set) == ntest)
+            import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set") and (len(self.testing_set) == ntest)
         if not import_successful:
             self.testing_set.generate(ntest, sampling)
-            # Export 
+            # Export
             self.testing_set.save(self.folder["testing_set"], "testing_set")
         return import_successful
     
-    ## Perform the offline phase of the reduced order model
+    # Perform the offline phase of the reduced order model
     @abstractmethod
     def offline(self):
         raise NotImplementedError("Please implement the offline phase of the reduced order model.")
         
-    ## Initialize data structures required for the offline phase
+    # Initialize data structures required for the offline phase
     def _init_offline(self):
         pass
         
-    ## Finalize data structures required after the offline phase
+    # Finalize data structures required after the offline phase
     def _finalize_offline(self):
         pass
     
@@ -100,11 +98,11 @@ class ReductionMethod(object, metaclass=ABCMeta):
     def error_analysis(self, N=None, **kwargs):
         raise NotImplementedError("Please implement the error analysis of the reduced order model.")
         
-    ## Initialize data structures required for the error analysis phase
+    # Initialize data structures required for the error analysis phase
     def _init_error_analysis(self, **kwargs):
         pass
         
-    ## Finalize data structures required after the error analysis phase
+    # Finalize data structures required after the error analysis phase
     def _finalize_error_analysis(self, **kwargs):
         pass
         
@@ -114,11 +112,10 @@ class ReductionMethod(object, metaclass=ABCMeta):
     def speedup_analysis(self, N=None, **kwargs):
         raise NotImplementedError("Please implement the speedup analysis of the reduced order model.")
         
-    ## Initialize data structures required for the speedup analysis phase
+    # Initialize data structures required for the speedup analysis phase
     def _init_speedup_analysis(self, **kwargs):
         pass
         
-    ## Finalize data structures required after the speedup analysis phase
+    # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
         pass
-        

@@ -22,5 +22,3 @@ from rbnics.utils.decorators import AbstractBackend
 @AbstractBackend
 class TensorBasisList(TensorsList):
     pass
-
-

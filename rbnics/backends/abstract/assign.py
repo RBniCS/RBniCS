@@ -22,4 +22,3 @@ from rbnics.utils.decorators import abstract_backend
 @abstract_backend
 def assign(object_to, object_from):
     pass
-    

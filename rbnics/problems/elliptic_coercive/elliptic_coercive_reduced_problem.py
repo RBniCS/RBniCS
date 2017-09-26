@@ -44,4 +44,3 @@ def EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem_Derive
             
     # return value (a class) for the decorator
     return EllipticCoerciveReducedProblem_Class
-        

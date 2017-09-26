@@ -16,12 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 from rbnics.problems.base import LinearReducedProblem
-from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
-from rbnics.backends import LinearSolver, product, sum, transpose
-from rbnics.backends.online import OnlineFunction
-from rbnics.reduction_methods.stokes_optimal_control import StokesOptimalControlReductionMethod
+from rbnics.backends import product, sum, transpose
 
 def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
@@ -84,16 +80,15 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 else:
                     raise ValueError("Invalid value for order of term " + term)
             self._output = (
-                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 
-                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) - 
-                transpose(assembled_operator["g"])*self._solution + 
+                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
+                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
+                transpose(assembled_operator["g"])*self._solution +
                 0.5*assembled_operator["h"]
             )
         
         # If a value of N was provided, make sure to double it when dealing with y and p, due to
         # the aggregated component approach
         def _online_size_from_kwargs(self, N, **kwargs):
-            all_components_in_kwargs = all([c in kwargs for c in self.components])
             if N is None:
                 # then either,
                 # * the user has passed kwargs, so we trust that he/she has doubled velocities, supremizers and pressures for us
@@ -125,7 +120,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 assert kwargs["components"] == components
             return StokesOptimalControlReducedProblem_Base._compute_relative_error(self, absolute_error, **kwargs)
             
-        ## Assemble the reduced order affine expansion
+        # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
             if term == "bt_restricted":
                 self.operator["bt_restricted"] = self.operator["bt"]

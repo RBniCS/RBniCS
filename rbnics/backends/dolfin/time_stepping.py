@@ -36,7 +36,7 @@ class TimeStepping(AbstractTimeStepping):
             if ic is not None:
                 assign(solution, ic)
             self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
-            self.solver  = PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy()) # create copies to avoid internal storage overwriting
+            self.solver = PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy()) # create copies to avoid internal storage overwriting
         elif problem_wrapper.time_order() == 2:
             assert solution_dot_dot is not None
             ic_eval_output = problem_wrapper.ic_eval()
@@ -46,7 +46,7 @@ class TimeStepping(AbstractTimeStepping):
                 assign(solution, ic_eval_output[0])
                 assign(solution_dot, ic_eval_output[1])
             self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
-            self.solver  = PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy(), self.problem.solution_dot_dot.vector().copy()) # create copies to avoid internal storage overwriting
+            self.solver = PETScTSIntegrator(self.problem, self.problem.solution.vector().copy(), self.problem.solution_dot.vector().copy(), self.problem.solution_dot_dot.vector().copy()) # create copies to avoid internal storage overwriting
         else:
             raise ValueError("Invalid time order in TimeStepping.__init__().")
         # Store solution input
@@ -96,7 +96,7 @@ class _TimeDependentProblem_Base(object):
         self.V = solution.function_space()
         # Storage for residual and jacobian
         self.residual_vector = PETScVector()
-        self.jacobian_matrix = PETScMatrix()        
+        self.jacobian_matrix = PETScMatrix()
         # Storage for solutions
         self.all_solutions_time = list()
         self.all_solutions = list()
@@ -333,7 +333,7 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
            The matrices Amat and Pmat are exactly the matrices that are used by SNES for the nonlinear solve.
 
            If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace()
-           to supply the null space to Amat and the KSP solvers will automatically use that null space 
+           to supply the null space to Amat and the KSP solvers will automatically use that null space
            as needed during the solution process.
 
            The matrix dF/dU + a*dF/dU_t you provide turns out to be
@@ -369,7 +369,7 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         # Make sure that residual vector and jacobian matrix are properly initialized
         self.residual_vector_assemble(0., self.solution, self.solution_dot, self.solution_dot_dot, overwrite=True)
         self.jacobian_matrix_assemble(0., self.solution, self.solution_dot, self.solution_dot_dot, 0., 0., overwrite=True)
-        # Storage for solutions 
+        # Storage for solutions
         self.all_solutions_dot_dot = list()
         
     def residual_vector_eval(self, ts, t, solution, solution_dot, solution_dot_dot, residual):

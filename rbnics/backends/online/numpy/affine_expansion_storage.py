@@ -24,7 +24,7 @@ from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.wrapping import function_load, function_save, tensor_load, tensor_save
-from rbnics.utils.decorators import BackendFor, list_of, ModuleWrapper, overload, tuple_of
+from rbnics.utils.decorators import BackendFor, ModuleWrapper, overload, tuple_of
 
 backend = ModuleWrapper(Function, Matrix, Vector)
 wrapping = ModuleWrapper(function_load, function_save, tensor_load, tensor_save, function_copy=function_copy, tensor_copy=tensor_copy)

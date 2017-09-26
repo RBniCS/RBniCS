@@ -21,19 +21,19 @@ import numpy
 from rbnics.utils.mpi import is_io_process
 
 class NumpyIO(object):
-    ## Save a variable to file
+    # Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
         if is_io_process():
             numpy.save(str(directory) + "/" + filename, content)
         is_io_process.mpi_comm.barrier()
     
-    ## Load a variable from file
+    # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
         return numpy.load(str(directory) + "/" + filename + ".npy")
             
-    ## Check if the file exists
+    # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
         exists = None
@@ -41,4 +41,3 @@ class NumpyIO(object):
             exists = os.path.exists(str(directory) + "/" + filename + ".npy")
         exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists
-        

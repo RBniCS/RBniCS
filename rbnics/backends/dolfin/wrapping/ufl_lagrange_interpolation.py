@@ -21,7 +21,7 @@ from dolfin import assemble, inner, dP, TestFunction
 
 def ufl_lagrange_interpolation(output, ufl_expression):
     V = output.function_space()
-    if not V in ufl_lagrange_interpolation._test_function:
+    if V not in ufl_lagrange_interpolation._test_function:
         ufl_lagrange_interpolation._test_function[V] = TestFunction(V)
     v = ufl_lagrange_interpolation._test_function[V]
     assemble(inner(v, ufl_expression)*dP, output.vector())
@@ -66,22 +66,22 @@ def assert_lagrange_1(space):
 # Auxiliary functions:
 
 def _get_global_dof_to_local_dof_map(V, dofmap):
-    if not V in _get_global_dof_to_local_dof_map._storage:
+    if V not in _get_global_dof_to_local_dof_map._storage:
         local_to_global = dofmap.tabulate_local_to_global_dofs()
         local_size = dofmap.ownership_range()[1] - dofmap.ownership_range()[0]
-        global_to_local = {global_:local for (local, global_) in enumerate(local_to_global) if local < local_size}
+        global_to_local = {global_: local for (local, global_) in enumerate(local_to_global) if local < local_size}
         _get_global_dof_to_local_dof_map._storage[V] = global_to_local
     return _get_global_dof_to_local_dof_map._storage[V]
 _get_global_dof_to_local_dof_map._storage = dict()
     
 def _get_local_dof_to_coordinates_map(V):
-    if not V in _get_local_dof_to_coordinates_map._storage:
+    if V not in _get_local_dof_to_coordinates_map._storage:
         _get_local_dof_to_coordinates_map._storage[V] = V.tabulate_dof_coordinates().reshape((-1, V.mesh().ufl_cell().topological_dimension()))
     return _get_local_dof_to_coordinates_map._storage[V]
 _get_local_dof_to_coordinates_map._storage = dict()
 
 def _get_local_dof_to_component_map(V, component=None, dof_component_map=None, recursive=False):
-    if not V in _get_local_dof_to_component_map._storage:
+    if V not in _get_local_dof_to_component_map._storage:
         if component is None:
             component = [-1]
         if dof_component_map is None:
@@ -111,4 +111,3 @@ def _get_local_dof_to_component_map(V, component=None, dof_component_map=None, r
     else:
         return None
 _get_local_dof_to_component_map._storage = dict()
-    

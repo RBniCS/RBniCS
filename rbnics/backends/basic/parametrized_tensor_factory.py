@@ -62,4 +62,3 @@ class PrettyTuple(tuple):
         as_list.extend([str(key) + " = " + value for key, value in arg1.items()])
         as_list.append("with id " + str(arg2))
         return tuple.__new__(cls, tuple(as_list))
-        

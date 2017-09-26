@@ -17,7 +17,7 @@
 #
 
 from numbers import Number
-from rbnics.utils.decorators.dispatch import dict_of, powerset, tuple_of
+from rbnics.utils.decorators.dispatch import dict_of, tuple_of
 
 def ComputeThetaType(additional_types=None):
     all_types = [Number]

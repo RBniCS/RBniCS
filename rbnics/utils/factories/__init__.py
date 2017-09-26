@@ -17,10 +17,11 @@
 #
 
 from rbnics.utils.factories.reduced_problem_factory import ReducedProblemFactory
-from rbnics.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin #, ReductionMethodFactory # not needed
+from rbnics.utils.factories.reduction_method_factory import ReducedBasis, PODGalerkin, ReductionMethodFactory
 
 __all__ = [
-    'PODGalerkin'
+    'PODGalerkin',
     'ReducedBasis',
     'ReducedProblemFactory',
+    'ReductionMethodFactory'
 ]

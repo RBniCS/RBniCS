@@ -28,4 +28,3 @@ class UniformDistribution(Distribution):
                 mu.append(random.uniform(box_p[0], box_p[1]))
             set_.append(tuple(mu))
         return set_
-        

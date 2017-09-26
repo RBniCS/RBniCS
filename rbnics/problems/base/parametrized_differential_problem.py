@@ -74,7 +74,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     
     def init(self):
         """
-        Calls _init_operators() and _init_dirichlet_bc(). 
+        Calls _init_operators() and _init_dirichlet_bc().
         """
         self._init_operators()
         self._init_dirichlet_bc()
@@ -183,11 +183,11 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 else:
                     dirichlet_bc[component] = operator_bc
                     try:
-                        theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
+                        self.compute_theta(dirichlet_bc_string.format(c=component))
                     except ValueError: # there were no theta functions
                         # We provide in this case a shortcut for the case of homogeneous Dirichlet BCs,
                         # that do not require an additional lifting functions.
-                        # The user needs to implement the dirichlet_bc case for assemble_operator, 
+                        # The user needs to implement the dirichlet_bc case for assemble_operator,
                         # but not the one in compute_theta (since theta would not matter, being multiplied by zero)
                         def generate_modified_compute_theta(component):
                             standard_compute_theta = self.compute_theta
@@ -290,7 +290,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         def solve(self):
             pass
     
-    ## Perform a truth solve
+    # Perform a truth solve
     def _solve(self, **kwargs):
         problem_solver = self.ProblemSolver(self)
         problem_solver.solve()
@@ -378,7 +378,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     
     @abstractmethod
     def compute_theta(self, term):
-        """Return theta multiplicative terms of the affine expansion of the problem.
+        """
+        Return theta multiplicative terms of the affine expansion of the problem.
         Example of implementation for Poisson problem:
            m1 = self.mu[0]
            m2 = self.mu[1]
@@ -399,11 +400,11 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         """
         raise NotImplementedError("The method compute_theta() is problem-specific and needs to be overridden.")
         
-    
     @abstractmethod
     def assemble_operator(self, term):
-        """ Return forms resulting from the discretization of the affine expansion of the problem operators.
-         Example of implementation for Poisson problem:
+        """
+        Return forms resulting from the discretization of the affine expansion of the problem operators.
+        Example of implementation for Poisson problem:
            if term == "a":
                a0 = inner(grad(u),grad(v))*dx
                return (a0,)
@@ -422,10 +423,10 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         raise NotImplementedError("The method assemble_operator() is problem-specific and needs to be overridden.")
         
     def get_stability_factor(self):
-        """Return a lower bound for the coercivity constant
-         Example of implementation:
+        """
+        Return a lower bound for the coercivity constant
+        Example of implementation:
             return 1.0
-         Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason for which it is not marked as @abstractmethod
+        Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason for which it is not marked as @abstractmethod
         """
         raise NotImplementedError("The method get_stability_factor() is problem-specific and needs to be overridden.")
-            

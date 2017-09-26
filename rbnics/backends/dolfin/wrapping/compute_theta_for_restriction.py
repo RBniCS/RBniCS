@@ -28,4 +28,3 @@ def compute_theta_for_restriction(restricted_term_to_original_term):
             
         return compute_theta_for_restriction_decorator_impl
     return compute_theta_for_restriction_decorator
-        

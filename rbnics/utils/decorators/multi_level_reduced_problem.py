@@ -56,4 +56,3 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                             
     # return value (a class) for the decorator
     return MultiLevelReducedProblem_Class
-        

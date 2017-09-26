@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import ones, zeros
+from numpy import ones
 from dolfin import Constant, Expression, Function, log, PROGRESS
 from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
@@ -26,7 +26,6 @@ from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
 from ufl.tensors import ComponentTensor, ListTensor
-from rbnics.utils.io import ExportableList
 from rbnics.utils.decorators import BackendFor
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 from rbnics.backends.dolfin.wrapping import expression_name
@@ -67,7 +66,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         for integral in self._form.integrals():
             log(PROGRESS, "\t Currently on integrand " + str(integral.integrand()))
             assert not isinstance(integral.integrand(), Sum), "Please write your form as a*u*v*dx + b*u*v*dx rather than (a*u*v + b*u*v)*dx, otherwise skipping tree nodes may not work."
-            self._coefficients.append( list() ) # of ParametrizedExpression
+            self._coefficients.append(list()) # of ParametrizedExpression
             for e in iter_expressions(integral):
                 log(PROGRESS, "\t\t Expression " + str(e))
                 pre_traversal_e = [n for n in pre_traversal(e)]
@@ -92,7 +91,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                         else: # not broken
                             log(PROGRESS, "\t\t Node " + str(n) + " and its descendants are being analyzed for non-parametrized check")
                             # Make sure to skip all descendants of this node in the outer loop
-                            # Note that a map with key set to the expression is not enough to 
+                            # Note that a map with key set to the expression is not enough to
                             # mark the node as visited, since the same expression may appear
                             # on different sides of the tree
                             pre_traversal_n = [d for d in pre_traversal(n)]
@@ -178,10 +177,10 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                 self._form_unchanged.append(integral.integrand()*measure)
             else:
                 log(PROGRESS, "\t Preparing form with placeholders for integrand " + str(integral.integrand()))
-                self._placeholders.append( list() ) # of Constants
+                self._placeholders.append(list()) # of Constants
                 placeholders_dict = dict()
                 for c in integral_to_coefficients[integral]:
-                    self._placeholders[-1].append( Constant(self._NaN*ones(c.ufl_shape)) )
+                    self._placeholders[-1].append(Constant(self._NaN*ones(c.ufl_shape)))
                     placeholders_dict[c] = self._placeholders[-1][-1]
                 replacer = _SeparatedParametrizedForm_Replacer(placeholders_dict)
                 new_integrand = replacer.visit(integral.integrand())
@@ -191,11 +190,11 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         for form in self._form_with_placeholders:
             for integral in form.integrals():
                 for e in pre_traversal(integral.integrand()):
-                    assert not (isinstance(e, Expression) and "mu_0" in e.user_parameters), "Form " + str(i) + " still contains a parametrized expression"
+                    assert not (isinstance(e, Expression) and "mu_0" in e.user_parameters), "Form " + str(integral) + " still contains a parametrized expression"
         
         log(PROGRESS, "4. Prepare coefficients hash codes")
         for addend in self._coefficients:
-            self._placeholder_names.append( list() ) # of string
+            self._placeholder_names.append(list()) # of string
             for factor in addend:
                 self._placeholder_names[-1].append(expression_name(factor))
                 
@@ -225,4 +224,3 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         
     def placeholders_names(self, i):
         return self._placeholder_names[i]
-

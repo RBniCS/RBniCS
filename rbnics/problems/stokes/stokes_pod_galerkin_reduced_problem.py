@@ -29,4 +29,3 @@ StokesPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(StokesRed
 @ReducedProblemFor(StokesProblem, StokesPODGalerkinReduction)
 class StokesPODGalerkinReducedProblem(StokesPODGalerkinReducedProblem_Base):
     pass
-        

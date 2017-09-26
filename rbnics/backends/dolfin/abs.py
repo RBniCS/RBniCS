@@ -16,11 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from math import fabs, fabs as scalar_fabs
-from numpy import ndarray as VectorMatrixType, fabs as vector_matrix_fabs, argmax as vector_matrix_argmax
-from numpy.linalg import norm as vector_matrix_norm
+from math import fabs
 from ufl.core.operator import Operator
-from dolfin import as_backend_type, Point, vertices
+from dolfin import as_backend_type
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function

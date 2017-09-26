@@ -39,4 +39,3 @@ def evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_matrix, dofs_list):
         assert mat_ij_processor >= 0
         out[index] = mpi_comm.bcast(out_index, root=mat_ij_processor)
     return out
-    

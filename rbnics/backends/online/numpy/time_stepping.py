@@ -32,9 +32,7 @@ from rbnics.backends.online.numpy.assign import assign
 from rbnics.backends.online.numpy.copy import function_copy
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.linear_solver import LinearSolver
-from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver, NonlinearProblemWrapper
-from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import BackendFor
 
 @BackendFor("numpy", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
@@ -47,7 +45,7 @@ class TimeStepping(AbstractTimeStepping):
             if ic is not None:
                 assign(solution, ic)
             self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
-            self.solver  = self.problem.create_solver({"problem_type": "linear"})
+            self.solver = self.problem.create_solver({"problem_type": "linear"})
         elif problem_wrapper.time_order() == 2:
             assert solution_dot_dot is not None
             ic_eval_output = problem_wrapper.ic_eval()
@@ -57,7 +55,7 @@ class TimeStepping(AbstractTimeStepping):
                 assign(solution, ic_eval_output[0])
                 assign(solution_dot, ic_eval_output[1])
             self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
-            self.solver  = self.problem.create_solver({"problem_type": "nonlinear"})
+            self.solver = self.problem.create_solver({"problem_type": "nonlinear"})
         else:
             raise ValueError("Invalid time order in TimeStepping.__init__().")
                         
@@ -104,6 +102,9 @@ class _TimeDependentProblem1(object):
             return solver
         else:
             raise ValueError("Invalid integrator type in _TimeDependentProblem_Base.create_solver().")
+            
+class _TimeDependentProblem2(object):
+    pass
         
 class _ScipyImplicitEuler(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time, problem_type):
@@ -175,7 +176,7 @@ class _ScipyImplicitEuler(object):
             elif key == "problem_type":
                 assert value == self.problem_type
             elif key == "report":
-                if value == True:
+                if value is True:
                     def print_time(t):
                         print("# t = " + str(t))
                     self._report = print_time
@@ -365,4 +366,3 @@ if has_IDA:
             self.solution.vector()[:] = all_solutions_as_functions[-1].vector()
             self.solution_dot.vector()[:] = all_solutions_dot_as_functions[-1].vector()
             return all_times, all_solutions_as_functions, all_solutions_dot_as_functions
-            

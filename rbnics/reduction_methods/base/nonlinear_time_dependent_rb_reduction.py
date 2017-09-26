@@ -29,4 +29,3 @@ def NonlinearTimeDependentRBReduction(DifferentialProblemReductionMethod_Derived
                 
     # return value (a class) for the decorator
     return NonlinearTimeDependentRBReduction_Class
-    

@@ -27,4 +27,3 @@ NonlinearEllipticPODGalerkinReduction_Base = NonlinearPODGalerkinReduction(Nonli
 @ReductionMethodFor(NonlinearEllipticProblem, "PODGalerkin")
 class NonlinearEllipticPODGalerkinReduction(NonlinearEllipticPODGalerkinReduction_Base):
     pass
-    

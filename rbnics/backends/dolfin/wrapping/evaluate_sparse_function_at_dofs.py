@@ -61,4 +61,3 @@ def _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list):
             out.setValues(reduced_i, mpi_comm.recv(source=vec_i_processor), addv=PETSc.InsertMode.INSERT)
     out.assemble()
     out.ghostUpdate()
-    

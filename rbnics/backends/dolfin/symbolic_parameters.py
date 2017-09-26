@@ -38,4 +38,3 @@ class SymbolicParameters(AbstractSymbolicParameters, tuple):
             output = output[:-2]
             output += ")"
             return output
-            

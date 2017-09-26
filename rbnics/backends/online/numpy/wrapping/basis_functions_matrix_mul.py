@@ -16,30 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
-
 def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matrix, BasisFunctionsMatrixType):
-    Z = basis_functions_matrix.V_or_Z
-    assert isinstance(Z, AbstractFunctionsList)
-    
     raise RuntimeError("TODO") # TODO
-    output = FunctionsListType(Z)
-    dim = online_matrix.shape[1]
-    for j in range(dim):
-        assert len(online_matrix[:, j]) == len(functions)
-        output_j = function_copy(functions[0])
-        output_j.vector()[:] = 0.
-        for (i, fun_i) in enumerate(functions):
-            online_matrix_ij = float(online_matrix[i, j])
-            output_j.vector()[:] += fun_i.vector()*online_matrix_ij
-        output.enrich(output_j)
-    return output
 
 def basis_functions_matrix_mul_online_vector(basis_functions_matrix, online_vector):
     raise RuntimeError("TODO") # TODO
-    output = function_copy(functions[0])
-    output.vector()[:] = 0.
-    for (i, fun_i) in enumerate(functions):
-        online_vector_i = float(online_vector[i])
-        output.vector()[:] += fun_i.vector()*online_vector_i
-    return output

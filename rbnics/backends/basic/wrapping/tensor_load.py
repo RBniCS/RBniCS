@@ -18,4 +18,3 @@
 
 def tensor_load(tensor, directory, filename):
     pass
-

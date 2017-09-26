@@ -22,7 +22,7 @@ from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType, tuple
 from rbnics.utils.mpi import is_io_process
 
 # Type for storing a list of functions. From the user point of view this is
-# the same as a matrix. Indeed, given a Matrix A, a Vector F 
+# the same as a matrix. Indeed, given a Matrix A, a Vector F
 # and a FunctionsList Z, overriding __mul__ and __rmul__ operators
 # allows to write expressions like transpose(Z)*A*Z and transpose(Z)*F
 def FunctionsList(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
@@ -141,7 +141,7 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
         
         @overload(slice) # e.g. key = :N, return the first N functions
         def __getitem__(self, key):
-            assert key.start is None 
+            assert key.start is None
             assert key.step is None
             assert key.stop <= len(self._list)
             

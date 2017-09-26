@@ -16,11 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta
-from rbnics.utils.decorators import AbstractBackend, abstractmethod
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 # Type for storing a list of FE functions. From the user point of view this is
-# the same as a matrix. Indeed, given a TruthMatrix A, a TruthVector F 
+# the same as a matrix. Indeed, given a TruthMatrix A, a TruthVector F
 # and a FunctionsList Z, overriding __mul__ and __rmul__ operators
 # allow to write expressions like transpose(Z)*A*Z and transpose(Z)*F
 @AbstractBackend
@@ -65,4 +64,3 @@ class FunctionsList(object, metaclass=ABCMeta):
     @abstractmethod
     def __iter__(self):
         pass
-        

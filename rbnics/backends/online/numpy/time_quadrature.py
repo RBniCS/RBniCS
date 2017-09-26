@@ -39,4 +39,3 @@ class TimeQuadrature(AbstractTimeQuadrature):
         integrated_function = Function(N)
         integrated_function.vector()[:] = integrated_vector
         return integrated_function
-        

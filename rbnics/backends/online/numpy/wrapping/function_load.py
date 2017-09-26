@@ -16,9 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os # for path
 from rbnics.utils.io import NumpyIO
-from rbnics.utils.mpi import is_io_process
 
 def function_load(fun, directory, filename, suffix=None):
     if suffix is not None:
@@ -28,4 +26,3 @@ def function_load(fun, directory, filename, suffix=None):
         vec = NumpyIO.load_file(directory, filename)
         fun.vector()[:] = vec
     return file_exists
-

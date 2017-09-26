@@ -40,4 +40,3 @@ class TimeQuadrature(AbstractTimeQuadrature):
         integrated_function.vector().set_local(integrated_vector)
         integrated_function.vector().apply("insert")
         return integrated_function
-        

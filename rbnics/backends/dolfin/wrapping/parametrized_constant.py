@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
 import re
 from dolfin import Expression
 
@@ -44,4 +43,3 @@ def expression_float(self):
     else:
         return NotImplemented
 Expression.__float__ = expression_float
-

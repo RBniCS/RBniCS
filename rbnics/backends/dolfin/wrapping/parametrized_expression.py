@@ -22,10 +22,10 @@ from dolfin import Expression
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
 
 # This ideally should be a subclass of Expression. However, dolfin manual
-# states that subclassing Expression may be significantly slower than using 
+# states that subclassing Expression may be significantly slower than using
 # JIT-compiled expressions. To this end we avoid subclassing expression and
 # just add the set_mu method using the types library
-def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *args, **kwargs):    
+def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *args, **kwargs):
     if parametrized_expression_code is None:
         return None
     
@@ -70,10 +70,10 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     for (p, mu_p) in enumerate(mu):
         assert isinstance(mu_p, (Expression, Number))
         if isinstance(mu_p, Number):
-            mu_dict[ "mu_" + str(p) ] = mu_p
+            mu_dict["mu_" + str(p)] = mu_p
         elif isinstance(mu_p, Expression):
             assert is_parametrized_constant(mu_p)
-            mu_dict[ "mu_" + str(p) ] = parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0])
+            mu_dict["mu_" + str(p)] = parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0])
     del kwargs["mu"]
     kwargs.update(mu_dict)
     
@@ -100,7 +100,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
     # Note that this override is different from the one that we use in decorated problems,
     # since (1) we do not want to define a new child class, (2) we have to execute some preprocessing
-    # on the data, (3) it is a one-way propagation rather than a sync. 
+    # on the data, (3) it is a one-way propagation rather than a sync.
     # For these reasons, the decorator @sync_setters is not used but we partially duplicate some code
     
     # Possibly also keep time in sync
@@ -114,4 +114,3 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         truth_problem.set_time = types.MethodType(overridden_set_time, truth_problem)
     
     return expression
-

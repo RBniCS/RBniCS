@@ -19,4 +19,3 @@
 def gram_schmidt_projection_step(new_basis, X, old_basis, transpose):
     new_basis.vector()[:] -= (transpose(new_basis)*X*old_basis) * old_basis.vector()
     return new_basis
-

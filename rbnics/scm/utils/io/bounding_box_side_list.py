@@ -23,4 +23,3 @@ class BoundingBoxSideList(ExportableList):
         ExportableList.__init__(self, "pickle")
         if size is not None:
             self._list.extend([0. for x in range(size)])
-            

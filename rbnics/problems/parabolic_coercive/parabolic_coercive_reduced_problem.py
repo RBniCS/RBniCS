@@ -17,7 +17,6 @@
 #
 
 from rbnics.problems.base import LinearTimeDependentReducedProblem
-from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.backends import product, sum
 
 # Base class containing the interface of a projection based ROM
@@ -55,4 +54,3 @@ def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
             
     # return value (a class) for the decorator
     return ParabolicCoerciveReducedProblem_Class
-

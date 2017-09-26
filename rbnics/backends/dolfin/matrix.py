@@ -69,7 +69,7 @@ def arithmetic_with_form(operator):
 for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
     arithmetic_with_form(operator)
 
-# Define the __and__ operator to be used in combination with __invert__ operator 
+# Define the __and__ operator to be used in combination with __invert__ operator
 # of sum(product(theta, DirichletBCs)) to zero rows and columns associated to Dirichlet BCs
 def custom__and__(self, other):
     if isinstance(other, InvertProductOutputDirichletBC):
@@ -82,4 +82,3 @@ def custom__and__(self, other):
     else:
         return NotImplemented
 setattr(GenericMatrix, "__and__", custom__and__)
-

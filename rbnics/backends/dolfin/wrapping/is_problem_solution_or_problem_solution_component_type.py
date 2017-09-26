@@ -22,4 +22,3 @@ from rbnics.backends.dolfin.wrapping.function_from_subfunction_if_any import fun
 def is_problem_solution_or_problem_solution_component_type(node):
     node = function_from_subfunction_if_any(node)
     return isinstance(node, Function)
-    

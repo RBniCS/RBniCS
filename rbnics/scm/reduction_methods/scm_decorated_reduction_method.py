@@ -19,7 +19,6 @@
 from numbers import Number
 import types
 import inspect
-from rbnics.backends.common.linear_program_solver import LinearProgramSolver
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.scm.problems import SCM
 from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod
@@ -36,7 +35,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Storage for SCM reduction method
             self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, self.truth_problem.name() + "/scm")
             
-        ## OFFLINE: set maximum reduced space dimension (stopping criterion)
+        # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             assert "SCM" in kwargs
@@ -44,7 +43,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             assert isinstance(Nmax_SCM, int)
             self.SCM_reduction.set_Nmax(Nmax_SCM) # kwargs are not needed
 
-        ## OFFLINE: set tolerance (stopping criterion)
+        # OFFLINE: set tolerance (stopping criterion)
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             assert "SCM" in kwargs
@@ -52,21 +51,21 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             assert isinstance(tol_SCM, Number)
             self.SCM_reduction.set_tolerance(tol_SCM) # kwargs are not needed
             
-        ## OFFLINE: set the elements in the training set.
+        # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
             # Initialize training set of SCM reduction
             assert "SCM" in kwargs
             ntrain_SCM = kwargs["SCM"]
             import_successful_SCM = self.SCM_reduction.initialize_training_set(ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
-            # If an exception is raised we will fall back to exact evaluation, 
+            # If an exception is raised we will fall back to exact evaluation,
             # and thus we cannot use a distributed training set
             self.training_set.distributed_max = False
             self.SCM_reduction.training_set.distributed_max = False
             # Return
             return import_successful and import_successful_SCM
             
-        ## ERROR ANALYSIS: set the elements in the testing set.
+        # ERROR ANALYSIS: set the elements in the testing set.
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
             # Initialize testing set of SCM reduction
@@ -76,7 +75,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Return
             return import_successful and import_successful_SCM
             
-        ## Perform the offline phase of the reduced order model
+        # Perform the offline phase of the reduced order model
         def offline(self):
             # Perform first the SCM offline phase, ...
             bak_first_mu = self.truth_problem.mu
@@ -90,8 +89,8 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def error_analysis(self, N=None, **kwargs):
             # Perform first the SCM error analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t. 
-                                                # an exact coercivity constant, 
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
+                                                # an exact coercivity constant,
                                                 # so he probably is not interested in the error analysis of SCM
                     and
                 "SCM" not in kwargs             # otherwise we assume the user was interested in computing the error for a fixed number of SCM basis
@@ -118,8 +117,8 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def speedup_analysis(self, N=None, **kwargs):
             # Perform first the SCM speedup analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t. 
-                                                # an exact coercivity constant, 
+                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
+                                                # an exact coercivity constant,
                                                 # so he probably is not interested in the speedup analysis of SCM
                     and
                 "SCM" not in kwargs             # otherwise we assume the user was interested in computing the speedup for a fixed number of SCM basis
@@ -164,4 +163,3 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         
     # return value (a class) for the decorator
     return SCMDecoratedReductionMethod_Class
-    

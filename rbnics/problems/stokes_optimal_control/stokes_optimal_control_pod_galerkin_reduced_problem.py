@@ -27,4 +27,3 @@ StokesOptimalControlPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedPro
 @ReducedProblemFor(StokesOptimalControlProblem, StokesOptimalControlPODGalerkinReduction)
 class StokesOptimalControlPODGalerkinReducedProblem(StokesOptimalControlPODGalerkinReducedProblem_Base):
     pass
-        

@@ -20,4 +20,3 @@ from rbnics.scm.problems.scm_decorated_problem import SCMDecoratedProblem
 
 # For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
 SCM = SCMDecoratedProblem
-

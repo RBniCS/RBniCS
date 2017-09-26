@@ -24,7 +24,7 @@ NonlinearEllipticProblem_Base = NonlinearProblem(EllipticCoerciveProblem)
 
 class NonlinearEllipticProblem(NonlinearEllipticProblem_Base):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         NonlinearEllipticProblem_Base.__init__(self, V, **kwargs)
@@ -44,4 +44,3 @@ class NonlinearEllipticProblem(NonlinearEllipticProblem_Base):
         def jacobian_eval(self, solution):
             problem = self.problem
             return sum(product(problem.compute_theta("da"), problem.operator["da"]))
-    

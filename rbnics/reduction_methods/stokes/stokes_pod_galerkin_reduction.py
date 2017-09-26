@@ -27,9 +27,9 @@ StokesPODGalerkinReduction_Base = LinearPODGalerkinReduction(StokesReductionMeth
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
 @ReductionMethodFor(StokesProblem, "PODGalerkin")
-class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):    
+class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
     
-    ## Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
+    # Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
     def _init_offline(self):
         # We cannot use the standard initialization provided by PODGalerkinReduction because
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code
@@ -49,7 +49,7 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
         # Return
         return output
         
-    ## Update the snapshots matrix: overridden version because supremizer POD is different from a standard component
+    # Update the snapshots matrix: overridden version because supremizer POD is different from a standard component
     def update_snapshots_matrix(self, snapshot_and_supremizer):
         assert isinstance(snapshot_and_supremizer, tuple)
         assert len(snapshot_and_supremizer) == 2
@@ -69,4 +69,3 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
         kwargs["components"] = components
         
         StokesPODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
-        

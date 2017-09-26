@@ -27,7 +27,6 @@ def basic_expression_on_reduced_mesh(backend, wrapping):
         expression_name = expression_wrapper._name
         EIM_approximation = get_EIM_approximation_from_parametrized_expression(expression_wrapper)
         reduced_mesh = at.get_reduced_mesh()
-        reduced_V = at.get_reduced_function_space()
         
         if (expression_name, reduced_mesh) not in expression_on_reduced_mesh__expression_cache:
             visited = set()

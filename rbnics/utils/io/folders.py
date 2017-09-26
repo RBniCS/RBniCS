@@ -86,4 +86,3 @@ class Folders(dict): # dict from string to string
             return_value = self[key].create()
             global_return_value = global_return_value or return_value
         return global_return_value
-        

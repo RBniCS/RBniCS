@@ -27,9 +27,9 @@ StokesRBReduction_Base = LinearRBReduction(StokesReductionMethod(DifferentialPro
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic coercive problems
 @ReductionMethodFor(StokesProblem, "ReducedBasis")
-class StokesRBReduction(StokesRBReduction_Base):    
+class StokesRBReduction(StokesRBReduction_Base):
     
-    ## Initialize data structures required for the offline phase: overridden version because supremizer GS is different from a standard component
+    # Initialize data structures required for the offline phase: overridden version because supremizer GS is different from a standard component
     def _init_offline(self):
         # We cannot use the standard initialization provided by RBReduction because
         # supremizer GS requires a custom initialization. We thus duplicate here part of its code
@@ -49,7 +49,7 @@ class StokesRBReduction(StokesRBReduction_Base):
         # Return
         return output
     
-    ## Update the basis matrix: overridden version because the input argument now contains both snapshot and supremizer
+    # Update the basis matrix: overridden version because the input argument now contains both snapshot and supremizer
     def update_basis_matrix(self, snapshot_and_supremizer):
         assert isinstance(snapshot_and_supremizer, tuple)
         assert len(snapshot_and_supremizer) == 2
@@ -73,4 +73,3 @@ class StokesRBReduction(StokesRBReduction_Base):
         kwargs["components"] = components
         
         StokesRBReduction_Base.error_analysis(self, N, **kwargs)
-    

@@ -29,4 +29,3 @@ EllipticOptimalControlPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedP
 @ReducedProblemFor(EllipticOptimalControlProblem, EllipticOptimalControlPODGalerkinReduction)
 class EllipticOptimalControlPODGalerkinReducedProblem(EllipticOptimalControlPODGalerkinReducedProblem_Base):
     pass
-        

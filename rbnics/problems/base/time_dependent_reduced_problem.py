@@ -17,7 +17,6 @@
 #
 
 from numbers import Number
-from math import sqrt
 from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, sync_setters
@@ -29,7 +28,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
     @PreserveClassName
     class TimeDependentReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
-        ## Default initialization of members
+        # Default initialization of members
         @sync_setters("truth_problem", "set_time", "t")
         @sync_setters("truth_problem", "set_initial_time", "t0")
         @sync_setters("truth_problem", "set_time_step_size", "dt")
@@ -40,11 +39,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             # Store quantities related to the time discretization
             assert truth_problem.t == 0.
             self.t = 0.
-            self.t0  = truth_problem.t0
+            self.t0 = truth_problem.t0
             assert truth_problem.dt is not None
             self.dt = truth_problem.dt
             assert truth_problem.T is not None
-            self.T  = truth_problem.T
+            self.T = truth_problem.T
             # Additional options for time stepping may be stored in the following dict
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["initial_time"] = self.t0
@@ -66,29 +65,29 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._output_over_time = list() # of numbers
             self._output_over_time_cache = dict() # of list of numbers
             
-        ## Set current time
+        # Set current time
         def set_time(self, t):
             self.t = t
             
-        ## Set initial time
+        # Set initial time
         def set_initial_time(self, t0):
             assert isinstance(t0, Number)
             self.t0 = t0
             self._time_stepping_parameters["initial_time"] = t0
             
-        ## Set time step size
+        # Set time step size
         def set_time_step_size(self, dt):
             assert isinstance(dt, Number)
             self.dt = dt
             self._time_stepping_parameters["time_step_size"] = dt
             
-        ## Set final time
+        # Set final time
         def set_final_time(self, T):
             assert isinstance(T, Number)
             self.T = T
             self._time_stepping_parameters["final_time"] = T
             
-        ## Initialize data structures required for the online phase
+        # Initialize data structures required for the online phase
         def init(self, current_stage="online"):
             # Initialize first data structures related to initial conditions
             self._init_initial_condition(current_stage)
@@ -138,7 +137,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     self.Q_ic = Q_ic
                 assert self.initial_condition_is_homogeneous == self.truth_problem.initial_condition_is_homogeneous
                 
-        ## Assemble the reduced order affine expansion.
+        # Assemble the reduced order affine expansion.
         def build_reduced_operators(self):
             ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self)
             # Initial condition
@@ -152,7 +151,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 if not self.initial_condition_is_homogeneous:
                     self.initial_condition = self.assemble_operator("initial_condition", "offline")
                 
-        ## Assemble the reduced order affine expansion
+        # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
             assert current_stage in ("online", "offline")
             if term.startswith("initial_condition"):
@@ -303,7 +302,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def _lifting_truth_solve(self, term, i):
             assert term.startswith("dirichlet_bc")
             component = term.replace("dirichlet_bc", "").replace("_", "")
-            # Since lifting solves for different values of i are associated to the same parameter 
+            # Since lifting solves for different values of i are associated to the same parameter
             # but with a patched call to compute_theta(), which returns the i-th component, we set
             # a custom cache_key so that they are properly differentiated when reading from cache.
             lifting_over_time = self.truth_problem.solve(cache_key="lifting_" + component + "_" + str(i))
@@ -430,7 +429,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assert all([isinstance(error, Number) for error in converted_error_over_time])
                 return converted_error_over_time[k]
         
-        ## Export solution to file
+        # Export solution to file
         def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
@@ -446,4 +445,3 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class
-    

@@ -29,4 +29,3 @@ def LinearPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 
     # return value (a class) for the decorator
     return LinearPODGalerkinReduction_Class
-    

@@ -16,16 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta
-from rbnics.utils.decorators import AbstractBackend, abstractmethod
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class GramSchmidt(object, metaclass=ABCMeta):
     def __init__(self, X):
         pass
         
-    ## Apply Gram Schmidt on the basis functions matrix Z
+    # Apply Gram Schmidt on the basis functions matrix Z
     @abstractmethod
     def apply(self, Z, N_bc):
         pass
-    

@@ -23,4 +23,3 @@ def expression_iterator(expression):
     for subexpression in iter_expressions(expression):
         for node in pre_traversal(subexpression): # pre_traversal algorithms guarantees that subsolutions are processed before solutions
             yield node
-

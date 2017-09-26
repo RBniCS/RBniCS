@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import ALE, cells, PROGRESS, Expression, Function, FunctionSpace, log, MeshFunctionSizet, VectorFunctionSpace
+from dolfin import ALE, cells, Function, FunctionSpace, log, MeshFunctionSizet, PROGRESS, VectorFunctionSpace
 from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
 from rbnics.utils.decorators import BackendFor, tuple_of
@@ -92,7 +92,7 @@ class MeshMotion(AbstractMeshMotion):
         log(PROGRESS, "back to the reference mesh")
         self.mesh.coordinates()[:] = self.reference_coordinates
         
-    ## Auxiliary method to deform the domain
+    # Auxiliary method to deform the domain
     def compute_displacement(self):
         displacement = Function(self.deformation_V)
         for (subdomain, displacement_expression_on_subdomain) in enumerate(self.displacement_expression):
@@ -101,4 +101,3 @@ class MeshMotion(AbstractMeshMotion):
             subdomain_dofs = self.subdomain_id_to_deformation_dofs[subdomain]
             displacement.vector()[subdomain_dofs] = displacement_function_on_subdomain.vector()[subdomain_dofs]
         return displacement
-        

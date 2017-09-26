@@ -19,7 +19,6 @@
 from dolfin import FunctionSpace
 from rbnics.backends.basic import TensorsList as BasicTensorsList
 from rbnics.backends.dolfin.export import tensor_save
-from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.import_ import tensor_load
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector

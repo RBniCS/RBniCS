@@ -42,4 +42,3 @@ def get_EIM_approximation_from_parametrized_expression(parametrized_expression):
     return _parametrized_expression_to_EIM_approximation_map[parametrized_expression]
     
 _parametrized_expression_to_EIM_approximation_map = dict()
-

@@ -73,4 +73,3 @@ def exact_problem(decorated_problem, preserve_class_name=True):
     return _all_exact_problems[(decorated_problem, preserve_class_name)]
         
 _all_exact_problems = dict()
-

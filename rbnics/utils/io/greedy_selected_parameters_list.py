@@ -21,4 +21,3 @@ from rbnics.utils.io.exportable_list import ExportableList
 class GreedySelectedParametersList(ExportableList):
     def __init__(self):
         ExportableList.__init__(self, "pickle")
-        

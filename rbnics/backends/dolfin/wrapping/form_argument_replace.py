@@ -20,4 +20,3 @@ from dolfin import Argument
 
 def form_argument_replace(argument, reduced_V):
     return Argument(reduced_V[argument.number()], argument.number(), argument.part())
-

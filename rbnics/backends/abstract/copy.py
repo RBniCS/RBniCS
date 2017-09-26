@@ -21,4 +21,3 @@ from rbnics.utils.decorators import abstract_backend
 @abstract_backend
 def copy(arg):
     pass
-    

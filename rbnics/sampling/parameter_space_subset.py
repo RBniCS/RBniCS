@@ -66,7 +66,8 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         
     def max(self, generator, postprocessor=None):
         if postprocessor is None:
-            postprocessor = lambda value: value
+            def postprocessor(value):
+                return value
         if self.distributed_max:
             local_list_indices = list(range(self.mpi_comm.rank, len(self._list), self.mpi_comm.size)) # start from index rank and take steps of length equal to size
         else:
@@ -74,7 +75,7 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         values = array(len(local_list_indices))
         values_with_postprocessing = array(len(local_list_indices))
         for i in range(len(local_list_indices)):
-            values[i] = generator(self._list[ local_list_indices[i] ])
+            values[i] = generator(self._list[local_list_indices[i]])
             values_with_postprocessing[i] = postprocessor(values[i])
         if self.distributed_max:
             local_i_max = argmax(values_with_postprocessing)
@@ -94,4 +95,3 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         output.distributed_max = self.distributed_max
         output._list = [mu for mu in self._list if mu not in other_set]
         return output
-        

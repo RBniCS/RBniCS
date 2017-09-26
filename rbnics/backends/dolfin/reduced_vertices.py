@@ -17,13 +17,12 @@
 #
 
 from numpy import ndarray as array
-from numpy.linalg import norm
-from dolfin import Cell, FunctionSpace, Point
+from dolfin import FunctionSpace
 from rbnics.backends.abstract import ReducedVertices as AbstractReducedVertices
 from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.backends.dolfin.wrapping import assert_lagrange_1
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
-from rbnics.utils.io import ExportableList, Folders
+from rbnics.utils.io import Folders
 
 def BasicReducedVertices(backend, wrapping):
     class _BasicReducedVertices(AbstractReducedVertices):
@@ -70,14 +69,12 @@ def BasicReducedVertices(backend, wrapping):
             self._reduced_mesh.save(directory, filename)
             
         def load(self, directory, filename):
-            # Get full directory name
-            full_directory = directory + "/" + filename
             # Load reduced mesh
             return self._reduced_mesh.load(directory, filename)
             
         def __getitem__(self, key):
             assert isinstance(key, slice)
-            assert key.start is None 
+            assert key.start is None
             assert key.step is None
             output = _BasicReducedVertices.__new__(type(self), self._V, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
             output.__init__(self._V, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)

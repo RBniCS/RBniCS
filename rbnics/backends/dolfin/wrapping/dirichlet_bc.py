@@ -57,7 +57,7 @@ def custom_DirichletBC_value(self):
 DirichletBC.value = custom_DirichletBC_value
 original_DirichletBC_set_value = DirichletBC.set_value
 def custom_DirichletBC_set_value(self, g):
-    self_._value = g
+    self._value = g
     original_DirichletBC_set_value(self, g)
 DirichletBC.set_value = custom_DirichletBC_set_value
 original_DirichletBC_homogenize = DirichletBC.homogenize
@@ -101,4 +101,3 @@ class ProductOutputDirichletBC(list):
 class InvertProductOutputDirichletBC(object):
     def __init__(self, bc_list):
         self.bc_list = bc_list
-        

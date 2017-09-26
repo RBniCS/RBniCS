@@ -45,4 +45,3 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         
     def placeholders_names(self, i):
         raise RuntimeError("This method should have never been called.")
-

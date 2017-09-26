@@ -67,4 +67,3 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
             return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self, subdomain_data=subdomain_data)
         else:
             return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self)
-                    

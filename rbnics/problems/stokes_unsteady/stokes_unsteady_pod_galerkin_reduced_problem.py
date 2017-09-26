@@ -33,4 +33,3 @@ StokesUnsteadyPODGalerkinReducedProblem_Base = AbstractCFDUnsteadyPODGalerkinRed
 @ReducedProblemFor(StokesUnsteadyProblem, StokesUnsteadyPODGalerkinReduction)
 class StokesUnsteadyPODGalerkinReducedProblem(StokesUnsteadyPODGalerkinReducedProblem_Base):
     pass
-        

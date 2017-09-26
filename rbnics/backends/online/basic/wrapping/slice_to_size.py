@@ -46,5 +46,3 @@ def slice_to_size(obj, key, length_dict=None):
                 current_size[component_name] = component_size
             size.append(current_size)
     return size
-
-    

@@ -22,7 +22,7 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             
     @PreserveClassName
     class PrimalDualReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        ## Default initialization of members.
+        # Default initialization of members.
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -59,11 +59,9 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             self._output = primal_output - dual_output
             return self._output
         
-        ## Return an error bound for the current non compliant output. Overriden to use dual problem in error estimation
+        # Return an error bound for the current non compliant output. Overriden to use dual problem in error estimation
         def estimate_error_output(self):
             return self.estimate_error()*self.dual_reduced_problem.estimate_error()
         
-            
     # return value (a class) for the decorator
     return PrimalDualReducedProblem_Class
-    

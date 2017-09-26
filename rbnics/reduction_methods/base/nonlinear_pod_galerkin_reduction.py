@@ -29,4 +29,3 @@ def NonlinearPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClas
                 
     # return value (a class) for the decorator
     return NonlinearPODGalerkinReduction_Class
-    

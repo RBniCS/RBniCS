@@ -30,4 +30,3 @@ def plot(obj, *args, **kwargs):
     else:
         original_plot(obj, *args, **kwargs)
 dolfin.plot = plot
-

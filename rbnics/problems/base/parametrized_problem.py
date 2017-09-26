@@ -58,4 +58,3 @@ class ParametrizedProblem(object):
         """
         assert len(mu) == len(self.mu_range), "mu and mu_range must have the same length"
         self.mu = mu
-        

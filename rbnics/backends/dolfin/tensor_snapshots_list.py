@@ -23,4 +23,3 @@ from rbnics.utils.decorators import BackendFor
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class TensorSnapshotsList(TensorsList):
     pass
-

@@ -17,7 +17,6 @@
 #
 
 from rbnics.backends import AffineExpansionStorage
-from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.eim.problems.deim import DEIM
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 
@@ -67,7 +66,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
     @_AlsoDecorateErrorEstimationOperators
     @PreserveClassName
     class DEIMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -75,7 +74,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self.truth_problem_for_DEIM = self.truth_problem
             # ... this makes sure that, in case self.truth_problem is replaced (because of multilevel reduction)
             #     the correct problem is called for what concerns DEIM computations
-            # Storage for truth problem operators after DEIM if they are not used during the offline solve because 
+            # Storage for truth problem operators after DEIM if they are not used during the offline solve because
             # DEIM is requested only online
             self.truth_problem_operator_with_DEIM = dict()
             self.truth_problem_operator_without_DEIM = dict()

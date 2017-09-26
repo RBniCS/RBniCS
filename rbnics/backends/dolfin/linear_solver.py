@@ -83,4 +83,3 @@ class LinearSolver(AbstractLinearSolver):
         solver = PETScLUSolver("mumps")
         solver.solve(self.lhs, self.solution.vector(), self.rhs)
         return self.solution
-        

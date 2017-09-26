@@ -18,4 +18,3 @@
 
 def function_to_vector(function):
     return function.vector()
-        

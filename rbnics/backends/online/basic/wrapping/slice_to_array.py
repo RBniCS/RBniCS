@@ -41,12 +41,12 @@ def slice_to_array(obj, key, length_dict=None, index_dict=None):
             del current_slice_length_cumsum[-1]
             current_slice_start = [0]
             current_slice_start.extend(current_slice_length_cumsum)
-            current_slice_stop  = [0]*len(index_dict[slice_index])
+            current_slice_stop = [0]*len(index_dict[slice_index])
             for (component_name, basis_component_index) in index_dict[slice_index].items():
-                current_slice_stop[basis_component_index]  = current_slice_start[basis_component_index] + slice_.stop[component_name]
+                current_slice_stop[basis_component_index] = current_slice_start[basis_component_index] + slice_.stop[component_name]
             assert len(current_slice_start) == len(current_slice_stop)
             slices_start.append(current_slice_start)
-            slices_stop .append(current_slice_stop )
+            slices_stop.append(current_slice_stop)
             
     slices = list()
     assert len(slices_start) == len(slices_stop)
@@ -109,4 +109,3 @@ def _check_index_dict(key, index_dict):
     assert all([isinstance(index_dict_i, dict) or index_dict_i is None for index_dict_i in index_dict])
     assert len(key) == len(index_dict)
     return index_dict
-    

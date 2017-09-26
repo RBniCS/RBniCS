@@ -17,7 +17,7 @@
 #
 
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
-from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrization
+from rbnics.shape_parametrization.problems.shape_parametrization import ShapeParametrization
 
 @ReducedProblemDecoratorFor(ShapeParametrization)
 def ShapeParametrizationDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -32,4 +32,3 @@ def ShapeParametrizationDecoratedReducedProblem(ParametrizedReducedDifferentialP
     
     # return value (a class) for the decorator
     return ShapeParametrizationDecoratedReducedProblem_Class
-    

@@ -18,14 +18,13 @@
 
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
-from rbnics.scm.problems.scm import SCM
 
 @ReducedProblemDecoratorFor(ExactCoercivityConstant)
 def ExactCoercivityConstantDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
     @PreserveClassName
     class ExactCoercivityConstantDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        ## Default initialization of members
+        # Default initialization of members
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

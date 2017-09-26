@@ -31,4 +31,3 @@ def form_iterator(form, iterator_type="nodes"):
             yield integral
     else:
         raise ValueError("Invalid iterator type")
-

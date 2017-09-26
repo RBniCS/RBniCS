@@ -65,7 +65,7 @@ def basic_tensor_load(backend, wrapping):
         
     @overload(backend.Matrix.Type(), (Folders.Folder, str), str, Form, str, object)
     def _permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
-        if not form_name in _permutation_storage:
+        if form_name not in _permutation_storage:
             if not PickleIO.exists_file(directory, "." + form_name):
                 return (None, False)
             else:
@@ -76,7 +76,7 @@ def basic_tensor_load(backend, wrapping):
                 (V_0__dof_map_writer_mapping, V_1__dof_map_writer_mapping) = PickleIO.load_file(directory, "." + form_name)
                 matrix_row_permutation = dict() # from row index at time of saving to current row index
                 matrix_col_permutation = dict() # from col index at time of saving to current col index
-                (writer_mat, loaded) = matrix_load(directory, filename)
+                (writer_mat, loaded) = _matrix_load(directory, filename)
                 if not loaded:
                     return (None, False)
                 writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
@@ -94,7 +94,7 @@ def basic_tensor_load(backend, wrapping):
                 
     @overload(backend.Vector.Type(), (Folders.Folder, str), str, Form, str, object)
     def _permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
-        if not form_name in _permutation_storage:
+        if form_name not in _permutation_storage:
             if not PickleIO.exists_file(directory, "." + form_name):
                 return (None, False)
             else:
@@ -102,7 +102,7 @@ def basic_tensor_load(backend, wrapping):
                 V_0__dof_map_reader_mapping = wrapping.build_dof_map_reader_mapping(V_0)
                 V_0__dof_map_writer_mapping = PickleIO.load_file(directory, "." + form_name)
                 vector_permutation = dict() # from index at time of saving to current index
-                (writer_vec, loaded) = vector_load(directory, filename)
+                (writer_vec, loaded) = _vector_load(directory, filename)
                 if not loaded:
                     return (None, False)
                 writer_row_start, writer_row_end = writer_vec.getOwnershipRange()
@@ -127,7 +127,7 @@ def basic_tensor_load(backend, wrapping):
                 writer_cols, vals = writer_mat.getRow(writer_row)
                 cols = list()
                 for writer_col in writer_cols:
-                    cols.append( matrix_col_permutation[writer_col] )
+                    cols.append(matrix_col_permutation[writer_col])
                 mat.setValues(row, cols, vals, addv=PETSc.InsertMode.INSERT)
             mat.assemble()
             return True

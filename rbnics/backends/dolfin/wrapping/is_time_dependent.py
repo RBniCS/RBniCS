@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Expression, Function
+from dolfin import Expression
 from rbnics.utils.decorators import get_problem_from_solution
 
 def basic_is_time_dependent(backend, wrapping):

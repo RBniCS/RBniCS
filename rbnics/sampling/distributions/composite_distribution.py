@@ -62,4 +62,3 @@ class CompositeDistribution(Distribution):
         # ... and convert each mu to a tuple
         set_ = [tuple(mu) for mu in set_as_list]
         return set_
-        

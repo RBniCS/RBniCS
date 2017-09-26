@@ -17,7 +17,6 @@
 #
 
 # Declare abstract vector type
-from abc import abstractclassmethod, abstractmethod, abstractproperty
 import inspect
 from functools import wraps
 from rbnics.utils.decorators.backend_for import _cache as backends_cache

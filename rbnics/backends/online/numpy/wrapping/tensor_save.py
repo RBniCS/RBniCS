@@ -20,4 +20,3 @@ from rbnics.utils.io import NumpyIO
 
 def tensor_save(tensor, directory, filename):
     NumpyIO.save_file(tensor, directory, filename)
-

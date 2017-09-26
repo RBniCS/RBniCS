@@ -55,5 +55,3 @@ transpose_base = basic_transpose(backend, wrapping, online_backend, online_wrapp
 @backend_for("dolfin", inputs=((BasisFunctionsMatrix, Form, Function.Type(), FunctionsList, Operator, TensorsList, Vector.Type()), ))
 def transpose(arg):
     return transpose_base(arg)
-    
-        

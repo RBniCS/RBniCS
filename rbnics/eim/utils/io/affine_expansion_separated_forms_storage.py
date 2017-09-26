@@ -30,4 +30,3 @@ class AffineExpansionSeparatedFormsStorage(object):
         
     def __len__(self):
         return self._content.size
-        

@@ -30,4 +30,3 @@ ParabolicCoercivePODGalerkinReducedProblem_Base = LinearTimeDependentPODGalerkin
 @ReducedProblemFor(ParabolicCoerciveProblem, ParabolicCoercivePODGalerkinReduction)
 class ParabolicCoercivePODGalerkinReducedProblem(ParabolicCoercivePODGalerkinReducedProblem_Base):
     pass
-        

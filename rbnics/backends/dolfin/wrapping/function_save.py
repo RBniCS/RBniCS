@@ -17,7 +17,7 @@
 #
 
 import os # for path
-from dolfin import assign, File, has_hdf5, has_hdf5_parallel, XDMFFile
+from dolfin import assign, File, has_hdf5_parallel, XDMFFile
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 from rbnics.utils.mpi import is_io_process

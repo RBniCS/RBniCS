@@ -39,4 +39,3 @@ class Timer(object):
             return self._comm.allreduce(elapsed, op=SUM)
         else:
             raise ValueError("Invalid mode for timer")
-        
