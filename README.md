@@ -1,4 +1,5 @@
-## ![RBniCS - reduced order modelling in FEniCS](https://gitlab.com/RBniCS/RBniCS/raw/master/doc/rbnics-logo-small.png "RBniCS - reduced order modelling in FEniCS") RBniCS - reduced order modelling in FEniCS ##
+## RBniCS - reduced order modelling in FEniCS ##
+![RBniCS - reduced order modelling in FEniCS](https://gitlab.com/RBniCS/RBniCS/raw/master/doc/rbnics-logo-small.png "RBniCS - reduced order modelling in FEniCS")
 
 ### 0. Introduction
 **RBniCS** is an implementation in **FEniCS** of several reduced order modelling techniques (and, in particular, certified reduced basis method and Proper Orthogonal Decomposition-Galerkin methods) for coercive problems. It is ideally suited for an introductory course on reduced basis methods and reduced order modelling, thanks to an object-oriented approach and an intuitive and versatile python interface. To this end, it has been employed in several doctoral courses on "Reduced Basis Methods for Computational Mechanics".
@@ -11,25 +12,19 @@ Several tutorials are provided. This software is also a companion of the introdu
 
 ### 1. Prerequisites
 **RBniCS** requires
-* **FEniCS**, with PETSc and SLEPc, for computations during the offline stage;
-* **numpy** for computations during the online stage;
-* **python-glpk**, a python interface to the glpk library for linear programming, necessary for the successive constraints method.
+* **FEniCS** (>= 2017.2.0, python 3, SWIG interface), with PETSc, petsc4py and SLEPc, for computations during the offline stage;
+* **numpy** and **scipy** for computations during the online stage.
+
+Additional requirements are automatically handled during the setup.
 
 ### 2. Installation and usage
 Simply clone the **RBniCS** public repository:
 ```
-git clone https://gitlab.com/RBniCS/RBniCS.git /RB/ni/CS/path
+git clone https://gitlab.com/RBniCS/RBniCS.git
 ```
-The core of the **RBniCS** code is in the **RBniCS** subfolder of the repository.
-
-Then Make sure that both **FEniCS** and **RBniCS** are in your PYTHONPATH,
+and install the package by typing
 ```
-source /FE/ni/CS/path/share/fenics/fenics.conf
-export PYTHONPATH="/RB/ni/CS/path:$PYTHONPATH"
-```
-and run a **RBniCS** python script (such as the tutorials) as follows:
-```
-python RBniCS_example.py
+python3 setup.py install
 ```
 
 ### 3. RBniCS virtual machine
@@ -49,11 +44,13 @@ Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/
 
 ### 5. Authors and contributors
 **RBniCS** is currently developed and mantained at [SISSA mathLab](http://mathlab.sissa.it/) by
-* [Dr. Francesco Ballarin](mailto:francesco.ballarin@sissa.it)
-* [Dr. Alberto Sartori](mailto:alberto.sartori@sissa.it)
-* [Prof. Gianluigi Rozza](mailto:gianluigi.rozza@sissa.it)
+* [Dr. Francesco Ballarin](http://people.sissa.it/~fballarin/)
+* [Dr. Alberto Sartori](https://scholar.google.it/citations?user=rdoHp_EAAAAJ&hl=en)
+* [Prof. Gianluigi Rozza](http://people.sissa.it/~grozza/)
 
-Contact us by email for further information or questions about **RBniCS**, or open an ''Issue'' on this website. **RBniCS** is at an early development stage, so contributions improving either the code or the documentation are welcome, both as patches or merge requests on this website.
+in the framework of the [AROMA-CFD ERC CoG project](http://people.sissa.it/~grozza/aroma-cfd/). Please see the [AUTHORS file](https://gitlab.com/RBniCS/RBniCS/raw/master/AUTHORS) for a list of contributors.
+
+Contact us by [email](mailto:francesco.ballarin@sissa.it) for further information or questions about **RBniCS**, or open an issue on [our issue tracker](https://gitlab.com/RBniCS/RBniCS/issues). **RBniCS** is at an early development stage, so contributions improving either the code or the documentation are welcome, both as patches or [merge requests](https://gitlab.com/RBniCS/RBniCS/merge_requests).
 
 ### 6. How to cite
 If you use **RBniCS** in your work, please use the following citations to reference **RBniCS**
