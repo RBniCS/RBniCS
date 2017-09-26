@@ -1,0 +1,2 @@
+recursive-include rbnics *.py
+global-exclude __pycache__ *.pyc

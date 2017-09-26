@@ -16,12 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-__author__ = "Francesco Ballarin, Gianluigi Rozza, Alberto Sartori"
-__copyright__ = "Copyright 2015-2017 by the RBniCS authors"
-__license__ = "LGPL"
-__version__ = "0.0.1"
-__email__ = "francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it"
-
 # Set empty __all__ variable to be possibly extended by backends
 __all__ = []
 
