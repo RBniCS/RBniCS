@@ -44,7 +44,17 @@ setup(name="RBniCS",
           "cvxopt",
           "mpi4py",
           "multipledispatch",
+          "pytest-runner",
           "toposort"
+      ],
+      tests_require=[
+          "pytest",
+          "pytest-benchmark",
+          "pytest-dependency",
+          "pytest-flake8",
+          "pytest-html",
+          "pytest-instafail",
+          "pytest-xdist"
       ],
       zip_safe=False
       )
