@@ -100,7 +100,7 @@ def Vector_Transpose(backend, wrapping, online_backend, online_wrapping, Additio
         @overload(object, )
         def __init__(self, vector):
             if AdditionalIsFunction(vector):
-                self.vector = ConvertAdditionalFunctionTypes(vector)
+                self.vector = wrapping.function_to_vector(ConvertAdditionalFunctionTypes(vector))
             elif AdditionalIsVector(vector):
                 self.vector = ConvertAdditionalVectorTypes(vector)
             else:
