@@ -618,12 +618,16 @@ def supercedes(A, B):
                 if type(a) == type(b):
                     if not supercedes((a.types, ), (b.types, )):
                         return False
+                elif b is object:
+                    return True
                 else:
                     return False
             elif isinstance(a, _dict_of):
                 if isinstance(b, _dict_of):
                     if not supercedes((a.types_from, ), (b.types_from, )) or not supercedes((a.types_to, ), (b.types_to, )):
                         return False
+                elif b is object:
+                    return True
                 else:
                     return False
             elif isinstance(a, (list, tuple)):
