@@ -89,7 +89,7 @@ class EigenSolver(AbstractEigenSolver):
         mat = as_backend_type(mat)
         
         petsc_version = PETSc.Sys().getVersionInfo()
-        if petsc_version["major"] == 3 and petsc_version["minor"] <= 7 and petsc_version["release"] is True:
+        if petsc_version["major"] == 3 and petsc_version["minor"] <= 7:
             condensed_mat = mat.mat().getSubMatrix(self._is, self._is)
         else:
             condensed_mat = mat.mat().createSubMatrix(self._is, self._is)
