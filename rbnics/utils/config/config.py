@@ -67,14 +67,17 @@ class Config(object):
         self._config_as_dict = dict()
         self._parser_to_dict()
         
-    def read(self):
+    def read(self, directory=None):
         # Read from configparser
         config_files_list = list()
         config_files_list.append(os.path.join(self.rbnics_directory, ".rbnicsrc"))
-        if hasattr(sys.modules["__main__"], "__file__"): # from script
-            main_directory = os.path.dirname(os.path.realpath(sys.modules["__main__"].__file__))
-        else: # interactive
-            main_directory = os.getcwd()
+        if directory is None:
+            if hasattr(sys.modules["__main__"], "__file__"): # from script
+                main_directory = os.path.dirname(os.path.realpath(sys.modules["__main__"].__file__))
+            else: # interactive
+                main_directory = os.getcwd()
+        else:
+            main_directory = directory
         main_directory_split = main_directory.split(os.path.sep)
         for p in range(len(main_directory_split), 0, -1):
             new_config_file_list = list()
@@ -88,9 +91,9 @@ class Config(object):
         # Update dict
         self._parser_to_dict()
         
-    def write(self, filename):
+    def write(self, file_):
         if is_io_process():
-            self._config_as_parser.write(filename)
+            self._config_as_parser.write(file_)
         
     def get(self, section, option):
         return self._config_as_dict[section][option]
