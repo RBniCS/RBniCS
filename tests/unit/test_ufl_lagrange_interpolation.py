@@ -16,113 +16,143 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import pytest
 from numpy import isclose
-from dolfin import *
-import time
-from rbnics.backends.dolfin import transpose
+from dolfin import Constant, Expression, FiniteElement, Function, FunctionSpace, LagrangeInterpolator, MixedElement, project, UnitSquareMesh, VectorElement, VectorFunctionSpace
 from rbnics.backends.dolfin.wrapping import ufl_lagrange_interpolation
 
-mesh = UnitSquareMesh(2, 2)
-interpolator = LagrangeInterpolator()
-
+# Mesh
+@pytest.fixture(scope="module")
+def mesh():
+    return UnitSquareMesh(2, 2)
+    
 # Prepare a Function containing the coordinate x.
 # We cannot use SpatialCoordinates since it is not implemented with dP
 # Moreover, we use CG2 elements to show that the expression may involve FE functions of arbitrary degree
-x_expression = Expression(("x[0]", "x[1]"), degree=1)
-X = VectorFunctionSpace(mesh, "Lagrange", 2)
-x = project(x_expression, X)
+@pytest.fixture(scope="module")
+def X(mesh):
+    return VectorFunctionSpace(mesh, "Lagrange", 2)
+    
+@pytest.fixture(scope="module")
+def x(X):
+    return project(Expression(("x[0]", "x[1]"), degree=1), X)
 
 # Prepare a Function on a mixed function space
-xs_expression = Expression(("x[0]", "x[1]", "x[0] + x[1]"), degree=1)
-element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
-element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-element   = MixedElement(element_0, element_1)
-XS = FunctionSpace(mesh, element)
-xs = project(xs_expression, XS)
+@pytest.fixture(scope="module")
+def XS(mesh):
+    element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(element_0, element_1)
+    return FunctionSpace(mesh, element)
+    
+@pytest.fixture(scope="module")
+def xs(XS):
+    return project(Expression(("x[0]", "x[1]", "x[0] + x[1]"), degree=1), XS)
 
 # ~~~ Scalar case ~~~ #
-V = FunctionSpace(mesh, "Lagrange", 1)
+def ScalarSpace(mesh):
+    return FunctionSpace(mesh, "Lagrange", 1)
 
-e1a = Expression("x[0] + pow(x[1], 2)", element=V.ufl_element())
-u1a = Function(V)
-interpolator.interpolate(u1a, e1a)
-e1b = e1a
-u1b = Function(V)
-ufl_lagrange_interpolation(u1b, e1b)
-assert isclose(u1a.vector().array(), u1b.vector().array()).all()
+def test_scalar_1(mesh):
+    V = ScalarSpace(mesh)
+    e1a = Expression("x[0] + pow(x[1], 2)", element=V.ufl_element())
+    u1a = Function(V)
+    LagrangeInterpolator.interpolate(u1a, e1a)
+    e1b = e1a
+    u1b = Function(V)
+    ufl_lagrange_interpolation(u1b, e1b)
+    assert isclose(u1a.vector().array(), u1b.vector().array()).all()
 
-e2a = Expression("x[0] + pow(x[1], 2) + 1", element=V.ufl_element())
-u2a = Function(V)
-interpolator.interpolate(u2a, e2a)
-e2b = e1b + 1
-u2b = Function(V)
-ufl_lagrange_interpolation(u2b, e2b)
-assert isclose(u2a.vector().array(), u2b.vector().array()).all()
+def test_scalar_2(mesh):
+    V = ScalarSpace(mesh)
+    e2a = Expression("x[0] + pow(x[1], 2) + 1", element=V.ufl_element())
+    u2a = Function(V)
+    LagrangeInterpolator.interpolate(u2a, e2a)
+    e2b = Expression("x[0] + pow(x[1], 2)", element=V.ufl_element()) + 1
+    u2b = Function(V)
+    ufl_lagrange_interpolation(u2b, e2b)
+    assert isclose(u2a.vector().array(), u2b.vector().array()).all()
 
-e3a = e1a
-u3a = Function(V)
-interpolator.interpolate(u3a, e3a)
-e3b = x[0] + x[1]**2
-u3b = Function(V)
-ufl_lagrange_interpolation(u3b, e3b)
-assert isclose(u3a.vector().array(), u3b.vector().array()).all()
+def test_scalar_3(mesh, x):
+    V = ScalarSpace(mesh)
+    e3a = Expression("x[0] + pow(x[1], 2)", element=V.ufl_element())
+    u3a = Function(V)
+    LagrangeInterpolator.interpolate(u3a, e3a)
+    e3b = x[0] + x[1]**2
+    u3b = Function(V)
+    ufl_lagrange_interpolation(u3b, e3b)
+    assert isclose(u3a.vector().array(), u3b.vector().array()).all()
 
-e4a = e2a
-u4a = Function(V)
-interpolator.interpolate(u4a, e4a)
-e4b = e3b + 1
-u4b = Function(V)
-ufl_lagrange_interpolation(u4b, e4b)
-assert isclose(u4a.vector().array(), u4b.vector().array()).all()
+def test_scalar_4(mesh, x):
+    V = ScalarSpace(mesh)
+    e4a = Expression("x[0] + pow(x[1], 2) + 1", element=V.ufl_element())
+    u4a = Function(V)
+    LagrangeInterpolator.interpolate(u4a, e4a)
+    e4b = x[0] + x[1]**2 + 1
+    u4b = Function(V)
+    ufl_lagrange_interpolation(u4b, e4b)
+    assert isclose(u4a.vector().array(), u4b.vector().array()).all()
 
-e5a = Expression("2*x[0] + x[1] + pow(x[1], 2)", element=V.ufl_element())
-u5a = Function(V)
-interpolator.interpolate(u5a, e5a)
-e5b = xs[0] + xs[1]**2 + xs[2]
-u5b = Function(V)
-ufl_lagrange_interpolation(u5b, e5b)
-assert isclose(u5a.vector().array(), u5b.vector().array()).all()
+def test_scalar_5(mesh, xs):
+    V = ScalarSpace(mesh)
+    e5a = Expression("2*x[0] + x[1] + pow(x[1], 2)", element=V.ufl_element())
+    u5a = Function(V)
+    LagrangeInterpolator.interpolate(u5a, e5a)
+    e5b = xs[0] + xs[1]**2 + xs[2]
+    u5b = Function(V)
+    ufl_lagrange_interpolation(u5b, e5b)
+    assert isclose(u5a.vector().array(), u5b.vector().array()).all()
 
-e6a = Expression("2*x[0] + x[1] + pow(x[1], 2) + 1", element=V.ufl_element())
-u6a = Function(V)
-interpolator.interpolate(u6a, e6a)
-e6b = e5b + 1
-u6b = Function(V)
-ufl_lagrange_interpolation(u6b, e6b)
-assert isclose(u6a.vector().array(), u6b.vector().array()).all()
+def test_scalar_6(mesh, xs):
+    V = ScalarSpace(mesh)
+    e6a = Expression("2*x[0] + x[1] + pow(x[1], 2) + 1", element=V.ufl_element())
+    u6a = Function(V)
+    LagrangeInterpolator.interpolate(u6a, e6a)
+    e6b = xs[0] + xs[1]**2 + xs[2] + 1
+    u6b = Function(V)
+    ufl_lagrange_interpolation(u6b, e6b)
+    assert isclose(u6a.vector().array(), u6b.vector().array()).all()
 
 # ~~~ Vector case ~~~ #
-V = VectorFunctionSpace(mesh, "Lagrange", 1)
+def VectorSpace(mesh):
+    return VectorFunctionSpace(mesh, "Lagrange", 1)
 
-e1a = Expression(("x[0] + pow(x[1], 2)", "pow(x[0], 3) + pow(x[1], 4)"), element=V.ufl_element())
-u1a = Function(V)
-interpolator.interpolate(u1a, e1a)
-e1b = e1a
-u1b = Function(V)
-ufl_lagrange_interpolation(u1b, e1b)
-assert isclose(u1a.vector().array(), u1b.vector().array()).all()
+def test_vector_1(mesh):
+    V = VectorSpace(mesh)
+    e1a = Expression(("x[0] + pow(x[1], 2)", "pow(x[0], 3) + pow(x[1], 4)"), element=V.ufl_element())
+    u1a = Function(V)
+    LagrangeInterpolator.interpolate(u1a, e1a)
+    e1b = e1a
+    u1b = Function(V)
+    ufl_lagrange_interpolation(u1b, e1b)
+    assert isclose(u1a.vector().array(), u1b.vector().array()).all()
 
-e2a = Expression(("x[0] + pow(x[1], 2) + 1", "pow(x[0], 3) + pow(x[1], 4) + 2"), element=V.ufl_element())
-u2a = Function(V)
-interpolator.interpolate(u2a, e2a)
-e2b = e1b + Constant((1, 2))
-u2b = Function(V)
-ufl_lagrange_interpolation(u2b, e2b)
-assert isclose(u2a.vector().array(), u2b.vector().array()).all()
+def test_vector_2(mesh):
+    V = VectorSpace(mesh)
+    e2a = Expression(("x[0] + pow(x[1], 2) + 1", "pow(x[0], 3) + pow(x[1], 4) + 2"), element=V.ufl_element())
+    u2a = Function(V)
+    LagrangeInterpolator.interpolate(u2a, e2a)
+    e2b = Expression(("x[0] + pow(x[1], 2)", "pow(x[0], 3) + pow(x[1], 4)"), element=V.ufl_element()) + Constant((1, 2))
+    u2b = Function(V)
+    ufl_lagrange_interpolation(u2b, e2b)
+    assert isclose(u2a.vector().array(), u2b.vector().array()).all()
 
-e3a = e1a
-u3a = Function(V)
-interpolator.interpolate(u3a, e3a)
-e3b = project(e3a, X)
-u3b = Function(V)
-ufl_lagrange_interpolation(u3b, e3b)
-assert isclose(u3a.vector().array(), u3b.vector().array()).all()
+def test_vector_3(mesh, X):
+    V = VectorSpace(mesh)
+    e3a = Expression(("x[0] + pow(x[1], 2)", "pow(x[0], 3) + pow(x[1], 4)"), element=V.ufl_element())
+    u3a = Function(V)
+    LagrangeInterpolator.interpolate(u3a, e3a)
+    e3b = project(e3a, X)
+    u3b = Function(V)
+    ufl_lagrange_interpolation(u3b, e3b)
+    assert isclose(u3a.vector().array(), u3b.vector().array()).all()
 
-e4a = e2a
-u4a = Function(V)
-interpolator.interpolate(u4a, e4a)
-e4b = e3b + Constant((1, 2))
-u4b = Function(V)
-ufl_lagrange_interpolation(u4b, e4b)
-assert isclose(u4a.vector().array(), u4b.vector().array()).all()
-
+def test_vector_4(mesh, X):
+    V = VectorSpace(mesh)
+    e4a = Expression(("x[0] + pow(x[1], 2) + 1", "pow(x[0], 3) + pow(x[1], 4) + 2"), element=V.ufl_element())
+    u4a = Function(V)
+    LagrangeInterpolator.interpolate(u4a, e4a)
+    e4b = project(Expression(("x[0] + pow(x[1], 2)", "pow(x[0], 3) + pow(x[1], 4)"), element=V.ufl_element()), X) + Constant((1, 2))
+    u4b = Function(V)
+    ufl_lagrange_interpolation(u4b, e4b)
+    assert isclose(u4a.vector().array(), u4b.vector().array()).all()

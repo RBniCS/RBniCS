@@ -17,7 +17,7 @@
 #
 
 from numpy import isclose
-from dolfin import *
+from dolfin import assemble, DirichletBC, DOLFIN_EPS, dx, Expression, Function, FunctionSpace, grad, inner, IntervalMesh, pi, project, TestFunction, TrialFunction
 from rbnics.backends.dolfin import LinearSolver as SparseLinearSolver
 from rbnics.backends.online.numpy import Function as DenseFunction, LinearSolver as DenseLinearSolver, Matrix as DenseMatrix, Vector as DenseVector
 
@@ -28,67 +28,61 @@ Solve
 for g such that u = u_ex = x + sin(2*x)
 """
 
-# Create mesh and define function space
-mesh = IntervalMesh(132, 0, 2*pi)
-V = FunctionSpace(mesh, "Lagrange", 1)
-
-# Define Dirichlet boundary (x = 0 or x = 2*pi)
-def boundary(x):
-    return x[0] < 0 + DOLFIN_EPS or x[0] > 2*pi - 10*DOLFIN_EPS
-    
-# Define exact solution
-exact_solution_expression = Expression("x[0] + sin(2*x[0])", element=V.ufl_element())
-exact_solution = project(exact_solution_expression, V)
-
-# Define variational problem
-u = TrialFunction(V)
-v = TestFunction(V)
-g = Expression("4*sin(2*x[0])", element=V.ufl_element())
-a = inner(grad(u), grad(v))*dx
-f = g*v*dx
-x = inner(u, v)*dx
-
-# Assemble matrix and vector
-A = assemble(a)
-F = assemble(f)
-X = assemble(x)
-
 # ~~~ Sparse case ~~~ #
-# Define boundary condition
-bc = [DirichletBC(V, exact_solution_expression, boundary)]
+def _test_linear_solver_sparse(callback_type):
+    # Create mesh and define function space
+    mesh = IntervalMesh(132, 0, 2*pi)
+    V = FunctionSpace(mesh, "Lagrange", 1)
 
-# ::: Callbacks return tensors :: #
-# Solve the linear problem
-sparse_solution = Function(V)
-sparse_solver = SparseLinearSolver(A, sparse_solution, F, bc)
-sparse_solver.solve()
+    # Define Dirichlet boundary (x = 0 or x = 2*pi)
+    def boundary(x):
+        return x[0] < 0 + DOLFIN_EPS or x[0] > 2*pi - 10*DOLFIN_EPS
+        
+    # Define exact solution
+    exact_solution_expression = Expression("x[0] + sin(2*x[0])", element=V.ufl_element())
+    exact_solution = project(exact_solution_expression, V)
 
-# Compute the error
-sparse_error = Function(V)
-sparse_error.vector().add_local(+ sparse_solution.vector().array())
-sparse_error.vector().add_local(- exact_solution.vector().array())
-sparse_error.vector().apply("")
-sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-print("SparseLinearSolver error (tensor callbacks):", sparse_error_norm)
-assert isclose(sparse_error_norm, 0., atol=1.e-5)
+    # Define variational problem
+    u = TrialFunction(V)
+    v = TestFunction(V)
+    g = Expression("4*sin(2*x[0])", element=V.ufl_element())
+    a = inner(grad(u), grad(v))*dx
+    f = g*v*dx
+    x = inner(u, v)*dx
 
-# ::: Callbacks return forms :: #
-# Solve the linear problem
-sparse_solution = Function(V)
-sparse_solver = SparseLinearSolver(a, sparse_solution, f, bc)
-sparse_solver.solve()
+    # Assemble inner product matrix
+    X = assemble(x)
+    
+    # Define boundary condition
+    bc = [DirichletBC(V, exact_solution_expression, boundary)]
+    
+    # Defin solution
+    sparse_solution = Function(V)
+    
+    # Define linear solver depending on callback type, and solve the problem
+    assert callback_type in ("form callbacks", "tensor callbacks")
+    if callback_type == "form callbacks":
+        A = None
+        F = None
+        sparse_solver = SparseLinearSolver(a, sparse_solution, f, bc)
+    elif callback_type == "tensor callbacks":
+        A = assemble(a)
+        F = assemble(f)
+        sparse_solver = SparseLinearSolver(A, sparse_solution, F, bc)
+    sparse_solver.solve()
 
-# Compute the error
-sparse_error = Function(V)
-sparse_error.vector().add_local(+ sparse_solution.vector().array())
-sparse_error.vector().add_local(- exact_solution.vector().array())
-sparse_error.vector().apply("")
-sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-print("SparseLinearSolver error (form callbacks):", sparse_error_norm)
-assert isclose(sparse_error_norm, 0., atol=1.e-5)
+    # Compute the error
+    sparse_error = Function(V)
+    sparse_error.vector().add_local(+ sparse_solution.vector().array())
+    sparse_error.vector().add_local(- exact_solution.vector().array())
+    sparse_error.vector().apply("")
+    sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
+    print("SparseLinearSolver error (" + callback_type + "):", sparse_error_norm)
+    assert isclose(sparse_error_norm, 0., atol=1.e-5)
+    return (sparse_error_norm, V, A, F, X, exact_solution)
 
 # ~~~ Dense case ~~~ #
-if mesh.mpi_comm().size == 1: # dense solver is not partitioned
+def _test_linear_solver_dense(V, A, F, X, exact_solution):
     # Define boundary condition
     x_to_dof = dict(zip(V.tabulate_dof_coordinates(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
@@ -130,7 +124,14 @@ if mesh.mpi_comm().size == 1: # dense solver is not partitioned
     dense_error_norm = dense_error_norm[0, 0]
     print("DenseLinearSolver error:", dense_error_norm)
     assert isclose(dense_error_norm, 0., atol=1.e-5)
-else:
-    print("DenseLinearSolver error: skipped in parallel")
+    return dense_error_norm
     
-
+# ~~~ Test function ~~~ #
+def test_linear_solver():
+    (error_sparse_tensor_callbacks, V, A, F, X, exact_solution) = _test_linear_solver_sparse("tensor callbacks")
+    (error_sparse_form_callbacks, _, _, _, _, _) = _test_linear_solver_sparse("form callbacks")
+    assert isclose(error_sparse_tensor_callbacks, error_sparse_form_callbacks)
+    if V.mesh().mpi_comm().size == 1: # dense solver is not partitioned
+        error_dense = _test_linear_solver_dense(V, A, F, X, exact_solution)
+        assert isclose(error_dense, error_sparse_tensor_callbacks)
+        assert isclose(error_dense, error_sparse_form_callbacks)

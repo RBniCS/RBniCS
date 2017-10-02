@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import pytest
 import sys
 import types
 import inspect
@@ -27,56 +28,85 @@ from multipledispatch.utils import raises
 from rbnics.utils.decorators import dict_of, dispatch, list_of, overload, tuple_of
 from rbnics.utils.decorators.dispatch import AmbiguousSignatureError, consistent, Dispatcher, InvalidSignatureError, MethodDispatcher_Wrapper as MethodDispatcher, supercedes, UnavailableSignatureError
 
-# Run tests (this is not a function because its code needs to be executed at the global scope)
-run_tests = """
-tests = dict(inspect.currentframe().f_locals)
-for (test_name, test) in tests.items():
-    if test_name.startswith("test_") and test_name not in tests_blacklist:
-        print("Running", test_name)
-        vars_before = set(inspect.currentframe().f_locals.keys())
-        test()
-        # Clean up new variable which may have been added to the global namespace by @dispatch
-        new_vars = set(inspect.currentframe().f_locals.keys()) - vars_before
-        exec("del " + test_name)
-        for new_var in new_vars:
-            exec("del " + new_var)
-        del new_var
-        del new_vars
-del test_name
-del test
-"""
+# Fixture to clean up current module after test execution
+@pytest.fixture
+def clean_main_module():
+    current_state = dict(sys.modules[__name__].__dict__)
+    for (name, val) in current_state.items():
+        if isinstance(val, Dispatcher):
+            delattr(sys.modules[__name__], name)
+            
+def apply_clean_main_module_to_tests():
+    current_state = dict(sys.modules[__name__].__dict__)
+    for (name, val) in current_state.items():
+        if inspect.isfunction(val) and val.__name__.startswith("test_"):
+            delattr(sys.modules[__name__], name)
+            setattr(sys.modules[__name__], name, pytest.mark.usefixtures("clean_main_module")(val))
 
-# Download official tests
-def run_multipledispatch_tests(file_name, start_from_line):
+# Prepare tests blacklist from upstream tests
+tests_blacklist = {
+    "test_conflict.py": [
+        "test_super_signature", "test_type_mro", # we are not interested in the super signature warning
+    ],
+    "test_core.py": [
+        "test_competing_ambiguous", # patched version raises an error rather than a warning and this would stop the execution
+        "test_namespaces", # we have replaced namespaces with modules so it makes no sense to test this
+    ],
+    "test_dispatcher.py": [
+        "test_register_instance_method", "test_register_stacking", "test_dispatch_method", # created a custom version of that replaces unallowed list with list_of(int) and tuple_of(int)
+        "test_source", # disabled because of incompatibility with exec (failure with OSError)
+        "test_not_implemented", "test_not_implemented_error", # handling of MDNotImplementedError has been disabled by us
+    ]
+}
+
+# Prepare additional test renames
+test_renames = {
+    "test_conflict.py": {},
+    "test_core.py": {
+        "test_union_types": "test_union_types_core"
+    },
+    "test_dispatcher.py": {
+        "test_union_types": "test_union_types_dispatcher"
+    }
+}
+
+# Get upstream tests from github
+def download_multipledispatch_tests(file_name, start_from_line):
     response = urllib.request.urlopen("https://raw.githubusercontent.com/mrocklin/multipledispatch/master/multipledispatch/tests/" + file_name)
-    code = "\n".join(response.read().decode("utf-8").split("\n")[start_from_line:]) + "\n" + run_tests
+    lines = response.read().decode("utf-8").split("\n")[start_from_line:]
+    # Get all classes which have been defined
+    classes = ""
+    for line in lines:
+        if line.startswith("class "):
+            classes += "    " + line + "\n"
+    # Make class definition local to each function
+    code = ""
+    for line in lines:
+        if line.startswith("class "):
+            pass
+        elif line.startswith("def "):
+            code += line + "\n"
+            code += classes + "\n"
+        else:
+            code += line + "\n"
+    # Blacklist tests that should not be run
+    for test in tests_blacklist[file_name]:
+        code = code.replace("def " + test + "():", "def _disabled_" + test + "():")
+    # Rename tests
+    for (test_original_name, test_new_name) in test_renames[file_name].items():
+        code = code.replace("def " + test_original_name + "():", "def " + test_new_name + "():")
     return code
 
-# Prepare tests blacklist
-tests_blacklist = (
-    ## from official tests, test_core.py
-    "test_competing_ambiguous", # patched version raises an error rather than a warning and this would stop the execution
-    "test_namespaces", # we have replaced namespaces with modules so it makes no sense to test this
-    ## from official tests, test_dispatcher.py
-    "test_register_instance_method", "test_register_stacking", "test_dispatch_method", # created a custom version of that replaces unallowed list with list_of(int) and tuple_of(int)
-    "test_source", # disabled because of incompatibility with exec (failure with OSError)
-    "test_not_implemented", "test_not_implemented_error", # handling of MDNotImplementedError has been disabled by us
-    ## from official tests, test_conflict.py
-    "test_super_signature", "test_type_mro", # we are not interested in the super signature warning
-)
-
-# Get and run standard tests from github
-print("* Running all tests in test_core.py *")
-exec(run_multipledispatch_tests("test_core.py", 10))
-print("* Running all tests in test_dispatcher.py *")
-exec(run_multipledispatch_tests("test_dispatcher.py", 7))
-print("* Running all tests in test_conflict.py *")
-exec(run_multipledispatch_tests("test_conflict.py", 4))
+exec(download_multipledispatch_tests("test_conflict.py", 4))
+exec(download_multipledispatch_tests("test_core.py", 10))
+exec(download_multipledispatch_tests("test_dispatcher.py", 7))
 
 # Add back patched version of ambiguous test of test_core.py
 def test_competing_ambiguous_try():
-    class A(object): pass
-    class C(A): pass
+    class A(object):
+        pass
+    class C(A):
+        pass
     
     @dispatch(A, C)
     def f(x, y):
@@ -158,12 +188,15 @@ def test_source_copy():
 
     assert 'x + y' in f._source(1, 1)
     assert 'x - y' in f._source(1.0, 1.0)
-
+    
 # Test on supercedes
 def test_supercedes_2():
-    class A(object): pass
-    class B(A): pass
-    class C(object): pass
+    class A(object):
+        pass
+    class B(A):
+        pass
+    class C(object):
+        pass
     
     assert supercedes((B, ), (A, ))
     assert supercedes((B, A), (A, A))
@@ -194,9 +227,12 @@ def test_supercedes_2():
     
 # Test on consistent
 def test_consistent_2():
-    class A(object): pass
-    class B(A): pass
-    class C(object): pass
+    class A(object):
+        pass
+    class B(A):
+        pass
+    class C(object):
+        pass
     
     assert consistent((A, ), (A, ))
     assert consistent((B, ), (B, ))
@@ -221,9 +257,12 @@ def test_consistent_2():
     
 # Test on ambiguous
 def test_ambiguous_2():
-    class A(object): pass
-    class B(A): pass
-    class C(object): pass
+    class A(object):
+        pass
+    class B(A):
+        pass
+    class C(object):
+        pass
     
     assert not ambiguous((A, ), (A, ))
     assert not ambiguous((A, ), (B, ))
@@ -581,9 +620,12 @@ def test_dispatch_twice_method():
 
 # Test inheritance in combination with list_of
 def test_inheritance_for_list_of():
-    class A(object): pass
-    class B(object): pass
-    class C(A): pass
+    class A(object):
+        pass
+    class B(object):
+        pass
+    class C(A):
+        pass
     
     @dispatch(list_of(A))
     def f(x):
@@ -601,9 +643,12 @@ def test_inheritance_for_list_of():
     
 # Test inheritance in combination with dict_of (keys only)
 def test_inheritance_for_dict_of_keys():
-    class A(object): pass
-    class B(object): pass
-    class C(A): pass
+    class A(object):
+        pass
+    class B(object):
+        pass
+    class C(A):
+        pass
     
     @dispatch(dict_of(A, int))
     def f(x):
@@ -620,9 +665,12 @@ def test_inheritance_for_dict_of_keys():
     
 # Test inheritance in combination with dict_of (values only)
 def test_inheritance_for_dict_of_values():
-    class A(object): pass
-    class B(object): pass
-    class C(A): pass
+    class A(object):
+        pass
+    class B(object):
+        pass
+    class C(A):
+        pass
     
     @dispatch(dict_of(int, A))
     def f(x):
@@ -639,9 +687,12 @@ def test_inheritance_for_dict_of_values():
     
 # Test inheritance in combination with dict_of (keys and values)
 def test_inheritance_for_dict_of_keys_values():
-    class A(object): pass
-    class B(object): pass
-    class C(A): pass
+    class A(object):
+        pass
+    class B(object):
+        pass
+    class C(A):
+        pass
     
     @dispatch(dict_of(A, A))
     def f(x):
@@ -660,9 +711,12 @@ def test_inheritance_for_dict_of_keys_values():
     
 # Test inheritance in combination with dict_of (keys only, which are tuple_of)
 def test_inheritance_for_dict_of_keys_tuple_of():
-    class A(object): pass
-    class B(object): pass
-    class C(A): pass
+    class A(object):
+        pass
+    class B(object):
+        pass
+    class C(A):
+        pass
     
     @dispatch(dict_of(tuple_of(A), int))
     def f(x):
@@ -680,9 +734,12 @@ def test_inheritance_for_dict_of_keys_tuple_of():
     
 # Test competing solutions for list_of
 def test_competing_solutions_for_list_of():
-    class A(object): pass
-    class C(A): pass
-    class D(C): pass
+    class A(object):
+        pass
+    class C(A):
+        pass
+    class D(C):
+        pass
 
     @dispatch(list_of(A))
     def h(x):
@@ -698,9 +755,12 @@ def test_competing_solutions_for_list_of():
     
 # Test competing solutions for dict_of (keys only)
 def test_competing_solutions_for_dict_of_keys():
-    class A(object): pass
-    class C(A): pass
-    class D(C): pass
+    class A(object):
+        pass
+    class C(A):
+        pass
+    class D(C):
+        pass
 
     @dispatch(dict_of(A, int))
     def h(x):
@@ -717,9 +777,12 @@ def test_competing_solutions_for_dict_of_keys():
     
 # Test competing solutions for dict_of (values only)
 def test_competing_solutions_for_dict_of_values():
-    class A(object): pass
-    class C(A): pass
-    class D(C): pass
+    class A(object):
+        pass
+    class C(A):
+        pass
+    class D(C):
+        pass
 
     @dispatch(dict_of(int, A))
     def h(x):
@@ -735,10 +798,13 @@ def test_competing_solutions_for_dict_of_values():
     assert raises(UnavailableSignatureError, lambda: h({4.: A()}))
     
 # Test competing solutions for dict_of (keys and values)
-def test_competing_solutions_for_dict_of_values():
-    class A(object): pass
-    class C(A): pass
-    class D(C): pass
+def test_competing_solutions_for_dict_of_keys_and_values():
+    class A(object):
+        pass
+    class C(A):
+        pass
+    class D(C):
+        pass
 
     @dispatch(dict_of(A, A))
     def h(x):
@@ -757,8 +823,10 @@ def test_competing_solutions_for_dict_of_values():
     
 # Test that cache is cleared also for list_of
 def test_caching_correct_behavior_list_of():
-    class A(object): pass
-    class C(A): pass
+    class A(object):
+        pass
+    class C(A):
+        pass
     
     @dispatch(list_of(A))
     def f(x):
@@ -774,8 +842,10 @@ def test_caching_correct_behavior_list_of():
     
 # Test union types where one of them is a list_of
 def test_union_types_list_of():
-    class A(object): pass
-    class C(A): pass
+    class A(object):
+        pass
+    class C(A):
+        pass
     
     @dispatch((A, list_of(C)))
     def f(x):
@@ -1066,6 +1136,5 @@ def test_call_method_from_class():
     assert a.show(1) == 1
     assert A.show(a, 1) == 1
     
-# Run all custom tests
-print("* Running all custom tests *")
-exec(run_tests)
+# Apply fixture to clean up current module after test execution
+apply_clean_main_module_to_tests()

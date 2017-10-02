@@ -20,43 +20,32 @@ import os
 import sys
 from rbnics.utils.config import Config
 
-def clean_up():
-    try:
-        os.remove(".rbnicsrc")
-    except OSError:
-        pass
+def test_config(tempdir):
+    # Create a default configuration
+    config = Config()
+
+    # Write config to stdout
+    print("===============")
+    config.write(sys.stdout)
+    print("===============")
+
+    # Change options
+    config.set("backends", "delay assembly", True)
+    config.set("backends", "online backend", "online")
+    config.set("problems", "cache", {"Disk"})
+
+    # Write config to stdout
+    print("===============")
+    config.write(sys.stdout)
+    print("===============")
+
+    # Write config to file
+    with open(os.path.join(tempdir, ".rbnicsrc"), "w") as configfile:
+        config.write(configfile)
         
-# Clean previous runs
-clean_up()
+    # Read back in
+    config2 = Config()
+    config2.read(tempdir)
 
-# Create a default configuration
-config = Config()
-
-# Write config to stdout
-print("===============")
-config.write(sys.stdout)
-print("===============")
-
-# Change options
-config.set("backends", "delay assembly", True)
-config.set("backends", "online backend", "online")
-config.set("problems", "cache", {"Disk"})
-
-# Write config to stdout
-print("===============")
-config.write(sys.stdout)
-print("===============")
-
-# Write config to file
-with open(".rbnicsrc", "w") as configfile:
-    config.write(configfile)
-    
-# Read back in
-config2 = Config()
-config2.read()
-
-# Check that read was successful
-assert config == config2
-
-# Clean current run
-clean_up()
+    # Check that read was successful
+    assert config == config2

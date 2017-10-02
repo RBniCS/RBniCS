@@ -16,34 +16,33 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os
+import pytest
 from numpy import array, isclose, nonzero, sort
-from dolfin import *
+from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, inner, log, MixedElement, mpi_comm_self, Point, PROGRESS, project, set_log_level, split, TestFunction, TrialFunction, UnitSquareMesh, Vector, VectorElement
 set_log_level(PROGRESS)
-from mshr import *
-from fenicstools import DofMapPlotter
+try:
+    from mshr import generate_mesh, Rectangle
+except ImportError:
+    has_mshr = False
+else:
+    has_mshr = True
 from rbnics.backends.dolfin import ReducedMesh
 from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
 
-# Possibly disable saving to file. This bool can be used to 
-# check loading with a number of processors different from
-# the one originally used when saving.
-skip_reduced_mesh_save = False
-
-# Make output directory, if necessary
-try: 
-    os.makedirs("test_reduced_mesh.output_dir")
-except OSError:
-    if not os.path.isdir("test_reduced_mesh.output_dir"):
-        raise
-        
-use_unstructured_grid = True
-if not use_unstructured_grid:
-    mesh = UnitSquareMesh(3, 3)
-else:
-    domain = Rectangle(Point(0., 0.), Point(1., 1.))
-    mesh = generate_mesh(domain, 5)
+# Meshes
+def structured_mesh():
+    return UnitSquareMesh(3, 3)
     
+if has_mshr:
+    def unstructured_mesh():
+        domain = Rectangle(Point(0., 0.), Point(1., 1.))
+        return generate_mesh(domain, 5)
+        
+    generate_meshes = pytest.mark.parametrize("mesh", [structured_mesh(), unstructured_mesh()])
+else:
+    generate_meshes = pytest.mark.parametrize("mesh", [structured_mesh()])
+
+# Helper functions
 def nonzero_values(function):
     serialized_vector = Vector(mpi_comm_self())
     function.vector().gather(serialized_vector, array(range(function.function_space().dim()), "intc"))
@@ -51,33 +50,40 @@ def nonzero_values(function):
     return sort(serialized_vector.array()[indices])
 
 # ~~~ Elliptic case ~~~ #
-V = FunctionSpace(mesh, "CG", 2)
-
-"""
-dmp = DofMapPlotter(V)
-dmp.plot()
-dmp.show()
-"""
+def EllipticFunctionSpace(mesh):
+    return FunctionSpace(mesh, "CG", 2)
 
 # === Matrix computation === #
-log(PROGRESS, "*** Elliptic case, matrix, appending ***")
-reduced_mesh = ReducedMesh((V, V))
-dofs = [(1, 2), (11, 12), (48, 12), (41, 41)]
+@generate_meshes
+def test_reduced_mesh_io_elliptic_matrix(mesh, tempdir):
+    test_reduced_mesh_save_elliptic_matrix(mesh, tempdir)
+    test_reduced_mesh_load_elliptic_matrix(mesh, tempdir)
 
-for pair in dofs:
-    log(PROGRESS, "Adding " + str(pair))
-    reduced_mesh.append(pair)
-    
-    """
-    dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
-    dmp.plot()
-    dmp.show()
-    """
-    
-    if not skip_reduced_mesh_save:
-        reduced_mesh.save("test_reduced_mesh.output_dir", "test_reduced_mesh_elliptic_matrix")
+@generate_meshes
+def test_reduced_mesh_save_elliptic_matrix(mesh, save_tempdir):
+    log(PROGRESS, "*** Elliptic case, matrix, offline computation ***")
+    V = EllipticFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, V))
+    dofs = [(1, 2), (11, 12), (48, 12), (41, 41)]
 
-def compute_elliptic_error_matrix(reduced_mesh):
+    for pair in dofs:
+        log(PROGRESS, "Adding " + str(pair))
+        reduced_mesh.append(pair)
+        
+        reduced_mesh.save(save_tempdir, "test_reduced_mesh_elliptic_matrix")
+    
+    _test_reduced_mesh_elliptic_matrix(V, reduced_mesh)
+    
+@generate_meshes
+def test_reduced_mesh_load_elliptic_matrix(mesh, load_tempdir):
+    log(PROGRESS, "*** Elliptic case, matrix, online computation ***")
+    V = EllipticFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, V))
+    reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_matrix")
+    
+    _test_reduced_mesh_elliptic_matrix(V, reduced_mesh)
+    
+def _test_reduced_mesh_elliptic_matrix(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
     dofs = reduced_mesh.get_dofs_list()
     reduced_dofs = reduced_mesh.get_reduced_dofs_list()
@@ -101,36 +107,38 @@ def compute_elliptic_error_matrix(reduced_mesh):
     log(PROGRESS, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
     
     assert isclose(A_dofs, A_N_reduced_dofs).all()
-
-log(PROGRESS, "*** Elliptic case, matrix, offline computation ***")
-compute_elliptic_error_matrix(reduced_mesh)
-
-# Also test I/O
-reduced_mesh_loaded = ReducedMesh((V, V))
-reduced_mesh_loaded.load("test_reduced_mesh.output_dir", "test_reduced_mesh_elliptic_matrix")
-
-log(PROGRESS, "*** Elliptic case, matrix, online computation ***")
-compute_elliptic_error_matrix(reduced_mesh_loaded)
-
+    
 # === Vector computation === #
-log(PROGRESS, "*** Elliptic case, vector, appending ***")
-reduced_mesh = ReducedMesh((V, ))
-dofs = [(1, ), (11, ), (48, ), (41, )]
-
-for pair in dofs:
-    log(PROGRESS, "Adding " + str(pair))
-    reduced_mesh.append(pair)
+@generate_meshes
+def test_reduced_mesh_io_elliptic_vector(mesh, tempdir):
+    test_reduced_mesh_save_elliptic_vector(mesh, tempdir)
+    test_reduced_mesh_load_elliptic_vector(mesh, tempdir)
     
-    """
-    dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
-    dmp.plot()
-    dmp.show()
-    """
-    
-    if not skip_reduced_mesh_save:
-        reduced_mesh.save("test_reduced_mesh.output_dir", "test_reduced_mesh_elliptic_vector")
+@generate_meshes
+def test_reduced_mesh_save_elliptic_vector(mesh, save_tempdir):
+    log(PROGRESS, "*** Elliptic case, vector, offline computation ***")
+    V = EllipticFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, ))
+    dofs = [(1, ), (11, ), (48, ), (41, )]
 
-def compute_elliptic_error_vector(reduced_mesh):
+    for pair in dofs:
+        log(PROGRESS, "Adding " + str(pair))
+        reduced_mesh.append(pair)
+        
+        reduced_mesh.save(save_tempdir, "test_reduced_mesh_elliptic_vector")
+        
+    _test_reduced_mesh_elliptic_vector(V, reduced_mesh)
+
+@generate_meshes
+def test_reduced_mesh_load_elliptic_vector(mesh, load_tempdir):
+    log(PROGRESS, "*** Elliptic case, vector, online computation ***")
+    V = EllipticFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, ))
+    reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_vector")
+    
+    _test_reduced_mesh_elliptic_vector(V, reduced_mesh)
+
+def _test_reduced_mesh_elliptic_vector(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
     dofs = reduced_mesh.get_dofs_list()
     reduced_dofs = reduced_mesh.get_reduced_dofs_list()
@@ -152,35 +160,37 @@ def compute_elliptic_error_vector(reduced_mesh):
     
     assert isclose(b_dofs, b_N_reduced_dofs).all()
 
-log(PROGRESS, "*** Elliptic case, vector, offline computation ***")
-compute_elliptic_error_vector(reduced_mesh)
-
-# Also test I/O
-reduced_mesh_loaded = ReducedMesh((V, ))
-reduced_mesh_loaded.load("test_reduced_mesh.output_dir", "test_reduced_mesh_elliptic_vector")
-
-log(PROGRESS, "*** Elliptic case, vector, online computation ***")
-compute_elliptic_error_vector(reduced_mesh_loaded)
-
 # === Function computation === #
-log(PROGRESS, "*** Elliptic case, function, appending ***")
-reduced_mesh = ReducedMesh((V, ))
-dofs = [(1, ), (11, ), (48, ), (41, )]
-
-for pair in dofs:
-    log(PROGRESS, "Adding " + str(pair))
-    reduced_mesh.append(pair)
+@generate_meshes
+def test_reduced_mesh_io_elliptic_function(mesh, tempdir):
+    test_reduced_mesh_save_elliptic_function(mesh, tempdir)
+    test_reduced_mesh_load_elliptic_function(mesh, tempdir)
     
-    """
-    dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
-    dmp.plot()
-    dmp.show()
-    """
-    
-    if not skip_reduced_mesh_save:
-        reduced_mesh.save("test_reduced_mesh.output_dir", "test_reduced_mesh_elliptic_function")
+@generate_meshes
+def test_reduced_mesh_save_elliptic_function(mesh, save_tempdir):
+    log(PROGRESS, "*** Elliptic case, function, offline computation ***")
+    V = EllipticFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, ))
+    dofs = [(1, ), (11, ), (48, ), (41, )]
 
-def compute_elliptic_error_function(reduced_mesh):
+    for pair in dofs:
+        log(PROGRESS, "Adding " + str(pair))
+        reduced_mesh.append(pair)
+        
+        reduced_mesh.save(save_tempdir, "test_reduced_mesh_elliptic_function")
+        
+    _test_reduced_mesh_elliptic_function(V, reduced_mesh)
+
+@generate_meshes
+def test_reduced_mesh_load_elliptic_function(mesh, load_tempdir):
+    log(PROGRESS, "*** Elliptic case, function, online computation ***")
+    V = EllipticFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, ))
+    reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_function")
+    
+    _test_reduced_mesh_elliptic_function(V, reduced_mesh)
+
+def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
     dofs = [d[0] for d in reduced_mesh.get_dofs_list()] # convert from 1-tuple to int
     reduced_dofs = [d[0] for d in reduced_mesh.get_reduced_dofs_list()] # convert from 1-tuple to int
@@ -203,47 +213,44 @@ def compute_elliptic_error_function(reduced_mesh):
     assert isclose(nonzero_values(f_dofs), nonzero_values(f_reduced_dofs)).all()
     assert isclose(f_reduced_dofs.vector().array(), f_N_reduced_dofs.vector().array()).all()
 
-log(PROGRESS, "*** Elliptic case, function, offline computation ***")
-compute_elliptic_error_function(reduced_mesh)
-
-# Also test I/O
-reduced_mesh_loaded = ReducedMesh((V, ))
-reduced_mesh_loaded.load("test_reduced_mesh.output_dir", "test_reduced_mesh_elliptic_function")
-
-log(PROGRESS, "*** Elliptic case, function, online computation ***")
-compute_elliptic_error_function(reduced_mesh_loaded)
-
 # ~~~ Mixed case ~~~ #
-element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
-element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-element   = MixedElement(element_0, element_1)
-V = FunctionSpace(mesh, element)
-
-"""
-dmp = DofMapPlotter(V)
-dmp.plot()
-dmp.show()
-"""
+def MixedFunctionSpace(mesh):
+    element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(element_0, element_1)
+    return FunctionSpace(mesh, element)
 
 # === Matrix computation === #
-log(PROGRESS, "*** Mixed case, matrix, appending ***")
-reduced_mesh = ReducedMesh((V, V))
-dofs = [(1, 2), (31, 33), (48, 12), (42, 42)]
+@generate_meshes
+def test_reduced_mesh_io_mixed_matrix(mesh, tempdir):
+    test_reduced_mesh_save_mixed_matrix(mesh, tempdir)
+    test_reduced_mesh_load_mixed_matrix(mesh, tempdir)
 
-for pair in dofs:
-    log(PROGRESS, "Adding " + str(pair))
-    reduced_mesh.append(pair)
-    
-    """
-    dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
-    dmp.plot()
-    dmp.show()
-    """
-    
-    if not skip_reduced_mesh_save:
-        reduced_mesh.save("test_reduced_mesh.output_dir", "test_reduced_mesh_mixed_matrix")
+@generate_meshes
+def test_reduced_mesh_save_mixed_matrix(mesh, save_tempdir):
+    log(PROGRESS, "*** Mixed case, matrix, offline computation ***")
+    V = MixedFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, V))
+    dofs = [(1, 2), (31, 33), (48, 12), (42, 42)]
 
-def compute_mixed_error_matrix(reduced_mesh):
+    for pair in dofs:
+        log(PROGRESS, "Adding " + str(pair))
+        reduced_mesh.append(pair)
+        
+        reduced_mesh.save(save_tempdir, "test_reduced_mesh_mixed_matrix")
+    
+    _test_reduced_mesh_mixed_matrix(V, reduced_mesh)
+    
+@generate_meshes
+def test_reduced_mesh_load_mixed_matrix(mesh, load_tempdir):
+    log(PROGRESS, "*** Mixed case, matrix, online computation ***")
+    V = MixedFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, V))
+    reduced_mesh.load(load_tempdir, "test_reduced_mesh_mixed_matrix")
+    
+    _test_reduced_mesh_mixed_matrix(V, reduced_mesh)
+    
+def _test_reduced_mesh_mixed_matrix(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
     dofs = reduced_mesh.get_dofs_list()
     reduced_dofs = reduced_mesh.get_reduced_dofs_list()
@@ -271,36 +278,38 @@ def compute_mixed_error_matrix(reduced_mesh):
     log(PROGRESS, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
     
     assert isclose(A_dofs, A_N_reduced_dofs).all()
-
-log(PROGRESS, "*** Mixed case, matrix, offline computation ***")
-compute_mixed_error_matrix(reduced_mesh)
-
-# Also test I/O
-reduced_mesh_loaded = ReducedMesh((V, V))
-reduced_mesh_loaded.load("test_reduced_mesh.output_dir", "test_reduced_mesh_mixed_matrix")
-
-log(PROGRESS, "*** Mixed case, matrix, online computation ***")
-compute_mixed_error_matrix(reduced_mesh_loaded)
-
+    
 # === Vector computation === #
-log(PROGRESS, "*** Mixed case, vector, appending ***")
-reduced_mesh = ReducedMesh((V, ))
-dofs = [(2, ), (33, ), (48, ), (42, )]
-
-for pair in dofs:
-    log(PROGRESS, "Adding " + str(pair))
-    reduced_mesh.append(pair)
+@generate_meshes
+def test_reduced_mesh_io_mixed_vector(mesh, tempdir):
+    test_reduced_mesh_save_mixed_vector(mesh, tempdir)
+    test_reduced_mesh_load_mixed_vector(mesh, tempdir)
     
-    """
-    dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
-    dmp.plot()
-    dmp.show()
-    """
-    
-    if not skip_reduced_mesh_save:
-        reduced_mesh.save("test_reduced_mesh.output_dir", "test_reduced_mesh_mixed_vector")
+@generate_meshes
+def test_reduced_mesh_save_mixed_vector(mesh, save_tempdir):
+    log(PROGRESS, "*** Mixed case, vector, offline computation ***")
+    V = MixedFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, ))
+    dofs = [(2, ), (33, ), (48, ), (42, )]
 
-def compute_mixed_error_vector(reduced_mesh):
+    for pair in dofs:
+        log(PROGRESS, "Adding " + str(pair))
+        reduced_mesh.append(pair)
+        
+        reduced_mesh.save(save_tempdir, "test_reduced_mesh_mixed_vector")
+        
+    _test_reduced_mesh_mixed_vector(V, reduced_mesh)
+
+@generate_meshes
+def test_reduced_mesh_load_mixed_vector(mesh, load_tempdir):
+    log(PROGRESS, "*** Mixed case, vector, online computation ***")
+    V = MixedFunctionSpace(mesh)
+    reduced_mesh = ReducedMesh((V, ))
+    reduced_mesh.load(load_tempdir, "test_reduced_mesh_mixed_vector")
+    
+    _test_reduced_mesh_mixed_vector(V, reduced_mesh)
+
+def _test_reduced_mesh_mixed_vector(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
     dofs = reduced_mesh.get_dofs_list()
     reduced_dofs = reduced_mesh.get_reduced_dofs_list()
@@ -324,48 +333,46 @@ def compute_mixed_error_vector(reduced_mesh):
     
     assert isclose(b_dofs, b_N_reduced_dofs).all()
 
-log(PROGRESS, "*** Mixed case, vector, offline computation ***")
-compute_mixed_error_vector(reduced_mesh)
-
-# Also test I/O
-reduced_mesh_loaded = ReducedMesh((V, ))
-reduced_mesh_loaded.load("test_reduced_mesh.output_dir", "test_reduced_mesh_mixed_vector")
-
-log(PROGRESS, "*** Mixed case, vector, online computation ***")
-compute_mixed_error_vector(reduced_mesh_loaded)
-
 # ~~~ Collapsed case ~~~ #
-U = FunctionSpace(mesh, element)
-V = U.sub(0).collapse()
-
-"""
-dmp = DofMapPlotter(U)
-dmp.plot()
-dmp.show()
-dmp = DofMapPlotter(V)
-dmp.plot()
-dmp.show()
-"""
+def CollapsedFunctionSpaces(mesh):
+    element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(element_0, element_1)
+    U = FunctionSpace(mesh, element)
+    V = U.sub(0).collapse()
+    return (V, U)
 
 # === Matrix computation === #
-log(PROGRESS, "*** Collapsed case, matrix, appending ***")
-reduced_mesh = ReducedMesh((V, U))
-dofs = [(2, 1), (48, 33), (40, 12), (31, 39)]
+@generate_meshes
+def test_reduced_mesh_io_collapsed_matrix(mesh, tempdir):
+    test_reduced_mesh_save_collapsed_matrix(mesh, tempdir)
+    test_reduced_mesh_load_collapsed_matrix(mesh, tempdir)
 
-for pair in dofs:
-    log(PROGRESS, "Adding " + str(pair))
-    reduced_mesh.append(pair)
-    
-    """
-    dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
-    dmp.plot()
-    dmp.show()
-    """
-    
-    if not skip_reduced_mesh_save:
-        reduced_mesh.save("test_reduced_mesh.output_dir", "test_reduced_mesh_collapsed_matrix")
+@generate_meshes
+def test_reduced_mesh_save_collapsed_matrix(mesh, save_tempdir):
+    log(PROGRESS, "*** Collapsed case, matrix, offline computation ***")
+    (V, U) = CollapsedFunctionSpaces(mesh)
+    reduced_mesh = ReducedMesh((V, U))
+    dofs = [(2, 1), (48, 33), (40, 12), (31, 39)]
+
+    for pair in dofs:
+        log(PROGRESS, "Adding " + str(pair))
+        reduced_mesh.append(pair)
         
-def compute_collapsed_error_matrix(reduced_mesh):
+        reduced_mesh.save(save_tempdir, "test_reduced_mesh_collapsed_matrix")
+    
+    _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh)
+    
+@generate_meshes
+def test_reduced_mesh_load_collapsed_matrix(mesh, load_tempdir):
+    log(PROGRESS, "*** Collapsed case, matrix, online computation ***")
+    (V, U) = CollapsedFunctionSpaces(mesh)
+    reduced_mesh = ReducedMesh((V, U))
+    reduced_mesh.load(load_tempdir, "test_reduced_mesh_collapsed_matrix")
+    
+    _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh)
+    
+def _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
     dofs = reduced_mesh.get_dofs_list()
     reduced_dofs = reduced_mesh.get_reduced_dofs_list()
@@ -391,36 +398,38 @@ def compute_collapsed_error_matrix(reduced_mesh):
     log(PROGRESS, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
     
     assert isclose(A_dofs, A_N_reduced_dofs).all()
-
-log(PROGRESS, "*** Collapsed case, matrix, offline computation ***")
-compute_collapsed_error_matrix(reduced_mesh)
-
-# Also test I/O
-reduced_mesh_loaded = ReducedMesh((V, U))
-reduced_mesh_loaded.load("test_reduced_mesh.output_dir", "test_reduced_mesh_collapsed_matrix")
-
-log(PROGRESS, "*** Collapsed case, matrix, online computation ***")
-compute_collapsed_error_matrix(reduced_mesh_loaded)
-
+    
 # === Vector computation === #
-log(PROGRESS, "*** Collapsed case, vector, appending ***")
-reduced_mesh = ReducedMesh((V, ))
-dofs = [(2, ), (48, ), (40, ), (11, )]
+@generate_meshes
+def test_reduced_mesh_io_collapsed_vector(mesh, tempdir):
+    test_reduced_mesh_save_collapsed_vector(mesh, tempdir)
+    test_reduced_mesh_load_collapsed_vector(mesh, tempdir)
+    
+@generate_meshes
+def test_reduced_mesh_save_collapsed_vector(mesh, save_tempdir):
+    log(PROGRESS, "*** Collapsed case, vector, offline computation ***")
+    (V, _) = CollapsedFunctionSpaces(mesh)
+    reduced_mesh = ReducedMesh((V, ))
+    dofs = [(2, ), (48, ), (40, ), (11, )]
 
-for pair in dofs:
-    log(PROGRESS, "Adding " + str(pair))
-    reduced_mesh.append(pair)
-    
-    """
-    dmp = DofMapPlotter(reduced_mesh.get_reduced_function_spaces()[0])
-    dmp.plot()
-    dmp.show()
-    """
-    
-    if not skip_reduced_mesh_save:
-        reduced_mesh.save("test_reduced_mesh.output_dir", "test_reduced_mesh_collapsed_vector")
+    for pair in dofs:
+        log(PROGRESS, "Adding " + str(pair))
+        reduced_mesh.append(pair)
         
-def compute_collapsed_error_vector(reduced_mesh):
+        reduced_mesh.save(save_tempdir, "test_reduced_mesh_collapsed_vector")
+        
+    _test_reduced_mesh_collapsed_vector(V, reduced_mesh)
+
+@generate_meshes
+def test_reduced_mesh_load_collapsed_vector(mesh, load_tempdir):
+    log(PROGRESS, "*** Collapsed case, vector, online computation ***")
+    (V, _) = CollapsedFunctionSpaces(mesh)
+    reduced_mesh = ReducedMesh((V, ))
+    reduced_mesh.load(load_tempdir, "test_reduced_mesh_collapsed_vector")
+    
+    _test_reduced_mesh_collapsed_vector(V, reduced_mesh)
+
+def _test_reduced_mesh_collapsed_vector(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
     dofs = reduced_mesh.get_dofs_list()
     reduced_dofs = reduced_mesh.get_reduced_dofs_list()
@@ -439,13 +448,3 @@ def compute_collapsed_error_vector(reduced_mesh):
     log(PROGRESS, "b at dofs:\n" + str(b_dofs))
     log(PROGRESS, "b_N at reduced dofs:\n" + str(b_N_reduced_dofs))
     log(PROGRESS, "Error:\n" + str(b_dofs - b_N_reduced_dofs))
-
-log(PROGRESS, "*** Collapsed case, vector, offline computation ***")
-compute_collapsed_error_vector(reduced_mesh)
-
-# Also test I/O
-reduced_mesh_loaded = ReducedMesh((V, ))
-reduced_mesh_loaded.load("test_reduced_mesh.output_dir", "test_reduced_mesh_collapsed_vector")
-
-log(PROGRESS, "*** Collapsed case, vector, online computation ***")
-compute_collapsed_error_vector(reduced_mesh_loaded)

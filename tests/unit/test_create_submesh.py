@@ -16,146 +16,339 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import *
+import os
+import pickle
+import pytest
+from numpy import allclose, ndarray as array
+import matplotlib
+import matplotlib.pyplot as plt
+from dolfin import CellFunction, cells, FacetFunction, facets, FiniteElement, FunctionSpace, HDF5File, log, MixedElement, MPI, PROGRESS, set_log_level, UnitSquareMesh, VectorElement, vertices
 set_log_level(PROGRESS)
-from fenicstools import DofMapPlotter
-from rbnics.backends.dolfin.wrapping import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh
+try:
+    from fenicstools import DofMapPlotter as FEniCSToolsDofMapPlotter
+except ImportError:
+    has_fenicstools = False
+else:
+    has_fenicstools = True
+from rbnics.backends.dolfin.wrapping import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh, map_functionspaces_between_mesh_and_submesh
 
-mesh = UnitSquareMesh(3, 3)
-assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4)
-# 1 processor        -> test serial case
-# 2 and 3 processors -> test case where submesh in contained only on one processor
-# 4 processors       -> test case where submesh is shared by two processors, resulting in shared vertices
+data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_create_submesh")
 
-subdomains = CellFunction("size_t", mesh, 0)
-for c in cells(mesh):
-    subdomains.array()[c.index()] = c.global_index()
+# Mesh
+@pytest.fixture(scope="module")
+def mesh():
+    mesh = UnitSquareMesh(3, 3)
+    assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4)
+    # 1 processor        -> test serial case
+    # 2 and 3 processors -> test case where submesh in contained only on one processor
+    # 4 processors       -> test case where submesh is shared by two processors, resulting in shared facets and vertices
+    return mesh
 
-boundaries = FacetFunction("size_t", mesh, 0)
-for f in facets(mesh):
-    boundaries.array()[f.index()] = 0
-    for v in vertices(f):
-        boundaries.array()[f.index()] += v.global_index()
+# Mesh subdomains
+@pytest.fixture(scope="module")
+def subdomains(mesh):
+    subdomains = CellFunction("size_t", mesh, 0)
+    for c in cells(mesh):
+        subdomains.array()[c.index()] = c.global_index()
+    return subdomains
 
-markers = CellFunction("bool", mesh, False)
-hdf = HDF5File(mesh.mpi_comm(), "data/test_create_submesh_markers.h5", "r")
-hdf.read(markers, "/cells")
+# Mesh boundaries
+@pytest.fixture(scope="module")
+def boundaries(mesh):
+    boundaries = FacetFunction("size_t", mesh, 0)
+    for f in facets(mesh):
+        boundaries.array()[f.index()] = 0
+        for v in vertices(f):
+            boundaries.array()[f.index()] += v.global_index()
+    return boundaries
 
-submesh = create_submesh(mesh, markers)
-
-[submesh_subdomains, submesh_boundaries] = convert_meshfunctions_to_submesh(mesh, submesh, [subdomains, boundaries])
-
-# A dof map plotter will be opened in a few lines. You can use it to do the following checks, denoted by a), b), etc.
-
-# a) compare cell numbers in mesh and reduced mesh by pressing C in dof map plotter. Double check the following maps:
-log(PROGRESS, "Mesh to submesh cell global indices")
-for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_cell_local_indices.iteritems():
-    mesh_global_index = mesh.topology().global_indices(mesh.topology().dim())[mesh_local_index]
-    submesh_global_index = submesh.topology().global_indices(submesh.topology().dim())[submesh_local_index]
-    log(PROGRESS, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
-log(PROGRESS, "Submesh to mesh cell global indices")
-for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_cell_local_indices):
-    submesh_global_index = submesh.topology().global_indices(submesh.topology().dim())[submesh_local_index]
-    mesh_global_index = mesh.topology().global_indices(mesh.topology().dim())[mesh_local_index]
-    log(PROGRESS, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
-
-# b) compare facet numbers in mesh and reduced mesh by pressing T in dof map plotter. Double check the following maps:
-log(PROGRESS, "Mesh to submesh facet global indices")
-for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_facet_local_indices.iteritems():
-    mesh_global_index = mesh.topology().global_indices(mesh.topology().dim() - 1)[mesh_local_index]
-    submesh_global_index = submesh.topology().global_indices(submesh.topology().dim() - 1)[submesh_local_index]
-    log(PROGRESS, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
-log(PROGRESS, "Submesh to mesh facet global indices")
-for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_facet_local_indices):
-    submesh_global_index = submesh.topology().global_indices(submesh.topology().dim() - 1)[submesh_local_index]
-    mesh_global_index = mesh.topology().global_indices(mesh.topology().dim() - 1)[mesh_local_index]
-    log(PROGRESS, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
-
-# c) compare vertex numbers in mesh and reduced mesh by pressing V in dof map plotter. Double check the following maps:
-log(PROGRESS, "Mesh to submesh vertex global indices")
-for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_vertex_local_indices.iteritems():
-    mesh_global_index = mesh.topology().global_indices(0)[mesh_local_index]
-    submesh_global_index = submesh.topology().global_indices(0)[submesh_local_index]
-    log(PROGRESS, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
-log(PROGRESS, "Submesh to mesh vertex global indices")
-for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_vertex_local_indices):
-    submesh_global_index = submesh.topology().global_indices(0)[submesh_local_index]
-    mesh_global_index = mesh.topology().global_indices(0)[mesh_local_index]
-    log(PROGRESS, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
+# Submesh markers
+@pytest.fixture(scope="module")
+def submesh_markers(mesh):
+    markers = CellFunction("bool", mesh, False)
+    hdf = HDF5File(mesh.mpi_comm(), os.path.join(data_dir, "markers.h5"), "r")
+    hdf.read(markers, "/cells")
+    return markers
     
-# d) print shared indices
-dim_to_text = {
-    submesh.topology().dim(): "cells",
-    submesh.topology().dim() - 1: "facets",
-    0: "vertices"
-}
-for dim in [submesh.topology().dim(), submesh.topology().dim() - 1, 0]:
-    log(PROGRESS, "Submesh shared indices for " + str(dim_to_text[dim]))
-    log(PROGRESS, str(submesh.topology().shared_entities(dim)))
-
-# ~~~ Elliptic case ~~~ #
-log(PROGRESS, "~~~ Elliptic case ~~~")
-V = FunctionSpace(mesh, "CG", 2)
-(submesh_V, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs) = convert_functionspace_to_submesh(V, submesh, markers)
-
-# e) compare dof numbers in mesh and reduced mesh by pressing D in dof map plotter. Double check the following maps:
-log(PROGRESS, "Mesh to submesh dofs")
-log(PROGRESS, "Local mesh dofs ownership range: " + str(V.dofmap().ownership_range()))
-for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs.iteritems():
-    log(PROGRESS, "\t" + str(mesh_dof) + " -> " + str(submesh_dof))
-log(PROGRESS, "Submesh to mesh dofs")
-log(PROGRESS, "Local submesh dofs ownership range: " + str(submesh_V.dofmap().ownership_range()))
-for (submesh_dof, mesh_dof) in submesh_dofs_to_mesh_dofs.iteritems():
-    log(PROGRESS, "\t" + str(submesh_dof) + " -> " + str(mesh_dof))
+# Submesh
+@pytest.fixture(scope="module")
+def submesh(mesh, submesh_markers):
+    return create_submesh(mesh, submesh_markers)
     
-# In reduced function space dof map plotter:
-# any processors -> f) press C to double check that the cell numbering is independent on the number of processors.
-#                   g) moreover, processors with fake cells should have the largest numbering.
-# 4 processors   -> h) press D to double check that the dofs numbering on the interface among processors is the same.
-#                      In order to see the global dof id you will need to change line 155 of
-#                      fenicstools/dofmapplotter/dofhandler.py with
-#                           dof = self.dofmaps[j].local_to_global_index(dof)
-#                   i) press T to double check that the facet numbering on the interface among processors is the same
-# 
-
-# Open dof map plotters
-"""
-dmp = DofMapPlotter(V)
-dmp.plot()
-dmp.show()
-
-dmp = DofMapPlotter(submesh_V)
-dmp.plot()
-dmp.show()
-"""
-
-# ~~~ Mixed case ~~~ #
-log(PROGRESS, "~~~ Mixed case ~~~")
-element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
-element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-element   = MixedElement(element_0, element_1)
-V = FunctionSpace(mesh, element)
-(submesh_V, mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs) = convert_functionspace_to_submesh(V, submesh, markers)
-
-# e) compare dof numbers in mesh and reduced mesh by pressing D in dof map plotter. Double check the following maps:
-log(PROGRESS, "Mesh to submesh dofs")
-log(PROGRESS, "Local mesh dofs ownership range: " + str(V.dofmap().ownership_range()))
-for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs.iteritems():
-    log(PROGRESS, "\t" + str(mesh_dof) + " -> " + str(submesh_dof))
-log(PROGRESS, "Submesh to mesh dofs")
-log(PROGRESS, "Local submesh dofs ownership range: " + str(submesh_V.dofmap().ownership_range()))
-for (submesh_dof, mesh_dof) in submesh_dofs_to_mesh_dofs.iteritems():
-    log(PROGRESS, "\t" + str(submesh_dof) + " -> " + str(mesh_dof))
+# Internal: submesh subdomains and boundaries
+@pytest.fixture(scope="module")
+def _submesh_subdomains_boundaries(mesh, submesh, subdomains, boundaries):
+    return convert_meshfunctions_to_submesh(mesh, submesh, [subdomains, boundaries])
     
-# also check h) as above
+# Submesh subdomains
+@pytest.fixture(scope="module")
+def submesh_subdomains(_submesh_subdomains_boundaries):
+    return _submesh_subdomains_boundaries[0]
+    
+# Submesh boundaries
+@pytest.fixture(scope="module")
+def submesh_boundaries(_submesh_subdomains_boundaries):
+    return _submesh_subdomains_boundaries[1]
+    
+# Auxiliary functions for array asserts
+def array_save(arr, directory, filename):
+    assert isinstance(arr, array)
+    with open(directory + "/" + filename, "wb") as outfile:
+        pickle.dump(arr, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+        
+def array_assert_equal(arr, directory, filename):
+    assert isinstance(arr, array)
+    with open(directory + "/" + filename, "rb") as infile:
+        arr_in = pickle.load(infile)
+    assert (arr == arr_in).all()
+    
+# Auxiliary functions for dict asserts
+def dict_save(dic, directory, filename):
+    assert isinstance(dic, dict)
+    with open(directory + "/" + filename, "wb") as outfile:
+        pickle.dump(dic, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+        
+def dict_assert_equal(dic, directory, filename):
+    assert isinstance(dic, dict)
+    with open(directory + "/" + filename, "rb") as infile:
+        dic_in = pickle.load(infile)
+    assert dic == dic_in
+    
+# Auxiliary functions for list asserts
+def list_save(lis, directory, filename):
+    assert isinstance(lis, list)
+    with open(directory + "/" + filename, "wb") as outfile:
+        pickle.dump(lis, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+        
+def list_assert_equal(lis, directory, filename):
+    assert isinstance(lis, list)
+    with open(directory + "/" + filename, "rb") as infile:
+        lis_in = pickle.load(infile)
+    assert lis == lis_in
+    
+# Auxiliary functions to open DofMapPlotter
+def assert_mesh_plotter(mesh, submesh, key, directory, filename):
+    V = FunctionSpace(mesh, "Real", 0)
+    submesh_V = FunctionSpace(submesh, "Real", 0)
+    assert_dof_map_plotter(V, submesh_V, key, directory, filename)
+    
+def assert_dof_map_plotter(V, submesh_V, key, directory, filename):
+    dmp_V = DofMapPlotter(V, key)
+    dmp_submesh_V = DofMapPlotter(submesh_V, key)
+    plt.show()
+    dmp_V.save(directory, filename + "__mesh_plot_")
+    dmp_submesh_V.save(directory, filename + "__submesh_plot_")
+    dmp_V.assert_equal(data_dir, filename + "__mesh_plot_")
+    dmp_submesh_V.assert_equal(data_dir, filename + "__submesh_plot_")
+    
+# Auxiliary functions for function space definition
+def EllipticFunctionSpace(mesh):
+    return FunctionSpace(mesh, "CG", 2)
 
-# Open dof map plotters
-"""
-dmp = DofMapPlotter(V)
-dmp.plot()
-dmp.show()
+def StokesFunctionSpace(mesh):
+    element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(element_0, element_1)
+    return FunctionSpace(mesh, element)
+    
+# DofMapPlotter
+if has_fenicstools:
+    # Patch matplotlib.axes.Axes.text to store the text before writing it
+    original_text = matplotlib.axes.Axes.text
+    
+    def custom_text(self, x, y, s, *args, **kwargs):
+        original_text(self, x, y, s, *args, **kwargs)
+        if not hasattr(self, "_text_storage"):
+            self._text_storage = dict()
+        self._text_storage[s] = (x, y)
+        
+    matplotlib.axes.Axes.text = custom_text
+    
+    # Event that mimics a keypress
+    class Event(object):
+        def __init__(self, key):
+            self.key = key
+            
+    # Custom dof map plotter
+    class DofMapPlotter(FEniCSToolsDofMapPlotter):
+        def __init__(self, V, key):
+            FEniCSToolsDofMapPlotter.__init__(self, V)
+            self.plot()
+            assert len(self.plots) is 1
+            assert key in ("C", "T", "V", "D")
+            if key in ("C", "T", "V"):
+                self.plots[0].mesh_entity_handler.__call__(Event(key))
+            elif key in ("D", ):
+                self.plots[0].dof_handler.__call__(Event(key))
+            self.ax = self.plots[0].mesh_entity_handler.axes
+        
+        def save(self, directory, filename):
+            assert hasattr(self.ax, "_text_storage")
+            with open(directory + "/" + filename + "_size_" + str(self.mpi_size) + "_rank_" + str(self.mpi_rank) + ".pkl", "wb") as outfile:
+                pickle.dump(self.ax._text_storage, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+            
+        def assert_equal(self, directory, filename):
+            with open(directory + "/" + filename + "_size_" + str(self.mpi_size) + "_rank_" + str(self.mpi_rank) + ".pkl", "rb") as infile:
+                text_storage = pickle.load(infile)
+            assert hasattr(self.ax, "_text_storage")
+            assert text_storage.keys() == self.ax._text_storage.keys()
+            for key in text_storage:
+                assert allclose(text_storage[key], self.ax._text_storage[key])
+else:
+    class DofMapPlotter(object):
+        def __init__(self, V, key):
+            pass
+        
+        def save(self, directory, filename):
+            pass
+            
+        def assert_equal(self, directory, filename):
+            pass
+    
+# === NOTE: most of the following tests require interactivity because === #
+# ===       cells may be moved from the owning process to another     === #
+# ===       process which otherwise would have no cell.               === #
+# ===       The same communication should be done in these tests to   === #
+# ===       assert the results. Instead, we rely on fenicstools'      === #
+# ===       DofMapPlotter and compare its internal state.             === #
 
-dmp = DofMapPlotter(submesh_V)
-dmp.plot()
-dmp.show()
-"""
+# Test mesh to submesh global cell indices
+def test_mesh_to_submesh_global_cell_indices(mesh, submesh, tempdir):
+    log(PROGRESS, "Mesh to submesh global cell indices:")
+    for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_cell_local_indices.items():
+        mesh_global_index = mesh.topology().global_indices(mesh.topology().dim())[mesh_local_index]
+        submesh_global_index = submesh.topology().global_indices(submesh.topology().dim())[submesh_local_index]
+        log(PROGRESS, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
+    assert_mesh_plotter(mesh, submesh, "C", tempdir, "test_mesh_to_submesh_global_cell_indices")
+    filename = "test_mesh_to_submesh_global_cell_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    dict_save(submesh.mesh_to_submesh_cell_local_indices, tempdir, filename)
+    dict_assert_equal(submesh.mesh_to_submesh_cell_local_indices, data_dir, filename)
+    
+# Test submesh to mesh global cell indices
+def test_submesh_to_mesh_global_cell_indices(mesh, submesh, tempdir):
+    log(PROGRESS, "Submesh to mesh global cell indices:")
+    for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_cell_local_indices):
+        submesh_global_index = submesh.topology().global_indices(submesh.topology().dim())[submesh_local_index]
+        mesh_global_index = mesh.topology().global_indices(mesh.topology().dim())[mesh_local_index]
+        log(PROGRESS, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
+    assert_mesh_plotter(mesh, submesh, "C", tempdir, "test_submesh_to_mesh_global_cell_indices")
+    filename = "test_submesh_to_mesh_global_cell_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    array_save(submesh.submesh_to_mesh_cell_local_indices, tempdir, filename)
+    array_assert_equal(submesh.submesh_to_mesh_cell_local_indices, data_dir, filename)
+    
+# Test that the cell numbering is independent on the number of processors, and that
+# fake cells have the largest numbering
+def test_submesh_global_cell_numbering_independent_on_mpi(mesh, submesh_markers, submesh, tempdir):
+    cell_markers = dict()
+    cell_centroids = dict()
+    for submesh_cell in cells(submesh):
+        submesh_local_index = submesh_cell.index()
+        submesh_global_index = submesh.topology().global_indices(submesh.topology().dim())[submesh_local_index]
+        mesh_local_index = submesh.submesh_to_mesh_cell_local_indices[submesh_local_index]
+        cell_markers[submesh_global_index] = submesh_markers.array()[mesh_local_index]
+        cell_centroids[submesh_global_index] = [submesh_cell.midpoint()[i] for i in range(submesh.topology().dim())]
+    output_filename = "test_submesh_cell_numbering_independent_on_mpi__size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    with open(tempdir + "/" + output_filename, "wb") as outfile:
+        pickle.dump(cell_centroids, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+    input_filename = "test_submesh_cell_numbering_independent_on_mpi__size_1_rank_0.pkl"
+    with open(data_dir + "/" + input_filename, "rb") as infile:
+        serial_cell_centroids = pickle.load(infile)
+    for submesh_global_index in cell_centroids.keys():
+        if submesh_global_index < len(serial_cell_centroids):
+            assert allclose(cell_centroids[submesh_global_index], serial_cell_centroids[submesh_global_index])
+            assert cell_markers[submesh_global_index]
+        else:
+            assert not cell_markers[submesh_global_index]
+    
+# Test mesh to submesh global facet indices
+def test_mesh_to_submesh_global_facet_indices(mesh, submesh, tempdir):
+    log(PROGRESS, "Mesh to submesh global facet indices:")
+    for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_facet_local_indices.items():
+        mesh_global_index = mesh.topology().global_indices(mesh.topology().dim() - 1)[mesh_local_index]
+        submesh_global_index = submesh.topology().global_indices(submesh.topology().dim() - 1)[submesh_local_index]
+        log(PROGRESS, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
+    assert_mesh_plotter(mesh, submesh, "T", tempdir, "test_mesh_to_submesh_global_facet_indices")
+    filename = "test_mesh_to_submesh_global_facet_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    dict_save(submesh.mesh_to_submesh_facet_local_indices, tempdir, filename)
+    dict_assert_equal(submesh.mesh_to_submesh_facet_local_indices, data_dir, filename)
+    
+# Test submesh to mesh global facet indices
+def test_submesh_to_mesh_global_facet_indices(mesh, submesh, tempdir):
+    log(PROGRESS, "Submesh to mesh global facet indices:")
+    for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_facet_local_indices):
+        submesh_global_index = submesh.topology().global_indices(submesh.topology().dim() - 1)[submesh_local_index]
+        mesh_global_index = mesh.topology().global_indices(mesh.topology().dim() - 1)[mesh_local_index]
+        log(PROGRESS, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
+    assert_mesh_plotter(mesh, submesh, "T", tempdir, "test_submesh_to_mesh_global_facet_indices")
+    filename = "test_submesh_to_mesh_global_facet_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    list_save(submesh.submesh_to_mesh_facet_local_indices, tempdir, filename)
+    list_assert_equal(submesh.submesh_to_mesh_facet_local_indices, data_dir, filename)
+    
+# Test mesh to submesh global vertex indices
+def test_mesh_to_submesh_global_vertex_indices(mesh, submesh, tempdir):
+    log(PROGRESS, "Mesh to submesh global vertex indices:")
+    for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_vertex_local_indices.items():
+        mesh_global_index = mesh.topology().global_indices(0)[mesh_local_index]
+        submesh_global_index = submesh.topology().global_indices(0)[submesh_local_index]
+        log(PROGRESS, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
+    assert_mesh_plotter(mesh, submesh, "V", tempdir, "test_mesh_to_submesh_global_vertex_indices")
+    filename = "test_mesh_to_submesh_global_vertex_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    dict_save(submesh.mesh_to_submesh_vertex_local_indices, tempdir, filename)
+    dict_assert_equal(submesh.mesh_to_submesh_vertex_local_indices, data_dir, filename)
+    
+# Test submesh to mesh global vertex indices
+def test_submesh_to_mesh_global_vertex_indices(mesh, submesh, tempdir):
+    log(PROGRESS, "Submesh to mesh global vertex indices:")
+    for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_vertex_local_indices):
+        submesh_global_index = submesh.topology().global_indices(0)[submesh_local_index]
+        mesh_global_index = mesh.topology().global_indices(0)[mesh_local_index]
+        log(PROGRESS, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
+    assert_mesh_plotter(mesh, submesh, "V", tempdir, "test_submesh_to_mesh_global_vertex_indices")
+    filename = "test_submesh_to_mesh_global_vertex_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    array_save(submesh.submesh_to_mesh_vertex_local_indices, tempdir, filename)
+    array_assert_equal(submesh.submesh_to_mesh_vertex_local_indices, data_dir, filename)
+    
+# Test shared entities detection
+def test_shared_entities_detection(mesh, submesh, tempdir):
+    dim_to_text = {
+        submesh.topology().dim(): "cells",
+        submesh.topology().dim() - 1: "facets",
+        0: "vertices"
+    }
+    for dim in [submesh.topology().dim(), submesh.topology().dim() - 1, 0]:
+        shared_entities = submesh.topology().shared_entities(dim)
+        log(PROGRESS, "Submesh shared indices for " + str(dim_to_text[dim]))
+        log(PROGRESS, str(shared_entities))
+        filename = "test_shared_entities_detection__dim_" + str(dim) + "__size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+        dict_save(shared_entities, tempdir, filename)
+        dict_assert_equal(shared_entities, data_dir, filename)
+
+# Test mesh to submesh dof map
+@pytest.mark.parametrize("FunctionSpace", (EllipticFunctionSpace, StokesFunctionSpace))
+def test_mesh_to_submesh_dof_map(mesh, FunctionSpace, submesh_markers, submesh, tempdir):
+    log(PROGRESS, "Mesh to submesh dofs")
+    V = FunctionSpace(mesh)
+    submesh_V = convert_functionspace_to_submesh(V, submesh)
+    (mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs) = map_functionspaces_between_mesh_and_submesh(V, mesh, submesh_V, submesh)
+    log(PROGRESS, "Local mesh dofs ownership range: " + str(V.dofmap().ownership_range()))
+    for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs.items():
+        log(PROGRESS, "\t" + str(mesh_dof) + " -> " + str(submesh_dof))
+    assert_dof_map_plotter(V, submesh_V, "D", tempdir, "test_mesh_to_submesh_dof_map_" + FunctionSpace.__name__)
+    filename = "test_mesh_to_submesh_dof_map_" + FunctionSpace.__name__ + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    dict_save(mesh_dofs_to_submesh_dofs, tempdir, filename)
+    dict_assert_equal(mesh_dofs_to_submesh_dofs, data_dir, filename)
+    
+# Test submesh to mesh dof map
+@pytest.mark.parametrize("FunctionSpace", (EllipticFunctionSpace, StokesFunctionSpace))
+def test_submesh_to_mesh_dof_map(mesh, FunctionSpace, submesh_markers, submesh, tempdir):
+    log(PROGRESS, "Submesh to mesh dofs")
+    V = FunctionSpace(mesh)
+    submesh_V = convert_functionspace_to_submesh(V, submesh)
+    (mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs) = map_functionspaces_between_mesh_and_submesh(V, mesh, submesh_V, submesh)
+    log(PROGRESS, "Local submesh dofs ownership range: " + str(submesh_V.dofmap().ownership_range()))
+    for (submesh_dof, mesh_dof) in submesh_dofs_to_mesh_dofs.items():
+        log(PROGRESS, "\t" + str(submesh_dof) + " -> " + str(mesh_dof))
+    assert_dof_map_plotter(V, submesh_V, "D", tempdir, "test_submesh_to_mesh_dof_map_" + FunctionSpace.__name__)
+    filename = "test_submesh_to_mesh_dof_map_" + FunctionSpace.__name__ + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
+    dict_save(submesh_dofs_to_mesh_dofs, tempdir, filename)
+    dict_assert_equal(submesh_dofs_to_mesh_dofs, data_dir, filename)
