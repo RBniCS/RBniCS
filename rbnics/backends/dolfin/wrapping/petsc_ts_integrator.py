@@ -50,6 +50,11 @@ class PETScTSIntegrator(object):
             "report": True
         }
         self.set_parameters(default_parameters)
+        # TODO since PETSc 3.8 TSAlpha2 is not working properly in the linear case without attaching a fake monitor
+        if self.problem.time_order == 2:
+            def monitor(snes, it, fgnorm):
+                pass
+            self.ts.getSNES().setMonitor(monitor)
              
     def set_parameters(self, parameters):
         for (key, value) in parameters.items():
