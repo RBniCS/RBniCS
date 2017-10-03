@@ -24,6 +24,8 @@ class NumpyIO(object):
     # Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
+        if not filename.endswith(".npy"):
+            filename = filename + ".npy"
         if is_io_process():
             numpy.save(str(directory) + "/" + filename, content)
         is_io_process.mpi_comm.barrier()
@@ -31,13 +33,17 @@ class NumpyIO(object):
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
-        return numpy.load(str(directory) + "/" + filename + ".npy")
+        if not filename.endswith(".npy"):
+            filename = filename + ".npy"
+        return numpy.load(str(directory) + "/" + filename)
             
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
+        if not filename.endswith(".npy"):
+            filename = filename + ".npy"
         exists = None
         if is_io_process():
-            exists = os.path.exists(str(directory) + "/" + filename + ".npy")
+            exists = os.path.exists(str(directory) + "/" + filename)
         exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists

@@ -23,8 +23,10 @@ class TextIO(object):
     # Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
+        if not filename.endswith(".txt"):
+            filename = filename + ".txt"
         if is_io_process():
-            with open(str(directory) + "/" + filename + ".txt", "w") as outfile:
+            with open(str(directory) + "/" + filename, "w") as outfile:
                 for content_i in content:
                     outfile.write(str(content_i) + "\n")
         is_io_process.mpi_comm.barrier()
@@ -32,14 +34,18 @@ class TextIO(object):
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
-        with open(str(directory) + "/" + filename + ".txt", "r") as infile:
+        if not filename.endswith(".txt"):
+            filename = filename + ".txt"
+        with open(str(directory) + "/" + filename, "r") as infile:
             return [line.rstrip("\n") for line in infile]
             
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
+        if not filename.endswith(".txt"):
+            filename = filename + ".txt"
         exists = None
         if is_io_process():
-            exists = os.path.exists(str(directory) + "/" + filename + ".txt")
+            exists = os.path.exists(str(directory) + "/" + filename)
         exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists
