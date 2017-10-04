@@ -19,16 +19,7 @@
 from dolfin import *
 from rbnics import *
 
-@ShapeParametrization(
-    ("2.0 - 2.0*mu[0] + mu[0]*x[0] +(2.0-2.0*mu[0])*x[1]", "2.0 -2.0*mu[1] + (2.0-mu[1])*x[1]"), # subdomain 1
-    ("2.0*mu[0]-2.0 +x[0] +(mu[0]-1.0)*x[1]", "2.0 -2.0*mu[1] + (2.0-mu[1])*x[1]"), # subdomain 2
-    ("2.0 - 2.0*mu[0] + (2.0-mu[0])*x[0]", "2.0 -2.0*mu[1] + (2.0-2.0*mu[1])*x[0] + mu[1]*x[1]"), # subdomain 3
-    ("2.0 - 2.0*mu[0] + (2.0-mu[0])*x[0]", "2.0*mu[1] -2.0 + (mu[1]-1.0)*x[0] + x[1]"), # subdomain 4
-    ("2.0*mu[0] -2.0 + (2.0-mu[0])*x[0]", "2.0 -2.0*mu[1] + (2.0*mu[1]-2.0)*x[0] + mu[1]*x[1]"), # subdomain 5
-    ("2.0*mu[0] -2.0 + (2.0-mu[0])*x[0]", "2.0*mu[1] -2.0 + (1.0 - mu[1])*x[0] + x[1]"), # subdomain 6
-    ("2.0 -2.0*mu[0] + mu[0]*x[0] + (2.0*mu[0]-2.0)*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 7
-    ("2.0*mu[0] -2.0 + x[0] + (1.0-mu[0])*x[1]", "2.0*mu[1] -2.0 + (2.0 - mu[1])*x[1]"), # subdomain 8
-)
+@AffineShapeParametrization("data/hole_vertices_mapping.pkl")
 class Hole(EllipticCoerciveProblem):
     
     ## Default initialization of members

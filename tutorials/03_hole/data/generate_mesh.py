@@ -18,22 +18,62 @@
 
 from dolfin import *
 from mshr import *
+from rbnics.utils.io import PickleIO
+
+# Define domain
+outer_rectangle = Rectangle(Point(-2., -2.), Point(2., 2.))
+inner_rectangle = Rectangle(Point(-1., -1.), Point(1., 1.))
+domain = outer_rectangle - inner_rectangle
+
+# Define vertices mappings of affine shape parametrization. These will be used
+# to partition the mesh in subdomains.
+vertices_mappings = [
+    {
+        ("-1", "-1"): ("-mu[0]", "-mu[1]"),
+        ("-2", "-2"): ("-2", "-2"),
+        ("1", "-1"): ("mu[0]", "-mu[1]")
+    }, # subdomain 1
+    {
+        ("1", "-1"): ("mu[0]", "-mu[1]"),
+        ("-2", "-2"): ("-2", "-2"),
+        ("2", "-2"): ("2", "-2")
+    }, # subdomain 2
+    {
+        ("-1", "-1"): ("-mu[0]", "-mu[1]"),
+        ("-1", "1"): ("-mu[0]", "mu[1]"),
+        ("-2", "-2"): ("-2", "-2")
+    }, # subdomain 3
+    {
+        ("-1", "1"): ("-mu[0]", "mu[1]"),
+        ("-2", "2"): ("-2", "2"),
+        ("-2", "-2"): ("-2", "-2")
+    }, # subdomain 4
+    {
+        ("1", "-1"): ("mu[0]", "-mu[1]"),
+        ("2", "-2"): ("2", "-2"),
+        ("1", "1"): ("mu[0]", "mu[1]")
+    }, # subdomain 5
+    {
+        ("2", "2"): ("2", "2"),
+        ("1", "1"): ("mu[0]", "mu[1]"),
+        ("2", "-2"): ("2", "-2")
+    }, # subdomain 6
+    {
+        ("-1", "1"): ("-mu[0]", "mu[1]"),
+        ("1", "1"): ("mu[0]", "mu[1]"),
+        ("-2", "2"): ("-2", "2")
+    }, # subdomain 7
+    {
+        ("2", "2"): ("2", "2"),
+        ("-2", "2"): ("-2", "2"),
+        ("1", "1"): ("mu[0]", "mu[1]")
+    } # subdomain 8
+]
 
 # Create mesh
-outer_rectangle = Rectangle(Point(-2., -2.), Point(+2., +2.))
-inner_rectangle = Rectangle(Point(-1., -1.), Point(+1., +1.))
-subdomain = dict()
-subdomain[1] = Polygon([Point(-2., -2.), Point(+1., -1.), Point(-1., -1.)])
-subdomain[2] = Polygon([Point(-2., -2.), Point(+2., -2.), Point(+1., -1.)])
-subdomain[3] = Polygon([Point(-2., -2.), Point(-1., -1.), Point(-1., +1.)])
-subdomain[4] = Polygon([Point(-2., -2.), Point(-1., +1.), Point(-2., +2.)])
-subdomain[5] = Polygon([Point(+2., -2.), Point(+1., +1.), Point(+1., -1.)])
-subdomain[6] = Polygon([Point(+2., -2.), Point(+2., +2.), Point(+1., +1.)])
-subdomain[7] = Polygon([Point(-2., +2.), Point(-1., +1.), Point(+1., +1.)])
-subdomain[8] = Polygon([Point(-2., +2.), Point(+1., +1.), Point(+2., +2.)])
-domain = outer_rectangle - inner_rectangle
-for i, s in subdomain.iteritems():
-    domain.set_subdomain(i, subdomain[i])
+for i, vertices_mapping in enumerate(vertices_mappings):
+    subdomain_i = Polygon([Point(*[float(coord) for coord in vertex]) for vertex in vertices_mapping.keys()])
+    domain.set_subdomain(i + 1, subdomain_i)
 mesh = generate_mesh(domain, 46)
 
 # Create subdomains
@@ -92,6 +132,7 @@ rightOuter = RightOuter()
 rightOuter.mark(boundaries, 8)
 
 # Save
+PickleIO.save_file(vertices_mappings, ".", "hole_vertices_mapping.pkl")
 File("hole.xml") << mesh
 File("hole_physical_region.xml") << subdomains
 File("hole_facet_region.xml") << boundaries
