@@ -68,7 +68,7 @@ class PyGeMWrapper(object):
         
     def update(self, mu):
         if self.pygem_morphing_type == "FFD":
-            for (pygem_index_and_component, mu_index) in self.pygem_index_and_component_to_mu_index_map.iteritems():
+            for (pygem_index_and_component, mu_index) in self.pygem_index_and_component_to_mu_index_map.items():
                 assert len(pygem_index_and_component) == 2
                 pygem_index = pygem_index_and_component[0]
                 assert len(pygem_index) == 3
@@ -84,7 +84,7 @@ class PyGeMWrapper(object):
                     raise AssertionError("Invalid component.")
         elif self.pygem_morphing_type == "RBF":
             control_points_displacements = zeros((self.params.n_control_points, 3))
-            for (pygem_index_and_component, mu_index) in self.pygem_index_and_component_to_mu_index_map.iteritems():
+            for (pygem_index_and_component, mu_index) in self.pygem_index_and_component_to_mu_index_map.items():
                 assert len(pygem_index_and_component) == 2
                 pygem_index = pygem_index_and_component[0]
                 assert isinstance(pygem_index, int)

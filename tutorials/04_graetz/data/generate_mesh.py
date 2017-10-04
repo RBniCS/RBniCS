@@ -25,7 +25,7 @@ subdomain = dict()
 subdomain[1] = Rectangle(Point(0., 0.), Point(1., 1.))
 subdomain[2] = Rectangle(Point(1., 0.), Point(2., 1.))
 domain = rectangle
-for i, s in subdomain.iteritems():
+for i, s in subdomain.items():
     domain.set_subdomain(i, subdomain[i])
 mesh = generate_mesh(domain, 64)
 

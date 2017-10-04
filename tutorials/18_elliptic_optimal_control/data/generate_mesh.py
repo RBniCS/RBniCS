@@ -30,7 +30,7 @@ def generate_mesh2():
     subdomain[1] = Rectangle(Point(0.2, 0.3), Point(0.8, 0.7))
     subdomain[2] = Rectangle(Point(1.2, 0.3), Point(2.5, 0.7))
     domain = rectangle
-    for i, s in subdomain.iteritems():
+    for i, s in subdomain.items():
         domain.set_subdomain(i, subdomain[i])
     mesh = generate_mesh(domain, 64)
 
