@@ -16,10 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.shape_parametrization.reduction_methods.affine_shape_parametrization_decorated_reduction_method import AffineShapeParametrizationDecoratedReductionMethod
+from rbnics.utils.decorators import ReductionMethodDecoratorFor
+from rbnics.shape_parametrization.problems import AffineShapeParametrization
 from rbnics.shape_parametrization.reduction_methods.shape_parametrization_decorated_reduction_method import ShapeParametrizationDecoratedReductionMethod
 
-__all__ = [
-    'AffineShapeParametrizationDecoratedReductionMethod',
-    'ShapeParametrizationDecoratedReductionMethod'
-]
+@ReductionMethodDecoratorFor(AffineShapeParametrization)
+def AffineShapeParametrizationDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
+    return ShapeParametrizationDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)

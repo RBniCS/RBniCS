@@ -16,10 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.shape_parametrization.reduction_methods.affine_shape_parametrization_decorated_reduction_method import AffineShapeParametrizationDecoratedReductionMethod
-from rbnics.shape_parametrization.reduction_methods.shape_parametrization_decorated_reduction_method import ShapeParametrizationDecoratedReductionMethod
+from rbnics.shape_parametrization.problems.affine_shape_parametrization_decorated_problem import AffineShapeParametrizationDecoratedProblem
 
-__all__ = [
-    'AffineShapeParametrizationDecoratedReductionMethod',
-    'ShapeParametrizationDecoratedReductionMethod'
-]
+# For the sake of the user, since this is the only class that he/she needs to use, rename it to an easier name
+AffineShapeParametrization = AffineShapeParametrizationDecoratedProblem
