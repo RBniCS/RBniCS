@@ -30,7 +30,7 @@ def basic_tensor_load(backend, wrapping):
         form = tensor.generator._form
         load_failed = False
         # Read in generator
-        full_filename_generator = str(directory) + "/" + filename + ".generator"
+        full_filename_generator = os.path.join(str(directory), filename + ".generator")
         generator_string = None
         if is_io_process(mpi_comm):
             if os.path.exists(full_filename_generator):
@@ -43,7 +43,7 @@ def basic_tensor_load(backend, wrapping):
         else:
             generator_string = mpi_comm.bcast(generator_string, root=is_io_process.root)
         # Read in generator mpi size
-        full_filename_generator_mpi_size = str(directory) + "/" + filename + ".generator_mpi_size"
+        full_filename_generator_mpi_size = os.path.join(str(directory), filename + ".generator_mpi_size")
         generator_mpi_size_string = None
         if is_io_process(mpi_comm):
             if os.path.exists(full_filename_generator_mpi_size):
@@ -147,21 +147,21 @@ def basic_tensor_load(backend, wrapping):
     
     def _matrix_load(directory, filename):
         if _file_exists(directory, filename + ".dat"):
-            viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "r")
+            viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "r")
             return (PETSc.Mat().load(viewer), True)
         else:
             return (None, False)
             
     def _vector_load(directory, filename):
         if _file_exists(directory, filename + ".dat"):
-            viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "r")
+            viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "r")
             return (PETSc.Vec().load(viewer), True)
         else:
             return (None, False)
         
     def _file_exists(directory, filename):
         file_exists = False
-        if is_io_process() and os.path.exists(str(directory) + "/" + filename):
+        if is_io_process() and os.path.exists(os.path.join(str(directory), filename)):
             file_exists = True
         file_exists = is_io_process.mpi_comm.bcast(file_exists, root=is_io_process.root)
         return file_exists

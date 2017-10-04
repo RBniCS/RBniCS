@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import os
 from math import sqrt
 from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
 from rbnics.utils.mpi import is_io_process
@@ -107,7 +107,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
         def save_eigenvalues_file(self, output_directory, eigenvalues_file):
             if is_io_process(self.mpi_comm):
                 N = len(self.snapshots_matrix)
-                with open(str(output_directory) + "/" + eigenvalues_file, "w") as outfile:
+                with open(os.path.join(str(output_directory), eigenvalues_file), "w") as outfile:
                     for i in range(N):
                         outfile.write(str(i) + " " + str(self.eigenvalues[i]) + "\n")
             self.mpi_comm.barrier()
@@ -115,7 +115,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
         def save_retained_energy_file(self, output_directory, retained_energy_file):
             if is_io_process(self.mpi_comm):
                 N = len(self.snapshots_matrix)
-                with open(str(output_directory) + "/" + retained_energy_file, "w") as outfile:
+                with open(os.path.join(str(output_directory), retained_energy_file), "w") as outfile:
                     for i in range(N):
                         outfile.write(str(i) + " " + str(self.retained_energy[i]) + "\n")
             self.mpi_comm.barrier()

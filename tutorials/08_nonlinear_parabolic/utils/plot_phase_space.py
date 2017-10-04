@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 import matplotlib.pyplot as plt
 
 def plot_phase_space(solution_over_time, reduced_solution_over_time, Z, x, folder, filename):
@@ -33,4 +34,4 @@ def plot_phase_space(solution_over_time, reduced_solution_over_time, Z, x, folde
     offline_line, = plt.plot(all_u1, all_u2, label="Offline solution")
     online_line, = plt.plot(all_reduced_u1, all_reduced_u2, label="Online solution")
     plt.legend(handles=[offline_line, online_line])
-    plt.savefig(folder + "/" + filename + ".png")
+    plt.savefig(os.path.join(folder, filename + ".png"))

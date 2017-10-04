@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from petsc4py import PETSc
 from ufl import Form
 from dolfin import as_backend_type
@@ -30,13 +31,13 @@ def basic_tensor_save(backend, wrapping):
         form = tensor.generator._form
         # Write out generator
         assert hasattr(tensor, "generator")
-        full_filename_generator = str(directory) + "/" + filename + ".generator"
+        full_filename_generator = os.path.join(str(directory), filename + ".generator")
         form_name = wrapping.form_name(form)
         if is_io_process(mpi_comm):
             with open(full_filename_generator, "w") as generator_file:
                 generator_file.write(form_name)
         # Write out generator mpi size
-        full_filename_generator_mpi_size = str(directory) + "/" + filename + ".generator_mpi_size"
+        full_filename_generator_mpi_size = os.path.join(str(directory), filename + ".generator_mpi_size")
         if is_io_process(mpi_comm):
             with open(full_filename_generator_mpi_size, "w") as generator_mpi_size_file:
                 generator_mpi_size_file.write(str(mpi_comm.size))
@@ -90,12 +91,12 @@ def basic_tensor_save(backend, wrapping):
             
     def _matrix_save(matrix, directory, filename):
         mat = as_backend_type(matrix).mat()
-        viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "w")
+        viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "w")
         viewer.view(mat)
         
     def _vector_save(vector, directory, filename):
         vec = as_backend_type(vector).vec()
-        viewer = PETSc.Viewer().createBinary(str(directory) + "/" + filename + ".dat", "w")
+        viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "w")
         viewer.view(vec)
         
     def _dict_update(dict1, dict2, datatype):

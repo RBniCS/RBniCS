@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from rbnics.utils.decorators import PreserveClassName, sync_setters
 
 def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
@@ -34,7 +35,7 @@ def DualProblem(ParametrizedDifferentialProblem_DerivedClass):
             self.primal_problem = primal_problem
             
             # Change the folder names in Parent
-            new_folder_prefix = primal_problem.folder_prefix + "/" + "dual"
+            new_folder_prefix = os.path.join(primal_problem.folder_prefix, "dual")
             for (key, name) in self.folder.items():
                 self.folder[key] = name.replace(self.folder_prefix, new_folder_prefix)
             self.folder_prefix = new_folder_prefix

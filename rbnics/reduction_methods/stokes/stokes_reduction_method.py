@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from rbnics.reduction_methods.base import LinearReductionMethod
 
 # Base class containing the interface of a projection based ROM
@@ -31,7 +32,7 @@ def StokesReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
             # Call to parent
             StokesReductionMethod_Base.__init__(self, truth_problem, **kwargs)
             # I/O
-            self.folder["supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
+            self.folder["supremizer_snapshots"] = os.path.join(self.folder_prefix, "snapshots")
             
         # Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problem
         def postprocess_snapshot(self, snapshot, snapshot_index):

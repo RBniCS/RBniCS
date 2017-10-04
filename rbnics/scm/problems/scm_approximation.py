@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import os
 import hashlib
 import operator # to find closest parameters
 from math import sqrt
@@ -54,9 +54,9 @@ class SCMApproximation(ParametrizedProblem):
         self.M_p = kwargs["M_p"] # integer denoting the number of constraints based on the previous lower bounds, or None
         
         # I/O
-        self.folder["cache"] = self.folder_prefix + "/" + "reduced_cache"
+        self.folder["cache"] = os.path.join(self.folder_prefix, "reduced_cache")
         self.cache_config = config.get("SCM", "cache")
-        self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
+        self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
         
         # Coercivity constant eigen problem
         self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(truth_problem, "a", True, "smallest", kwargs["coercivity_eigensolver_parameters"], self.folder_prefix)

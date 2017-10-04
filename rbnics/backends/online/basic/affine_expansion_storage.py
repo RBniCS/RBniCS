@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from numbers import Number
 from numpy import empty as AffineExpansionStorageContent_Base
 from numpy import nditer as AffineExpansionStorageContent_Iterator
@@ -67,7 +68,7 @@ def AffineExpansionStorage(backend, wrapping):
         def save(self, directory, filename):
             assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
             # Get full directory name
-            full_directory = Folders.Folder(directory + "/" + filename)
+            full_directory = Folders.Folder(os.path.join(str(directory), filename))
             full_directory.create()
             # Save content shape
             self._save_content_shape(full_directory)
@@ -154,7 +155,7 @@ def AffineExpansionStorage(backend, wrapping):
                             return False
                         it.iternext()
             # Get full directory name
-            full_directory = Folders.Folder(directory + "/" + filename)
+            full_directory = Folders.Folder(os.path.join(str(directory), filename))
             # Load content shape
             content_shape = self._load_content_shape(full_directory)
             # Prepare content

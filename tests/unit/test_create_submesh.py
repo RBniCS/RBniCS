@@ -93,36 +93,36 @@ def submesh_boundaries(_submesh_subdomains_boundaries):
 # Auxiliary functions for array asserts
 def array_save(arr, directory, filename):
     assert isinstance(arr, array)
-    with open(directory + "/" + filename, "wb") as outfile:
+    with open(os.path.join(directory, filename), "wb") as outfile:
         pickle.dump(arr, outfile, protocol=pickle.HIGHEST_PROTOCOL)
         
 def array_assert_equal(arr, directory, filename):
     assert isinstance(arr, array)
-    with open(directory + "/" + filename, "rb") as infile:
+    with open(os.path.join(directory, filename), "rb") as infile:
         arr_in = pickle.load(infile)
     assert (arr == arr_in).all()
     
 # Auxiliary functions for dict asserts
 def dict_save(dic, directory, filename):
     assert isinstance(dic, dict)
-    with open(directory + "/" + filename, "wb") as outfile:
+    with open(os.path.join(directory, filename), "wb") as outfile:
         pickle.dump(dic, outfile, protocol=pickle.HIGHEST_PROTOCOL)
         
 def dict_assert_equal(dic, directory, filename):
     assert isinstance(dic, dict)
-    with open(directory + "/" + filename, "rb") as infile:
+    with open(os.path.join(directory, filename), "rb") as infile:
         dic_in = pickle.load(infile)
     assert dic == dic_in
     
 # Auxiliary functions for list asserts
 def list_save(lis, directory, filename):
     assert isinstance(lis, list)
-    with open(directory + "/" + filename, "wb") as outfile:
+    with open(os.path.join(directory, filename), "wb") as outfile:
         pickle.dump(lis, outfile, protocol=pickle.HIGHEST_PROTOCOL)
         
 def list_assert_equal(lis, directory, filename):
     assert isinstance(lis, list)
-    with open(directory + "/" + filename, "rb") as infile:
+    with open(os.path.join(directory, filename), "rb") as infile:
         lis_in = pickle.load(infile)
     assert lis == lis_in
     
@@ -184,11 +184,11 @@ if has_fenicstools:
         
         def save(self, directory, filename):
             assert hasattr(self.ax, "_text_storage")
-            with open(directory + "/" + filename + "_size_" + str(self.mpi_size) + "_rank_" + str(self.mpi_rank) + ".pkl", "wb") as outfile:
+            with open(os.path.join(directory, filename + "_size_" + str(self.mpi_size) + "_rank_" + str(self.mpi_rank) + ".pkl"), "wb") as outfile:
                 pickle.dump(self.ax._text_storage, outfile, protocol=pickle.HIGHEST_PROTOCOL)
             
         def assert_equal(self, directory, filename):
-            with open(directory + "/" + filename + "_size_" + str(self.mpi_size) + "_rank_" + str(self.mpi_rank) + ".pkl", "rb") as infile:
+            with open(os.path.join(directory, filename + "_size_" + str(self.mpi_size) + "_rank_" + str(self.mpi_rank) + ".pkl"), "rb") as infile:
                 text_storage = pickle.load(infile)
             assert hasattr(self.ax, "_text_storage")
             assert text_storage.keys() == self.ax._text_storage.keys()
@@ -248,10 +248,10 @@ def test_submesh_global_cell_numbering_independent_on_mpi(mesh, submesh_markers,
         cell_markers[submesh_global_index] = submesh_markers.array()[mesh_local_index]
         cell_centroids[submesh_global_index] = [submesh_cell.midpoint()[i] for i in range(submesh.topology().dim())]
     output_filename = "test_submesh_cell_numbering_independent_on_mpi__size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
-    with open(tempdir + "/" + output_filename, "wb") as outfile:
+    with open(os.path.join(tempdir, output_filename), "wb") as outfile:
         pickle.dump(cell_centroids, outfile, protocol=pickle.HIGHEST_PROTOCOL)
     input_filename = "test_submesh_cell_numbering_independent_on_mpi__size_1_rank_0.pkl"
-    with open(data_dir + "/" + input_filename, "rb") as infile:
+    with open(os.path.join(data_dir, input_filename), "rb") as infile:
         serial_cell_centroids = pickle.load(infile)
     for submesh_global_index in cell_centroids.keys():
         if submesh_global_index < len(serial_cell_centroids):

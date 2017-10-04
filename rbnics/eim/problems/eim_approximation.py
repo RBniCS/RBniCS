@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 import hashlib
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.backends import abs, copy, evaluate, export, import_, max
@@ -55,9 +56,9 @@ class EIMApproximation(ParametrizedProblem):
         # Basis functions container
         self.Z = parametrized_expression.create_basis_container()
         # I/O
-        self.folder["basis"] = self.folder_prefix + "/" + "basis"
-        self.folder["cache"] = self.folder_prefix + "/" + "cache"
-        self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
+        self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
+        self.folder["cache"] = os.path.join(self.folder_prefix, "cache")
+        self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
         self.cache_config = config.get("EIM", "cache")
         
     # Initialize data structures required for the online phase

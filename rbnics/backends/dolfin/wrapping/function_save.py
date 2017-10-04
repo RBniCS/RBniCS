@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os # for path
+import os
 from dolfin import assign, File, has_hdf5_parallel, XDMFFile
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
@@ -46,7 +46,7 @@ def function_save(fun, directory, filename, suffix=None):
 def _write_to_xml_file(fun, directory, filename, suffix):
     if suffix is not None:
         filename = filename + "." + str(suffix)
-    full_filename = str(directory) + "/" + filename + ".xml"
+    full_filename = os.path.join(str(directory), filename + ".xml")
     file_ = File(full_filename)
     file_ << fun
     
@@ -69,7 +69,7 @@ def _write_to_pvd_file(fun, directory, filename, suffix, component=None):
                 filename_i = filename + "_component_" + str(i)
             _write_to_pvd_file(fun_i, directory, filename_i, suffix)
     else:
-        full_filename = str(directory) + "/" + filename + ".pvd"
+        full_filename = os.path.join(str(directory), filename + ".pvd")
         if suffix is not None:
             if full_filename in _all_pvd_files:
                 assert _all_pvd_latest_suffix[full_filename] == suffix - 1
@@ -108,8 +108,8 @@ def _write_to_xdmf_file(fun, directory, filename, suffix, component=None, functi
                 filename_i = filename + "_component_" + str(i)
             _write_to_xdmf_file(fun_i, directory, filename_i, suffix, None, function_name)
     else:
-        full_filename_visualization = str(directory) + "/" + filename + ".xdmf"
-        full_filename_checkpoint = str(directory) + "/" + filename + "_checkpoint.xdmf"
+        full_filename_visualization = os.path.join(str(directory), filename + ".xdmf")
+        full_filename_checkpoint = os.path.join(str(directory), filename + "_checkpoint.xdmf")
         if suffix is not None:
             if full_filename_checkpoint in _all_xdmf_files:
                 assert _all_xdmf_latest_suffix[full_filename_checkpoint] == suffix - 1

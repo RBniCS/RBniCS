@@ -17,6 +17,7 @@
 #
 
 from abc import ABCMeta, abstractmethod
+import os
 from rbnics.backends import BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
@@ -52,7 +53,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             self._riesz_solve_homogeneous_dirichlet_bc = None # setup by init()
             self._riesz_product_inner_product = None # setup by init()
             # I/O
-            self.folder["error_estimation"] = self.folder_prefix + "/" + "error_estimation"
+            self.folder["error_estimation"] = os.path.join(self.folder_prefix, "error_estimation")
             
             # Provide a default value for Riesz terms and Riesz product terms
             self.riesz_terms = [term for term in self.terms]

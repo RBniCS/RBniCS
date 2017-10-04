@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from numbers import Number
 from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
@@ -40,8 +41,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Declare a POD object
             self.POD = None # ProperOrthogonalDecomposition (for problems with one component) or dict of ProperOrthogonalDecomposition (for problem with several components)
             # I/O
-            self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
-            self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+            self.folder["snapshots"] = os.path.join(self.folder_prefix, "snapshots")
+            self.folder["post_processing"] = os.path.join(self.folder_prefix, "post_processing")
             self.label = "POD-Galerkin"
             
             # Since we use a POD for each component, it makes sense to possibly have

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import os
 from dolfin import *
 from rbnics import EquispacedDistribution
 from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
@@ -89,7 +89,7 @@ class MockReductionMethod(ReductionMethod):
         self.truth_problem = truth_problem
         self.reduced_problem = None
         # I/O
-        self.folder["basis"] = self.truth_problem.folder_prefix + "/" + "basis"
+        self.folder["basis"] = os.path.join(self.truth_problem.folder_prefix, "basis")
         # Gram Schmidt
         self.GS = GramSchmidt(self.truth_problem.X)
         

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from rbnics.backends.online import online_copy, online_export, online_import_, OnlineVector
 from rbnics.utils.decorators import list_of, overload
 from rbnics.utils.io import Folders, PickleIO as ItemVectorDimensionIO, PickleIO as LenIO
@@ -37,7 +38,7 @@ class UpperBoundsList(list):
             
     def save(self, directory, filename):
         # Get full directory name
-        full_directory = Folders.Folder(directory + "/" + filename)
+        full_directory = Folders.Folder(os.path.join(str(directory), filename))
         full_directory.create()
         # Save list length
         self._save_len(full_directory)
@@ -61,7 +62,7 @@ class UpperBoundsList(list):
             return True
         else:
             # Get full directory name
-            full_directory = Folders.Folder(directory + "/" + filename)
+            full_directory = Folders.Folder(os.path.join(str(directory), filename))
             # Load list length
             len_ = self._load_len(full_directory)
             # Load list item vector dimension

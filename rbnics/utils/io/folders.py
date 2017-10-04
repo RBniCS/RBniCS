@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os # for path and makedir
+import os
 from rbnics.utils.mpi import is_io_process
 from rbnics.utils.decorators import overload
 
@@ -47,8 +47,8 @@ class Folders(dict): # dict from string to string
             
         def touch_file(self, filename):
             if is_io_process():
-                with open(self.name + "/" + filename, "a"):
-                    os.utime(self.name + "/" + filename, None)
+                with open(os.path.join(self.name, filename), "a"):
+                    os.utime(os.path.join(self.name, filename), None)
             is_io_process.mpi_comm.barrier()
 
         def __str__(self):

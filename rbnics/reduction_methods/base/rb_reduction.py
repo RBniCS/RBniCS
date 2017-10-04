@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from math import sqrt
 from rbnics.backends import GramSchmidt
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
@@ -42,8 +43,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Declare a GS object
             self.GS = None # GramSchmidt (for problems with one component) or dict of GramSchmidt (for problem with several components)
             # I/O
-            self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
-            self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+            self.folder["snapshots"] = os.path.join(self.folder_prefix, "snapshots")
+            self.folder["post_processing"] = os.path.join(self.folder_prefix, "post_processing")
             self.greedy_selected_parameters = GreedySelectedParametersList()
             self.greedy_error_estimators = GreedyErrorEstimatorsList()
             self.label = "RB"

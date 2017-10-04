@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import os
 import types
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.backends import abs, evaluate, max
@@ -37,8 +37,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.snapshots_container = self.EIM_approximation.parametrized_expression.create_snapshots_container()
         self._training_set_parameters_to_snapshots_container_index = dict()
         # I/O
-        self.folder["snapshots"] = self.folder_prefix + "/" + "snapshots"
-        self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+        self.folder["snapshots"] = os.path.join(self.folder_prefix, "snapshots")
+        self.folder["post_processing"] = os.path.join(self.folder_prefix, "post_processing")
         self.greedy_selected_parameters = GreedySelectedParametersList()
         self.greedy_errors = GreedyErrorEstimatorsList()
         #

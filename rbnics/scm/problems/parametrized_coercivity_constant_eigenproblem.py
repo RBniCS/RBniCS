@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 import hashlib
 from numpy import isclose
 from rbnics.problems.base import ParametrizedProblem
@@ -53,7 +54,7 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         self._eigenvalue_cache = dict()
         self._eigenvector = Function(truth_problem.V)
         self._eigenvector_cache = dict()
-        self.folder["cache"] = folder_prefix + "/" + "cache"
+        self.folder["cache"] = os.path.join(folder_prefix, "cache")
         self.cache_config = config.get("problems", "cache")
     
     def init(self):

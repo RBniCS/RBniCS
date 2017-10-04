@@ -16,8 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 from abc import ABCMeta, abstractmethod
+import os
 import types
 from math import sqrt
 from numpy import isclose
@@ -77,8 +77,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # Basis functions matrix
         self.Z = BasisFunctionsMatrix(truth_problem.V)
         # I/O
-        self.folder["basis"] = self.folder_prefix + "/" + "basis"
-        self.folder["reduced_operators"] = self.folder_prefix + "/" + "reduced_operators"
+        self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
+        self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
         self.cache_config = config.get("reduced problems", "cache")
     
     def init(self, current_stage="online"):

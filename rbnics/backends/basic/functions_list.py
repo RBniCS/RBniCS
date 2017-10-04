@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from numbers import Number
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType, tuple_of
@@ -98,7 +99,7 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
                     
         def _save_Nmax(self, directory, filename):
             if is_io_process(self.mpi_comm):
-                with open(str(directory) + "/" + filename + ".length", "w") as length:
+                with open(os.path.join(str(directory), filename + ".length"), "w") as length:
                     length.write(str(len(self._list)))
             
         def load(self, directory, filename):
@@ -115,7 +116,7 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
         def _load_Nmax(self, directory, filename):
             Nmax = None
             if is_io_process(self.mpi_comm):
-                with open(str(directory) + "/" + filename + ".length", "r") as length:
+                with open(os.path.join(str(directory), filename + ".length"), "r") as length:
                     Nmax = int(length.readline())
             Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
             return Nmax

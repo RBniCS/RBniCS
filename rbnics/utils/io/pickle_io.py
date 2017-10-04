@@ -17,7 +17,7 @@
 #
 
 import pickle
-import os # for path
+import os
 from rbnics.utils.mpi import is_io_process
 
 class PickleIO(object):
@@ -27,7 +27,7 @@ class PickleIO(object):
         if not filename.endswith(".pkl"):
             filename = filename + ".pkl"
         if is_io_process():
-            with open(str(directory) + "/" + filename, "wb") as outfile:
+            with open(os.path.join(str(directory), filename), "wb") as outfile:
                 pickle.dump(content, outfile, protocol=pickle.HIGHEST_PROTOCOL)
         is_io_process.mpi_comm.barrier()
         
@@ -36,7 +36,7 @@ class PickleIO(object):
     def load_file(directory, filename):
         if not filename.endswith(".pkl"):
             filename = filename + ".pkl"
-        with open(str(directory) + "/" + filename, "rb") as infile:
+        with open(os.path.join(str(directory), filename), "rb") as infile:
             return pickle.load(infile)
             
     # Check if the file exists
@@ -46,6 +46,6 @@ class PickleIO(object):
             filename = filename + ".pkl"
         exists = None
         if is_io_process():
-            exists = os.path.exists(str(directory) + "/" + filename)
+            exists = os.path.exists(os.path.join(str(directory), filename))
         exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists

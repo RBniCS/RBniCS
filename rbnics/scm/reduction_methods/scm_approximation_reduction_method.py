@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import os
 from numpy import isclose
 from rbnics.backends import transpose
 from rbnics.backends.online import OnlineVector
@@ -36,7 +36,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         # High fidelity problem
         self.SCM_approximation = SCM_approximation
         # I/O
-        self.folder["post_processing"] = self.folder_prefix + "/" + "post_processing"
+        self.folder["post_processing"] = os.path.join(self.folder_prefix, "post_processing")
         self.greedy_selected_parameters = SCM_approximation.greedy_selected_parameters
         self.greedy_error_estimators = GreedyErrorEstimatorsList()
         

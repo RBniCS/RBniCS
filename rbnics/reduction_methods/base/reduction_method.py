@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from abc import ABCMeta, abstractmethod
 from rbnics.sampling import ParameterSpaceSubset
 from rbnics.utils.io import Folders
@@ -35,13 +36,13 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # Training set
         self.training_set = ParameterSpaceSubset(mu_range)
         # I/O
-        self.folder["training_set"] = self.folder_prefix + "/" + "training_set"
+        self.folder["training_set"] = os.path.join(self.folder_prefix, "training_set")
         
         # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
         # Testing set
         self.testing_set = ParameterSpaceSubset(mu_range)
         # I/O
-        self.folder["testing_set"] = self.folder_prefix + "/" + "testing_set"
+        self.folder["testing_set"] = os.path.join(self.folder_prefix, "testing_set")
     
     # OFFLINE: set maximum reduced space dimension (stopping criterion)
     def set_Nmax(self, Nmax, **kwargs):

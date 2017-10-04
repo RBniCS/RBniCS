@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os # for path
+import os
 import numpy
 from rbnics.utils.mpi import is_io_process
 
@@ -27,7 +27,7 @@ class NumpyIO(object):
         if not filename.endswith(".npy"):
             filename = filename + ".npy"
         if is_io_process():
-            numpy.save(str(directory) + "/" + filename, content)
+            numpy.save(os.path.join(str(directory), filename), content)
         is_io_process.mpi_comm.barrier()
     
     # Load a variable from file
@@ -35,7 +35,7 @@ class NumpyIO(object):
     def load_file(directory, filename):
         if not filename.endswith(".npy"):
             filename = filename + ".npy"
-        return numpy.load(str(directory) + "/" + filename)
+        return numpy.load(os.path.join(str(directory), filename))
             
     # Check if the file exists
     @staticmethod
@@ -44,6 +44,6 @@ class NumpyIO(object):
             filename = filename + ".npy"
         exists = None
         if is_io_process():
-            exists = os.path.exists(str(directory) + "/" + filename)
+            exists = os.path.exists(os.path.join(str(directory), filename))
         exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists

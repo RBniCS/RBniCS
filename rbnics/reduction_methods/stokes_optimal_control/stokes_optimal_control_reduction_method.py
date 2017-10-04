@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from rbnics.reduction_methods.base import LinearReductionMethod
 
 def StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -29,8 +30,8 @@ def StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod_Deriv
             # Call to parent
             StokesOptimalControlReductionMethod_Base.__init__(self, truth_problem, **kwargs)
             # I/O
-            self.folder["state_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
-            self.folder["adjoint_supremizer_snapshots"] = self.folder_prefix + "/" + "snapshots"
+            self.folder["state_supremizer_snapshots"] = os.path.join(self.folder_prefix, "snapshots")
+            self.folder["adjoint_supremizer_snapshots"] = os.path.join(self.folder_prefix, "snapshots")
             
         # Postprocess a snapshot before adding it to the basis/snapshot matrix: also solve the supremizer problems
         def postprocess_snapshot(self, snapshot, snapshot_index):

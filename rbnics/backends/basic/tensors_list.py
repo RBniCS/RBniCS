@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import is_io_process
@@ -58,7 +59,7 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
                     
         def _save_Nmax(self, directory, filename):
             if is_io_process(self.mpi_comm):
-                with open(str(directory) + "/" + filename + ".length", "w") as length:
+                with open(os.path.join(str(directory), filename + ".length"), "w") as length:
                     length.write(str(len(self._list)))
             
         def load(self, directory, filename):
@@ -75,7 +76,7 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
         def _load_Nmax(self, directory, filename):
             Nmax = None
             if is_io_process(self.mpi_comm):
-                with open(str(directory) + "/" + filename + ".length", "r") as length:
+                with open(os.path.join(str(directory), filename + ".length"), "r") as length:
                     Nmax = int(length.readline())
             Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
             return Nmax

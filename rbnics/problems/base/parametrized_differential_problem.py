@@ -17,6 +17,7 @@
 #
 
 from abc import ABCMeta, abstractmethod
+import os
 import types
 import hashlib
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
@@ -66,7 +67,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         self._output_cache = dict() # of floats
         self._output_cache__current_cache_key = None
         # I/O
-        self.folder["cache"] = self.folder_prefix + "/" + "cache"
+        self.folder["cache"] = os.path.join(self.folder_prefix, "cache")
         self.cache_config = config.get("problems", "cache")
         
     def name(self):

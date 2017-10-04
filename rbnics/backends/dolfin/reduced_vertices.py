@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from numpy import ndarray as array
 from dolfin import FunctionSpace
 from rbnics.backends.abstract import ReducedVertices as AbstractReducedVertices
@@ -63,7 +64,7 @@ def BasicReducedVertices(backend, wrapping):
             
         def save(self, directory, filename):
             # Get full directory name
-            full_directory = Folders.Folder(directory + "/" + filename)
+            full_directory = Folders.Folder(os.path.join(str(directory), filename))
             full_directory.create()
             # Save reduced mesh
             self._reduced_mesh.save(directory, filename)

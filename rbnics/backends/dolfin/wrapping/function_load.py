@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os # for path
+import os
 from dolfin import File, Function, has_hdf5_parallel, XDMFFile
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
@@ -47,7 +47,7 @@ def function_load(fun, directory, filename, suffix=None):
 def _read_from_xml_file(fun, directory, filename, suffix):
     if suffix is not None:
         filename = filename + "." + str(suffix)
-    full_filename = str(directory) + "/" + filename + ".xml"
+    full_filename = os.path.join(str(directory), filename + ".xml")
     file_exists = False
     if is_io_process() and os.path.exists(full_filename):
         file_exists = True
@@ -85,7 +85,7 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, component=None, funct
                 fun.vector().add_local(extended_sub_fun.vector().array())
                 fun.vector().apply("add")
     else:
-        full_filename_checkpoint = str(directory) + "/" + filename + "_checkpoint.xdmf"
+        full_filename_checkpoint = os.path.join(str(directory), filename + "_checkpoint.xdmf")
         file_exists = False
         if is_io_process() and os.path.exists(full_filename_checkpoint):
             file_exists = True

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from dolfin import CellFunction, cells, DEBUG, File, has_hdf5, has_hdf5_parallel, log, Mesh, MeshFunction, XDMFFile
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
 from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
@@ -224,13 +225,13 @@ def BasicReducedMesh(backend, wrapping):
         def save(self, directory, filename):
             self._assert_dict_lengths()
             # Get full directory name
-            full_directory = Folders.Folder(directory + "/" + filename)
+            full_directory = Folders.Folder(os.path.join(str(directory), filename))
             full_directory.create()
             # Nmax
             self._save_Nmax(directory, filename)
             # reduced_mesh
             for (index, reduced_mesh) in self.reduced_mesh.items():
-                mesh_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index)
+                mesh_filename = os.path.join(str(directory), filename, "reduced_mesh_" + str(index))
                 if not has_hdf5() or not has_hdf5_parallel():
                     assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh in parallel"
                     mesh_filename = mesh_filename + ".xml"
@@ -253,7 +254,7 @@ def BasicReducedMesh(backend, wrapping):
                 for (index, reduced_subdomain_data) in self.reduced_subdomain_data.items():
                     subdomain_index = 0
                     for (subdomain, reduced_subdomain) in reduced_subdomain_data.items():
-                        subdomain_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index)
+                        subdomain_filename = os.path.join(str(directory), filename, "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index))
                         if not has_hdf5() or not has_hdf5_parallel():
                             assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
                             subdomain_filename = subdomain_filename + ".xml"
@@ -273,7 +274,7 @@ def BasicReducedMesh(backend, wrapping):
                         subdomain_index += 1
             # reduced_mesh_markers
             for (index, reduced_mesh_markers) in self.reduced_mesh_markers.items():
-                marker_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_markers"
+                marker_filename = os.path.join(str(directory), filename, "reduced_mesh_" + str(index) + "_markers")
                 if not has_hdf5() or not has_hdf5_parallel():
                     assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to save a mesh function in parallel"
                     marker_filename = marker_filename + ".xml"
@@ -320,13 +321,13 @@ def BasicReducedMesh(backend, wrapping):
                 
         def _save_Nmax(self, directory, filename):
             if is_io_process(self.mpi_comm):
-                with open(str(directory) + "/" + filename + "/" + "reduced_mesh.length", "w") as length:
+                with open(os.path.join(str(directory), filename, "reduced_mesh.length"), "w") as length:
                     length.write(str(len(self.reduced_mesh)))
             self.mpi_comm.barrier()
             
         def _save_auxiliary_reduced_function_space(self, key):
             # Get full directory name
-            full_directory = Folders.Folder(self._auxiliary_io_directory + "/" + self._auxiliary_io_filename)
+            full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory, self._auxiliary_io_filename))
             full_directory.create()
             # Init
             self._init_for_auxiliary_save_if_needed()
@@ -349,7 +350,7 @@ def BasicReducedMesh(backend, wrapping):
                 
         def _save_auxiliary_basis_functions_matrix(self, key):
             # Get full directory name
-            full_directory = Folders.Folder(self._auxiliary_io_directory + "/" + self._auxiliary_io_filename)
+            full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory , self._auxiliary_io_filename))
             full_directory.create()
             # Save auxiliary basis functions matrix
             auxiliary_basis_functions_matrix = self._auxiliary_basis_functions_matrix[key]
@@ -390,12 +391,12 @@ def BasicReducedMesh(backend, wrapping):
             else:
                 self._assert_dict_lengths()
                 # Get full directory name
-                full_directory = directory + "/" + filename
+                full_directory = os.path.join(str(directory), filename)
                 # Nmax
                 Nmax = self._load_Nmax(directory, filename)
                 # reduced_mesh
                 for index in range(Nmax):
-                    mesh_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index)
+                    mesh_filename = os.path.join(str(directory), filename, "reduced_mesh_" + str(index))
                     if not has_hdf5() or not has_hdf5_parallel():
                         assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to load a mesh in parallel"
                         mesh_filename = mesh_filename + ".xml"
@@ -425,7 +426,7 @@ def BasicReducedMesh(backend, wrapping):
                     if self.subdomain_data is not None:
                         reduced_subdomain_data = dict()
                         for (subdomain_index, subdomain) in enumerate(self.subdomain_data):
-                            subdomain_filename = str(directory) + "/" + filename + "/" + "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index)
+                            subdomain_filename = os.path.join(str(directory), filename, "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index))
                             if not has_hdf5() or not has_hdf5_parallel():
                                 assert self.mpi_comm.size == 1, "hdf5 is required by dolfin to load a mesh in parallel"
                                 subdomain_filename = subdomain_filename + ".xml"
@@ -524,14 +525,14 @@ def BasicReducedMesh(backend, wrapping):
         def _load_Nmax(self, directory, filename):
             Nmax = None
             if is_io_process(self.mpi_comm):
-                with open(str(directory) + "/" + filename + "/" + "reduced_mesh.length", "r") as length:
+                with open(os.path.join(str(directory), filename, "reduced_mesh.length"), "r") as length:
                     Nmax = int(length.readline())
             Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
             return Nmax
             
         def _load_auxiliary_reduced_function_space(self, key):
             # Get full directory name
-            full_directory = Folders.Folder(self._auxiliary_io_directory + "/" + self._auxiliary_io_filename)
+            full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory, self._auxiliary_io_filename))
             full_directory.create()
             # Init
             self._init_for_auxiliary_load_if_needed()
@@ -593,16 +594,16 @@ def BasicReducedMesh(backend, wrapping):
             return auxiliary_basis_functions_matrix
             
         def _auxiliary_key_to_folder(self, key):
-            folder = key[0].name() + "/"
+            folder_path = [key[0].name()]
             assert isinstance(key[1], tuple)
             assert len(key[1]) > 0
             if len(key[1]) is 1:
                 if key[1][0] is not None:
-                    folder += "component_" + str(key[1][0]) + "/"
+                    folder_path.append("component_" + str(key[1][0]))
             else:
-                folder += "component_" + "_".join([str(c) for c in key[1]]) + "/"
-            folder += str(key[2])
-            return folder
+                folder_path.append("component_" + "_".join([str(c) for c in key[1]]))
+            folder_path.append(str(key[2]))
+            return os.path.join(*folder_path)
                 
         def _assert_dict_lengths(self):
             assert len(self.reduced_mesh) == len(self.reduced_function_spaces)
@@ -740,7 +741,7 @@ class ReducedMesh(ReducedMesh_Base):
             
     def _load_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_problem, auxiliary_reduced_V):
         # Get full directory name
-        full_directory = Folders.Folder(self._auxiliary_io_directory + "/" + self._auxiliary_io_filename)
+        full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory, self._auxiliary_io_filename))
         full_directory.create()
         # Load auxiliary basis functions matrix
         full_directory_plus_key = Folders.Folder(full_directory + "/auxiliary_basis_functions/" + self._auxiliary_key_to_folder(key))

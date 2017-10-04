@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os # for path
+import os
 from rbnics.utils.mpi import is_io_process
 
 class TextIO(object):
@@ -26,7 +26,7 @@ class TextIO(object):
         if not filename.endswith(".txt"):
             filename = filename + ".txt"
         if is_io_process():
-            with open(str(directory) + "/" + filename, "w") as outfile:
+            with open(os.path.join(str(directory), filename), "w") as outfile:
                 for content_i in content:
                     outfile.write(str(content_i) + "\n")
         is_io_process.mpi_comm.barrier()
@@ -36,7 +36,7 @@ class TextIO(object):
     def load_file(directory, filename):
         if not filename.endswith(".txt"):
             filename = filename + ".txt"
-        with open(str(directory) + "/" + filename, "r") as infile:
+        with open(os.path.join(str(directory), filename), "r") as infile:
             return [line.rstrip("\n") for line in infile]
             
     # Check if the file exists
@@ -46,6 +46,6 @@ class TextIO(object):
             filename = filename + ".txt"
         exists = None
         if is_io_process():
-            exists = os.path.exists(str(directory) + "/" + filename)
+            exists = os.path.exists(os.path.join(str(directory), filename))
         exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
         return exists
