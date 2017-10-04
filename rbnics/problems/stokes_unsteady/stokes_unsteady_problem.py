@@ -48,20 +48,20 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             cache_key += (int(round(self.t/self.dt)), )
             return (cache_key, cache_file)
             
-        def export_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+        def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             assert suffix is None
             AbstractCFDUnsteadyProblem_Base.export_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=int(round(self.t/self.dt)))
             
-        def import_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+        def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             assert suffix is None
             return AbstractCFDUnsteadyProblem_Base.import_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=int(round(self.t/self.dt)))
 
-        def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+        def export_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if component is None:
                 component = ["u", "p"] # but not "s"
             AbstractCFDUnsteadyProblem_Base.export_solution(self, folder, filename, solution_over_time, solution_dot_over_time, component, suffix)
             
-        def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+        def import_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
             if component is None:
                 component = ["u", "p"] # but not "s"
             return AbstractCFDUnsteadyProblem_Base.import_solution(self, folder, filename, solution_over_time, solution_dot_over_time, component, suffix)

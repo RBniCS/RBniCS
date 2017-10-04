@@ -190,7 +190,7 @@ reduced_elliptic_optimal_control = pod_galerkin_method.offline()
 online_mu = (3.0, 0.6)
 reduced_elliptic_optimal_control.set_mu(online_mu)
 reduced_elliptic_optimal_control.solve()
-reduced_elliptic_optimal_control.export_solution("EllipticOptimalControl1POD", "online_solution")
+reduced_elliptic_optimal_control.export_solution(filename="online_solution")
 print("Reduced output for mu =", online_mu, "is", reduced_elliptic_optimal_control.compute_output())
 
 # 7. Perform an error analysis

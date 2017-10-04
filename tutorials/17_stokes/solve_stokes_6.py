@@ -219,7 +219,7 @@ reduced_stokes_problem = reduced_basis_method.offline()
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution("Stokes6", "online_solution")
+reduced_stokes_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())

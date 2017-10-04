@@ -619,7 +619,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 else:
                     return float("NaN")
         
-    def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+    def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         """
         It exports reduced solution to file.
         

@@ -120,11 +120,11 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.reduced_problem._output_cache.clear()
         # ... and also disable the capability of importing/exporting truth solutions
         self._speedup_analysis__original_import_solution = self.truth_problem.import_solution
-        def disabled_import_solution(self_, folder, filename, solution=None, component=None, suffix=None):
+        def disabled_import_solution(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
             return False
         self.truth_problem.import_solution = types.MethodType(disabled_import_solution, self.truth_problem)
         self._speedup_analysis__original_export_solution = self.truth_problem.export_solution
-        def disabled_export_solution(self_, folder, filename, solution=None, component=None, suffix=None):
+        def disabled_export_solution(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
             pass
         self.truth_problem.export_solution = types.MethodType(disabled_export_solution, self.truth_problem)
         

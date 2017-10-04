@@ -202,24 +202,28 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             0.5*assembled_operator["h"]
         )
         
-    def export_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+    def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
+        assert folder is not None
+        assert filename is not None
         assert supremizer is not None
         assert component is not None
         assert isinstance(component, str)
         export(supremizer, folder, filename + "_" + component, suffix, component)
         
-    def import_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+    def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
+        assert folder is not None
+        assert filename is not None
         assert supremizer is not None
         assert component is not None
         assert isinstance(component, str)
         return import_(supremizer, folder, filename + "_" + component, suffix, component)
         
-    def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+    def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["v", "p", "u", "w", "q"] # but not "s" and "r"
         StokesOptimalControlProblem_Base.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
         
-    def import_solution(self, folder, filename, solution=None, component=None, suffix=None):
+    def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["v", "p", "u", "w", "q"] # but not "s" and "r"
         return StokesOptimalControlProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)

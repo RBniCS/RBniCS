@@ -127,7 +127,7 @@ reduced_nonlinear_elliptic_problem = pod_galerkin_method.offline()
 online_mu = (0.3, 9.0)
 reduced_nonlinear_elliptic_problem.set_mu(online_mu)
 reduced_nonlinear_elliptic_problem.solve()
-reduced_nonlinear_elliptic_problem.export_solution("NonlinearEllipticExact", "online_solution")
+reduced_nonlinear_elliptic_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(50)

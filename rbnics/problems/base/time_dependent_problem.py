@@ -78,7 +78,11 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._time_stepping_parameters["final_time"] = T
             
         # Export solution to file
-        def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+        def export_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+            if folder is None:
+                folder = self.folder_prefix
+            if filename is None:
+                filename = "solution"
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
             if solution_dot_over_time is None:
@@ -89,7 +93,11 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 ParametrizedDifferentialProblem_DerivedClass.export_solution(self, os.path.join(folder, filename), "solution_dot", solution_dot, component=component, suffix=k)
                 
         # Import solution from file
-        def import_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+        def import_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+            if folder is None:
+                folder = self.folder_prefix
+            if filename is None:
+                filename = "solution"
             if solution_over_time is None:
                 solution = self._solution
                 solution_over_time = self._solution_over_time

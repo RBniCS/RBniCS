@@ -115,7 +115,7 @@ reduced_geostrophic_problem = pod_galerkin_method.offline()
 online_mu = (1e-4, (7e4/1e6)**3)
 reduced_geostrophic_problem.set_mu(online_mu)
 reduced_geostrophic_problem.solve()
-reduced_geostrophic_problem.export_solution("Geostrophic", "online_solution")
+reduced_geostrophic_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100, sampling=LogUniformDistribution())

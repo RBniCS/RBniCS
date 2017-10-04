@@ -55,7 +55,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             class ShapeParametrizationDecoratedProblem_Class(ShapeParametrizationDecoratedProblem_Class_Base):
                 
                 # Deform the mesh as a function of the geometrical parameters and then export solution to file
-                def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+                def export_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
                     self.mesh_motion.move_mesh()
                     ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution_over_time, solution_dot_over_time, component, suffix)
                     self.mesh_motion.reset_reference()
@@ -64,7 +64,7 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             class ShapeParametrizationDecoratedProblem_Class(ShapeParametrizationDecoratedProblem_Class_Base):
                 
                 # Deform the mesh as a function of the geometrical parameters and then export solution to file
-                def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+                def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
                     self.mesh_motion.move_mesh()
                     ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component, suffix)
                     self.mesh_motion.reset_reference()

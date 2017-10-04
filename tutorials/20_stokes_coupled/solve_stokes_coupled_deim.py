@@ -302,7 +302,7 @@ reduced_stokes_problem = stokes_pod_galerkin_method.offline()
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution("StokesDEIM", "online_solution")
+reduced_stokes_problem.export_solution(filename="online_solution")
 
 # 2b. Create Finite Element space for advection diffusion problem
 element_c = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
@@ -325,7 +325,7 @@ reduced_advection_diffusion_problem = advection_diffusion_pod_galerkin_method.of
 # 6b. Perform an online solve
 reduced_advection_diffusion_problem.set_mu(online_mu)
 reduced_advection_diffusion_problem.solve()
-reduced_advection_diffusion_problem.export_solution("AdvectionDiffusionDEIM", "online_solution")
+reduced_advection_diffusion_problem.export_solution(filename="online_solution")
 
 # 7a. Perform an error analysis
 stokes_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM=40)

@@ -193,7 +193,7 @@ reduced_navier_stokes_unsteady_problem = pod_galerkin_method.offline()
 online_mu = (1e-2, )
 reduced_navier_stokes_unsteady_problem.set_mu(online_mu)
 reduced_navier_stokes_unsteady_problem.solve()
-reduced_navier_stokes_unsteady_problem.export_solution("NavierStokesUnsteady", "online_solution")
+reduced_navier_stokes_unsteady_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(10)

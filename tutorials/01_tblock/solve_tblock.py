@@ -103,7 +103,7 @@ reduced_thermal_block_problem = reduced_basis_method.offline()
 online_mu = (8.0,-1.0)
 reduced_thermal_block_problem.set_mu(online_mu)
 reduced_thermal_block_problem.solve()
-reduced_thermal_block_problem.export_solution("ThermalBlock", "online_solution")
+reduced_thermal_block_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(500)

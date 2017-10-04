@@ -140,7 +140,7 @@ reduced_graetz_problem = reduced_basis_method.offline()
 online_mu = (10.0, 0.01, 1.0, 1.0)
 reduced_graetz_problem.set_mu(online_mu)
 reduced_graetz_problem.solve()
-reduced_graetz_problem.export_solution("Graetz2", "online_solution")
+reduced_graetz_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(100, dual=100, SCM=100)

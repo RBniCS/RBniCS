@@ -105,7 +105,7 @@ reduced_gaussian_problem = reduced_basis_method.offline()
 online_mu = (0.3,-1.0)
 reduced_gaussian_problem.set_mu(online_mu)
 reduced_gaussian_problem.solve()
-reduced_gaussian_problem.export_solution("GaussianExact", "online_solution")
+reduced_gaussian_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(50)

@@ -151,9 +151,9 @@ reduced_fitz_hugh_nagumo_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
 solution_over_time = fitz_hugh_nagumo_problem.solve()
-fitz_hugh_nagumo_problem.export_solution("FitzHughNagumoExact", "offline_solution")
+fitz_hugh_nagumo_problem.export_solution(filename="offline_solution")
 reduced_solution_over_time = reduced_fitz_hugh_nagumo_problem.solve()
-reduced_fitz_hugh_nagumo_problem.export_solution("FitzHughNagumoExact", "online_solution")
+reduced_fitz_hugh_nagumo_problem.export_solution(filename="online_solution")
 Z = reduced_fitz_hugh_nagumo_problem.Z
 plot_phase_space(solution_over_time, reduced_solution_over_time, Z, 0.0, "FitzHughNagumoExact", "phase_space_0.0")
 plot_phase_space(solution_over_time, reduced_solution_over_time, Z, 0.1, "FitzHughNagumoExact", "phase_space_0.1")

@@ -335,10 +335,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         # Return
         return (cache_key, cache_file)
     
-    def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+    def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         """
         Export solution to file.
         """
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "solution"
         if solution is None:
             solution = self._solution
         assert component is None or isinstance(component, (str, list))
@@ -355,10 +359,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         else:
             raise TypeError("Invalid component in export_solution()")
             
-    def import_solution(self, folder, filename, solution=None, component=None, suffix=None):
+    def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         """
         Import solution from file.
         """
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "solution"
         if solution is None:
             solution = self._solution
         assert component is None or isinstance(component, (str, list))

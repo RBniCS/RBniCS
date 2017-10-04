@@ -133,7 +133,7 @@ reduced_unsteady_thermal_block_problem = reduced_basis_method.offline()
 online_mu = (8.0,-1.0)
 reduced_unsteady_thermal_block_problem.set_mu(online_mu)
 reduced_unsteady_thermal_block_problem.solve()
-reduced_unsteady_thermal_block_problem.export_solution("UnsteadyThermalBlock3RB", "online_solution")
+reduced_unsteady_thermal_block_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(10)

@@ -101,7 +101,7 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
             @PreserveClassName
             class PyGeMDecoratedProblem_DEIMClass(PyGeMDecoratedProblem_BaseClass):
                 ## Deform the mesh as a function of the geometrical parameters and then export solution to file
-                def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+                def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
                     self.pygem_wrapper.move_mesh()
                     PyGeMDecoratedProblem_BaseClass.export_solution(self, folder, filename, solution, component, suffix)
                     self.pygem_wrapper.reset_reference()

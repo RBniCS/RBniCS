@@ -430,7 +430,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 return converted_error_over_time[k]
         
         # Export solution to file
-        def export_solution(self, folder, filename, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+        def export_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+            if folder is None:
+                folder = self.folder_prefix
+            if filename is None:
+                filename = "solution"
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
             if solution_dot_over_time is None:

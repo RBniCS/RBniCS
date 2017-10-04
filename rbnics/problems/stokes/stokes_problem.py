@@ -111,7 +111,9 @@ class StokesProblem(StokesProblem_Base):
     def _supremizer_cache_key_and_file(self):
         return self._cache_key_and_file_from_kwargs()
         
-    def export_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+    def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
+        assert folder is not None
+        assert filename is not None
         if supremizer is None:
             supremizer = self._supremizer
         assert component is None or isinstance(component, str)
@@ -119,7 +121,9 @@ class StokesProblem(StokesProblem_Base):
             component = "s"
         export(supremizer, folder, filename + "_" + component, suffix, component)
         
-    def import_supremizer(self, folder, filename, supremizer=None, component=None, suffix=None):
+    def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
+        assert folder is not None
+        assert filename is not None
         if supremizer is None:
             supremizer = self._supremizer
         assert component is None or isinstance(component, str)
@@ -128,12 +132,12 @@ class StokesProblem(StokesProblem_Base):
         return import_(supremizer, folder, filename + "_" + component, suffix, component)
         
     # Export solution to file
-    def export_solution(self, folder, filename, solution=None, component=None, suffix=None):
+    def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
         StokesProblem_Base.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
         
-    def import_solution(self, folder, filename, solution=None, component=None, suffix=None):
+    def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
         return StokesProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)

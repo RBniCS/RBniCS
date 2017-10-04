@@ -181,7 +181,7 @@ reduced_navier_stokes_problem = pod_galerkin_method.offline()
 online_mu = (80.0,)
 reduced_navier_stokes_problem.set_mu(online_mu)
 reduced_navier_stokes_problem.solve()
-reduced_navier_stokes_problem.export_solution("NavierStokesTensor3_1", "online_solution")
+reduced_navier_stokes_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100)

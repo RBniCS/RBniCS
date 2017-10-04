@@ -150,7 +150,7 @@ reduced_elastic_block_problem = pod_galerkin_method.offline()
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0)
 reduced_elastic_block_problem.set_mu(online_mu)
 reduced_elastic_block_problem.solve()
-reduced_elastic_block_problem.export_solution("ElasticBlock", "online_solution")
+reduced_elastic_block_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(500)

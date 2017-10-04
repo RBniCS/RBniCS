@@ -377,11 +377,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.EIM_approximation.snapshot_cache.clear()
         # ... and also disable the capability of importing/exporting truth solutions
         self._speedup_analysis__original_import_solution = self.EIM_approximation.import_solution
-        def disabled_import_solution(self_, folder, filename, solution=None):
+        def disabled_import_solution(self_, folder=None, filename=None, solution=None):
             return False
         self.EIM_approximation.import_solution = types.MethodType(disabled_import_solution, self.EIM_approximation)
         self._speedup_analysis__original_export_solution = self.EIM_approximation.export_solution
-        def disabled_export_solution(self_, folder, filename, solution=None):
+        def disabled_export_solution(self_, folder=None, filename=None, solution=None):
             pass
         self.EIM_approximation.export_solution = types.MethodType(disabled_export_solution, self.EIM_approximation)
         
