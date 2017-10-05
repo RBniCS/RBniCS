@@ -1,0 +1,260 @@
+# Copyright (C) 2015- 2017 by the RBniCS authors
+#
+# This file is part of RBniCS.
+#
+# RBniCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RBniCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
+#
+
+from sympy import MatrixSymbol
+from rbnics.shape_parametrization.utils.symbolic import compute_shape_parametrization_gradient
+from test_affine_shape_parametrization_from_vertices_mapping import symbolic_equal, X, Y
+
+# Test shape parametrization gradient computation for tutorial 3
+def test_compute_shape_parametrization_gradient_hole():
+    shape_parametrization_expression = [
+        ("2 - 2*mu[0] + mu[0]*x[0] + (2 - 2*mu[0])*x[1]", "2 - 2*mu[1] + (2 - mu[1])*x[1]"), # subdomain 1
+        ("2*mu[0]- 2 + x[0] + (mu[0] - 1)*x[1]", "2 - 2*mu[1] + (2 - mu[1])*x[1]"), # subdomain 2
+        ("2 - 2*mu[0] + (2 - mu[0])*x[0]", "2 - 2*mu[1] + (2- 2*mu[1])*x[0] + mu[1]*x[1]"), # subdomain 3
+        ("2 - 2*mu[0] + (2 - mu[0])*x[0]", "2*mu[1] - 2 + (mu[1] - 1)*x[0] + x[1]"), # subdomain 4
+        ("2*mu[0] - 2 + (2 - mu[0])*x[0]", "2 - 2*mu[1] + (2*mu[1]- 2)*x[0] + mu[1]*x[1]"), # subdomain 5
+        ("2*mu[0] - 2 + (2 - mu[0])*x[0]", "2*mu[1] - 2 + (1 - mu[1])*x[0] + x[1]"), # subdomain 6
+        ("2 - 2*mu[0] + mu[0]*x[0] + (2*mu[0] - 2)*x[1]", "2*mu[1] - 2 + (2 - mu[1])*x[1]"), # subdomain 7
+        ("2*mu[0] - 2 + x[0] + (1 - mu[0])*x[1]", "2*mu[1] - 2 + (2 - mu[1])*x[1]") # subdomain 8
+    ]
+    shape_parametrization_gradient_expression = [compute_shape_parametrization_gradient(expression_on_subdomain) for expression_on_subdomain in shape_parametrization_expression]
+    # Auxiliary symbolic quantities
+    x = MatrixSymbol("x", 2, 1)
+    mu = MatrixSymbol("mu", 2, 1)
+    # Start checks
+    assert len(shape_parametrization_gradient_expression) is 8
+    # Check subdomain 1
+    assert len(shape_parametrization_gradient_expression[0]) is 2
+    assert len(shape_parametrization_gradient_expression[0][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][X][X], "mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][X][Y], "2 - 2*mu[0]", x, mu)
+    assert len(shape_parametrization_gradient_expression[0][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][Y][Y], "2 - mu[1]", x, mu)
+    # Check subdomain 2
+    assert len(shape_parametrization_gradient_expression[1]) is 2
+    assert len(shape_parametrization_gradient_expression[1][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][X][X], "1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][X][Y], "mu[0] - 1", x, mu)
+    assert len(shape_parametrization_gradient_expression[1][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][Y], "2 - mu[1]", x, mu)
+    # Check subdomain 3
+    assert len(shape_parametrization_gradient_expression[2]) is 2
+    assert len(shape_parametrization_gradient_expression[2][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[2][X][X], "2 - mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[2][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[2][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[2][Y][X], "2 - 2*mu[1]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[2][Y][Y], "mu[1]", x, mu)
+    # Check subdomain 4
+    assert len(shape_parametrization_gradient_expression[3]) is 2
+    assert len(shape_parametrization_gradient_expression[3][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[3][X][X], "2 - mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[3][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[3][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[3][Y][X], "mu[1] - 1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[3][Y][Y], "1", x, mu)
+    # Check subdomain 5
+    assert len(shape_parametrization_gradient_expression[4]) is 2
+    assert len(shape_parametrization_gradient_expression[4][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[4][X][X], "2 - mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[4][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[4][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[4][Y][X], "2*mu[1]- 2", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[4][Y][Y], "mu[1]", x, mu)
+    # Check subdomain 6
+    assert len(shape_parametrization_gradient_expression[5]) is 2
+    assert len(shape_parametrization_gradient_expression[5][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[5][X][X], "2 - mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[5][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[5][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[5][Y][X], "1 - mu[1]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[5][Y][Y], "1", x, mu)
+    # Check subdomain 7
+    assert len(shape_parametrization_gradient_expression[6]) is 2
+    assert len(shape_parametrization_gradient_expression[6][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[6][X][X], "mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[6][X][Y], "2*mu[0] - 2", x, mu)
+    assert len(shape_parametrization_gradient_expression[6][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[6][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[6][Y][Y], "2 - mu[1]", x, mu)
+    # Check subdomain 8
+    assert len(shape_parametrization_gradient_expression[7]) is 2
+    assert len(shape_parametrization_gradient_expression[7][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[7][X][X], "1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[7][X][Y], "1 - mu[0]", x, mu)
+    assert len(shape_parametrization_gradient_expression[7][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][Y], "2 - mu[1]", x, mu)
+    
+# Test shape parametrization gradient computation for tutorial 4
+def test_compute_shape_parametrization_gradient_graetz():
+    shape_parametrization_expression = [
+        ("x[0]", "x[1]"), # subdomain 1
+        ("mu[0]*(x[0] - 1) + 1", "x[1]") # subdomain 2
+    ]
+    shape_parametrization_gradient_expression = [compute_shape_parametrization_gradient(expression_on_subdomain) for expression_on_subdomain in shape_parametrization_expression]
+    # Auxiliary symbolic quantities
+    x = MatrixSymbol("x", 2, 1)
+    mu = MatrixSymbol("mu", 1, 1)
+    # Start checks
+    assert len(shape_parametrization_gradient_expression) is 2
+    # Check subdomain 1
+    assert len(shape_parametrization_gradient_expression[0]) is 2
+    assert len(shape_parametrization_gradient_expression[0][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][X][X], "1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[0][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][Y][Y], "1", x, mu)
+    # Check subdomain 2
+    assert len(shape_parametrization_gradient_expression[1]) is 2
+    assert len(shape_parametrization_gradient_expression[1][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][X][X], "mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[1][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][Y], "1", x, mu)
+    
+def test_compute_shape_parametrization_gradient_stokes_optimal_dirichlet_boundary_control():
+    shape_parametrization_expression = [
+        ("x[0]", "x[1]"), # subdomain 1
+        ("0.9 - 9.0*mu[0] + 10.0*mu[0]*x[0] ", "x[1]"), # subdomain 2
+        ("0.9 - 9.0*mu[0] + 10.0*mu[0]*x[0] ", "x[1]"), # subdomain 3
+        ("0.9 - 9.0*mu[0] + 10.0*mu[0]*x[0] ", "x[1]"), # subdomain 4
+        ("0.9 - 9.0*mu[0] + 10.0*mu[0]*x[0] ", "x[1]"), # subdomain 5
+        ("2.25*mu[0] + x[0]*(-1.25*mu[0] + 1.125) - 0.225 ", "x[1]"), # subdomain 6
+        ("2.0*mu[0] + x[0]*(-mu[0] + 1.1) + x[1]*(-mu[0] + 0.1) - 0.2 ", "x[1]"), # subdomain 7
+        ("2.25*mu[0] + x[0]*(-1.25*mu[0] + 1.125) - 0.225 ", "x[1]"), # subdomain 8
+        ("mu[0] + x[0]*(-mu[0] + 1.1) + x[1]*(mu[0] - 0.1) - 0.1", "x[1]"), # subdomain 9
+        ("x[0]", "x[1]"), # subdomain 10
+        ("x[0]", "x[1]"), # subdomain 11
+        ("2.25*mu[0] + x[0]*(-1.25*mu[0] + 1.125) - 0.225 ", "x[1]"), # subdomain 12
+        ("2.25*mu[0] + x[0]*(-1.25*mu[0] + 1.125) - 0.225 ", "x[1]") # subdomain 13
+    ]
+    shape_parametrization_gradient_expression = [compute_shape_parametrization_gradient(expression_on_subdomain) for expression_on_subdomain in shape_parametrization_expression]
+    # Auxiliary symbolic quantities
+    x = MatrixSymbol("x", 2, 1)
+    mu = MatrixSymbol("mu", 1, 1)
+    # Start checks
+    assert len(shape_parametrization_gradient_expression) is 13
+    # Check subdomain 1
+    assert len(shape_parametrization_gradient_expression[0]) is 2
+    assert len(shape_parametrization_gradient_expression[0][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][X][X], "1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[0][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[0][Y][Y], "1", x, mu)
+    # Check subdomain 2
+    assert len(shape_parametrization_gradient_expression[1]) is 2
+    assert len(shape_parametrization_gradient_expression[1][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][X][X], "10.0*mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[1][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][Y], "1", x, mu)
+    # Check subdomain 3
+    assert len(shape_parametrization_gradient_expression[2]) is 2
+    assert len(shape_parametrization_gradient_expression[2][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[2][X][X], "10.0*mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[2][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[2][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[2][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[2][Y][Y], "1", x, mu)
+    # Check subdomain 4
+    assert len(shape_parametrization_gradient_expression[3]) is 2
+    assert len(shape_parametrization_gradient_expression[3][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[3][X][X], "10.0*mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[3][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[3][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[3][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[3][Y][Y], "1", x, mu)
+    # Check subdomain 5
+    assert len(shape_parametrization_gradient_expression[4]) is 2
+    assert len(shape_parametrization_gradient_expression[4][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[4][X][X], "10.0*mu[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[4][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[4][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[4][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[4][Y][Y], "1", x, mu)
+    # Check subdomain 6
+    assert len(shape_parametrization_gradient_expression[5]) is 2
+    assert len(shape_parametrization_gradient_expression[5][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[5][X][X], "-1.25*mu[0] + 1.125", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[5][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[5][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[5][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[5][Y][Y], "1", x, mu)
+    # Check subdomain 7
+    assert len(shape_parametrization_gradient_expression[6]) is 2
+    assert len(shape_parametrization_gradient_expression[6][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[6][X][X], "-mu[0] + 1.1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[6][X][Y], "-mu[0] + 0.1", x, mu)
+    assert len(shape_parametrization_gradient_expression[6][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[6][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[6][Y][Y], "1", x, mu)
+    # Check subdomain 8
+    assert len(shape_parametrization_gradient_expression[7]) is 2
+    assert len(shape_parametrization_gradient_expression[7][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[7][X][X], "-1.25*mu[0] + 1.125", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[7][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[7][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][Y], "1", x, mu)
+    # Check subdomain 9
+    assert len(shape_parametrization_gradient_expression[8]) is 2
+    assert len(shape_parametrization_gradient_expression[8][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[8][X][X], "-mu[0] + 1.1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[8][X][Y], "mu[0] - 0.1", x, mu)
+    assert len(shape_parametrization_gradient_expression[8][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[8][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[8][Y][Y], "1", x, mu)
+    # Check subdomain 10
+    assert len(shape_parametrization_gradient_expression[9]) is 2
+    assert len(shape_parametrization_gradient_expression[9][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[9][X][X], "1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[9][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[9][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[9][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[9][Y][Y], "1", x, mu)
+    # Check subdomain 11
+    assert len(shape_parametrization_gradient_expression[10]) is 2
+    assert len(shape_parametrization_gradient_expression[10][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[10][X][X], "1", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[10][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[10][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[10][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[10][Y][Y], "1", x, mu)
+    # Check subdomain 12
+    assert len(shape_parametrization_gradient_expression[11]) is 2
+    assert len(shape_parametrization_gradient_expression[11][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[11][X][X], "-1.25*mu[0] + 1.125", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[11][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[11][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[11][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[11][Y][Y], "1", x, mu)
+    # Check subdomain 13
+    assert len(shape_parametrization_gradient_expression[12]) is 2
+    assert len(shape_parametrization_gradient_expression[12][X]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[12][X][X], "-1.25*mu[0] + 1.125", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[12][X][Y], "0", x, mu)
+    assert len(shape_parametrization_gradient_expression[12][Y]) is 2
+    assert symbolic_equal(shape_parametrization_gradient_expression[12][Y][X], "0", x, mu)
+    assert symbolic_equal(shape_parametrization_gradient_expression[12][Y][Y], "1", x, mu)

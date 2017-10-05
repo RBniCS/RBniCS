@@ -17,6 +17,7 @@
 #
 
 from rbnics.backends import MeshMotion
+from rbnics.shape_parametrization.utils.symbolic import compute_shape_parametrization_gradient
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs):
@@ -36,13 +37,22 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             def __init__(self, V, **kwargs):
                 # Call the standard initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
-                # Store mesh motion class
+                
+                # Get shape paramatrization expression
                 if len(shape_parametrization_expression) == 0:
                     shape_parametrization_expression__from_decorator = decorator_kwargs["shape_parametrization_expression"]
                 else:
                     shape_parametrization_expression__from_decorator = shape_parametrization_expression
+                
+                # Store mesh motion class
                 assert "subdomains" in kwargs
                 self.mesh_motion = MeshMotion(V, kwargs["subdomains"], shape_parametrization_expression__from_decorator)
+                
+                # Store the shape parametrization expression
+                self.shape_parametrization_expression = shape_parametrization_expression__from_decorator
+                
+                # Store the shape parametrization gradient expression
+                self.shape_parametrization_gradient_expression = [compute_shape_parametrization_gradient(expression_on_subdomain) for expression_on_subdomain in self.shape_parametrization_expression]
             
             # Initialize data structures required for the offline phase
             def init(self):
