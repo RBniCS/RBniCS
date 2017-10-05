@@ -43,9 +43,17 @@ def test_config(tempdir):
     with open(os.path.join(tempdir, ".rbnicsrc"), "w") as configfile:
         config.write(configfile)
         
+    # Check that file has been written
+    assert os.path.isfile(os.path.join(tempdir, ".rbnicsrc"))
+    
     # Read back in
     config2 = Config()
     config2.read(tempdir)
+    
+    # Write config2 to stdout
+    print("===============")
+    config2.write(sys.stdout)
+    print("===============")
 
     # Check that read was successful
     assert config == config2

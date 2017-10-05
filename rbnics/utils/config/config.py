@@ -94,6 +94,7 @@ class Config(object):
     def write(self, file_):
         if is_io_process():
             self._config_as_parser.write(file_)
+        is_io_process.mpi_comm.barrier()
         
     def get(self, section, option):
         return self._config_as_dict[section][option]
@@ -117,7 +118,7 @@ class Config(object):
         default = self.defaults[section][option]
         assert isinstance(default, set)
         assert value.issubset(default)
-        value_str = ", ".join(str(v) for v in value)
+        value_str = ", ".join(str(v) for v in sorted(value))
         if len(value) < 2:
             value_str += "," # to differentiate between str and a set with one element
         return value_str
