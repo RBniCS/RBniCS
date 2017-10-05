@@ -16,82 +16,61 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import pytest
+from numpy import isclose
 from numpy.linalg import norm
 from rbnics.backends import product as factory_product, sum as factory_sum
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum
+from test_utils import RandomNumpyMatrix, RandomTuple
+
 product = None
 sum = None
 all_product = {"numpy": numpy_product, "online": online_product, "factory": factory_product}
 all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
-from test_utils import RandomNumpyMatrix, RandomTuple, TestBase
 
-class Test(TestBase):
+class Data(object):
     def __init__(self, N, Q):
         self.N = N
         self.Q = Q
-        # Call parent init
-        TestBase.__init__(self)
-            
-    def run(self):
-        N = self.N
-        Q = self.Q
-        test_id = self.test_id
-        test_subid = self.test_subid
-        if test_id >= 0:
-            if not self.index in self.storage:
-                A = OnlineAffineExpansionStorage(self.Q)
-                for i in range(self.Q):
-                    # Generate random matrix
-                    A[i] = RandomNumpyMatrix(N, N)
-                # Genereate random theta
-                theta = RandomTuple(Q)
-                # Store
-                self.storage[self.index] = (theta, A)
-            else:
-                (theta, A) = self.storage[self.index]
-            self.index += 1
-        if test_id >= 1:
-            if test_id > 1 or (test_id == 1 and test_subid == "a"):
-                # Time using built in methods
-                assembled_matrix_builtin = theta[0]*A[0]
-                for i in range(1, self.Q):
-                    assembled_matrix_builtin += theta[i]*A[i]
-                assembled_matrix_builtin.M = N
-                assembled_matrix_builtin.N = N
-            if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using sum(product()) method
-                assembled_matrix_sum_product = sum(product(theta, A))
-        if test_id >= 2:
-            return norm(assembled_matrix_builtin - assembled_matrix_sum_product)/norm(assembled_matrix_builtin)
-
-for i in range(4, 9):
-    N = 2**i
-    for j in range(1, 4):
-        Q = 10 + 4*j
-        test = Test(N, Q)
-        print("N =", N, "and Q =", Q)
         
-        test.init_test(0)
-        (usec_0_build, usec_0_access) = test.timeit()
-        print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+    def generate_random(self):
+        A = OnlineAffineExpansionStorage(self.Q)
+        for i in range(self.Q):
+            # Generate random matrix
+            A[i] = RandomNumpyMatrix(self.N, self.N)
+        # Genereate random theta
+        theta = RandomTuple(self.Q)
+        # Return
+        return (theta, A)
         
-        test.init_test(1, "a")
-        usec_1a = test.timeit()
-        print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+    def evaluate_builtin(self, theta, A):
+        result_builtin = theta[0]*A[0]
+        for i in range(1, self.Q):
+            result_builtin += theta[i]*A[i]
+        result_builtin.M = self.N
+        result_builtin.N = self.N
+        return result_builtin
         
-        for backend in ("numpy", "online", "factory"):
-            print("Testing", backend, "backend")
-            product, sum = all_product[backend], all_sum[backend]
-            
-            test.init_test(1, "b")
-            usec_1b = test.timeit()
-            print("\tsum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-            
-            print("\tRelative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
-            
-            test.init_test(2)
-            error = test.average()
-            print("\tRelative error:", error)
+    def evaluate_backend(self, theta, A):
+        return sum(product(theta, A))
+        
+    def assert_backend(self, theta, A, result_backend):
+        result_builtin = self.evaluate_builtin(theta, A)
+        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        assert isclose(relative_error, 0., atol=1e-12)
+        
+@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
+@pytest.mark.parametrize("Q", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
+def test_numpy_matrix_assembly(N, Q, test_type, benchmark):
+    data = Data(N, Q)
+    print("N = " + str(N) + ", Q = " + str(Q))
+    if test_type == "builtin":
+        print("Testing", test_type)
+        benchmark(data.evaluate_builtin, setup=data.generate_random)
+    else:
+        print("Testing", test_type, "backend")
+        global product, sum
+        product, sum = all_product[test_type], all_sum[test_type]
+        benchmark(data.evaluate_backend, setup=data.generate_random, teardown=data.assert_backend)

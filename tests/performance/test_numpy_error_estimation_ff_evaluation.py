@@ -16,85 +16,62 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-from numpy import zeros as legacy_tensor
-from numpy.linalg import norm
+import pytest
+from numpy import isclose, zeros as legacy_tensor
 from rbnics.backends import product as factory_product, sum as factory_sum
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum
+from test_utils import RandomNumber, RandomTuple
+
 product = None
 sum = None
 all_product = {"numpy": numpy_product, "online": online_product, "factory": factory_product}
 all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
-from test_utils import RandomNumber, RandomTuple, TestBase
 
-class Test(TestBase):
+class Data(object):
     def __init__(self, N, Q):
         self.N = N
         self.Q = Q
-        # Call parent init
-        TestBase.__init__(self)
-            
-    def run(self):
-        N = self.N
-        Q = self.Q
-        test_id = self.test_id
-        test_subid = self.test_subid
-        if test_id >= 0:
-            if not self.index in self.storage:
-                ff_product = OnlineAffineExpansionStorage(Q, Q)
-                ff_product_legacy = legacy_tensor((Q, Q))
-                for i in range(Q):
-                    for j in range(Q):
-                        # Generate random matrix
-                        ff_product[i, j] = RandomNumber()
-                        ff_product_legacy[i, j] = ff_product[i, j]
-                # Genereate random theta
-                theta = RandomTuple(Q)
-                # Store
-                self.storage[self.index] = (theta, ff_product, ff_product_legacy)
-            else:
-                (theta, ff_product, ff_product_legacy) = self.storage[self.index]
-            self.index += 1
-        if test_id >= 1:
-            if test_id > 1 or (test_id == 1 and test_subid == "a"):
-                # Time using built in methods
-                error_estimator_legacy = 0.
-                for i in range(Q):
-                    for j in range(Q):
-                        error_estimator_legacy += theta[i]*ff_product_legacy[i, j]*theta[j]
-            if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using sum(product()) method
-                error_estimator_sum_product = sum(product(theta, ff_product, theta))
-        if test_id >= 2:
-            return abs(error_estimator_legacy - error_estimator_sum_product)/abs(error_estimator_legacy)
+        
+    def generate_random(self):
+        ff_product = OnlineAffineExpansionStorage(self.Q, self.Q)
+        ff_product_legacy = legacy_tensor((self.Q, self.Q))
+        for i in range(self.Q):
+            for j in range(self.Q):
+                # Generate random matrix
+                ff_product[i, j] = RandomNumber()
+                ff_product_legacy[i, j] = ff_product[i, j]
+        # Genereate random theta
+        theta = RandomTuple(self.Q)
+        # Return
+        return (theta, ff_product, ff_product_legacy)
+        
+    def evaluate_builtin(self, theta, ff_product, ff_product_legacy):
+        result_builtin = 0.
+        for i in range(self.Q):
+            for j in range(self.Q):
+                result_builtin += theta[i]*ff_product_legacy[i, j]*theta[j]
+        return result_builtin
+        
+    def evaluate_backend(self, theta, ff_product, ff_product_legacy):
+        return sum(product(theta, ff_product, theta))
+        
+    def assert_backend(self, theta, ff_product, ff_product_legacy, result_backend):
+        result_builtin = self.evaluate_builtin(theta, ff_product, ff_product_legacy)
+        relative_error = abs(result_builtin - result_backend)/abs(result_builtin)
+        assert isclose(relative_error, 0., atol=1e-12)
 
-for i in range(4, 9):
-    N = 2**i
-    for j in range(1, 8):
-        Q = 2 + 4*j
-        test = Test(N, Q)
-        print("N =", N, "and Q =", Q)
-        
-        test.init_test(0)
-        (usec_0_build, usec_0_access) = test.timeit()
-        print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        test.init_test(1, "a")
-        usec_1a = test.timeit()
-        print("Legacy method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        for backend in ("numpy", "online", "factory"):
-            print("Testing", backend, "backend")
-            product, sum = all_product[backend], all_sum[backend]
-            
-            test.init_test(1, "b")
-            usec_1b = test.timeit()
-            print("\tsum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-            
-            print("\tSpeed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
-            
-            test.init_test(2)
-            error = test.average()
-            print("\tRelative error:", error)
+@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
+@pytest.mark.parametrize("Q", [2 + 4*j for j in range(1, 8)])
+@pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
+def test_numpy_error_estimation_ff_evaluation(N, Q, test_type, benchmark):
+    data = Data(N, Q)
+    print("N = " + str(N) + ", Q = " + str(Q))
+    if test_type == "builtin":
+        print("Testing", test_type)
+        benchmark(data.evaluate_builtin, setup=data.generate_random)
+    else:
+        print("Testing", test_type, "backend")
+        global product, sum
+        product, sum = all_product[test_type], all_sum[test_type]
+        benchmark(data.evaluate_backend, setup=data.generate_random, teardown=data.assert_backend)

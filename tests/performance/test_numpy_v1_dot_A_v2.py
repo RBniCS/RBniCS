@@ -16,70 +16,50 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import pytest
+from numpy import isclose
 from rbnics.backends import transpose as factory_transpose
 from rbnics.backends.online import online_transpose
 from rbnics.backends.online.numpy import transpose as numpy_transpose
+from test_utils import RandomNumpyMatrix, RandomNumpyVector
+
 transpose = None
 all_transpose = {"numpy": numpy_transpose, "online": online_transpose, "factory": factory_transpose}
-from test_utils import RandomNumpyMatrix, RandomNumpyVector, TestBase
 
-class Test(TestBase):
+class Data(object):
     def __init__(self, N):
         self.N = N
-        # Call parent init
-        TestBase.__init__(self)
         
-    def run(self):
-        N = self.N
-        test_id = self.test_id
-        test_subid = self.test_subid
-        if test_id >= 0:
-            if not self.index in self.storage:
-                # Generate random vectors
-                v1 = RandomNumpyVector(N)
-                v2 = RandomNumpyVector(N)
-                # Generate random matrix
-                A = RandomNumpyMatrix(N, N)
-                # Store
-                self.storage[self.index] = (v1, v2, A)
-            else:
-                (v1, v2, A) = self.storage[self.index]
-            self.index += 1
-        if test_id >= 1:
-            if test_id > 1 or (test_id == 1 and test_subid == "a"):
-                # Time using built in methods
-                v1_dot_A_v2_builtin = float(v1.T.dot(A*v2))
-            if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using transpose() method
-                v1_dot_A_v2_transpose = transpose(v1)*A*v2
-        if test_id >= 2:
-            return (v1_dot_A_v2_builtin - v1_dot_A_v2_transpose)/v1_dot_A_v2_builtin
+    def generate_random(self):
+        # Generate random vectors
+        v1 = RandomNumpyVector(self.N)
+        v2 = RandomNumpyVector(self.N)
+        # Generate random matrix
+        A = RandomNumpyMatrix(self.N, self.N)
+        # Return
+        return (v1, v2, A)
+        
+    def evaluate_builtin(self, v1, v2, A):
+        return float(v1.T.dot(A*v2))
+        
+    def evaluate_backend(self, v1, v2, A):
+        return transpose(v1)*A*v2
+        
+    def assert_backend(self, v1, v2, A, result_backend):
+        result_builtin = self.evaluate_builtin(v1, v2, A)
+        relative_error = (result_builtin - result_backend)/result_builtin
+        assert isclose(relative_error, 0., atol=1e-12)
 
-for i in range(4, 15):
-    N = 2**i
-    test = Test(N)
-    print("N =", N)
-    
-    test.init_test(0)
-    (usec_0_build, usec_0_access) = test.timeit()
-    print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
-    print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-    
-    test.init_test(1, "a")
-    usec_1a = test.timeit()
-    print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-    
-    for backend in ("numpy", "online", "factory"):
-        print("Testing", backend, "backend")
-        transpose = all_transpose[backend]
-        
-        test.init_test(1, "b")
-        usec_1b = test.timeit()
-        print("\ttranspose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        print("\tRelative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
-        
-        test.init_test(2)
-        error = test.average()
-        print("\tRelative error:", error)
+@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
+@pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
+def test_numpy_v1_dot_A_v2(N, test_type, benchmark):
+    data = Data(N)
+    print("N = " + str(N))
+    if test_type == "builtin":
+        print("Testing", test_type)
+        benchmark(data.evaluate_builtin, setup=data.generate_random)
+    else:
+        print("Testing", test_type, "backend")
+        global transpose
+        transpose = all_transpose[test_type]
+        benchmark(data.evaluate_backend, setup=data.generate_random, teardown=data.assert_backend)

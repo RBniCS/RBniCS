@@ -16,84 +16,63 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import pytest
+from numpy import isclose
 from numpy.linalg import norm
 from numpy.random import randint
 from rbnics.backends import product as factory_product, sum as factory_sum
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum
+from test_utils import RandomNumpyVector, RandomTuple
+
 product = None
 sum = None
 all_product = {"numpy": numpy_product, "online": online_product, "factory": factory_product}
 all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
-from test_utils import RandomNumpyVector, RandomTuple, TestBase
 
-class Test(TestBase):
+class Data(object):
     def __init__(self, Nmax, Q):
         self.Nmax = Nmax
         self.Q = Q
-        # Call parent init
-        TestBase.__init__(self)
-            
-    def run(self):
-        Nmax = self.Nmax
-        Q = self.Q
-        test_id = self.test_id
-        test_subid = self.test_subid
-        if test_id >= 0:
-            if not self.index in self.storage:
-                F = OnlineAffineExpansionStorage(self.Q)
-                for i in range(self.Q):
-                    # Generate random vector
-                    F[i] = RandomNumpyVector(Nmax)
-                # Genereate random theta
-                theta = RandomTuple(Q)
-                # Generate N <= Nmax
-                N = randint(1, Nmax + 1)
-                # Store
-                self.storage[self.index] = (theta, F, N)
-            else:
-                (theta, F, N) = self.storage[self.index]
-            self.index += 1
-        if test_id >= 1:
-            if test_id > 1 or (test_id == 1 and test_subid == "a"):
-                # Time using built in methods
-                assembled_vector_builtin = theta[0]*F[0][:N]
-                for i in range(1, self.Q):
-                    assembled_vector_builtin += theta[i]*F[i][:N]
-                assembled_vector_builtin.N = N
-            if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using sum(product()) method
-                assembled_vector_sum_product = sum(product(theta, F[:N]))
-        if test_id >= 2:
-            return norm(assembled_vector_builtin - assembled_vector_sum_product)/norm(assembled_vector_builtin)
+        
+    def generate_random(self):
+        F = OnlineAffineExpansionStorage(self.Q)
+        for i in range(self.Q):
+            # Generate random vector
+            F[i] = RandomNumpyVector(self.Nmax)
+        # Genereate random theta
+        theta = RandomTuple(self.Q)
+        # Generate N <= Nmax
+        N = randint(1, self.Nmax + 1)
+        # Return
+        return (theta, F, N)
+        
+    def evaluate_builtin(self, theta, F, N):
+        result_builtin = theta[0]*F[0][:N]
+        for i in range(1, self.Q):
+            result_builtin += theta[i]*F[i][:N]
+        result_builtin.N = N
+        return result_builtin
+        
+    def evaluate_backend(self, theta, F, N):
+        return sum(product(theta, F[:N]))
+        
+    def assert_backend(self, theta, F, N, result_backend):
+        result_builtin = self.evaluate_builtin(theta, F, N)
+        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        assert isclose(relative_error, 0., atol=1e-12)
 
-for i in range(4, 9):
-    N = 2**i
-    for j in range(1, 4):
-        Q = 10 + 4*j
-        test = Test(N, Q)
-        print("N =", N, "and Q =", Q)
-        
-        test.init_test(0)
-        (usec_0_build, usec_0_access) = test.timeit()
-        print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        test.init_test(1, "a")
-        usec_1a = test.timeit()
-        print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        
-        for backend in ("numpy", "online", "factory"):
-            print("Testing", backend, "backend")
-            product, sum = all_product[backend], all_sum[backend]
-            
-            test.init_test(1, "b")
-            usec_1b = test.timeit()
-            print("\tsum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-            
-            print("\tRelative overhead of the sum(product()) method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
-            
-            test.init_test(2)
-            error = test.average()
-            print("\tRelative error:", error)
+@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
+@pytest.mark.parametrize("Q", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
+def test_numpy_vector_assembly_with_slicing(N, Q, test_type, benchmark):
+    data = Data(N, Q)
+    print("N = " + str(N) + ", Q = " + str(Q))
+    if test_type == "builtin":
+        print("Testing", test_type)
+        benchmark(data.evaluate_builtin, setup=data.generate_random)
+    else:
+        print("Testing", test_type, "backend")
+        global product, sum
+        product, sum = all_product[test_type], all_sum[test_type]
+        benchmark(data.evaluate_backend, setup=data.generate_random, teardown=data.assert_backend)

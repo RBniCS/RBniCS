@@ -16,87 +16,67 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-from dolfin import *
+import pytest
+from dolfin import assemble, dx, FunctionSpace, grad, inner, TrialFunction, TestFunction, UnitSquareMesh
+from numpy import isclose
 from numpy.linalg import norm
 from rbnics.backends import FunctionsList
 from rbnics.backends import transpose as factory_transpose
 from rbnics.backends.dolfin import transpose as dolfin_transpose
+from rbnics.backends.online.numpy import Matrix as NumpyMatrix
+from test_utils import RandomDolfinFunction
+
 transpose = None
 all_transpose = {"dolfin": dolfin_transpose, "factory": factory_transpose}
-from rbnics.backends.online.numpy import Matrix as NumpyMatrix
-from test_utils import RandomDolfinFunction, TestBase
 
-class Test(TestBase):
-    def __init__(self, Nh, N):
+class Data(object):
+    def __init__(self, Th, N):
         self.N = N
-        mesh = UnitSquareMesh(Nh, Nh)
+        mesh = UnitSquareMesh(Th, Th)
         self.V = FunctionSpace(mesh, "Lagrange", 1)
         u = TrialFunction(self.V)
         v = TestFunction(self.V)
         self.a = lambda k: k*inner(grad(u), grad(v))*dx
-        # Call parent init
-        TestBase.__init__(self)
-            
-    def run(self):
-        N = self.N
-        test_id = self.test_id
-        test_subid = self.test_subid
-        if test_id >= 0:
-            if not self.index in self.storage:
-                # Generate random vectors
-                S = FunctionsList(self.V)
-                for _ in range(self.N):
-                    b = RandomDolfinFunction(self.V)
-                    S.enrich(b)
-                k = RandomDolfinFunction(self.V)
-                # Generate random matrix
-                A = assemble(self.a(k))
-                # Store
-                self.storage[self.index] = (S, A)
-            else:
-                (S, A) = self.storage[self.index]
-            self.index += 1
-        if test_id >= 1:
-            if test_id > 1 or (test_id == 1 and test_subid == "a"):
-                # Time using built in methods
-                S_T_dot_A_S_builtin = NumpyMatrix(self.N, self.N)
-                for j in range(self.N):
-                    A_S_j = A*S[j].vector()
-                    for i in range(self.N):
-                        S_T_dot_A_S_builtin[i, j] = S[i].vector().inner(A_S_j)
-            if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using transpose() method
-                S_T_dot_A_S_transpose = transpose(S)*A*S
-        if test_id >= 2:
-            return norm(S_T_dot_A_S_builtin - S_T_dot_A_S_transpose)/norm(S_T_dot_A_S_builtin)
-
-for i in range(3, 7):
-    Nh = 2**i
-    for j in range(1, 4):
-        N = 10 + 4*j
-        test = Test(Nh, N)
-        print("Nh =", test.V.dim(), "and N =", N)
         
-        test.init_test(0)
-        (usec_0_build, usec_0_access) = test.timeit()
-        print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
-        print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+    def generate_random(self):
+        # Generate random vectors
+        S = FunctionsList(self.V)
+        for _ in range(self.N):
+            b = RandomDolfinFunction(self.V)
+            S.enrich(b)
+        k = RandomDolfinFunction(self.V)
+        # Generate random matrix
+        A = assemble(self.a(k))
+        # Return
+        return (S, A)
         
-        test.init_test(1, "a")
-        usec_1a = test.timeit()
-        print("Builtin method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
+    def evaluate_builtin(self, S, A):
+        result_builtin = NumpyMatrix(self.N, self.N)
+        for j in range(self.N):
+            A_S_j = A*S[j].vector()
+            for i in range(self.N):
+                result_builtin[i, j] = S[i].vector().inner(A_S_j)
+        return result_builtin
         
-        for backend in ("dolfin", "factory"):
-            print("Testing", backend, "backend")
-            transpose = all_transpose[backend]
-            
-            test.init_test(1, "b")
-            usec_1b = test.timeit()
-            print("\ttranspose() method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-            
-            print("\tRelative overhead of the transpose() method:", (usec_1b - usec_1a)/(usec_1a - usec_0_access))
-            
-            test.init_test(2)
-            error = test.average()
-            print("\tRelative error:", error)
+    def evaluate_backend(self, S, A):
+        return transpose(S)*A*S
+        
+    def assert_backend(self, S, A, result_backend):
+        result_builtin = self.evaluate_builtin(S, A)
+        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        assert isclose(relative_error, 0., atol=1e-12)
+        
+@pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
+@pytest.mark.parametrize("N", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
+def test_dolfin_S_T_dot_A_S(Th, N, test_type, benchmark):
+    data = Data(Th, N)
+    print("Th = " + str(Th) + ", Nh = " + str(data.V.dim()) + ", N = " + str(N))
+    if test_type == "builtin":
+        print("Testing", test_type)
+        benchmark(data.evaluate_builtin, setup=data.generate_random)
+    else:
+        print("Testing", test_type, "backend")
+        global transpose
+        transpose = all_transpose[test_type]
+        benchmark(data.evaluate_backend, setup=data.generate_random, teardown=data.assert_backend)

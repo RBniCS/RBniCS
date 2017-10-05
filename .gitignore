@@ -1,5 +1,6 @@
 *~
 *.bak
+*.benchmarks
 *.cache
 *.egg
 *.egg-info

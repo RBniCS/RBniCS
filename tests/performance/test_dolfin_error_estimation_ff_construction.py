@@ -16,5 +16,4 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 print("Please see test_truth_v1_dot_A_v2.py")

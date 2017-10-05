@@ -16,141 +16,115 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-from numpy import zeros as legacy_tensor
-from numpy.linalg import norm
+import pytest
+from numpy import isclose, zeros as legacy_tensor
 from rbnics.backends import product as factory_product, sum as factory_sum, transpose as factory_transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum, online_transpose
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum, transpose as numpy_transpose
+from test_utils import RandomNumber, RandomNumpyMatrix, RandomNumpyVector, RandomTuple
+
 product = None
 sum = None
 transpose = None
 all_product = {"numpy": numpy_product, "online": online_product, "factory": factory_product}
 all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
 all_transpose = {"numpy": numpy_transpose, "online": online_transpose, "factory": factory_transpose}
-from test_utils import RandomNumber, RandomNumpyMatrix, RandomNumpyVector, RandomTuple, TestBase
 
-class Test(TestBase):
+class Data(object):
     def __init__(self, N, Qa, Qf):
         self.N = N
         self.Qa = Qa
         self.Qf = Qf
-        # Call parent init
-        TestBase.__init__(self)
-            
-    def run(self):
-        N = self.N
-        Qa = self.Qa
-        Qf = self.Qf
-        Ntrain = 100
-        test_id = self.test_id
-        test_subid = self.test_subid
-        if test_id >= 0:
-            if not self.index in self.storage:
-                aa_product = OnlineAffineExpansionStorage(Qa, Qa)
-                aa_product_legacy = legacy_tensor((Qa, Qa, N, N))
-                for i in range(Qa):
-                    for j in range(Qa):
-                        # Generate random matrix
-                        aa_product[i, j] = RandomNumpyMatrix(N, N)
-                        for n in range(N):
-                            for m in range(N):
-                                aa_product_legacy[i, j, n, m] = aa_product[i, j][n, m]
-                af_product = OnlineAffineExpansionStorage(Qa, Qf)
-                af_product_legacy = legacy_tensor((Qa, Qf, N))
-                for i in range(Qa):
-                    for j in range(Qf):
-                        # Generate random matrix
-                        af_product[i, j] = RandomNumpyVector(N)
-                        for n in range(N):
-                            af_product_legacy[i, j, n] = af_product[i, j][n]
-                ff_product = OnlineAffineExpansionStorage(Qf, Qf)
-                ff_product_legacy = legacy_tensor((Qf, Qf))
-                for i in range(Qf):
-                    for j in range(Qf):
-                        # Generate random matrix
-                        ff_product[i, j] = RandomNumber()
-                        ff_product_legacy[i, j] = ff_product[i, j]
-                # Genereate random theta
-                theta_a = []
-                theta_f = []
-                for t in range(Ntrain):
-                    theta_a.append(RandomTuple(Qa))
-                    theta_f.append(RandomTuple(Qf))
-                # Generate random solution
-                u = []
-                v = []
-                for t in range(Ntrain):
-                    u.append(RandomNumpyVector(N))
-                    v.append(RandomNumpyVector(N))
-                # Store
-                self.storage[self.index] = (theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
-            else:
-                (theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v) = self.storage[self.index]
-            self.index += 1
-        if test_id >= 1:
-            if test_id > 1 or (test_id == 1 and test_subid == "a"):
-                # Time using built in methods
-                all_error_estimator_legacy = []
-                for t in range(Ntrain):
-                    error_estimator_legacy = 0.
-                    for i in range(Qa):
-                        for j in range(Qa):
-                            for n in range(N):
-                                for m in range(N):
-                                    error_estimator_legacy += u[t].item(n)*theta_a[t][i]*aa_product_legacy[i, j, n, m]*theta_a[t][j]*v[t].item(m)
-                    for i in range(Qa):
-                        for j in range(Qf):
-                            for n in range(N):
-                                error_estimator_legacy += theta_a[t][i]*af_product_legacy[i, j, n]*theta_f[t][j]*u[t].item(n)
-                    for i in range(Qf):
-                        for j in range(Qf):
-                            error_estimator_legacy += theta_f[t][i]*ff_product_legacy[i, j]*theta_f[t][j]
-                    all_error_estimator_legacy.append(error_estimator_legacy)
-            if test_id > 1 or (test_id == 1 and test_subid == "b"):
-                # Time using sum(product()) method
-                all_error_estimator_sum_product = []
-                for t in range(Ntrain):
-                    all_error_estimator_sum_product.append(
-                        transpose(u[t])*sum(product(theta_a[t], aa_product[:N, :N], theta_a[t]))*v[t] +
-                        transpose(u[t])*sum(product(theta_a[t], af_product[:N], theta_f[t])) +
-                        sum(product(theta_f[t], ff_product, theta_f[t]))
-                    )
-        if test_id >= 2:
-            average_relative_error = 0.
-            for t in range(Ntrain):
-                average_relative_error += abs(all_error_estimator_legacy[t] - all_error_estimator_sum_product[t])/abs(all_error_estimator_legacy[t])
-            average_relative_error /= Ntrain
-            return average_relative_error
+        self.Ntrain = 100
+        
+    def generate_random(self):
+        aa_product = OnlineAffineExpansionStorage(self.Qa, self.Qa)
+        aa_product_legacy = legacy_tensor((self.Qa, self.Qa, self.N, self.N))
+        for i in range(self.Qa):
+            for j in range(self.Qa):
+                # Generate random matrix
+                aa_product[i, j] = RandomNumpyMatrix(self.N, self.N)
+                for n in range(self.N):
+                    for m in range(self.N):
+                        aa_product_legacy[i, j, n, m] = aa_product[i, j][n, m]
+        af_product = OnlineAffineExpansionStorage(self.Qa, self.Qf)
+        af_product_legacy = legacy_tensor((self.Qa, self.Qf, self.N))
+        for i in range(self.Qa):
+            for j in range(self.Qf):
+                # Generate random matrix
+                af_product[i, j] = RandomNumpyVector(self.N)
+                for n in range(self.N):
+                    af_product_legacy[i, j, n] = af_product[i, j][n]
+        ff_product = OnlineAffineExpansionStorage(self.Qf, self.Qf)
+        ff_product_legacy = legacy_tensor((self.Qf, self.Qf))
+        for i in range(self.Qf):
+            for j in range(self.Qf):
+                # Generate random matrix
+                ff_product[i, j] = RandomNumber()
+                ff_product_legacy[i, j] = ff_product[i, j]
+        # Genereate random theta
+        theta_a = []
+        theta_f = []
+        for t in range(self.Ntrain):
+            theta_a.append(RandomTuple(self.Qa))
+            theta_f.append(RandomTuple(self.Qf))
+        # Generate random solution
+        u = []
+        v = []
+        for t in range(self.Ntrain):
+            u.append(RandomNumpyVector(self.N))
+            v.append(RandomNumpyVector(self.N))
+        # Return
+        return (theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
+        
+    def evaluate_builtin(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v):
+        result_builtin = list()
+        for t in range(self.Ntrain):
+            result_builtin_t = 0.
+            for i in range(self.Qa):
+                for j in range(self.Qa):
+                    for n in range(self.N):
+                        for m in range(self.N):
+                            result_builtin_t += u[t].item(n)*theta_a[t][i]*aa_product_legacy[i, j, n, m]*theta_a[t][j]*v[t].item(m)
+            for i in range(self.Qa):
+                for j in range(self.Qf):
+                    for n in range(self.N):
+                        result_builtin_t += theta_a[t][i]*af_product_legacy[i, j, n]*theta_f[t][j]*u[t].item(n)
+            for i in range(self.Qf):
+                for j in range(self.Qf):
+                    result_builtin_t += theta_f[t][i]*ff_product_legacy[i, j]*theta_f[t][j]
+            result_builtin.append(result_builtin_t)
+        return result_builtin
+        
+    def evaluate_backend(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v):
+        result_backend = []
+        for t in range(self.Ntrain):
+            result_backend.append(
+                transpose(u[t])*sum(product(theta_a[t], aa_product[:self.N, :self.N], theta_a[t]))*v[t] +
+                transpose(u[t])*sum(product(theta_a[t], af_product[:self.N], theta_f[t])) +
+                sum(product(theta_f[t], ff_product, theta_f[t]))
+            )
+        return result_backend
+        
+    def assert_backend(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v, result_backend):
+        assert len(result_backend) is self.Ntrain
+        result_builtin = self.evaluate_builtin(theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
+        assert len(result_builtin) is self.Ntrain
+        relative_error = sum([abs(result_builtin_t - result_backend_t)/abs(result_builtin_t) for (result_builtin_t, result_backend_t) in zip(result_builtin, result_backend)])/self.Ntrain
+        assert isclose(relative_error, 0., atol=1e-12)
 
-for i in range(4, 9):
-    N = 2**i
-    for j in range(1, 8):
-        Qa = 2 + 4*j
-        for k in range(1, 8):
-            Qf = 2 + 4*k
-            test = Test(N, Qa, Qf)
-            print("N =", N, "and Qa =", Qa, "and Qf =", Qf)
-            
-            test.init_test(0)
-            (usec_0_build, usec_0_access) = test.timeit()
-            print("Construction:", usec_0_build, "usec", "(number of runs: ", test.number_of_runs(), ")")
-            print("Access:", usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-            
-            test.init_test(1, "a")
-            usec_1a = test.timeit()
-            print("Legacy method:", usec_1a - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-            
-            for backend in ("numpy", "online", "factory"):
-                print("Testing", backend, "backend")
-                product, sum, transpose = all_product[backend], all_sum[backend], all_transpose[backend]
-                
-                test.init_test(1, "b")
-                usec_1b = test.timeit()
-                print("\tsum(product()) method:", usec_1b - usec_0_access, "usec", "(number of runs: ", test.number_of_runs(), ")")
-                
-                print("\tSpeed up of the sum(product()) method:", (usec_1a - usec_0_access)/(usec_1b - usec_0_access))
-                
-                test.init_test(2)
-                error = test.average()
-                print("\tRelative error:", error)
+@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
+@pytest.mark.parametrize("Qa", [2 + 4*j for j in range(1, 8)])
+@pytest.mark.parametrize("Qf", [2 + 4*k for k in range(1, 8)])
+@pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
+def test_numpy_greedy_prototype(N, Qa, Qf, test_type, benchmark):
+    data = Data(N, Qa, Qf)
+    print("N = " + str(N) + ", Qa = " + str(Qa) + ", Qf = " + str(Qf))
+    if test_type == "builtin":
+        print("Testing", test_type)
+        benchmark(data.evaluate_builtin, setup=data.generate_random)
+    else:
+        print("Testing", test_type, "backend")
+        global product, sum, transpose
+        product, sum, transpose = all_product[test_type], all_sum[test_type], all_transpose[test_type]
+        benchmark(data.evaluate_backend, setup=data.generate_random, teardown=data.assert_backend)
