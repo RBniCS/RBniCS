@@ -45,6 +45,7 @@ setup(name="RBniCS",
           "mpi4py",
           "multipledispatch",
           "pytest-runner",
+          "sympy",
           "toposort"
       ],
       tests_require=[
