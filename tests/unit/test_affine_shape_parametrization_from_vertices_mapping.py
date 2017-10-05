@@ -18,7 +18,7 @@
 
 import os
 from sympy import Float, MatrixSymbol, preorder_traversal, simplify, sympify
-from rbnics.shape_parametrization.problems.affine_shape_parametrization_decorated_problem import affine_shape_parametrization_from_vertices_mapping
+from rbnics.shape_parametrization.utils.symbolic import affine_shape_parametrization_from_vertices_mapping
 from rbnics.utils.io import PickleIO
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_affine_shape_parametrization_from_vertices_mapping")

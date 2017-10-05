@@ -1,0 +1,63 @@
+# Copyright (C) 2015-2017 by the RBniCS authors
+#
+# This file is part of RBniCS.
+#
+# RBniCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RBniCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
+#
+
+import itertools
+from sympy import Inverse, sympify, Transpose, zeros
+from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import strings_to_sympy_symbolic_parameters
+from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
+
+def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
+    # Check if the "identity" string is provided, and return this trivial case
+    if isinstance(vertices_mapping, str):
+        assert vertices_mapping.lower() == "identity"
+        return tuple(["x[" + str(i) + "]" for i in range(dim)])
+    # Get a sympy symbol for mu
+    mu = strings_to_sympy_symbolic_parameters(itertools.chain(*vertices_mapping.values()))
+    # Convert vertices from string to symbols
+    vertices_mapping_symbolic = dict()
+    for (reference_vertex, deformed_vertex) in vertices_mapping.items():
+        reference_vertex_symbolic = dim*[None]
+        deformed_vertex_symbolic = dim*[None]
+        for i in range(dim):
+            reference_vertex_symbolic[i] = sympify(reference_vertex[i])
+            deformed_vertex_symbolic[i] = sympify(deformed_vertex[i], locals={"mu": mu})
+        reference_vertex_symbolic = tuple(reference_vertex_symbolic)
+        deformed_vertex_symbolic = tuple(deformed_vertex_symbolic)
+        assert reference_vertex_symbolic not in vertices_mapping_symbolic
+        vertices_mapping_symbolic[reference_vertex_symbolic] = deformed_vertex_symbolic
+    # Find A and b such that x_o = A x + b for all (x, x_o) in vertices_mapping
+    lhs = zeros(dim + dim**2, dim + dim**2)
+    rhs = zeros(dim + dim**2, 1)
+    for (offset, (reference_vertex, deformed_vertex)) in enumerate(vertices_mapping_symbolic.items()):
+        for i in range(dim):
+            rhs[offset*dim + i] = deformed_vertex[i]
+            lhs[offset*dim + i, i] = 1
+            for j in range(dim):
+                lhs[offset*dim + i, (i + 1)*dim + j] = reference_vertex[j]
+    solution = Inverse(lhs)*rhs
+    b = zeros(dim, 1)
+    for i in range(dim):
+        b[i] = solution[i]
+    A = zeros(dim, dim)
+    for i in range(dim):
+        for j in range(dim):
+            A[i, j] = solution[dim + i*dim + j]
+    # Convert into an expression
+    x = sympy_symbolic_coordinates(dim)
+    x_o = A*x + b
+    return tuple([str(x_o[i]).replace(", 0]", "]") for i in range(dim)])

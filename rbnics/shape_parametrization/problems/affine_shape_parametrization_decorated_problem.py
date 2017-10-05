@@ -16,9 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import re
-from sympy import Inverse, Matrix, MatrixSymbol, symbols, sympify, Transpose, zeros
 from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrizationDecoratedProblem
+from rbnics.shape_parametrization.utils.symbolic import affine_shape_parametrization_from_vertices_mapping
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.utils.io import PickleIO
 
@@ -84,55 +83,3 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
     
     # return the decorator itself
     return AffineShapeParametrizationDecoratedProblem_Decorator
-    
-# Auxiliary function
-def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
-    # Check if the "identity" string is provided, and return this trivial case
-    if isinstance(vertices_mapping, str):
-        assert vertices_mapping.lower() == "identity"
-        return tuple(["x[" + str(i) + "]" for i in range(dim)])
-    # Detect how many parameters are used
-    P = -1
-    for (reference_vertex, deformed_vertex) in vertices_mapping.items():
-        for i in range(dim):
-            for match in mu_regex.findall(deformed_vertex[i]):
-                P = max(P, int(match))
-    if P >= 0:
-        mu = MatrixSymbol("mu", P + 1, 1)
-    else:
-        mu = None
-    # Convert vertices from string to symbols
-    vertices_mapping_symbolic = dict()
-    for (reference_vertex, deformed_vertex) in vertices_mapping.items():
-        reference_vertex_symbolic = dim*[None]
-        deformed_vertex_symbolic = dim*[None]
-        for i in range(dim):
-            reference_vertex_symbolic[i] = sympify(reference_vertex[i])
-            deformed_vertex_symbolic[i] = sympify(deformed_vertex[i], locals={"mu": mu})
-        reference_vertex_symbolic = tuple(reference_vertex_symbolic)
-        deformed_vertex_symbolic = tuple(deformed_vertex_symbolic)
-        assert reference_vertex_symbolic not in vertices_mapping_symbolic
-        vertices_mapping_symbolic[reference_vertex_symbolic] = deformed_vertex_symbolic
-    # Find A and b such that x_o = A x + b for all (x, x_o) in vertices_mapping
-    lhs = zeros(dim + dim**2, dim + dim**2)
-    rhs = zeros(dim + dim**2, 1)
-    for (offset, (reference_vertex, deformed_vertex)) in enumerate(vertices_mapping_symbolic.items()):
-        for i in range(dim):
-            rhs[offset*dim + i] = deformed_vertex[i]
-            lhs[offset*dim + i, i] = 1
-            for j in range(dim):
-                lhs[offset*dim + i, (i + 1)*dim + j] = reference_vertex[j]
-    solution = Inverse(lhs)*rhs
-    b = zeros(dim, 1)
-    for i in range(dim):
-        b[i] = solution[i]
-    A = zeros(dim, dim)
-    for i in range(dim):
-        for j in range(dim):
-            A[i, j] = solution[dim + i*dim + j]
-    # Convert into an expression
-    x = Matrix([symbols("x[" + str(i) + "]") for i in range(dim)])
-    x_o = A*x + b
-    return tuple([str(x_o[i]).replace(", 0]", "]") for i in range(dim)])
-    
-mu_regex = re.compile("mu\[([0-9]+)\]")
