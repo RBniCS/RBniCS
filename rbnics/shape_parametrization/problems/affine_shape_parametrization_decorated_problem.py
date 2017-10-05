@@ -38,7 +38,8 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
     # Detect the mesh dimension based on the number of vertices to be mapped
     dim = None
     for vertices_mapping in shape_parametrization_vertices_mappings:
-        if isinstance(vertices_mapping, str) and vertices_mapping.lower() == "identity":
+        if isinstance(vertices_mapping, str):
+            assert vertices_mapping.lower() == "identity"
             continue
         else:
             assert isinstance(vertices_mapping, dict)
@@ -86,6 +87,10 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
     
 # Auxiliary function
 def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
+    # Check if the "identity" string is provided, and return this trivial case
+    if isinstance(vertices_mapping, str):
+        assert vertices_mapping.lower() == "identity"
+        return tuple(["x[" + str(i) + "]" for i in range(dim)])
     # Detect how many parameters are used
     P = -1
     for (reference_vertex, deformed_vertex) in vertices_mapping.items():

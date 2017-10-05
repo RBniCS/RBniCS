@@ -17,7 +17,7 @@
 #
 
 import os
-from sympy import MatrixSymbol, simplify, sympify
+from sympy import Float, MatrixSymbol, preorder_traversal, simplify, sympify
 from rbnics.shape_parametrization.problems.affine_shape_parametrization_decorated_problem import affine_shape_parametrization_from_vertices_mapping
 from rbnics.utils.io import PickleIO
 
@@ -31,7 +31,11 @@ Y = 1
 def symbolic_equal(expression1, expression2, x, mu):
     locals = {"x": x, "mu": mu}
     difference = sympify(expression1, locals=locals) - sympify(expression2, locals=locals)
-    return simplify(difference) == 0
+    difference = simplify(difference)
+    for node in preorder_traversal(difference):
+        if isinstance(node, Float):
+            difference = difference.subs(node, round(node, 10))
+    return difference == 0
 
 # Test affine shape parametrization for tutorial 3
 def test_affine_shape_parametrization_from_vertices_mapping_hole():
@@ -123,3 +127,126 @@ def test_affine_shape_parametrization_from_vertices_mapping_graetz():
     assert len(shape_parametrization_expression[3]) is 2
     assert symbolic_equal(shape_parametrization_expression[3][X], "mu[0]*(x[0] - 1) + 1", x, mu)
     assert symbolic_equal(shape_parametrization_expression[3][Y], "x[1]", x, mu)
+    
+def test_affine_shape_parametrization_from_vertices_mapping_stokes_optimal_dirichlet_boundary_control():
+    vertices_mappings = [
+        "identity", # subdomain 1
+        {
+            ("0.9", "0.0"): ("0.9", "0.0"),
+            ("1.0", "0.0"): ("0.9+mu[0]", "0.0"),
+            ("0.9", "0.4"): ("0.9", "0.4")
+        }, # subdomain 2
+        {
+            ("1.0", "0.0"): ("0.9+mu[0]", "0.0"),
+            ("1.0", "0.4"): ("0.9+mu[0]", "0.4"),
+            ("0.9", "0.4"): ("0.9", "0.4")
+        }, # subdomain 3
+        {
+            ("0.9", "0.6"): ("0.9", "0.6"),
+            ("1.0", "0.6"): ("0.9+mu[0]", "0.6"),
+            ("0.9", "1.0"): ("0.9", "1.0")
+        }, # subdomain 4
+        {
+            ("1.0", "0.6"): ("0.9+mu[0]", "0.6"),
+            ("1.0", "1.0"): ("0.9+mu[0]", "1.0"),
+            ("0.9", "1.0"): ("0.9", "1.0")
+        }, # subdomain 5
+        {
+            ("1.0", "0.0"): ("0.9+mu[0]", "0.0"),
+            ("1.8", "0.2"): ("1.8", "0.2"),
+            ("1.0", "0.4"): ("0.9+mu[0]", "0.4")
+        }, # subdomain 6
+        {
+            ("1.0", "0.0"): ("0.9+mu[0]", "0.0"),
+            ("2.0", "0.0"): ("2.0", "0.0"),
+            ("1.8", "0.2"): ("1.8", "0.2")
+        }, # subdomain 7
+        {
+            ("1.0", "0.6"): ("0.9+mu[0]", "0.6"),
+            ("1.8", "0.8"): ("1.8", "0.8"),
+            ("1.0", "1.0"): ("0.9+mu[0]", "1.0")
+        }, # subdomain 8
+        {
+            ("1.0", "1.0"): ("0.9+mu[0]", "1.0"),
+            ("1.8", "0.8"): ("1.8", "0.8"),
+            ("2.0", "1.0"): ("2.0", "1.0")
+        }, # subdomain 9
+        {
+            ("1.8", "0.8"): ("1.8", "0.8"),
+            ("2.0", "0.0"): ("2.0", "0.0"),
+            ("2.0", "1.0"): ("2.0", "1.0")
+        }, # subdomain 10
+        {
+            ("1.8", "0.8"): ("1.8", "0.8"),
+            ("1.8", "0.2"): ("1.8", "0.2"),
+            ("2.0", "0.0"): ("2.0", "0.0")
+        }, # subdomain 11
+        {
+            ("1.0", "0.4"): ("0.9+mu[0]", "0.4"),
+            ("1.8", "0.2"): ("1.8", "0.2"),
+            ("1.0", "0.6"): ("0.9+mu[0]", "0.6")
+        }, # subdomain 12
+        {
+            ("1.0", "0.6"): ("0.9+mu[0]", "0.6"),
+            ("1.8", "0.2"): ("1.8", "0.2"),
+            ("1.8", "0.8"): ("1.8", "0.8")
+        }  # subdomain 13
+    ]
+    shape_parametrization_expression = [affine_shape_parametrization_from_vertices_mapping(2, vertices_mapping) for vertices_mapping in vertices_mappings]
+    # Auxiliary symbolic quantities
+    x = MatrixSymbol("x", 2, 1)
+    mu = MatrixSymbol("mu", 1, 1)
+    # Start checks
+    assert len(shape_parametrization_expression) is 13
+    # Check subdomain 1
+    assert len(shape_parametrization_expression[0]) is 2
+    assert symbolic_equal(shape_parametrization_expression[0][X], "x[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[0][Y], "x[1]", x, mu)
+    # Check subdomain 2
+    assert len(shape_parametrization_expression[1]) is 2
+    assert symbolic_equal(shape_parametrization_expression[1][X], "0.9 - 9.0*mu[0] + 10.0*mu[0]*x[0] ", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[1][Y], "x[1]", x, mu)
+    # Check subdomain 3
+    assert len(shape_parametrization_expression[2]) is 2
+    assert symbolic_equal(shape_parametrization_expression[2][X], "0.9 - 9.0*mu[0] + 10.0*mu[0]*x[0] ", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[2][Y], "x[1]", x, mu)
+    # Check subdomain 4
+    assert len(shape_parametrization_expression[3]) is 2
+    assert symbolic_equal(shape_parametrization_expression[3][X], "0.9 - 9.0*mu[0] + 10.0*mu[0]*x[0] ", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[3][Y], "x[1]", x, mu)
+    # Check subdomain 5
+    assert len(shape_parametrization_expression[4]) is 2
+    assert symbolic_equal(shape_parametrization_expression[4][X], "0.9 - 9.0*mu[0] + 10.0*mu[0]*x[0] ", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[4][Y], "x[1]", x, mu)
+    # Check subdomain 6
+    assert len(shape_parametrization_expression[5]) is 2
+    assert symbolic_equal(shape_parametrization_expression[5][X], "2.25*mu[0] + x[0]*(-1.25*mu[0] + 1.125) - 0.225 ", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[5][Y], "x[1]", x, mu)
+    # Check subdomain 7
+    assert len(shape_parametrization_expression[6]) is 2
+    assert symbolic_equal(shape_parametrization_expression[6][X], "2.0*mu[0] + x[0]*(-mu[0] + 1.1) + x[1]*(-mu[0] + 0.1) - 0.2 ", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[6][Y], "x[1]", x, mu)
+    # Check subdomain 8
+    assert len(shape_parametrization_expression[7]) is 2
+    assert symbolic_equal(shape_parametrization_expression[7][X], "2.25*mu[0] + x[0]*(-1.25*mu[0] + 1.125) - 0.225 ", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[7][Y], "x[1]", x, mu)
+    # Check subdomain 9
+    assert len(shape_parametrization_expression[8]) is 2
+    assert symbolic_equal(shape_parametrization_expression[8][X], "mu[0] + x[0]*(-mu[0] + 1.1) + x[1]*(mu[0] - 0.1) - 0.1", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[8][Y], "x[1]", x, mu)
+    # Check subdomain 10
+    assert len(shape_parametrization_expression[9]) is 2
+    assert symbolic_equal(shape_parametrization_expression[9][X], "x[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[9][Y], "x[1]", x, mu)
+    # Check subdomain 11
+    assert len(shape_parametrization_expression[10]) is 2
+    assert symbolic_equal(shape_parametrization_expression[10][X], "x[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[10][Y], "x[1]", x, mu)
+    # Check subdomain 12
+    assert len(shape_parametrization_expression[11]) is 2
+    assert symbolic_equal(shape_parametrization_expression[11][X], "x[0]*(-1.25*mu[0] + 1.125) + 2.25*mu[0] - 0.225", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[11][Y], "x[1]", x, mu)
+    # Check subdomain 13
+    assert len(shape_parametrization_expression[12]) is 2
+    assert symbolic_equal(shape_parametrization_expression[12][X], "2.25*mu[0] + x[0]*(-1.25*mu[0] + 1.125) - 0.225", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[12][Y], "x[1]", x, mu)
