@@ -66,6 +66,7 @@ from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrize
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.backends.dolfin.wrapping.petsc_ts_integrator import PETScTSIntegrator
 from rbnics.backends.dolfin.wrapping.plot import plot
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import pull_back_forms_to_reference_domain
 from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.backends.dolfin.wrapping.tensor_copy import tensor_copy

@@ -92,12 +92,16 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     def overridden_set_mu(self, mu):
         standard_set_mu(mu)
         if expression.mu is not mu:
-            assert isinstance(mu, tuple)
-            assert len(mu) == len(expression.mu)
-            for (p, mu_p) in enumerate(mu):
-                setattr(expression, "mu_" + str(p), mu_p)
-            expression.mu = mu
+            expression.set_mu(mu)
     truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
+    def expression_set_mu(mu):
+        assert isinstance(mu, tuple)
+        assert len(mu) >= len(expression.mu)
+        mu = mu[:len(expression.mu)]
+        for (p, mu_p) in enumerate(mu):
+            setattr(expression, "mu_" + str(p), mu_p)
+        expression.mu = mu
+    expression.set_mu = expression_set_mu
     # Note that this override is different from the one that we use in decorated problems,
     # since (1) we do not want to define a new child class, (2) we have to execute some preprocessing
     # on the data, (3) it is a one-way propagation rather than a sync.

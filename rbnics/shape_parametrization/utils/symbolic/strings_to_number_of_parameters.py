@@ -16,13 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from sympy import MatrixSymbol
-from rbnics.shape_parametrization.utils.symbolic.strings_to_number_of_parameters import strings_to_number_of_parameters
+import re
 
-def strings_to_sympy_symbolic_parameters(strings):
-    P = strings_to_number_of_parameters(strings)
-    if P > 0:
-        mu = MatrixSymbol("mu", P, 1)
-    else:
-        mu = None
-    return mu
+def strings_to_number_of_parameters(strings):
+    P = -1
+    for string in strings:
+        for match in mu_regex.findall(string):
+            P = max(P, int(match))
+    return P + 1
+    
+mu_regex = re.compile("mu\[([0-9]+)\]")

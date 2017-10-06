@@ -18,12 +18,14 @@
 
 from rbnics.shape_parametrization.utils.symbolic.affine_shape_parametrization_from_vertices_mapping import affine_shape_parametrization_from_vertices_mapping
 from rbnics.shape_parametrization.utils.symbolic.compute_shape_parametrization_gradient import compute_shape_parametrization_gradient
+from rbnics.shape_parametrization.utils.symbolic.strings_to_number_of_parameters import strings_to_number_of_parameters
 from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import strings_to_sympy_symbolic_parameters
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
 __all__ = [
     'affine_shape_parametrization_from_vertices_mapping',
     'compute_shape_parametrization_gradient',
+    'strings_to_number_of_parameters',
     'strings_to_sympy_symbolic_parameters',
     'sympy_symbolic_coordinates'
 ]
