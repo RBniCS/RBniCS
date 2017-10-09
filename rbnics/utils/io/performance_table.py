@@ -17,6 +17,7 @@
 #
 
 from numpy import exp, log, max, mean, min, zeros as Content
+from rbnics.utils.io.pickle_io import PickleIO
 
 class PerformanceTable(object):
     
@@ -173,6 +174,24 @@ class PerformanceTable(object):
                 output += formatter.format(*current_line, **column_size) + "\n"
             output += "\n"
         return output[:-2] # remove the last two newlines
+        
+    def save(self, directory, filename):
+        PickleIO.save_file(self, directory, filename)
+    
+    def load(self, directory, filename):
+        assert len(self._columns) == 0 # cannot load multiple times
+        assert PickleIO.exists_file(directory, filename)
+        loaded_table = PickleIO.load_file(directory, filename)
+        self._columns = loaded_table._columns
+        self._columns_operations = loaded_table._columns_operations
+        self._columns_not_implemented = loaded_table._columns_not_implemented
+        self._groups = loaded_table._groups
+        self._group_names_sorted = loaded_table._group_names_sorted
+        assert self._len_testing_set == loaded_table._len_testing_set
+        self._Nmin = loaded_table._Nmin
+        self._Nmax = loaded_table._Nmax
+        return True
+        
         
 class CustomNotImplementedType(object):
     def __init__(self):

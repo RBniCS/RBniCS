@@ -144,7 +144,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
-        def error_analysis(self, N=None, **kwargs):
+        def error_analysis(self, N=None, filename=None, **kwargs):
             if "components" in kwargs:
                 components = kwargs["components"]
             else:
@@ -166,7 +166,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             for column in ("error_output", "relative_error_output"):
                 ErrorAnalysisTable.preprocess_setitem(column, solution_preprocess_setitem)
                 
-            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, filename, **kwargs)
             
             ErrorAnalysisTable.clear_setitem_preprocessing()
         

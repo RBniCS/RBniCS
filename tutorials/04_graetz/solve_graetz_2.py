@@ -144,20 +144,20 @@ reduced_graetz_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 reduced_basis_method.initialize_testing_set(100, dual=100, SCM=100)
-reduced_basis_method.error_analysis()
+reduced_basis_method.error_analysis(filename="error_analysis")
 
 # 8. Perform a speedup analysis
-reduced_basis_method.speedup_analysis()
+reduced_basis_method.speedup_analysis(filename="speedup_analysis")
 
 # 9. Perform an error analysis employing a smaller number of SCM constraints
-reduced_basis_method.error_analysis(SCM=5)
+reduced_basis_method.error_analysis(SCM=5, filename="error_analysis__SCM_5")
 
 # 10. Perform a speedup analysis employing a smaller number of SCM constraints
-reduced_basis_method.speedup_analysis(SCM=5)
+reduced_basis_method.speedup_analysis(SCM=5, filename="speedup_analysis__SCM_5")
 
 # 11. Perform an error analysis with respect to the exact problem,
 #     for which SCM is replaced by ExactCoercivityConstant
-reduced_basis_method.error_analysis(with_respect_to=exact_problem)
+reduced_basis_method.error_analysis(with_respect_to=exact_problem, filename="error_analysis__with_respect_to_exact")
 
 # 12. Perform a speedup analysis with respect to the exact problem
-reduced_basis_method.speedup_analysis(with_respect_to=exact_problem)
+reduced_basis_method.speedup_analysis(with_respect_to=exact_problem, filename="speedup_analysis__with_respect_to_exact")

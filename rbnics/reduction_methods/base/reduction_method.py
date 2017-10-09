@@ -38,11 +38,13 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # I/O
         self.folder["training_set"] = os.path.join(self.folder_prefix, "training_set")
         
-        # $$ ERROR ANALYSIS DATA STRUCTURES $$ #
+        # $$ ERROR ANALYSIS AND SPEEDUP ANALYSIS DATA STRUCTURES $$ #
         # Testing set
         self.testing_set = ParameterSpaceSubset(mu_range)
         # I/O
         self.folder["testing_set"] = os.path.join(self.folder_prefix, "testing_set")
+        self.folder["error_analysis"] = os.path.join(self.folder_prefix, "error_analysis")
+        self.folder["speedup_analysis"] = os.path.join(self.folder_prefix, "speedup_analysis")
     
     # OFFLINE: set maximum reduced space dimension (stopping criterion)
     def set_Nmax(self, Nmax, **kwargs):

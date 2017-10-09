@@ -200,7 +200,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("find next mu")
             return self.training_set.max(solve_and_estimate_error)
             
-        def error_analysis(self, N=None, **kwargs):
+        def error_analysis(self, N=None, filename=None, **kwargs):
             """
             It computes the error of the reduced order approximation with respect to the full order one over the testing set.
             
@@ -297,9 +297,12 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("==============================================================")
             print("")
             
+            # Export error analysis table
+            error_analysis_table.save(self.folder["error_analysis"], "error_analysis" if filename is None else filename)
+            
             self._finalize_error_analysis(**kwargs)
             
-        def speedup_analysis(self, N=None, **kwargs):
+        def speedup_analysis(self, N=None, filename=None, **kwargs):
             """
             It computes the speedup of the reduced order approximation with respect to the full order one over the testing set.
             
@@ -365,6 +368,9 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("=" + "{:^60}".format(self.label + " speedup analysis ends") + "=")
             print("==============================================================")
             print("")
+            
+            # Export speedup analysis table
+            speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
             
             self._finalize_speedup_analysis(**kwargs)
         

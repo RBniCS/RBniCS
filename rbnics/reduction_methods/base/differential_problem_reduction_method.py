@@ -54,7 +54,9 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         all_folders.update(self.folder)
         assert self.reduced_problem is not None
         all_folders.update(self.reduced_problem.folder)
-        all_folders.pop("testing_set") # this is required only in the error analysis
+        all_folders.pop("testing_set") # this is required only in the error/speedup analysis
+        all_folders.pop("error_analysis") # this is required only in the error analysis
+        all_folders.pop("speedup_analysis") # this is required only in the speedup analysis
         at_least_one_folder_created = all_folders.create()
         if not at_least_one_folder_created:
             return False # offline construction should be skipped, since data are already available
@@ -104,6 +106,9 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem.init("online")
         
+        # Create folder to store the results
+        self.folder["error_analysis"].create()
+        
     # Initialize data structures required for the speedup analysis phase
     def _init_speedup_analysis(self, **kwargs):
         # Initialize the affine expansion in the truth problem
@@ -111,6 +116,9 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem.init("online")
+        
+        # Create folder to store the results
+        self.folder["speedup_analysis"].create()
         
         # Make sure to clean up problem and reduced problem solution cache to ensure that
         # solution and reduced solution are actually computed

@@ -64,8 +64,8 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
     # over the testing set.
     # Note that we cannot move this method to the parent class because error analysis is defined
     # by the PODGalerkinReduction decorator
-    def error_analysis(self, N=None, **kwargs):
+    def error_analysis(self, N=None, filename=None, **kwargs):
         components = ["u", "p"] # but not "s"
         kwargs["components"] = components
         
-        StokesPODGalerkinReduction_Base.error_analysis(self, N, **kwargs)
+        StokesPODGalerkinReduction_Base.error_analysis(self, N, filename, **kwargs)
