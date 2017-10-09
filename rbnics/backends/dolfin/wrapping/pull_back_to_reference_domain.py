@@ -22,9 +22,9 @@ from ufl import as_tensor, det, inv, Measure, TensorElement, tr, transpose, Vect
 from ufl.algorithms.apply_algebra_lowering import apply_algebra_lowering
 from ufl.algorithms.expand_indices import expand_indices, purge_list_tensors
 from ufl.classes import FacetJacobian, FacetJacobianDeterminant, Grad
-from ufl.compound_expressions import determinant_expr
+from ufl.compound_expressions import determinant_expr, inverse_expr
 from ufl.core.multiindex import Index, indices
-from ufl.corealg.multifunction import MultiFunction
+from ufl.corealg.multifunction import memoized_handler, MultiFunction
 from ufl.corealg.map_dag import map_expr_dag
 from dolfin import cells, Expression, facets
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
@@ -72,6 +72,10 @@ def ShapeParametrizationJacobianDeterminant(shape_parametrization_expression_on_
 @shape_parametrization_cache
 def ShapeParametrizationFacetJacobian(shape_parametrization_expression_on_subdomain, problem, domain):
     return ShapeParametrizationJacobian(shape_parametrization_expression_on_subdomain, problem, domain)*FacetJacobian(domain)
+
+@shape_parametrization_cache
+def ShapeParametrizationFacetJacobianInverse(shape_parametrization_expression_on_subdomain, problem, domain):
+    return inverse_expr(ShapeParametrizationFacetJacobian(shape_parametrization_expression_on_subdomain, problem, domain))
     
 @shape_parametrization_cache
 def ShapeParametrizationFacetJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem, domain):
@@ -112,10 +116,7 @@ class PullBackGradients(MultiFunction): # inspired by OLDChangeToReferenceGrad
         self.problem = problem
 
     expr = MultiFunction.reuse_if_untouched
-
-    def terminal(self, o):
-        return o
-        
+    
     def div(self, o, f):
         # Create shape parametrization Jacobian inverse object
         Jinv = ShapeParametrizationJacobianInverse(self.shape_parametrization_expression_on_subdomain, self.problem, f.ufl_domain())
@@ -153,10 +154,63 @@ def pull_back_gradients(shape_parametrization_expression_on_subdomain, problem, 
     
 # ===== Pull back geometric quantities: inspired by ufl/algorithms/apply_geometry_lowering.py ===== #
 class PullBackGeometricQuantities(MultiFunction): # inspired by GeometryLoweringApplier
-    pass # TODO
+    def __init__(self, shape_parametrization_expression_on_subdomain, problem):
+        MultiFunction.__init__(self)
+        self.shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain
+        self.problem = problem
 
+    expr = MultiFunction.reuse_if_untouched
+    
+    def _not_implemented(self, o):
+        raise NotImplementedError("Pull back of this geometric quantity has not been implemented")
+    
+    @memoized_handler
+    def jacobian(self, o):
+        return ShapeParametrizationJacobian(self.shape_parametrization_expression_on_subdomain, self.problem, o.ufl_domain())
+        
+    @memoized_handler
+    def jacobian_inverse(self, o):
+        return ShapeParametrizationJacobianInverse(self.shape_parametrization_expression_on_subdomain, self.problem, o.ufl_domain())
+        
+    @memoized_handler
+    def jacobian_determinant(self, o):
+        return ShapeParametrizationJacobianDeterminant(self.shape_parametrization_expression_on_subdomain, self.problem, o.ufl_domain())
+        
+    @memoized_handler
+    def facet_jacobian(self, o):
+        return ShapeParametrizationFacetJacobian(self.shape_parametrization_expression_on_subdomain, self.problem, o.ufl_domain())
+        
+    @memoized_handler
+    def facet_jacobian_inverse(self, o):
+        return ShapeParametrizationFacetJacobianInverse(self.shape_parametrization_expression_on_subdomain, self.problem, o.ufl_domain())
+        
+    @memoized_handler
+    def facet_jacobian_determinant(self, o):
+        return ShapeParametrizationFacetJacobianDeterminant(self.shape_parametrization_expression_on_subdomain, self.problem, o.ufl_domain())
+        
+    @memoized_handler
+    def spatial_coordinate(self, o):
+        return ShapeParametrizationMap(self.shape_parametrization_expression_on_subdomain, self.problem, o.ufl_domain())
+        
+    @memoized_handler
+    def cell_volume(self, o):
+        return self.jacobian_determinant(o)*CellVolume(o.ufl_domain())
+        
+    @memoized_handler
+    def facet_area(self, o):
+        return self.facet_jacobian_determinant(o)*FacetArea(o.ufl_domain())
+        
+    circumradius = _not_implemented
+    min_cell_edge_length = _not_implemented
+    max_cell_edge_length = _not_implemented
+    min_facet_edge_length = _not_implemented
+    max_facet_edge_length = _not_implemented
+    
+    cell_normal = _not_implemented
+    facet_normal = _not_implemented
+        
 def pull_back_geometric_quantities(shape_parametrization_expression_on_subdomain, problem, integrand): # inspired by apply_geometry_lowering
-    return integrand # TODO
+    return map_expr_dag(PullBackGeometricQuantities(shape_parametrization_expression_on_subdomain, problem), integrand)
 
 # ===== Pull back expressions to reference domain: inspired by ufl/algorithms/apply_function_pullbacks.py ===== #
 pull_back_expression_code = """
