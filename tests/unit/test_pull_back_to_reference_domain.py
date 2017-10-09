@@ -17,8 +17,9 @@
 #
 
 import os
-from dolfin import assemble, Constant, Expression, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, TestFunction, TrialFunction
+import itertools
 from numpy import isclose
+from dolfin import assemble, Constant, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, split, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression, pull_back_forms_to_reference_domain
 
@@ -282,3 +283,207 @@ def test_pull_back_to_reference_domain_graetz():
         f_on_reference_domain = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_on_reference_domain.compute_theta("f"), problem_on_reference_domain.assemble_operator("f"))])
         f_pull_back = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_pull_back.compute_theta("f"), problem_pull_back.assemble_operator("f"))])
         assert isclose(assemble(f_on_reference_domain).norm("l2"), assemble(f_pull_back).norm("l2"))
+        
+# Test shape parametrization gradient computation for tutorial 17:
+def test_pull_back_to_reference_domain_stokes():
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "t_bypass.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "t_bypass_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "t_bypass_facet_region.xml"))
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+        ("mu[4]*x[0] + mu[1] - mu[4]", "tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - tan(mu[5]) - mu[0]"), # subdomain 1
+        ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 2
+        ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 3
+        ("mu[1]*x[0]", "mu[2]*x[1]") # subdomain 4
+    ]
+    
+    # Define function space, test/trial functions, measures, auxiliary expressions
+    element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(element_u, element_p)
+    V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
+    up = TrialFunction(V)
+    (u, p) = split(up)
+    vq = TestFunction(V)
+    (v, q) = split(vq)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    ds = Measure("ds")(subdomain_data=boundaries)
+    
+    ff = Constant((0.0, -10.0))
+    gg = Constant(1.0)
+    nu = Constant(1.0)
+    
+    @ShapeParametrization(*shape_parametrization_expression)
+    class Stokes(object):
+        def __init__(self, V, **kwargs):
+            self.V = V
+            self.mu = None
+            
+        def set_mu(self, mu):
+            assert len(mu) is 6
+            self.mu = mu
+            
+    # Define problem with forms written on reference domain
+    class StokesOnReferenceDomain(Stokes):
+        def compute_theta(self, term):
+            mu = self.mu
+            mu1 = mu[0]
+            mu2 = mu[1]
+            mu3 = mu[2]
+            mu4 = mu[3]
+            mu5 = mu[4]
+            mu6 = mu[5]
+            if term == "a":
+                theta_a0 = nu*(mu1/mu5)
+                theta_a1 = nu*(-tan(mu6)/mu5)
+                theta_a2 = nu*((tan(mu6)**2 + mu5**2)/(mu5*mu1))
+                theta_a3 = nu*(mu4/mu2)
+                theta_a4 = nu*(mu2/mu4)
+                theta_a5 = nu*(mu1/mu2)
+                theta_a6 = nu*(mu2/mu1)
+                theta_a7 = nu*(mu3/mu2)
+                theta_a8 = nu*(mu2/mu3)
+                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8)
+            elif term in ("b", "bt"):
+                theta_b0 = mu1
+                theta_b1 = -tan(mu6)
+                theta_b2 = mu5
+                theta_b3 = mu4
+                theta_b4 = mu2
+                theta_b5 = mu1
+                theta_b6 = mu2
+                theta_b7 = mu3
+                theta_b8 = mu2
+                return (theta_b0, theta_b1, theta_b2, theta_b3, theta_b4, theta_b5, theta_b6, theta_b7, theta_b8)
+            elif term == "f":
+                theta_f0 = mu[0]*mu[4]
+                theta_f1 = mu[1]*mu[3]
+                theta_f2 = mu[0]*mu[1]
+                theta_f3 = mu[1]*mu[2]
+                return (theta_f0, theta_f1, theta_f2, theta_f3)
+            elif term == "g":
+                theta_g0 = mu[0]*mu[4]
+                theta_g1 = mu[1]*mu[3]
+                theta_g2 = mu[0]*mu[1]
+                theta_g3 = mu[1]*mu[2]
+                return (theta_g0, theta_g1, theta_g2, theta_g3)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+            
+        ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx(1)
+                a1 = (u[0].dx(0)*v[0].dx(1) + u[0].dx(1)*v[0].dx(0) + u[1].dx(0)*v[1].dx(1) + u[1].dx(1)*v[1].dx(0))*dx(1)
+                a2 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx(1)
+                a3 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx(2)
+                a4 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx(2)
+                a5 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx(3)
+                a6 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx(3)
+                a7 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx(4)
+                a8 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx(4)
+                return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
+            elif term == "b":
+                b0 = - q*u[0].dx(0)*dx(1)
+                b1 = - q*u[0].dx(1)*dx(1)
+                b2 = - q*u[1].dx(1)*dx(1)
+                b3 = - q*u[0].dx(0)*dx(2)
+                b4 = - q*u[1].dx(1)*dx(2)
+                b5 = - q*u[0].dx(0)*dx(3)
+                b6 = - q*u[1].dx(1)*dx(3)
+                b7 = - q*u[0].dx(0)*dx(4)
+                b8 = - q*u[1].dx(1)*dx(4)
+                return (b0, b1, b2, b3, b4, b5, b6, b7, b8)
+            elif term == "bt":
+                bt0 = - p*v[0].dx(0)*dx(1)
+                bt1 = - p*v[0].dx(1)*dx(1)
+                bt2 = - p*v[1].dx(1)*dx(1)
+                bt3 = - p*v[0].dx(0)*dx(2)
+                bt4 = - p*v[1].dx(1)*dx(2)
+                bt5 = - p*v[0].dx(0)*dx(3)
+                bt6 = - p*v[1].dx(1)*dx(3)
+                bt7 = - p*v[0].dx(0)*dx(4)
+                bt8 = - p*v[1].dx(1)*dx(4)
+                return (bt0, bt1, bt2, bt3, bt4, bt5, bt6, bt7, bt8)
+            elif term == "f":
+                f0 = inner(ff, v)*dx(1)
+                f1 = inner(ff, v)*dx(2)
+                f2 = inner(ff, v)*dx(3)
+                f3 = inner(ff, v)*dx(4)
+                return (f0, f1, f2, f3)
+            elif term == "g":
+                g0 = gg*q*dx(1)
+                g1 = gg*q*dx(2)
+                g2 = gg*q*dx(3)
+                g3 = gg*q*dx(4)
+                return (g0, g1, g2, g3)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+    
+    # Define problem with forms pulled back reference domain
+    class StokesPullBack(Stokes):
+        def compute_theta(self, term):
+            if term == "a":
+                theta_a0 = nu*1.0
+                return (theta_a0, )
+            elif term in ("b", "bt"):
+                theta_b0 = 1.0
+                return (theta_b0, )
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0, )
+            elif term == "g":
+                theta_g0 = 1.0
+                return (theta_g0, )
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+        @pull_back_forms_to_reference_domain("a", "b", "bt", "f", "g")
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(u), grad(v))*dx
+                return (a0, )
+            elif term == "b":
+                b0 = - q*div(u)*dx
+                return (b0, )
+            elif term == "bt":
+                bt0 = - p*div(v)*dx
+                return (bt0, )
+            elif term == "f":
+                f0 = inner(ff, v)*dx
+                return (f0, )
+            elif term == "g":
+                g0 = q*gg*dx
+                return (g0, )
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+    
+    # Check forms
+    problem_on_reference_domain = StokesOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = StokesPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    for mu in itertools.product((0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.0, pi/6.0)):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_on_reference_domain.compute_theta("a"), problem_on_reference_domain.assemble_operator("a"))])
+        a_pull_back = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_pull_back.compute_theta("a"), problem_pull_back.assemble_operator("a"))])
+        assert isclose(assemble(a_on_reference_domain).norm("frobenius"), assemble(a_pull_back).norm("frobenius"))
+        
+        b_on_reference_domain = sum([Constant(theta_b)*b for (theta_b, b) in zip(problem_on_reference_domain.compute_theta("b"), problem_on_reference_domain.assemble_operator("b"))])
+        b_pull_back = sum([Constant(theta_b)*b for (theta_b, b) in zip(problem_pull_back.compute_theta("b"), problem_pull_back.assemble_operator("b"))])
+        assert isclose(assemble(b_on_reference_domain).norm("frobenius"), assemble(b_pull_back).norm("frobenius"))
+        
+        bt_on_reference_domain = sum([Constant(theta_bt)*bt for (theta_bt, bt) in zip(problem_on_reference_domain.compute_theta("bt"), problem_on_reference_domain.assemble_operator("bt"))])
+        bt_pull_back = sum([Constant(theta_bt)*bt for (theta_bt, bt) in zip(problem_pull_back.compute_theta("bt"), problem_pull_back.assemble_operator("bt"))])
+        assert isclose(assemble(bt_on_reference_domain).norm("frobenius"), assemble(bt_pull_back).norm("frobenius"))
+        
+        f_on_reference_domain = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_on_reference_domain.compute_theta("f"), problem_on_reference_domain.assemble_operator("f"))])
+        f_pull_back = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_pull_back.compute_theta("f"), problem_pull_back.assemble_operator("f"))])
+        assert isclose(assemble(f_on_reference_domain).norm("l2"), assemble(f_pull_back).norm("l2"))
+        
+        g_on_reference_domain = sum([Constant(theta_g)*g for (theta_g, g) in zip(problem_on_reference_domain.compute_theta("g"), problem_on_reference_domain.assemble_operator("g"))])
+        g_pull_back = sum([Constant(theta_g)*g for (theta_g, g) in zip(problem_pull_back.compute_theta("g"), problem_pull_back.assemble_operator("g"))])
+        assert isclose(assemble(g_on_reference_domain).norm("l2"), assemble(g_pull_back).norm("l2"))

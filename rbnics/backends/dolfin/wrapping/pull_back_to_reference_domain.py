@@ -117,8 +117,6 @@ class PullBackGradients(MultiFunction): # inspired by OLDChangeToReferenceGrad
         return o
         
     def div(self, o, f):
-        assert f._ufl_is_terminal_
-        
         # Create shape parametrization Jacobian inverse object
         Jinv = ShapeParametrizationJacobianInverse(self.shape_parametrization_expression_on_subdomain, self.problem, f.ufl_domain())
         
@@ -131,8 +129,6 @@ class PullBackGradients(MultiFunction): # inspired by OLDChangeToReferenceGrad
         return as_tensor(Jinv[j, last]*Grad(f)[first + (last, j)], first)
 
     def grad(self, _, f):
-        assert f._ufl_is_terminal_
-        
         # Create shape parametrization Jacobian inverse object
         Jinv = ShapeParametrizationJacobianInverse(self.shape_parametrization_expression_on_subdomain, self.problem, f.ufl_domain())
         
@@ -258,8 +254,8 @@ def fill_facet_id_to_subdomain_id(problem):
         facet_id_to_subdomain_ids = dict(facet_id_to_subdomain_ids)
         subdomain_id_to_facet_ids = dict(subdomain_id_to_facet_ids)
         # Collect in parallel
-        mpi_comm.allreduce(facet_id_to_subdomain_ids, op=_dict_collect_op)
-        mpi_comm.allreduce(subdomain_id_to_facet_ids, op=_dict_collect_op)
+        facet_id_to_subdomain_ids = mpi_comm.allreduce(facet_id_to_subdomain_ids, op=_dict_collect_op)
+        subdomain_id_to_facet_ids = mpi_comm.allreduce(subdomain_id_to_facet_ids, op=_dict_collect_op)
         # Store
         problem.facet_id_to_subdomain_ids = facet_id_to_subdomain_ids
         problem.subdomain_id_to_facet_ids = subdomain_id_to_facet_ids
@@ -267,7 +263,7 @@ def fill_facet_id_to_subdomain_id(problem):
 def _dict_collect(dict1, dict2, datatype):
     dict12 = defaultdict(set)
     for dict_ in (dict1, dict2):
-        for (key, value) in d.items():
+        for (key, value) in dict_.items():
             dict12[key].update(value)
     return dict(dict12)
 
