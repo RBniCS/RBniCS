@@ -120,6 +120,8 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         assert self.spectrum is "largest" or self.spectrum is "smallest"
         eigensolver_parameters["spectrum"] = self.spectrum + " real"
         if self.eigensolver_parameters is not None:
+            if "spectral_transform" in self.eigensolver_parameters and self.eigensolver_parameters["spectral_transform"] == "shift-and-invert":
+                eigensolver_parameters["spectrum"] = "target real"
             eigensolver_parameters.update(self.eigensolver_parameters)
         eigensolver.set_parameters(eigensolver_parameters)
         eigensolver.solve(1)
