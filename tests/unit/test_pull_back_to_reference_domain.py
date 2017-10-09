@@ -25,6 +25,18 @@ from rbnics.backends.dolfin.wrapping import ParametrizedExpression, pull_back_fo
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_pull_back_to_reference_domain")
 
+def bilinear_forms_are_close(form_on_reference_domain, form_pull_back):
+    return isclose(assemble(form_on_reference_domain).norm("frobenius"), assemble(form_pull_back).norm("frobenius"))
+    
+def linear_forms_are_close(form_on_reference_domain, form_pull_back):
+    return isclose(assemble(form_on_reference_domain).norm("l2"), assemble(form_pull_back).norm("l2"))
+    
+def scalars_are_close(form_on_reference_domain, form_pull_back):
+    return isclose(assemble(form_on_reference_domain), assemble(form_pull_back))
+    
+def theta_times_operator(problem, term):
+    return sum([Constant(theta)*operator for (theta, operator) in zip(problem.compute_theta(term), problem.assemble_operator(term))])
+
 # Test forms pull back to reference domain for tutorial 3
 def test_pull_back_to_reference_domain_hole():
     # Read the mesh for this problem
@@ -169,17 +181,14 @@ def test_pull_back_to_reference_domain_hole():
     for mu in ((1., 1., 0.), (0.5, 1.5, 0.), (0.5, 0.5, 0.), (0.5, 1.5, 1.)):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
-        a_1_on_reference_domain = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_on_reference_domain.compute_theta("a")[:12], problem_on_reference_domain.assemble_operator("a")[:12])])
-        a_1_pull_back = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_pull_back.compute_theta("a")[:1], problem_pull_back.assemble_operator("a")[:1])])
-        assert isclose(assemble(a_1_on_reference_domain).norm("frobenius"), assemble(a_1_pull_back).norm("frobenius"))
-        a_2_on_reference_domain = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_on_reference_domain.compute_theta("a")[12:], problem_on_reference_domain.assemble_operator("a")[12:])])
-        a_2_pull_back = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_pull_back.compute_theta("a")[1:], problem_pull_back.assemble_operator("a")[1:])])
-        assert isclose(assemble(a_2_on_reference_domain).norm("frobenius"), assemble(a_2_pull_back).norm("frobenius"))
-        f_on_reference_domain = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_on_reference_domain.compute_theta("f"), problem_on_reference_domain.assemble_operator("f"))])
-        f_pull_back = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_pull_back.compute_theta("f"), problem_pull_back.assemble_operator("f"))])
-        assert isclose(assemble(f_on_reference_domain).norm("l2"), assemble(f_pull_back).norm("l2"))
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert bilinear_forms_are_close(a_on_reference_domain, a_pull_back)
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert linear_forms_are_close(f_on_reference_domain, f_pull_back)
     
-# Test shape parametrization gradient computation for tutorial 4
+# Test forms pull back to reference domain for tutorial 4
 def test_pull_back_to_reference_domain_graetz():
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "graetz.xml"))
@@ -277,14 +286,14 @@ def test_pull_back_to_reference_domain_graetz():
     for mu in ((0.1, 0.1), (10.0, 10.0), (0.1, 10.), (10., 0.1)):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
-        a_on_reference_domain = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_on_reference_domain.compute_theta("a"), problem_on_reference_domain.assemble_operator("a"))])
-        a_pull_back = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_pull_back.compute_theta("a"), problem_pull_back.assemble_operator("a"))])
-        assert isclose(assemble(a_on_reference_domain).norm("frobenius"), assemble(a_pull_back).norm("frobenius"))
-        f_on_reference_domain = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_on_reference_domain.compute_theta("f"), problem_on_reference_domain.assemble_operator("f"))])
-        f_pull_back = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_pull_back.compute_theta("f"), problem_pull_back.assemble_operator("f"))])
-        assert isclose(assemble(f_on_reference_domain).norm("l2"), assemble(f_pull_back).norm("l2"))
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert bilinear_forms_are_close(a_on_reference_domain, a_pull_back)
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert linear_forms_are_close(f_on_reference_domain, f_pull_back)
         
-# Test shape parametrization gradient computation for tutorial 17:
+# Test forms pull back to reference domain for tutorial 17
 def test_pull_back_to_reference_domain_stokes():
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "t_bypass.xml"))
@@ -468,22 +477,23 @@ def test_pull_back_to_reference_domain_stokes():
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
         
-        a_on_reference_domain = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_on_reference_domain.compute_theta("a"), problem_on_reference_domain.assemble_operator("a"))])
-        a_pull_back = sum([Constant(theta_a)*a for (theta_a, a) in zip(problem_pull_back.compute_theta("a"), problem_pull_back.assemble_operator("a"))])
-        assert isclose(assemble(a_on_reference_domain).norm("frobenius"), assemble(a_pull_back).norm("frobenius"))
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert bilinear_forms_are_close(a_on_reference_domain, a_pull_back)
         
-        b_on_reference_domain = sum([Constant(theta_b)*b for (theta_b, b) in zip(problem_on_reference_domain.compute_theta("b"), problem_on_reference_domain.assemble_operator("b"))])
-        b_pull_back = sum([Constant(theta_b)*b for (theta_b, b) in zip(problem_pull_back.compute_theta("b"), problem_pull_back.assemble_operator("b"))])
-        assert isclose(assemble(b_on_reference_domain).norm("frobenius"), assemble(b_pull_back).norm("frobenius"))
+        b_on_reference_domain = theta_times_operator(problem_on_reference_domain, "b")
+        b_pull_back = theta_times_operator(problem_pull_back, "b")
+        assert bilinear_forms_are_close(b_on_reference_domain, b_pull_back)
         
-        bt_on_reference_domain = sum([Constant(theta_bt)*bt for (theta_bt, bt) in zip(problem_on_reference_domain.compute_theta("bt"), problem_on_reference_domain.assemble_operator("bt"))])
-        bt_pull_back = sum([Constant(theta_bt)*bt for (theta_bt, bt) in zip(problem_pull_back.compute_theta("bt"), problem_pull_back.assemble_operator("bt"))])
-        assert isclose(assemble(bt_on_reference_domain).norm("frobenius"), assemble(bt_pull_back).norm("frobenius"))
+        bt_on_reference_domain = theta_times_operator(problem_on_reference_domain, "bt")
+        bt_pull_back = theta_times_operator(problem_pull_back, "bt")
+        assert bilinear_forms_are_close(bt_on_reference_domain, bt_pull_back)
         
-        f_on_reference_domain = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_on_reference_domain.compute_theta("f"), problem_on_reference_domain.assemble_operator("f"))])
-        f_pull_back = sum([Constant(theta_f)*f for (theta_f, f) in zip(problem_pull_back.compute_theta("f"), problem_pull_back.assemble_operator("f"))])
-        assert isclose(assemble(f_on_reference_domain).norm("l2"), assemble(f_pull_back).norm("l2"))
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert linear_forms_are_close(f_on_reference_domain, f_pull_back)
         
-        g_on_reference_domain = sum([Constant(theta_g)*g for (theta_g, g) in zip(problem_on_reference_domain.compute_theta("g"), problem_on_reference_domain.assemble_operator("g"))])
-        g_pull_back = sum([Constant(theta_g)*g for (theta_g, g) in zip(problem_pull_back.compute_theta("g"), problem_pull_back.assemble_operator("g"))])
-        assert isclose(assemble(g_on_reference_domain).norm("l2"), assemble(g_pull_back).norm("l2"))
+        g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
+        g_pull_back = theta_times_operator(problem_pull_back, "g")
+        assert linear_forms_are_close(g_on_reference_domain, g_pull_back)
+
