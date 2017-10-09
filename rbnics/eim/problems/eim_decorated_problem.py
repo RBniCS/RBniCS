@@ -97,22 +97,26 @@ def EIMDecoratedProblem(
                     self.mu = self.mu_symbolic
                     # Loop over each term
                     for term in self.terms:
-                        forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
-                        Q = len(forms)
-                        self.separated_forms[term] = AffineExpansionSeparatedFormsStorage(Q)
-                        for q in range(Q):
-                            self.separated_forms[term][q] = SeparatedParametrizedForm(forms[q])
-                            self.separated_forms[term][q].separate()
-                            # All parametrized coefficients should be approximated by EIM
-                            for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
-                                for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
-                                    if factor not in self.EIM_approximations:
-                                        factory_factor = ParametrizedExpressionFactory(factor)
-                                        if factory_factor.is_time_dependent():
-                                            EIMApproximationType = TimeDependentEIMApproximation
-                                        else:
-                                            EIMApproximationType = EIMApproximation
-                                        self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, self.name() + "/eim/" + factor_name, basis_generation)
+                        try:
+                            forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
+                        except ValueError: # possibily raised e.g. because output computation is optional
+                            pass
+                        else:
+                            Q = len(forms)
+                            self.separated_forms[term] = AffineExpansionSeparatedFormsStorage(Q)
+                            for q in range(Q):
+                                self.separated_forms[term][q] = SeparatedParametrizedForm(forms[q])
+                                self.separated_forms[term][q].separate()
+                                # All parametrized coefficients should be approximated by EIM
+                                for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
+                                    for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
+                                        if factor not in self.EIM_approximations:
+                                            factory_factor = ParametrizedExpressionFactory(factor)
+                                            if factory_factor.is_time_dependent():
+                                                EIMApproximationType = TimeDependentEIMApproximation
+                                            else:
+                                                EIMApproximationType = EIMApproximation
+                                            self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, self.name() + "/eim/" + factor_name, basis_generation)
                     # Restore float parameters
                     self.mu = mu_float
                 
@@ -141,7 +145,7 @@ def EIMDecoratedProblem(
                     self._update_N_EIM__previous_kwargs = kwargs
                 
             def assemble_operator(self, term):
-                if term in self.terms:
+                if term in self.separated_forms.keys():
                     if "offline" in self._apply_EIM_at_stages:
                         return self._assemble_operator_EIM(term)
                     else:
@@ -168,7 +172,7 @@ def EIMDecoratedProblem(
                 return tuple(eim_forms)
                     
             def compute_theta(self, term):
-                if term in self.terms:
+                if term in self.separated_forms.keys():
                     if "offline" in self._apply_EIM_at_stages:
                         return self._compute_theta_EIM(term)
                     else:

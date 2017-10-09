@@ -30,7 +30,6 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             class _AlsoDecorateErrorEstimationOperators_Class(ReducedParametrizedProblem_DecoratedClass):
                 
                 def compute_riesz(self, term):
-                    assert term in self.terms
                     # Temporarily swap truth problem exact operator with DEIM operators
                     if "offline" not in self.truth_problem_for_DEIM._apply_DEIM_at_stages:
                         self._set_truth_problem_operator_with_DEIM(term)
@@ -42,7 +41,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     
                 def assemble_error_estimation_operators(self, term, current_stage="online"):
                     if current_stage == "offline":
-                        if term in self.terms:
+                        if term in self.truth_problem_for_DEIM.DEIM_approximations.keys():
                             if "offline" not in self.truth_problem_for_DEIM._apply_DEIM_at_stages:
                                 # Temporarily swap truth problem exact operator with DEIM operators
                                 self._set_truth_problem_operator_with_DEIM(term)
@@ -89,7 +88,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     and
                 current_stage == "offline"
             ):
-                for term in self.terms:
+                for term in self.truth_problem_for_DEIM.DEIM_approximations.keys():
                     self.truth_problem_operator_with_DEIM[term] = AffineExpansionStorage(self.truth_problem_for_DEIM._assemble_operator_DEIM(term))
                     self.truth_problem_operator_without_DEIM[term] = self.truth_problem_for_DEIM.operator[term]
                     self.truth_problem_Q_with_DEIM[term] = len(self.truth_problem_operator_with_DEIM[term])
@@ -104,7 +103,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     and
                 current_stage == "offline"
             ):
-                for term in self.terms:
+                for term in self.truth_problem_for_DEIM.DEIM_approximations.keys():
                     self._set_truth_problem_operator_without_DEIM(term)
             
         def _set_truth_problem_operator_with_DEIM(self, term):
@@ -124,7 +123,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         def assemble_operator(self, term, current_stage="online"):
             if current_stage == "offline":
-                if term in self.terms:
+                if term in self.truth_problem_for_DEIM.DEIM_approximations.keys():
                     if "offline" not in self.truth_problem_for_DEIM._apply_DEIM_at_stages:
                         # Temporarily swap truth problem exact operator with DEIM operators
                         self._set_truth_problem_operator_with_DEIM(term)
@@ -142,7 +141,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
         
         def compute_theta(self, term):
-            if term in self.terms:
+            if term in self.truth_problem_for_DEIM.DEIM_approximations.keys():
                 return self.truth_problem_for_DEIM._compute_theta_DEIM(term)
             else:
                 return self.truth_problem_for_DEIM.compute_theta(term)

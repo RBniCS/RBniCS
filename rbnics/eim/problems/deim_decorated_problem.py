@@ -95,19 +95,23 @@ def DEIMDecoratedProblem(
                     self.mu = self.mu_symbolic
                     # Loop over each term
                     for term in self.terms:
-                        forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
-                        self.DEIM_approximations[term] = dict()
-                        self.non_DEIM_forms[term] = dict()
-                        for (q, form_q) in enumerate(forms):
-                            factory_form_q = ParametrizedTensorFactory(form_q)
-                            if factory_form_q.is_parametrized():
-                                if factory_form_q.is_time_dependent():
-                                    DEIMApproximationType = TimeDependentDEIMApproximation
+                        try:
+                            forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
+                        except ValueError: # possibily raised e.g. because output computation is optional
+                            pass
+                        else:
+                            self.DEIM_approximations[term] = dict()
+                            self.non_DEIM_forms[term] = dict()
+                            for (q, form_q) in enumerate(forms):
+                                factory_form_q = ParametrizedTensorFactory(form_q)
+                                if factory_form_q.is_parametrized():
+                                    if factory_form_q.is_time_dependent():
+                                        DEIMApproximationType = TimeDependentDEIMApproximation
+                                    else:
+                                        DEIMApproximationType = DEIMApproximation
+                                    self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, self.name() + "/deim/" + factory_form_q.name(), basis_generation)
                                 else:
-                                    DEIMApproximationType = DEIMApproximation
-                                self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, self.name() + "/deim/" + factory_form_q.name(), basis_generation)
-                            else:
-                                self.non_DEIM_forms[term][q] = form_q
+                                    self.non_DEIM_forms[term][q] = form_q
                     # Restore float parameters
                     self.mu = mu_float
                 
@@ -122,7 +126,7 @@ def DEIMDecoratedProblem(
                         assert isinstance(N_DEIM, (dict, int))
                         if isinstance(N_DEIM, int):
                             N_DEIM_dict = dict()
-                            for term in self.terms:
+                            for term in self.DEIM_approximations.keys():
                                 N_DEIM_dict[term] = dict()
                                 for q in self.DEIM_approximations[term]:
                                     N_DEIM_dict[term][q] = N_DEIM
@@ -134,7 +138,7 @@ def DEIMDecoratedProblem(
                     self._update_N_DEIM__previous_kwargs = kwargs
                 
             def assemble_operator(self, term):
-                if term in self.terms:
+                if term in self.DEIM_approximations.keys():
                     if "offline" in self._apply_DEIM_at_stages:
                         return self._assemble_operator_DEIM(term)
                     else:
@@ -153,7 +157,7 @@ def DEIMDecoratedProblem(
                 return tuple(deim_forms)
             
             def compute_theta(self, term):
-                if term in self.terms:
+                if term in self.DEIM_approximations.keys():
                     if "offline" in self._apply_DEIM_at_stages:
                         return self._compute_theta_DEIM(term)
                     else:
