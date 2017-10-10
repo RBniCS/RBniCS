@@ -19,6 +19,7 @@
 import os
 import itertools
 from numpy import isclose
+from ufl import Form
 from dolfin import assemble, Constant, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, split, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression, pull_back_forms_to_reference_domain
@@ -32,7 +33,15 @@ def linear_forms_are_close(form_on_reference_domain, form_pull_back):
     return isclose(assemble(form_on_reference_domain).norm("l2"), assemble(form_pull_back).norm("l2"))
     
 def scalars_are_close(form_on_reference_domain, form_pull_back):
-    return isclose(assemble(form_on_reference_domain), assemble(form_pull_back))
+    def scalar_assemble(form):
+        assert isinstance(form, (Constant, float, Form))
+        if isinstance(form, Constant):
+            return float(form)
+        elif isinstance(form, Form):
+            return assemble(form)
+        elif isinstance(form, float):
+            return form
+    return isclose(scalar_assemble(form_on_reference_domain), scalar_assemble(form_pull_back))
     
 def theta_times_operator(problem, term):
     return sum([Constant(theta)*operator for (theta, operator) in zip(problem.compute_theta(term), problem.assemble_operator(term))])
@@ -496,4 +505,221 @@ def test_pull_back_to_reference_domain_stokes():
         g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
         g_pull_back = theta_times_operator(problem_pull_back, "g")
         assert linear_forms_are_close(g_on_reference_domain, g_pull_back)
-
+        
+# Test forms pull back to reference domain for tutorial 18
+def test_pull_back_to_reference_domain_elliptic_optimal_control_1():
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "elliptic_optimal_control_1.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "elliptic_optimal_control_1_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "elliptic_optimal_control_1_facet_region.xml"))
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+        ("x[0]", "x[1]"), # subdomain 1
+        ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
+    ]
+    
+    # Define function space, test/trial functions, measures, auxiliary expressions
+    scalar_element = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(scalar_element, scalar_element, scalar_element)
+    V = FunctionSpace(mesh, element, components=["y", "u", "p"])
+    yup = TrialFunction(V)
+    (y, u, p) = split(yup)
+    zvq = TestFunction(V)
+    (z, v, q) = split(zvq)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    ds = Measure("ds")(subdomain_data=boundaries)
+    alpha = Constant(0.01)
+    y_d = Constant(1.0)
+    
+    @ShapeParametrization(*shape_parametrization_expression)
+    class EllipticOptimalControl(object):
+        def __init__(self, V, **kwargs):
+            self.V = V
+            self.mu = None
+            
+        def set_mu(self, mu):
+            assert len(mu) is 2
+            self.mu = mu
+            
+    # Define problem with forms written on reference domain
+    class EllipticOptimalControlOnReferenceDomain(EllipticOptimalControl):
+        def compute_theta(self, term):
+            mu1 = self.mu[0]
+            mu2 = self.mu[1]
+            if term  in ("a", "a*"):
+                theta_a0 = 1.0
+                theta_a1 = 1.0/mu1
+                theta_a2 = mu1
+                return (theta_a0, theta_a1, theta_a2)
+            elif term in ("c", "c*"):
+                theta_c0 = 1.0
+                theta_c1 = mu1
+                return (theta_c0, theta_c1)
+            elif term == "m":
+                theta_m0 = 1.0
+                theta_m1 = mu1
+                return (theta_m0, theta_m1)
+            elif term == "n":
+                theta_n0 = alpha
+                theta_n1 = alpha*mu1
+                return (theta_n0, theta_n1)
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0,)
+            elif term == "g":
+                theta_g0 = 1.0
+                theta_g1 = mu1*mu2
+                return (theta_g0, theta_g1)
+            elif term == "h":
+                theta_h0 = 1.0 + mu1*mu2**2
+                return (theta_h0,)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(y),grad(q))*dx(1)
+                a1 = y.dx(0)*q.dx(0)*dx(2)
+                a2 = y.dx(1)*q.dx(1)*dx(2)
+                return (a0, a1, a2)
+            elif term == "a*":
+                as0 = inner(grad(z),grad(p))*dx(1)
+                as1 = z.dx(0)*p.dx(0)*dx(2)
+                as2 = z.dx(1)*p.dx(1)*dx(2)
+                return (as0, as1, as2)
+            elif term == "c":
+                c0 = u*q*dx(1)
+                c1 = u*q*dx(2)
+                return (c0, c1)
+            elif term == "c*":
+                cs0 = v*p*dx(1)
+                cs1 = v*p*dx(2)
+                return (cs0, cs1)
+            elif term == "m":
+                m0 = y*z*dx(1)
+                m1 = y*z*dx(2)
+                return (m0, m1)
+            elif term == "n":
+                n0 = u*v*dx(1)
+                n1 = u*v*dx(2)
+                return (n0, n1)
+            elif term == "f":
+                f0 = Constant(0.0)*q*dx
+                return (f0,)
+            elif term == "g":
+                g0 = y_d*z*dx(1)
+                g1 = y_d*z*dx(2)
+                return (g0, g1)
+            elif term == "h":
+                h0 = 1.0
+                return (h0,)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Define problem with forms pulled back reference domain
+    class EllipticOptimalControlPullBack(EllipticOptimalControl):
+        def compute_theta(self, term):
+            mu2 = self.mu[1]
+            if term  in ("a", "a*"):
+                theta_a0 = 1.0
+                return (theta_a0,)
+            elif term in ("c", "c*"):
+                theta_c0 = 1.0
+                return (theta_c0,)
+            elif term == "m":
+                theta_m0 = 1.0
+                return (theta_m0,)
+            elif term == "n":
+                theta_n0 = alpha
+                return (theta_n0,)
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0,)
+            elif term == "g":
+                theta_g0 = 1.0
+                theta_g1 = mu2
+                return (theta_g0, theta_g1)
+            elif term == "h":
+                theta_h0 = 1.0
+                theta_h1 = mu2**2
+                return (theta_h0, theta_h1)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        @pull_back_forms_to_reference_domain("a", "a*", "c", "c*", "m", "n", "f", "g", "h")
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(y), grad(q))*dx
+                return (a0,)
+            elif term == "a*":
+                as0 = inner(grad(z), grad(p))*dx
+                return (as0,)
+            elif term == "c":
+                c0 = u*q*dx
+                return (c0,)
+            elif term == "c*":
+                cs0 = v*p*dx
+                return (cs0,)
+            elif term == "m":
+                m0 = y*z*dx
+                return (m0,)
+            elif term == "n":
+                n0 = u*v*dx
+                return (n0,)
+            elif term == "f":
+                f0 = Constant(0.0)*q*dx
+                return (f0,)
+            elif term == "g": 
+                g0 = y_d*z*dx(1)
+                g1 = y_d*z*dx(2)
+                return (g0,g1)
+            elif term == "h":
+                h0 = y_d*y_d*dx(1, domain=mesh)
+                h1 = y_d*y_d*dx(2, domain=mesh)
+                return (h0, h1)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Check forms
+    problem_on_reference_domain = EllipticOptimalControlOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = EllipticOptimalControlPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    for mu in itertools.product((1.0, 3.5), (0.5, 2.5)):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert bilinear_forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        as_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a*")
+        as_pull_back = theta_times_operator(problem_pull_back, "a*")
+        assert bilinear_forms_are_close(as_on_reference_domain, as_pull_back)
+        
+        c_on_reference_domain = theta_times_operator(problem_on_reference_domain, "c")
+        c_pull_back = theta_times_operator(problem_pull_back, "c")
+        assert bilinear_forms_are_close(c_on_reference_domain, c_pull_back)
+        
+        cs_on_reference_domain = theta_times_operator(problem_on_reference_domain, "c*")
+        cs_pull_back = theta_times_operator(problem_pull_back, "c*")
+        assert bilinear_forms_are_close(cs_on_reference_domain, cs_pull_back)
+        
+        m_on_reference_domain = theta_times_operator(problem_on_reference_domain, "m")
+        m_pull_back = theta_times_operator(problem_pull_back, "m")
+        assert bilinear_forms_are_close(m_on_reference_domain, m_pull_back)
+        
+        n_on_reference_domain = theta_times_operator(problem_on_reference_domain, "n")
+        n_pull_back = theta_times_operator(problem_pull_back, "n")
+        assert bilinear_forms_are_close(n_on_reference_domain, n_pull_back)
+        
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert linear_forms_are_close(f_on_reference_domain, f_pull_back)
+        
+        g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
+        g_pull_back = theta_times_operator(problem_pull_back, "g")
+        assert linear_forms_are_close(g_on_reference_domain, g_pull_back)
+        
+        h_on_reference_domain = theta_times_operator(problem_on_reference_domain, "h")
+        h_pull_back = theta_times_operator(problem_pull_back, "h")
+        assert scalars_are_close(h_on_reference_domain, h_pull_back)
