@@ -17,7 +17,7 @@
 #
 
 import itertools
-from sympy import Inverse, sympify, Transpose, zeros
+from sympy import Inverse, Matrix, MatrixSymbol, symbols, sympify, Transpose, zeros
 from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import strings_to_sympy_symbolic_parameters
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
@@ -27,7 +27,7 @@ def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
         assert vertices_mapping.lower() == "identity"
         return tuple(["x[" + str(i) + "]" for i in range(dim)])
     # Get a sympy symbol for mu
-    mu = strings_to_sympy_symbolic_parameters(itertools.chain(*vertices_mapping.values()))
+    mu = strings_to_sympy_symbolic_parameters(itertools.chain(*vertices_mapping.values()), MatrixSymbol)
     # Convert vertices from string to symbols
     vertices_mapping_symbolic = dict()
     for (reference_vertex, deformed_vertex) in vertices_mapping.items():
@@ -58,6 +58,10 @@ def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
         for j in range(dim):
             A[i, j] = solution[dim + i*dim + j]
     # Convert into an expression
-    x = sympy_symbolic_coordinates(dim)
+    x = sympy_symbolic_coordinates(dim, MatrixListSymbol)
     x_o = A*x + b
     return tuple([str(x_o[i]).replace(", 0]", "]") for i in range(dim)])
+    
+def MatrixListSymbol(prefix, dim, one):
+    assert one == 1
+    return Matrix([symbols(prefix + "[" + str(i) + "]") for i in range(dim)])

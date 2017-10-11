@@ -16,13 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from sympy import MatrixSymbol
 from rbnics.shape_parametrization.utils.symbolic.strings_to_number_of_parameters import strings_to_number_of_parameters
 
-def strings_to_sympy_symbolic_parameters(strings):
+def strings_to_sympy_symbolic_parameters(strings, SymbolGenerator):
     P = strings_to_number_of_parameters(strings)
     if P > 0:
-        mu = MatrixSymbol("mu", P, 1)
+        mu = SymbolGenerator("mu", P, 1)
     else:
         mu = None
     return mu

@@ -16,7 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from sympy import Matrix, symbols
-
-def sympy_symbolic_coordinates(dim):
-    return Matrix([symbols("x[" + str(i) + "]") for i in range(dim)])
+def sympy_symbolic_coordinates(dim, SymbolGenerator):
+    return SymbolGenerator("x", dim, 1)
