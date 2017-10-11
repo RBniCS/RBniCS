@@ -26,3 +26,10 @@ def custom__mul__(self, other):
     else:
         return original__mul__(self, other)
 setattr(Form, "__mul__", custom__mul__)
+
+def custom__truediv__(self, other):
+    if isinstance(other, Number):
+        return self.__rmul__(1./other)
+    else:
+        return NotImplemented
+setattr(Form, "__truediv__", custom__truediv__)
