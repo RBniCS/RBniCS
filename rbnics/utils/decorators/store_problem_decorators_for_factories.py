@@ -50,17 +50,17 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
                 
         # Move attributes from the base class to the decorated class
         DecoratedProblem.UndecoratedProblemClass = UndecoratedProblemClass
-        if hasattr(Problem, "UndecoratedProblemClass"):
-            delattr(Problem, "UndecoratedProblemClass")
+        # if hasattr(Problem, "UndecoratedProblemClass"):
+        #     delattr(Problem, "UndecoratedProblemClass")
         DecoratedProblem.ProblemDecorators = ProblemDecorators
-        if hasattr(Problem, "ProblemDecorators"):
-            delattr(Problem, "ProblemDecorators")
+        # if hasattr(Problem, "ProblemDecorators"):
+        #     delattr(Problem, "ProblemDecorators")
         DecoratedProblem.ProblemDecoratorsKwargs = ProblemDecoratorsKwargs
-        if hasattr(Problem, "ProblemDecoratorsKwargs"):
-            delattr(Problem, "ProblemDecoratorsKwargs")
+        # if hasattr(Problem, "ProblemDecoratorsKwargs"):
+        #     delattr(Problem, "ProblemDecoratorsKwargs")
         DecoratedProblem.ProblemExactDecorators = ProblemExactDecorators
-        if hasattr(Problem, "ProblemExactDecorators"):
-            delattr(Problem, "ProblemExactDecorators")
+        # if hasattr(Problem, "ProblemExactDecorators"):
+        #     delattr(Problem, "ProblemExactDecorators")
         # ... and append the new problem decorator
         if Algorithm in DecoratedProblem.ProblemDecorators:
             assert kwargs in DecoratedProblem.ProblemDecoratorsKwargs, "You have decorated twice the problem with same decorator but different kwargs"
