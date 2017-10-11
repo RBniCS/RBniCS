@@ -16,11 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from sympy import ccode, MatrixSymbol, sympify
+from mpi4py.MPI import MAX, MIN
 from dolfin import ALE, cells, Function, FunctionSpace, log, MeshFunctionSizet, PROGRESS, VectorFunctionSpace
 from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
 from rbnics.utils.decorators import BackendFor, tuple_of
-from mpi4py.MPI import MAX, MIN
 
 @BackendFor("dolfin", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
 class MeshMotion(AbstractMeshMotion):
@@ -64,14 +65,22 @@ class MeshMotion(AbstractMeshMotion):
         # Preprocess the shape parametrization expression to convert it in the displacement expression
         # This cannot be done during __init__ because at construction time the number
         # of parameters is still unknown
+        
+        # Declare first some sympy simbolic quantities, needed by ccode
+        from rbnics.shape_parametrization.utils.symbolic import strings_to_sympy_symbolic_parameters, sympy_symbolic_coordinates
+        x = sympy_symbolic_coordinates(self.mesh.geometry().dim(), MatrixSymbol)
+        mu = MatrixSymbol("mu", len(problem.mu), 1)
+        
+        # Then carry out the proprocessing
         self.displacement_expression = list()
         for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression:
             displacement_expression_on_subdomain = list()
             assert len(shape_parametrization_expression_on_subdomain) == self.mesh.geometry().dim()
             for (component, shape_parametrization_component_on_subdomain) in enumerate(shape_parametrization_expression_on_subdomain):
                 # convert from shape parametrization T to displacement d = T - I
+                displacement_expression_component_on_subdomain = sympify(shape_parametrization_component_on_subdomain + " - x[" + str(component) + "]", locals={"x": x, "mu": mu})
                 displacement_expression_on_subdomain.append(
-                    shape_parametrization_component_on_subdomain + " - x[" + str(component) + "]",
+                    ccode(displacement_expression_component_on_subdomain).replace(", 0]", "]"),
                 )
             self.displacement_expression.append(
                 ParametrizedExpression(
