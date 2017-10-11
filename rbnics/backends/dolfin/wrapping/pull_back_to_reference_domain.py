@@ -17,17 +17,28 @@
 #
 
 from collections import defaultdict
+import re
+import types
+import math
+from numpy import allclose, ones as numpy_ones, zeros as numpy_zeros
 from mpi4py.MPI import Op
-from ufl import as_tensor, det, inv, Measure, TensorElement, tr, transpose, VectorElement
+from sympy import ccode, collect, expand_mul, Float, Integer, MatrixSymbol, Number, preorder_traversal, simplify, symbols, sympify, zeros as sympy_zeros
+from ufl import as_tensor, det, Form, inv, Measure, sqrt, TensorElement, tr, transpose, VectorElement
+from ufl.algorithms import apply_transformer, Transformer
 from ufl.algorithms.apply_algebra_lowering import apply_algebra_lowering
+from ufl.algorithms.apply_derivatives import apply_derivatives
 from ufl.algorithms.expand_indices import expand_indices, purge_list_tensors
-from ufl.classes import FacetJacobian, FacetJacobianDeterminant, Grad
+from ufl.classes import FacetJacobian, FacetJacobianDeterminant, FacetNormal, Grad, Sum
 from ufl.compound_expressions import determinant_expr, inverse_expr
-from ufl.core.multiindex import Index, indices
+from ufl.core.multiindex import FixedIndex, Index, indices, MultiIndex
 from ufl.corealg.multifunction import memoized_handler, MultiFunction
 from ufl.corealg.map_dag import map_expr_dag
-from dolfin import cells, Expression, facets
+from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
+from ufl.indexed import Indexed
+from dolfin import cells, Constant, Expression, facets
+import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
+from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 
 # ===== Memoization for shape parametrization objects: inspired by ufl/corealg/multifunction.py ===== #
 def shape_parametrization_cache(function):
@@ -44,10 +55,18 @@ def shape_parametrization_cache(function):
 # ===== Shape parametrization classes related to jacobian, inspired by ufl/geometry.py ===== #
 @shape_parametrization_cache
 def ShapeParametrizationMap(shape_parametrization_expression_on_subdomain, problem, domain):
-    from rbnics.shape_parametrization.utils.symbolic import strings_to_number_of_parameters
+    from rbnics.shape_parametrization.utils.symbolic import strings_to_number_of_parameters, sympy_symbolic_coordinates
     mu = (0, )*strings_to_number_of_parameters(shape_parametrization_expression_on_subdomain)
+    x_symb = sympy_symbolic_coordinates(problem.V.mesh().geometry().dim(), MatrixSymbol)
+    mu_symb = MatrixSymbol("mu", len(mu), 1)
+    shape_parametrization_expression_on_subdomain_cpp = list()
+    for shape_parametrization_component_on_subdomain in shape_parametrization_expression_on_subdomain:
+        shape_parametrization_component_on_subdomain_cpp = sympify(shape_parametrization_component_on_subdomain, locals={"x": x_symb, "mu": mu_symb})
+        shape_parametrization_expression_on_subdomain_cpp.append(
+            ccode(shape_parametrization_component_on_subdomain_cpp).replace(", 0]", "]"),
+        )
     element = VectorElement("CG", domain.ufl_cell(), 1)
-    shape_parametrization_map = ParametrizedExpression(problem, shape_parametrization_expression_on_subdomain, mu=mu, element=element)
+    shape_parametrization_map = ParametrizedExpression(problem, tuple(shape_parametrization_expression_on_subdomain_cpp), mu=mu, element=element)
     shape_parametrization_map.set_mu(problem.mu)
     return shape_parametrization_map
 
@@ -57,13 +76,30 @@ def ShapeParametrizationJacobian(shape_parametrization_expression_on_subdomain, 
     shape_parametrization_gradient_on_subdomain = compute_shape_parametrization_gradient(shape_parametrization_expression_on_subdomain)
     mu = (0, )*strings_to_number_of_parameters(shape_parametrization_expression_on_subdomain)
     element = TensorElement("CG", domain.ufl_cell(), 1)
-    shape_parametrization_jacobian = ParametrizedExpression(problem, shape_parametrization_gradient_on_subdomain, mu=mu, element=element)
+    shape_parametrization_jacobian = ParametrizedExpression(problem, shape_parametrization_gradient_on_subdomain, mu=mu, element=element) # no need to convert expression to cpp, this is done already by compute_shape_parametrization_gradient()
     shape_parametrization_jacobian.set_mu(problem.mu)
     return shape_parametrization_jacobian
+    
+@shape_parametrization_cache
+def ShapeParametrizationJacobianSympy(shape_parametrization_expression_on_subdomain, problem, domain):
+    from rbnics.shape_parametrization.utils.symbolic import strings_to_number_of_parameters, sympy_symbolic_coordinates
+    dim = problem.V.mesh().geometry().dim()
+    x_symb = sympy_symbolic_coordinates(dim, MatrixSymbol)
+    mu_symb = MatrixSymbol("mu", strings_to_number_of_parameters(shape_parametrization_expression_on_subdomain), 1)
+    shape_parametrization_jacobian = ShapeParametrizationJacobian(shape_parametrization_expression_on_subdomain, problem, domain).cppcode
+    shape_parametrization_jacobian_sympy = sympy_zeros(dim, dim)
+    for i in range(dim):
+        for j in range(dim):
+            shape_parametrization_jacobian_sympy[i, j] = sympify(shape_parametrization_jacobian[i][j], locals={"x": x_symb, "mu": mu_symb})
+    return shape_parametrization_jacobian_sympy
 
 @shape_parametrization_cache
 def ShapeParametrizationJacobianInverse(shape_parametrization_expression_on_subdomain, problem, domain):
     return inv(ShapeParametrizationJacobian(shape_parametrization_expression_on_subdomain, problem, domain))
+    
+@shape_parametrization_cache
+def ShapeParametrizationJacobianInverseTranspose(shape_parametrization_expression_on_subdomain, problem, domain):
+    return transpose(ShapeParametrizationJacobianInverse(shape_parametrization_expression_on_subdomain, problem, domain))
     
 @shape_parametrization_cache
 def ShapeParametrizationJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem, domain):
@@ -79,7 +115,9 @@ def ShapeParametrizationFacetJacobianInverse(shape_parametrization_expression_on
     
 @shape_parametrization_cache
 def ShapeParametrizationFacetJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem, domain):
-    return determinant_expr(ShapeParametrizationFacetJacobian(shape_parametrization_expression_on_subdomain, problem, domain))
+    nanson = ShapeParametrizationJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem, domain)*ShapeParametrizationJacobianInverseTranspose(shape_parametrization_expression_on_subdomain, problem, domain)*FacetNormal(domain)
+    i = Index()
+    return sqrt(nanson[i]*nanson[i])
     
 # ===== Pull back form measures: inspired by ufl/algorithms/apply_integral_scaling.py ===== #
 def pull_back_measures(shape_parametrization_expression_on_subdomain, problem, integral, subdomain_id): # inspired by compute_integrand_scaling_factor
@@ -91,7 +129,7 @@ def pull_back_measures(shape_parametrization_expression_on_subdomain, problem, i
     elif integral_type.startswith("exterior_facet") or integral_type.startswith("interior_facet"):
         if tdim > 1:
             # Scaling integral by facet jacobian determinant
-            scale = ShapeParametrizationFacetJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem, integral.ufl_domain())/FacetJacobianDeterminant(integral.ufl_domain())
+            scale = ShapeParametrizationFacetJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem, integral.ufl_domain())
         else:
             # No need to scale "integral" over a vertex
             scale = 1
@@ -272,48 +310,23 @@ def pull_back_form(shape_parametrization_expression, problem, form): # inspired 
                     measure_subdomain_id = integral_subdomain_or_facet_id
             elif integral_type.startswith("exterior_facet") or integral_type.startswith("interior_facet"):
                 if integral_subdomain_or_facet_id == "everywhere":
-                    measure_subdomain_id = problem.subdomain_id_to_facet_ids[subdomain_id]
-                elif subdomain_id not in problem.facet_id_to_subdomain_ids[integral_subdomain_or_facet_id]:
+                    measure_subdomain_id = problem._subdomain_id_to_facet_ids[subdomain_id]
+                elif subdomain_id not in problem._facet_id_to_subdomain_ids[integral_subdomain_or_facet_id]:
                     continue
                 else:
                     measure_subdomain_id = integral_subdomain_or_facet_id
+            else:
+                raise ValueError("Unhandled integral type.")
             # Carry out pull back, if loop was not continue-d
             integrand = integral.integrand()
             integrand = pull_back_expressions(shape_parametrization_expression_on_subdomain, problem, integrand)
             integrand = pull_back_geometric_quantities(shape_parametrization_expression_on_subdomain, problem, integrand)
             integrand = pull_back_gradients(shape_parametrization_expression_on_subdomain, problem, integrand)
             (scale, measure) = pull_back_measures(shape_parametrization_expression_on_subdomain, problem, integral, measure_subdomain_id)
-            #integrand_times_scale = expand_indices(apply_algebra_lowering(integrand*scale)) # TODO only for affine case
-            integrand_times_scale = integrand*scale
-            pulled_back_form += integrand_times_scale*measure
+            pulled_back_form += (integrand*scale)*measure
     return pulled_back_form
     
-# ===== Auxiliary function to store a dict from facet id to subdomain ids ===== #
-def fill_facet_id_to_subdomain_id(problem):
-    if not hasattr(problem, "facet_id_to_subdomain_ids"):
-        assert not hasattr(problem, "subdomain_id_to_facet_ids")
-        mesh = problem.V.mesh()
-        mpi_comm = mesh.mpi_comm().tompi4py()
-        assert "subdomains" in problem.problem_kwargs
-        subdomains = problem.problem_kwargs["subdomains"]
-        assert "boundaries" in problem.problem_kwargs
-        boundaries = problem.problem_kwargs["boundaries"]
-        # Loop over local part of the mesh
-        facet_id_to_subdomain_ids = defaultdict(set)
-        subdomain_id_to_facet_ids = defaultdict(set)
-        for f in facets(mesh):
-            for c in cells(f):
-                facet_id_to_subdomain_ids[boundaries[f]].add(subdomains[c])
-                subdomain_id_to_facet_ids[subdomains[c]].add(boundaries[f])
-        facet_id_to_subdomain_ids = dict(facet_id_to_subdomain_ids)
-        subdomain_id_to_facet_ids = dict(subdomain_id_to_facet_ids)
-        # Collect in parallel
-        facet_id_to_subdomain_ids = mpi_comm.allreduce(facet_id_to_subdomain_ids, op=_dict_collect_op)
-        subdomain_id_to_facet_ids = mpi_comm.allreduce(subdomain_id_to_facet_ids, op=_dict_collect_op)
-        # Store
-        problem.facet_id_to_subdomain_ids = facet_id_to_subdomain_ids
-        problem.subdomain_id_to_facet_ids = subdomain_id_to_facet_ids
-    
+# ===== Auxiliary function to collect dict values in parallel ===== #
 def _dict_collect(dict1, dict2, datatype):
     dict12 = defaultdict(set)
     for dict_ in (dict1, dict2):
@@ -324,43 +337,474 @@ def _dict_collect(dict1, dict2, datatype):
 _dict_collect_op = Op.Create(_dict_collect, commute=True)
     
 # ===== Pull back forms decorator ===== #
-def pull_back_forms_to_reference_domain(*args, **kwargs):
-    def pull_back_forms_to_reference_domain_decorator(assemble_operator):
-        def decoreated_assemble_operator(self, term):
-            forms = assemble_operator(self, term)
-            if term in args:
-                fill_facet_id_to_subdomain_id(self) # carried out only once
-                pulled_back_forms = [pull_back_form(self.shape_parametrization_expression, self, form) for form in forms]
-                # Check if the dependence is affine on the parameters. If so, move parameter dependent coefficients to compute_theta
-                # TODO
-                # If debug is enabled, deform the mesh for a few representative values of the parameters to check the the form assembled
-                # on the parametrized domain results in the same tensor as the pulled back one
-                if "debug" in kwargs and kwargs["debug"] is True:
-                    pass # TODO
-                return tuple(pulled_back_forms)
-            else:
-                return forms
+def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decorator_kwargs):
+    @ProblemDecoratorFor(PullBackFormsToReferenceDomain, terms_to_pull_back=terms_to_pull_back)
+    def PullBackFormsToReferenceDomainDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
+        from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
+        from rbnics.shape_parametrization.problems import AffineShapeParametrization, ShapeParametrization
+        assert all([Algorithm not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)]), "DEIM, EIM and ExactParametrizedFunctions should be applied after PullBackFormsToReferenceDomain"
+        assert any([Algorithm in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (AffineShapeParametrization, ShapeParametrization)]), "PullBackFormsToReferenceDomain should be applied after AffineShapeParametrization or ShapeParametrization"
+        
+        from rbnics.backends.dolfin import SeparatedParametrizedForm
+        from rbnics.shape_parametrization.utils.symbolic import sympy_symbolic_coordinates
+        
+        @PreserveClassName
+        class PullBackFormsToReferenceDomainDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
-        return decoreated_assemble_operator
-    return pull_back_forms_to_reference_domain_decorator
+            # Default initialization of members
+            def __init__(self, V, **kwargs):
+                # Call the parent initialization
+                ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
+                # Storage for pull back
+                self._terms_to_pull_back = terms_to_pull_back
+                self._pulled_back_operators = dict()
+                self._pulled_back_theta_factors = dict()
+                (self._facet_id_to_subdomain_ids, self._subdomain_id_to_facet_ids) = self._map_facet_id_to_subdomain_id(**kwargs)
+                self._facet_id_to_normal_direction_if_straight = self._map_facet_id_to_normal_direction_if_straight(**kwargs)
+                self._is_affine_parameter_dependent_regex = re.compile(r"\bx\[[0-9]+\]")
+                self._shape_parametrization_jacobians = [ShapeParametrizationJacobian(shape_parametrization_expression_on_subdomain, self, self.V.mesh().ufl_domain()) for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression]
+                self._shape_parametrization_jacobians_sympy = [ShapeParametrizationJacobianSympy(shape_parametrization_expression_on_subdomain, self, self.V.mesh().ufl_domain()) for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression]
+                
+            def init(self):
+                for term in self._terms_to_pull_back:
+                    assert (term in self._pulled_back_operators) is (term in self._pulled_back_theta_factors)
+                    if term not in self._pulled_back_operators: # initialize only once
+                        # Pull back forms
+                        forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
+                        pulled_back_forms = [pull_back_form(self.shape_parametrization_expression, self, form) for form in forms]
+                        # Preprocess pulled back forms via SeparatedParametrizedForm
+                        separated_pulled_back_forms = [SeparatedParametrizedForm(expand(pulled_back_form)) for pulled_back_form in pulled_back_forms]
+                        for separated_pulled_back_form in separated_pulled_back_forms:
+                            separated_pulled_back_form.separate()
+                        # Check if the dependence is affine on the parameters. If so, move parameter dependent coefficients to compute_theta
+                        postprocessed_pulled_back_forms = list()
+                        postprocessed_pulled_back_theta_factors = list()
+                        for (q, separated_pulled_back_form) in enumerate(separated_pulled_back_forms):
+                            if self._is_affine_parameter_dependent(separated_pulled_back_form):
+                                postprocessed_pulled_back_forms.append(self._get_affine_parameter_dependent_forms(separated_pulled_back_form))
+                                postprocessed_pulled_back_theta_factors.append(self._get_affine_parameter_dependent_theta_factors(separated_pulled_back_form))
+                                assert len(postprocessed_pulled_back_forms) == q + 1
+                                assert len(postprocessed_pulled_back_theta_factors) == q + 1
+                                (postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q]) = collect_common_forms_theta_factors(postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q])
+                            else:
+                                assert any([Algorithm in self.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)]), "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"
+                                postprocessed_pulled_back_forms.append((pulled_back_forms[q], ))
+                                postprocessed_pulled_back_theta_factors.append((1, ))
+                        # Store resulting pulled back forms and theta factors
+                        self._pulled_back_operators[term] = postprocessed_pulled_back_forms
+                        self._pulled_back_theta_factors[term] = postprocessed_pulled_back_theta_factors
+                        # If debug is enabled, deform the mesh for a few representative values of the parameters to check the the form assembled
+                        # on the parametrized domain results in the same tensor as the pulled back one
+                        if "debug" in decorator_kwargs and decorator_kwargs["debug"] is True:
+                            pass # TODO
+                # Call parent
+                ParametrizedDifferentialProblem_DerivedClass.init(self)
+                
+            def assemble_operator(self, term):
+                if term in self._terms_to_pull_back:
+                    return tuple([pulled_back_operator for pulled_back_operators in self._pulled_back_operators[term] for pulled_back_operator in pulled_back_operators])
+                else:
+                    return ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
+                    
+            def compute_theta(self, term):
+                thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
+                if term in self._terms_to_pull_back:
+                    return tuple([safe_eval(str(pulled_back_theta_factor), {"mu": self.mu})*thetas[q] for (q, pulled_back_theta_factors) in enumerate(self._pulled_back_theta_factors[term]) for pulled_back_theta_factor in pulled_back_theta_factors])
+                else:
+                    return thetas
+                    
+            def _map_facet_id_to_subdomain_id(self, **kwargs):
+                mesh = self.V.mesh()
+                mpi_comm = mesh.mpi_comm().tompi4py()
+                assert "subdomains" in kwargs
+                subdomains = kwargs["subdomains"]
+                assert "boundaries" in kwargs
+                boundaries = kwargs["boundaries"]
+                # Loop over local part of the mesh
+                facet_id_to_subdomain_ids = defaultdict(set)
+                subdomain_id_to_facet_ids = defaultdict(set)
+                for f in facets(mesh):
+                    if boundaries[f] > 0: # skip unmarked facets
+                        for c in cells(f):
+                            facet_id_to_subdomain_ids[boundaries[f]].add(subdomains[c])
+                            subdomain_id_to_facet_ids[subdomains[c]].add(boundaries[f])
+                facet_id_to_subdomain_ids = dict(facet_id_to_subdomain_ids)
+                subdomain_id_to_facet_ids = dict(subdomain_id_to_facet_ids)
+                # Collect in parallel
+                facet_id_to_subdomain_ids = mpi_comm.allreduce(facet_id_to_subdomain_ids, op=_dict_collect_op)
+                subdomain_id_to_facet_ids = mpi_comm.allreduce(subdomain_id_to_facet_ids, op=_dict_collect_op)
+                # Return
+                return (facet_id_to_subdomain_ids, subdomain_id_to_facet_ids)
+                
+            def _map_facet_id_to_normal_direction_if_straight(self, **kwargs):
+                mesh = self.V.mesh()
+                dim = mesh.topology().dim()
+                mpi_comm = mesh.mpi_comm().tompi4py()
+                assert "subdomains" in kwargs
+                subdomains = kwargs["subdomains"]
+                assert "boundaries" in kwargs
+                boundaries = kwargs["boundaries"]
+                # Loop over local part of the mesh
+                facet_id_to_normal_directions = defaultdict(set)
+                for f in facets(mesh):
+                    if boundaries[f] > 0: # skip unmarked facets
+                        if f.exterior():
+                            facet_id_to_normal_directions[boundaries[f]].add(tuple([f.normal(d) for d in range(dim)]))
+                        else:
+                            cell_id_to_subdomain_id = dict()
+                            for (c_id, c) in enumerate(cells(f)):
+                                cell_id_to_subdomain_id[c_id] = subdomains[c]
+                            assert len(cell_id_to_subdomain_id) is 2
+                            assert cell_id_to_subdomain_id[0] != cell_id_to_subdomain_id[1]
+                            cell_id_to_restricted_sign = dict()
+                            if cell_id_to_subdomain_id[0] > cell_id_to_subdomain_id[1]:
+                                cell_id_to_restricted_sign[0] = "+"
+                                cell_id_to_restricted_sign[1] = "-"
+                            else:
+                                cell_id_to_restricted_sign[0] = "-"
+                                cell_id_to_restricted_sign[1] = "+"
+                            for (c_id, c) in enumerate(cells(f)):
+                                facet_id_to_normal_directions[(boundaries[f], cell_id_to_restricted_sign[c_id])].add(tuple([c.normal(c.index(f), d) for d in range(dim)]))
+                facet_id_to_normal_directions = dict(facet_id_to_normal_directions)
+                # Collect in parallel
+                facet_id_to_normal_directions = mpi_comm.allreduce(facet_id_to_normal_directions, op=_dict_collect_op)
+                # Remove curved facets
+                facet_id_to_normal_direction_if_straight = dict()
+                for (facet_id, normal_directions) in facet_id_to_normal_directions.items():
+                    normal_direction = normal_directions.pop()
+                    for other_normal_direction in normal_directions:
+                        if not allclose(other_normal_direction, normal_direction):
+                            facet_id_to_normal_direction_if_straight[facet_id] = None
+                            break
+                    else:
+                        facet_id_to_normal_direction_if_straight[facet_id] = normal_direction
+                # Return
+                return facet_id_to_normal_direction_if_straight
+                    
+            def _is_affine_parameter_dependent(self, separated_pulled_back_form):
+                # The pulled back form is not affine if any of its coefficients depend on x
+                for addend in separated_pulled_back_form.coefficients:
+                    for factor in addend:
+                        assert factor.ufl_shape == ()
+                        for node in pre_traversal(factor):
+                            if isinstance(node, Indexed):
+                                operand_0 = node.ufl_operands[0]
+                                if isinstance(operand_0, Expression):
+                                    node_cppcode = operand_0.cppcode
+                                    for index in node.ufl_operands[1].indices():
+                                        assert isinstance(index, FixedIndex)
+                                        node_cppcode = node_cppcode[int(index)]
+                                    if len(self._is_affine_parameter_dependent_regex.findall(node_cppcode)) > 0:
+                                        return False
+                # The pulled back form is not affine if it contains a boundary integral on a non-straight boundary,
+                # because the normal direction would depend on x
+                for form_with_placeholder in separated_pulled_back_form._form_with_placeholders:
+                    assert len(form_with_placeholder.integrals()) is 1
+                    integral = form_with_placeholder.integrals()[0]
+                    integral_type = integral.integral_type()
+                    integral_subdomain_id = integral.subdomain_id()
+                    if integral_type == "cell":
+                        pass
+                    elif integral_type.startswith("exterior_facet"):
+                        if self._facet_id_to_normal_direction_if_straight[integral_subdomain_id] is None:
+                            return False
+                    elif integral_type.startswith("interior_facet"):
+                        if (
+                            self._facet_id_to_normal_direction_if_straight[(integral_subdomain_id, "+")] is None
+                                or
+                            self._facet_id_to_normal_direction_if_straight[(integral_subdomain_id, "-")] is None
+                        ):
+                            return False
+                    else:
+                        raise ValueError("Unknown integral type {}, don't know how to check for affinity.".format(integral_type))
+                # Otherwise, the pulled back form is affine
+                return True
+                
+            def _get_affine_parameter_dependent_forms(self, separated_pulled_back_form):
+                affine_parameter_dependent_forms = list()
+                # Append forms which were not originally affinely dependent
+                for (index, addend) in enumerate(separated_pulled_back_form.coefficients):
+                    affine_parameter_dependent_forms.append(
+                        separated_pulled_back_form.replace_placeholders(index, [1]*len(addend))
+                    )
+                # Append forms which were already affinely dependent
+                for unchanged_form in separated_pulled_back_form.unchanged_forms:
+                    affine_parameter_dependent_forms.append(unchanged_form)
+                # Return
+                return tuple(affine_parameter_dependent_forms)
+                
+            def _get_affine_parameter_dependent_theta_factors(self, separated_pulled_back_form):
+                # Prepare theta factors
+                affine_parameter_dependent_theta_factors = list()
+                # Append factors corresponding to forms which were not originally affinely dependent
+                assert len(separated_pulled_back_form.coefficients) == len(separated_pulled_back_form._placeholders) == len(separated_pulled_back_form._form_with_placeholders)
+                for (addend_coefficient, addend_placeholder, addend_form_with_placeholder) in zip(separated_pulled_back_form.coefficients, separated_pulled_back_form._placeholders, separated_pulled_back_form._form_with_placeholders):
+                    affine_parameter_dependent_theta_factors.append(
+                        self._compute_affine_parameter_dependent_theta_factor(addend_coefficient, addend_placeholder, addend_form_with_placeholder)
+                    )
+                # Append factors corresponding to forms which were already affinely dependent
+                for _ in separated_pulled_back_form.unchanged_forms:
+                    affine_parameter_dependent_theta_factors.append(1.)
+                # Return
+                return tuple(affine_parameter_dependent_theta_factors)
+                
+            def _compute_affine_parameter_dependent_theta_factor(self, coefficient, placeholder, form_with_placeholder):
+                assert len(form_with_placeholder.integrals()) is 1
+                integral = form_with_placeholder.integrals()[0]
+                integral_type = integral.integral_type()
+                integral_subdomain_id = integral.subdomain_id()
+                integrand = integral.integrand()
+                # Call UFL replacer
+                replacer = ComputeAffineParameterDependentThetaFactorReplacer(coefficient, placeholder)
+                theta_factor = apply_transformer(integrand, replacer)
+                # Convert to sympy
+                locals = dict()
+                # ... add parameters
+                for p in range(len(self.mu)):
+                    locals["mu_" + str(p)] = symbols("mu[" + str(p) + "]")
+                # ... add shape parametrization jacobians to locals
+                for (shape_parametrization_jacobian, shape_parametrization_jacobian_sympy) in zip(self._shape_parametrization_jacobians, self._shape_parametrization_jacobians_sympy):
+                    locals[str(shape_parametrization_jacobian)] = shape_parametrization_jacobian_sympy
+                # ... add fake unity constants to locals
+                mesh_point = self.V.mesh().coordinates()[0]
+                for constant in replacer.constants:
+                    assert len(constant.ufl_shape) in (0, 1, 2)
+                    if len(constant.ufl_shape) is 0:
+                        locals[str(constant)] = float(constant)
+                    elif len(constant.ufl_shape) is 1:
+                        vals = numpy_zeros(constant.ufl_shape)
+                        constant.eval(vals, mesh_point)
+                        for i in range(constant.ufl_shape[0]):
+                            locals[str(constant) + "[" + str(i) + "]"] = vals[i]
+                    elif len(constant.ufl_shape) is 2:
+                        vals = numpy_zeros(constant.ufl_shape).reshape((-1,))
+                        constant.eval(vals, mesh_point)
+                        vals = vals.reshape(constant.ufl_shape)
+                        for i in range(constant.ufl_shape[0]):
+                            for j in range(constant.ufl_shape[1]):
+                                locals[str(constant) + "[" + str(i) + ", " + str(j) + "]"] = vals[i, j]
+                # ... add normal direction (facet integration only)
+                if integral_type == "cell":
+                    pass
+                elif integral_type.startswith("exterior_facet"):
+                    assert self._facet_id_to_normal_direction_if_straight[integral_subdomain_id] is not None
+                    locals["n"] = self._facet_id_to_normal_direction_if_straight[integral_subdomain_id]
+                elif integral_type.startswith("interior_facet"):
+                    assert self._facet_id_to_normal_direction_if_straight[(integral_subdomain_id, "+")] is not None
+                    assert self._facet_id_to_normal_direction_if_straight[(integral_subdomain_id, "-")] is not None
+                    raise NotImplementedError("compute_affine_parameter_dependent_theta_factor has not been implemented yet for interior_facet")
+                else:
+                    raise ValueError("Unknown integral type {}, don't know how to check for affinity.".format(integral_type))
+                # ... carry out conversion
+                theta_factor_sympy = theta_factor
+                for i in range(2): # first pass will replace shape parametrization and normals, second one mu_* to self.mu[*]
+                    theta_factor_sympy = simplify(sympify(str(theta_factor_sympy), locals=locals))
+                theta_factor_sympy = simplify(convert_float_to_int_if_possible(theta_factor_sympy))
+                return theta_factor_sympy
+                
+        # return value (a class) for the decorator
+        return PullBackFormsToReferenceDomainDecoratedProblem_Class
+        
+    # return the decorator itself
+    return PullBackFormsToReferenceDomainDecoratedProblem_Decorator
+                
+PullBackFormsToReferenceDomain = PullBackFormsToReferenceDomainDecoratedProblem
     
-# ===== Pull back Dirichlet BC decorator ===== #
-def pull_back_dirichlet_bcs_to_reference_domain(*args, **kwargs):
-    def pull_back_dirichlet_bcs_to_reference_domain_decorator(assemble_operator):
-        def decoreated_assemble_operator(self, term):
-            dirichlet_bcs = assemble_operator(self, term)
-            if term in args:
-                fill_facet_id_to_subdomain_id(self) # carried out only once
-                pulled_back_dirichlet_bcs = None # TODO
-                # Check if the dependence is affine on the parameters. If so, move parameter dependent coefficients to compute_theta
-                # TODO
-                # If debug is enabled, deform the mesh for a few representative values of the parameters to check the the form assembled
-                # on the parametrized domain results in the same tensor as the pulled back one
-                if "debug" in kwargs and kwargs["debug"] is True:
-                    pass # TODO
-                return tuple(pulled_back_dirichlet_bcs)
-            else:
-                return forms
+def expand(form):
+    # Call UFL expander
+    expanded_form = expand_indices(apply_derivatives(apply_algebra_lowering(form)))
+    # Call sympy replacer
+    expanded_form = apply_transformer(expanded_form, SympyExpander())
+    # Split sums
+    expanded_split_form_integrals = list()
+    for integral in expanded_form.integrals():
+        split_sum_of_integrals(integral, expanded_split_form_integrals)
+    expanded_split_form = Form(expanded_split_form_integrals)
+    # Return
+    return expanded_split_form
+    
+class SympyExpander(Transformer):
+    def __init__(self):
+        Transformer.__init__(self)
+        self.ufl_to_sympy = dict()
+        self.sympy_to_ufl = dict()
+        self.sympy_id_to_ufl = dict()
+        
+    def operator(self, e, *ops):
+        self._store_sympy_symbol(e)
+        return e
+        
+    def sum(self, e, arg1, arg2):
+        def op(arg1, arg2):
+            return arg1 + arg2
+        return self._apply_sympy_simplify(e, arg1, arg2, op)
+
+    def product(self, e, arg1, arg2):
+        def op(arg1, arg2):
+            return arg1*arg2
+        return self._apply_sympy_simplify(e, arg1, arg2, op)
+    
+    def terminal(self, o):
+        self._store_sympy_symbol(o)
+        return o
+        
+    def _apply_sympy_simplify(self, e, arg1, arg2, op):
+        assert arg1 in self.ufl_to_sympy
+        sympy_arg1 = self.ufl_to_sympy[arg1]
+        assert arg2 in self.ufl_to_sympy
+        sympy_arg2 = self.ufl_to_sympy[arg2]
+        sympy_expanded_e = expand_mul(op(sympy_arg1, sympy_arg2))
+        ufl_expanded_e = safe_eval(str(sympy_expanded_e), self.sympy_id_to_ufl)
+        self.ufl_to_sympy[ufl_expanded_e] = sympy_expanded_e
+        self.sympy_to_ufl[sympy_expanded_e] = ufl_expanded_e
+        return ufl_expanded_e
+    
+    def _store_sympy_symbol(self, o):
+        if isinstance(o, MultiIndex):
+            pass
+        else:
+            assert len(o.ufl_shape) in (0, 1, 2)
+            if len(o.ufl_shape) is 0:
+                self._store_sympy_scalar_symbol(o)
+            elif len(o.ufl_shape) is 1:
+                for i in range(o.ufl_shape[0]):
+                    self._store_sympy_scalar_symbol(o[i])
+            elif len(o.ufl_shape) is 2:
+                for i in range(o.ufl_shape[0]):
+                    for j in range(o.ufl_shape[1]):
+                        self._store_sympy_scalar_symbol(o[i, j])
+                
+    def _store_sympy_scalar_symbol(self, o):
+        assert o.ufl_shape == ()
+        if o not in self.ufl_to_sympy:
+            sympy_id = "sympy" + str(len(self.ufl_to_sympy))
+            sympy_o = symbols(sympy_id)
+            self.ufl_to_sympy[o] = sympy_o
+            self.sympy_to_ufl[sympy_o] = o
+            self.sympy_id_to_ufl[sympy_id] = o
             
-        return decoreated_assemble_operator
-    return pull_back_dirichlet_bcs_to_reference_domain_decorator
+def split_sum_of_integrals(integral, expanded_split_form_integrals):
+    integrand = integral.integrand()
+    if isinstance(integrand, Sum):
+        for operand in integrand.ufl_operands:
+            split_sum_of_integrals(integral.reconstruct(integrand=operand), expanded_split_form_integrals)
+    else:
+        expanded_split_form_integrals.append(integral)
+    
+class ComputeAffineParameterDependentThetaFactorReplacer(Transformer):
+    def __init__(self, coefficient, placeholder):
+        Transformer.__init__(self)
+        assert len(placeholder) == len(coefficient)
+        self.placeholder_to_coefficient = dict(zip(placeholder, coefficient))
+        self.contains_placeholder = dict()
+        self.constants = list()
+        # Append to constants all the constants in coefficient, that may result from SeparatedParametrizedForm
+        for c in coefficient:
+            for node in traverse_unique_terminals(c):
+                if isinstance(node, Constant):
+                    self.constants.append(node)
+        
+    def operator(self, e, *ops):
+        replaced_ops = list()
+        contains_placeholder = False
+        for o in ops:
+            assert o in self.contains_placeholder
+            if self.contains_placeholder[o]:
+                replaced_ops.append(o)
+                contains_placeholder = True
+            elif isinstance(o, MultiIndex):
+                replaced_ops.append(o)
+            else:
+                replaced_o = Constant(numpy_ones(o.ufl_shape))
+                self.constants.append(replaced_o)
+                replaced_ops.append(replaced_o)
+        replaced_e = e._ufl_expr_reconstruct_(*replaced_ops)
+        self.contains_placeholder[replaced_e] = contains_placeholder
+        return replaced_e
+    
+    def terminal(self, o):
+        if o in self.placeholder_to_coefficient:
+            assert o.ufl_shape == ()
+            replaced_o = self.placeholder_to_coefficient[o]
+            assert replaced_o.ufl_shape == ()
+            self.contains_placeholder[replaced_o] = True
+            return replaced_o
+        elif isinstance(o, MultiIndex):
+            self.contains_placeholder[o] = False
+            return o
+        else:
+            replaced_o = Constant(numpy_ones(o.ufl_shape))
+            self.contains_placeholder[replaced_o] = False
+            self.constants.append(replaced_o)
+            return replaced_o
+            
+def convert_float_to_int_if_possible(theta_factor):
+    for node in preorder_traversal(theta_factor):
+        if isinstance(node, Float) and node == int(node):
+            theta_factor = theta_factor.subs(node, Integer(int(node)))
+    return theta_factor
+    
+def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postprocessed_pulled_back_theta_factors):
+    # Remove all zero theta factors
+    postprocessed_pulled_back_forms_non_zero = list()
+    postprocessed_pulled_back_theta_factors_non_zero = list()
+    assert len(postprocessed_pulled_back_forms) == len(postprocessed_pulled_back_theta_factors)
+    for (postprocessed_pulled_back_form, postprocessed_pulled_back_theta_factor) in zip(postprocessed_pulled_back_forms, postprocessed_pulled_back_theta_factors):
+        if postprocessed_pulled_back_theta_factor != 0:
+            postprocessed_pulled_back_forms_non_zero.append(postprocessed_pulled_back_form)
+            postprocessed_pulled_back_theta_factors_non_zero.append(postprocessed_pulled_back_theta_factor)
+    # Convert forms to sympy symbols
+    postprocessed_pulled_back_forms_ufl_to_sympy = dict()
+    postprocessed_pulled_back_forms_sympy_id_to_ufl = dict()
+    for postprocessed_pulled_back_form in postprocessed_pulled_back_forms_non_zero:
+        if postprocessed_pulled_back_form not in postprocessed_pulled_back_forms_ufl_to_sympy:
+            sympy_id = "sympyform" + str(len(postprocessed_pulled_back_forms_sympy_id_to_ufl))
+            postprocessed_pulled_back_form_sympy = symbols(sympy_id)
+            postprocessed_pulled_back_forms_ufl_to_sympy[postprocessed_pulled_back_form] = postprocessed_pulled_back_form_sympy
+            postprocessed_pulled_back_forms_sympy_id_to_ufl[sympy_id] = postprocessed_pulled_back_form
+    # Convert theta factors to sympy symbols
+    postprocessed_pulled_back_theta_factors_sympy_independents = list()
+    postprocessed_pulled_back_theta_factors_ufl_to_sympy = dict()
+    postprocessed_pulled_back_theta_factors_sympy_id_to_ufl = dict()
+    for postprocessed_pulled_back_theta_factor in postprocessed_pulled_back_theta_factors_non_zero:
+        if postprocessed_pulled_back_theta_factor not in postprocessed_pulled_back_theta_factors_ufl_to_sympy:
+            for (previous_theta_factor_ufl, previous_theta_factor_sympy) in postprocessed_pulled_back_theta_factors_ufl_to_sympy.items():
+                ratio = simplify(postprocessed_pulled_back_theta_factor/previous_theta_factor_ufl)
+                if isinstance(ratio, Number):
+                    postprocessed_pulled_back_theta_factors_ufl_to_sympy[postprocessed_pulled_back_theta_factor] = ratio*previous_theta_factor_sympy
+                    break
+            else:
+                sympy_id = "sympytheta" + str(len(postprocessed_pulled_back_theta_factors_sympy_id_to_ufl))
+                postprocessed_pulled_back_theta_factor_sympy = symbols(sympy_id)
+                postprocessed_pulled_back_theta_factors_sympy_independents.append(postprocessed_pulled_back_theta_factor_sympy)
+                postprocessed_pulled_back_theta_factors_ufl_to_sympy[postprocessed_pulled_back_theta_factor] = postprocessed_pulled_back_theta_factor_sympy
+                postprocessed_pulled_back_theta_factors_sympy_id_to_ufl[sympy_id] = postprocessed_pulled_back_theta_factor
+    # Carry out symbolic sum(product())
+    postprocessed_pulled_back_sum_product = 0
+    for (postprocessed_pulled_back_form, postprocessed_pulled_back_theta_factor) in zip(postprocessed_pulled_back_forms_non_zero, postprocessed_pulled_back_theta_factors_non_zero):
+        postprocessed_pulled_back_sum_product += (
+            postprocessed_pulled_back_theta_factors_ufl_to_sympy[postprocessed_pulled_back_theta_factor]
+                *
+            postprocessed_pulled_back_forms_ufl_to_sympy[postprocessed_pulled_back_form]
+        )
+    # Collect first with respect to theta factors
+    collected_with_respect_to_theta = collect(postprocessed_pulled_back_sum_product, postprocessed_pulled_back_theta_factors_sympy_independents, evaluate=False, exact=True)
+    collected_sum_product = 0
+    for (collected_theta_factor, collected_form) in collected_with_respect_to_theta.items():
+        collected_sum_product += collected_theta_factor*collected_form
+    # Collect then with respect to form factors
+    collected_with_respect_to_form = collect(collected_sum_product, collected_with_respect_to_theta.values(), evaluate=False, exact=True)
+    # Convert back to ufl
+    collected_forms = list()
+    collected_theta_factors = list()
+    for (collected_form, collected_theta_factor) in collected_with_respect_to_form.items():
+        collected_forms.append(safe_eval(str(collected_form), postprocessed_pulled_back_forms_sympy_id_to_ufl))
+        collected_theta_factors.append(safe_eval(str(collected_theta_factor), postprocessed_pulled_back_theta_factors_sympy_id_to_ufl))
+    # Return
+    return (tuple(collected_forms), tuple(collected_theta_factors))
+    
+def safe_eval(string, locals):
+    for name, function in math.__dict__.items():
+        if callable(function):
+            locals[name] = function
+    return eval(string, {"__builtins__": None}, locals)
