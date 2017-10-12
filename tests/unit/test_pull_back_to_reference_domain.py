@@ -362,10 +362,14 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
     
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("mu[4]*x[0] + mu[1] - mu[4]", "tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - tan(mu[5]) - mu[0]"), # subdomain 1
-        ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 2
-        ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 3
-        ("mu[1]*x[0]", "mu[2]*x[1]") # subdomain 4
+        ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 1
+        ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 2
+        ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 3
+        ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 4
+        ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 5
+        ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 6
+        ("mu[1]*x[0]", "mu[2]*x[1]"), # subdomain 7
+        ("mu[1]*x[0]", "mu[2]*x[1]"), # subdomain 8
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
     
@@ -383,7 +387,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
     
     ff = Constant((0.0, -10.0))
     gg = Constant(1.0)
-    nu = Constant(1.0)
+    nu = 1.0
     
     # Define base problem
     @ShapeParametrization(*shape_parametrization_expression)
@@ -412,8 +416,8 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             mu6 = mu[5]
             if term == "a":
                 theta_a0 = nu*(mu1/mu5)
-                theta_a1 = nu*(-tan(mu6)/mu5)
-                theta_a2 = nu*((tan(mu6)**2 + mu5**2)/(mu5*mu1))
+                theta_a1 = nu*(-tan(mu6))
+                theta_a2 = nu*(mu5*(tan(mu6)**2 + 1)/mu1)
                 theta_a3 = nu*(mu4/mu2)
                 theta_a4 = nu*(mu2/mu4)
                 theta_a5 = nu*(mu1/mu2)
@@ -423,7 +427,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8)
             elif term in ("b", "bt"):
                 theta_b0 = mu1
-                theta_b1 = -tan(mu6)
+                theta_b1 = -tan(mu6)*mu5
                 theta_b2 = mu5
                 theta_b3 = mu4
                 theta_b4 = mu2
@@ -449,49 +453,49 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             
         def assemble_operator(self, term):
             if term == "a":
-                a0 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx(1)
-                a1 = (u[0].dx(0)*v[0].dx(1) + u[0].dx(1)*v[0].dx(0) + u[1].dx(0)*v[1].dx(1) + u[1].dx(1)*v[1].dx(0))*dx(1)
-                a2 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx(1)
-                a3 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx(2)
-                a4 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx(2)
-                a5 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx(3)
-                a6 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx(3)
-                a7 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx(4)
-                a8 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx(4)
+                a0 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*(dx(1) + dx(2))
+                a1 = (u[0].dx(0)*v[0].dx(1) + u[0].dx(1)*v[0].dx(0) + u[1].dx(0)*v[1].dx(1) + u[1].dx(1)*v[1].dx(0))*(dx(1) + dx(2))
+                a2 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*(dx(1) + dx(2))
+                a3 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*(dx(3) + dx(4))
+                a4 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*(dx(3) + dx(4))
+                a5 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*(dx(5) + dx(6))
+                a6 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*(dx(5) + dx(6))
+                a7 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*(dx(7) + dx(8))
+                a8 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*(dx(7) + dx(8))
                 return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
             elif term == "b":
-                b0 = - q*u[0].dx(0)*dx(1)
-                b1 = - q*u[0].dx(1)*dx(1)
-                b2 = - q*u[1].dx(1)*dx(1)
-                b3 = - q*u[0].dx(0)*dx(2)
-                b4 = - q*u[1].dx(1)*dx(2)
-                b5 = - q*u[0].dx(0)*dx(3)
-                b6 = - q*u[1].dx(1)*dx(3)
-                b7 = - q*u[0].dx(0)*dx(4)
-                b8 = - q*u[1].dx(1)*dx(4)
+                b0 = - q*u[0].dx(0)*(dx(1) + dx(2))
+                b1 = - q*u[0].dx(1)*(dx(1) + dx(2))
+                b2 = - q*u[1].dx(1)*(dx(1) + dx(2))
+                b3 = - q*u[0].dx(0)*(dx(3) + dx(4))
+                b4 = - q*u[1].dx(1)*(dx(3) + dx(4))
+                b5 = - q*u[0].dx(0)*(dx(5) + dx(6))
+                b6 = - q*u[1].dx(1)*(dx(5) + dx(6))
+                b7 = - q*u[0].dx(0)*(dx(7) + dx(8))
+                b8 = - q*u[1].dx(1)*(dx(7) + dx(8))
                 return (b0, b1, b2, b3, b4, b5, b6, b7, b8)
             elif term == "bt":
-                bt0 = - p*v[0].dx(0)*dx(1)
-                bt1 = - p*v[0].dx(1)*dx(1)
-                bt2 = - p*v[1].dx(1)*dx(1)
-                bt3 = - p*v[0].dx(0)*dx(2)
-                bt4 = - p*v[1].dx(1)*dx(2)
-                bt5 = - p*v[0].dx(0)*dx(3)
-                bt6 = - p*v[1].dx(1)*dx(3)
-                bt7 = - p*v[0].dx(0)*dx(4)
-                bt8 = - p*v[1].dx(1)*dx(4)
+                bt0 = - p*v[0].dx(0)*(dx(1) + dx(2))
+                bt1 = - p*v[0].dx(1)*(dx(1) + dx(2))
+                bt2 = - p*v[1].dx(1)*(dx(1) + dx(2))
+                bt3 = - p*v[0].dx(0)*(dx(3) + dx(4))
+                bt4 = - p*v[1].dx(1)*(dx(3) + dx(4))
+                bt5 = - p*v[0].dx(0)*(dx(5) + dx(6))
+                bt6 = - p*v[1].dx(1)*(dx(5) + dx(6))
+                bt7 = - p*v[0].dx(0)*(dx(7) + dx(8))
+                bt8 = - p*v[1].dx(1)*(dx(7) + dx(8))
                 return (bt0, bt1, bt2, bt3, bt4, bt5, bt6, bt7, bt8)
             elif term == "f":
-                f0 = inner(ff, v)*dx(1)
-                f1 = inner(ff, v)*dx(2)
-                f2 = inner(ff, v)*dx(3)
-                f3 = inner(ff, v)*dx(4)
+                f0 = inner(ff, v)*(dx(1) + dx(2))
+                f1 = inner(ff, v)*(dx(3) + dx(4))
+                f2 = inner(ff, v)*(dx(5) + dx(6))
+                f3 = inner(ff, v)*(dx(7) + dx(8))
                 return (f0, f1, f2, f3)
             elif term == "g":
-                g0 = gg*q*dx(1)
-                g1 = gg*q*dx(2)
-                g2 = gg*q*dx(3)
-                g3 = gg*q*dx(4)
+                g0 = gg*q*(dx(1) + dx(2))
+                g1 = gg*q*(dx(3) + dx(4))
+                g2 = gg*q*(dx(5) + dx(6))
+                g3 = gg*q*(dx(7) + dx(8))
                 return (g0, g1, g2, g3)
             else:
                 raise ValueError("Invalid term for assemble_operator().")
