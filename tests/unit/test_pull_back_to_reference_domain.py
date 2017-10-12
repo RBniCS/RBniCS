@@ -595,6 +595,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
     ds = Measure("ds")(subdomain_data=boundaries)
     alpha = Constant(0.01)
     y_d = Constant(1.0)
+    ff = Constant(2.0)
     
     # Define base problem
     @ShapeParametrization(*shape_parametrization_expression)
@@ -635,7 +636,8 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 return (theta_n0, theta_n1)
             elif term == "f":
                 theta_f0 = 1.0
-                return (theta_f0,)
+                theta_f1 = mu1
+                return (theta_f0, theta_f1)
             elif term == "g":
                 theta_g0 = 1.0
                 theta_g1 = mu1*mu2
@@ -674,8 +676,9 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 n1 = u*v*dx(2)
                 return (n0, n1)
             elif term == "f":
-                f0 = Constant(0.0)*q*dx
-                return (f0,)
+                f0 = ff*q*dx(1)
+                f1 = ff*q*dx(2)
+                return (f0, f1)
             elif term == "g":
                 g0 = y_d*z*dx(1)
                 g1 = y_d*z*dx(2)
@@ -738,7 +741,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 n0 = u*v*dx
                 return (n0,)
             elif term == "f":
-                f0 = Constant(0.0)*q*dx
+                f0 = ff*q*dx
                 return (f0,)
             elif term == "g": 
                 g0 = y_d*z*dx(1)

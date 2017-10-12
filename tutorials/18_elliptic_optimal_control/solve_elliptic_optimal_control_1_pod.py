@@ -19,6 +19,7 @@
 from dolfin import *
 from rbnics import *
 
+@PullBackFormsToReferenceDomain("a", "a*", "c", "c*", "m", "n", "f", "g", "h")
 @ShapeParametrization(
     ("x[0]", "x[1]"), # subdomain 1
     ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
@@ -41,6 +42,8 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         self.ds = Measure("ds")(subdomain_data=boundaries)
         # Regularization coefficient
         self.alpha = 0.01
+        # Desired state
+        self.y_d = Constant(1.0)
         
     ## Return custom problem name
     def name(self):
@@ -48,36 +51,30 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
-        mu1 = self.mu[0]
         mu2 = self.mu[1]
         if term  in ("a", "a*"):
             theta_a0 = 1.0
-            theta_a1 = 1.0/mu1
-            theta_a2 = mu1
-            return (theta_a0, theta_a1, theta_a2)
+            return (theta_a0,)
         elif term in ("c", "c*"):
             theta_c0 = 1.0
-            theta_c1 = mu1
-            return (theta_c0, theta_c1)
+            return (theta_c0,)
         elif term == "m":
             theta_m0 = 1.0
-            theta_m1 = mu1
-            return (theta_m0, theta_m1)
+            return (theta_m0,)
         elif term == "n":
-            alpha = self.alpha
-            theta_n0 = alpha
-            theta_n1 = alpha*mu1
-            return (theta_n0, theta_n1)
+            theta_n0 = self.alpha
+            return (theta_n0,)
         elif term == "f":
             theta_f0 = 1.0
             return (theta_f0,)
         elif term == "g":
             theta_g0 = 1.0
-            theta_g1 = mu1*mu2
+            theta_g1 = mu2
             return (theta_g0, theta_g1)
         elif term == "h":
-            theta_h0 = 1.0 + mu1*mu2**2
-            return (theta_h0,)
+            theta_h0 = 1.0
+            theta_h1 = mu2**2
+            return (theta_h0, theta_h1)
         elif term == "dirichlet_bc_y":
             theta_bc0 = 1.
             return (theta_bc0,)
@@ -90,53 +87,48 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         if term == "a":
             y = self.y
             q = self.q
-            a0 = inner(grad(y),grad(q))*dx(1)
-            a1 = y.dx(0)*q.dx(0)*dx(2)
-            a2 = y.dx(1)*q.dx(1)*dx(2)
-            return (a0, a1, a2)
+            a0 = inner(grad(y), grad(q))*dx
+            return (a0,)
         elif term == "a*":
             z = self.z
             p = self.p
-            as0 = inner(grad(z),grad(p))*dx(1)
-            as1 = z.dx(0)*p.dx(0)*dx(2)
-            as2 = z.dx(1)*p.dx(1)*dx(2)
-            return (as0, as1, as2)
+            as0 = inner(grad(z), grad(p))*dx
+            return (as0,)
         elif term == "c":
             u = self.u
             q = self.q
-            c0 = u*q*dx(1)
-            c1 = u*q*dx(2)
-            return (c0, c1)
+            c0 = u*q*dx
+            return (c0,)
         elif term == "c*":
             v = self.v
             p = self.p
-            cs0 = v*p*dx(1)
-            cs1 = v*p*dx(2)
-            return (cs0, cs1)
+            cs0 = v*p*dx
+            return (cs0,)
         elif term == "m":
             y = self.y
             z = self.z
-            m0 = y*z*dx(1)
-            m1 = y*z*dx(2)
-            return (m0, m1)
+            m0 = y*z*dx
+            return (m0,)
         elif term == "n":
             u = self.u
             v = self.v
-            n0 = u*v*dx(1)
-            n1 = u*v*dx(2)
-            return (n0, n1)
+            n0 = u*v*dx
+            return (n0,)
         elif term == "f":
             q = self.q
             f0 = Constant(0.0)*q*dx
             return (f0,)
         elif term == "g":
             z = self.z
-            g0 = z*dx(1)
-            g1 = z*dx(2)
+            y_d = self.y_d
+            g0 = y_d*z*dx(1)
+            g1 = y_d*z*dx(2)
             return (g0, g1)
         elif term == "h":
-            h0 = 1.0
-            return (h0,)
+            y_d = self.y_d
+            h0 = y_d*y_d*dx(1, domain=mesh)
+            h1 = y_d*y_d*dx(2, domain=mesh)
+            return (h0, h1)
         elif term == "dirichlet_bc_y":
             bc0 = [DirichletBC(self.V.sub(0), Constant(1.0), self.boundaries, i) for i in range(1, 9)]
             return (bc0,)
