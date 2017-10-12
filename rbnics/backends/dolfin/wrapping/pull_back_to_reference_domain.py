@@ -270,10 +270,32 @@ pull_back_expression_code = """
     };
 """
 def PullBackExpression(shape_parametrization_expression_on_subdomain, f, problem, domain):
+    shape_parametrization_expression_on_subdomain = ShapeParametrizationMap(shape_parametrization_expression_on_subdomain, problem, domain)
     pulled_back_f = Expression(pull_back_expression_code, element=f.ufl_element())
     pulled_back_f.f = f
-    pulled_back_f.shape_parametrization_expression_on_subdomain = ShapeParametrizationMap(shape_parametrization_expression_on_subdomain, problem, domain)
+    pulled_back_f.f_no_upcast = f
+    pulled_back_f.shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain
+    pulled_back_f.shape_parametrization_expression_on_subdomain_no_upcast = shape_parametrization_expression_on_subdomain
     return pulled_back_f
+    
+def is_pull_back_expression(expression):
+    return hasattr(expression, "shape_parametrization_expression_on_subdomain")
+
+def is_pull_back_expression_parametrized(expression):
+    if "mu_0" in expression.f_no_upcast.user_parameters:
+        return True
+    # mu[*] is provided by default to shape parametrization expressions, check if it is really used
+    shape_parametrization_expression_on_subdomain = expression.shape_parametrization_expression_on_subdomain_no_upcast.cppcode
+    for component_expression in shape_parametrization_expression_on_subdomain:
+        assert isinstance(component_expression, str)
+        if len(is_pull_back_expression_parametrized.regex.findall(component_expression)) > 0:
+            return True
+    # Otherwise, the expression is not parametrized
+    return False
+is_pull_back_expression_parametrized.regex = re.compile(r"\bmu\[[0-9]+\]")
+    
+def is_pull_back_expression_time_dependent(expression):
+    return "t" in expression.f_no_upcast.user_parameters
 
 class PullBackExpressions(MultiFunction):
     def __init__(self, shape_parametrization_expression_on_subdomain, problem):
@@ -857,6 +879,7 @@ def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postproc
     return (tuple(collected_forms), tuple(collected_theta_factors))
     
 def safe_eval(string, locals):
+    locals = dict(locals)
     for name, function in math.__dict__.items():
         if callable(function):
             locals[name] = function

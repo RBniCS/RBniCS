@@ -29,6 +29,7 @@ from ufl.tensors import ComponentTensor, ListTensor
 from rbnics.utils.decorators import BackendFor
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 from rbnics.backends.dolfin.wrapping import expression_name
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized
 
 @BackendFor("dolfin", inputs=(Form, ))
 class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
@@ -105,8 +106,14 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                 if not internal_tree_nodes_skip[d_i]:
                                     # Skip all expressions where at least one leaf is not parametrized
                                     for t in traverse_terminals(d):
-                                        if (isinstance(t, Expression) and "mu_0" not in t.user_parameters) or isinstance(t, Constant):
-                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it is a non-parametrized expression")
+                                        if isinstance(t, Expression):
+                                            if is_pull_back_expression(t) and is_pull_back_expression_parametrized(t):
+                                                break
+                                            elif "mu_0" not in t.user_parameters:
+                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it is a non-parametrized expression")
+                                                break
+                                        elif isinstance(t, Constant):
+                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it is a constant")
                                             break
                                     else:
                                         at_least_one_expression_or_function = False
@@ -190,7 +197,9 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         for form in self._form_with_placeholders:
             for integral in form.integrals():
                 for e in pre_traversal(integral.integrand()):
-                    assert not (isinstance(e, Expression) and "mu_0" in e.user_parameters), "Form " + str(integral) + " still contains a parametrized expression"
+                    if isinstance(e, Expression):
+                        assert not (is_pull_back_expression(e) and is_pull_back_expression_parametrized(e)), "Form " + str(integral) + " still contains a parametrized pull back expression"
+                        assert "mu_0" not in e.user_parameters, "Form " + str(integral) + " still contains a parametrized expression"
         
         log(PROGRESS, "4. Prepare coefficients hash codes")
         for addend in self._coefficients:

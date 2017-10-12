@@ -18,14 +18,18 @@
 
 from dolfin import Expression
 from rbnics.utils.decorators import get_problem_from_solution
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_time_dependent
 
 def basic_is_time_dependent(backend, wrapping):
     def _basic_is_time_dependent(expression_or_form, iterator):
         visited = set()
         for node in iterator(expression_or_form):
             # ... parametrized expressions
-            if isinstance(node, Expression) and "t" in node.user_parameters:
-                return True
+            if isinstance(node, Expression):
+                if is_pull_back_expression(node) and is_pull_back_expression_time_dependent(node):
+                    return True
+                elif "t" in node.user_parameters:
+                    return True
             # ... problem solutions related to nonlinear terms
             elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
                 if wrapping.is_problem_solution_or_problem_solution_component(node):
