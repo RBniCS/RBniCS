@@ -480,14 +480,14 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 
             def assemble_operator(self, term):
-                if term in self._terms_to_pull_back:
+                if term in self._pulled_back_operators:
                     return tuple([pulled_back_operator for pulled_back_operators in self._pulled_back_operators[term] for pulled_back_operator in pulled_back_operators])
                 else:
                     return ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                     
             def compute_theta(self, term):
                 thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
-                if term in self._terms_to_pull_back:
+                if term in self._pulled_back_theta_factors:
                     return tuple([safe_eval(str(pulled_back_theta_factor), {"mu": self.mu})*thetas[q] for (q, pulled_back_theta_factors) in enumerate(self._pulled_back_theta_factors[term]) for pulled_back_theta_factor in pulled_back_theta_factors])
                 else:
                     return thetas
