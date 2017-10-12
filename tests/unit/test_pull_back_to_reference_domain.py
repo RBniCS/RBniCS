@@ -1074,3 +1074,175 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
         h_on_reference_domain = theta_times_operator(problem_on_reference_domain, "h")
         h_pull_back = theta_times_operator(problem_pull_back, "h")
         assert forms_are_close(h_on_reference_domain, h_pull_back)
+        
+# Test forms pull back to reference domain for tutorial 23
+@check_affine_and_non_affine_shape_parametrizations
+def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "cavity.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "cavity_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "cavity_facet_region.xml"))
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+        ("mu[0]*x[0]", "x[1]"), # subdomain 1
+    ]
+    shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
+    
+    # Define function space, test/trial functions, measures, auxiliary expressions
+    element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(element_u, element_p)
+    V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
+    up = TrialFunction(V)
+    (u, p) = split(up)
+    vq = TestFunction(V)
+    (v, q) = split(vq)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    ds = Measure("ds")(subdomain_data=boundaries)
+    
+    ff = Constant((1.0, 2.0))
+    gg = Constant(1.0)
+    
+    # Define base problem
+    @ShapeParametrization(*shape_parametrization_expression)
+    class StokesUnsteady(object):
+        def __init__(self, V, **kwargs):
+            self.V = V
+            self.mu = (1., )
+            self.mu_range = [(0.5, 2.5)]
+            
+        def set_mu(self, mu):
+            assert len(mu) is 1
+            self.mu = mu
+            
+        def init(self):
+            pass
+            
+    # Define problem with forms written on reference domain
+    class StokesUnsteadyOnReferenceDomain(StokesUnsteady):
+        def compute_theta(self, term):
+            mu = self.mu
+            mu1 = mu[0]
+            if term == "a":
+                theta_a0 = 1./mu1
+                theta_a1 = mu1
+                return (theta_a0, theta_a1)
+            elif term in ("b", "bt"):
+                theta_b0 = 1.
+                theta_b1 = mu1
+                return (theta_b0, theta_b1)
+            elif term == "f":
+                theta_f0 = mu1
+                return (theta_f0, )
+            elif term == "g":
+                theta_g0 = mu1
+                return (theta_g0, )
+            elif term == "m":
+                theta_m0 = mu1
+                return (theta_m0, )
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+            
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx
+                a1 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx
+                return (a0, a1)
+            elif term == "b":
+                b0 = - q*u[0].dx(0)*dx
+                b1 = - q*u[1].dx(1)*dx
+                return (b0, b1)
+            elif term == "bt":
+                bt0 = - p*v[0].dx(0)*dx
+                bt1 = - p*v[1].dx(1)*dx
+                return (bt0, bt1)
+            elif term == "f":
+                f0 = inner(ff, v)*dx
+                return (f0, )
+            elif term == "g":
+                g0 = gg*q*dx
+                return (g0, )
+            elif term == "m":
+                m0 = inner(u, v)*dx
+                return (m0, )
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+    
+    # Define problem with forms pulled back reference domain
+    @AdditionalProblemDecorator()
+    @PullBackFormsToReferenceDomain("a", "b", "bt", "m", "f", "g", debug=True)
+    class StokesUnsteadyPullBack(StokesUnsteady):
+        def compute_theta(self, term):
+            if term == "a":
+                theta_a0 = 1.0
+                return (theta_a0, )
+            elif term in ("b", "bt"):
+                theta_b0 = 1.0
+                return (theta_b0, )
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0, )
+            elif term == "g":
+                theta_g0 = 1.0
+                return (theta_g0, )
+            elif term == "m":
+                theta_m0 = 1.0
+                return (theta_m0, )
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(u), grad(v))*dx
+                return (a0, )
+            elif term == "b":
+                b0 = - q*div(u)*dx
+                return (b0, )
+            elif term == "bt":
+                bt0 = - p*div(v)*dx
+                return (bt0, )
+            elif term == "f":
+                f0 = inner(ff, v)*dx
+                return (f0, )
+            elif term == "g":
+                g0 = q*gg*dx
+                return (g0, )
+            elif term == "m":
+                m0 = inner(u, v)*dx
+                return (m0, )
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+    
+    # Check forms
+    problem_on_reference_domain = StokesUnsteadyOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = StokesUnsteadyPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain.init()
+    problem_pull_back.init()
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        b_on_reference_domain = theta_times_operator(problem_on_reference_domain, "b")
+        b_pull_back = theta_times_operator(problem_pull_back, "b")
+        assert forms_are_close(b_on_reference_domain, b_pull_back)
+        
+        bt_on_reference_domain = theta_times_operator(problem_on_reference_domain, "bt")
+        bt_pull_back = theta_times_operator(problem_pull_back, "bt")
+        assert forms_are_close(bt_on_reference_domain, bt_pull_back)
+        
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
+        
+        g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
+        g_pull_back = theta_times_operator(problem_pull_back, "g")
+        assert forms_are_close(g_on_reference_domain, g_pull_back)
+        
+        m_on_reference_domain = theta_times_operator(problem_on_reference_domain, "m")
+        m_pull_back = theta_times_operator(problem_pull_back, "m")
+        assert forms_are_close(m_on_reference_domain, m_pull_back)
