@@ -18,6 +18,7 @@
 
 from dolfin import *
 from mshr import *
+from rbnics.backends.dolfin.wrapping import counterclockwise
 from rbnics.utils.io import PickleIO
 
 # Define domain
@@ -72,7 +73,7 @@ vertices_mappings = [
 
 # Create mesh
 for i, vertices_mapping in enumerate(vertices_mappings):
-    subdomain_i = Polygon([Point(*[float(coord) for coord in vertex]) for vertex in vertices_mapping.keys()])
+    subdomain_i = Polygon([Point(*[float(coord) for coord in vertex]) for vertex in counterclockwise(vertices_mapping.keys())])
     domain.set_subdomain(i + 1, subdomain_i)
 mesh = generate_mesh(domain, 46)
 

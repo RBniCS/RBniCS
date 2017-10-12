@@ -23,6 +23,7 @@ from rbnics.backends.dolfin.wrapping.assemble_operator_for_restriction import as
 from rbnics.backends.dolfin.wrapping.basis_functions_matrix_mul import basis_functions_matrix_mul_online_matrix, basis_functions_matrix_mul_online_vector
 from rbnics.backends.dolfin.wrapping.compute_theta_for_derivative import compute_theta_for_derivative
 from rbnics.backends.dolfin.wrapping.compute_theta_for_restriction import compute_theta_for_restriction
+from rbnics.backends.dolfin.wrapping.counterclockwise import counterclockwise
 from rbnics.backends.dolfin.wrapping.create_submesh import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh, map_functionspaces_between_mesh_and_submesh
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC
 from rbnics.backends.dolfin.wrapping.dofs_parallel_io_helpers import build_dof_map_writer_mapping, build_dof_map_reader_mapping
@@ -84,6 +85,7 @@ __all__ = [
     'build_dof_map_writer_mapping',
     'compute_theta_for_derivative',
     'compute_theta_for_restriction',
+    'counterclockwise',
     'convert_functionspace_to_submesh',
     'convert_meshfunctions_to_submesh',
     'create_submesh',
