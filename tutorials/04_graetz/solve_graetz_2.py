@@ -20,6 +20,7 @@ from dolfin import *
 from rbnics import *
 
 @SCM()
+@PullBackFormsToReferenceDomain("a", "f", "s")
 @ShapeParametrization(
     ("x[0]", "x[1]"), # subdomain 1
     ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
@@ -47,19 +48,16 @@ class Graetz(EllipticCoerciveProblem):
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
-        mu1 = self.mu[0]
         mu2 = self.mu[1]
         mu3 = self.mu[2]
         mu4 = self.mu[3]
         if term == "a":
             theta_a0 = mu2
-            theta_a1 = mu2/mu1
-            theta_a2 = mu1*mu2
-            theta_a3 = 1.0
-            return (theta_a0, theta_a1, theta_a2, theta_a3)
+            theta_a1 = 1.0
+            return (theta_a0, theta_a1)
         elif term == "f":
             theta_f0 = 1.0
-            return (theta_f0,)
+            return (theta_f0, )
         elif term == "dirichlet_bc":
             theta_bc0 = mu3
             theta_bc1 = mu4
@@ -77,11 +75,9 @@ class Graetz(EllipticCoerciveProblem):
         if term == "a":
             u = self.u
             vel = self.vel
-            a0 = inner(grad(u),grad(v))*dx(1)
-            a1 = u.dx(0)*v.dx(0)*dx(2)
-            a2 = u.dx(1)*v.dx(1)*dx(2)
-            a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2)
-            return (a0, a1, a2, a3)
+            a0 = inner(grad(u), grad(v))*dx
+            a1 = vel*u.dx(0)*v*dx
+            return (a0, a1)
         elif term == "f":
             f0 = Constant(0.0)*v*dx
             return (f0,)
