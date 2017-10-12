@@ -19,6 +19,7 @@
 from dolfin import *
 from rbnics import *
 
+@PullBackFormsToReferenceDomain("a", "f")
 @AffineShapeParametrization("data/hole_vertices_mapping.pkl")
 class Hole(EllipticCoerciveProblem):
     
@@ -39,37 +40,16 @@ class Hole(EllipticCoerciveProblem):
         
     ## Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
-        m1 = self.mu[0]
-        m2 = self.mu[1]
-        m3 = self.mu[2]
+        mu = self.mu
         if term == "a":
-            # subdomains 1 and 7
-            theta_a0 = - (m2 - 2)/m1 - (2*(2*m1 - 2)*(m1 - 1))/(m1*(m2 - 2)) #K11
-            theta_a1 = -m1/(m2 - 2) #K22
-            theta_a2 = -(2*(m1 - 1))/(m2 - 2) #K12 and K21
-            # subdomains 2 and 8
-            theta_a3 = 2 - (m1 - 1)*(m1 - 1)/(m2 - 2) - m2
-            theta_a4 = -1/(m2 - 2)
-            theta_a5 = (m1 - 1)/(m2 - 2)
-            # subdomains 3 and 5
-            theta_a6 = -m2/(m1 - 2)
-            theta_a7 = - (m1 - 2)/m2 - (2*(2*m2 - 2)*(m2 - 1))/(m2*(m1 - 2))
-            theta_a8 = -(2*(m2 - 1))/(m1 - 2)
-            # subdomains 4 and 6
-            theta_a9 = -1/(m1 - 2)
-            theta_a10 = 2 - (m2 - 1)*(m2 - 1)/(m1 - 2) - m1
-            theta_a11 = (m2 - 1)/(m1 - 2)
-            # boundaries 5, 6, 7 and 8
-            theta_a12 = m3
+            theta_a0 = 1.0
+            theta_a1 = mu[2]
             # Return
-            return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12)
+            return (theta_a0, theta_a1)
         elif term == "f":
-            theta_f0 = - m1*(m2 - 2.0) # boundary 1
-            theta_f1 = - m2*(m1 - 2.0) # boundary 2
-            theta_f2 = - m1*(m2 - 2.0) # boundary 3
-            theta_f3 = - m2*(m1 - 2.0) # boundary 4
+            theta_f0 = 1.0
             # Return
-            return (theta_f0, theta_f1, theta_f2, theta_f3)
+            return (theta_f0, )
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
@@ -80,33 +60,14 @@ class Hole(EllipticCoerciveProblem):
         dx = self.dx
         ds = self.ds
         if term == "a":
-            # subdomains 1 and 7
-            a0 = inner(u.dx(0), v.dx(0))*dx(1) +  inner(u.dx(0), v.dx(0))*dx(7)
-            a1 = inner(u.dx(1), v.dx(1))*dx(1) +  inner(u.dx(1), v.dx(1))*dx(7)
-            a2 = inner(u.dx(0), v.dx(1))*dx(1) +  inner(u.dx(1), v.dx(0))*dx(1) - (inner(u.dx(0), v.dx(1))*dx(7) +  inner(u.dx(1), v.dx(0))*dx(7))
-            # subdomains 2 and 8
-            a3 = inner(u.dx(0), v.dx(0))*dx(2) +  inner(u.dx(0), v.dx(0))*dx(8)
-            a4 = inner(u.dx(1), v.dx(1))*dx(2) +  inner(u.dx(1), v.dx(1))*dx(8)
-            a5 = inner(u.dx(0), v.dx(1))*dx(2) +  inner(u.dx(1), v.dx(0))*dx(2) - (inner(u.dx(0), v.dx(1))*dx(8) +  inner(u.dx(1), v.dx(0))*dx(8))
-            # subdomains 3 and 5
-            a6 = inner(u.dx(0), v.dx(0))*dx(3) +  inner(u.dx(0), v.dx(0))*dx(5)
-            a7 = inner(u.dx(1), v.dx(1))*dx(3) +  inner(u.dx(1), v.dx(1))*dx(5)
-            a8 = inner(u.dx(0), v.dx(1))*dx(3) +  inner(u.dx(1), v.dx(0))*dx(3) - (inner(u.dx(0), v.dx(1))*dx(5) +  inner(u.dx(1), v.dx(0))*dx(5))
-            # subdomains 4 and 6
-            a9 = inner(u.dx(0), v.dx(0))*dx(4) +  inner(u.dx(0), v.dx(0))*dx(6)
-            a10 = inner(u.dx(1), v.dx(1))*dx(4) +  inner(u.dx(1), v.dx(1))*dx(6)
-            a11 = inner(u.dx(0), v.dx(1))*dx(4) +  inner(u.dx(1), v.dx(0))*dx(4) - (inner(u.dx(0), v.dx(1))*dx(6) +  inner(u.dx(1), v.dx(0))*dx(6))
-            # boundaries 5, 6, 7 and 8
-            a12 = inner(u,v)*ds(5) + inner(u,v)*ds(6) + inner(u,v)*ds(7) + inner(u,v)*ds(8)
+            a0 = inner(grad(u), grad(v))*dx
+            a1 = inner(u,v)*ds(5) + inner(u,v)*ds(6) + inner(u,v)*ds(7) + inner(u,v)*ds(8)
             # Return
-            return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)
+            return (a0, a1)
         elif term == "f":
-            f0 = v*ds(1) # boundary 1
-            f1 = v*ds(2) # boundary 2
-            f2 = v*ds(3) # boundary 3
-            f3 = v*ds(4) # boundary 4
+            f0 = v*ds(1) + v*ds(2) + v*ds(3) + v*ds(4)
             # Return
-            return (f0, f1, f2, f3)
+            return (f0, )
         elif term == "inner_product":
             x0 = u*v*dx + inner(grad(u),grad(v))*dx
             return (x0,)
