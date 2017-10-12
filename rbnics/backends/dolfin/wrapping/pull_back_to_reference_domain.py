@@ -17,10 +17,11 @@
 #
 
 from collections import defaultdict
+import itertools
 import re
 import types
 import math
-from numpy import allclose, ones as numpy_ones, zeros as numpy_zeros
+from numpy import allclose, isclose, ones as numpy_ones, zeros as numpy_zeros
 from mpi4py.MPI import Op
 from sympy import ccode, collect, expand_mul, Float, Integer, MatrixSymbol, Number, preorder_traversal, simplify, symbols, sympify, zeros as sympy_zeros
 from ufl import as_tensor, det, Form, inv, Measure, sqrt, TensorElement, tr, transpose, VectorElement
@@ -35,10 +36,10 @@ from ufl.corealg.multifunction import memoized_handler, MultiFunction
 from ufl.corealg.map_dag import map_expr_dag
 from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 from ufl.indexed import Indexed
-from dolfin import cells, Constant, Expression, facets
+from dolfin import assemble, cells, Constant, Expression, facets, GenericMatrix, GenericVector
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
-from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
+from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor
 
 # ===== Memoization for shape parametrization objects: inspired by ufl/corealg/multifunction.py ===== #
 def shape_parametrization_cache(function):
@@ -357,6 +358,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for pull back
                 self._terms_to_pull_back = terms_to_pull_back
+                self._pull_back_is_affine = dict()
                 self._pulled_back_operators = dict()
                 self._pulled_back_theta_factors = dict()
                 (self._facet_id_to_subdomain_ids, self._subdomain_id_to_facet_ids) = self._map_facet_id_to_subdomain_id(**kwargs)
@@ -364,6 +366,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                 self._is_affine_parameter_dependent_regex = re.compile(r"\bx\[[0-9]+\]")
                 self._shape_parametrization_jacobians = [ShapeParametrizationJacobian(shape_parametrization_expression_on_subdomain, self, self.V.mesh().ufl_domain()) for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression]
                 self._shape_parametrization_jacobians_sympy = [ShapeParametrizationJacobianSympy(shape_parametrization_expression_on_subdomain, self, self.V.mesh().ufl_domain()) for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression]
+                self.debug = decorator_kwargs.get("debug", False)
                 
             def init(self):
                 for term in self._terms_to_pull_back:
@@ -377,6 +380,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                         for separated_pulled_back_form in separated_pulled_back_forms:
                             separated_pulled_back_form.separate()
                         # Check if the dependence is affine on the parameters. If so, move parameter dependent coefficients to compute_theta
+                        pull_back_is_affine = list()
                         postprocessed_pulled_back_forms = list()
                         postprocessed_pulled_back_theta_factors = list()
                         for (q, separated_pulled_back_form) in enumerate(separated_pulled_back_forms):
@@ -386,17 +390,66 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                                 assert len(postprocessed_pulled_back_forms) == q + 1
                                 assert len(postprocessed_pulled_back_theta_factors) == q + 1
                                 (postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q]) = collect_common_forms_theta_factors(postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q])
+                                pull_back_is_affine.append((True, )*len(postprocessed_pulled_back_forms[q]))
                             else:
                                 assert any([Algorithm in self.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)]), "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"
                                 postprocessed_pulled_back_forms.append((pulled_back_forms[q], ))
                                 postprocessed_pulled_back_theta_factors.append((1, ))
+                                pull_back_is_affine.append((False, ))
                         # Store resulting pulled back forms and theta factors
+                        self._pull_back_is_affine[term] = pull_back_is_affine
                         self._pulled_back_operators[term] = postprocessed_pulled_back_forms
                         self._pulled_back_theta_factors[term] = postprocessed_pulled_back_theta_factors
                         # If debug is enabled, deform the mesh for a few representative values of the parameters to check the the form assembled
                         # on the parametrized domain results in the same tensor as the pulled back one
-                        if "debug" in decorator_kwargs and decorator_kwargs["debug"] is True:
-                            pass # TODO
+                        if self.debug:
+                            # Init mesh motion object
+                            self.mesh_motion.init(self)
+                            # Backup current mu
+                            mu_bak = self.mu
+                            # Check pull back over all corners of parametric domain
+                            for mu in itertools.product(*self.mu_range):
+                                self.set_mu(mu)
+                                # Assemble from pulled back forms
+                                thetas_pull_back = self.compute_theta(term)
+                                forms_pull_back = self.assemble_operator(term)
+                                tensor_pull_back = tensor_assemble(sum([Constant(theta)*operator for (theta, operator) in zip(thetas_pull_back, forms_pull_back)]))
+                                # Assemble from forms on parametrized domain
+                                self.mesh_motion.move_mesh()
+                                thetas_parametrized_domain = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
+                                forms_parametrized_domain = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
+                                tensor_parametrized_domain = tensor_assemble(sum([Constant(theta)*operator for (theta, operator) in zip(thetas_parametrized_domain, forms_parametrized_domain)]))
+                                self.mesh_motion.reset_reference()
+                                # Print thetas and forms
+                                print("=== DEBUGGING PULL BACK FOR TERM", term, "AND mu=", mu, "===")
+                                print("Thetas on parametrized domain")
+                                for (q, theta) in enumerate(thetas_parametrized_domain):
+                                    print("\ttheta_" + str(q), "=", theta)
+                                print("Theta factors for pull back")
+                                q = 0
+                                for (parametrized_q, pulled_back_theta_factors) in enumerate(self._pulled_back_theta_factors[term]):
+                                    for pulled_back_theta_factor in pulled_back_theta_factors:
+                                        print("\ttheta_factor_" + str(q), "=", pulled_back_theta_factor, "(evals to " + str(safe_eval(str(pulled_back_theta_factor), {"mu": mu})) + ") associated to theta_" + str(parametrized_q))
+                                        q += 1
+                                print("Pulled back thetas")
+                                for (q, theta) in enumerate(thetas_pull_back):
+                                    print("\tpulled_back_theta_" + str(q), "=", theta)
+                                print("Operators on parametrized domain")
+                                for (q, form) in enumerate(forms_pull_back):
+                                    print("\toperator_" + str(q), "=", form)
+                                print("Affinity of pulled back operators")
+                                q = 0
+                                for pull_back_is_affine in self._pull_back_is_affine[term]:
+                                    for pull_back_is_affine_q in pull_back_is_affine:
+                                        print("\tis_affine(pulled_back_operator_" + str(q) + ") =", pull_back_is_affine_q)
+                                        q += 1
+                                print("Pulled back operators")
+                                for (q, form) in enumerate(forms_pull_back):
+                                    print("\tpulled_back_operator_" + str(q), "=", form)
+                                # Assert
+                                assert tensors_are_close(tensor_pull_back, tensor_parametrized_domain)
+                            # Restore mu
+                            self.set_mu(mu_bak)
                 # Call parent
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 
@@ -808,3 +861,28 @@ def safe_eval(string, locals):
         if callable(function):
             locals[name] = function
     return eval(string, {"__builtins__": None}, locals)
+    
+def forms_are_close(form_1, form_2):
+    return tensors_are_close(tensor_assemble(form_1), tensor_assemble(form_2))
+    
+@overload
+def tensors_are_close(tensor_1: GenericMatrix, tensor_2: GenericMatrix):
+    return isclose(tensor_1.norm("frobenius"), tensor_2.norm("frobenius"))
+    
+@overload
+def tensors_are_close(tensor_1: GenericVector, tensor_2: GenericVector):
+    return isclose(tensor_1.norm("l2"), tensor_2.norm("l2"))
+    
+@overload
+def tensors_are_close(tensor_1: float, tensor_2: float):
+    return isclose(tensor_1, tensor_2)
+    
+def tensor_assemble(form):
+    assert isinstance(form, (Constant, float, Form))
+    if isinstance(form, Constant):
+        assert form.ufl_shape == ()
+        return float(form)
+    elif isinstance(form, float):
+        return form
+    elif isinstance(form, Form):
+        return assemble(form)

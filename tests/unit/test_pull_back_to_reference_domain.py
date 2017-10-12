@@ -21,32 +21,15 @@ import os
 import itertools
 import functools
 from contextlib import contextmanager
-from numpy import isclose
 from ufl import Form
 from dolfin import assemble, Constant, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, split, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression, PullBackFormsToReferenceDomain
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
 from rbnics.eim.problems import EIM
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_pull_back_to_reference_domain")
 
-def bilinear_forms_are_close(form_on_reference_domain, form_pull_back):
-    return isclose(assemble(form_on_reference_domain).norm("frobenius"), assemble(form_pull_back).norm("frobenius"))
-    
-def linear_forms_are_close(form_on_reference_domain, form_pull_back):
-    return isclose(assemble(form_on_reference_domain).norm("l2"), assemble(form_pull_back).norm("l2"))
-    
-def scalars_are_close(form_on_reference_domain, form_pull_back):
-    def scalar_assemble(form):
-        assert isinstance(form, (Constant, float, Form))
-        if isinstance(form, Constant):
-            return float(form)
-        elif isinstance(form, Form):
-            return assemble(form)
-        elif isinstance(form, float):
-            return form
-    return isclose(scalar_assemble(form_on_reference_domain), scalar_assemble(form_pull_back))
-    
 def theta_times_operator(problem, term):
     return sum([Constant(theta)*operator for (theta, operator) in zip(problem.compute_theta(term), problem.assemble_operator(term))])
 
@@ -133,6 +116,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
         def __init__(self, V, **kwargs):
             self.V = V
             self.mu = (1., 1., 0)
+            self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.01, 1.0)]
             
         def set_mu(self, mu):
             assert len(mu) is 3
@@ -212,7 +196,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "f")
+    @PullBackFormsToReferenceDomain("a", "f", debug=True)
     class HolePullBack(Hole):
         def compute_theta(self, term):
             m3 = self.mu[2]
@@ -246,15 +230,15 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
     problem_pull_back = HolePullBack(V, subdomains=subdomains, boundaries=boundaries)
     problem_on_reference_domain.init()
     problem_pull_back.init()
-    for mu in ((1., 1., 0.), (0.5, 1.5, 0.), (0.5, 0.5, 0.), (0.5, 1.5, 1.)):
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
         a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
         a_pull_back = theta_times_operator(problem_pull_back, "a")
-        assert bilinear_forms_are_close(a_on_reference_domain, a_pull_back)
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
-        assert linear_forms_are_close(f_on_reference_domain, f_pull_back)
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
 
 # Test forms pull back to reference domain for tutorial 4
 @check_affine_and_non_affine_shape_parametrizations
@@ -285,6 +269,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
         def __init__(self, V, **kwargs):
             self.V = V
             self.mu = (1., 1.)
+            self.mu_range = [(0.1, 10.0), (0.01, 10.0)]
             
         def set_mu(self, mu):
             assert len(mu) is 2
@@ -327,7 +312,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "f")
+    @PullBackFormsToReferenceDomain("a", "f", debug=True)
     class GraetzPullBack(Graetz):
         def compute_theta(self, term):
             mu2 = self.mu[1]
@@ -357,15 +342,15 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
     problem_pull_back = GraetzPullBack(V, subdomains=subdomains, boundaries=boundaries)
     problem_on_reference_domain.init()
     problem_pull_back.init()
-    for mu in ((0.1, 0.1), (10.0, 10.0), (0.1, 10.), (10., 0.1)):
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
         a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
         a_pull_back = theta_times_operator(problem_pull_back, "a")
-        assert bilinear_forms_are_close(a_on_reference_domain, a_pull_back)
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
-        assert linear_forms_are_close(f_on_reference_domain, f_pull_back)
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
         
 # Test forms pull back to reference domain for tutorial 17
 @check_affine_and_non_affine_shape_parametrizations
@@ -406,6 +391,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
         def __init__(self, V, **kwargs):
             self.V = V
             self.mu = (1., 1., 1., 1., 1., 0.)
+            self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.0, pi/6.0)]
             
         def set_mu(self, mu):
             assert len(mu) is 6
@@ -512,7 +498,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
     
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "b", "bt", "f", "g")
+    @PullBackFormsToReferenceDomain("a", "b", "bt", "f", "g", debug=True)
     class StokesPullBack(Stokes):
         def compute_theta(self, term):
             if term == "a":
@@ -554,29 +540,29 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
     problem_pull_back = StokesPullBack(V, subdomains=subdomains, boundaries=boundaries)
     problem_on_reference_domain.init()
     problem_pull_back.init()
-    for mu in itertools.product((0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.0, pi/6.0)):
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
         
         a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
         a_pull_back = theta_times_operator(problem_pull_back, "a")
-        assert bilinear_forms_are_close(a_on_reference_domain, a_pull_back)
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
         
         b_on_reference_domain = theta_times_operator(problem_on_reference_domain, "b")
         b_pull_back = theta_times_operator(problem_pull_back, "b")
-        assert bilinear_forms_are_close(b_on_reference_domain, b_pull_back)
+        assert forms_are_close(b_on_reference_domain, b_pull_back)
         
         bt_on_reference_domain = theta_times_operator(problem_on_reference_domain, "bt")
         bt_pull_back = theta_times_operator(problem_pull_back, "bt")
-        assert bilinear_forms_are_close(bt_on_reference_domain, bt_pull_back)
+        assert forms_are_close(bt_on_reference_domain, bt_pull_back)
         
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
-        assert linear_forms_are_close(f_on_reference_domain, f_pull_back)
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
         
         g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
         g_pull_back = theta_times_operator(problem_pull_back, "g")
-        assert linear_forms_are_close(g_on_reference_domain, g_pull_back)
+        assert forms_are_close(g_on_reference_domain, g_pull_back)
         
 # Test forms pull back to reference domain for tutorial 18
 @check_affine_and_non_affine_shape_parametrizations
@@ -612,6 +598,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
         def __init__(self, V, **kwargs):
             self.V = V
             self.mu = (1., 1.)
+            self.mu_range = [(1.0, 3.5), (0.5, 2.5)]
             
         def set_mu(self, mu):
             assert len(mu) is 2
@@ -697,7 +684,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "a*", "c", "c*", "m", "n", "f", "g", "h")
+    @PullBackFormsToReferenceDomain("a", "a*", "c", "c*", "m", "n", "f", "g", "h", debug=True)
     class EllipticOptimalControlPullBack(EllipticOptimalControl):
         def compute_theta(self, term):
             mu2 = self.mu[1]
@@ -765,42 +752,42 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
     problem_pull_back = EllipticOptimalControlPullBack(V, subdomains=subdomains, boundaries=boundaries)
     problem_on_reference_domain.init()
     problem_pull_back.init()
-    for mu in itertools.product((1.0, 3.5), (0.5, 2.5)):
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
         
         a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
         a_pull_back = theta_times_operator(problem_pull_back, "a")
-        assert bilinear_forms_are_close(a_on_reference_domain, a_pull_back)
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
         
         as_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a*")
         as_pull_back = theta_times_operator(problem_pull_back, "a*")
-        assert bilinear_forms_are_close(as_on_reference_domain, as_pull_back)
+        assert forms_are_close(as_on_reference_domain, as_pull_back)
         
         c_on_reference_domain = theta_times_operator(problem_on_reference_domain, "c")
         c_pull_back = theta_times_operator(problem_pull_back, "c")
-        assert bilinear_forms_are_close(c_on_reference_domain, c_pull_back)
+        assert forms_are_close(c_on_reference_domain, c_pull_back)
         
         cs_on_reference_domain = theta_times_operator(problem_on_reference_domain, "c*")
         cs_pull_back = theta_times_operator(problem_pull_back, "c*")
-        assert bilinear_forms_are_close(cs_on_reference_domain, cs_pull_back)
+        assert forms_are_close(cs_on_reference_domain, cs_pull_back)
         
         m_on_reference_domain = theta_times_operator(problem_on_reference_domain, "m")
         m_pull_back = theta_times_operator(problem_pull_back, "m")
-        assert bilinear_forms_are_close(m_on_reference_domain, m_pull_back)
+        assert forms_are_close(m_on_reference_domain, m_pull_back)
         
         n_on_reference_domain = theta_times_operator(problem_on_reference_domain, "n")
         n_pull_back = theta_times_operator(problem_pull_back, "n")
-        assert bilinear_forms_are_close(n_on_reference_domain, n_pull_back)
+        assert forms_are_close(n_on_reference_domain, n_pull_back)
         
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
-        assert linear_forms_are_close(f_on_reference_domain, f_pull_back)
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
         
         g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
         g_pull_back = theta_times_operator(problem_pull_back, "g")
-        assert linear_forms_are_close(g_on_reference_domain, g_pull_back)
+        assert forms_are_close(g_on_reference_domain, g_pull_back)
         
         h_on_reference_domain = theta_times_operator(problem_on_reference_domain, "h")
         h_pull_back = theta_times_operator(problem_pull_back, "h")
-        assert scalars_are_close(h_on_reference_domain, h_pull_back)
+        assert forms_are_close(h_on_reference_domain, h_pull_back)

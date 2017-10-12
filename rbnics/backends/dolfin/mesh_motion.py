@@ -61,36 +61,39 @@ class MeshMotion(AbstractMeshMotion):
         self.shape_parametrization_expression = shape_parametrization_expression
         assert len(self.shape_parametrization_expression) == len(self.subdomain_id_to_deformation_dofs.keys())
         
-    def init(self, problem):
-        # Preprocess the shape parametrization expression to convert it in the displacement expression
-        # This cannot be done during __init__ because at construction time the number
-        # of parameters is still unknown
-        
-        # Declare first some sympy simbolic quantities, needed by ccode
-        from rbnics.shape_parametrization.utils.symbolic import strings_to_sympy_symbolic_parameters, sympy_symbolic_coordinates
-        x = sympy_symbolic_coordinates(self.mesh.geometry().dim(), MatrixSymbol)
-        mu = MatrixSymbol("mu", len(problem.mu), 1)
-        
-        # Then carry out the proprocessing
+        # Prepare storage for displacement expression, computed by init()
         self.displacement_expression = list()
-        for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression:
-            displacement_expression_on_subdomain = list()
-            assert len(shape_parametrization_expression_on_subdomain) == self.mesh.geometry().dim()
-            for (component, shape_parametrization_component_on_subdomain) in enumerate(shape_parametrization_expression_on_subdomain):
-                # convert from shape parametrization T to displacement d = T - I
-                displacement_expression_component_on_subdomain = sympify(shape_parametrization_component_on_subdomain + " - x[" + str(component) + "]", locals={"x": x, "mu": mu})
-                displacement_expression_on_subdomain.append(
-                    ccode(displacement_expression_component_on_subdomain).replace(", 0]", "]"),
+        
+    def init(self, problem):
+        if len(self.displacement_expression) == 0: # avoid initialize multiple times
+            # Preprocess the shape parametrization expression to convert it in the displacement expression
+            # This cannot be done during __init__ because at construction time the number
+            # of parameters is still unknown
+            
+            # Declare first some sympy simbolic quantities, needed by ccode
+            from rbnics.shape_parametrization.utils.symbolic import strings_to_sympy_symbolic_parameters, sympy_symbolic_coordinates
+            x = sympy_symbolic_coordinates(self.mesh.geometry().dim(), MatrixSymbol)
+            mu = MatrixSymbol("mu", len(problem.mu), 1)
+            
+            # Then carry out the proprocessing
+            for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression:
+                displacement_expression_on_subdomain = list()
+                assert len(shape_parametrization_expression_on_subdomain) == self.mesh.geometry().dim()
+                for (component, shape_parametrization_component_on_subdomain) in enumerate(shape_parametrization_expression_on_subdomain):
+                    # convert from shape parametrization T to displacement d = T - I
+                    displacement_expression_component_on_subdomain = sympify(shape_parametrization_component_on_subdomain + " - x[" + str(component) + "]", locals={"x": x, "mu": mu})
+                    displacement_expression_on_subdomain.append(
+                        ccode(displacement_expression_component_on_subdomain).replace(", 0]", "]"),
+                    )
+                self.displacement_expression.append(
+                    ParametrizedExpression(
+                        problem,
+                        tuple(displacement_expression_on_subdomain),
+                        mu=problem.mu,
+                        element=self.deformation_V.ufl_element(),
+                        domain=self.mesh
+                    )
                 )
-            self.displacement_expression.append(
-                ParametrizedExpression(
-                    problem,
-                    tuple(displacement_expression_on_subdomain),
-                    mu=problem.mu,
-                    element=self.deformation_V.ufl_element(),
-                    domain=self.mesh
-                )
-            )
         
     def move_mesh(self):
         log(PROGRESS, "moving mesh")
@@ -104,6 +107,7 @@ class MeshMotion(AbstractMeshMotion):
     # Auxiliary method to deform the domain
     def compute_displacement(self):
         displacement = Function(self.deformation_V)
+        assert len(self.displacement_expression) == len(self.shape_parametrization_expression)
         for (subdomain, displacement_expression_on_subdomain) in enumerate(self.displacement_expression):
             displacement_function_on_subdomain = Function(self.deformation_V)
             ufl_lagrange_interpolation(displacement_function_on_subdomain, displacement_expression_on_subdomain)
