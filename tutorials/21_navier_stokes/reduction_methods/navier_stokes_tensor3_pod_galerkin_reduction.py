@@ -18,7 +18,7 @@
 
 from rbnics.reduction_methods.navier_stokes import NavierStokesPODGalerkinReduction
 from problems.navier_stokes_tensor3_problem import NavierStokesTensor3Problem
-from navier_stokes_tensor3_reduction_method import NavierStokesTensor3ReductionMethod
+from .navier_stokes_tensor3_reduction_method import NavierStokesTensor3ReductionMethod
 from rbnics.utils.decorators import ReductionMethodFor
 
 NavierStokesTensor3PODGalerkinReduction_Base = NavierStokesTensor3ReductionMethod(NavierStokesPODGalerkinReduction)

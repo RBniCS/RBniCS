@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from assemble_operator_for_derivative_and_tensor3 import assemble_operator_for_derivative_and_tensor3
+from .assemble_operator_for_derivative_and_tensor3 import assemble_operator_for_derivative_and_tensor3
 
 __all__ = [
     'assemble_operator_for_derivative_and_tensor3'

@@ -16,8 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from geostrophic_reduction_method import GeostrophicReductionMethod
-from geostrophic_pod_galerkin_reduction import GeostrophicPODGalerkinReduction
+from .geostrophic_reduction_method import GeostrophicReductionMethod
+from .geostrophic_pod_galerkin_reduction import GeostrophicPODGalerkinReduction
 
 __all__ = [
     'GeostrophicReductionMethod',

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from plot_phase_space import plot_phase_space
+from .plot_phase_space import plot_phase_space
 
 __all__ = [
     'plot_phase_space'

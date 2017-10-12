@@ -19,7 +19,7 @@
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from rbnics.utils.decorators import ReductionMethodFor
 from problems import GeostrophicProblem
-from geostrophic_reduction_method import GeostrophicReductionMethod
+from .geostrophic_reduction_method import GeostrophicReductionMethod
 
 GeostrophicPODGalerkinReduction_Base = LinearPODGalerkinReduction(GeostrophicReductionMethod(DifferentialProblemReductionMethod))
 
