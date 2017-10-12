@@ -33,7 +33,7 @@ def function_from_subfunction_if_any(node: (Argument, Constant, ConstantValue, E
 @overload
 def function_from_subfunction_if_any(node: Indexed):
     assert len(node.ufl_operands) == 2
-    assert isinstance(node.ufl_operands[0], (Argument, Expression, Function, Operator))
+    assert isinstance(node.ufl_operands[0], (Argument, Constant, Expression, Function, Operator))
     assert isinstance(node.ufl_operands[1], MultiIndex)
     return node.ufl_operands[0]
     
