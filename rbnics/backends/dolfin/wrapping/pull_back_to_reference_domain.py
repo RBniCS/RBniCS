@@ -39,7 +39,7 @@ from ufl.indexed import Indexed
 from dolfin import assemble, cells, Constant, Expression, facets, GenericMatrix, GenericVector
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
-from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor
+from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
 
 # ===== Memoization for shape parametrization objects: inspired by ufl/corealg/multifunction.py ===== #
 def shape_parametrization_cache(function):
@@ -386,11 +386,15 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                 (self._facet_id_to_subdomain_ids, self._subdomain_id_to_facet_ids) = self._map_facet_id_to_subdomain_id(**kwargs)
                 self._facet_id_to_normal_direction_if_straight = self._map_facet_id_to_normal_direction_if_straight(**kwargs)
                 self._is_affine_parameter_dependent_regex = re.compile(r"\bx\[[0-9]+\]")
-                self._shape_parametrization_jacobians = [ShapeParametrizationJacobian(shape_parametrization_expression_on_subdomain, self, self.V.mesh().ufl_domain()) for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression]
-                self._shape_parametrization_jacobians_sympy = [ShapeParametrizationJacobianSympy(shape_parametrization_expression_on_subdomain, self, self.V.mesh().ufl_domain()) for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression]
+                self._shape_parametrization_jacobians = list()
+                self._shape_parametrization_jacobians_sympy = list()
                 self.debug = decorator_kwargs.get("debug", False)
                 
             def init(self):
+                if len(self._shape_parametrization_jacobians) == 0: # initialize only once
+                    self._shape_parametrization_jacobians = [ShapeParametrizationJacobian(shape_parametrization_expression_on_subdomain, self, self.V.mesh().ufl_domain()) for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression]
+                if len(self._shape_parametrization_jacobians_sympy) == 0: # initialize only once
+                    self._shape_parametrization_jacobians_sympy = [ShapeParametrizationJacobianSympy(shape_parametrization_expression_on_subdomain, self, self.V.mesh().ufl_domain()) for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression]
                 for term in self._terms_to_pull_back:
                     assert (term in self._pulled_back_operators) is (term in self._pulled_back_theta_factors)
                     if term not in self._pulled_back_operators: # initialize only once
@@ -684,7 +688,16 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
     return PullBackFormsToReferenceDomainDecoratedProblem_Decorator
                 
 PullBackFormsToReferenceDomain = PullBackFormsToReferenceDomainDecoratedProblem
+
+@ReductionMethodDecoratorFor(PullBackFormsToReferenceDomain)
+def PullBackFormsToReferenceDomainDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
+    return DifferentialProblemReductionMethod_DerivedClass
     
+@ReducedProblemDecoratorFor(PullBackFormsToReferenceDomain)
+def PullBackFormsToReferenceDomainDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+    return ParametrizedReducedDifferentialProblem_DerivedClass
+    
+# ===== Pull back forms decorator (auxiliary functions and classes) ===== #
 def expand(form):
     # Call UFL expander
     expanded_form = expand_indices(apply_derivatives(apply_algebra_lowering(form)))
