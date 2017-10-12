@@ -33,7 +33,7 @@ from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pul
 
 @BackendFor("dolfin", inputs=(Form, ))
 class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
-    def __init__(self, form):
+    def __init__(self, form, strict=False):
         AbstractSeparatedParametrizedForm.__init__(self, form)
         form = expand_derivatives(form)
         self._form = form
@@ -43,7 +43,13 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form_with_placeholders = list() # of forms
         self._form_unchanged = list() # of forms
         # Internal usage
-        self._NaN = float('NaN')
+        self._NaN = float("NaN")
+        # Strict mode when checking candidates to be added to coefficients which contain both parametrized and non parametrized leaves. 
+        # If False (default), coefficient splitting is prevented, because separating the non parametrized part would result in more 
+        # than one coefficient, and the candidate is accepted as the coefficient which contain both parametrized and non parametrized leaves.
+        # If True, coefficient is split in order to assure that all coefficients only containt parametrized terms, at the expense of
+        # a larger number of coefficients
+        self._strict = strict
     
     def separate(self):
         class _SeparatedParametrizedForm_Replacer(Transformer):
@@ -131,35 +137,40 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                             log(PROGRESS, "\t\t\t Descendant node " + str(d) + " has not passed the non-parametrized because is not an expression")
                             # Evaluate candidates
                             if len(all_candidates) == 0: # the whole expression was actually non-parametrized
-                                log(PROGRESS, "\t\t Node " + str(n) + " is skipped because is a non-parametrized coefficient")
+                                log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is a non-parametrized coefficient")
                                 continue
                             elif len(all_candidates) == 1: # the whole expression was actually parametrized
-                                candidate = all_candidates[0]
-                            else: # part of the expression was not parametrized, but separating the non parametrized part would result in more than one coefficient
-                                candidate = n
-                                log(PROGRESS, "\t\t\t Node " + str(n) + " was not split because it would have resulted in more than one coefficient, namely " + ", ".join([str(c) for c in all_candidates]))
-                            # Add the coefficient
-                            if isinstance(candidate, Indexed):
-                                assert isinstance(candidate.ufl_operands[1], MultiIndex)
-                                assert len(candidate.ufl_operands) == 2
-                                indices = candidate.ufl_operands[1].indices()
-                                is_fixed = isinstance(indices[0], FixedIndex)
-                                assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
-                                is_mute = isinstance(indices[0], Index) # mute index for sum
-                                assert all([isinstance(index, Index) == is_mute for index in indices])
-                                assert (is_fixed and not is_mute) or (not is_fixed and is_mute)
-                                if is_fixed:
-                                    self._coefficients[-1].append(candidate)
-                                    log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with fixed index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])) + " for fixed index " + str(candidate.ufl_operands[1]))
-                                elif is_mute:
-                                    self._coefficients[-1].append(candidate.ufl_operands[0])
-                                    log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with mute index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                log(PROGRESS, "\t\t Node " + str(n) + " will be accepted because it is a non-parametrized coefficient")
+                                pass
+                            else: # part of the expression was not parametrized, and separating the non parametrized part may result in more than one coefficient
+                                if self._strict: # non parametrized coefficients are not allowed, so split the expression
+                                    log(PROGRESS, "\t\t\t Node " + str(n) + " will be accepted because it is a non-parametrized coefficient with more than one candidate. It will be split because strict mode is on. Its split coefficients are " + ", ".join([str(c) for c in all_candidates]))
+                                else: # non parametrized coefficients are allowed, so go on with the whole expression
+                                    log(PROGRESS, "\t\t\t Node " + str(n) + " will be accepted because it is a non-parametrized coefficient with more than one candidate. It will not be split because strict mode is off. Splitting it would have resulted in more than one coefficient, namely " + ", ".join([str(c) for c in all_candidates]))
+                                    all_candidates = [n]
+                            # Add the coefficient(s)
+                            for candidate in all_candidates:
+                                if isinstance(candidate, Indexed):
+                                    assert isinstance(candidate.ufl_operands[1], MultiIndex)
+                                    assert len(candidate.ufl_operands) == 2
+                                    indices = candidate.ufl_operands[1].indices()
+                                    is_fixed = isinstance(indices[0], FixedIndex)
+                                    assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
+                                    is_mute = isinstance(indices[0], Index) # mute index for sum
+                                    assert all([isinstance(index, Index) == is_mute for index in indices])
+                                    assert (is_fixed and not is_mute) or (not is_fixed and is_mute)
+                                    if is_fixed:
+                                        self._coefficients[-1].append(candidate)
+                                        log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with fixed index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])) + " for fixed index " + str(candidate.ufl_operands[1]))
+                                    elif is_mute:
+                                        self._coefficients[-1].append(candidate.ufl_operands[0])
+                                        log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with mute index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                    else:
+                                        raise TypeError("Invalid index")
                                 else:
-                                    raise TypeError("Invalid index")
-                            else:
-                                assert not isinstance(candidate, (ListTensor, ComponentTensor))
-                                self._coefficients[-1].append(candidate)
-                                log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
+                                    assert not isinstance(candidate, (ListTensor, ComponentTensor))
+                                    self._coefficients[-1].append(candidate)
+                                    log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
                     else:
                         log(PROGRESS, "\t\t Node " + str(n) + " to be skipped because is a descendant of a coefficient which has already been detected")
             if len(self._coefficients[-1]) == 0: # then there were no coefficients to extract

@@ -398,7 +398,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                         forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                         pulled_back_forms = [pull_back_form(self.shape_parametrization_expression, self, form) for form in forms]
                         # Preprocess pulled back forms via SeparatedParametrizedForm
-                        separated_pulled_back_forms = [SeparatedParametrizedForm(expand(pulled_back_form)) for pulled_back_form in pulled_back_forms]
+                        separated_pulled_back_forms = [SeparatedParametrizedForm(expand(pulled_back_form), strict=True) for pulled_back_form in pulled_back_forms]
                         for separated_pulled_back_form in separated_pulled_back_forms:
                             separated_pulled_back_form.separate()
                         # Check if the dependence is affine on the parameters. If so, move parameter dependent coefficients to compute_theta
