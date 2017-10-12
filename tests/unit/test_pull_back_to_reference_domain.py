@@ -791,3 +791,282 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
         h_on_reference_domain = theta_times_operator(problem_on_reference_domain, "h")
         h_pull_back = theta_times_operator(problem_pull_back, "h")
         assert forms_are_close(h_on_reference_domain, h_pull_back)
+        
+# Test forms pull back to reference domain for tutorial 19
+@check_affine_and_non_affine_shape_parametrizations
+def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "stokes_optimal_control_1.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "stokes_optimal_control_1_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "stokes_optimal_control_1_facet_region.xml"))
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+            ("x[0]", "mu[0]*x[1]") # subdomain 1
+    ]
+    shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
+    
+    # Define function space, test/trial functions, measures, auxiliary expressions
+    velocity_element = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    pressure_element = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(velocity_element, pressure_element, velocity_element, velocity_element, pressure_element)
+    V = FunctionSpace(mesh, element, components=[["v", "s"], "p", "u", ["w", "r"], "q"])
+    trial = TrialFunction(V)
+    (v, p, u, w, q) = split(trial)
+    test = TestFunction(V)
+    (psi, pi, tau, phi, xi) = split(test)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    ds = Measure("ds")(subdomain_data=boundaries)
+    alpha = 0.008
+    nu = 0.1
+    vx_d = Expression("x[1]", degree=1)
+    ll = Constant(1.0)
+    
+    @ShapeParametrization(*shape_parametrization_expression)
+    class StokesOptimalControl(object):
+        def __init__(self, V, **kwargs):
+            self.V = V
+            self.mu = (1.0, 1.0)
+            self.mu_range = [(0.5, 2.0), (0.5, 1.5)]
+            
+        def set_mu(self, mu):
+            assert len(mu) is 2
+            self.mu = mu
+            
+        def init(self):
+            pass
+    
+    # Define problem with forms written on reference domain
+    class StokesOptimalControlOnReferenceDomain(StokesOptimalControl):
+        def compute_theta(self, term):
+            mu1 = self.mu[0]
+            mu2 = self.mu[1]
+            if term in ("a", "a*"):
+                theta_a0 = nu*mu1
+                theta_a1 = nu/mu1
+                return (theta_a0, theta_a1)
+            elif term in ("b", "b*", "bt", "bt*"):
+                theta_b0 = mu1
+                theta_b1 = 1.0
+                return (theta_b0, theta_b1)
+            elif term in ("c", "c*"):
+                theta_c0 = mu1
+                return (theta_c0,)
+            elif term == "m":
+                theta_m0 = mu1
+                return (theta_m0,)
+            elif term == "n":
+                theta_n0 = alpha*mu1
+                return (theta_n0,)
+            elif term == "f":
+                theta_f0 = - mu1*mu2
+                return (theta_f0,)
+            elif term == "g":
+                theta_g0 = mu1**2
+                return (theta_g0,)
+            elif term == "l":
+                theta_l0 = mu1
+                return (theta_l0,)
+            elif term == "h":
+                theta_h0 = mu1**3/3.
+                return (theta_h0,)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = v[0].dx(0)*phi[0].dx(0)*dx + v[1].dx(0)*phi[1].dx(0)*dx
+                a1 = v[0].dx(1)*phi[0].dx(1)*dx + v[1].dx(1)*phi[1].dx(1)*dx
+                return (a0, a1)
+            elif term == "a*":
+                as0 = psi[0].dx(0)*w[0].dx(0)*dx + psi[1].dx(0)*w[1].dx(0)*dx
+                as1 = psi[0].dx(1)*w[0].dx(1)*dx + psi[1].dx(1)*w[1].dx(1)*dx
+                return (as0, as1)
+            elif term == "b":
+                b0 = - xi*v[0].dx(0)*dx
+                b1 = - xi*v[1].dx(1)*dx
+                return (b0, b1)
+            elif term == "bt":
+                bt0 = - p*phi[0].dx(0)*dx
+                bt1 = - p*phi[1].dx(1)*dx
+                return (bt0, bt1)
+            elif term == "b*":
+                bs0 = - pi*w[0].dx(0)*dx
+                bs1 = - pi*w[1].dx(1)*dx
+                return (bs0, bs1)
+            elif term == "bt*":
+                bts0 = - q*psi[0].dx(0)*dx
+                bts1 = - q*psi[1].dx(1)*dx
+                return (bts0, bts1)
+            elif term == "c":
+                c0 = inner(u, phi)*dx
+                return (c0,)
+            elif term == "c*":
+                cs0 = inner(tau, w)*dx
+                return (cs0,)
+            elif term == "m":
+                m0 = v[0]*psi[0]*dx
+                return (m0,)
+            elif term == "n":
+                n0 = inner(u, tau)*dx
+                return (n0,)
+            elif term == "f":
+                f0 = phi[1]*dx
+                return (f0,)
+            elif term == "g":
+                g0 = vx_d*psi[0]*dx
+                return (g0,)
+            elif term == "l":
+                l0 = ll*xi*dx
+                return (l0,)
+            elif term == "h":
+                h0 = 1.0
+                return (h0,)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+
+    # Define problem with forms pulled back reference domain
+    @AdditionalProblemDecorator()
+    @PullBackFormsToReferenceDomain("a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "h", "l", debug=True)
+    class StokesOptimalControlPullBack(StokesOptimalControl):
+        def compute_theta(self, term):
+            mu2 = self.mu[1]
+            if term in ("a", "a*"):
+                theta_a0 = nu*1.0
+                return (theta_a0,)
+            elif term in ("b", "b*", "bt", "bt*"):
+                theta_b0 = 1.0
+                return (theta_b0,)
+            elif term in ("c", "c*"):
+                theta_c0 = 1.0
+                return (theta_c0,)
+            elif term == "m":
+                theta_m0 = 1.0
+                return (theta_m0,)
+            elif term == "n":
+                theta_n0 = alpha*1.0
+                return (theta_n0,)
+            elif term == "f":
+                theta_f0 = - mu2
+                return (theta_f0,)
+            elif term == "g":
+                theta_g0 = 1.0
+                return (theta_g0,)
+            elif term == "l":
+                theta_l0 = 1.0
+                return (theta_l0,)
+            elif term == "h":
+                theta_h0 = 1.0
+                return (theta_h0,)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+        
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(v), grad(phi))*dx
+                return (a0,)
+            elif term == "a*":
+                ad0 = inner(grad(w), grad(psi))*dx
+                return (ad0,)
+            elif term == "b":
+                b0 = -xi*div(v)*dx
+                return (b0,)
+            elif term == "b*":
+                btd0 = -pi*div(w)*dx
+                return (btd0,)
+            elif term == "bt":
+                bt0 = -p*div(phi)*dx
+                return (bt0,)
+            elif term == "bt*":
+                bd0 = -q*div(psi)*dx
+                return (bd0,)
+            elif term == "c":
+                c0 = inner(u, phi)*dx
+                return (c0,)
+            elif term == "c*":
+                cd0 = inner(tau, w)*dx
+                return (cd0,)
+            elif term == "m":
+                m0 = v[0]*psi[0]*dx
+                return (m0,)
+            elif term == "n":
+                n0 = inner(u, tau)*dx
+                return (n0,)
+            elif term == "f":
+                f0 = phi[1]*dx
+                return (f0,)
+            elif term == "g":
+                g0 = vx_d*psi[0]*dx
+                return (g0,)
+            elif term == "l":
+                l0 = ll*xi*dx
+                return (l0,)
+            elif term == "h":
+                h0 = vx_d*vx_d*dx(domain=mesh)
+                return (h0,)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+    # Check forms
+    problem_on_reference_domain = StokesOptimalControlOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = StokesOptimalControlPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain.init()
+    problem_pull_back.init()
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        as_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a*")
+        as_pull_back = theta_times_operator(problem_pull_back, "a*")
+        assert forms_are_close(as_on_reference_domain, as_pull_back)
+        
+        b_on_reference_domain = theta_times_operator(problem_on_reference_domain, "b")
+        b_pull_back = theta_times_operator(problem_pull_back, "b")
+        assert forms_are_close(b_on_reference_domain, b_pull_back)
+        
+        bt_on_reference_domain = theta_times_operator(problem_on_reference_domain, "bt")
+        bt_pull_back = theta_times_operator(problem_pull_back, "bt")
+        assert forms_are_close(bt_on_reference_domain, bt_pull_back)
+        
+        bs_on_reference_domain = theta_times_operator(problem_on_reference_domain, "b*")
+        bs_pull_back = theta_times_operator(problem_pull_back, "b*")
+        assert forms_are_close(bs_on_reference_domain, bs_pull_back)
+        
+        bts_on_reference_domain = theta_times_operator(problem_on_reference_domain, "bt*")
+        bts_pull_back = theta_times_operator(problem_pull_back, "bt*")
+        assert forms_are_close(bts_on_reference_domain, bts_pull_back)
+        
+        c_on_reference_domain = theta_times_operator(problem_on_reference_domain, "c")
+        c_pull_back = theta_times_operator(problem_pull_back, "c")
+        assert forms_are_close(c_on_reference_domain, c_pull_back)
+        
+        cs_on_reference_domain = theta_times_operator(problem_on_reference_domain, "c*")
+        cs_pull_back = theta_times_operator(problem_pull_back, "c*")
+        assert forms_are_close(cs_on_reference_domain, cs_pull_back)
+        
+        m_on_reference_domain = theta_times_operator(problem_on_reference_domain, "m")
+        m_pull_back = theta_times_operator(problem_pull_back, "m")
+        assert forms_are_close(m_on_reference_domain, m_pull_back)
+        
+        n_on_reference_domain = theta_times_operator(problem_on_reference_domain, "n")
+        n_pull_back = theta_times_operator(problem_pull_back, "n")
+        assert forms_are_close(n_on_reference_domain, n_pull_back)
+        
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
+        
+        g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
+        g_pull_back = theta_times_operator(problem_pull_back, "g")
+        assert forms_are_close(g_on_reference_domain, g_pull_back)
+        
+        l_on_reference_domain = theta_times_operator(problem_on_reference_domain, "l")
+        l_pull_back = theta_times_operator(problem_pull_back, "l")
+        assert forms_are_close(l_on_reference_domain, l_pull_back)
+        
+        h_on_reference_domain = theta_times_operator(problem_on_reference_domain, "h")
+        h_pull_back = theta_times_operator(problem_pull_back, "h")
+        assert forms_are_close(h_on_reference_domain, h_pull_back)
