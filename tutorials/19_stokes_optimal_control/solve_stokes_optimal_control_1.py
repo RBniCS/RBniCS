@@ -19,6 +19,7 @@
 from dolfin import *
 from rbnics import *
 
+@PullBackFormsToReferenceDomain("a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "h", "l")
 @ShapeParametrization(
     ("x[0]", "mu[0]*x[1]"), # subdomain 1
 )
@@ -56,35 +57,32 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
         if term in ("a", "a*"):
-            nu = self.nu
-            theta_a0 = nu*mu1
-            theta_a1 = nu/mu1
-            return (theta_a0, theta_a1)
+            theta_a0 = self.nu*1.0
+            return (theta_a0,)
         elif term in ("b", "b*", "bt", "bt*"):
-            theta_b0 = mu1
-            theta_b1 = 1.0
-            return (theta_b0, theta_b1)
+            theta_b0 = 1.0
+            return (theta_b0,)
         elif term in ("c", "c*"):
-            theta_c0 = mu1
+            theta_c0 = 1.0
             return (theta_c0,)
         elif term == "m":
-            theta_m0 = mu1
+            theta_m0 = 1.0
             return (theta_m0,)
         elif term == "n":
-            theta_n0 = self.alpha*mu1
+            theta_n0 = self.alpha*1.0
             return (theta_n0,)
         elif term == "f":
-            theta_f0 = - mu1*mu2
+            theta_f0 = - mu2
             return (theta_f0,)
         elif term == "g":
-            theta_g0 = mu1**2
+            theta_g0 = 1.0
             return (theta_g0,)
-        elif term == "h":
-            theta_h0 = mu1**3/3.
-            return (theta_h0,)
         elif term == "l":
-            theta_l0 = mu1
+            theta_l0 = 1.0
             return (theta_l0,)
+        elif term == "h":
+            theta_h0 = 1.0
+            return (theta_h0,)
         elif term == "dirichlet_bc_v":
             theta_bc0 = mu1
             return (theta_bc0,)
@@ -103,39 +101,33 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         if term == "a":
             v = self.v
             phi = self.phi
-            a0 = v[0].dx(0)*phi[0].dx(0)*dx + v[1].dx(0)*phi[1].dx(0)*dx
-            a1 = v[0].dx(1)*phi[0].dx(1)*dx + v[1].dx(1)*phi[1].dx(1)*dx
-            return (a0, a1)
+            a0 = inner(grad(v), grad(phi))*dx
+            return (a0,)
         elif term == "a*":
             psi = self.psi
             w = self.w
-            as0 = psi[0].dx(0)*w[0].dx(0)*dx + psi[1].dx(0)*w[1].dx(0)*dx
-            as1 = psi[0].dx(1)*w[0].dx(1)*dx + psi[1].dx(1)*w[1].dx(1)*dx
-            return (as0, as1)
+            as0 = inner(grad(w), grad(psi))*dx
+            return (as0,)
         elif term == "b":
             xi = self.xi
             v = self.v
-            b0 = - xi*v[0].dx(0)*dx
-            b1 = - xi*v[1].dx(1)*dx
-            return (b0, b1)
+            b0 = -xi*div(v)*dx
+            return (b0,)
         elif term == "bt":
             p = self.p
             phi = self.phi
-            bt0 = - p*phi[0].dx(0)*dx
-            bt1 = - p*phi[1].dx(1)*dx
-            return (bt0, bt1)
+            bt0 = -p*div(phi)*dx
+            return (bt0,)
         elif term == "b*":
             pi = self.pi
             w = self.w
-            bs0 = - pi*w[0].dx(0)*dx
-            bs1 = - pi*w[1].dx(1)*dx
-            return (bs0, bs1)
+            bs0 = -pi*div(w)*dx
+            return (bs0,)
         elif term == "bt*":
             q = self.q
             psi = self.psi
-            bts0 = - q*psi[0].dx(0)*dx
-            bts1 = - q*psi[1].dx(1)*dx
-            return (bts0, bts1)
+            bts0 = -q*div(psi)*dx
+            return (bts0,)
         elif term == "c":
             u = self.u
             phi = self.phi
@@ -162,15 +154,17 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             return (f0,)
         elif term == "g":
             psi = self.psi
-            g0 = self.vx_d*psi[0]*dx
+            vx_d = self.vx_d
+            g0 = vx_d*psi[0]*dx
             return (g0,)
-        elif term == "h":
-            h0 = 1.0
-            return (h0,)
         elif term == "l":
             xi = self.xi
             l0 = Constant(0.0)*xi*dx
             return (l0,)
+        elif term == "h":
+            vx_d = self.vx_d
+            h0 = vx_d*vx_d*dx(domain=mesh)
+            return (h0,)
         elif term == "dirichlet_bc_v":
             bc0 = [DirichletBC(self.V.sub("v").sub(0), self.vx_d    , self.boundaries, 1),
                    DirichletBC(self.V.sub("v").sub(1), Constant(0.0), self.boundaries, 1)]
