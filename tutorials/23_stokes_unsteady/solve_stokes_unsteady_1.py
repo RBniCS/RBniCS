@@ -19,6 +19,7 @@
 from dolfin import *
 from rbnics import *
 
+@PullBackFormsToReferenceDomain("a", "b", "bt", "m", "f", "g")
 @ShapeParametrization(
     ("mu[0]*x[0]", "x[1]"),
 )
@@ -51,24 +52,20 @@ class StokesUnsteady(StokesUnsteadyProblem):
     ## Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
-        mu = self.mu
-        mu1 = mu[0]
         if term == "a":
-            theta_a0 = 1./mu1
-            theta_a1 = mu1
-            return (theta_a0, theta_a1)
+            theta_a0 = 1.0
+            return (theta_a0, )
         elif term in ("b", "bt"):
-            theta_b0 = 1.
-            theta_b1 = mu1
-            return (theta_b0, theta_b1)
+            theta_b0 = 1.0
+            return (theta_b0, )
         elif term == "f":
-            theta_f0 = mu1
+            theta_f0 = 1.0
             return (theta_f0, )
         elif term == "g":
-            theta_g0 = mu1
+            theta_g0 = 1.0
             return (theta_g0, )
         elif term == "m":
-            theta_m0 = mu1
+            theta_m0 = 1.0
             return (theta_m0, )
         elif term == "dirichlet_bc_u":
             theta_bc0 = 1.
@@ -85,21 +82,18 @@ class StokesUnsteady(StokesUnsteadyProblem):
         if term == "a":
             u = self.u
             v = self.v
-            a0 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx
-            a1 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx
-            return (a0, a1)
+            a0 = inner(grad(u), grad(v))*dx
+            return (a0, )
         elif term == "b":
             u = self.u
             q = self.q
-            b0 = - q*u[0].dx(0)*dx
-            b1 = - q*u[1].dx(1)*dx
-            return (b0, b1)
+            b0 = - q*div(u)*dx
+            return (b0, )
         elif term == "bt":
             p = self.p
             v = self.v
-            bt0 = - p*v[0].dx(0)*dx
-            bt1 = - p*v[1].dx(1)*dx
-            return (bt0, bt1)
+            bt0 = - p*div(v)*dx
+            return (bt0, )
         elif term == "f":
             v = self.v
             f0 = inner(self.f, v)*dx
