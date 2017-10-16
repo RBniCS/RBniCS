@@ -16,7 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from sympy import ccode, MatrixSymbol, sympify, zeros
+from sympy import MatrixSymbol, zeros
+from rbnics.shape_parametrization.utils.symbolic.python_string_to_sympy import MatrixListSymbol, python_string_to_sympy
 from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import strings_to_sympy_symbolic_parameters
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
@@ -29,7 +30,7 @@ def compute_shape_parametrization_gradient(shape_parametrization_expression_on_s
     # Convert expression from string to sympy representation
     deformation = list()
     for deformation_i in shape_parametrization_expression_on_subdomain:
-        deformation.append(sympify(deformation_i, locals={"x": x, "mu": mu}))
+        deformation.append(python_string_to_sympy(deformation_i, x, mu))
     # Compute gradient
     gradient = zeros(dim, dim)
     for i in range(dim):
@@ -40,6 +41,6 @@ def compute_shape_parametrization_gradient(shape_parametrization_expression_on_s
     for i in range(dim):
         gradient_str_i = list()
         for j in range(dim):
-            gradient_str_i.append(ccode(gradient[i, j]).replace(", 0]", "]"))
+            gradient_str_i.append(str(gradient[i, j]).replace(", 0]", "]"))
         gradient_str.append(tuple(gradient_str_i))
     return tuple(gradient_str)

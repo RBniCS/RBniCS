@@ -17,7 +17,8 @@
 #
 
 import itertools
-from sympy import Inverse, Matrix, MatrixSymbol, symbols, sympify, Transpose, zeros
+from sympy import Inverse, Matrix, MatrixSymbol, zeros
+from rbnics.shape_parametrization.utils.symbolic.python_string_to_sympy import MatrixListSymbol, python_string_to_sympy
 from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import strings_to_sympy_symbolic_parameters
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
@@ -31,13 +32,13 @@ def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
     # Convert vertices from string to symbols
     vertices_mapping_symbolic = dict()
     for (reference_vertex, deformed_vertex) in vertices_mapping.items():
-        reference_vertex_symbolic = dim*[None]
-        deformed_vertex_symbolic = dim*[None]
-        for i in range(dim):
-            reference_vertex_symbolic[i] = sympify(reference_vertex[i])
-            deformed_vertex_symbolic[i] = sympify(deformed_vertex[i], locals={"mu": mu})
-        reference_vertex_symbolic = tuple(reference_vertex_symbolic)
-        deformed_vertex_symbolic = tuple(deformed_vertex_symbolic)
+        assert isinstance(reference_vertex, Matrix) == isinstance(deformed_vertex, Matrix)
+        if isinstance(reference_vertex, Matrix):
+            reference_vertex_symbolic = reference_vertex
+            deformed_vertex_symbolic = deformed_vertex
+        else:
+            reference_vertex_symbolic = python_string_to_sympy(reference_vertex, None, None)
+            deformed_vertex_symbolic = python_string_to_sympy(deformed_vertex, None, mu)
         assert reference_vertex_symbolic not in vertices_mapping_symbolic
         vertices_mapping_symbolic[reference_vertex_symbolic] = deformed_vertex_symbolic
     # Find A and b such that x_o = A x + b for all (x, x_o) in vertices_mapping
@@ -61,7 +62,3 @@ def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
     x = sympy_symbolic_coordinates(dim, MatrixListSymbol)
     x_o = A*x + b
     return tuple([str(x_o[i]).replace(", 0]", "]") for i in range(dim)])
-    
-def MatrixListSymbol(prefix, dim, one):
-    assert one == 1
-    return Matrix([symbols(prefix + "[" + str(i) + "]") for i in range(dim)])
