@@ -18,8 +18,7 @@
 
 import os
 from sympy import Float, MatrixSymbol, preorder_traversal, simplify, sympify
-from rbnics.shape_parametrization.utils.symbolic import affine_shape_parametrization_from_vertices_mapping
-from rbnics.utils.io import PickleIO
+from rbnics.shape_parametrization.utils.symbolic import affine_shape_parametrization_from_vertices_mapping, VerticesMappingIO
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_affine_shape_parametrization_from_vertices_mapping")
 
@@ -40,8 +39,8 @@ def symbolic_equal(expression1, expression2, x, mu):
 # Test affine shape parametrization for tutorial 3
 def test_affine_shape_parametrization_from_vertices_mapping_hole():
     filename = "vertices_mapping_hole"
-    assert PickleIO.exists_file(data_dir, filename)
-    vertices_mappings = PickleIO.load_file(data_dir, filename)
+    assert VerticesMappingIO.exists_file(data_dir, filename)
+    vertices_mappings = VerticesMappingIO.load_file(data_dir, filename)
     shape_parametrization_expression = [affine_shape_parametrization_from_vertices_mapping(2, vertices_mapping) for vertices_mapping in vertices_mappings]
     # Auxiliary symbolic quantities
     x = MatrixSymbol("x", 2, 1)
@@ -131,8 +130,8 @@ def test_affine_shape_parametrization_from_vertices_mapping_graetz():
 # Test affine shape parametrization for tutorial 17
 def test_affine_shape_parametrization_from_vertices_mapping_stokes():
     filename = "vertices_mapping_stokes"
-    assert PickleIO.exists_file(data_dir, filename)
-    vertices_mappings = PickleIO.load_file(data_dir, filename)
+    assert VerticesMappingIO.exists_file(data_dir, filename)
+    vertices_mappings = VerticesMappingIO.load_file(data_dir, filename)
     shape_parametrization_expression = [affine_shape_parametrization_from_vertices_mapping(2, vertices_mapping) for vertices_mapping in vertices_mappings]
     # Auxiliary symbolic quantities
     x = MatrixSymbol("x", 2, 1)

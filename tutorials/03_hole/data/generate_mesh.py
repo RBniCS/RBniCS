@@ -19,7 +19,7 @@
 from dolfin import *
 from mshr import *
 from rbnics.backends.dolfin.wrapping import counterclockwise
-from rbnics.utils.io import PickleIO
+from rbnics.shape_parametrization.utils.symbolic import VerticesMappingIO
 
 # Define domain
 outer_rectangle = Rectangle(Point(-2., -2.), Point(2., 2.))
@@ -133,7 +133,7 @@ rightOuter = RightOuter()
 rightOuter.mark(boundaries, 8)
 
 # Save
-PickleIO.save_file(vertices_mappings, ".", "hole_vertices_mapping.pkl")
+VerticesMappingIO.save_file(vertices_mappings, ".", "hole_vertices_mapping.vmp")
 File("hole.xml") << mesh
 File("hole_physical_region.xml") << subdomains
 File("hole_facet_region.xml") << boundaries

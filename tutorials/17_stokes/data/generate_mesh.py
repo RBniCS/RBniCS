@@ -19,7 +19,7 @@
 from dolfin import *
 from mshr import *
 from rbnics.backends.dolfin.wrapping import counterclockwise
-from rbnics.utils.io import PickleIO
+from rbnics.shape_parametrization.utils.symbolic import VerticesMappingIO
 
 # Geometrical parameters
 t = 1. # mu[0]
@@ -121,7 +121,7 @@ walls_ID = 3
 walls.mark(boundaries, walls_ID)
 
 # Save to xml file
-PickleIO.save_file(vertices_mappings, ".", "t_bypass_vertices_mapping.pkl")
+VerticesMappingIO.save_file(vertices_mappings, ".", "t_bypass_vertices_mapping.vmp")
 File("t_bypass.xml") << mesh
 File("t_bypass_physical_region.xml") << subdomains
 File("t_bypass_facet_region.xml") << boundaries
