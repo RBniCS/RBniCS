@@ -18,7 +18,7 @@
 
 from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.indexed import Indexed
-from dolfin import Function, split
+from dolfin import Function, MixedElement, split, TensorElement
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _get_sub_elements__recursive
 from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
 
@@ -36,12 +36,18 @@ def _prepare_solution_split_storage():
 def _split_function(solution, solution_split_to_component, solution_split_to_solution):
     solution_split_to_component[solution] = (None, )
     solution_split_to_solution[solution] = solution
-    sub_elements = _get_all_sub_elements(solution.function_space())
-    for sub_element_index in sub_elements:
-        sub_solution = _split_from_tuple(solution, sub_element_index)
-        solution_split_to_component[sub_solution] = sub_element_index
-        solution_split_to_solution[sub_solution] = solution
-                
+    element = solution.ufl_element()
+    if (
+        isinstance(element, MixedElement)
+            and
+        not isinstance(element, TensorElement) # split() does not work with TensorElement
+    ):
+        sub_elements = _get_all_sub_elements(solution.function_space())
+        for sub_element_index in sub_elements:
+            sub_solution = _split_from_tuple(solution, sub_element_index)
+            solution_split_to_component[sub_solution] = sub_element_index
+            solution_split_to_solution[sub_solution] = solution
+            
 def _remove_mute_indices(node):
     if isinstance(node, Indexed):
         assert len(node.ufl_operands) == 2

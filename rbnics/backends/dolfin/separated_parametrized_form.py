@@ -17,7 +17,7 @@
 #
 
 from numpy import ones
-from dolfin import Constant, Expression, Function, log, PROGRESS
+from dolfin import Constant, Expression, log, PROGRESS
 from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
 from ufl.algorithms import expand_derivatives, Transformer
@@ -26,9 +26,9 @@ from ufl.core.multiindex import FixedIndex, Index, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
 from ufl.tensors import ComponentTensor, ListTensor
-from rbnics.utils.decorators import BackendFor
+from rbnics.utils.decorators import BackendFor, get_problem_from_solution
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from rbnics.backends.dolfin.wrapping import expression_name
+from rbnics.backends.dolfin.wrapping import expression_name, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, solution_identify_component
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized
 
 @BackendFor("dolfin", inputs=(Form, ))
@@ -113,28 +113,41 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                     # Skip all expressions where at least one leaf is not parametrized
                                     for t in traverse_terminals(d):
                                         if isinstance(t, Expression):
-                                            if is_pull_back_expression(t) and is_pull_back_expression_parametrized(t):
+                                            if is_pull_back_expression(t) and not is_pull_back_expression_parametrized(t):
+                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized pulled back expression")
                                                 break
                                             elif "mu_0" not in t.user_parameters:
-                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it is a non-parametrized expression")
+                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized expression")
                                                 break
                                         elif isinstance(t, Constant):
-                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it is a constant")
+                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a constant")
                                             break
+                                        elif is_problem_solution_or_problem_solution_component_type(t):
+                                            if not is_problem_solution_or_problem_solution_component(t):
+                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized function")
+                                                break
                                     else:
-                                        at_least_one_expression_or_function = False
+                                        at_least_one_expression_or_solution = False
                                         for t in traverse_terminals(d):
-                                            if isinstance(t, (Expression, Function)): # Functions are always assumed to be parametrized
-                                                at_least_one_expression_or_function = True
-                                        if at_least_one_expression_or_function:
-                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check")
+                                            if isinstance(t, Expression): # which is parametrized, because previous for loop was not broken
+                                                at_least_one_expression_or_solution = True
+                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the parametrized expression " + str(t))
+                                                break
+                                            elif is_problem_solution_or_problem_solution_component_type(t):
+                                                if is_problem_solution_or_problem_solution_component(t):
+                                                    print(t)
+                                                    at_least_one_expression_or_solution = True
+                                                    (_, _, solution) = solution_identify_component(t)
+                                                    log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution of " + get_problem_from_solution(solution).name())
+                                                    break
+                                        if at_least_one_expression_or_solution:
                                             all_candidates.append(d)
                                             pre_traversal_d = [q for q in pre_traversal(d)]
                                             for (q_i, q) in enumerate(pre_traversal_d):
                                                 assert q == pre_traversal_n[d_i + q_i] # make sure that we are marking the right node
                                                 internal_tree_nodes_skip[d_i + q_i] = True
                                         else:
-                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " has not passed the non-parametrized because is not an expression")
+                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " has not passed the non-parametrized because it is not a parametrized expression or a solution")
                             # Evaluate candidates
                             if len(all_candidates) == 0: # the whole expression was actually non-parametrized
                                 log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is a non-parametrized coefficient")
@@ -172,7 +185,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                     self._coefficients[-1].append(candidate)
                                     log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
                     else:
-                        log(PROGRESS, "\t\t Node " + str(n) + " to be skipped because is a descendant of a coefficient which has already been detected")
+                        log(PROGRESS, "\t\t Node " + str(n) + " to be skipped because it is a descendant of a coefficient which has already been detected")
             if len(self._coefficients[-1]) == 0: # then there were no coefficients to extract
                 log(PROGRESS, "\t There were no coefficients to extract")
                 self._coefficients.pop() # remove the (empty) element that was added to possibly store coefficients
