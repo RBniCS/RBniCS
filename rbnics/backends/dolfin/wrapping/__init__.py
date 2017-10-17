@@ -45,7 +45,6 @@ from rbnics.backends.dolfin.wrapping.form_name import form_name
 from rbnics.backends.dolfin.wrapping.form_replace import form_replace
 from rbnics.backends.dolfin.wrapping.function_copy import function_copy
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
-from rbnics.backends.dolfin.wrapping.function_from_subfunction_if_any import function_from_subfunction_if_any
 from rbnics.backends.dolfin.wrapping.function_from_ufl_operators import function_from_ufl_operators
 from rbnics.backends.dolfin.wrapping.function_load import function_load
 from rbnics.backends.dolfin.wrapping.function_save import function_save
@@ -106,7 +105,6 @@ __all__ = [
     'form_replace',
     'function_copy',
     'function_extend_or_restrict',
-    'function_from_subfunction_if_any',
     'function_from_ufl_operators',
     'function_load',
     'function_save',

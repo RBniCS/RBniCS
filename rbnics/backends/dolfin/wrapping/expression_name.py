@@ -31,7 +31,6 @@ def basic_expression_name(backend, wrapping):
         for n in wrapping.expression_iterator(expression):
             if n in visited:
                 continue
-            n = _preprocess_indexed(n, coefficients_replacement, str_repr)
             if hasattr(n, "cppcode"):
                 coefficients_replacement[repr(n)] = str(n.cppcode)
                 str_repr += repr(n.cppcode)
@@ -66,24 +65,6 @@ def basic_expression_name(backend, wrapping):
                         (str_repr + dolfin_version).encode("utf-8")
                     ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
         return hash_code
-        
-    def _preprocess_indexed(n, coefficients_replacement, str_repr):
-        if isinstance(n, Indexed):
-            assert len(n.ufl_operands) == 2
-            assert isinstance(n.ufl_operands[1], MultiIndex)
-            index_id = 0
-            for index in n.ufl_operands[1].indices():
-                assert isinstance(index, (FixedIndex, Index))
-                if isinstance(index, FixedIndex):
-                    str_repr += repr(str(index))
-                elif isinstance(index, Index):
-                    if repr(index) not in coefficients_replacement:
-                        coefficients_replacement[repr(index)] = "i_" + str(index_id)
-                        index_id += 1
-                    str_repr += coefficients_replacement[repr(index)]
-            return n.ufl_operands[0]
-        else:
-            return n
     
     return _basic_expression_name
 

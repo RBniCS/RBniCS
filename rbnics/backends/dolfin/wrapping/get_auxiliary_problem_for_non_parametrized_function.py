@@ -17,24 +17,60 @@
 #
 
 import hashlib
+from ufl.core.multiindex import MultiIndex
+from ufl.indexed import Indexed
+from ufl.tensors import ListTensor
 from dolfin import Function
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import _remove_mute_indices
+from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import _remove_mute_indices, _split_function
 
 def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping):
     def _basic_get_auxiliary_problem_for_non_parametrized_function(function):
-        function = _remove_mute_indices(function)
-        
         assert (
             (function in _basic_get_auxiliary_problem_for_non_parametrized_function._storage_problem)
                 ==
             (function in _basic_get_auxiliary_problem_for_non_parametrized_function._storage_component)
         )
         if function not in _basic_get_auxiliary_problem_for_non_parametrized_function._storage_problem:
-            assert isinstance(function, Function), "The case of split(non parametrized function) has not been implemented yet"
+            assert isinstance(function, (Function, Indexed, ListTensor))
+            if isinstance(function, Function):
+                converted_function = function
+                component = (None, )
+            elif isinstance(function, Indexed):
+                converted_function = _remove_mute_indices(function)
+                if isinstance(converted_function, Indexed):
+                    assert len(converted_function.ufl_operands) == 2
+                    assert isinstance(converted_function.ufl_operands[0], Function)
+                    assert isinstance(converted_function.ufl_operands[1], MultiIndex)
+                    function_split_to_component = dict()
+                    function_split_to_function = dict()
+                    _split_function(converted_function.ufl_operands[0], function_split_to_component, function_split_to_function)
+                    assert converted_function in function_split_to_component
+                    assert converted_function in function_split_to_function
+                    component = function_split_to_component[converted_function]
+                    converted_function = function_split_to_function[converted_function]
+                else:
+                    assert isinstance(converted_function, Function)
+                    component = (None, )
+            elif isinstance(function, ListTensor):
+                assert all(isinstance(component, Indexed) for component in function.ufl_operands)
+                assert all(len(component.ufl_operands) == 2 for component in function.ufl_operands)
+                assert all(isinstance(component.ufl_operands[0], Function) for component in function.ufl_operands)
+                assert all(isinstance(component.ufl_operands[1], MultiIndex) for component in function.ufl_operands)
+                assert all(component.ufl_operands[0] == function.ufl_operands[-1].ufl_operands[0] for component in function.ufl_operands)
+                function_split_to_component = dict()
+                function_split_to_function = dict()
+                _split_function(function.ufl_operands[-1].ufl_operands[0], function_split_to_component, function_split_to_function)
+                assert function in function_split_to_component
+                assert function in function_split_to_function
+                component = function_split_to_component[function]
+                converted_function = function_split_to_function[function]
+            else:
+                raise ValueError("Invalid function provided to get_auxiliary_problem_for_non_parametrized_function")
+                
             # Only a V attribute and a name method are required
             class AuxiliaryProblemForNonParametrizedFunction(object):
-                def __init__(self, function):
-                    self.V = wrapping.get_function_space(function)
+                def __init__(self, converted_function):
+                    self.V = wrapping.get_function_space(converted_function)
                     
                 def name(self):
                     return type(self).__name__
@@ -42,16 +78,16 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
             # Change the name of the (local) class to (almost) uniquely identify the function.
             # Since the unique dolfin identifier f_** may change between runs, we use as identifiers
             # a combination of the norms, truncated to the first five significant figures.
-            norm_1 = round_to_significant_figures(wrapping.get_function_norm(function, "l1"), 5)
-            norm_2 = round_to_significant_figures(wrapping.get_function_norm(function, "l2"), 5)
-            norm_inf = round_to_significant_figures(wrapping.get_function_norm(function, "linf"), 5)
+            norm_1 = round_to_significant_figures(wrapping.get_function_norm(converted_function, "l1"), 5)
+            norm_2 = round_to_significant_figures(wrapping.get_function_norm(converted_function, "l2"), 5)
+            norm_inf = round_to_significant_figures(wrapping.get_function_norm(converted_function, "linf"), 5)
             AuxiliaryProblemForNonParametrizedFunction.__name__ = (
                 "Function_" + hashlib.sha1(
                     (norm_1 + norm_2 + norm_inf).encode("utf-8")
                 ).hexdigest()
             )
-            _basic_get_auxiliary_problem_for_non_parametrized_function._storage_problem[function] = AuxiliaryProblemForNonParametrizedFunction(function)
-            _basic_get_auxiliary_problem_for_non_parametrized_function._storage_component[function] = (None, )
+            _basic_get_auxiliary_problem_for_non_parametrized_function._storage_problem[function] = AuxiliaryProblemForNonParametrizedFunction(converted_function)
+            _basic_get_auxiliary_problem_for_non_parametrized_function._storage_component[function] = component
         return (
             _basic_get_auxiliary_problem_for_non_parametrized_function._storage_problem[function],
             _basic_get_auxiliary_problem_for_non_parametrized_function._storage_component[function]

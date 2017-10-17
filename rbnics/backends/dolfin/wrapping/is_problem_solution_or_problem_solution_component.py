@@ -30,13 +30,17 @@ def is_problem_solution_or_problem_solution_component(node):
 def _prepare_solution_split_storage():
     for solution in _solution_to_problem_map:
         if solution not in _solution_split_to_component:
-            _solution_split_to_component[solution] = (None, )
-            _solution_split_to_solution[solution] = solution
-            sub_elements = _get_all_sub_elements(solution.function_space())
-            for sub_element_index in sub_elements:
-                sub_solution = _split_from_tuple(solution, sub_element_index)
-                _solution_split_to_component[sub_solution] = sub_element_index
-                _solution_split_to_solution[sub_solution] = solution
+            assert solution not in _solution_split_to_solution
+            _split_function(solution, _solution_split_to_component, _solution_split_to_solution)
+            
+def _split_function(solution, solution_split_to_component, solution_split_to_solution):
+    solution_split_to_component[solution] = (None, )
+    solution_split_to_solution[solution] = solution
+    sub_elements = _get_all_sub_elements(solution.function_space())
+    for sub_element_index in sub_elements:
+        sub_solution = _split_from_tuple(solution, sub_element_index)
+        solution_split_to_component[sub_solution] = sub_element_index
+        solution_split_to_solution[sub_solution] = solution
                 
 def _remove_mute_indices(node):
     if isinstance(node, Indexed):
