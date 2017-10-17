@@ -54,7 +54,7 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             L = 1e6
             C = 0
             # Fixed problem coefficients related to the nonlinear term
-            delta_I = 0.
+            delta_I = 7e4
             # Test and trial functions for variational forms definition
             phip = TestFunction(W)
             (phi, p) = split(phip)
