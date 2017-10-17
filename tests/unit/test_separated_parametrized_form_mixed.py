@@ -879,3 +879,235 @@ def test_separated_parametrized_forms_mixed_16():
         "\t\t" + str(a16_sep._form_unchanged[0].integrals()[0].integrand()) + "\n"
         )
     assert "v_0 * (sum_{i_{353}} ([f_40[0], f_40[1]])[i_{353}] * (grad(v_1))[i_{353}] )" == str(a16_sep._form_unchanged[0].integrals()[0].integrand())
+    
+@skip_in_parallel
+@pytest.mark.dependency(name="17", depends=["16"])
+def test_separated_parametrized_forms_mixed_17():
+    a17 = inner(grad(expr11)*grad(u), grad(v))*dx + inner(grad(u)*grad(expr10), v)*dx + expr10.dx(0)*inner(u, v)*dx - p*tr(grad(expr11)*grad(v))*dx - div(expr11)*q*div(u)*dx - expr10.dx(1)*p*q*dx
+    a17_sep = SeparatedParametrizedForm(a17)
+    log(PROGRESS, "*** ###              FORM 17             ### ***")
+    log(PROGRESS, "This form is similar to form 11, but each term is multiplied by the gradient/partial derivative of a Function, which is the solution of a parametrized problem")
+    a17_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a17_sep.coefficients)) + "\n"
+        )
+    assert 6 == len(a17_sep.coefficients)
+    log(PROGRESS, "\tSublen coefficients:\n" +
+        "\t\t" + str(len(a17_sep.coefficients[0])) + "\n" +
+        "\t\t" + str(len(a17_sep.coefficients[1])) + "\n" +
+        "\t\t" + str(len(a17_sep.coefficients[2])) + "\n" +
+        "\t\t" + str(len(a17_sep.coefficients[3])) + "\n" +
+        "\t\t" + str(len(a17_sep.coefficients[4])) + "\n" +
+        "\t\t" + str(len(a17_sep.coefficients[5])) + "\n"
+        )
+    assert 1 == len(a17_sep.coefficients[0])
+    assert 1 == len(a17_sep.coefficients[1])
+    assert 1 == len(a17_sep.coefficients[2])
+    assert 1 == len(a17_sep.coefficients[3])
+    assert 1 == len(a17_sep.coefficients[4])
+    assert 1 == len(a17_sep.coefficients[5])
+    log(PROGRESS, "\tCoefficients:\n" +
+        "\t\t" + str(a17_sep.coefficients[0][0]) + "\n" +
+        "\t\t" + str(a17_sep.coefficients[1][0]) + "\n" +
+        "\t\t" + str(a17_sep.coefficients[2][0]) + "\n" +
+        "\t\t" + str(a17_sep.coefficients[3][0]) + "\n" +
+        "\t\t" + str(a17_sep.coefficients[4][0]) + "\n" +
+        "\t\t" + str(a17_sep.coefficients[5][0]) + "\n"
+        )
+    assert "grad(f_22)" == str(a17_sep.coefficients[0][0])
+    assert "grad(f_19)" == str(a17_sep.coefficients[1][0])
+    assert "(grad(f_19))[0]" == str(a17_sep.coefficients[2][0])
+    assert "grad(f_22)" == str(a17_sep.coefficients[3][0])
+    assert "grad(f_22)" == str(a17_sep.coefficients[4][0])
+    assert "(grad(f_19))[1]" == str(a17_sep.coefficients[5][0])
+    log(PROGRESS, "\tPlaceholders:\n" +
+        "\t\t" + str(a17_sep._placeholders[0][0]) + "\n" +
+        "\t\t" + str(a17_sep._placeholders[1][0]) + "\n" +
+        "\t\t" + str(a17_sep._placeholders[2][0]) + "\n" +
+        "\t\t" + str(a17_sep._placeholders[3][0]) + "\n" +
+        "\t\t" + str(a17_sep._placeholders[4][0]) + "\n" +
+        "\t\t" + str(a17_sep._placeholders[5][0]) + "\n"
+        )
+    assert "f_98" == str(a17_sep._placeholders[0][0])
+    assert "f_99" == str(a17_sep._placeholders[1][0])
+    assert "f_100" == str(a17_sep._placeholders[2][0])
+    assert "f_101" == str(a17_sep._placeholders[3][0])
+    assert "f_102" == str(a17_sep._placeholders[4][0])
+    assert "f_103" == str(a17_sep._placeholders[5][0])
+    log(PROGRESS, "\tForms with placeholders:\n" +
+        "\t\t" + str(a17_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a17_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a17_sep._form_with_placeholders[2].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a17_sep._form_with_placeholders[3].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a17_sep._form_with_placeholders[4].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a17_sep._form_with_placeholders[5].integrals()[0].integrand()) + "\n"
+        )
+    assert "sum_{i_{363}} sum_{i_{362}} ([{ A | A_{i_{371}} = (grad(v_0))[0, i_{371}] }, { A | A_{i_{372}} = (grad(v_0))[1, i_{372}] }])[i_{362}, i_{363}] * ({ A | A_{i_{354}, i_{355}} = sum_{i_{356}} ([{ A | A_{i_{369}} = (grad(v_1))[0, i_{369}] }, { A | A_{i_{370}} = (grad(v_1))[1, i_{370}] }])[i_{356}, i_{355}] * f_98[i_{354}, i_{356}]  })[i_{362}, i_{363}]  " == str(a17_sep._form_with_placeholders[0].integrals()[0].integrand())
+    assert "sum_{i_{364}} ([v_0[0], v_0[1]])[i_{364}] * ({ A | A_{i_{357}} = sum_{i_{358}} ([{ A | A_{i_{373}} = (grad(v_1))[0, i_{373}] }, { A | A_{i_{374}} = (grad(v_1))[1, i_{374}] }])[i_{357}, i_{358}] * f_99[i_{358}]  })[i_{364}] " == str(a17_sep._form_with_placeholders[1].integrals()[0].integrand())
+    assert "f_100 * (sum_{i_{365}} ([v_0[0], v_0[1]])[i_{365}] * ([v_1[0], v_1[1]])[i_{365}] )" == str(a17_sep._form_with_placeholders[2].integrals()[0].integrand())
+    assert "-1 * v_1[2] * (sum_{i_{366}} ({ A | A_{i_{359}, i_{360}} = sum_{i_{361}} ([{ A | A_{i_{375}} = (grad(v_0))[0, i_{375}] }, { A | A_{i_{376}} = (grad(v_0))[1, i_{376}] }])[i_{361}, i_{360}] * f_101[i_{359}, i_{361}]  })[i_{366}, i_{366}] )" == str(a17_sep._form_with_placeholders[3].integrals()[0].integrand())
+    assert "-1 * v_0[2] * (sum_{i_{367}} f_102[i_{367}, i_{367}] ) * (sum_{i_{368}} ([{ A | A_{i_{378}} = (grad(v_1))[0, i_{378}] }, { A | A_{i_{379}} = (grad(v_1))[1, i_{379}] }])[i_{368}, i_{368}] )" == str(a17_sep._form_with_placeholders[4].integrals()[0].integrand())
+    assert "-1 * v_0[2] * v_1[2] * f_103" == str(a17_sep._form_with_placeholders[5].integrals()[0].integrand())
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a17_sep._form_unchanged)) + "\n"
+        )
+    assert 0 == len(a17_sep._form_unchanged)
+
+@skip_in_parallel
+@pytest.mark.dependency(name="18", depends=["17"])
+def test_separated_parametrized_forms_mixed_18():
+    a18 = inner(grad(expr13_split_0_split[0]), grad(scalar_trial))*scalar_test*dx + expr13_split_0_split[1].dx(0)*scalar_trial.dx(0)*scalar_test*dx
+    a18_sep = SeparatedParametrizedForm(a18)
+    log(PROGRESS, "*** ###              FORM 18             ### ***")
+    log(PROGRESS, "This form is similar to form 12, but each term is multiplied by the gradient/partial derivative of a Function, which is the solution of a parametrized problem")
+    a18_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a18_sep.coefficients)) + "\n"
+        )
+    assert 2 == len(a18_sep.coefficients)
+    log(PROGRESS, "\tSublen coefficients:\n" +
+        "\t\t" + str(len(a18_sep.coefficients[0])) + "\n" +
+        "\t\t" + str(len(a18_sep.coefficients[1])) + "\n"
+        )
+    assert 1 == len(a18_sep.coefficients[0])
+    assert 1 == len(a18_sep.coefficients[1])
+    log(PROGRESS, "\tCoefficients:\n" +
+        "\t\t" + str(a18_sep.coefficients[0][0]) + "\n" +
+        "\t\t" + str(a18_sep.coefficients[1][0]) + "\n"
+        )
+    assert "grad(f_28)" == str(a18_sep.coefficients[0][0])
+    assert "(grad(f_28))[1, 0]" == str(a18_sep.coefficients[1][0])
+    log(PROGRESS, "\tPlaceholders:\n" +
+        "\t\t" + str(a18_sep._placeholders[0][0]) + "\n" +
+        "\t\t" + str(a18_sep._placeholders[1][0]) + "\n"
+        )
+    assert "f_104" == str(a18_sep._placeholders[0][0])
+    assert "f_105" == str(a18_sep._placeholders[1][0])
+    log(PROGRESS, "\tForms with placeholders:\n" +
+        "\t\t" + str(a18_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a18_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n"
+        )
+    assert "v_0 * (sum_{i_{381}} f_104[0, i_{381}] * (grad(v_1))[i_{381}] )" == str(a18_sep._form_with_placeholders[0].integrals()[0].integrand())
+    assert "v_0 * (grad(v_1))[0] * f_105" == str(a18_sep._form_with_placeholders[1].integrals()[0].integrand())
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a18_sep._form_unchanged)) + "\n"
+        )
+    assert 0 == len(a18_sep._form_unchanged)
+
+@skip_in_parallel
+@pytest.mark.dependency(name="19", depends=["18"])
+def test_separated_parametrized_forms_mixed_19():
+    a19 = inner(grad(expr13_split[0])*grad(scalar_trial), grad(scalar_test))*dx + inner(expr13_split[0].dx(0), grad(scalar_trial))*scalar_test*dx
+    a19_sep = SeparatedParametrizedForm(a19)
+    log(PROGRESS, "*** ###              FORM 19             ### ***")
+    log(PROGRESS, "This form is similar to form 13, but each term is multiplied by the gradient/partial derivative of a Function, which is the solution of a parametrized problem")
+    a19_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a19_sep.coefficients)) + "\n"
+        )
+    assert 2 == len(a19_sep.coefficients)
+    log(PROGRESS, "\tSublen coefficients:\n" +
+        "\t\t" + str(len(a19_sep.coefficients[0])) + "\n" +
+        "\t\t" + str(len(a19_sep.coefficients[1])) + "\n"
+        )
+    assert 1 == len(a19_sep.coefficients[0])
+    assert 1 == len(a19_sep.coefficients[1])
+    log(PROGRESS, "\tCoefficients:\n" +
+        "\t\t" + str(a19_sep.coefficients[0][0]) + "\n" +
+        "\t\t" + str(a19_sep.coefficients[1][0]) + "\n"
+        )
+    assert "grad(f_28)" == str(a19_sep.coefficients[0][0])
+    assert "grad(f_28)" == str(a19_sep.coefficients[1][0])
+    log(PROGRESS, "\tPlaceholders:\n" +
+        "\t\t" + str(a19_sep._placeholders[0][0]) + "\n" +
+        "\t\t" + str(a19_sep._placeholders[1][0]) + "\n"
+        )
+    assert "f_106" == str(a19_sep._placeholders[0][0])
+    assert "f_107" == str(a19_sep._placeholders[1][0])
+    log(PROGRESS, "\tForms with placeholders:\n" +
+        "\t\t" + str(a19_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a19_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n"
+        )
+    assert "sum_{i_{387}} ({ A | A_{i_{384}} = sum_{i_{385}} ([{ A | A_{i_{389}} = f_106[0, i_{389}] }, { A | A_{i_{390}} = f_106[1, i_{390}] }])[i_{384}, i_{385}] * (grad(v_1))[i_{385}]  })[i_{387}] * (grad(v_0))[i_{387}] " == str(a19_sep._form_with_placeholders[0].integrals()[0].integrand())
+    assert "v_0 * (sum_{i_{388}} ([{ A | A_{i_{391}} = f_107[0, i_{391}] }, { A | A_{i_{392}} = f_107[1, i_{392}] }])[i_{388}, 0] * (grad(v_1))[i_{388}] )" == str(a19_sep._form_with_placeholders[1].integrals()[0].integrand())
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a19_sep._form_unchanged)) + "\n"
+        )
+    assert 0 == len(a19_sep._form_unchanged)
+    
+@skip_in_parallel
+@pytest.mark.dependency(name="20", depends=["19"])
+def test_separated_parametrized_forms_mixed_20():
+    a20 = inner(grad(expr15)*grad(u), grad(v))*dx + inner(grad(u)*grad(expr14), v)*dx + expr14.dx(0)*inner(u, v)*dx - p*tr(grad(expr15)*grad(v))*dx - div(expr15)*q*div(u)*dx - expr14.dx(1)*p*q*dx
+    a20_sep = SeparatedParametrizedForm(a20)
+    log(PROGRESS, "*** ###              FORM 20             ### ***")
+    log(PROGRESS, "This form is similar to form 14, but each term is multiplied by the gradient/partial derivative of a Function, which is not the solution of a parametrized problem")
+    a20_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a20_sep.coefficients)) + "\n"
+        )
+    assert 0 == len(a20_sep.coefficients)
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a20_sep._form_unchanged)) + "\n"
+        )
+    assert 6 == len(a20_sep._form_unchanged)
+    log(PROGRESS, "\tUnchanged forms:\n" +
+        "\t\t" + str(a20_sep._form_unchanged[0].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a20_sep._form_unchanged[1].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a20_sep._form_unchanged[2].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a20_sep._form_unchanged[3].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a20_sep._form_unchanged[4].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a20_sep._form_unchanged[5].integrals()[0].integrand()) + "\n"
+        )
+    assert "sum_{i_{402}} sum_{i_{401}} ([{ A | A_{i_{410}} = (grad(v_0))[0, i_{410}] }, { A | A_{i_{411}} = (grad(v_0))[1, i_{411}] }])[i_{401}, i_{402}] * ({ A | A_{i_{393}, i_{394}} = sum_{i_{395}} ([{ A | A_{i_{408}} = (grad(v_1))[0, i_{408}] }, { A | A_{i_{409}} = (grad(v_1))[1, i_{409}] }])[i_{395}, i_{394}] * (grad(f_34))[i_{393}, i_{395}]  })[i_{401}, i_{402}]  " == str(a20_sep._form_unchanged[0].integrals()[0].integrand())
+    assert "sum_{i_{403}} ([v_0[0], v_0[1]])[i_{403}] * ({ A | A_{i_{396}} = sum_{i_{397}} ([{ A | A_{i_{412}} = (grad(v_1))[0, i_{412}] }, { A | A_{i_{413}} = (grad(v_1))[1, i_{413}] }])[i_{396}, i_{397}] * (grad(f_31))[i_{397}]  })[i_{403}] " == str(a20_sep._form_unchanged[1].integrals()[0].integrand())
+    assert "(grad(f_31))[0] * (sum_{i_{404}} ([v_0[0], v_0[1]])[i_{404}] * ([v_1[0], v_1[1]])[i_{404}] )" == str(a20_sep._form_unchanged[2].integrals()[0].integrand())
+    assert "-1 * v_1[2] * (sum_{i_{405}} ({ A | A_{i_{398}, i_{399}} = sum_{i_{400}} ([{ A | A_{i_{414}} = (grad(v_0))[0, i_{414}] }, { A | A_{i_{415}} = (grad(v_0))[1, i_{415}] }])[i_{400}, i_{399}] * (grad(f_34))[i_{398}, i_{400}]  })[i_{405}, i_{405}] )" == str(a20_sep._form_unchanged[3].integrals()[0].integrand())
+    assert "-1 * v_0[2] * (sum_{i_{406}} (grad(f_34))[i_{406}, i_{406}] ) * (sum_{i_{407}} ([{ A | A_{i_{417}} = (grad(v_1))[0, i_{417}] }, { A | A_{i_{418}} = (grad(v_1))[1, i_{418}] }])[i_{407}, i_{407}] )" == str(a20_sep._form_unchanged[4].integrals()[0].integrand())
+    assert "-1 * v_0[2] * (grad(f_31))[1] * v_1[2]" == str(a20_sep._form_unchanged[5].integrals()[0].integrand())
+    
+@skip_in_parallel
+@pytest.mark.dependency(name="21", depends=["20"])
+def test_separated_parametrized_forms_mixed_21():
+    a21 = inner(grad(expr17_split_0_split[0]), grad(scalar_trial))*scalar_test*dx + expr17_split_0_split[1].dx(0)*scalar_trial.dx(0)*scalar_test*dx
+    a21_sep = SeparatedParametrizedForm(a21)
+    log(PROGRESS, "*** ###              FORM 21             ### ***")
+    log(PROGRESS, "This form is similar to form 15, but each term is multiplied by the gradient/partial derivative of a Function, which is not the solution of a parametrized problem")
+    a21_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a21_sep.coefficients)) + "\n"
+        )
+    assert 0 == len(a21_sep.coefficients)
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a21_sep._form_unchanged)) + "\n"
+        )
+    assert 2 == len(a21_sep._form_unchanged)
+    log(PROGRESS, "\tUnchanged forms:\n" +
+        "\t\t" + str(a21_sep._form_unchanged[0].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a21_sep._form_unchanged[1].integrals()[0].integrand()) + "\n"
+        )
+    assert "v_0 * (sum_{i_{420}} (grad(f_40))[0, i_{420}] * (grad(v_1))[i_{420}] )" == str(a21_sep._form_unchanged[0].integrals()[0].integrand())
+    assert "v_0 * (grad(v_1))[0] * (grad(f_40))[1, 0]" == str(a21_sep._form_unchanged[1].integrals()[0].integrand())
+
+@skip_in_parallel
+@pytest.mark.dependency(name="22", depends=["21"])
+def test_separated_parametrized_forms_mixed_22():
+    a22 = inner(grad(expr17_split[0])*grad(scalar_trial), grad(scalar_test))*dx + inner(expr17_split[0].dx(0), grad(scalar_trial))*scalar_test*dx
+    a22_sep = SeparatedParametrizedForm(a22)
+    log(PROGRESS, "*** ###              FORM 22             ### ***")
+    log(PROGRESS, "This form is similar to form 16, but each term is multiplied by the gradient/partial derivative of a Function, which is not the solution of a parametrized problem")
+    a22_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a22_sep.coefficients)) + "\n"
+        )
+    assert 0 == len(a22_sep.coefficients)
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a22_sep._form_unchanged)) + "\n"
+        )
+    assert 2 == len(a22_sep._form_unchanged)
+    log(PROGRESS, "\tUnchanged forms:\n" +
+        "\t\t" + str(a22_sep._form_unchanged[0].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a22_sep._form_unchanged[1].integrals()[0].integrand()) + "\n"
+        )
+    assert "sum_{i_{426}} ({ A | A_{i_{423}} = sum_{i_{424}} ([{ A | A_{i_{428}} = (grad(f_40))[0, i_{428}] }, { A | A_{i_{429}} = (grad(f_40))[1, i_{429}] }])[i_{423}, i_{424}] * (grad(v_1))[i_{424}]  })[i_{426}] * (grad(v_0))[i_{426}] " == str(a22_sep._form_unchanged[0].integrals()[0].integrand())
+    assert "v_0 * (sum_{i_{427}} ([{ A | A_{i_{430}} = (grad(f_40))[0, i_{430}] }, { A | A_{i_{431}} = (grad(f_40))[1, i_{431}] }])[i_{427}, 0] * (grad(v_1))[i_{427}] )" == str(a22_sep._form_unchanged[1].integrals()[0].integrand())

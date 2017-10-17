@@ -22,9 +22,10 @@ from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
 from ufl.algorithms import expand_derivatives, Transformer
 from ufl.algorithms.traversal import iter_expressions
-from ufl.core.multiindex import FixedIndex, Index, MultiIndex
+from ufl.core.multiindex import FixedIndex, Index as MuteIndex, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
 from ufl.indexed import Indexed
+from ufl.indexsum import IndexSum
 from ufl.tensors import ComponentTensor, ListTensor
 from rbnics.utils.decorators import BackendFor, get_problem_from_solution
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
@@ -163,27 +164,53 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                     all_candidates = [n]
                             # Add the coefficient(s)
                             for candidate in all_candidates:
-                                if isinstance(candidate, Indexed):
-                                    assert isinstance(candidate.ufl_operands[1], MultiIndex)
-                                    assert len(candidate.ufl_operands) == 2
-                                    indices = candidate.ufl_operands[1].indices()
-                                    is_fixed = isinstance(indices[0], FixedIndex)
-                                    assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
-                                    is_mute = isinstance(indices[0], Index) # mute index for sum
-                                    assert all([isinstance(index, Index) == is_mute for index in indices])
-                                    assert (is_fixed and not is_mute) or (not is_fixed and is_mute)
-                                    if is_fixed:
-                                        self._coefficients[-1].append(candidate)
-                                        log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with fixed index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])) + " for fixed index " + str(candidate.ufl_operands[1]))
-                                    elif is_mute:
-                                        self._coefficients[-1].append(candidate.ufl_operands[0])
-                                        log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as an Indexed expression with mute index, resulting in a coefficient " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                def preprocess_candidate(candidate):
+                                    if isinstance(candidate, Indexed):
+                                        assert len(candidate.ufl_operands) == 2
+                                        assert isinstance(candidate.ufl_operands[1], MultiIndex)
+                                        if all([isinstance(index, FixedIndex) for index in candidate.ufl_operands[1].indices()]):
+                                            log(PROGRESS, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an Indexed expression with fixed indices, resulting in a candidate " + str(candidate) + " of type " + str(type(candidate)))
+                                            return candidate # no further preprocessing needed
+                                        else:
+                                            log(PROGRESS, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an Indexed expression with at least one mute index, resulting in a candidate " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                            return preprocess_candidate(candidate.ufl_operands[0])
+                                    elif isinstance(candidate, IndexSum):
+                                        assert len(candidate.ufl_operands) == 2
+                                        assert isinstance(candidate.ufl_operands[1], MultiIndex)
+                                        assert all([isinstance(index, MuteIndex) for index in candidate.ufl_operands[1].indices()])
+                                        log(PROGRESS, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an IndexSum expression, resulting in a candidate " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                        return preprocess_candidate(candidate.ufl_operands[0])
+                                    elif isinstance(candidate, ListTensor):
+                                        candidates = set([preprocess_candidate(component) for component in candidate.ufl_operands])
+                                        if len(candidates) is 1:
+                                            preprocessed_candidate = candidates.pop()
+                                            log(PROGRESS, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an ListTensor expression with a unique preprocessed component, resulting in a candidate " + str(preprocessed_candidate) + " of type " + str(type(preprocessed_candidate)))
+                                            return preprocess_candidate(preprocessed_candidate)
+                                        else:
+                                            at_least_one_mute_index = False
+                                            candidates_from_components = list()
+                                            for component in candidates:
+                                                assert isinstance(component, (ComponentTensor, Indexed))
+                                                assert len(component.ufl_operands) == 2
+                                                assert isinstance(component.ufl_operands[1], MultiIndex)
+                                                if not all([isinstance(index, FixedIndex) for index in component.ufl_operands[1].indices()]):
+                                                    at_least_one_mute_index = True
+                                                candidates_from_components.append(preprocess_candidate(component.ufl_operands[0]))
+                                            if at_least_one_mute_index:
+                                                candidates_from_components = set(candidates_from_components)
+                                                assert len(candidates_from_components) is 1
+                                                preprocessed_candidate = candidates_from_components.pop()
+                                                log(PROGRESS, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an ListTensor expression with multiple preprocessed components with at least one mute index, resulting in a candidate " + str(preprocessed_candidate) + " of type " + str(type(preprocessed_candidate)))
+                                                return preprocess_candidate(preprocessed_candidate)
+                                            else:
+                                                log(PROGRESS, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an ListTensor expression with multiple preprocessed components with fixed indices, resulting in a candidate " + str(candidate) + " of type " + str(type(candidate)))
+                                                return candidate # no further preprocessing needed
                                     else:
-                                        raise TypeError("Invalid index")
-                                else:
-                                    assert not isinstance(candidate, (ListTensor, ComponentTensor))
-                                    self._coefficients[-1].append(candidate)
-                                    log(PROGRESS, "\t\t\t Accepting descandant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
+                                        log(PROGRESS, "\t\t\t No preprocessing required for descendant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
+                                        return candidate
+                                preprocessed_candidate = preprocess_candidate(candidate)
+                                self._coefficients[-1].append(preprocessed_candidate)
+                                log(PROGRESS, "\t\t\t Accepting descendant node " + str(preprocessed_candidate) + " as a coefficient of type " + str(type(preprocessed_candidate)))
                     else:
                         log(PROGRESS, "\t\t Node " + str(n) + " to be skipped because it is a descendant of a coefficient which has already been detected")
             if len(self._coefficients[-1]) == 0: # then there were no coefficients to extract

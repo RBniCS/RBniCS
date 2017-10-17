@@ -22,7 +22,7 @@ from ufl.core.operator import Operator
 from ufl.core.multiindex import IndexBase, MultiIndex
 from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
-from ufl.tensors import ListTensor
+from ufl.tensors import ComponentTensor, ListTensor
 from dolfin import Constant, Expression, Function
 from rbnics.utils.decorators import overload
 
@@ -37,15 +37,11 @@ def is_problem_solution_or_problem_solution_component_type(node: Function):
 @overload
 def is_problem_solution_or_problem_solution_component_type(node: Indexed):
     assert len(node.ufl_operands) == 2
-    assert isinstance(node.ufl_operands[0], (Argument, Constant, Expression, Function, Operator))
     assert isinstance(node.ufl_operands[1], MultiIndex)
     return is_problem_solution_or_problem_solution_component_type(node.ufl_operands[0])
     
 @overload
 def is_problem_solution_or_problem_solution_component_type(node: ListTensor):
-    assert all(isinstance(component, Indexed) for component in node.ufl_operands)
-    assert all(len(component.ufl_operands) == 2 for component in node.ufl_operands)
-    assert all(isinstance(component.ufl_operands[0], (Argument, Function)) for component in node.ufl_operands)
-    assert all(isinstance(component.ufl_operands[1], MultiIndex) for component in node.ufl_operands)
-    assert all(component.ufl_operands[0] == node.ufl_operands[-1].ufl_operands[0] for component in node.ufl_operands)
-    return is_problem_solution_or_problem_solution_component_type(node.ufl_operands[-1].ufl_operands[0])
+    result = [is_problem_solution_or_problem_solution_component_type(component) for component in node.ufl_operands]
+    assert all([result_i == result[0] for result_i in result[1:]])
+    return result[0]

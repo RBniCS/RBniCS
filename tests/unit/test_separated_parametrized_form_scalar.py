@@ -923,3 +923,67 @@ def test_separated_parametrized_forms_scalar_21():
         )
     assert "v_0 * f_31[0] * v_1" == str(a21_sep._form_unchanged[0].integrals()[0].integrand())
     assert "v_0 * (grad(v_1))[0] * f_31[1]" == str(a21_sep._form_unchanged[1].integrals()[0].integrand())
+    
+@skip_in_parallel
+@pytest.mark.dependency(name="22", depends=["21"])
+def test_separated_parametrized_forms_scalar_22():
+    a22 = inner(grad(expr13_split[0]), grad(u))*v*dx + expr13_split[1].dx(0)*u.dx(0)*v*dx
+    a22_sep = SeparatedParametrizedForm(a22)
+    log(PROGRESS, "*** ###              FORM 22             ### ***")
+    log(PROGRESS, "This form is similar to form 17, but each term is multiplied to the gradient/partial derivative of a component of a solution of a parametrized problem")
+    a22_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a22_sep.coefficients)) + "\n"
+        )
+    assert 2 == len(a22_sep.coefficients)
+    log(PROGRESS, "\tSublen coefficients:\n" +
+        "\t\t" + str(len(a22_sep.coefficients[0])) + "\n" +
+        "\t\t" + str(len(a22_sep.coefficients[1])) + "\n"
+        )
+    assert 1 == len(a22_sep.coefficients[0])
+    assert 1 == len(a22_sep.coefficients[1])
+    log(PROGRESS, "\tCoefficients:\n" +
+        "\t\t" + str(a22_sep.coefficients[0][0]) + "\n" +
+        "\t\t" + str(a22_sep.coefficients[1][0]) + "\n"
+        )
+    assert "grad(f_22)" == str(a22_sep.coefficients[0][0])
+    assert "(grad(f_22))[1, 0]" == str(a22_sep.coefficients[1][0])
+    log(PROGRESS, "\tPlaceholders:\n" +
+        "\t\t" + str(a22_sep._placeholders[0][0]) + "\n" +
+        "\t\t" + str(a22_sep._placeholders[1][0]) + "\n"
+        )
+    assert "f_82" == str(a22_sep._placeholders[0][0])
+    assert "f_83" == str(a22_sep._placeholders[1][0])
+    log(PROGRESS, "\tForms with placeholders:\n" +
+        "\t\t" + str(a22_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a22_sep._form_with_placeholders[1].integrals()[0].integrand()) + "\n"
+        )
+    assert "v_0 * (sum_{i_{66}} f_82[0, i_{66}] * (grad(v_1))[i_{66}] )" == str(a22_sep._form_with_placeholders[0].integrals()[0].integrand())
+    assert "v_0 * (grad(v_1))[0] * f_83" == str(a22_sep._form_with_placeholders[1].integrals()[0].integrand())
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a22_sep._form_unchanged)) + "\n"
+        )
+    assert 0 == len(a22_sep._form_unchanged)
+    
+@skip_in_parallel
+@pytest.mark.dependency(name="23", depends=["22"])
+def test_separated_parametrized_forms_scalar_23():
+    a23 = inner(grad(expr16_split[0]), grad(u))*v*dx + expr16_split[1].dx(0)*u.dx(0)*v*dx
+    a23_sep = SeparatedParametrizedForm(a23)
+    log(PROGRESS, "*** ###              FORM 23             ### ***")
+    log(PROGRESS, "This form is similar to form 22, but each term is multiplied to the gradient/partial derivative of a component of a Function which is not the solution of a parametrized problem. This results in no parametrized coefficients")
+    a23_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a23_sep.coefficients)) + "\n"
+        )
+    assert 0 == len(a23_sep.coefficients)
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a23_sep._form_unchanged)) + "\n"
+        )
+    assert 2 == len(a23_sep._form_unchanged)
+    log(PROGRESS, "\tUnchanged forms:\n" +
+        "\t\t" + str(a23_sep._form_unchanged[0].integrals()[0].integrand()) + "\n" +
+        "\t\t" + str(a23_sep._form_unchanged[1].integrals()[0].integrand()) + "\n"
+        )
+    assert "v_0 * (sum_{i_{69}} (grad(f_31))[0, i_{69}] * (grad(v_1))[i_{69}] )" == str(a23_sep._form_unchanged[0].integrals()[0].integrand())
+    assert "v_0 * (grad(v_1))[0] * (grad(f_31))[1, 0]" == str(a23_sep._form_unchanged[1].integrals()[0].integrand())

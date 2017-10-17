@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from ufl.core.multiindex import FixedIndex, Index, MultiIndex
+from ufl.core.multiindex import FixedIndex, Index as MuteIndex, MultiIndex
 from ufl.indexed import Indexed
 from dolfin import Function, MixedElement, split, TensorElement
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _get_sub_elements__recursive
@@ -56,8 +56,8 @@ def _remove_mute_indices(node):
         indices = node.ufl_operands[1].indices()
         is_fixed = isinstance(indices[0], FixedIndex)
         assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
-        is_mute = isinstance(indices[0], Index) # mute index for sum
-        assert all([isinstance(index, Index) == is_mute for index in indices])
+        is_mute = isinstance(indices[0], MuteIndex) # mute index for sum
+        assert all([isinstance(index, MuteIndex) == is_mute for index in indices])
         assert (is_fixed and not is_mute) or (not is_fixed and is_mute)
         if is_fixed:
             return node
