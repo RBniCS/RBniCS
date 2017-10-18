@@ -171,6 +171,53 @@ def test_affine_shape_parametrization_from_vertices_mapping_stokes():
     assert symbolic_equal(shape_parametrization_expression[7][X], "mu[1]*x[0]", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "mu[2]*x[1]", x, mu)
     
+ # Test affine shape parametrization for tutorial 22
+def test_affine_shape_parametrization_from_vertices_mapping_navier_stokes():
+    vertices_mappings = [
+        {
+            ("0.0", "5.0"): ("0.0", "5.0"),
+            ("0.0", "2.0"): ("0.0", "2.0"),
+            ("22.0", "2.0"): ("22.0", "2.0")
+        }, # subdomain 1 bottom
+        {
+            ("22.0", "2.0"): ("22.0", "2.0"),
+            ("22.0", "5.0"): ("22.0", "5.0"),
+            ("0.0", "5.0"): ("0.0", "5.0")
+        }, # subdomain 1 top
+        {
+            ("4.0", "2.0"): ("4.0", "2.0"),
+            ("4.0", "0.0"): ("4.0", "2.0 - mu[1]"),
+            ("22.0", "0.0"): ("22.0", "2.0 - mu[1]")
+        }, # subdomain 2 bottom
+        {
+            ("22.0", "0.0"): ("22.0", "2.0 - mu[1]"),
+            ("22.0", "2.0"): ("22.0", "2.0"),
+            ("4.0", "2.0"): ("4.0", "2.0")
+        } # subdomain 2 top
+    ]
+    shape_parametrization_expression = [affine_shape_parametrization_from_vertices_mapping(2, vertices_mapping) for vertices_mapping in vertices_mappings]
+    # Auxiliary symbolic quantities
+    x = MatrixSymbol("x", 2, 1)
+    mu = MatrixSymbol("mu", 2, 1)
+    # Start checks
+    assert len(shape_parametrization_expression) is 4
+    # Check subdomain 1 top
+    assert len(shape_parametrization_expression[0]) is 2
+    assert symbolic_equal(shape_parametrization_expression[0][X], "x[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[0][Y], "x[1]", x, mu)
+    # Check subdomain 1 bottom
+    assert len(shape_parametrization_expression[1]) is 2
+    assert symbolic_equal(shape_parametrization_expression[1][X], "x[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[1][Y], "x[1]", x, mu)
+    # Check subdomain 2 top
+    assert len(shape_parametrization_expression[2]) is 2
+    assert symbolic_equal(shape_parametrization_expression[2][X], "x[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[2][Y], "0.5*mu[1]*x[1] - 1.0*mu[1] + 2.0", x, mu)
+    # Check subdomain 2 bottom
+    assert len(shape_parametrization_expression[3]) is 2
+    assert symbolic_equal(shape_parametrization_expression[3][X], "x[0]", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[3][Y], "0.5*mu[1]*x[1] - 1.0*mu[1]+ 2.0", x, mu)
+    
 # Test affine shape parametrization for stokes optimal dirichlet boundary control
 def test_affine_shape_parametrization_from_vertices_mapping_stokes_optimal_dirichlet_boundary_control():
     vertices_mappings = [
