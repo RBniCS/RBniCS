@@ -80,6 +80,89 @@ def test_affine_shape_parametrization_from_vertices_mapping_hole():
     assert symbolic_equal(shape_parametrization_expression[7][X], "2*mu[0] - 2 + x[0] + (1 - mu[0])*x[1]", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "2*mu[1] - 2 + (2 - mu[1])*x[1]", x, mu)
     
+# Test affine shape parametrization for tutorial 3 rotation
+def test_affine_shape_parametrization_from_vertices_mapping_hole_rotation():
+    vertices_mappings = [
+        {
+            ("-1", "-1"): ("-sqrt(2.0)*cos(mu[0]) - 0.0*sin(mu[0])", "-sqrt(2.0)*sin(mu[0]) + 0.0*cos(mu[0])"),
+            ("-2", "-2"): ("-2", "-2"),
+            ("1", "-1") : ("0.0*cos(mu[0])-(-sqrt(2.0))*sin(mu[0])", "0.0*sin(mu[0])+(-sqrt(2.0))*cos(mu[0])")
+        }, # subdomain 1
+        {
+            ("-2", "-2"): ("-2", "-2"),
+            ("2", "-2"): ("2", "-2"),
+            ("1", "-1"): ("0.0*cos(mu[0])-(-sqrt(2.0))*sin(mu[0])", "0.0*sin(mu[0])+(-sqrt(2.0))*cos(mu[0])")
+        }, # subdomain 2
+        {
+            ("-1", "-1"): ("-sqrt(2.0)*cos(mu[0]) - 0.0*sin(mu[0])", "-sqrt(2.0)*sin(mu[0]) + 0.0*cos(mu[0])"),
+            ("-1", "1"): ("0.0*cos(mu[0])-sqrt(2.0)*sin(mu[0])", "0.0*sin(mu[0])+sqrt(2.0)*cos(mu[0])"),
+            ("-2", "-2"): ("-2", "-2")
+        }, # subdomain 3
+        {
+            ("-1", "1"): ("0.0*cos(mu[0])-sqrt(2.0)*sin(mu[0])", "0.0*sin(mu[0])+sqrt(2.0)*cos(mu[0])"),
+            ("-2", "2"): ("-2", "2"),
+            ("-2", "-2"): ("-2", "-2")
+        }, # subdomain 4
+        {
+            ("1", "-1"): ("0.0*cos(mu[0])-(-sqrt(2.0))*sin(mu[0])", "0.0*sin(mu[0])+(-sqrt(2.0))*cos(mu[0])"),
+            ("2", "-2"): ("2", "-2"),
+            ("1", "1"): ("sqrt(2.0)*cos(mu[0]) - 0.0*sin(mu[0])", "sqrt(2.0)*sin(mu[0]) + 0.0*cos(mu[0])")
+        }, # subdomain 5
+        {
+            ("2", "2"): ("2", "2"),
+            ("1", "1"): ("sqrt(2.0)*cos(mu[0]) - 0.0*sin(mu[0])", "sqrt(2.0)*sin(mu[0]) + 0.0*cos(mu[0])"),
+            ("2", "-2"): ("2", "-2")
+        }, # subdomain 6
+        {
+            ("-2", "2"): ("-2", "2"),
+            ("-1", "1"): ("0.0*cos(mu[0])-sqrt(2.0)*sin(mu[0])", "0.0*sin(mu[0])+sqrt(2.0)*cos(mu[0])"),
+            ("1", "1"): ("sqrt(2.0)*cos(mu[0]) - 0.0*sin(mu[0])", "sqrt(2.0)*sin(mu[0]) + 0.0*cos(mu[0])")
+        }, # subdomain 7
+        {
+            ("-2", "2"): ("-2", "2"),
+            ("1", "1"): ("sqrt(2.0)*cos(mu[0]) - 0.0*sin(mu[0])", "sqrt(2.0)*sin(mu[0]) + 0.0*cos(mu[0])"),
+            ("2", "2"): ("2", "2")
+        } # subdomain 8
+    ]
+    shape_parametrization_expression = [affine_shape_parametrization_from_vertices_mapping(2, vertices_mapping) for vertices_mapping in vertices_mappings]
+    # Auxiliary symbolic quantities
+    x = MatrixSymbol("x", 2, 1)
+    mu = MatrixSymbol("mu", 1, 1)
+    # Start checks
+    assert len(shape_parametrization_expression) is 8
+    # Check subdomain 1
+    assert len(shape_parametrization_expression[0]) is 2
+    assert symbolic_equal(shape_parametrization_expression[0][X], "-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) + 2", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[0][Y], "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2) + x[1]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2) + 2", x, mu)
+    # Check subdomain 2
+    assert len(shape_parametrization_expression[1]) is 2
+    assert symbolic_equal(shape_parametrization_expression[1][X], "2*sqrt(2.0)*sin(mu[0]) + x[0] + x[1]*(sqrt(2.0)*sin(mu[0]) - 1) - 2", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[1][Y], "-2*sqrt(2.0)*cos(mu[0]) + x[1]*(-sqrt(2.0)*cos(mu[0]) + 2) + 2", x, mu)
+    # Check subdomain 3
+    assert len(shape_parametrization_expression[2]) is 2
+    assert symbolic_equal(shape_parametrization_expression[2][X], "-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[2][Y], "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(-3*sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2", x, mu)
+    # Check subdomain 4
+    assert len(shape_parametrization_expression[3]) is 2
+    assert symbolic_equal(shape_parametrization_expression[3][X], "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(-sqrt(2.0)*sin(mu[0]) + 2) + 2", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[3][Y], "2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*cos(mu[0]) - 1) + x[1] - 2", x, mu)
+    # Check subdomain 5
+    assert len(shape_parametrization_expression[4]) is 2
+    assert symbolic_equal(shape_parametrization_expression[4][X], "2*sqrt(2.0)*sin(mu[0]) + x[0]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) - 2", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[4][Y], "-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + 3*sqrt(2.0)*cos(mu[0])/2 - 2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2", x, mu)
+    # Check subdomain 6
+    assert len(shape_parametrization_expression[5]) is 2
+    assert symbolic_equal(shape_parametrization_expression[5][X], "2*sqrt(2.0)*cos(mu[0]) + x[0]*(-sqrt(2.0)*cos(mu[0]) + 2) - 2", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[5][Y], "2*sqrt(2.0)*sin(mu[0]) + x[0]*(-sqrt(2.0)*sin(mu[0]) + 1) + x[1] - 2", x, mu)
+    # Check subdomain 7
+    assert len(shape_parametrization_expression[6]) is 2
+    assert symbolic_equal(shape_parametrization_expression[6][X], "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + x[1]*(3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 - 2) + 2", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[6][Y], "2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) - 2", x, mu)
+    # Check subdomain 8
+    assert len(shape_parametrization_expression[7]) is 2
+    assert symbolic_equal(shape_parametrization_expression[7][X], "2*sqrt(2.0)*cos(mu[0]) + x[0] + x[1]*(-sqrt(2.0)*cos(mu[0]) + 1) - 2", x, mu)
+    assert symbolic_equal(shape_parametrization_expression[7][Y], "2*sqrt(2.0)*sin(mu[0]) + x[1]*(-sqrt(2.0)*sin(mu[0]) + 2) - 2", x, mu)
+    
 # Test affine shape parametrization for tutorial 4
 def test_affine_shape_parametrization_from_vertices_mapping_graetz():
     vertices_mappings = [
