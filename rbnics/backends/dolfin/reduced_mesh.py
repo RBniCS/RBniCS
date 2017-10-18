@@ -350,7 +350,7 @@ def BasicReducedMesh(backend, wrapping):
                 
         def _save_auxiliary_basis_functions_matrix(self, key):
             # Get full directory name
-            full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory , self._auxiliary_io_filename))
+            full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory, self._auxiliary_io_filename))
             full_directory.create()
             # Save auxiliary basis functions matrix
             auxiliary_basis_functions_matrix = self._auxiliary_basis_functions_matrix[key]

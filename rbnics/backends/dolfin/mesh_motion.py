@@ -71,7 +71,7 @@ class MeshMotion(AbstractMeshMotion):
             # of parameters is still unknown
             
             # Declare first some sympy simbolic quantities, needed by ccode
-            from rbnics.shape_parametrization.utils.symbolic import strings_to_sympy_symbolic_parameters, sympy_symbolic_coordinates
+            from rbnics.shape_parametrization.utils.symbolic import sympy_symbolic_coordinates
             x = sympy_symbolic_coordinates(self.mesh.geometry().dim(), MatrixSymbol)
             mu = MatrixSymbol("mu", len(problem.mu), 1)
             

@@ -26,4 +26,4 @@ def sympy_exec(string, locals):
             if callable(function):
                 locals[name] = function
     exec(string, {"__builtins__": None}, locals) # stores the result in an expression named e
-    return e
+    return e  # noqa

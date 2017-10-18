@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG # easier to read in parallel
+from dolfin import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG # easier to read in parallel  # noqa
 from rbnics.backends.dolfin.wrapping.assemble import assemble
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_derivative import assemble_operator_for_derivative
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_restriction import assemble_operator_for_restriction
@@ -40,7 +40,7 @@ from rbnics.backends.dolfin.wrapping.form_argument_replace import form_argument_
 from rbnics.backends.dolfin.wrapping.form_argument_space import form_argument_space
 from rbnics.backends.dolfin.wrapping.form_description import form_description
 from rbnics.backends.dolfin.wrapping.form_iterator import form_iterator
-import rbnics.backends.dolfin.wrapping.form_mul
+import rbnics.backends.dolfin.wrapping.form_mul  # noqa
 from rbnics.backends.dolfin.wrapping.form_name import form_name
 from rbnics.backends.dolfin.wrapping.form_replace import form_replace
 from rbnics.backends.dolfin.wrapping.function_copy import function_copy

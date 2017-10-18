@@ -22,7 +22,7 @@ from ufl.core.operator import Operator
 from ufl.core.multiindex import IndexBase, MultiIndex
 from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
-from ufl.tensors import ComponentTensor, ListTensor
+from ufl.tensors import ListTensor
 from dolfin import Constant, Expression, Function
 from rbnics.utils.decorators import overload
 

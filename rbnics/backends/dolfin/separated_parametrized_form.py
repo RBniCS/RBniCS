@@ -45,8 +45,8 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form_unchanged = list() # of forms
         # Internal usage
         self._NaN = float("NaN")
-        # Strict mode when checking candidates to be added to coefficients which contain both parametrized and non parametrized leaves. 
-        # If False (default), coefficient splitting is prevented, because separating the non parametrized part would result in more 
+        # Strict mode when checking candidates to be added to coefficients which contain both parametrized and non parametrized leaves.
+        # If False (default), coefficient splitting is prevented, because separating the non parametrized part would result in more
         # than one coefficient, and the candidate is accepted as the coefficient which contain both parametrized and non parametrized leaves.
         # If True, coefficient is split in order to assure that all coefficients only containt parametrized terms, at the expense of
         # a larger number of coefficients

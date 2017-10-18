@@ -18,4 +18,4 @@
 
 # Force import of reduction methods package, so that @ReductionMethodDecoratorFor
 # decorators are processed
-import rbnics.shape_parametrization.reduction_methods
+import rbnics.shape_parametrization.reduction_methods  # noqa

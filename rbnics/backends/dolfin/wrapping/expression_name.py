@@ -18,8 +18,6 @@
 
 from numpy import zeros
 from dolfin import __version__ as dolfin_version, Constant
-from ufl.core.multiindex import FixedIndex, Index, MultiIndex
-from ufl.indexed import Indexed
 import hashlib
 from rbnics.utils.decorators import get_problem_from_solution
 

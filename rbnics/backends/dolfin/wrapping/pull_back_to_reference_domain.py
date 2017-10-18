@@ -19,28 +19,25 @@
 from collections import defaultdict, namedtuple
 import itertools
 import re
-import types
-import math
 from numpy import allclose, isclose, ones as numpy_ones, zeros as numpy_zeros
 from mpi4py.MPI import Op
-from sympy import Basic as SympyBase, ccode, collect, expand_mul, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix, Number, preorder_traversal, simplify, symbols, sympify, zeros as sympy_zeros
-from ufl import as_tensor, det, FiniteElement, Form, inv, Measure, sqrt, TensorElement, tr, transpose, VectorElement
+from sympy import Basic as SympyBase, ccode, collect, expand_mul, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix, Number, preorder_traversal, simplify, symbols, sympify
+from ufl import as_tensor, FiniteElement, Form, Measure, sqrt, TensorElement, VectorElement
 from ufl.algorithms import apply_transformer, Transformer
 from ufl.algorithms.apply_algebra_lowering import apply_algebra_lowering
 from ufl.algorithms.apply_derivatives import apply_derivatives
-from ufl.algorithms.expand_indices import expand_indices, purge_list_tensors
+from ufl.algorithms.expand_indices import expand_indices
 from ufl.algorithms.map_integrands import map_integrand_dags
-from ufl.classes import CellVolume, Circumradius, ComponentTensor, FacetArea, FacetJacobian, FacetJacobianDeterminant, FacetJacobianDeterminant, FacetNormal, Grad, IndexSum, Jacobian, JacobianDeterminant, JacobianInverse, Product, Sum
-from ufl.compound_expressions import determinant_expr, inverse_expr
+from ufl.classes import CellVolume, Circumradius, FacetArea, FacetJacobianDeterminant, FacetNormal, Grad, Jacobian, JacobianDeterminant, JacobianInverse, Sum
 from ufl.core.multiindex import FixedIndex, Index, indices, MultiIndex
 from ufl.corealg.multifunction import memoized_handler, MultiFunction
 from ufl.corealg.map_dag import map_expr_dag
 from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 from ufl.indexed import Indexed
 from dolfin import assemble, cells, Constant, Expression, facets, GenericMatrix, GenericVector
-import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division
+import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
-from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor, tuple_of
+from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
 
 # ===== Helper function for sympy/ufl conversion ===== #
 @overload
