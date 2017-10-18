@@ -21,7 +21,7 @@ import os
 import itertools
 import functools
 from contextlib import contextmanager
-from dolfin import CellSize, Constant, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
+from dolfin import CellSize, Constant, cos, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
@@ -220,11 +220,9 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             if term == "a":
                 theta_a0 = 1.0
                 theta_a1 = m3
-                # Return
                 return (theta_a0, theta_a1)
             elif term == "f":
                 theta_f0 = 1.0
-                # Return
                 return (theta_f0, )
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -233,15 +231,13 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             if term == "a":
                 a0 = inner(grad(u), grad(v))*dx
                 a1 = inner(u, v)*ds(5) + inner(u, v)*ds(6) + inner(u, v)*ds(7) + inner(u, v)*ds(8)
-                # Return
                 return (a0, a1)
             elif term == "f":
                 f0 = v*ds(1) + v*ds(2) + v*ds(3) + v*ds(4)
-                # Return
                 return (f0, )
             else:
                 raise ValueError("Invalid term for assemble_operator().")
-                    
+                
     # Check forms
     problem_on_reference_domain = HoleOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
     problem_pull_back = HolePullBack(V, subdomains=subdomains, boundaries=boundaries)
@@ -250,9 +246,192 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
     for mu in itertools.product(*problem_on_reference_domain.mu_range):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
+        
         a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
         a_pull_back = theta_times_operator(problem_pull_back, "a")
         assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
+        
+# Test forms pull back to reference domain for tutorial 3 rotation
+@check_affine_and_non_affine_shape_parametrizations()
+def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "hole.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "hole_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "hole_facet_region.xml"))
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+        ("-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) + 2", "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2) + x[1]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2) + 2"), # subdomain 1
+        ("2*sqrt(2.0)*sin(mu[0]) + x[0] + x[1]*(sqrt(2.0)*sin(mu[0]) - 1) - 2", "-2*sqrt(2.0)*cos(mu[0]) + x[1]*(-sqrt(2.0)*cos(mu[0]) + 2) + 2"), # subdomain 2
+        ("-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2", "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(-3*sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2"), # subdomain 3
+        ("-2*sqrt(2.0)*sin(mu[0]) + x[0]*(-sqrt(2.0)*sin(mu[0]) + 2) + 2", "2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*cos(mu[0]) - 1) + x[1] - 2"), # subdomain 4
+        ("2*sqrt(2.0)*sin(mu[0]) + x[0]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) - 2", "-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + 3*sqrt(2.0)*cos(mu[0])/2 - 2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2"), # subdomain 5
+        ("2*sqrt(2.0)*cos(mu[0]) + x[0]*(-sqrt(2.0)*cos(mu[0]) + 2) - 2", "2*sqrt(2.0)*sin(mu[0]) + x[0]*(-sqrt(2.0)*sin(mu[0]) + 1) + x[1] - 2"), # subdomain 6
+        ("-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + x[1]*(3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 - 2) + 2", "2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) - 2"), # subdomain 7
+        ("2*sqrt(2.0)*cos(mu[0]) + x[0] + x[1]*(-sqrt(2.0)*cos(mu[0]) + 1) - 2", "2*sqrt(2.0)*sin(mu[0]) + x[1]*(-sqrt(2.0)*sin(mu[0]) + 2) - 2")  # subdomain 8
+    ]
+    shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
+    
+    # Define function space, test/trial functions, measures
+    V = FunctionSpace(mesh, "Lagrange", 1)
+    u = TrialFunction(V)
+    v = TestFunction(V)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    ds = Measure("ds")(subdomain_data=boundaries)
+    ff = Constant(0.0)
+    
+    # Define base problem
+    class HoleRotation(ParametrizedProblem):
+        def __init__(self, folder_prefix):
+            ParametrizedProblem.__init__(self, folder_prefix)
+            self.mu = (pi/4.0, 0.01)
+            self.mu_range = [(pi/4.0-pi/45.0, pi/4.0+pi/45.0), (0.01, 1.0)]
+            
+        def init(self):
+            pass
+    
+    # Define problem with forms written on reference domain
+    @ShapeParametrization(*shape_parametrization_expression)
+    class HoleRotationOnReferenceDomain(HoleRotation):
+        def __init__(self, V, **kwargs):
+            HoleRotation.__init__(self, "HoleRotationOnReferenceDomain")
+            self.V = V
+            
+        def compute_theta(self, term):
+            mu = self.mu
+            mu1 = mu[0]
+            mu2 = mu[1]
+            if term == "a":
+                theta_a0 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu1) + 8*sqrt(2.0)*cos(mu1) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu1)))
+                theta_a1 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu1))
+                theta_a2 = (-2*sqrt(2.0) + 4*sin(mu1))/(sqrt(2.0) - 4*cos(mu1))
+                theta_a3 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu1) + 4*sqrt(2.0)*cos(mu1) - 5)/(sqrt(2.0)*cos(mu1) - 2)
+                theta_a4 = -1/(sqrt(2.0)*cos(mu1) - 2)
+                theta_a5 = (sqrt(2.0)*sin(mu1) - 1)/(sqrt(2.0)*cos(mu1) - 2)
+                theta_a6 = -sqrt(2.0)/(sqrt(2.0) - 4*sin(mu1))
+                theta_a7 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu1) + 16*sqrt(2.0)*cos(mu1) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*sin(mu1)))
+                theta_a8 = (-2*sqrt(2.0) + 4*cos(mu1))/(sqrt(2.0) - 4*sin(mu1))
+                theta_a9 = -1/(sqrt(2.0)*sin(mu1) - 2)
+                theta_a10 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu1) + 2*sqrt(2.0)*cos(mu1) - 5)/(sqrt(2.0)*sin(mu1) - 2)
+                theta_a11 = (sqrt(2.0)*cos(mu1) - 1)/(sqrt(2.0)*sin(mu1) - 2)
+                theta_a12 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu1))
+                theta_a13 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu1) + 8*sqrt(2.0)*cos(mu1) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu1)))
+                theta_a14 = 2*(sqrt(2.0) - 2*sin(mu1))/(sqrt(2.0) - 4*cos(mu1))
+                theta_a15 = -1/(sqrt(2.0)*cos(mu1) - 2)
+                theta_a16 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu1) + 4*sqrt(2.0)*cos(mu1) - 5)/(sqrt(2.0)*cos(mu1) - 2)
+                theta_a17 = (-sqrt(2.0)*sin(mu1) + 1)/(sqrt(2.0)*cos(mu1) - 2)
+                theta_a18 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu1) + 16*sqrt(2.0)*cos(mu1) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*sin(mu1)))
+                theta_a19 = -sqrt(2.0)/(sqrt(2.0) - 4*sin(mu1))
+                theta_a20 = 2*(sqrt(2.0) - 2*cos(mu1))/(sqrt(2.0) - 4*sin(mu1))
+                theta_a21 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu1) + 2*sqrt(2.0)*cos(mu1) - 5)/(sqrt(2.0)*sin(mu1) - 2)
+                theta_a22 = -1/(sqrt(2.0)*sin(mu1) - 2)
+                theta_a23 = (-sqrt(2.0)*cos(mu1) + 1)/(sqrt(2.0)*sin(mu1) - 2)
+                theta_a24 = mu2
+                theta_a25 = mu2
+                theta_a26 = mu2
+                theta_a27 = mu2
+                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12, theta_a13, theta_a14, theta_a15, theta_a16, theta_a17, theta_a18, theta_a19, theta_a20, theta_a21, theta_a22, theta_a23, theta_a24, theta_a25, theta_a26, theta_a27)
+            elif term == "f":
+                theta_f0 = 1.0
+                theta_f1 = 1.0
+                theta_f2 = 1.0
+                theta_f3 = 1.0
+                theta_f4 = 1.0
+                return (theta_f0, theta_f1, theta_f2, theta_f3)
+            else:
+                raise ValueError("Invalid term for compute_theta().")   
+        
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = u.dx(0)*v.dx(0)*dx(1)
+                a1 = u.dx(1)*v.dx(1)*dx(1)
+                a2 = u.dx(0)*v.dx(1)*dx(1) + u.dx(1)*v.dx(0)*dx(1)
+                a3 = u.dx(0)*v.dx(0)*dx(2)
+                a4 = u.dx(1)*v.dx(1)*dx(2)
+                a5 = u.dx(0)*v.dx(1)*dx(2) + u.dx(1)*v.dx(0)*dx(2)
+                a6 = u.dx(0)*v.dx(0)*dx(3)
+                a7 = u.dx(1)*v.dx(1)*dx(3)
+                a8 = u.dx(0)*v.dx(1)*dx(3) + u.dx(1)*v.dx(0)*dx(3)
+                a9 = u.dx(0)*v.dx(0)*dx(4)
+                a10 = u.dx(1)*v.dx(1)*dx(4)
+                a11 = u.dx(0)*v.dx(1)*dx(4) + u.dx(1)*v.dx(0)*dx(4)
+                a12 = u.dx(0)*v.dx(0)*dx(5)
+                a13 = u.dx(1)*v.dx(1)*dx(5)
+                a14 = u.dx(0)*v.dx(1)*dx(5) + u.dx(1)*v.dx(0)*dx(5)
+                a15 = u.dx(0)*v.dx(0)*dx(6)
+                a16 = u.dx(1)*v.dx(1)*dx(6)
+                a17 = u.dx(0)*v.dx(1)*dx(6) + u.dx(1)*v.dx(0)*dx(6)
+                a18 = u.dx(0)*v.dx(0)*dx(7)
+                a19 = u.dx(1)*v.dx(1)*dx(7)
+                a20 = u.dx(0)*v.dx(1)*dx(7) + u.dx(1)*v.dx(0)*dx(7)
+                a21 = u.dx(0)*v.dx(0)*dx(8)
+                a22 = u.dx(1)*v.dx(1)*dx(8)
+                a23 = u.dx(0)*v.dx(1)*dx(8) + u.dx(1)*v.dx(0)*dx(8)
+                a24 = u*v*ds(5)
+                a25 = u*v*ds(6)
+                a26 = u*v*ds(7)
+                a27 = u*v*ds(8)
+                return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27)
+            elif term  == "f":
+                f0 = v*ds(1)
+                f1 = v*ds(2)
+                f2 = v*ds(3)
+                f3 = v*ds(4)
+                f4 = ff*v*dx
+                return (f0, f1, f2, f3)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+            
+    # Define problem with forms pulled back reference domain
+    @AdditionalProblemDecorator()
+    @PullBackFormsToReferenceDomain("a", "f", debug=True)
+    @ShapeParametrization(*shape_parametrization_expression)
+    class HoleRotationPullBack(HoleRotation):
+        def __init__(self, V, **kwargs):
+            HoleRotation.__init__(self, "HoleRotationPullBack")
+            self.V = V
+            
+        def compute_theta(self, term):
+            mu = self.mu
+            mu2 = mu[1]
+            if term == "a":
+                theta_a0 = 1.0
+                theta_a1 = mu2
+                return (theta_a0, theta_a1)
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0,)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(u), grad(v))*dx
+                a1 = u*v*ds(5) + u*v*ds(6) + u*v*ds(7) + u*v*ds(8)
+                return (a0, a1)
+            elif term == "f":
+                f0 = ff*v*dx + v*ds(1) + v*ds(2) + v*ds(3) + v*ds(4)
+                return (f0,)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Check forms
+    problem_on_reference_domain = HoleRotationOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = HoleRotationPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain.init()
+    problem_pull_back.init()
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
@@ -367,9 +546,11 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
     for mu in itertools.product(*problem_on_reference_domain.mu_range):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
+        
         a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
         a_pull_back = theta_times_operator(problem_pull_back, "a")
         assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
@@ -505,9 +686,11 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
     for mu in itertools.product(*problem_on_reference_domain.mu_range):
         problem_on_reference_domain.set_mu(mu)
         problem_pull_back.set_mu(mu)
+        
         a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
         a_pull_back = theta_times_operator(problem_pull_back, "a")
         assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
@@ -977,7 +1160,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
     
     # Define shape parametrization
     shape_parametrization_expression = [
-            ("x[0]", "mu[0]*x[1]") # subdomain 1
+        ("x[0]", "mu[0]*x[1]") # subdomain 1
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
     
