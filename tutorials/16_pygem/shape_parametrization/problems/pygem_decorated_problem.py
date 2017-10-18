@@ -19,28 +19,27 @@
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from shape_parametrization.utils import PyGeMWrapper
-import backends.dolfin # make sure that dolfin backend is overridden
+import backends.dolfin # make sure that dolfin backend is overridden  # noqa
 
 def PyGeMDecoratedProblem(pygem_morphing_type, pygem_parameters_filename, pygem_index_and_component_to_mu_index_map, **decorator_kwargs):
     assert pygem_morphing_type in ("FFD", "RBF")
     
-    @ProblemDecoratorFor(PyGeM,
+    @ProblemDecoratorFor(
+        PyGeM,
         pygem_morphing_type=pygem_morphing_type,
         pygem_parameters_filename=pygem_parameters_filename,
         pygem_index_and_component_to_mu_index_map=pygem_index_and_component_to_mu_index_map
     )
     def PyGeMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-        assert (
-            hasattr(ParametrizedDifferentialProblem_DerivedClass, "ProblemDecorators")
-        ), \
-        """DEIM or ExactParametrizedFunctions are required when using PyGeM for mesh motion, while apparently your problem does not have any decorator!
-Please make sure that you decorate your problem as
-    @PyGeM(...)
-    @DEIM(...)
-rather than
-    @DEIM(...)
-    @PyGeM(...)
-because DEIM (or ExactParametrizedFunctions) have to be applied first."""
+        assert hasattr(ParametrizedDifferentialProblem_DerivedClass, "ProblemDecorators"), \
+            """DEIM or ExactParametrizedFunctions are required when using PyGeM for mesh motion, while apparently your problem does not have any decorator!
+    Please make sure that you decorate your problem as
+        @PyGeM(...)
+        @DEIM(...)
+    rather than
+        @DEIM(...)
+        @PyGeM(...)
+    because DEIM (or ExactParametrizedFunctions) have to be applied first."""
         
         assert EIM not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators, "EIM is not supported for mesh motion by PyGeM"
         
@@ -49,14 +48,14 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
                 or
             ExactParametrizedFunctions in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators
         ), \
-        """DEIM or ExactParametrizedFunctions are required when using PyGeM for mesh motion. 
-Please make sure that you decorate your problem as
-    @PyGeM(...)
-    @DEIM(...)
-rather than
-    @DEIM(...)
-    @PyGeM(...)
-because DEIM (or ExactParametrizedFunctions) have to be applied first."""
+            """DEIM or ExactParametrizedFunctions are required when using PyGeM for mesh motion.
+    Please make sure that you decorate your problem as
+        @PyGeM(...)
+        @DEIM(...)
+    rather than
+        @DEIM(...)
+        @PyGeM(...)
+    because DEIM (or ExactParametrizedFunctions) have to be applied first."""
         
         @PreserveClassName
         class PyGeMDecoratedProblem_BaseClass(ParametrizedDifferentialProblem_DerivedClass):
@@ -72,7 +71,7 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
                 )
                 self.pygem_wrapper.init(V.mesh())
 
-            ## Initialize data structures required for the offline phase
+            # Initialize data structures required for the offline phase
             def init(self):
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Check consistency between self.mu and parameters related to deformation.
@@ -100,7 +99,7 @@ because DEIM (or ExactParametrizedFunctions) have to be applied first."""
         elif DEIM in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators:
             @PreserveClassName
             class PyGeMDecoratedProblem_DEIMClass(PyGeMDecoratedProblem_BaseClass):
-                ## Deform the mesh as a function of the geometrical parameters and then export solution to file
+                # Deform the mesh as a function of the geometrical parameters and then export solution to file
                 def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
                     self.pygem_wrapper.move_mesh()
                     PyGeMDecoratedProblem_BaseClass.export_solution(self, folder, filename, solution, component, suffix)

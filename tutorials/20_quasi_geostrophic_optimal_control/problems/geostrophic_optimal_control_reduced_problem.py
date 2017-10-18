@@ -16,11 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends import LinearSolver, product, sum, transpose
-from rbnics.backends.online import OnlineFunction
+from rbnics.backends import product, sum, transpose
 from rbnics.problems.base import LinearReducedProblem
-from reduction_methods import GeostrophicOptimalControlReductionMethod
-from .geostrophic_optimal_control_problem import GeostrophicOptimalControlProblem
 
 def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
@@ -69,22 +66,21 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                 else:
                     raise ValueError("Invalid value for order of term " + term)
             self._output = (
-                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 
-                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) - 
-                transpose(assembled_operator["g"])*self._solution + 
+                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
+                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
+                transpose(assembled_operator["g"])*self._solution +
                 0.5*assembled_operator["h"]
             )
         
         def _online_size_from_kwargs(self, N, **kwargs):
-            all_components_in_kwargs = all([c in kwargs for c in self.components])
             if N is None:
-            # then either,
-            # * the user has passed kwargs, so we trust that he/she has doubled y and p for us
-            # * or self.N was copied, which already stores the correct count of basis functions
+                # then either,
+                # * the user has passed kwargs, so we trust that he/she has doubled y and p for us
+                # * or self.N was copied, which already stores the correct count of basis functions
                 return GeostrophicOptimalControlReducedProblem_Base._online_size_from_kwargs(self, N, **kwargs)
             else:
-            # then the integer value provided to N would be used for all components: need to double
-            # it for y and p
+                # then the integer value provided to N would be used for all components: need to double
+                # it for y and p
                 N, kwargs = GeostrophicOptimalControlReducedProblem_Base._online_size_from_kwargs(self, N, **kwargs)
                 for component in ("ypsi", "yq", "ppsi", "pq"):
                     N[component] *= 2

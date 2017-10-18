@@ -31,11 +31,11 @@ def generate_mesh1():
     # Create boundaries
     class Left(SubDomain):
         def inside(self, x, on_boundary):
-            return on_boundary and abs(x[0] - 0.) < DOLFIN_EPS 
+            return on_boundary and abs(x[0] - 0.) < DOLFIN_EPS
        
     class Right(SubDomain):
         def inside(self, x, on_boundary):
-            return on_boundary and abs(x[0] - 1.) < DOLFIN_EPS 
+            return on_boundary and abs(x[0] - 1.) < DOLFIN_EPS
             
     class Bottom(SubDomain):
         def inside(self, x, on_boundary):
@@ -49,9 +49,9 @@ def generate_mesh1():
     boundaries.set_all(0)
     left = Left()
     left.mark(boundaries, 1)
-    bottom = Bottom() 
+    bottom = Bottom()
     bottom.mark(boundaries, 1)
-    top = Top() 
+    top = Top()
     top.mark(boundaries, 1)
     right = Right()
     right.mark(boundaries, 2)

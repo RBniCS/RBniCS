@@ -23,7 +23,7 @@ from rbnics import *
 @ExactParametrizedFunctions("offline")
 class NonlinearElliptic(NonlinearEllipticProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         NonlinearEllipticProblem.__init__(self, V, **kwargs)
@@ -46,11 +46,11 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             "error_on_nonconvergence": True
         })
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "NonlinearEllipticEIM"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivative({"da": "a"})
     def compute_theta(self, term):
         mu1 = self.mu[0]
@@ -64,7 +64,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
     
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivative({"da": "a"})
     def assemble_operator(self, term):
         v = self.v
@@ -84,7 +84,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             return (bc0,)
         elif term == "inner_product":
             du = self.du
-            x0 = inner(grad(du),grad(v))*dx
+            x0 = inner(grad(du), grad(v))*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

@@ -25,5 +25,4 @@ GeostrophicPODGalerkinReduction_Base = LinearPODGalerkinReduction(GeostrophicRed
 
 @ReductionMethodFor(GeostrophicProblem, "PODGalerkin")
 class GeostrophicPODGalerkinReduction(GeostrophicPODGalerkinReduction_Base):
-    pass 
-            
+    pass

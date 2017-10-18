@@ -23,7 +23,7 @@ from utils import *
 @ExactParametrizedFunctions()
 class FitzHughNagumo(NonlinearParabolicProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         NonlinearParabolicProblem.__init__(self, V, **kwargs)
@@ -56,11 +56,11 @@ class FitzHughNagumo(NonlinearParabolicProblem):
             }
         })
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "FitzHughNagumoExact"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivative({"da": "a"})
     def compute_theta(self, term):
         if term == "m":
@@ -81,7 +81,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
     
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivative({"da": "a"})
     def assemble_operator(self, term):
         (v1, v2) = (self.v1, self.v2)
@@ -105,7 +105,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
             return (f0, f1)
         elif term == "inner_product":
             (u1, u2) = (self.du1, self.du2)
-            x0 = inner(grad(u1),grad(v1))*dx + u2*v2*dx
+            x0 = inner(grad(u1), grad(v1))*dx + u2*v2*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

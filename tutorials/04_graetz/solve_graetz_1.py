@@ -27,7 +27,7 @@ from rbnics import *
 )
 class Graetz(EllipticCoerciveProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         EllipticCoerciveProblem.__init__(self, V, **kwargs)
@@ -42,11 +42,11 @@ class Graetz(EllipticCoerciveProblem):
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "Graetz1"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu2 = self.mu[1]
         if term == "a":
@@ -65,7 +65,7 @@ class Graetz(EllipticCoerciveProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                     
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
         dx = self.dx
@@ -93,7 +93,7 @@ class Graetz(EllipticCoerciveProblem):
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u),grad(v))*dx
+            x0 = inner(grad(u), grad(v))*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

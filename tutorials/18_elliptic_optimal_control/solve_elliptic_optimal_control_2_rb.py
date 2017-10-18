@@ -21,7 +21,7 @@ from rbnics import *
 
 class EllipticOptimalControl(EllipticOptimalControlProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         EllipticOptimalControlProblem.__init__(self, V, **kwargs)
@@ -40,15 +40,15 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.sub(0).ufl_element())
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "EllipticOptimalControl2RB"
         
-    ## Return stability factor
+    # Return stability factor
     def get_stability_factor(self):
         return 1.
     
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
@@ -82,21 +82,21 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                     
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":
             y = self.y
             q = self.q
             vel = self.vel
-            a0 = inner(grad(y),grad(q))*dx
+            a0 = inner(grad(y), grad(q))*dx
             a1 = vel*y.dx(0)*q*dx
             return (a0, a1)
         elif term == "a*":
             z = self.z
             p = self.p
             vel = self.vel
-            as0 = inner(grad(z),grad(p))*dx
+            as0 = inner(grad(z), grad(p))*dx
             as1 = - vel*p.dx(0)*z*dx
             return (as0, as1)
         elif term == "c":

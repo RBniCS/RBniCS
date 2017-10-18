@@ -53,4 +53,3 @@ def assemble_operator_for_derivative_and_tensor3(jacobian_term_to_residual_term)
             
         return assemble_operator_for_derivative_and_tensor3_decorator_impl
     return assemble_operator_for_derivative_and_tensor3_decorator
-        

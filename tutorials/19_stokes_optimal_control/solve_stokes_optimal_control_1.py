@@ -25,7 +25,7 @@ from rbnics import *
 )
 class StokesOptimalControl(StokesOptimalControlProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         StokesOptimalControlProblem.__init__(self, V, **kwargs)
@@ -46,11 +46,11 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         # Desired velocity
         self.vx_d = Expression("x[1]", degree=1)
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "StokesOptimalControl1"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     @compute_theta_for_restriction({"bt*_restricted": "bt*"})
     def compute_theta(self, term):
@@ -89,7 +89,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                     
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_restriction({"bt*_restricted": "bt*"}, test="s")
     @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="r")
     @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_v"}, trial="s")
@@ -166,7 +166,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             h0 = vx_d*vx_d*dx(domain=mesh)
             return (h0,)
         elif term == "dirichlet_bc_v":
-            bc0 = [DirichletBC(self.V.sub("v").sub(0), self.vx_d    , self.boundaries, 1),
+            bc0 = [DirichletBC(self.V.sub("v").sub(0), self.vx_d, self.boundaries, 1),
                    DirichletBC(self.V.sub("v").sub(1), Constant(0.0), self.boundaries, 1)]
             return (bc0,)
         elif term == "dirichlet_bc_w":

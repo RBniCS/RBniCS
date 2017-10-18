@@ -23,7 +23,7 @@ from rbnics import *
 @AffineShapeParametrization("data/hole_vertices_mapping.vmp")
 class Hole(EllipticCoerciveProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         EllipticCoerciveProblem.__init__(self, V, **kwargs)
@@ -38,22 +38,20 @@ class Hole(EllipticCoerciveProblem):
         self.subdomains = subdomains
         self.boundaries = boundaries
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
         if term == "a":
             theta_a0 = 1.0
             theta_a1 = mu[2]
-            # Return
             return (theta_a0, theta_a1)
         elif term == "f":
             theta_f0 = 1.0
-            # Return
             return (theta_f0, )
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         u = self.u
         v = self.v
@@ -61,15 +59,13 @@ class Hole(EllipticCoerciveProblem):
         ds = self.ds
         if term == "a":
             a0 = inner(grad(u), grad(v))*dx
-            a1 = inner(u,v)*ds(5) + inner(u,v)*ds(6) + inner(u,v)*ds(7) + inner(u,v)*ds(8)
-            # Return
+            a1 = inner(u, v)*ds(5) + inner(u, v)*ds(6) + inner(u, v)*ds(7) + inner(u, v)*ds(8)
             return (a0, a1)
         elif term == "f":
             f0 = v*ds(1) + v*ds(2) + v*ds(3) + v*ds(4)
-            # Return
             return (f0, )
         elif term == "inner_product":
-            x0 = u*v*dx + inner(grad(u),grad(v))*dx
+            x0 = u*v*dx + inner(grad(u), grad(v))*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

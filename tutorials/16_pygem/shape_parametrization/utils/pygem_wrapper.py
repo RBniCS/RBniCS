@@ -110,4 +110,3 @@ class PyGeMWrapper(object):
         
     def _from_3d(self, coordinates):
         return coordinates[:, :self.dim]
-        

@@ -42,9 +42,9 @@ class Geostrophic(GeostrophicProblem):
             theta_a1 = 1.
             theta_a2 = mu1
             theta_a3 = mu2
-            theta_a4 = 1.  
+            theta_a4 = 1.
             theta_a5 = 1.
-            return (theta_a1, theta_a2, theta_a3,theta_a4,theta_a5)
+            return (theta_a1, theta_a2, theta_a3, theta_a4, theta_a5)
         elif term == "f":
             theta_f0 = 1.
             return (theta_f0,)
@@ -58,31 +58,31 @@ class Geostrophic(GeostrophicProblem):
         if term == "a":
             psi = self.psi
             q = self.q
-            a1 = inner(psi.dx(0),p)*dx
-            a2 = inner(q,p)*dx
-            a3 = inner(grad(q),grad(p))*dx
-            a4 = inner(q,phi)*dx  
-            a5 = inner(grad(psi),grad(phi))*dx
+            a1 = inner(psi.dx(0), p)*dx
+            a2 = inner(q, p)*dx
+            a3 = inner(grad(q), grad(p))*dx
+            a4 = inner(q, phi)*dx
+            a5 = inner(grad(psi), grad(phi))*dx
             return (a1, a2, a3, a4, a5,)
         elif term == "f":
             f = self.f
-            f0 = inner(f,p)*dx
+            f0 = inner(f, p)*dx
             return (f0,)
         elif term == "dirichlet_bc_psi":
-            bc0 = [DirichletBC(W.sub(0), Constant(0.0), boundaries, idx) for idx in [1,2,3,4]]
+            bc0 = [DirichletBC(W.sub(0), Constant(0.0), boundaries, idx) for idx in [1, 2, 3, 4]]
             return (bc0,)
         elif term == "dirichlet_bc_q":
-            bc0 = [DirichletBC(W.sub(1), Constant(0.0), boundaries, idx) for idx in [1,2,3,4]]
-            return (bc0,) 
+            bc0 = [DirichletBC(W.sub(1), Constant(0.0), boundaries, idx) for idx in [1, 2, 3, 4]]
+            return (bc0,)
         elif term == "inner_product_psi":
             psi = self.psi
             phi = self.phi
-            x0 = inner(grad(phi), grad(psi))*dx 
+            x0 = inner(grad(phi), grad(psi))*dx
             return (x0,)
         elif term == "inner_product_q":
             q = self.q
             p = self.p
-            x0 = inner(grad(p), grad(q))*dx 
+            x0 = inner(grad(p), grad(q))*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -96,7 +96,7 @@ boundaries = MeshFunction("size_t", mesh, "data/square_facet_region.xml")
 V_element = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 Q_element = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 W_element = MixedElement(V_element, Q_element)
-W = FunctionSpace(mesh, W_element, components = ["psi", "q"])
+W = FunctionSpace(mesh, W_element, components=["psi", "q"])
 
 # 3. Allocate an object of the Geostrophic class
 geostrophic_problem = Geostrophic(W, subdomains=subdomains, boundaries=boundaries)

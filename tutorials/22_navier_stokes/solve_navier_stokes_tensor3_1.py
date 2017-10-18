@@ -24,7 +24,7 @@ from utils import *
 
 class NavierStokes(NavierStokesTensor3Problem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         NavierStokesTensor3Problem.__init__(self, V, **kwargs)
@@ -54,11 +54,11 @@ class NavierStokes(NavierStokesTensor3Problem):
             "error_on_nonconvergence": True
         })
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "NavierStokesTensor3_1"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivative({"dc": "c"})
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
@@ -85,7 +85,7 @@ class NavierStokes(NavierStokesTensor3Problem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivative_and_tensor3({"dc": "c"})
     @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
     @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
@@ -122,13 +122,13 @@ class NavierStokes(NavierStokesTensor3Problem):
             g0 = self.g*q*dx
             return (g0,)
         elif term == "dirichlet_bc_u":
-            bc0 = [DirichletBC(self.V.sub(0), self.inlet,           self.boundaries, 1),
+            bc0 = [DirichletBC(self.V.sub(0), self.inlet, self.boundaries, 1),
                    DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 2)]
             return (bc0,)
         elif term == "inner_product_u":
             du = self.du
             v = self.v
-            x0 = inner(grad(du),grad(v))*dx
+            x0 = inner(grad(du), grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":
             dp = self.dp
@@ -159,7 +159,7 @@ boundaries = MeshFunction("size_t", mesh, "data/backward_facing_step_facet_regio
 # 2. Create Finite Element space (Taylor-Hood P2-P1)
 element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
 element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-element   = MixedElement(element_u, element_p)
+element = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the Elastic Block class

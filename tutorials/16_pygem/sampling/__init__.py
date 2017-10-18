@@ -21,4 +21,3 @@ from sampling.discard_inadmissible_deformations import DiscardInadmissibleDeform
 __all__ = [
     'DiscardInadmissibleDeformations'
 ]
-        

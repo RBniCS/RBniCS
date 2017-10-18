@@ -19,7 +19,7 @@
 
 from numpy import array_equal
 from dolfin import cells
-from rbnics.sampling.distributions import Distribution, EquispacedDistribution
+from rbnics.sampling.distributions import EquispacedDistribution
 
 def DiscardInadmissibleDeformations(Distribution_DerivedClass):
     assert not issubclass(Distribution_DerivedClass, EquispacedDistribution) # we would have no way to replace inadmissible parameters
@@ -54,4 +54,3 @@ def DiscardInadmissibleDeformations(Distribution_DerivedClass):
             return set_
             
     return DiscardInadmissibleDeformations_Class
-    

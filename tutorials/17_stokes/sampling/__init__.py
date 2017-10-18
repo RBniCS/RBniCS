@@ -21,4 +21,3 @@ from sampling.linearly_dependent_uniform_distribution import LinearlyDependentUn
 __all__ = [
     'LinearlyDependentUniformDistribution'
 ]
-        

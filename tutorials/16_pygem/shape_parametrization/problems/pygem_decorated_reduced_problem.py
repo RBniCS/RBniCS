@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.eim.problems import DEIM, ExactParametrizedFunctions
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from shape_parametrization.problems.pygem_decorated_problem import PyGeM
 
@@ -31,4 +30,3 @@ def PyGeMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedC
             
     # return value (a class) for the decorator
     return PyGeMDecoratedReducedProblem_Class
-    

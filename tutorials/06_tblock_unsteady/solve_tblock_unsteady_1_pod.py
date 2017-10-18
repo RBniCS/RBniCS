@@ -21,7 +21,7 @@ from rbnics import *
 
 class UnsteadyThermalBlock(ParabolicCoerciveProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         ParabolicCoerciveProblem.__init__(self, V, **kwargs)
@@ -34,11 +34,11 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "UnsteadyThermalBlock1POD"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu1 = self.mu[0]
         mu2 = self.mu[1]
@@ -55,7 +55,7 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
         dx = self.dx
@@ -65,8 +65,8 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
             return (m0, )
         elif term == "a":
             u = self.u
-            a0 = inner(grad(u),grad(v))*dx(1)
-            a1 = inner(grad(u),grad(v))*dx(2)
+            a0 = inner(grad(u), grad(v))*dx(1)
+            a1 = inner(grad(u), grad(v))*dx(2)
             return (a0, a1)
         elif term == "f":
             ds = self.ds
@@ -77,7 +77,7 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u),grad(v))*dx
+            x0 = inner(grad(u), grad(v))*dx
             return (x0,)
         elif term == "projection_inner_product":
             u = self.u
@@ -107,13 +107,13 @@ pod_galerkin_method.set_Nmax(20, nested_POD=4)
 pod_galerkin_method.set_tolerance(1e-8, nested_POD=1e-4)
 
 # 5. Perform the offline phase
-first_mu = (0.5,1.0)
+first_mu = (0.5, 1.0)
 unsteady_thermal_block_problem.set_mu(first_mu)
 pod_galerkin_method.initialize_training_set(100)
 reduced_unsteady_thermal_block_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = (8.0,-1.0)
+online_mu = (8.0, -1.0)
 reduced_unsteady_thermal_block_problem.set_mu(online_mu)
 reduced_unsteady_thermal_block_problem.solve()
 reduced_unsteady_thermal_block_problem.export_solution(filename="online_solution")

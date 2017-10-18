@@ -24,7 +24,7 @@ GeostrophicOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialPr
 class GeostrophicOptimalControlProblem(GeostrophicOptimalControlProblem_Base):
  
     """
-    The problem to be solved is 
+    The problem to be solved is
             min {J(y_psi, u) = 1/2 m(y_psi - y_d, y_psi - y_d) + 1/2 n(u, u)}
             (y_psi, y_q) in YxY,  y_d in Y, u in U
             s.t.
@@ -52,10 +52,10 @@ class GeostrophicOptimalControlProblem(GeostrophicOptimalControlProblem_Base):
         
         # Form names for saddle point problems
         self.terms = [
-        "a", "a*", "c", "c*", "m", "n", "f", "g", "h"
+            "a", "a*", "c", "c*", "m", "n", "f", "g", "h"
         ]
         self.terms_order = {
-            "a": 2, "a*": 2, 
+            "a": 2, "a*": 2,
             "c": 2, "c*": 2,
             "m": 2, "n": 2,
             "f": 1, "g": 1,
@@ -70,7 +70,7 @@ class GeostrophicOptimalControlProblem(GeostrophicOptimalControlProblem_Base):
             for term in ("a", "a*", "c", "c*", "m", "n"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
-                  assembled_operator["m"]                                                      + assembled_operator["a*"] 
+                  assembled_operator["m"]                                                      + assembled_operator["a*"]
                                                                      + assembled_operator["n"] - assembled_operator["c*"]
                 + assembled_operator["a"] - assembled_operator["c"]
             )
@@ -92,8 +92,8 @@ class GeostrophicOptimalControlProblem(GeostrophicOptimalControlProblem_Base):
         for term in ("m", "n", "g", "h"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         self._output = (
-            0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) + 
-            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) - 
-            transpose(assembled_operator["g"])*self._solution + 
+            0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
+            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
+            transpose(assembled_operator["g"])*self._solution +
             0.5*assembled_operator["h"]
         )

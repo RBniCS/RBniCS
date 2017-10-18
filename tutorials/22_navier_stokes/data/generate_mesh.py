@@ -45,10 +45,10 @@ class Inlet(SubDomain):
 
 class Bottom(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and ( \
-            (x[0] <= pre_step_length and abs(x[1] - after_step_height + pre_step_height) < DOLFIN_EPS) or \
-            (x[1] <= after_step_height - pre_step_height and abs(x[0] - pre_step_length) < DOLFIN_EPS) or \
-            (x[0] >= pre_step_length and abs(x[1]) < DOLFIN_EPS) \
+        return on_boundary and (
+            (x[0] <= pre_step_length and abs(x[1] - after_step_height + pre_step_height) < DOLFIN_EPS) or
+            (x[1] <= after_step_height - pre_step_height and abs(x[0] - pre_step_length) < DOLFIN_EPS) or
+            (x[0] >= pre_step_length and abs(x[1]) < DOLFIN_EPS)
         )
         
 class Top(SubDomain):

@@ -24,4 +24,3 @@ from rbnics.utils.decorators import BackendFor
 class ParametrizedTensorFactory(DolfinParametrizedTensorFactory):
     def is_parametrized(self):
         return True # Tensors are always parametrized due to geometrical parameters
-        

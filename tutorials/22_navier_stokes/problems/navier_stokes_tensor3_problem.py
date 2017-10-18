@@ -21,7 +21,7 @@ from rbnics.problems.navier_stokes import NavierStokesProblem
 
 class NavierStokesTensor3Problem(NavierStokesProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         NavierStokesProblem.__init__(self, V, **kwargs)
@@ -36,5 +36,5 @@ class NavierStokesTensor3Problem(NavierStokesProblem):
         # Add tensor3 version of nonlinear terms
         for term in ("c_tensor3", "dc_tensor3"):
             if term not in self.operator: # init was not called already
-                self.operator[term] = self.assemble_operator(term) 
+                self.operator[term] = self.assemble_operator(term)
                 # note that we do not store this in a AffineExpansionStorage, as no assembly should be done

@@ -16,11 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from shape_parametrization.problems.pygem_decorated_problem import PyGeM #, PyGeMDecoratedProblem # not needed
+from shape_parametrization.problems.pygem_decorated_problem import PyGeM, PyGeMDecoratedProblem
 from shape_parametrization.problems.pygem_decorated_reduced_problem import PyGeMDecoratedReducedProblem
 
 __all__ = [
     'PyGeM',
+    'PyGeMDecoratedProblem',
     'PyGeMDecoratedReducedProblem'
 ]
-        

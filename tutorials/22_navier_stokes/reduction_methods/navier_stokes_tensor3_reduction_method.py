@@ -16,8 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.reduction_methods.navier_stokes import NavierStokesReductionMethod
-
 def NavierStokesTensor3ReductionMethod(NavierStokesReductionMethod_DerivedClass):
     
     NavierStokesTensor3ReductionMethod_Base = NavierStokesReductionMethod_DerivedClass
@@ -27,4 +25,3 @@ def NavierStokesTensor3ReductionMethod(NavierStokesReductionMethod_DerivedClass)
         
     # return value (a class) for the decorator
     return NavierStokesTensor3ReductionMethod_Class
-        

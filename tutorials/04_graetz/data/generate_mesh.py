@@ -36,12 +36,14 @@ subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
 class Left(SubDomain):
     def __init__(self):
         SubDomain.__init__(self)
+        
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] - 0.) < DOLFIN_EPS
 
 class Right(SubDomain):
     def __init__(self):
         SubDomain.__init__(self)
+        
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] - 2.) < DOLFIN_EPS
 
@@ -50,6 +52,7 @@ class Bottom(SubDomain):
         SubDomain.__init__(self)
         self.x_min = x_min
         self.x_max = x_max
+        
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 0.) < DOLFIN_EPS and x[0] >= self.x_min and x[0] <= self.x_max
                 
@@ -58,6 +61,7 @@ class Top(SubDomain):
         SubDomain.__init__(self)
         self.x_min = x_min
         self.x_max = x_max
+        
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 1.) < DOLFIN_EPS and x[0] >= self.x_min and x[0] <= self.x_max
         

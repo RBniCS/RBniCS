@@ -17,7 +17,6 @@
 #
 
 from rbnics.reduction_methods.base import LinearReductionMethod
-from problems import GeostrophicOptimalControlProblem
 
 def GeostrophicOptimalControlReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     

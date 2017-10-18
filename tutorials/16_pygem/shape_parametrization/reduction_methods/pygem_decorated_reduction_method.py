@@ -42,4 +42,3 @@ def PyGeMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClas
             
     # return value (a class) for the decorator
     return PyGeMDecoratedReductionMethod_Class
-    

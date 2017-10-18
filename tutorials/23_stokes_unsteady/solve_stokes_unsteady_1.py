@@ -25,7 +25,7 @@ from rbnics import *
 )
 class StokesUnsteady(StokesUnsteadyProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         StokesUnsteadyProblem.__init__(self, V, **kwargs)
@@ -45,11 +45,11 @@ class StokesUnsteady(StokesUnsteadyProblem):
         self.f = Constant((0.0, 0.0))
         self.g = Constant(0.0)
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "StokesUnsteady1"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
         if term == "a":
@@ -73,7 +73,7 @@ class StokesUnsteady(StokesUnsteadyProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
     @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
     @assemble_operator_for_restriction({"inner_product_s": "inner_product_u"}, test="s", trial="s")
@@ -121,7 +121,7 @@ class StokesUnsteady(StokesUnsteadyProblem):
         elif term == "inner_product_u":
             u = self.u
             v = self.v
-            x0 = inner(grad(u),grad(v))*dx
+            x0 = inner(grad(u), grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.p
@@ -139,7 +139,7 @@ boundaries = MeshFunction("size_t", mesh, "data/cavity_facet_region.xml")
 # 2. Create Finite Element space (Taylor-Hood P2-P1)
 element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
 element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-element   = MixedElement(element_u, element_p)
+element = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the StokesUnsteady class

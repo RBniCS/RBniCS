@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends import FunctionsList, ProperOrthogonalDecomposition
 from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
 from problems import GeostrophicOptimalControlProblem
@@ -25,9 +24,9 @@ from .geostrophic_optimal_control_reduction_method import GeostrophicOptimalCont
 GeostrophicOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(GeostrophicOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
 @ReductionMethodFor(GeostrophicOptimalControlProblem, "PODGalerkin")
-class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPODGalerkinReduction_Base):    
+class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPODGalerkinReduction_Base):
     
-    ## Compute basis functions performing POD: overridden to handle aggregated spaces
+    # Compute basis functions performing POD: overridden to handle aggregated spaces
     def compute_basis_functions(self):
         # Carry out POD
         Z = dict()

@@ -101,10 +101,10 @@ class Outlet(SubDomain):
 
 class Walls(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and ( \
-            abs(x[0]) < DOLFIN_EPS or \
-            abs(x[1] - D - t - S) < DOLFIN_EPS or \
-            ((x[1] <= L or x[1] >= L + t) and abs(x[0] - D) < DOLFIN_EPS) or \
+        return on_boundary and (
+            abs(x[0]) < DOLFIN_EPS or
+            abs(x[1] - D - t - S) < DOLFIN_EPS or
+            ((x[1] <= L or x[1] >= L + t) and abs(x[0] - D) < DOLFIN_EPS) or
             (x[0] >= D and (abs(x[1] - L) < DOLFIN_EPS or abs(x[1] - L - t) < DOLFIN_EPS))
         )
         

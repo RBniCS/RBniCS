@@ -27,5 +27,3 @@ NavierStokesTensor3PODGalerkinReducedProblem_Base = NavierStokesTensor3ReducedPr
 @ReducedProblemFor(NavierStokesTensor3Problem, NavierStokesTensor3PODGalerkinReduction)
 class NavierStokesTensor3PODGalerkinReducedProblem(NavierStokesTensor3PODGalerkinReducedProblem_Base):
     pass
-    
-        

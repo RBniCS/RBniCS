@@ -50,7 +50,7 @@ for refinements in range(1):
     for cell in cells(mesh):
         p = cell.midpoint()
         if (
-            (refinement_box[0][0] < p[0] < refinement_box[0][1]) 
+            (refinement_box[0][0] < p[0] < refinement_box[0][1])
                 and
             (refinement_box[1][0] < p[1] < refinement_box[1][1])
         ):

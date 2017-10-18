@@ -18,7 +18,7 @@
 
 from ufl import replace
 from dolfin import TestFunction, TrialFunction
-from rbnics.backends import product, sum, transpose
+from rbnics.backends import transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.problems.navier_stokes.navier_stokes_reduced_problem import NavierStokesReducedProblem
 
@@ -143,4 +143,3 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
         
     # return value (a class) for the decorator
     return NavierStokesTensor3ReducedProblem_Class
-

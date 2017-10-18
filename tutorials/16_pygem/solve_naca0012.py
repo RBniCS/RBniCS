@@ -34,7 +34,7 @@ from shape_parametrization.reduction_methods import *
 @ExactParametrizedFunctions()
 class NACA0012(EllipticCoerciveProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         EllipticCoerciveProblem.__init__(self, V, **kwargs)
@@ -47,11 +47,11 @@ class NACA0012(EllipticCoerciveProblem):
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
         
-    ## Return the alpha_lower bound.
+    # Return the alpha_lower bound.
     def get_stability_factor(self):
         return 1.
     
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         if term == "a":
             return (1.,)
@@ -60,7 +60,7 @@ class NACA0012(EllipticCoerciveProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
         dx = self.dx
@@ -82,7 +82,7 @@ class NACA0012(EllipticCoerciveProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
     
-    ## Also compute pressure using Bernoulli equation
+    # Also compute pressure using Bernoulli equation
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if filename is None:
             filename = "solution"
@@ -131,4 +131,3 @@ reduced_basis_method.error_analysis()
 
 # 8. Perform a speedup analysis
 reduced_basis_method.speedup_analysis()
-

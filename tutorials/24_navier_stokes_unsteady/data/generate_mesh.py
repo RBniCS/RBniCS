@@ -21,12 +21,12 @@ from mshr import *
 
 # Geometrical parameters
 # ... of outer rectangle
-L = 2.5;
-H = 0.41;
+L = 2.5
+H = 0.41
 # ... of circle
-C_x = 0.4;
-C_y = 0.205;
-r = 0.05;
+C_x = 0.4
+C_y = 0.205
+r = 0.05
 
 # Create mesh
 rectangle = Rectangle(Point(0., 0.), Point(L, H))

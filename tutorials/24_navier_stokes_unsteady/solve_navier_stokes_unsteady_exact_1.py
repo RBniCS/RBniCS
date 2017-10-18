@@ -22,7 +22,7 @@ from rbnics import *
 @ExactParametrizedFunctions()
 class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         NavierStokesUnsteadyProblem.__init__(self, V, **kwargs)
@@ -50,11 +50,11 @@ class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
             }
         })
              
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "NavierStokesUnsteadyExact1"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivative({"dc": "c"})
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
@@ -84,7 +84,7 @@ class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivative({"dc": "c"})
     @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
     @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
@@ -94,8 +94,6 @@ class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
         if term == "a":
             u = self.du
             v = self.v
-            mu = self.mu
-            mu1 = mu[0]
             a0 = inner(grad(u), grad(v))*dx
             return (a0,)
         elif term == "b":
@@ -128,13 +126,13 @@ class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
             return (m0,)
         elif term == "dirichlet_bc_u":
             bc0 = [DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 1),
-                   DirichletBC(self.V.sub(0), self.inlet          , self.boundaries, 3),
+                   DirichletBC(self.V.sub(0), self.inlet, self.boundaries, 3),
                    DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 4)]
             return (bc0,)
         elif term == "inner_product_u":
             u = self.du
             v = self.v
-            x0 = inner(grad(u),grad(v))*dx
+            x0 = inner(grad(u), grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.dp
@@ -166,9 +164,9 @@ subdomains = MeshFunction("size_t", mesh, "data/cylinder_physical_region.xml")
 boundaries = MeshFunction("size_t", mesh, "data/cylinder_facet_region.xml")
 
 # 2. Create Finite Element space for Stokes problem (Taylor-Hood P2-P1)
-element_u  = VectorElement("Lagrange", mesh.ufl_cell(), 2)
-element_p  = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-element    = MixedElement(element_u, element_p)
+element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+element = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the NavierStokesUnsteady class

@@ -35,6 +35,7 @@ class Left(SubDomain):
         SubDomain.__init__(self)
         self.y_min = y_min
         self.y_max = y_max
+        
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] - 0.) < DOLFIN_EPS and x[1] >= self.y_min and x[1] <= self.y_max
 
@@ -43,6 +44,7 @@ class Right(SubDomain):
         SubDomain.__init__(self)
         self.y_min = y_min
         self.y_max = y_max
+        
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] - 1.) < DOLFIN_EPS and x[1] >= self.y_min and x[1] <= self.y_max
 
@@ -51,6 +53,7 @@ class Bottom(SubDomain):
         SubDomain.__init__(self)
         self.x_min = x_min
         self.x_max = x_max
+        
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 0.) < DOLFIN_EPS and x[0] >= self.x_min and x[0] <= self.x_max
                 
@@ -59,6 +62,7 @@ class Top(SubDomain):
         SubDomain.__init__(self)
         self.x_min = x_min
         self.x_max = x_max
+        
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 1.) < DOLFIN_EPS and x[0] >= self.x_min and x[0] <= self.x_max
         

@@ -26,7 +26,7 @@ from rbnics import *
 )
 class EllipticOptimalControl(EllipticOptimalControlProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         EllipticOptimalControlProblem.__init__(self, V, **kwargs)
@@ -45,18 +45,18 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         # Desired state
         self.y_d = Constant(1.0)
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "EllipticOptimalControl1RB"
     
-    ## Return stability factor
+    # Return stability factor
     def get_stability_factor(self):
         return 1.
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu2 = self.mu[1]
-        if term  in ("a", "a*"):
+        if term in ("a", "a*"):
             theta_a0 = 1.0
             return (theta_a0,)
         elif term in ("c", "c*"):
@@ -85,7 +85,7 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                     
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":

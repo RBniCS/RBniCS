@@ -31,7 +31,7 @@ shape_parametrization = (
 @ShapeParametrization(*shape_parametrization)
 class Stokes(StokesProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         StokesProblem.__init__(self, V, **kwargs)
@@ -78,20 +78,13 @@ class Stokes(StokesProblem):
             self.tensor_kappa.append(ParametrizedExpression(self, tensor_kappa[s], mu=expression_mu, element=tensor_element))
             self.tensor_chi.append(ParametrizedExpression(self, tensor_chi[s], mu=expression_mu, element=tensor_element))
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "StokesEIM"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
-        mu = self.mu
-        mu1 = mu[0]
-        mu2 = mu[1]
-        mu3 = mu[2]
-        mu4 = mu[3]
-        mu5 = mu[4]
-        mu6 = mu[5]
         if term == "a":
             theta_a0 = 1.
             return (theta_a0,)
@@ -107,7 +100,7 @@ class Stokes(StokesProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                 
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
     @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
     @assemble_operator_for_restriction({"inner_product_s": "inner_product_u"}, test="s", trial="s")
@@ -157,7 +150,7 @@ class Stokes(StokesProblem):
         elif term == "inner_product_u":
             u = self.u
             v = self.v
-            x0 = inner(grad(u),grad(v))*dx
+            x0 = inner(grad(u), grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.p
@@ -171,7 +164,7 @@ class Stokes(StokesProblem):
 @ShapeParametrization(*shape_parametrization)
 class AdvectionDiffusion(EllipticCoerciveProblem):
     
-    ## Default initialization of members
+    # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         EllipticCoerciveProblem.__init__(self, V, **kwargs)
@@ -216,11 +209,11 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
             self.tensor_kappa.append(ParametrizedExpression(self, tensor_kappa[s], mu=expression_mu, element=tensor_element))
             self.tensor_chi.append(ParametrizedExpression(self, tensor_chi[s], mu=expression_mu, element=tensor_element))
         
-    ## Return custom problem name
+    # Return custom problem name
     def name(self):
         return "AdvectionDiffusionEIM"
         
-    ## Return theta multiplicative terms of the affine expansion of the problem.
+    # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         if term == "a":
             theta_a0 = 1.
@@ -235,7 +228,7 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
         else:
             raise ValueError("Invalid term for compute_theta().")
                     
-    ## Return forms resulting from the discretization of the affine expansion of the problem operators.
+    # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         d = self.d
         dx = self.dx
@@ -262,7 +255,7 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
             return (bc0,)
         elif term == "inner_product":
             c = self.c
-            x0 = inner(grad(c),grad(d))*dx
+            x0 = inner(grad(c), grad(d))*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -273,20 +266,20 @@ subdomains = MeshFunction("size_t", mesh, "data/t_bypass_physical_region.xml")
 boundaries = MeshFunction("size_t", mesh, "data/t_bypass_facet_region.xml")
 
 # 2a. Create Finite Element space for Stokes problem (Taylor-Hood P2-P1)
-element_u  = VectorElement("Lagrange", mesh.ufl_cell(), 2)
-element_p  = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 element_up = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element_up, components=[["u", "s"], "p"])
 
 # 3a. Allocate an object of the Stokes class
 stokes_problem = Stokes(V, subdomains=subdomains, boundaries=boundaries)
-mu_range = [ \
-    (0.5, 1.5), \
-    (0.5, 1.5), \
-    (0.5, 1.5), \
-    (0.5, 1.5), \
-    (0.5, 1.5), \
-    (0., pi/6.) \
+mu_range = [
+    (0.5, 1.5),
+    (0.5, 1.5),
+    (0.5, 1.5),
+    (0.5, 1.5),
+    (0.5, 1.5),
+    (0., pi/6.)
 ]
 stokes_problem.set_mu_range(mu_range)
 

@@ -32,4 +32,3 @@ class LinearlyDependentUniformDistribution(Distribution):
             mu = (2 - aux_mu[0], aux_mu[1], aux_mu[0], aux_mu[0], 2 - aux_mu[1], aux_mu[2])
             set_.append(mu)
         return set_
-        

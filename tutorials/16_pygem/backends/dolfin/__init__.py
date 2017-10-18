@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import backends.dolfin.affine_expansion_storage
+import backends.dolfin.affine_expansion_storage  # noqa
 from backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
 
 __all__ = [
