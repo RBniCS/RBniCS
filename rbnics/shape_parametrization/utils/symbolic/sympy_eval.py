@@ -17,11 +17,15 @@
 #
 
 import math
+from numbers import Number
 
 def sympy_eval(string, locals):
     locals = dict(locals)
-    for package in (math, ):
-        for name, function in package.__dict__.items():
-            if callable(function):
-                locals[name] = function
+    locals.update(math_locals)
     return eval(string, {"__builtins__": None}, locals)
+
+math_locals = dict()
+for package in (math, ):
+    for name, item in package.__dict__.items():
+        if callable(item) or isinstance(item, Number):
+            math_locals[name] = item

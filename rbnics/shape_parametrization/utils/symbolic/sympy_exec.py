@@ -17,13 +17,17 @@
 #
 
 import math
+from numbers import Number
 import sympy
 
 def sympy_exec(string, locals):
     locals = dict(locals)
-    for package in (math, sympy):
-        for name, function in package.__dict__.items():
-            if callable(function):
-                locals[name] = function
+    locals.update(math_sympy_locals)
     exec(string, {"__builtins__": None}, locals) # stores the result in an expression named e
     return e  # noqa
+    
+math_sympy_locals = dict()
+for package in (math, sympy):
+    for name, item in package.__dict__.items():
+        if callable(item) or isinstance(item, Number):
+            math_sympy_locals[name] = item
