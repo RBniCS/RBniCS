@@ -18,7 +18,7 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import dx, FunctionSpace, Point, RectangleMesh, TrialFunction, TestFunction
 from rbnics import EquispacedDistribution, ParametrizedExpression
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
 from rbnics.eim.problems.eim_approximation import EIMApproximation
@@ -31,7 +31,7 @@ def test_eim_approximation_02(expression_type, basis_generation):
     This is a second basic test for EIM/DEIM, based on the test case of section 3.3.2 of
         S. Chaturantabut and D. C. Sorensen
         Nonlinear Model Reduction via Discrete Empirical Interpolation
-        SIAM Journal on Scientific Computing 2010 32:5, 2737-2764 
+        SIAM Journal on Scientific Computing 2010 32:5, 2737-2764
     * EIM: test interpolation of a scalar function
     * DEIM: test interpolation of form with scalar integrand on a scalar space
     """

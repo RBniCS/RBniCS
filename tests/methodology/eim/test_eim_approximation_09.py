@@ -18,7 +18,7 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import cos, dx, exp, Expression, FunctionSpace, IntervalMesh, pi, project, SpatialCoordinate, TestFunction, TrialFunction
 from rbnics import EquispacedDistribution
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.problems.eim_approximation import EIMApproximation
@@ -28,9 +28,9 @@ from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_09(expression_type, basis_generation):
     """
-    This test is an extension of test 01. 
+    This test is an extension of test 01.
     The aim of this script is to test the detection of parametrized expression defined using SymbolicParameters for mu and
-    SpatialCoordinates fo x. 
+    SpatialCoordinates fo x.
     * EIM: test the case when the expression to be interpolated is an Operator (rather than an Expression).
     * DEIM: test interpolation of form with integrand function of type Operator (rather than Expression).
     """

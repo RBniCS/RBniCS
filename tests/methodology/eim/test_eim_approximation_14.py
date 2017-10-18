@@ -18,10 +18,9 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import assemble, assign, cos, dx, exp, FiniteElement, Function, FunctionSpace, inner, IntervalMesh, MixedElement, pi, project, sin, SpatialCoordinate, split, TestFunction, TrialFunction, VectorElement
 from rbnics import EquispacedDistribution, ExactParametrizedFunctions
-from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
-from rbnics.backends.online import OnlineFunction
+from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.problems.base import ParametrizedProblem
@@ -31,8 +30,8 @@ from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFr
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_14(expression_type, basis_generation):
     """
-    The aim of this script is to test EIM/DEIM for nonlinear problems, extending test 13. 
-    The difference with respect to test 13 is that a parametrized problem is defined but it is not 
+    The aim of this script is to test EIM/DEIM for nonlinear problems, extending test 13.
+    The difference with respect to test 13 is that a parametrized problem is defined but it is not
     reduced any further. See the description of EIM and DEIM for test 13, taking care of the fact
     that the high fidelity solution is used in place of the reduced order one.
     """
@@ -110,7 +109,7 @@ def test_eim_approximation_14(expression_type, basis_generation):
     # 2. Create Finite Element space (Lagrange P1)
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2, dim=2)
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-    element   = MixedElement(element_0, element_1)
+    element = MixedElement(element_0, element_1)
     V = FunctionSpace(mesh, element)
 
     # 3. Create a parametrized problem

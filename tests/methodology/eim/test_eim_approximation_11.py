@@ -18,7 +18,7 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import assemble, cos, dx, exp, Function, FunctionSpace, IntervalMesh, pi, project, SpatialCoordinate, TestFunction, TrialFunction
 from rbnics import EquispacedDistribution
 from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
 from rbnics.backends.online import OnlineFunction
@@ -27,7 +27,6 @@ from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
-from rbnics.utils.io import Folders
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
@@ -168,11 +167,10 @@ def test_eim_approximation_11(expression_type, basis_generation):
     #    reduced problem
     reduction_method = MockReductionMethod(problem)
     reduction_method.initialize_training_set(12, sampling=EquispacedDistribution())
-    reduced_problem = reduction_method.offline()
+    reduction_method.offline()
 
     # 5. Allocate an object of the ParametrizedFunctionApproximation class
-    function = lambda u: exp(u)
-    parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation, function)
+    parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation, lambda u: exp(u))
     parametrized_function_approximation.set_mu_range(mu_range)
 
     # 6. Prepare reduction with EIM

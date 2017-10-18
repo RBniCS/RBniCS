@@ -18,7 +18,7 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import assemble, assign, dx, FiniteElement, Function, FunctionSpace, inner, MixedElement, Point, project, RectangleMesh, SpatialCoordinate, split, sqrt, TestFunction, TrialFunction, VectorElement
 from rbnics import EquispacedDistribution
 from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
 from rbnics.backends.online import OnlineFunction
@@ -27,7 +27,6 @@ from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
-from rbnics.utils.io import Folders
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
@@ -166,7 +165,7 @@ def test_eim_approximation_21(expression_type, basis_generation):
     # 2. Create Finite Element space (Lagrange P1)
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-    element   = MixedElement(element_0, element_1)
+    element = MixedElement(element_0, element_1)
     V = FunctionSpace(mesh, element)
 
     # 3. Create a parametrized problem
@@ -178,7 +177,7 @@ def test_eim_approximation_21(expression_type, basis_generation):
     #    reduced problem
     reduction_method = MockReductionMethod(problem)
     reduction_method.initialize_training_set(16, sampling=EquispacedDistribution())
-    reduced_problem = reduction_method.offline()
+    reduction_method.offline()
 
     # 5. Allocate an object of the ParametrizedFunctionApproximation class
     parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation)

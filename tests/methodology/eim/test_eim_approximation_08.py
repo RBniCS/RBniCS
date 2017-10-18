@@ -18,9 +18,9 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import div, dx, FiniteElement, FunctionSpace, MixedElement, Point, RectangleMesh, split, TestFunction, TrialFunction, VectorElement
 from rbnics import EquispacedDistribution, ParametrizedExpression
-from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
+from rbnics.backends import ParametrizedTensorFactory
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
@@ -64,7 +64,7 @@ def test_eim_approximation_08(expression_type, basis_generation):
     # 2. Create Finite Element space (Lagrange P1)
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-    element   = MixedElement(element_0, element_1)
+    element = MixedElement(element_0, element_1)
     V = FunctionSpace(mesh, element)
 
     # 3. Allocate an object of the ParametrizedFunctionApproximation class

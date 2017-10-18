@@ -18,7 +18,7 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import assemble, assign, cos, dx, exp, FiniteElement, Function, FunctionSpace, inner, IntervalMesh, MixedElement, pi, project, sin, SpatialCoordinate, split, TestFunction, TrialFunction, VectorElement
 from rbnics import EquispacedDistribution
 from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
 from rbnics.backends.online import OnlineFunction
@@ -27,13 +27,12 @@ from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
-from rbnics.utils.io import Folders
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_13(expression_type, basis_generation):
     """
-    The aim of this script is to test EIM/DEIM for nonlinear problems on mixed function spaces. 
+    The aim of this script is to test EIM/DEIM for nonlinear problems on mixed function spaces.
     This test is an extension of test 11. The main difference with respect to test 11 is that a only a component
     of the reduced order solution is required to define the parametrized expression/tensor.
     * EIM: the expression to be interpolated is a component of the solution of the nonlinear reduced problem.
@@ -172,7 +171,7 @@ def test_eim_approximation_13(expression_type, basis_generation):
     # 2. Create Finite Element space (Lagrange P1)
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2, dim=2)
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
-    element   = MixedElement(element_0, element_1)
+    element = MixedElement(element_0, element_1)
     V = FunctionSpace(mesh, element)
 
     # 3. Create a parametrized problem
@@ -184,7 +183,7 @@ def test_eim_approximation_13(expression_type, basis_generation):
     #    reduced problem
     reduction_method = MockReductionMethod(problem)
     reduction_method.initialize_training_set(12, sampling=EquispacedDistribution())
-    reduced_problem = reduction_method.offline()
+    reduction_method.offline()
 
     # 5. Allocate an object of the ParametrizedFunctionApproximation class
     parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation)

@@ -18,7 +18,7 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import dx, FunctionSpace, grad, inner, Point, RectangleMesh, TestFunction, TrialFunction, VectorElement
 from rbnics import EquispacedDistribution, ParametrizedExpression
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
 from rbnics.eim.problems.eim_approximation import EIMApproximation
@@ -30,7 +30,7 @@ def test_eim_approximation_06(expression_type, basis_generation):
     """
     The aim of this test is to check the interpolation of vector valued functions.
     * EIM: test interpolation of a scalar function
-    * DEIM: test interpolation of form with integrand given by the inner product of a vector valued function 
+    * DEIM: test interpolation of form with integrand given by the inner product of a vector valued function
       and some derivative of a test/trial functions of a scalar space
     """
 

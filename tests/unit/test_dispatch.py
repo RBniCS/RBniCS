@@ -20,10 +20,10 @@ import pytest
 import sys
 import types
 import inspect
-import warnings
+import warnings  # noqa
 import urllib.request
-from multipledispatch import halt_ordering, restart_ordering
-from multipledispatch.conflict import ambiguous, ambiguities, edge, ordering
+from multipledispatch import halt_ordering, restart_ordering  # noqa
+from multipledispatch.conflict import ambiguous, ambiguities, ordering  # noqa
 from multipledispatch.utils import raises
 from rbnics.utils.decorators import dict_of, dispatch, list_of, overload, tuple_of
 from rbnics.utils.decorators.dispatch import AmbiguousSignatureError, consistent, Dispatcher, InvalidSignatureError, MethodDispatcher_Wrapper as MethodDispatcher, supercedes, UnavailableSignatureError

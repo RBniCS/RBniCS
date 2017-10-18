@@ -21,10 +21,9 @@ import os
 import itertools
 import functools
 from contextlib import contextmanager
-from ufl import Form
-from dolfin import assemble, CellSize, Constant, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
+from dolfin import CellSize, Constant, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
-from rbnics.backends.dolfin.wrapping import ParametrizedExpression, PullBackFormsToReferenceDomain
+from rbnics.backends.dolfin.wrapping import PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
 from rbnics.eim.problems import EIM
 from rbnics.problems.base import ParametrizedProblem
@@ -178,23 +177,23 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
         def assemble_operator(self, term):
             if term == "a":
                 # subdomains 1 and 7
-                a0 = inner(u.dx(0), v.dx(0))*dx(1) +  inner(u.dx(0), v.dx(0))*dx(7)
-                a1 = inner(u.dx(1), v.dx(1))*dx(1) +  inner(u.dx(1), v.dx(1))*dx(7)
-                a2 = inner(u.dx(0), v.dx(1))*dx(1) +  inner(u.dx(1), v.dx(0))*dx(1) - (inner(u.dx(0), v.dx(1))*dx(7) +  inner(u.dx(1), v.dx(0))*dx(7))
+                a0 = inner(u.dx(0), v.dx(0))*dx(1) + inner(u.dx(0), v.dx(0))*dx(7)
+                a1 = inner(u.dx(1), v.dx(1))*dx(1) + inner(u.dx(1), v.dx(1))*dx(7)
+                a2 = inner(u.dx(0), v.dx(1))*dx(1) + inner(u.dx(1), v.dx(0))*dx(1) - (inner(u.dx(0), v.dx(1))*dx(7) + inner(u.dx(1), v.dx(0))*dx(7))
                 # subdomains 2 and 8
-                a3 = inner(u.dx(0), v.dx(0))*dx(2) +  inner(u.dx(0), v.dx(0))*dx(8)
-                a4 = inner(u.dx(1), v.dx(1))*dx(2) +  inner(u.dx(1), v.dx(1))*dx(8)
-                a5 = inner(u.dx(0), v.dx(1))*dx(2) +  inner(u.dx(1), v.dx(0))*dx(2) - (inner(u.dx(0), v.dx(1))*dx(8) +  inner(u.dx(1), v.dx(0))*dx(8))
+                a3 = inner(u.dx(0), v.dx(0))*dx(2) + inner(u.dx(0), v.dx(0))*dx(8)
+                a4 = inner(u.dx(1), v.dx(1))*dx(2) + inner(u.dx(1), v.dx(1))*dx(8)
+                a5 = inner(u.dx(0), v.dx(1))*dx(2) + inner(u.dx(1), v.dx(0))*dx(2) - (inner(u.dx(0), v.dx(1))*dx(8) + inner(u.dx(1), v.dx(0))*dx(8))
                 # subdomains 3 and 5
-                a6 = inner(u.dx(0), v.dx(0))*dx(3) +  inner(u.dx(0), v.dx(0))*dx(5)
-                a7 = inner(u.dx(1), v.dx(1))*dx(3) +  inner(u.dx(1), v.dx(1))*dx(5)
-                a8 = inner(u.dx(0), v.dx(1))*dx(3) +  inner(u.dx(1), v.dx(0))*dx(3) - (inner(u.dx(0), v.dx(1))*dx(5) +  inner(u.dx(1), v.dx(0))*dx(5))
+                a6 = inner(u.dx(0), v.dx(0))*dx(3) + inner(u.dx(0), v.dx(0))*dx(5)
+                a7 = inner(u.dx(1), v.dx(1))*dx(3) + inner(u.dx(1), v.dx(1))*dx(5)
+                a8 = inner(u.dx(0), v.dx(1))*dx(3) + inner(u.dx(1), v.dx(0))*dx(3) - (inner(u.dx(0), v.dx(1))*dx(5) + inner(u.dx(1), v.dx(0))*dx(5))
                 # subdomains 4 and 6
-                a9 = inner(u.dx(0), v.dx(0))*dx(4) +  inner(u.dx(0), v.dx(0))*dx(6)
-                a10 = inner(u.dx(1), v.dx(1))*dx(4) +  inner(u.dx(1), v.dx(1))*dx(6)
-                a11 = inner(u.dx(0), v.dx(1))*dx(4) +  inner(u.dx(1), v.dx(0))*dx(4) - (inner(u.dx(0), v.dx(1))*dx(6) +  inner(u.dx(1), v.dx(0))*dx(6))
+                a9 = inner(u.dx(0), v.dx(0))*dx(4) + inner(u.dx(0), v.dx(0))*dx(6)
+                a10 = inner(u.dx(1), v.dx(1))*dx(4) + inner(u.dx(1), v.dx(1))*dx(6)
+                a11 = inner(u.dx(0), v.dx(1))*dx(4) + inner(u.dx(1), v.dx(0))*dx(4) - (inner(u.dx(0), v.dx(1))*dx(6) + inner(u.dx(1), v.dx(0))*dx(6))
                 # boundaries 5, 6, 7 and 8
-                a12 = inner(u,v)*ds(5) + inner(u,v)*ds(6) + inner(u,v)*ds(7) + inner(u,v)*ds(8)
+                a12 = inner(u, v)*ds(5) + inner(u, v)*ds(6) + inner(u, v)*ds(7) + inner(u, v)*ds(8)
                 # Return
                 return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)
             elif term == "f":
@@ -233,7 +232,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
         def assemble_operator(self, term):
             if term == "a":
                 a0 = inner(grad(u), grad(v))*dx
-                a1 = inner(u,v)*ds(5) + inner(u,v)*ds(6) + inner(u,v)*ds(7) + inner(u,v)*ds(8)
+                a1 = inner(u, v)*ds(5) + inner(u, v)*ds(6) + inner(u, v)*ds(7) + inner(u, v)*ds(8)
                 # Return
                 return (a0, a1)
             elif term == "f":
@@ -380,7 +379,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
     "CellSize, cell_size_pull_back", [
         (lambda mesh: Constant(0.), lambda mu1: 0),
         (lambda mesh: Constant(1.), lambda mu1: 1),
-        (CellSize,  lambda mu1: sqrt(mu1))
+        (CellSize, lambda mu1: sqrt(mu1))
     ]
 ))
 def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellSize, cell_size_pull_back):
@@ -544,7 +543,6 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
     vq = TestFunction(V)
     (v, q) = split(vq)
     dx = Measure("dx")(subdomain_data=subdomains)
-    ds = Measure("ds")(subdomain_data=boundaries)
     
     ff = Constant((0.0, -10.0))
     gg = Constant(1.0)
@@ -758,7 +756,6 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
     zvq = TestFunction(V)
     (z, v, q) = split(zvq)
     dx = Measure("dx")(subdomain_data=subdomains)
-    ds = Measure("ds")(subdomain_data=boundaries)
     alpha = Constant(0.01)
     y_d = Constant(1.0)
     ff = Constant(2.0)
@@ -783,7 +780,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
         def compute_theta(self, term):
             mu1 = self.mu[0]
             mu2 = self.mu[1]
-            if term  in ("a", "a*"):
+            if term in ("a", "a*"):
                 theta_a0 = 1.0
                 theta_a1 = 1.0/mu1
                 theta_a2 = mu1
@@ -816,12 +813,12 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 
         def assemble_operator(self, term):
             if term == "a":
-                a0 = inner(grad(y),grad(q))*dx(1)
+                a0 = inner(grad(y), grad(q))*dx(1)
                 a1 = y.dx(0)*q.dx(0)*dx(2)
                 a2 = y.dx(1)*q.dx(1)*dx(2)
                 return (a0, a1, a2)
             elif term == "a*":
-                as0 = inner(grad(z),grad(p))*dx(1)
+                as0 = inner(grad(z), grad(p))*dx(1)
                 as1 = z.dx(0)*p.dx(0)*dx(2)
                 as2 = z.dx(1)*p.dx(1)*dx(2)
                 return (as0, as1, as2)
@@ -866,7 +863,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             
         def compute_theta(self, term):
             mu2 = self.mu[1]
-            if term  in ("a", "a*"):
+            if term in ("a", "a*"):
                 theta_a0 = 1.0
                 return (theta_a0,)
             elif term in ("c", "c*"):
@@ -914,10 +911,10 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             elif term == "f":
                 f0 = ff*q*dx
                 return (f0,)
-            elif term == "g": 
+            elif term == "g":
                 g0 = y_d*z*dx(1)
                 g1 = y_d*z*dx(2)
-                return (g0,g1)
+                return (g0, g1)
             elif term == "h":
                 h0 = y_d*y_d*dx(1, domain=mesh)
                 h1 = y_d*y_d*dx(2, domain=mesh)
@@ -994,7 +991,6 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
     test = TestFunction(V)
     (psi, pi, tau, phi, xi) = split(test)
     dx = Measure("dx")(subdomain_data=subdomains)
-    ds = Measure("ds")(subdomain_data=boundaries)
     alpha = 0.008
     nu = 0.1
     vx_d = Expression("x[1]", degree=1)
@@ -1279,7 +1275,6 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
     vq = TestFunction(V)
     (v, q) = split(vq)
     dx = Measure("dx")(subdomain_data=subdomains)
-    ds = Measure("ds")(subdomain_data=boundaries)
     
     ff = Constant((1.0, 2.0))
     gg = Constant(1.0)

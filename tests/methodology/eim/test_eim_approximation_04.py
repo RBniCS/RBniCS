@@ -18,9 +18,9 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import FunctionSpace, Measure, Mesh, MeshFunction, TestFunction, TrialFunction
 from rbnics import EquispacedDistribution, ParametrizedExpression
-from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
+from rbnics.backends import ParametrizedTensorFactory
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
@@ -28,7 +28,7 @@ from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_04(expression_type, basis_generation):
     """
-    This test is an extension of test 03. 
+    This test is an extension of test 03.
     The aim of this script is to test that integration of a subdomain is correctly handled by DEIM.
     * EIM: not applicable, as there is no difference with respect to test 03.
     * DEIM: the integral in form definitions is now restricted to a subdomain.

@@ -18,10 +18,9 @@
 
 import os
 import pytest
-from dolfin import *
+from dolfin import assemble, cos, dx, exp, Function, FunctionSpace, IntervalMesh, pi, project, SpatialCoordinate, TestFunction, TrialFunction
 from rbnics import EquispacedDistribution, ExactParametrizedFunctions
-from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
-from rbnics.backends.online import OnlineFunction
+from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.problems.base import ParametrizedProblem
@@ -31,8 +30,8 @@ from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFr
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_12(expression_type, basis_generation):
     """
-    The aim of this script is to test EIM/DEIM for nonlinear problems, extending test 11. 
-    The difference with respect to test 11 is that a parametrized problem is defined but it is not 
+    The aim of this script is to test EIM/DEIM for nonlinear problems, extending test 11.
+    The difference with respect to test 11 is that a parametrized problem is defined but it is not
     reduced any further.
     Thus, the high fidelity solution will be usued inside the parametrized expression/tensor, while
     in test 11 the reduced order solution was being used.
@@ -112,8 +111,7 @@ def test_eim_approximation_12(expression_type, basis_generation):
     # 4. Postpone generation of the reduced problem
 
     # 5. Allocate an object of the ParametrizedFunctionApproximation class
-    function = lambda u: exp(u)
-    parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation, function)
+    parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation, lambda u: exp(u))
     parametrized_function_approximation.set_mu_range(mu_range)
 
     # 6. Prepare reduction with EIM
