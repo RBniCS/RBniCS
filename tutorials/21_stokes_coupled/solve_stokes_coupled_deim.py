@@ -20,15 +20,8 @@ from dolfin import *
 from rbnics import *
 from sampling import LinearlyDependentUniformDistribution
 
-shape_parametrization = (
-    ("mu[4]*x[0] + mu[1] - mu[4]", "tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - tan(mu[5]) - mu[0]"), # subdomain 1
-    ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 2
-    ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 3
-    ("mu[1]*x[0]", "mu[2]*x[1]"), # subdomain 4
-)
-
 @DEIM(basis_generation="Greedy")
-@ShapeParametrization(*shape_parametrization)
+@AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class Stokes(StokesProblem):
     
     # Default initialization of members
@@ -161,7 +154,7 @@ class Stokes(StokesProblem):
             raise ValueError("Invalid term for assemble_operator().")
         
 @DEIM(basis_generation="Greedy")
-@ShapeParametrization(*shape_parametrization)
+@AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class AdvectionDiffusion(EllipticCoerciveProblem):
     
     # Default initialization of members
