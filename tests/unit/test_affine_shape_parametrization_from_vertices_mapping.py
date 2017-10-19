@@ -86,7 +86,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_hole_rotation():
         {
             ("-1", "-1"): ("-sqrt(2.0)*cos(mu[0]) - 0.0*sin(mu[0])", "-sqrt(2.0)*sin(mu[0]) + 0.0*cos(mu[0])"),
             ("-2", "-2"): ("-2", "-2"),
-            ("1", "-1") : ("0.0*cos(mu[0])-(-sqrt(2.0))*sin(mu[0])", "0.0*sin(mu[0])+(-sqrt(2.0))*cos(mu[0])")
+            ("1", "-1"): ("0.0*cos(mu[0])-(-sqrt(2.0))*sin(mu[0])", "0.0*sin(mu[0])+(-sqrt(2.0))*cos(mu[0])")
         }, # subdomain 1
         {
             ("-2", "-2"): ("-2", "-2"),
@@ -254,7 +254,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_stokes():
     assert symbolic_equal(shape_parametrization_expression[7][X], "mu[1]*x[0]", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "mu[2]*x[1]", x, mu)
     
- # Test affine shape parametrization for tutorial 22
+# Test affine shape parametrization for tutorial 22
 def test_affine_shape_parametrization_from_vertices_mapping_navier_stokes():
     vertices_mappings = [
         {

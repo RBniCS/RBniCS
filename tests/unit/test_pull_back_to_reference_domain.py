@@ -282,7 +282,6 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
     v = TestFunction(V)
     dx = Measure("dx")(subdomain_data=subdomains)
     ds = Measure("ds")(subdomain_data=boundaries)
-    ff = Constant(0.0)
     
     # Define base problem
     class HoleRotation(ParametrizedProblem):
@@ -340,10 +339,9 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
                 theta_f1 = 1.0
                 theta_f2 = 1.0
                 theta_f3 = 1.0
-                theta_f4 = 1.0
                 return (theta_f0, theta_f1, theta_f2, theta_f3)
             else:
-                raise ValueError("Invalid term for compute_theta().")   
+                raise ValueError("Invalid term for compute_theta().")
         
         def assemble_operator(self, term):
             if term == "a":
@@ -376,12 +374,11 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
                 a26 = u*v*ds(7)
                 a27 = u*v*ds(8)
                 return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27)
-            elif term  == "f":
+            elif term == "f":
                 f0 = v*ds(1)
                 f1 = v*ds(2)
                 f2 = v*ds(3)
                 f3 = v*ds(4)
-                f4 = ff*v*dx
                 return (f0, f1, f2, f3)
             else:
                 raise ValueError("Invalid term for assemble_operator().")
@@ -414,7 +411,7 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
                 a1 = u*v*ds(5) + u*v*ds(6) + u*v*ds(7) + u*v*ds(8)
                 return (a0, a1)
             elif term == "f":
-                f0 = ff*v*dx + v*ds(1) + v*ds(2) + v*ds(3) + v*ds(4)
+                f0 = v*ds(1) + v*ds(2) + v*ds(3) + v*ds(4)
                 return (f0,)
             else:
                 raise ValueError("Invalid term for assemble_operator().")
