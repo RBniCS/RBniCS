@@ -106,7 +106,7 @@ reduced_thermal_block_problem.solve()
 reduced_thermal_block_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(500)
+reduced_basis_method.initialize_testing_set(100)
 reduced_basis_method.error_analysis()
 
 # 8. Perform a speedup analysis

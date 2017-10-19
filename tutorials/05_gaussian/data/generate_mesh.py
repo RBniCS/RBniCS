@@ -19,18 +19,10 @@
 from dolfin import *
 from mshr import *
 
-coarse = False
-if coarse:
-    n = 10
-    filename = "gaussian_coarse"
-else:
-    n = 20
-    filename = "gaussian"
-
 # Create mesh
 rectangle = Rectangle(Point(-1., -1.), Point(1., 1.))
 domain = rectangle
-mesh = generate_mesh(domain, n)
+mesh = generate_mesh(domain, 20)
 
 # Create subdomains
 subdomains = CellFunction("size_t", mesh)
@@ -65,9 +57,9 @@ top = Top()
 top.mark(boundaries, 3)
 
 # Save
-File(filename + ".xml") << mesh
-File(filename + "_physical_region.xml") << subdomains
-File(filename + "_facet_region.xml") << boundaries
-XDMFFile(filename + ".xdmf").write(mesh)
-XDMFFile(filename + "_physical_region.xdmf").write(subdomains)
-XDMFFile(filename + "_facet_region.xdmf").write(boundaries)
+File("gaussian.xml") << mesh
+File("gaussian_physical_region.xml") << subdomains
+File("gaussian_facet_region.xml") << boundaries
+XDMFFile("gaussian.xdmf").write(mesh)
+XDMFFile("gaussian_physical_region.xdmf").write(subdomains)
+XDMFFile("gaussian_facet_region.xdmf").write(boundaries)
