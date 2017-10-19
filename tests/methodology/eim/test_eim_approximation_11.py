@@ -44,7 +44,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             # Call parent
-            ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_11.output_dir", expression_type, basis_generation, "mock_problem"))
+            ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"))
             # Minimal subset of a ParametrizedDifferentialProblem
             self.V = V
             self._solution = Function(V)
@@ -75,7 +75,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
     class MockReductionMethod(ReductionMethod):
         def __init__(self, truth_problem, **kwargs):
             # Call parent
-            ReductionMethod.__init__(self, os.path.join("test_eim_approximation_11.output_dir", expression_type, basis_generation, "mock_problem"), truth_problem.mu_range)
+            ReductionMethod.__init__(self, os.path.join("test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"), truth_problem.mu_range)
             # Minimal subset of a DifferentialProblemReductionMethod
             self.truth_problem = truth_problem
             self.reduced_problem = None
@@ -111,7 +111,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
         @sync_setters("truth_problem", "set_mu_range", "mu_range")
         def __init__(self, truth_problem, **kwargs):
             # Call parent
-            ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_11.output_dir", expression_type, basis_generation, "mock_problem"))
+            ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"))
             # Minimal subset of a ParametrizedReducedDifferentialProblem
             self.truth_problem = truth_problem
             self.Z = BasisFunctionsMatrix(self.truth_problem.V)
@@ -133,7 +133,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
         def __init__(self, truth_problem, expression_type, basis_generation, function):
             self.V = truth_problem.V
             #
-            folder_prefix = os.path.join("test_eim_approximation_11.output_dir", expression_type, basis_generation)
+            folder_prefix = os.path.join("test_eim_approximation_11_tempdir", expression_type, basis_generation)
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor

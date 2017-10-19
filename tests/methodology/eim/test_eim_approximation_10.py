@@ -69,7 +69,7 @@ def test_eim_approximation_10(expression_type, basis_generation):
             self.mock_time_dependent_problem = MockTimeDependentProblem(V)
             f = ParametrizedExpression(self.mock_time_dependent_problem, "(1-x[0])*cos(3*pi*(1+t)*(1+x[0]))*exp(-(1+t)*(1+x[0]))", mu=(), t=0., element=V.ufl_element())
             #
-            folder_prefix = os.path.join("test_eim_approximation_10.output_dir", expression_type, basis_generation)
+            folder_prefix = os.path.join("test_eim_approximation_10_tempdir", expression_type, basis_generation)
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor

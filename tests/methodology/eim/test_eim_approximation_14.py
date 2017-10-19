@@ -43,7 +43,7 @@ def test_eim_approximation_14(expression_type, basis_generation):
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             # Call parent
-            ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_14.output_dir", expression_type, basis_generation, "mock_problem"))
+            ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_14_tempdir", expression_type, basis_generation, "mock_problem"))
             # Minimal subset of a ParametrizedDifferentialProblem
             self.V = V
             self._solution = Function(V)
@@ -84,7 +84,7 @@ def test_eim_approximation_14(expression_type, basis_generation):
             self.V = truth_problem.V1
             (f0, _) = split(truth_problem._solution)
             #
-            folder_prefix = os.path.join("test_eim_approximation_14.output_dir", expression_type, basis_generation)
+            folder_prefix = os.path.join("test_eim_approximation_14_tempdir", expression_type, basis_generation)
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor

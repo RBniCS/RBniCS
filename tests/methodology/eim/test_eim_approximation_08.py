@@ -41,7 +41,7 @@ def test_eim_approximation_08(expression_type, basis_generation):
             # Parametrized function to be interpolated
             f1 = ParametrizedExpression(self, "1/sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)", mu=(-1., -1.), element=V.sub(1).ufl_element())
             #
-            folder_prefix = os.path.join("test_eim_approximation_08.output_dir", expression_type, basis_generation)
+            folder_prefix = os.path.join("test_eim_approximation_08_tempdir", expression_type, basis_generation)
             assert expression_type in ("Vector", "Matrix")
             if expression_type == "Vector":
                 q = TestFunction(V.sub(1).collapse())

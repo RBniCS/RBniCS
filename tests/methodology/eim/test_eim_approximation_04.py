@@ -42,7 +42,7 @@ def test_eim_approximation_04(expression_type, basis_generation):
             # Subdomain measure
             dx = Measure("dx")(subdomain_data=subdomains)(1)
             #
-            folder_prefix = os.path.join("test_eim_approximation_04.output_dir", expression_type, basis_generation)
+            folder_prefix = os.path.join("test_eim_approximation_04_tempdir", expression_type, basis_generation)
             assert expression_type in ("Vector", "Matrix")
             if expression_type == "Vector":
                 v = TestFunction(V)

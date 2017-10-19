@@ -42,7 +42,7 @@ def test_eim_approximation_05(expression_type, basis_generation):
             f2 = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(-1., -1.), element=V.sub(1).ufl_element())
             f3 = ParametrizedExpression(self, "(1-x[0])*cos(3*pi*(pi+mu[1])*(1+x[1]))*exp(-(pi+mu[0])*(1+x[0]))", mu=(-1., -1.), element=V.sub(1).ufl_element())
             #
-            folder_prefix = os.path.join("test_eim_approximation_05.output_dir", expression_type, basis_generation)
+            folder_prefix = os.path.join("test_eim_approximation_05_tempdir", expression_type, basis_generation)
             assert expression_type in ("Vector", "Matrix")
             if expression_type == "Vector":
                 vq = TestFunction(V)

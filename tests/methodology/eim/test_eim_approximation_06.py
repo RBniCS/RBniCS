@@ -45,7 +45,7 @@ def test_eim_approximation_06(expression_type, basis_generation):
             )
             f = ParametrizedExpression(self, f_expression, mu=(-1., -1.), element=vector_element)
             #
-            folder_prefix = os.path.join("test_eim_approximation_06.output_dir", expression_type, basis_generation)
+            folder_prefix = os.path.join("test_eim_approximation_06_tempdir", expression_type, basis_generation)
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor
