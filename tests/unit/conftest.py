@@ -16,13 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import pytest
-import os
-import shutil
-import matplotlib
-import matplotlib.pyplot as plt
-from dolfin_utils.test import tempdir
-matplotlib_backend = matplotlib.get_backend()
+import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa
+from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdir, save_tempdir, tempdir  # noqa
 
 # Customize item selection
 def pytest_collection_modifyitems(session, config, items):
@@ -98,46 +93,3 @@ def pytest_runtest_setup(item):
 def pytest_runtest_teardown(item, nextitem):
     if hasattr(item, "_runtest_teardown_function"):
         item._runtest_teardown_function()
-            
-# Helper functions to enable and disable matplotlib
-def disable_matplotlib():
-    plt.switch_backend("agg")
-    
-def enable_matplotlib():
-    plt.switch_backend(matplotlib_backend)
-    plt.close("all") # do not trigger matplotlib max_open_warning
-    
-# Temporarily change the tempdir fixture to avoid it clearing out the temporary folder
-os_mkdir = os.mkdir
-shutil_rmtree = shutil.rmtree
-
-def do_not_rmtree(arg):
-    pass
-
-def mkdir_for_save(arg):
-    os_mkdir(arg.replace("_test_tensor_save", "test_tensor_io"))
-    
-def mkdir_for_load(arg):
-    pass
-    
-@pytest.fixture(scope="function")
-def save_tempdir(request):
-    function_name = request.function.__name__
-    request.function.__name__ = function_name.replace("_save", "_io")
-    os.mkdir = mkdir_for_save
-    output = tempdir(request)
-    request.function.__name__ = function_name
-    os.mkdir = os_mkdir
-    return output
-
-@pytest.fixture(scope="function")
-def load_tempdir(request):
-    function_name = request.function.__name__
-    request.function.__name__ = function_name.replace("_load", "_io")
-    os.mkdir = mkdir_for_load
-    shutil.rmtree = do_not_rmtree
-    output = tempdir(request)
-    request.function.__name__ = function_name
-    os.mkdir = os_mkdir
-    shutil.rmtree = shutil_rmtree
-    return output

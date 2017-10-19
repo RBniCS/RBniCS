@@ -16,12 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa
-from rbnics.utils.test import add_performance_options, patch_benchmark_plugin
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib_backend = matplotlib.get_backend()
 
-def pytest_addoption(parser):
-    add_performance_options(parser)
-
-def pytest_configure(config):
-    assert config.pluginmanager.hasplugin("benchmark")
-    patch_benchmark_plugin(config.pluginmanager.getplugin("benchmark"))
+def disable_matplotlib():
+    plt.switch_backend("agg")
+    
+def enable_matplotlib():
+    plt.switch_backend(matplotlib_backend)
+    plt.close("all") # do not trigger matplotlib max_open_warning

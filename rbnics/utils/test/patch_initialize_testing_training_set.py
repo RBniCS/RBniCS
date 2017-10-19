@@ -16,12 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa
-from rbnics.utils.test import add_performance_options, patch_benchmark_plugin
-
-def pytest_addoption(parser):
-    add_performance_options(parser)
-
-def pytest_configure(config):
-    assert config.pluginmanager.hasplugin("benchmark")
-    patch_benchmark_plugin(config.pluginmanager.getplugin("benchmark"))
+# Patch ReductionMethod.initialize_{testing,training}_set to always read from file
+def patch_initialize_testing_training_set():
+    pass # TODO
