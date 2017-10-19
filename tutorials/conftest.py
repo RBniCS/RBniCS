@@ -17,6 +17,7 @@
 #
 
 import os
+import sys
 import importlib
 import pytest
 import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa
@@ -32,11 +33,7 @@ def pytest_collect_file(path, parent):
     """
     Hook into py.test to collect tutorial files.
     """
-    if (
-        path.ext == ".py" and path.basename not in "conftest.py" and not path.basename.startswith("test_")
-            and
-        "data" not in path.dirname
-    ):
+    if path.ext == ".py" and path.basename.startswith("solve_"):
         return TutorialFile(path, parent)
         
 def pytest_pycollect_makemodule(path, parent):
@@ -65,6 +62,7 @@ class TutorialItem(pytest.Item):
     def runtest(self):
         disable_matplotlib()
         os.chdir(self.parent.fspath.dirname)
+        sys.path.append(self.parent.fspath.dirname)
         spec = importlib.util.spec_from_file_location(self.name, str(self.parent.fspath))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
