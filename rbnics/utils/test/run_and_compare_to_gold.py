@@ -27,9 +27,7 @@ except ImportError:
     # compare action only requires to be able to do a git clone
     pass
 from rbnics.utils.mpi import is_io_process
-from rbnics.utils.io import Folders
-from rbnics.utils.test.dump import dump
-from rbnics.utils.test.isclose import isclose
+from rbnics.utils.test.diff import diff
 
 def run_and_compare_to_gold(runtest):
     def run_and_compare_to_gold_function(self):
@@ -57,7 +55,8 @@ def run_and_compare_to_gold(runtest):
         if action is not None and is_io_process():
             for set_ in ("testing_set", "training_set"):
                 for set_directory in glob.iglob(reference_dir + "/**/" + set_, recursive=True):
-                    if actions == "compare":
+                    set_directory = os.path.relpath(set_directory, reference_dir)
+                    if action == "compare":
                         assert os.path.exists(os.path.join(reference_dir, set_directory))
                     if os.path.exists(os.path.join(reference_dir, set_directory)):
                         if os.path.exists(os.path.join(current_dir, set_directory)):
@@ -69,19 +68,16 @@ def run_and_compare_to_gold(runtest):
         if is_io_process():
             if action == "compare":
                 failures = list()
-                failures_folder = Folders.Folder(os.path.join(current_dir, "failures"))
-                failures_folder.create()
                 for filename in glob.iglob(reference_dir + "/**/*.*", recursive=True):
-                    if not isclose(os.path.join(reference_dir, filename), os.path.join(current_dir, filename)):
+                    filename = os.path.relpath(filename, reference_dir)
+                    diffs = diff(os.path.join(reference_dir, filename), os.path.join(current_dir, filename))
+                    if len(diffs) > 0:
                         failures.append(filename)
-                        with open(os.path.join(failures_folder, filename), "w") as failure_file:
-                            failure_file.write("REFERENCE FILE\n")
-                            failure_file.write(dump(os.path.join(reference_dir, filename)))
-                            failure_file.write("\n")
-                            failure_file.write("CURRENT FILE\n")
-                            failure_file.write(dump(os.path.join(current_dir, filename)))
-                assert len(failures) == 0, self.name + ", comparison has failed for the following files: " + str(failures)
-                os.rmdir(str(failures_folder))
+                        os.makedirs(os.path.dirname(os.path.join(current_dir, filename + "_diff")), exist_ok=True)
+                        with open(os.path.join(current_dir, filename + "_diff"), "w") as failure_file:
+                            failure_file.writelines(diffs)
+                if len(failures) > 0:
+                    raise RuntimeError(self.name + ", comparison has failed for the following files: " + str(failures) + ".")
             elif action == "regold":
                 data_dir_repo = git.Repo(data_dir)
                 assert not data_dir_repo.is_dirty()
@@ -93,9 +89,9 @@ def run_and_compare_to_gold(runtest):
                 os.remove(os.path.join(reference_dir, ".gitignore"))
                 data_dir_repo.git.add([reference_dir])
                 # Commit changes
-                commit = str(git.Repo(rootdir).head)
+                commit = str(git.Repo(rootdir).head.reference.commit)
                 relpath = os.path.relpath(str(self.fspath), rootdir)
-                data_dir_repo.git.commit(message="Automatic regolding of " + relpath + " at upstream commit " + commit)
+                data_dir_repo.git.commit(message="Automatic regold of " + relpath + " at upstream commit " + commit)
                 # Clean repository
                 data_dir_repo.git.clean("-Xdf")
     return run_and_compare_to_gold_function

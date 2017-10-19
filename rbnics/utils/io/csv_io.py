@@ -38,7 +38,8 @@ class CSVIO(object):
         if not filename.endswith(".csv"):
             filename = filename + ".csv"
         with open(os.path.join(str(directory), filename), "r") as infile:
-            raise NotImplementedError("CSV load has not been implemented yet")
+            reader = csv.reader(infile, delimiter=";")
+            return [line for line in reader]
             
     # Check if the file exists
     @staticmethod

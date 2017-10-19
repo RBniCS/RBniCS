@@ -27,6 +27,7 @@ except ImportError:
             @classmethod
             def clone_from(cls, url, to_path):
                 os.system("git clone " + url + " " + to_path)
+from rbnics.utils.test.patch_initialize_testing_training_set import patch_initialize_testing_training_set
 
 def add_gold_options(parser):
     available_options = [name for opt in parser._anonymous.options for name in opt.names()]
@@ -49,3 +50,4 @@ def process_gold_options(config):
             data_dir = tempfile.mkdtemp()
             git.Repo.clone_from("git@gitlab.com:RBniCS/RBniCS-test-data.git", data_dir)
             config.option.data_dir = data_dir
+        patch_initialize_testing_training_set(config.option.action)

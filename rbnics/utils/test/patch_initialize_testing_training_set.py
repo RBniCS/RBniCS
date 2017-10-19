@@ -16,6 +16,44 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Patch ReductionMethod.initialize_{testing,training}_set to always read from file
-def patch_initialize_testing_training_set():
-    pass # TODO
+import rbnics.reduction_methods.base
+
+def patch_initialize_testing_training_set(action):
+    """
+    Patch ReductionMethod.initialize_{testing,training}_set to always read from file if 
+    action == "compare", and to try first to read from file if actions == "regold"
+    """
+    if action is None:
+        pass
+    elif action == "compare":
+        def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            import_successful = self.training_set.load(self.folder["training_set"], "training_set")
+            assert import_successful
+            return import_successful
+        rbnics.reduction_methods.base.ReductionMethod.initialize_training_set = initialize_training_set
+            
+        def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+            import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set")
+            assert import_successful
+            return import_successful
+        rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set = initialize_testing_set
+    elif action == "regold":
+        original_initialize_training_set = rbnics.reduction_methods.base.ReductionMethod.initialize_training_set
+        def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            self.folder["training_set"].create()
+            import_successful = self.training_set.load(self.folder["training_set"], "training_set")
+            if not import_successful:
+                return original_initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
+            else:
+                return import_successful
+        rbnics.reduction_methods.base.ReductionMethod.initialize_training_set = initialize_training_set
+        
+        original_initialize_testing_set = rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set
+        def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+            self.folder["testing_set"].create()
+            import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set")
+            if not import_successful:
+                return original_initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
+            else:
+                return import_successful
+        rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set = initialize_testing_set

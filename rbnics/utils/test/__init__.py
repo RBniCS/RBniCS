@@ -16,10 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.test.options import add_gold_options, add_performance_options, process_gold_options
-from rbnics.utils.test.dump import dump
-from rbnics.utils.test.isclose import isclose
+from rbnics.utils.test.diff import diff
 from rbnics.utils.test.matplotlib import disable_matplotlib, enable_matplotlib
+from rbnics.utils.test.options import add_gold_options, add_performance_options, process_gold_options
 from rbnics.utils.test.patch_benchmark_plugin import patch_benchmark_plugin
 from rbnics.utils.test.patch_initialize_testing_training_set import patch_initialize_testing_training_set
 from rbnics.utils.test.run_and_compare_to_gold import run_and_compare_to_gold
@@ -28,10 +27,9 @@ from rbnics.utils.test.tempdir import load_tempdir, save_tempdir, tempdir
 __all__ = [
     'add_gold_options',
     'add_performance_options',
+    'diff',
     'disable_matplotlib',
-    'dump',
     'enable_matplotlib',
-    'isclose',
     'load_tempdir',
     'patch_benchmark_plugin',
     'patch_initialize_testing_training_set',

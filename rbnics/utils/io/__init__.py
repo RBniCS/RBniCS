@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.io.csv_io import CSVIO
 from rbnics.utils.io.error_analysis_table import ErrorAnalysisTable
 from rbnics.utils.io.exportable_list import ExportableList
 from rbnics.utils.io.folders import Folders
@@ -30,6 +31,7 @@ from rbnics.utils.io.text_io import TextIO
 from rbnics.utils.io.timer import Timer
 
 __all__ = [
+    'CSVIO',
     'ErrorAnalysisTable',
     'ExportableList',
     'Folders',
