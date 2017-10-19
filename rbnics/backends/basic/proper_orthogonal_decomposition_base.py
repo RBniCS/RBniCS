@@ -18,7 +18,8 @@
 
 import os
 from math import sqrt
-from numpy import abs, isclose, zeros, sum as compute_total_energy, cumsum as compute_retained_energy
+from numpy import abs, cumsum as compute_retained_energy, isclose, sum as compute_total_energy
+from rbnics.utils.io import ExportableList
 from rbnics.utils.mpi import is_io_process
 
 # Class containing the implementation of the POD
@@ -29,19 +30,18 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             self.X = X
             self.V_or_Z = V_or_Z
             self.args = args
-            self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
-            
+                        
             # Declare a matrix to store the snapshots
             self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z, *args)
             # Declare a list to store eigenvalues
-            self.eigenvalues = zeros(0) # correct size will be assigned later
-            self.retained_energy = zeros(0) # correct size will be assigned later
+            self.eigenvalues = ExportableList("text")
+            self.retained_energy = ExportableList("text")
             # Store inner product
             self.X = X
             
         def clear(self):
             self.snapshots_matrix.clear()
-            self.eigenvalues = zeros(0)
+            self.eigenvalues = ExportableList("text")
             
         # No implementation is provided for store_snapshot, because
         # it has different interface for the standard POD and
@@ -69,18 +69,19 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             
             Neigs = len(self.snapshots_matrix)
             Nmax = min(Nmax, Neigs)
-            self.eigenvalues = zeros(Neigs)
+            assert len(self.eigenvalues) is 0
             for i in range(Neigs):
                 (eig_i_real, eig_i_complex) = eigensolver.get_eigenvalue(i)
                 assert isclose(eig_i_complex, 0.)
-                self.eigenvalues[i] = eig_i_real
+                self.eigenvalues.append(eig_i_real)
             
-            total_energy = compute_total_energy(abs(self.eigenvalues))
-            self.retained_energy = compute_retained_energy(abs(self.eigenvalues))
+            total_energy = compute_total_energy([abs(e) for e in self.eigenvalues])
+            retained_energy = compute_retained_energy([abs(e) for e in self.eigenvalues])
+            assert len(self.retained_energy) is 0
             if total_energy > 0.:
-                self.retained_energy /= total_energy
+                self.retained_energy.extend([retained_energy_i/total_energy for retained_energy_i in retained_energy])
             else:
-                self.retained_energy += 1. # trivial case, all snapshots are zero
+                self.retained_energy.extend([1. for _ in range(Neigs)]) # trivial case, all snapshots are zero
             
             for N in range(Nmax):
                 (eigvector, _) = eigensolver.get_eigenvector(N)
@@ -105,19 +106,9 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
                 print("lambda_" + str(i) + " = " + str(self.eigenvalues[i]))
             
         def save_eigenvalues_file(self, output_directory, eigenvalues_file):
-            if is_io_process(self.mpi_comm):
-                N = len(self.snapshots_matrix)
-                with open(os.path.join(str(output_directory), eigenvalues_file), "w") as outfile:
-                    for i in range(N):
-                        outfile.write(str(i) + " " + str(self.eigenvalues[i]) + "\n")
-            self.mpi_comm.barrier()
+            self.eigenvalues.save(output_directory, eigenvalues_file)
             
         def save_retained_energy_file(self, output_directory, retained_energy_file):
-            if is_io_process(self.mpi_comm):
-                N = len(self.snapshots_matrix)
-                with open(os.path.join(str(output_directory), retained_energy_file), "w") as outfile:
-                    for i in range(N):
-                        outfile.write(str(i) + " " + str(self.retained_energy[i]) + "\n")
-            self.mpi_comm.barrier()
+            self.retained_energy.save(output_directory, retained_energy_file)
     
     return _ProperOrthogonalDecompositionBase

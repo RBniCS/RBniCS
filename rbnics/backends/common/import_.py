@@ -18,12 +18,12 @@
 
 from numbers import Number
 from rbnics.utils.decorators import backend_for, list_of
-from rbnics.utils.io import Folders, PickleIO
+from rbnics.utils.io import Folders, TextIO
 
 @backend_for("common", inputs=(list_of(Number), (Folders.Folder, str), str, None, None))
 def import_(solution, directory, filename, suffix=None, component=None):
-    if PickleIO.exists_file(directory, filename):
-        loaded_solution = PickleIO.load_file(directory, filename)
+    if TextIO.exists_file(directory, filename):
+        loaded_solution = TextIO.load_file(directory, filename)
         assert len(solution) == len(loaded_solution)
         for (i, solution_i) in enumerate(loaded_solution):
             solution[i] = float(solution_i)

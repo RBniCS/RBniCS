@@ -18,8 +18,8 @@
 
 from numbers import Number
 from rbnics.utils.decorators import backend_for, list_of
-from rbnics.utils.io import Folders, PickleIO
+from rbnics.utils.io import Folders, TextIO
 
 @backend_for("common", inputs=(list_of(Number), (Folders.Folder, str), str, None, None))
 def export(solution, directory, filename, suffix=None, component=None):
-    PickleIO.save_file(solution, directory, filename)
+    TextIO.save_file(solution, directory, filename)

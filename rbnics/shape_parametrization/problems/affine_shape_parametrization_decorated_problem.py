@@ -17,9 +17,8 @@
 #
 
 from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrizationDecoratedProblem
-from rbnics.shape_parametrization.utils.symbolic import affine_shape_parametrization_from_vertices_mapping
+from rbnics.shape_parametrization.utils.symbolic import affine_shape_parametrization_from_vertices_mapping, VerticesMappingIO
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
-from rbnics.utils.io import PickleIO
 
 def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_mappings, **decorator_kwargs):
     
@@ -31,8 +30,8 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
     ):
         filename = shape_parametrization_vertices_mappings[0]
         assert filename != "identity", "It does not make any sense to use this if you only have one subdomain without parametrization"
-        assert PickleIO.exists_file("", filename)
-        shape_parametrization_vertices_mappings = PickleIO.load_file("", filename)
+        assert VerticesMappingIO.exists_file("", filename)
+        shape_parametrization_vertices_mappings = VerticesMappingIO.load_file("", filename)
         
     # Detect the mesh dimension based on the number of vertices to be mapped
     dim = None

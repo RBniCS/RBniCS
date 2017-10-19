@@ -72,3 +72,6 @@ class ExportableList(object):
         
     def __len__(self):
         return len(self._list)
+        
+    def __str__(self):
+        return str(self._list)

@@ -20,6 +20,6 @@ from rbnics.utils.io import ExportableList
 
 class BoundingBoxSideList(ExportableList):
     def __init__(self, size=None):
-        ExportableList.__init__(self, "pickle")
+        ExportableList.__init__(self, "text")
         if size is not None:
-            self._list.extend([0. for x in range(size)])
+            self._list.extend([0. for _ in range(size)])

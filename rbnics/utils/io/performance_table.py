@@ -16,8 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
+import collections
 from numpy import exp, log, max, mean, min, zeros as Content
-from rbnics.utils.io.pickle_io import PickleIO
+from rbnics.utils.io.csv_io import CSVIO
+from rbnics.utils.io.folders import Folders
 
 class PerformanceTable(object):
     
@@ -103,8 +106,8 @@ class PerformanceTable(object):
             else:
                 self._columns[column_name][N - self._Nmin, run] = self._preprocessor_setitem[column_name](value)
             
-    def __str__(self):
-        output = ""
+    def _process(self):
+        groups_content = collections.OrderedDict()
         for group in self._group_names_sorted:
             # Skip suppresed groups
             if group in self._suppressed_groups:
@@ -155,7 +158,16 @@ class PerformanceTable(object):
                         table_content[current_table_index][n - self._Nmin] = current_table_content
                     # Get the width of the columns
                     column_size[current_table_index] = max([max([len(str(x)) for x in table_content[current_table_index]]), len(current_table_header)])
-            # Prepare formetter for string conversion
+            # Save content
+            assert group not in groups_content
+            groups_content[group] = (table_index, table_header, table_content, column_size)
+        return groups_content
+        
+    def __str__(self):
+        groups_content = self._process()
+        output = ""
+        for (group, (table_index, table_header, table_content, column_size)) in groups_content.items():
+            # Prepare formatter for string conversion
             formatter = ""
             for (column_index, column_name) in enumerate(table_index):
                 formatter += "{" + str(column_index) + ":<{" + column_name + "}}"
@@ -176,21 +188,21 @@ class PerformanceTable(object):
         return output[:-2] # remove the last two newlines
         
     def save(self, directory, filename):
-        PickleIO.save_file(self, directory, filename)
+        full_directory = Folders.Folder(os.path.join(str(directory), filename))
+        full_directory.create()
+        groups_content = self._process()
+        for (group, (table_index, table_header, table_content, _)) in groups_content.items():
+            current_file = list()
+            # Store the header
+            current_file.append([table_header[t] for t in table_index])
+            # Store the content
+            for n in range(self._Nmin, self._Nmax + 1):
+                current_file.append([table_content[t][n - self._Nmin] for t in table_index])
+            # Save
+            CSVIO.save_file(current_file, full_directory, group)
     
     def load(self, directory, filename):
-        assert len(self._columns) == 0 # cannot load multiple times
-        assert PickleIO.exists_file(directory, filename)
-        loaded_table = PickleIO.load_file(directory, filename)
-        self._columns = loaded_table._columns
-        self._columns_operations = loaded_table._columns_operations
-        self._columns_not_implemented = loaded_table._columns_not_implemented
-        self._groups = loaded_table._groups
-        self._group_names_sorted = loaded_table._group_names_sorted
-        assert self._len_testing_set == loaded_table._len_testing_set
-        self._Nmin = loaded_table._Nmin
-        self._Nmax = loaded_table._Nmax
-        return True
+        raise RuntimeError("PerformanceTable.load has not been implemented yet")
         
         
 class CustomNotImplementedType(object):

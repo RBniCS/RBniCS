@@ -17,32 +17,34 @@
 #
 
 import os
+import csv
 from rbnics.utils.mpi import is_io_process
 
-class TextIO(object):
+class CSVIO(object):
     # Save a variable to file
     @staticmethod
     def save_file(content, directory, filename):
-        if os.path.splitext(filename)[1] == "":
-            filename = filename + ".txt"
+        if not filename.endswith(".csv"):
+            filename = filename + ".csv"
         if is_io_process():
             with open(os.path.join(str(directory), filename), "w") as outfile:
-                outfile.write(repr(content))
+                writer = csv.writer(outfile, delimiter=";")
+                writer.writerows(content)
         is_io_process.mpi_comm.barrier()
-                
+        
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
-        if os.path.splitext(filename)[1] == "":
-            filename = filename + ".txt"
+        if not filename.endswith(".csv"):
+            filename = filename + ".csv"
         with open(os.path.join(str(directory), filename), "r") as infile:
-            return eval(infile.read(), {"__builtins__": None}, {})
+            raise NotImplementedError("CSV load has not been implemented yet")
             
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
-        if os.path.splitext(filename)[1] == "":
-            filename = filename + ".txt"
+        if not filename.endswith(".csv"):
+            filename = filename + ".csv"
         exists = None
         if is_io_process():
             exists = os.path.exists(os.path.join(str(directory), filename))

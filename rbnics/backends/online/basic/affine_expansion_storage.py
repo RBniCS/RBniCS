@@ -23,7 +23,7 @@ from numpy import nditer as AffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.decorators import overload, tuple_of
-from rbnics.utils.io import Folders, PickleIO as ContentItemShapeIO, PickleIO as ContentItemTypeIO, PickleIO as ContentShapeIO, PickleIO as DictIO, PickleIO as ScalarContentIO
+from rbnics.utils.io import Folders, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as ContentShapeIO, TextIO as DictIO, TextIO as ScalarContentIO
 
 def AffineExpansionStorage(backend, wrapping):
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):

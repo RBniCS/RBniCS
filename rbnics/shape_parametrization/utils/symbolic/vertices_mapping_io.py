@@ -17,7 +17,7 @@
 #
 
 import os
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.io import TextIO
 
 class VerticesMappingIO(object):
     # Save a variable to file
@@ -25,26 +25,18 @@ class VerticesMappingIO(object):
     def save_file(vertices_mapping, directory, filename):
         if not filename.endswith(".vmp"):
             filename = filename + ".vmp"
-        if is_io_process():
-            with open(os.path.join(str(directory), filename), "w") as outfile:
-                outfile.write(str(vertices_mapping))
-        is_io_process.mpi_comm.barrier()
-                
+        TextIO.save_file(vertices_mapping, directory, filename)
+    
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
         if not filename.endswith(".vmp"):
             filename = filename + ".vmp"
-        with open(os.path.join(str(directory), filename), "r") as infile:
-            return eval(infile.read(), {"__builtins__": None}, {})
+        return TextIO.load_file(directory, filename)
             
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):
         if not filename.endswith(".vmp"):
             filename = filename + ".vmp"
-        exists = None
-        if is_io_process():
-            exists = os.path.exists(os.path.join(str(directory), filename))
-        exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
-        return exists
+        return TextIO.exists_file(directory, filename)

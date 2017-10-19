@@ -25,7 +25,7 @@ from numpy import argmax
 
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     def __init__(self, box):
-        ExportableList.__init__(self, "pickle")
+        ExportableList.__init__(self, "text")
         self.box = box
         self.mpi_comm = is_io_process.mpi_comm # default communicator
         self.distributed_max = True
@@ -46,17 +46,21 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
                 self._list.append(tuple())
         
     def save(self, directory, filename):
-        ExportableList.save(self, directory, filename)
+        assert not filename.endswith(".txt")
+        # Save the subset
+        ExportableList.save(self, directory, filename + ".txt")
         # Also save box
-        self._FileIO.save_file(self.box, directory, filename + "_box")
+        self._FileIO.save_file(self.box, directory, filename + "_box.txt")
         
     def load(self, directory, filename):
-        result = ExportableList.load(self, directory, filename)
+        assert not filename.endswith(".txt")
+        # Load the subset
+        result = ExportableList.load(self, directory, filename + ".txt")
         if not result:
             return False
         # Also load the box
-        assert self._FileIO.exists_file(directory, filename + "_box")
-        box = self._FileIO.load_file(directory, filename + "_box")
+        assert self._FileIO.exists_file(directory, filename + "_box.txt")
+        box = self._FileIO.load_file(directory, filename + "_box.txt")
         if len(box) != len(self.box):
             return False
         for (box_range, loaded_box_range) in zip(self.box, box):
