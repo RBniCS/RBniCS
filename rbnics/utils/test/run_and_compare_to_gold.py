@@ -57,10 +57,11 @@ def run_and_compare_to_gold(subdirectory=""):
             # Copy training and testing set
             if action is not None and is_io_process():
                 for set_ in ("testing_set", "training_set"):
-                    for set_directory in glob.iglob(os.path.join(reference_dir, "**", set_), recursive=True):
+                    set_directories = glob.glob(os.path.join(reference_dir, "**", set_), recursive=True)
+                    if action == "compare":
+                        assert len(set_directories) > 0
+                    for set_directory in set_directories:
                         set_directory = os.path.relpath(set_directory, reference_dir)
-                        if action == "compare":
-                            assert os.path.exists(os.path.join(reference_dir, set_directory))
                         if os.path.exists(os.path.join(reference_dir, set_directory)):
                             if os.path.exists(os.path.join(current_dir, set_directory)):
                                 shutil.rmtree(os.path.join(current_dir, set_directory))
@@ -71,7 +72,9 @@ def run_and_compare_to_gold(subdirectory=""):
             if is_io_process():
                 if action == "compare":
                     failures = list()
-                    for filename in glob.iglob(os.path.join(reference_dir, "**", "*.*"), recursive=True):
+                    filenames = glob.glob(os.path.join(reference_dir, "**", "*.*"), recursive=True)
+                    assert len(filenames) > 0
+                    for filename in filenames:
                         filename = os.path.relpath(filename, reference_dir)
                         diffs = diff(os.path.join(reference_dir, filename), os.path.join(current_dir, filename))
                         if len(diffs) > 0:
