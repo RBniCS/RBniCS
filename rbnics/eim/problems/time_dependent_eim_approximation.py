@@ -16,25 +16,28 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import types
 from numbers import Number
 import hashlib
+from rbnics.problems.base import ParametrizedProblem
 from rbnics.eim.problems.eim_approximation import EIMApproximation
-from rbnics.utils.decorators import overload, sync_setters, tuple_of
+from rbnics.utils.decorators import sync_setters
 
 def set_mu_decorator(set_mu):
-    @overload(tuple_of(Number))
     def decorated_set_mu(self, mu):
-        set_mu(self, mu)
-        
-    @overload(EnlargedMu)
-    def decorated_set_mu(self, mu):
-        assert len(mu) == 2
-        assert "mu" in mu
-        assert isinstance(mu["mu"], tuple)
-        set_mu(self, mu["mu"])
-        assert "t" in mu
-        assert isinstance(mu["t"], Number)
-        self.set_time(mu["t"])
+        assert isinstance(mu, (EnlargedMu, tuple))
+        if isinstance(mu, tuple):
+            set_mu(self, mu)
+        elif isinstance(mu, EnlargedMu):
+            assert len(mu) == 2
+            assert "mu" in mu
+            assert isinstance(mu["mu"], tuple)
+            set_mu(self, mu["mu"])
+            assert "t" in mu
+            assert isinstance(mu["t"], Number)
+            self.set_time(mu["t"])
+        else:
+            raise ValueError("Invalid mu")
         
     return decorated_set_mu
 
