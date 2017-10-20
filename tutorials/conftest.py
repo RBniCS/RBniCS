@@ -41,8 +41,7 @@ def pytest_pycollect_makemodule(path, parent):
     Hook into py.test to avoid collecting twice tutorial files explicitly provided on the command lines
     """
     assert path.ext == ".py"
-    assert path.basename not in "conftest.py"
-    assert "data" not in path.dirname
+    assert path.basename.startswith("solve_")
     return DoNothingFile(path, parent)
         
 class TutorialFile(pytest.File):
@@ -51,14 +50,14 @@ class TutorialFile(pytest.File):
     """
     
     def collect(self):
-        yield TutorialItem("run_tutorial -> " + os.path.relpath(str(self.fspath), str(self.parent.fspath)), self)
+        yield TutorialItem(os.path.relpath(str(self.fspath), str(self.parent.fspath)), self)
         
 class TutorialItem(pytest.Item):
     """
     Handle the execution of the tutorial.
     """
     
-    @run_and_compare_to_gold
+    @run_and_compare_to_gold()
     def runtest(self):
         disable_matplotlib()
         os.chdir(self.parent.fspath.dirname)

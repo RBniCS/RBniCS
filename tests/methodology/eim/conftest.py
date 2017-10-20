@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 import types
 import pytest
 import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa
@@ -55,9 +56,10 @@ def patch_test_item(test_item):
     Handle the execution of the test.
     """
     
+    subdirectory = os.path.join(test_item.originalname + "_tempdir", test_item.callspec.getparam("expression_type"), test_item.callspec.getparam("basis_generation"))
     original_runtest = test_item.runtest
     
-    @run_and_compare_to_gold
+    @run_and_compare_to_gold(subdirectory)
     def runtest(self):
         disable_matplotlib()
         original_runtest()
