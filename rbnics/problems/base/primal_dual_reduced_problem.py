@@ -42,7 +42,7 @@ def PrimalDualReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
                 if "dual" in kwargs:
                     self._dual_solve_latest_N = kwargs["dual"]
                 else:
-                    self._dual_solve_latest_N = min(N, self.dual_reduced_problem.N)
+                    self._dual_solve_latest_N = min(primal_solution.N, self.dual_reduced_problem.N)
                 self._dual_solve_latest_kwargs = kwargs
             # Return primal solution
             return primal_solution
