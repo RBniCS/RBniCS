@@ -52,18 +52,19 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
                     assert isinstance(converted_function, Function)
                     component = (None, )
             elif isinstance(function, ListTensor):
-                assert all(isinstance(component, Indexed) for component in function.ufl_operands)
-                assert all(len(component.ufl_operands) == 2 for component in function.ufl_operands)
-                assert all(isinstance(component.ufl_operands[0], Function) for component in function.ufl_operands)
-                assert all(isinstance(component.ufl_operands[1], MultiIndex) for component in function.ufl_operands)
-                assert all(component.ufl_operands[0] == function.ufl_operands[-1].ufl_operands[0] for component in function.ufl_operands)
+                converted_function = _remove_mute_indices(function)
+                assert all(isinstance(component, Indexed) for component in converted_function.ufl_operands)
+                assert all(len(component.ufl_operands) == 2 for component in converted_function.ufl_operands)
+                assert all(isinstance(component.ufl_operands[0], Function) for component in converted_function.ufl_operands)
+                assert all(isinstance(component.ufl_operands[1], MultiIndex) for component in converted_function.ufl_operands)
+                assert all(component.ufl_operands[0] == converted_function.ufl_operands[-1].ufl_operands[0] for component in converted_function.ufl_operands)
                 function_split_to_component = dict()
                 function_split_to_function = dict()
-                _split_function(function.ufl_operands[-1].ufl_operands[0], function_split_to_component, function_split_to_function)
-                assert function in function_split_to_component
-                assert function in function_split_to_function
-                component = function_split_to_component[function]
-                converted_function = function_split_to_function[function]
+                _split_function(converted_function.ufl_operands[-1].ufl_operands[0], function_split_to_component, function_split_to_function)
+                assert converted_function in function_split_to_component
+                assert converted_function in function_split_to_function
+                component = function_split_to_component[converted_function]
+                converted_function = function_split_to_function[converted_function]
             else:
                 raise ValueError("Invalid function provided to get_auxiliary_problem_for_non_parametrized_function")
                 
