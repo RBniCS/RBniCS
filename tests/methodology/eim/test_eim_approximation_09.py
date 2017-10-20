@@ -39,7 +39,7 @@ def test_eim_approximation_09(expression_type, basis_generation):
         def __init__(self, V, expression_type, basis_generation):
             self.V = V
             # Parametrized function to be interpolated
-            mu = SymbolicParameters(self, V, mu=(1., ))
+            mu = SymbolicParameters(self, V, (1., ))
             if expression_type == "Function":
                 x = project(Expression("x[0]", element=V.ufl_element()), V) # SpatialCoordinate is not supported by FEniCS dP measure
                 x = (x, )

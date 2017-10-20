@@ -51,7 +51,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
             self.components = ["f"]
             # Parametrized function to be interpolated
             x = SpatialCoordinate(V.mesh())
-            mu = SymbolicParameters(self, V, mu=(1., ))
+            mu = SymbolicParameters(self, V, (1., ))
             self.f = (1-x[0])*cos(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))
             # Inner product
             f = TrialFunction(self.V)
