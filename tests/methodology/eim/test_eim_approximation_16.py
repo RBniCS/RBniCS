@@ -26,7 +26,7 @@ from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMA
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 
-@pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
+@pytest.mark.parametrize("expression_type", ["Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_16(expression_type, basis_generation):
     """
