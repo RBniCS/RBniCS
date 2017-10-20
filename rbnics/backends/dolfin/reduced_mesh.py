@@ -327,7 +327,7 @@ def BasicReducedMesh(backend, wrapping):
             
         def _save_auxiliary_reduced_function_space(self, key):
             # Get full directory name
-            full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory, self._auxiliary_io_filename))
+            full_directory = Folders.Folder(os.path.join(str(self._auxiliary_io_directory), self._auxiliary_io_filename))
             full_directory.create()
             # Init
             self._init_for_auxiliary_save_if_needed()
@@ -350,7 +350,7 @@ def BasicReducedMesh(backend, wrapping):
                 
         def _save_auxiliary_basis_functions_matrix(self, key):
             # Get full directory name
-            full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory, self._auxiliary_io_filename))
+            full_directory = Folders.Folder(os.path.join(str(self._auxiliary_io_directory), self._auxiliary_io_filename))
             full_directory.create()
             # Save auxiliary basis functions matrix
             auxiliary_basis_functions_matrix = self._auxiliary_basis_functions_matrix[key]
@@ -532,7 +532,7 @@ def BasicReducedMesh(backend, wrapping):
             
         def _load_auxiliary_reduced_function_space(self, key):
             # Get full directory name
-            full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory, self._auxiliary_io_filename))
+            full_directory = Folders.Folder(os.path.join(str(self._auxiliary_io_directory), self._auxiliary_io_filename))
             full_directory.create()
             # Init
             self._init_for_auxiliary_load_if_needed()
@@ -741,7 +741,7 @@ class ReducedMesh(ReducedMesh_Base):
             
     def _load_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_problem, auxiliary_reduced_V):
         # Get full directory name
-        full_directory = Folders.Folder(os.path.join(self._auxiliary_io_directory, self._auxiliary_io_filename))
+        full_directory = Folders.Folder(os.path.join(str(self._auxiliary_io_directory), self._auxiliary_io_filename))
         full_directory.create()
         # Load auxiliary basis functions matrix
         full_directory_plus_key = Folders.Folder(full_directory + "/auxiliary_basis_functions/" + self._auxiliary_key_to_folder(key))
