@@ -98,7 +98,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
     @abstractmethod
-    def error_analysis(self, N=None, **kwargs):
+    def error_analysis(self, N=None, filename=None, **kwargs):
         raise NotImplementedError("Please implement the error analysis of the reduced order model.")
         
     # Initialize data structures required for the error analysis phase
@@ -112,7 +112,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
     # Compute the speedup analysis of the reduced order approximation with respect to the full order one
     # over the testing set
     @abstractmethod
-    def speedup_analysis(self, N=None, **kwargs):
+    def speedup_analysis(self, N=None, filename=None, **kwargs):
         raise NotImplementedError("Please implement the speedup analysis of the reduced order model.")
         
     # Initialize data structures required for the speedup analysis phase

@@ -123,7 +123,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
-        def error_analysis(self, N=None, **kwargs):
+        def error_analysis(self, N=None, filename=None, **kwargs):
             # Perform first the DEIM error analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
@@ -139,15 +139,15 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             ):
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
-                        DEIM_reduction_term_q.error_analysis(N)
+                        DEIM_reduction_term_q.error_analysis(N, filename)
             # ..., and then call the parent method.
             if "DEIM" in kwargs and kwargs["DEIM"] is None:
                 del kwargs["DEIM"]
-            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, filename, **kwargs)
             
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
-        def speedup_analysis(self, N=None, **kwargs):
+        def speedup_analysis(self, N=None, filename=None, **kwargs):
             # Perform first the DEIM speedup analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
@@ -163,11 +163,11 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             ):
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
-                        DEIM_reduction_term_q.speedup_analysis(N)
+                        DEIM_reduction_term_q.speedup_analysis(N, filename)
             # ..., and then call the parent method.
             if "DEIM" in kwargs and kwargs["DEIM"] is None:
                 del kwargs["DEIM"]
-            DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, filename, **kwargs)
         
     # return value (a class) for the decorator
     return DEIMDecoratedReductionMethod_Class

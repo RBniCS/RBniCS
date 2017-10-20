@@ -86,7 +86,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
-        def error_analysis(self, N=None, **kwargs):
+        def error_analysis(self, N=None, filename=None, **kwargs):
             # Perform first the SCM error analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
@@ -96,9 +96,9 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 "SCM" not in kwargs             # otherwise we assume the user was interested in computing the error for a fixed number of SCM basis
                                                 # functions, thus he has already carried out the error analysis of SCM
             ):
-                self.SCM_reduction.error_analysis(N)
+                self.SCM_reduction.error_analysis(N, filename)
             # ..., and then call the parent method.
-            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, filename, **kwargs)
             
         def _init_error_analysis(self, **kwargs):
             # Replace stability factor computation, if needed
@@ -114,7 +114,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
-        def speedup_analysis(self, N=None, **kwargs):
+        def speedup_analysis(self, N=None, filename=None, **kwargs):
             # Perform first the SCM speedup analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
@@ -124,9 +124,9 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 "SCM" not in kwargs             # otherwise we assume the user was interested in computing the speedup for a fixed number of SCM basis
                                                 # functions, thus he has already carried out the speedup analysis of SCM
             ):
-                self.SCM_reduction.speedup_analysis(N)
+                self.SCM_reduction.speedup_analysis(N, filename)
             # ..., and then call the parent method.
-            DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, filename, **kwargs)
             
         def _init_speedup_analysis(self, **kwargs):
             # Replace stability factor computation, if needed

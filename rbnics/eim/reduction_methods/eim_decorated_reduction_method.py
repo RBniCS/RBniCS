@@ -122,7 +122,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
-        def error_analysis(self, N=None, **kwargs):
+        def error_analysis(self, N=None, filename=None, **kwargs):
             # Perform first the EIM error analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
@@ -137,15 +137,15 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 )
             ):
                 for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
-                    EIM_reduction_coeff.error_analysis(N)
+                    EIM_reduction_coeff.error_analysis(N, filename)
             # ..., and then call the parent method.
             if "EIM" in kwargs and kwargs["EIM"] is None:
                 del kwargs["EIM"]
-            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, filename, **kwargs)
             
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
-        def speedup_analysis(self, N=None, **kwargs):
+        def speedup_analysis(self, N=None, filename=None, **kwargs):
             # Perform first the EIM speedup analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
@@ -160,11 +160,11 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 )
             ):
                 for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
-                    EIM_reduction_coeff.speedup_analysis(N)
+                    EIM_reduction_coeff.speedup_analysis(N, filename)
             # ..., and then call the parent method.
             if "EIM" in kwargs and kwargs["EIM"] is None:
                 del kwargs["EIM"]
-            DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, **kwargs)
+            DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, filename, **kwargs)
         
     # return value (a class) for the decorator
     return EIMDecoratedReductionMethod_Class

@@ -270,7 +270,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the testing set
-    def error_analysis(self, N=None, **kwargs):
+    def error_analysis(self, N=None, filename=None, **kwargs):
         if N is None:
             N = self.EIM_approximation.N
         assert len(kwargs) == 0 # not used in this method
@@ -314,11 +314,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
+        # Export error analysis table
+        error_analysis_table.save(self.folder["error_analysis"], "error_analysis" if filename is None else filename)
+        
         self._finalize_error_analysis(**kwargs)
         
     # Compute the speedup of the empirical interpolation approximation with respect to the
     # exact function over the testing set
-    def speedup_analysis(self, N=None, **kwargs):
+    def speedup_analysis(self, N=None, filename=None, **kwargs):
         if N is None:
             N = self.EIM_approximation.N
         assert len(kwargs) == 0 # not used in this method
@@ -367,6 +370,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
         print("==============================================================")
         print("")
+        
+        # Export speedup analysis table
+        speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
         
         self._finalize_speedup_analysis(**kwargs)
         
