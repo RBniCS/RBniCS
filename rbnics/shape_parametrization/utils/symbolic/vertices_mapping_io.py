@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os
 from rbnics.utils.io import TextIO
 
 class VerticesMappingIO(object):

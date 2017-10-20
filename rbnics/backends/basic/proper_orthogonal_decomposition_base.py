@@ -16,11 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os
 from math import sqrt
 from numpy import abs, cumsum as compute_retained_energy, isclose, sum as compute_total_energy
 from rbnics.utils.io import ExportableList
-from rbnics.utils.mpi import is_io_process
 
 # Class containing the implementation of the POD
 def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_wrapping, ParentProperOrthogonalDecomposition, SnapshotsContainerType, BasisContainerType):

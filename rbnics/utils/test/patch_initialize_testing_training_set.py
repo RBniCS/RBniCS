@@ -20,7 +20,7 @@ import rbnics.reduction_methods.base
 
 def patch_initialize_testing_training_set(action):
     """
-    Patch ReductionMethod.initialize_{testing,training}_set to always read from file if 
+    Patch ReductionMethod.initialize_{testing,training}_set to always read from file if
     action == "compare", and to try first to read from file if actions == "regold"
     """
     if action is None:

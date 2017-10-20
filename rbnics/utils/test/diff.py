@@ -48,7 +48,7 @@ def _diff_content(reference_items: (list_of(object), tuple_of(object)), current_
     if len(reference_items) != len(current_items):
         return [
             tab + "@@ different lengths @@" + "\n" +
-            tab + "- "+ str(len(reference_items)) + "\n" + 
+            tab + "- " + str(len(reference_items)) + "\n" +
             tab + "+ " + str(len(current_items)) + "\n"
         ]
     else:
@@ -73,7 +73,7 @@ def _diff_content(reference_item: str, current_item: str, tab: str):
         assert isinstance(current_item, str)
         if reference_item != current_item:
             return [
-                tab + "- " + reference_item + "\n" + 
+                tab + "- " + reference_item + "\n" +
                 tab + "+ " + current_item + "\n"
             ]
         else:
@@ -87,7 +87,7 @@ def _diff_content(reference_item: str, current_item: str, tab: str):
 def _diff_content(reference_item: Number, current_item: Number, tab: str):
     if not isclose(reference_item, current_item):
         return [
-            tab + "- " + str(reference_item) + "\n" + 
+            tab + "- " + str(reference_item) + "\n" +
             tab + "+ " + str(current_item) + "\n"
         ]
     else:

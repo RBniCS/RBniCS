@@ -16,10 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
 from numbers import Number
 import hashlib
-from rbnics.problems.base import ParametrizedProblem
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.utils.decorators import sync_setters
 
