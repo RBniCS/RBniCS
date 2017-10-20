@@ -48,7 +48,7 @@ def test_eim_approximation_10(expression_type, basis_generation):
             self.set_mu_range([])
             
         def name(self):
-            return "MockTimeDependentProblem"
+            return "MockTimeDependentProblem_" + expression_type + "_" + basis_generation
             
         def set_initial_time(self, t0):
             self.t0 = t0

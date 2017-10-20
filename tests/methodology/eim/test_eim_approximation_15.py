@@ -64,7 +64,7 @@ def test_eim_approximation_15(expression_type, basis_generation):
             self.V1 = V.sub(1).collapse()
             
         def name(self):
-            return "MockProblem"
+            return "MockProblem_" + expression_type + "_" + basis_generation
             
         def init(self):
             pass
