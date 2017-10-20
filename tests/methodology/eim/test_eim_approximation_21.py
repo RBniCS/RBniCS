@@ -122,7 +122,7 @@ def test_eim_approximation_21(expression_type, basis_generation):
             self.truth_problem = truth_problem
             self.Z = BasisFunctionsMatrix(self.truth_problem.V)
             self.Z.init(self.truth_problem.components)
-            self._solution = OnlineFunction()
+            self._solution = None
             
         def solve(self):
             print("solving mock reduced problem at mu =", self.mu)
