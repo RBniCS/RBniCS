@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from ufl import Form
 from ufl.core.operator import Operator
 from dolfin import assemble, Constant, Expression, project
@@ -97,6 +98,14 @@ def _product(thetas: ThetaType, operators: list_of(Vector.Type())):
         theta = float(theta)
         output.add_local(theta*operator.array())
     output.apply("add")
+    return ProductOutput(output)
+    
+@overload
+def _product(thetas: ThetaType, operators: list_of(Number)):
+    output = 0.
+    for (theta, operator) in zip(thetas, operators):
+        theta = float(theta)
+        output += theta*operator
     return ProductOutput(output)
     
 @overload
