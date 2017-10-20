@@ -60,7 +60,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
         all_folders = Folders()
         all_folders.update(self.folder)
         all_folders.update(self.EIM_approximation.folder)
-        all_folders.pop("testing_set") # this is required only in the error analysis
+        all_folders.pop("testing_set") # this is required only in the error/speedup analysis
+        all_folders.pop("error_analysis") # this is required only in the error analysis
+        all_folders.pop("speedup_analysis") # this is required only in the speedup analysis
         at_least_one_folder_created = all_folders.create()
         if not at_least_one_folder_created:
             return False # offline construction should be skipped, since data are already available
