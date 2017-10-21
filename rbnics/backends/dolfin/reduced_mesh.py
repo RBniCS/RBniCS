@@ -435,13 +435,13 @@ def BasicReducedMesh(backend, wrapping):
                                 reduced_subdomain = MeshFunction("size_t", self.reduced_mesh[index], subdomain.dim())
                                 assert hdf5_file_type in ("h5", "xdmf")
                                 if hdf5_file_type == "h5":
-                                    subdomain_filename = subdomain_filename + ".xdmf"
-                                    input_file = XDMFFile(self.mesh.mpi_comm(), subdomain_filename)
-                                    input_file.read(reduced_subdomain)
-                                    input_file.close()
-                                else:
                                     subdomain_filename = subdomain_filename + ".h5"
                                     input_file = HDF5File(self.mesh.mpi_comm(), subdomain_filename, "r")
+                                    input_file.read(reduced_subdomain, "/subdomain")
+                                    input_file.close()
+                                else:
+                                    subdomain_filename = subdomain_filename + ".xdmf"
+                                    input_file = XDMFFile(self.mesh.mpi_comm(), subdomain_filename)
                                     input_file.read(reduced_subdomain)
                                     input_file.close()
                             reduced_subdomain_data[subdomain] = reduced_subdomain
