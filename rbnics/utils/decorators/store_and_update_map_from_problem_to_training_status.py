@@ -28,7 +28,7 @@ def StoreMapFromProblemToTrainingStatus(ParametrizedDifferentialProblem_DerivedC
             ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
             
             # Populate problem to training status
-            set_map_from_problem_to_training_status_off(self)
+            init_map_from_problem_to_training_status(self)
             
     # return value (a class) for the decorator
     return StoreMapFromProblemToTrainingStatus_Class
@@ -52,12 +52,16 @@ def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_Deri
     # return value (a class) for the decorator
     return UpdateMapFromProblemToTrainingStatus_Class
     
+def init_map_from_problem_to_training_status(problem):
+    assert problem not in _problem_to_training_status
+    _problem_to_training_status[problem] = False
+    
 def set_map_from_problem_to_training_status_on(problem):
     assert problem in _problem_to_training_status
     _problem_to_training_status[problem] = True
     
 def set_map_from_problem_to_training_status_off(problem):
-    assert problem not in _problem_to_training_status
+    assert problem in _problem_to_training_status
     _problem_to_training_status[problem] = False
     
 def is_training_finished(problem):

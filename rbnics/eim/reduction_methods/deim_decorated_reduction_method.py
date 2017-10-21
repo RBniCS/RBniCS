@@ -21,7 +21,7 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApprox
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod as TimeDependentDEIMApproximationReductionMethod
-from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReductionMethodDecoratorFor, set_map_from_problem_to_training_status_off, set_map_from_problem_to_training_status_on
 
 @ReductionMethodDecoratorFor(DEIM)
 def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -137,9 +137,12 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                     ("DEIM" in kwargs and kwargs["DEIM"] is not None) # shorthand to disable DEIM error analysis
                 )
             ):
+                assert is_training_finished(self.truth_problem)
+                set_map_from_problem_to_training_status_off(self.truth_problem)
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
                         DEIM_reduction_term_q.error_analysis(N, filename)
+                set_map_from_problem_to_training_status_on(self.truth_problem)
             # ..., and then call the parent method.
             if "DEIM" in kwargs and kwargs["DEIM"] is None:
                 del kwargs["DEIM"]
@@ -161,9 +164,12 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                     ("DEIM" in kwargs and kwargs["DEIM"] is not None) # shorthand to disable DEIM speedup analysis
                 )
             ):
+                assert is_training_finished(self.truth_problem)
+                set_map_from_problem_to_training_status_off(self.truth_problem)
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
                         DEIM_reduction_term_q.speedup_analysis(N, filename)
+                set_map_from_problem_to_training_status_on(self.truth_problem)
             # ..., and then call the parent method.
             if "DEIM" in kwargs and kwargs["DEIM"] is None:
                 del kwargs["DEIM"]

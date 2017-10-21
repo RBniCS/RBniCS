@@ -21,7 +21,7 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
-from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReductionMethodDecoratorFor, set_map_from_problem_to_training_status_off, set_map_from_problem_to_training_status_on
 
 @ReductionMethodDecoratorFor(EIM)
 def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -136,8 +136,11 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     ("EIM" in kwargs and kwargs["EIM"] is not None) # shorthand to disable EIM error analysis
                 )
             ):
+                assert is_training_finished(self.truth_problem)
+                set_map_from_problem_to_training_status_off(self.truth_problem)
                 for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                     EIM_reduction_coeff.error_analysis(N, filename)
+                set_map_from_problem_to_training_status_on(self.truth_problem)
             # ..., and then call the parent method.
             if "EIM" in kwargs and kwargs["EIM"] is None:
                 del kwargs["EIM"]
@@ -159,8 +162,11 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     ("EIM" in kwargs and kwargs["EIM"] is not None) # shorthand to disable EIM error analysis
                 )
             ):
+                assert is_training_finished(self.truth_problem)
+                set_map_from_problem_to_training_status_off(self.truth_problem)
                 for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                     EIM_reduction_coeff.speedup_analysis(N, filename)
+                set_map_from_problem_to_training_status_on(self.truth_problem)
             # ..., and then call the parent method.
             if "EIM" in kwargs and kwargs["EIM"] is None:
                 del kwargs["EIM"]
