@@ -55,18 +55,18 @@ def EIMDecoratedProblem(
                 # Store value of N_EIM passed to solve
                 self._N_EIM = None
                 # Store values passed to decorator
-                self._store_stages(stages)
+                self._store_EIM_stages(stages)
                 # Avoid useless assignments
                 self._update_N_EIM__previous_kwargs = None
                 
             @overload(str)
-            def _store_stages(self, stage):
+            def _store_EIM_stages(self, stage):
                 assert stages != "offline", "This choice does not make any sense because it requires an EIM offline stage which then is not used online"
                 assert stages == "online"
                 self._apply_EIM_at_stages = (stages, )
                 
             @overload(tuple_of(str))
-            def _store_stages(self, stage):
+            def _store_EIM_stages(self, stage):
                 assert len(stages) in (1, 2)
                 assert stages[0] in ("offline", "online")
                 if len(stages) > 1:

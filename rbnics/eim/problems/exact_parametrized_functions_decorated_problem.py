@@ -46,16 +46,16 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 self.mu_symbolic = None
                 
                 # Store values passed to decorator
-                self._store_stages(stages)
+                self._store_exact_approximation_stages(stages)
             
             @overload(str)
-            def _store_stages(self, stage):
+            def _store_exact_approximation_stages(self, stage):
                 assert stages != "online", "This choice does not make any sense because it requires an EIM/DEIM offline stage which then is not used online"
                 assert stages == "offline"
                 self._apply_exact_approximation_at_stages = (stages, )
                 
             @overload(tuple_of(str))
-            def _store_stages(self, stage):
+            def _store_exact_approximation_stages(self, stage):
                 assert len(stages) in (1, 2)
                 assert stages[0] in ("offline", "online")
                 if len(stages) > 1:

@@ -53,18 +53,18 @@ def DEIMDecoratedProblem(
                 # Store value of N_DEIM passed to solve
                 self._N_DEIM = None
                 # Store values passed to decorator
-                self._store_stages(stages)
+                self._store_DEIM_stages(stages)
                 # Avoid useless assignments
                 self._update_N_DEIM__previous_kwargs = None
                 
             @overload(str)
-            def _store_stages(self, stage):
+            def _store_DEIM_stages(self, stage):
                 assert stages != "offline", "This choice does not make any sense because it requires a DEIM offline stage which then is not used online"
                 assert stages == "online"
                 self._apply_DEIM_at_stages = (stages, )
                 
             @overload(tuple_of(str))
-            def _store_stages(self, stage):
+            def _store_DEIM_stages(self, stage):
                 assert len(stages) in (1, 2)
                 assert stages[0] in ("offline", "online")
                 if len(stages) > 1:

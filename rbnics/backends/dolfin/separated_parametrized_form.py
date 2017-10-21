@@ -136,7 +136,6 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                                 break
                                             elif is_problem_solution_or_problem_solution_component_type(t):
                                                 if is_problem_solution_or_problem_solution_component(t):
-                                                    print(t)
                                                     at_least_one_expression_or_solution = True
                                                     (_, _, solution) = solution_identify_component(t)
                                                     log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution of " + get_problem_from_solution(solution).name())
