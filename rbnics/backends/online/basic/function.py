@@ -35,37 +35,61 @@ def Function(Vector):
             return self._v
             
         def __abs__(self):
-            return _Function_Type(self._v.__abs__())
+            v_abs = self._v.__abs__()
+            function_abs = _Function_Type.__new__(type(self), v_abs)
+            function_abs.__init__(v_abs)
+            return function_abs
             
         def __add__(self, other):
-            if isinstance(other, _Function_Type):
-                return _Function_Type(self._v.__add__(other._v))
+            if isinstance(other, _Function_Type):   
+                v_sum = self._v.__add__(other._v)
+                function_sum = _Function_Type.__new__(type(self), v_sum)
+                function_sum.__init__(v_sum)
+                return function_sum
             elif isinstance(other, Vector.Type()):
-                return _Function_Type(self._v.__add__(other))
+                v_sum = self._v.__add__(other)
+                function_sum = _Function_Type.__new__(type(self), v_sum)
+                function_sum.__init__(v_sum)
+                return function_sum
             else:
                 return NotImplemented
             
         def __sub__(self, other):
             if isinstance(other, _Function_Type):
-                return _Function_Type(self._v.__sub__(other._v))
+                v_sub = self._v.__sub__(other._v)
+                function_sub = _Function_Type.__new__(type(self), v_sub)
+                function_sub.__init__(v_sub)
+                return function_sub
             elif isinstance(other, Vector.Type()):
-                return _Function_Type(self._v.__sub__(other))
+                v_sub = self._v.__sub__(other)
+                function_sub = _Function_Type.__new__(type(self), v_sub)
+                function_sub.__init__(v_sub)
+                return function_sub
             else:
                 return NotImplemented
             
         def __mul__(self, other):
             if isinstance(other, Number):
-                return _Function_Type(self._v.__mul__(other))
+                v_mul = self._v.__mul__(other)
+                function_mul = _Function_Type.__new__(type(self), v_mul)
+                function_mul.__init__(v_mul)
+                return function_mul
             else:
                 return NotImplemented
             
         def __rmul__(self, other):
             if isinstance(other, Number):
-                return _Function_Type(self._v.__rmul__(other))
+                v_rmul = self._v.__rmul__(other)
+                function_rmul = _Function_Type.__new__(type(self), v_rmul)
+                function_rmul.__init__(v_rmul)
+                return function_rmul
             else:
                 return NotImplemented
             
         def __neg__(self):
-            return _Function_Type(self._v.neg())
+            v_neg = self._v.neg()
+            function_neg = _Function_Type.__new__(type(self), v_neg)
+            function_neg.__init__(v_neg)
+            return function_neg
             
     return _Function_Type
