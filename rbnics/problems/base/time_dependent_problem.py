@@ -89,8 +89,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solution_dot_over_time = self._solution_dot_over_time
             assert suffix is None
             for (k, (solution, solution_dot)) in enumerate(zip(solution_over_time, solution_dot_over_time)):
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, os.path.join(folder, filename), "solution", solution, component=component, suffix=k)
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, os.path.join(folder, filename), "solution_dot", solution_dot, component=component, suffix=k)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, os.path.join(str(folder), filename), "solution", solution, component=component, suffix=k)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, os.path.join(str(folder), filename), "solution_dot", solution_dot, component=component, suffix=k)
                 
         # Import solution from file
         def import_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
@@ -115,8 +115,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             del solution_over_time[:]
             del solution_dot_over_time[:]
             while self.t <= self.T:
-                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, os.path.join(folder, filename), "solution", solution, component, suffix=k)
-                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, os.path.join(folder, filename), "solution_dot", solution_dot, component, suffix=k)
+                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, os.path.join(str(folder), filename), "solution", solution, component, suffix=k)
+                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, os.path.join(str(folder), filename), "solution_dot", solution_dot, component, suffix=k)
                 import_solution_and_solution_dot = import_solution and import_solution_dot
                 if import_solution_and_solution_dot:
                     solution_over_time.append(copy(self._solution))

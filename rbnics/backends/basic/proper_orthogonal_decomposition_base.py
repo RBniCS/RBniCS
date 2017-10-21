@@ -40,6 +40,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
         def clear(self):
             self.snapshots_matrix.clear()
             self.eigenvalues = ExportableList("text")
+            self.retained_energy = ExportableList("text")
             
         # No implementation is provided for store_snapshot, because
         # it has different interface for the standard POD and

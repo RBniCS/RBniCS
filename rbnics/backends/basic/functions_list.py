@@ -68,11 +68,21 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
                 for function in functions:
                     self._add_to_list(function, component, None, copy)
         
-        @overload(object, (None, str, dict_of(str, str)), (None, Number), bool)
+        @overload(object, (None, str, dict_of(str, str)), (None, Number, list_of(Number)), bool)
         def _enrich(self, function, component, weight, copy):
             if AdditionalIsFunction(function):
                 function = ConvertAdditionalFunctionTypes(function)
+                assert weight is None or isinstance(weight, Number)
                 self._add_to_list(function, component, weight, copy)
+            elif isinstance(function, list):
+                converted_function = list()
+                for function_i in function:
+                    if AdditionalIsFunction(function_i):
+                        converted_function.append(ConvertAdditionalFunctionTypes(function_i))
+                    else:
+                        raise RuntimeError("Invalid function provided to FunctionsList.enrich()")
+                assert weight is None or isinstance(weight, list)
+                self._enrich(converted_function, component, weight, copy)
             else:
                 raise RuntimeError("Invalid function provided to FunctionsList.enrich()")
                 
