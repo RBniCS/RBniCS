@@ -60,6 +60,7 @@ def _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list):
                 mpi_comm.send(out_index, dest=out_reduced_i_processor)
             if mpi_comm.rank == out_reduced_i_processor:
                 out_index = mpi_comm.recv(source=vec_i_processor)
-        out.setValues(reduced_i, out_index, addv=PETSc.InsertMode.INSERT)
+        if mpi_comm.rank == out_reduced_i_processor:
+            out.setValues(reduced_i, out_index, addv=PETSc.InsertMode.INSERT)
     out.assemble()
     out.ghostUpdate()
