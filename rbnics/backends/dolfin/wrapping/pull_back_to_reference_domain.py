@@ -237,9 +237,6 @@ class PullBackGradients(MultiFunction): # inspired by OLDChangeToReferenceGrad
 
     def reference_grad(self, o):
         raise ValueError("Not expecting reference grad.")
-
-    def coefficient_derivative(self, o):
-        raise ValueError("Coefficient derivatives should be expanded before applying this.")
         
 def pull_back_gradients(shape_parametrization_expression_on_subdomain, problem, integrand): # inspired by change_to_reference_grad
     return map_expr_dag(PullBackGradients(shape_parametrization_expression_on_subdomain, problem), integrand)

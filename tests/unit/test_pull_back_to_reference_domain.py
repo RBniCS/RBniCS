@@ -21,9 +21,9 @@ import os
 import itertools
 import functools
 from contextlib import contextmanager
-from dolfin import CellSize, Constant, cos, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
+from dolfin import assign, CellSize, Constant, cos, div, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
-from rbnics.backends.dolfin.wrapping import PullBackFormsToReferenceDomain
+from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
 from rbnics.eim.problems import EIM
 from rbnics.problems.base import ParametrizedProblem
@@ -724,8 +724,8 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
     (v, q) = split(vq)
     dx = Measure("dx")(subdomain_data=subdomains)
     
-    ff = Constant((0.0, -10.0))
-    gg = Constant(1.0)
+    ff = Constant((1.0, -10.0))
+    gg = Constant(2.0)
     nu = 1.0
     
     # Define base problem
@@ -1615,6 +1615,211 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
+        
+# Test forms pull back to reference domain for tutorial 22
+@check_affine_and_non_affine_shape_parametrizations()
+def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "backward_facing_step.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "backward_facing_step_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "backward_facing_step_facet_region.xml"))
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+        ("x[0]", "x[1]"), # subdomain 1
+        ("x[0]", "mu[1]/2.*x[1] + (2. - mu[1])") # subdomain 2
+    ]
+    shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
+    
+    # Define function space, test/trial functions, measures, auxiliary expressions
+    element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element_up = MixedElement(element_u, element_p)
+    V = FunctionSpace(mesh, element_up, components=[["u", "s"], "p"])
+    dup = TrialFunction(V)
+    (du, dp) = split(dup)
+    up = Function(V)
+    assign(up.sub(0), project(Expression(("x[0]", "x[1]"), element=V.sub(0).ufl_element()), V.sub(0).collapse()))
+    (u, _) = split(up)
+    vq = TestFunction(V)
+    (v, q) = split(vq)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    ds = Measure("ds")(subdomain_data=boundaries)
+    
+    ff = Constant((1.0, -10.0))
+    gg = Constant(2.0)
+    nu = Constant(1.0)
+    
+    # Define base problem
+    class NavierStokes(ParametrizedProblem):
+        def __init__(self, folder_prefix):
+            ParametrizedProblem.__init__(self, folder_prefix)
+            self.mu = (1.0, 2.0)
+            self.mu_range = [(1.0, 80.0), (1.5, 2.5)]
+            
+        def init(self):
+            pass
+            
+    # Define problem with forms written on reference domain
+    @ShapeParametrization(*shape_parametrization_expression)
+    class NavierStokesOnReferenceDomain(NavierStokes):
+        def __init__(self, V, **kwargs):
+            NavierStokes.__init__(self, "NavierStokesOnReferenceDomain")
+            self.V = V
+            self._solution = up
+            
+        @compute_theta_for_derivative({"dc": "c"})
+        def compute_theta(self, term):
+            mu = self.mu
+            mu2 = mu[1]
+            if term == "a":
+                theta_a0 = nu*1.0
+                theta_a1 = nu*(mu2/2.0)
+                theta_a2 = nu*(2.0/mu2)
+                return (theta_a0, theta_a1, theta_a2)
+            elif term in ("b", "bt"):
+                theta_b0 = 1.0
+                theta_b1 = mu2/2.0
+                theta_b2 = 1.0
+                return (theta_b0, theta_b1, theta_b2)
+            elif term == "c":
+                theta_c0 = 1.0
+                theta_c1 = mu2/2.0
+                theta_c2 = 1.0
+                return (theta_c0, theta_c1, theta_c2)
+            elif term == "f":
+                theta_f0 = 1.0
+                theta_f1 = mu2/2.0
+                return (theta_f0, theta_f1)
+            elif term == "g":
+                theta_g0 = 1.0
+                theta_g1 = mu2/2.0
+                return (theta_g0, theta_g1)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        @assemble_operator_for_derivative({"dc": "c"})
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(du), grad(v))*dx(1)
+                a1 = du[0].dx(0)*v[0].dx(0)*dx(2) + du[1].dx(0)*v[1].dx(0)*dx(2)
+                a2 = du[0].dx(1)*v[0].dx(1)*dx(2) + du[1].dx(1)*v[1].dx(1)*dx(2)
+                return (a0, a1, a2)
+            elif term == "b":
+                b0 = -q*div(du)*dx(1)
+                b1 = -q*du[0].dx(0)*dx(2)
+                b2 = -q*du[1].dx(1)*dx(2)
+                return (b0, b1, b2)
+            elif term == "bt":
+                bt0 = -dp*div(v)*dx(1)
+                bt1 = -dp*v[0].dx(0)*dx(2)
+                bt2 = -dp*v[1].dx(1)*dx(2)
+                return (bt0, bt1, bt2)
+            elif term == "c":
+                c0 = inner(grad(u)*u, v)*dx(1)
+                c1 = u[0]*u[0].dx(0)*v[0]*dx(2) + u[0]*u[1].dx(0)*v[1]*dx(2)
+                c2 = u[1]*u[0].dx(1)*v[0]*dx(2) + u[1]*u[1].dx(1)*v[1]*dx(2)
+                return (c0, c1, c2)
+            elif term == "f":
+                f0 = inner(ff, v)*dx(1)
+                f1 = inner(ff, v)*dx(2)
+                return (f0, f1)
+            elif term == "g":
+                g0 = gg*q*dx(1)
+                g1 = gg*q*dx(2)
+                return (g0, g1)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+    
+    # Define problem with forms pulled back reference domain
+    @AdditionalProblemDecorator()
+    @PullBackFormsToReferenceDomain("a", "b", "bt", "c", "dc", "f", "g", debug=True)
+    @ShapeParametrization(*shape_parametrization_expression)
+    class NavierStokesPullBack(NavierStokes):
+        def __init__(self, V, **kwargs):
+            NavierStokes.__init__(self, "NavierStokesPullBack")
+            self.V = V
+            self._solution = up
+            
+        @compute_theta_for_derivative({"dc": "c"})
+        def compute_theta(self, term):
+            if term == "a":
+                theta_a0 = nu*1.0
+                return (theta_a0, )
+            elif term in ("b", "bt"):
+                theta_b0 = 1.0
+                return (theta_b0, )
+            elif term == "c":
+                theta_c0 = 1.0
+                return (theta_c0, )
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0, )
+            elif term == "g":
+                theta_g0 = 1.0
+                return (theta_g0, )
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        @assemble_operator_for_derivative({"dc": "c"})
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(du), grad(v))*dx
+                return (a0, )
+            elif term == "b":
+                b0 = - q*div(du)*dx
+                return (b0, )
+            elif term == "bt":
+                bt0 = - dp*div(v)*dx
+                return (bt0, )
+            elif term == "c":
+                c0 = inner(grad(u)*u, v)*dx
+                return (c0, )
+            elif term == "f":
+                f0 = inner(ff, v)*dx
+                return (f0, )
+            elif term == "g":
+                g0 = q*gg*dx
+                return (g0, )
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Check forms
+    problem_on_reference_domain = NavierStokesOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = NavierStokesPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain.init()
+    problem_pull_back.init()
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        b_on_reference_domain = theta_times_operator(problem_on_reference_domain, "b")
+        b_pull_back = theta_times_operator(problem_pull_back, "b")
+        assert forms_are_close(b_on_reference_domain, b_pull_back)
+        
+        bt_on_reference_domain = theta_times_operator(problem_on_reference_domain, "bt")
+        bt_pull_back = theta_times_operator(problem_pull_back, "bt")
+        assert forms_are_close(bt_on_reference_domain, bt_pull_back)
+        
+        c_on_reference_domain = theta_times_operator(problem_on_reference_domain, "c")
+        c_pull_back = theta_times_operator(problem_pull_back, "c")
+        assert forms_are_close(c_on_reference_domain, c_pull_back)
+        
+        dc_on_reference_domain = theta_times_operator(problem_on_reference_domain, "dc")
+        dc_pull_back = theta_times_operator(problem_pull_back, "dc")
+        assert forms_are_close(dc_on_reference_domain, dc_pull_back)
+        
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
+        
+        g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
+        g_pull_back = theta_times_operator(problem_pull_back, "g")
+        assert forms_are_close(g_on_reference_domain, g_pull_back)
         
 # Test forms pull back to reference domain for tutorial 23
 @check_affine_and_non_affine_shape_parametrizations()
