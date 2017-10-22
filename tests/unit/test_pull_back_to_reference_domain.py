@@ -21,7 +21,7 @@ import os
 import itertools
 import functools
 from contextlib import contextmanager
-from dolfin import CellSize, Constant, cos, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
+from dolfin import CellSize, Constant, cos, div, Expression, FiniteElement, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
@@ -1430,6 +1430,191 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
         h_on_reference_domain = theta_times_operator(problem_on_reference_domain, "h")
         h_pull_back = theta_times_operator(problem_pull_back, "h")
         assert forms_are_close(h_on_reference_domain, h_pull_back)
+        
+# Test forms pull back to reference domain for tutorial 21
+@check_affine_and_non_affine_shape_parametrizations()
+def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "t_bypass.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "t_bypass_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "t_bypass_facet_region.xml"))
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+        ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 1
+        ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 2
+        ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 3
+        ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 4
+        ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 5
+        ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 6
+        ("mu[1]*x[0]", "mu[2]*x[1]"), # subdomain 7
+        ("mu[1]*x[0]", "mu[2]*x[1]"), # subdomain 8
+    ]
+    shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
+    
+    # Define function space, test/trial functions, measures, auxiliary expressions
+    element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    U = FunctionSpace(mesh, element_u)
+    element_c = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    C = FunctionSpace(mesh, element_c)
+    c = TrialFunction(C)
+    d = TestFunction(C)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    ds = Measure("ds")(subdomain_data=boundaries)
+    vel = project(Expression(("-(16.0/25.0)*pow(x[1], 2) + (8.0/5.0)*x[1]", "-3.0/10.0"), degree=2), U)
+    ff = Constant(1.0)
+    
+    # Define base problem
+    class AdvectionDiffusion(ParametrizedProblem):
+        def __init__(self, folder_prefix):
+            ParametrizedProblem.__init__(self, folder_prefix)
+            self.mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
+            self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0., pi/6.)]
+            
+        def init(self):
+            pass
+        
+    # Define problem with forms written on reference domain
+    @ShapeParametrization(*shape_parametrization_expression)
+    class AdvectionDiffusionOnReferenceDomain(AdvectionDiffusion):
+        def __init__(self, V, **kwargs):
+            AdvectionDiffusion.__init__(self, "AdvectionDiffusionOnReferenceDomain")
+            self.V = V
+            
+        def compute_theta(self, term):
+            mu = self.mu
+            mu1 = mu[0]
+            mu2 = mu[1]
+            mu3 = mu[2]
+            mu4 = mu[3]
+            mu5 = mu[4]
+            mu6 = mu[5]
+            if term == "a":
+                # inner(grad(c), grad(d))*dx
+                theta_a0 = mu1/mu5
+                theta_a1 = mu5/(mu1*cos(mu6)**2)
+                theta_a2 = -tan(mu6)
+                theta_a3 = mu1/mu5
+                theta_a4 = mu5/(mu1*cos(mu6)**2)
+                theta_a5 = -tan(mu6)
+                theta_a6 = mu4/mu2
+                theta_a7 = mu2/mu4
+                theta_a8 = mu4/mu2
+                theta_a9 = mu2/mu4
+                theta_a10 = mu1/mu2
+                theta_a11 = mu2/mu1
+                theta_a12 = mu1/mu2
+                theta_a13 = mu2/mu1
+                theta_a14 = mu3/mu2
+                theta_a15 = mu2/mu3
+                theta_a16 = mu3/mu2
+                theta_a17 = mu2/mu3
+                # inner(vel, grad(c))*d*dx
+                theta_a18 = mu1
+                theta_a19 = mu4
+                theta_a20 = mu5*tan(mu6)
+                theta_a21 = mu4
+                theta_a22 = mu2
+                theta_a23 = mu1
+                theta_a24 = mu2
+                theta_a25 = mu3
+                theta_a26 = mu2
+                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12, theta_a13, theta_a14, theta_a15, theta_a16, theta_a17, theta_a18, theta_a19, theta_a20, theta_a21, theta_a22, theta_a23, theta_a24, theta_a25, theta_a26)
+            elif term == "f":
+                theta_f0 = mu1*mu5
+                theta_f1 = mu2*mu4
+                theta_f2 = mu1*mu2
+                theta_f3 = mu2*mu3
+                return (theta_f0, theta_f1, theta_f2, theta_f3)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+            
+        def assemble_operator(self, term):
+            if term == "a":
+                # inner(grad(c), grad(d))*dx
+                a0 = c.dx(0)*d.dx(0)*dx(1)
+                a1 = c.dx(1)*d.dx(1)*dx(1)
+                a2 = c.dx(0)*d.dx(1)*dx(1) + c.dx(1)*d.dx(0)*dx(1)
+                a3 = c.dx(0)*d.dx(0)*dx(2)
+                a4 = c.dx(1)*d.dx(1)*dx(2)
+                a5 = c.dx(0)*d.dx(1)*dx(2) + c.dx(1)*d.dx(0)*dx(2)
+                a6 = c.dx(0)*d.dx(0)*dx(3)
+                a7 = c.dx(1)*d.dx(1)*dx(3)
+                a8 = c.dx(0)*d.dx(0)*dx(4)
+                a9 = c.dx(1)*d.dx(1)*dx(4)
+                a10 = c.dx(0)*d.dx(0)*dx(5)
+                a11 = c.dx(1)*d.dx(1)*dx(5)
+                a12 = c.dx(0)*d.dx(0)*dx(6)
+                a13 = c.dx(1)*d.dx(1)*dx(6)
+                a14 = c.dx(0)*d.dx(0)*dx(7)
+                a15 = c.dx(1)*d.dx(1)*dx(7)
+                a16 = c.dx(0)*d.dx(0)*dx(8)
+                a17 = c.dx(1)*d.dx(1)*dx(8)
+                # inner(vel, grad(c))*d*dx
+                a18 = vel[0]*c.dx(0)*d*dx(1) + vel[0]*c.dx(0)*d*dx(2)
+                a19 = vel[1]*c.dx(1)*d*dx(1) + vel[1]*c.dx(1)*d*dx(2)
+                a20 = vel[1]*c.dx(0)*d*dx(1) + vel[1]*c.dx(0)*d*dx(2)
+                a21 = vel[0]*c.dx(0)*d*dx(3) + vel[0]*c.dx(0)*d*dx(4)
+                a22 = vel[1]*c.dx(1)*d*dx(3) + vel[1]*c.dx(1)*d*dx(4)
+                a23 = vel[0]*c.dx(0)*d*dx(5) + vel[0]*c.dx(0)*d*dx(6)
+                a24 = vel[1]*c.dx(1)*d*dx(5) + vel[1]*c.dx(1)*d*dx(6)
+                a25 = vel[0]*c.dx(0)*d*dx(7) + vel[0]*c.dx(0)*d*dx(8)
+                a26 = vel[1]*c.dx(1)*d*dx(7) + vel[1]*c.dx(1)*d*dx(8)
+                return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26)
+            elif term == "f":
+                f0 = ff*d*dx(1) + ff*d*dx(2)
+                f1 = ff*d*dx(3) + ff*d*dx(4)
+                f2 = ff*d*dx(5) + ff*d*dx(6)
+                f3 = ff*d*dx(7) + ff*d*dx(8)
+                return (f0, f1, f2, f3)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Define problem with forms pulled back reference domain
+    @AdditionalProblemDecorator()
+    @PullBackFormsToReferenceDomain("a", "f", debug=True)
+    @ShapeParametrization(*shape_parametrization_expression)
+    class AdvectionDiffusionPullBack(AdvectionDiffusion):
+        def __init__(self, V, **kwargs):
+            AdvectionDiffusion.__init__(self, "AdvectionDiffusionPullBack")
+            self.V = V
+            
+        def compute_theta(self, term):
+            if term == "a":
+                theta_a0 = 1.0
+                return (theta_a0,)
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0,)
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(c), grad(d))*dx + inner(vel, grad(c))*d*dx
+                return (a0,)
+            elif term == "f":
+                f0 = ff*d*dx
+                return (f0,)
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Check forms
+    problem_on_reference_domain = AdvectionDiffusionOnReferenceDomain(C, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = AdvectionDiffusionPullBack(C, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain.init()
+    problem_pull_back.init()
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
         
 # Test forms pull back to reference domain for tutorial 23
 @check_affine_and_non_affine_shape_parametrizations()
