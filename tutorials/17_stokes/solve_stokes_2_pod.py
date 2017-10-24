@@ -20,7 +20,7 @@ from dolfin import *
 from rbnics import *
 from sampling import LinearlyDependentUniformDistribution
 
-@PullBackFormsToReferenceDomain("a", "b", "bt", "f", "g")
+@PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class Stokes(StokesProblem):
     

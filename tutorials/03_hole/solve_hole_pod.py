@@ -19,7 +19,7 @@
 from dolfin import *
 from rbnics import *
 
-@PullBackFormsToReferenceDomain("a", "f")
+@PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/hole_vertices_mapping.vmp")
 class Hole(EllipticCoerciveProblem):
     

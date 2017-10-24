@@ -453,8 +453,8 @@ def _dict_collect(dict1, dict2, datatype):
 _dict_collect_op = Op.Create(_dict_collect, commute=True)
     
 # ===== Pull back forms decorator ===== #
-def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decorator_kwargs):
-    @ProblemDecoratorFor(PullBackFormsToReferenceDomain, terms_to_pull_back=terms_to_pull_back)
+def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
+    @ProblemDecoratorFor(PullBackFormsToReferenceDomain)
     def PullBackFormsToReferenceDomainDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
         from rbnics.shape_parametrization.problems import AffineShapeParametrization, ShapeParametrization
@@ -472,7 +472,6 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for pull back
-                self._terms_to_pull_back = terms_to_pull_back
                 self._pull_back_is_affine = dict()
                 self._pulled_back_operators = dict()
                 self._pulled_back_theta_factors = dict()
@@ -484,7 +483,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(*terms_to_pull_back, **decora
                 self.debug = decorator_kwargs.get("debug", False)
                 
             def init(self):
-                for term in self._terms_to_pull_back:
+                for term in self.terms:
                     assert (term in self._pulled_back_operators) is (term in self._pulled_back_theta_factors)
                     if term not in self._pulled_back_operators: # initialize only once
                         # Pull back forms

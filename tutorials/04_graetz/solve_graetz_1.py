@@ -20,7 +20,7 @@ from dolfin import *
 from rbnics import *
 
 @SCM()
-@PullBackFormsToReferenceDomain("a", "f", "s")
+@PullBackFormsToReferenceDomain()
 @ShapeParametrization(
     ("x[0]", "x[1]"), # subdomain 1
     ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2

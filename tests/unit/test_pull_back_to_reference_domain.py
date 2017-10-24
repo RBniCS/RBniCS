@@ -128,6 +128,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1., 1., 0)
             self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.01, 1.0)]
+            self.terms = ["a", "f"]
             
         def init(self):
             pass
@@ -208,7 +209,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "f", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class HolePullBack(Hole):
         def __init__(self, V, **kwargs):
@@ -289,6 +290,7 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (pi/4.0, 0.01)
             self.mu_range = [(pi/4.0-pi/45.0, pi/4.0+pi/45.0), (0.01, 1.0)]
+            self.terms = ["a", "f"]
             
         def init(self):
             pass
@@ -385,7 +387,7 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "f", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class HoleRotationPullBack(HoleRotation):
         def __init__(self, V, **kwargs):
@@ -462,6 +464,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1., 1.)
             self.mu_range = [(0.1, 10.0), (0.01, 10.0)]
+            self.terms = ["a", "f"]
             
         def init(self):
             pass
@@ -505,7 +508,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "f", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class GraetzPullBack(Graetz):
         def __init__(self, V, **kwargs):
@@ -588,6 +591,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1., 1.)
             self.mu_range = [(0.5, 4.0), (1e-6, 1e-1)]
+            self.terms = ["a", "f"]
             
         def init(self):
             pass
@@ -645,7 +649,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "f", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class GraetzPullBack(Graetz):
         def __init__(self, V, **kwargs):
@@ -734,6 +738,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1., 1., 1., 1., 1., 0.)
             self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.0, pi/6.0)]
+            self.terms = ["a", "b", "bt", "f", "g"]
             
         def init(self):
             pass
@@ -841,7 +846,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
     
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "b", "bt", "f", "g", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class StokesPullBack(Stokes):
         def __init__(self, V, **kwargs):
@@ -946,6 +951,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1., 1.)
             self.mu_range = [(1.0, 3.5), (0.5, 2.5)]
+            self.terms = ["a", "a*", "c", "c*", "m", "n", "f", "g", "h"]
             
         def init(self):
             pass
@@ -1034,7 +1040,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "a*", "c", "c*", "m", "n", "f", "g", "h", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class EllipticOptimalControlPullBack(EllipticOptimalControl):
         def __init__(self, V, **kwargs):
@@ -1182,6 +1188,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1.0, 1.0)
             self.mu_range = [(0.5, 2.0), (0.5, 1.5)]
+            self.terms = ["a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "h", "l"]
             
         def init(self):
             pass
@@ -1282,7 +1289,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "h", "l", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class StokesOptimalControlPullBack(StokesOptimalControl):
         def __init__(self, V, **kwargs):
@@ -1460,7 +1467,6 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
     c = TrialFunction(C)
     d = TestFunction(C)
     dx = Measure("dx")(subdomain_data=subdomains)
-    ds = Measure("ds")(subdomain_data=boundaries)
     vel = project(Expression(("-(16.0/25.0)*pow(x[1], 2) + (8.0/5.0)*x[1]", "-3.0/10.0"), degree=2), U)
     ff = Constant(1.0)
     
@@ -1470,6 +1476,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
             self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0., pi/6.)]
+            self.terms = ["a", "f"]
             
         def init(self):
             pass
@@ -1572,7 +1579,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "f", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class AdvectionDiffusionPullBack(AdvectionDiffusion):
         def __init__(self, V, **kwargs):
@@ -1644,7 +1651,6 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
     vq = TestFunction(V)
     (v, q) = split(vq)
     dx = Measure("dx")(subdomain_data=subdomains)
-    ds = Measure("ds")(subdomain_data=boundaries)
     
     ff = Constant((1.0, -10.0))
     gg = Constant(2.0)
@@ -1656,6 +1662,7 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1.0, 2.0)
             self.mu_range = [(1.0, 80.0), (1.5, 2.5)]
+            self.terms = ["a", "b", "bt", "c", "dc", "f", "g"]
             
         def init(self):
             pass
@@ -1733,7 +1740,7 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
     
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "b", "bt", "c", "dc", "f", "g", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class NavierStokesPullBack(NavierStokes):
         def __init__(self, V, **kwargs):
@@ -1855,6 +1862,7 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1., )
             self.mu_range = [(0.5, 2.5)]
+            self.terms = ["a", "b", "bt", "m", "f", "g"]
             
         def init(self):
             pass
@@ -1916,7 +1924,7 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
     
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain("a", "b", "bt", "m", "f", "g", debug=True)
+    @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
     class StokesUnsteadyPullBack(StokesUnsteady):
         def __init__(self, V, **kwargs):

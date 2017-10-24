@@ -19,7 +19,7 @@
 from dolfin import *
 from rbnics import *
 
-@PullBackFormsToReferenceDomain("a", "b", "bt", "m", "f", "g")
+@PullBackFormsToReferenceDomain()
 @ShapeParametrization(
     ("mu[0]*x[0]", "x[1]"),
 )
