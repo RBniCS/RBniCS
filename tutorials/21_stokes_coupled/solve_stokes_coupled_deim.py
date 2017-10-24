@@ -20,7 +20,7 @@ from dolfin import *
 from rbnics import *
 from sampling import LinearlyDependentUniformDistribution
 
-@DEIM(basis_generation="Greedy")
+@PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class Stokes(StokesProblem):
     
@@ -41,35 +41,6 @@ class Stokes(StokesProblem):
         #
         self.f = Constant((0.0, -10.0))
         self.g = Constant(0.0)
-        # Store parametrized tensors related to shape parametrization
-        expression_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
-        scalar_element = V.sub(0).sub(0).ufl_element()
-        tensor_element = TensorElement(scalar_element)
-        det_deformation_gradient = (
-            "mu[4]*mu[0]", # subdomain 1
-            "mu[1]*mu[3]", # subdomain 2
-            "mu[1]*mu[0]", # subdomain 3
-            "mu[1]*mu[2]"  # subdomain 4
-        )
-        tensor_kappa = (
-            (("mu[0]/mu[4]", "-tan(mu[5])/mu[4]"), ("-tan(mu[5])/mu[4]", "(pow(tan(mu[5]), 2) + pow(mu[4], 2))/(mu[4]*mu[0])")), # subdomain 1
-            (("mu[3]/mu[1]", "0."), ("0.", "mu[1]/mu[3]")), # subdomain 2
-            (("mu[0]/mu[1]", "0."), ("0.", "mu[1]/mu[0]")), # subdomain 3
-            (("mu[2]/mu[1]", "0."), ("0.", "mu[1]/mu[2]"))  # subdomain 4
-        )
-        tensor_chi = (
-            (("mu[0]", "0."), ("-tan(mu[5])", "mu[4]")), # subdomain 1
-            (("mu[3]", "0."), ("0.", "mu[1]")), # subdomain 2
-            (("mu[0]", "0."), ("0.", "mu[1]")), # subdomain 3
-            (("mu[2]", "0."), ("0.", "mu[1]"))  # subdomain 4
-        )
-        self.det_deformation_gradient = list()
-        self.tensor_kappa = list()
-        self.tensor_chi = list()
-        for s in range(4):
-            self.det_deformation_gradient.append(ParametrizedExpression(self, det_deformation_gradient[s], mu=expression_mu, element=scalar_element))
-            self.tensor_kappa.append(ParametrizedExpression(self, tensor_kappa[s], mu=expression_mu, element=tensor_element))
-            self.tensor_chi.append(ParametrizedExpression(self, tensor_chi[s], mu=expression_mu, element=tensor_element))
         
     # Return custom problem name
     def name(self):
@@ -102,40 +73,25 @@ class Stokes(StokesProblem):
         if term == "a":
             u = self.u
             v = self.v
-            tensor_kappa = self.tensor_kappa
-            a0 = 0
-            for s in range(4):
-                a0 += inner(grad(u)*tensor_kappa[s], grad(v))*dx(s + 1)
+            a0 = inner(grad(u), grad(v))*dx
             return (a0,)
         elif term == "b":
             u = self.u
             q = self.q
-            tensor_chi = self.tensor_chi
-            b0 = 0
-            for s in range(4):
-                b0 += - q*tr(tensor_chi[s]*grad(u))*dx(s + 1)
+            b0 = - q*div(u)*dx
             return (b0,)
         elif term == "bt":
             p = self.p
             v = self.v
-            tensor_chi = self.tensor_chi
-            bt0 = 0
-            for s in range(4):
-                bt0 += - p*tr(tensor_chi[s]*grad(v))*dx(s + 1)
+            bt0 = - p*div(v)*dx
             return (bt0,)
         elif term == "f":
             v = self.v
-            det_deformation_gradient = self.det_deformation_gradient
-            f0 = 0
-            for s in range(4):
-                f0 += inner(self.f, v)*det_deformation_gradient[s]*dx(s + 1)
+            f0 = inner(self.f, v)*dx
             return (f0,)
         elif term == "g":
             q = self.q
-            det_deformation_gradient = self.det_deformation_gradient
-            g0 = 0
-            for s in range(4):
-                g0 += self.g*q*det_deformation_gradient[s]*dx(s + 1)
+            g0 = self.g*q*dx
             return (g0,)
         elif term == "dirichlet_bc_u":
             bc0 = [DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 3)]
@@ -154,6 +110,7 @@ class Stokes(StokesProblem):
             raise ValueError("Invalid term for assemble_operator().")
         
 @DEIM(basis_generation="Greedy")
+@PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class AdvectionDiffusion(EllipticCoerciveProblem):
     
@@ -171,36 +128,8 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
         self.dx = Measure("dx")(subdomain_data=subdomains)
         self.ds = Measure("ds")(subdomain_data=boundaries)
         #
+        (self.vel, _) = split(self.stokes_problem._solution)
         self.f = Constant(0.0)
-        # Store parametrized tensors related to shape parametrization
-        expression_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
-        scalar_element = V.ufl_element()
-        tensor_element = TensorElement(scalar_element)
-        det_deformation_gradient = (
-            "mu[4]*mu[0]", # subdomain 1
-            "mu[1]*mu[3]", # subdomain 2
-            "mu[1]*mu[0]", # subdomain 3
-            "mu[1]*mu[2]"  # subdomain 4
-        )
-        tensor_kappa = (
-            (("(pow(mu[0], 2) + pow(tan(mu[5]), 2))/(mu[0]*mu[4])", "- tan(mu[5])/mu[0]"), ("- tan(mu[5])/mu[0]", "mu[4]/mu[0]")), # subdomain 1
-            (("mu[3]/mu[1]", "0."), ("0.", "mu[1]/mu[3]")), # subdomain 2
-            (("mu[0]/mu[1]", "0."), ("0.", "mu[1]/mu[0]")), # subdomain 3
-            (("mu[2]/mu[1]", "0."), ("0.", "mu[1]/mu[2]"))  # subdomain 4
-        )
-        tensor_chi = (
-            (("mu[0]", "-tan(mu[5])"), ("0.", "mu[4]")), # subdomain 1
-            (("mu[3]", "0."), ("0.", "mu[1]")), # subdomain 2
-            (("mu[0]", "0."), ("0.", "mu[1]")), # subdomain 3
-            (("mu[2]", "0."), ("0.", "mu[1]"))  # subdomain 4
-        )
-        self.det_deformation_gradient = list()
-        self.tensor_kappa = list()
-        self.tensor_chi = list()
-        for s in range(4):
-            self.det_deformation_gradient.append(ParametrizedExpression(self, det_deformation_gradient[s], mu=expression_mu, element=scalar_element))
-            self.tensor_kappa.append(ParametrizedExpression(self, tensor_kappa[s], mu=expression_mu, element=tensor_element))
-            self.tensor_chi.append(ParametrizedExpression(self, tensor_chi[s], mu=expression_mu, element=tensor_element))
         
     # Return custom problem name
     def name(self):
@@ -227,20 +156,12 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
         dx = self.dx
         if term == "a":
             c = self.c
-            (vel, _) = split(self.stokes_problem._solution)
-            tensor_kappa = self.tensor_kappa
-            tensor_chi = self.tensor_chi
-            a0 = 0
-            a1 = 0
-            for s in range(4):
-                a0 += inner(tensor_kappa[s]*grad(c), grad(d))*dx(s + 1)
-                a1 += inner(tensor_chi[s]*vel, grad(c))*d*dx(s + 1)
+            vel = self.vel
+            a0 = inner(grad(c), grad(d))*dx
+            a1 = inner(vel, grad(c))*d*dx
             return (a0, a1)
         elif term == "f":
-            det_deformation_gradient = self.det_deformation_gradient
-            f0 = 0
-            for s in range(4):
-                f0 += self.f*d*det_deformation_gradient[s]*dx(s + 1)
+            f0 = self.f*d*dx
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(1.0), self.boundaries, 1),
@@ -278,10 +199,10 @@ stokes_problem.set_mu_range(mu_range)
 
 # 4a. Prepare reduction with a POD-Galerkin method
 stokes_pod_galerkin_method = PODGalerkin(stokes_problem)
-stokes_pod_galerkin_method.set_Nmax(25, DEIM={"a": 9, "b": 7, "bt": 7, "bt_restricted": 7, "f": 4, "g": 4})
+stokes_pod_galerkin_method.set_Nmax(25)
 
 # 5a. Perform the offline phase
-stokes_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM={"a": 10, "b": 8, "bt": 8, "bt_restricted": 8, "f": 5, "g": 5})
+stokes_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
 reduced_stokes_problem = stokes_pod_galerkin_method.offline()
 
 # 6a. Perform an online solve
@@ -300,12 +221,12 @@ advection_diffusion_problem.set_mu_range(mu_range)
 
 # 4b. Prepare reduction with a POD-Galerkin method
 advection_diffusion_pod_galerkin_method = PODGalerkin(advection_diffusion_problem)
-advection_diffusion_pod_galerkin_method.set_Nmax(25, DEIM={"a": (9, 50), "f": 4})
+advection_diffusion_pod_galerkin_method.set_Nmax(25, DEIM=50)
 
 # 5b. Perform the offline phase
 first_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
 advection_diffusion_problem.set_mu(first_mu)
-advection_diffusion_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM={"a": (10, 100), "f": 5})
+advection_diffusion_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM=100)
 reduced_advection_diffusion_problem = advection_diffusion_pod_galerkin_method.offline()
 
 # 6b. Perform an online solve
@@ -314,7 +235,7 @@ reduced_advection_diffusion_problem.solve()
 reduced_advection_diffusion_problem.export_solution(filename="online_solution")
 
 # 7a. Perform an error analysis
-stokes_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM=40)
+stokes_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
 stokes_pod_galerkin_method.error_analysis()
 
 # 7b. Perform an error analysis
