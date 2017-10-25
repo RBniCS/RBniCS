@@ -33,7 +33,7 @@ def test_eim_approximation_12(expression_type, basis_generation):
     The aim of this script is to test EIM/DEIM for nonlinear problems, extending test 11.
     The difference with respect to test 11 is that a parametrized problem is defined but it is not
     reduced any further.
-    Thus, the high fidelity solution will be usued inside the parametrized expression/tensor, while
+    Thus, the high fidelity solution will be used inside the parametrized expression/tensor, while
     in test 11 the reduced order solution was being used.
     * EIM: the expression to be interpolated is the solution of the nonlinear high fidelity problem.
     * DEIM: the form to be interpolated contains the solution of the nonlinear high fidelity problem.
@@ -50,7 +50,7 @@ def test_eim_approximation_12(expression_type, basis_generation):
             # Minimal subset of a ParametrizedDifferentialProblem
             self.V = V
             self._solution = Function(V)
-            self.components = ["f"]
+            self.components = ["u"]
             # Parametrized function to be interpolated
             x = SpatialCoordinate(V.mesh())
             mu = SymbolicParameters(self, V, (1., ))

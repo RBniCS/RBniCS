@@ -44,7 +44,7 @@ def test_eim_approximation_16(expression_type, basis_generation):
             # Minimal subset of a ParametrizedDifferentialProblem
             self.V = V
             self._solution = Function(V)
-            self.components = ["f"]
+            self.components = ["u", "s", "p"]
             # Parametrized function to be interpolated
             x = SpatialCoordinate(V.mesh())
             mu = SymbolicParameters(self, V, (-1., -1.))
@@ -104,7 +104,7 @@ def test_eim_approximation_16(expression_type, basis_generation):
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
     element = MixedElement(element_0, element_1)
-    V = FunctionSpace(mesh, element)
+    V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
     # 3. Create a parametrized problem
     problem = MockProblem(V)

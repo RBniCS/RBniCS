@@ -48,7 +48,7 @@ def test_eim_approximation_15(expression_type, basis_generation):
             # Minimal subset of a ParametrizedDifferentialProblem
             self.V = V
             self._solution = Function(V)
-            self.components = ["f"]
+            self.components = ["u", "s", "p"]
             # Parametrized function to be interpolated
             x = SpatialCoordinate(V.mesh())
             mu = SymbolicParameters(self, V, (-1., -1.))
@@ -95,12 +95,13 @@ def test_eim_approximation_15(expression_type, basis_generation):
         def offline(self):
             self.reduced_problem = MockReducedProblem(self.truth_problem)
             if self.folder["basis"].create(): # basis folder was not available yet
-                for mu in self.training_set:
+                for (index, mu) in enumerate(self.training_set):
                     self.truth_problem.set_mu(mu)
                     print("solving mock problem at mu =", self.truth_problem.mu)
                     f = self.truth_problem.solve()
-                    self.reduced_problem.Z.enrich(f)
-                    self.GS.apply(self.reduced_problem.Z, 0)
+                    component = "u" if index % 2 == 0 else "s"
+                    self.reduced_problem.Z.enrich(f, component)
+                    self.GS.apply(self.reduced_problem.Z[component], 0)
                 self.reduced_problem.Z.save(self.folder["basis"], "basis")
             else:
                 self.reduced_problem.Z.load(self.folder["basis"], "basis")
@@ -165,7 +166,7 @@ def test_eim_approximation_15(expression_type, basis_generation):
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
     element = MixedElement(element_0, element_1)
-    V = FunctionSpace(mesh, element)
+    V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
     # 3. Create a parametrized problem
     problem = MockProblem(V)

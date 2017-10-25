@@ -48,7 +48,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
             # Minimal subset of a ParametrizedDifferentialProblem
             self.V = V
             self._solution = Function(V)
-            self.components = ["f"]
+            self.components = ["u"]
             # Parametrized function to be interpolated
             x = SpatialCoordinate(V.mesh())
             mu = SymbolicParameters(self, V, (1., ))
