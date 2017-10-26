@@ -121,7 +121,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             if term not in self.operator: # init was not called already
                 try:
                     self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
-                except ValueError: # raised by compute_theta if output computation is optional
+                except ValueError: # raised by assemble_operator if output computation is optional
                     self.operator[term] = None
                     self.Q[term] = 0
                 else:
