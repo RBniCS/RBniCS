@@ -563,33 +563,26 @@ def BasicReducedMesh(backend, wrapping):
             components_tuple = key[1]
             assert isinstance(components_tuple, tuple)
             assert len(components_tuple) > 0
-            if len(components_tuple) == 1:
-                component_as_int = components_tuple[0]
-                if (
-                    component_as_int is None # all components
-                        or
-                    len(auxiliary_reduced_problem.Z._components_name) is 1 # subcomponent of a problem with only one component
-                ):
-                    # Initialize a basis function matrix for all components
-                    components_name = auxiliary_reduced_problem.Z._components_name
-                else:
-                    # Initialize a basis function matrix only for the required integer component
-                    assert isinstance(component_as_int, int)
-                    components_name = [auxiliary_reduced_problem.Z._components_name[component_as_int]]
-            else:
+            if len(components_tuple) > 1:
                 # This handles the case where a subcomponent of a component is required
                 # (e.g., x subcomponent of the velocity field component of a (velocity, pressure) solution)
                 # Since basis are constructed with respect to components (rather than subcomponents) we
                 # use only the first entry in the tuple to detect the corresponding component name
                 assert all([isinstance(c, int) for c in components_tuple]) # there is no None and all entries are integer
-                if len(auxiliary_reduced_problem.Z._components_name) is 1: # subcomponent of a problem with only one component
-                    components_name = [auxiliary_reduced_problem.Z._components_name[0]]
-                else: # subcomponent of a problem with more than one component
-                    component_as_int = components_tuple[0]
-                    components_name = [auxiliary_reduced_problem.Z._components_name[component_as_int]]
-                # Note that the discard of all other subcomponents is automatically handled by
-                # evaluate_basis_functions_matrix_at_dofs, which will be provided reduced dofs
-                # acting only on the active subcomponent.
+            component_as_int = components_tuple[0]
+            if component_as_int is None: # all components
+                # Initialize a basis function matrix for all components
+                components_name = auxiliary_reduced_problem.Z._components_name
+            elif len(auxiliary_reduced_problem.Z._components_name) is 1: # subcomponent of a problem with only one component
+                # Initialize a basis function matrix for all components
+                components_name = auxiliary_reduced_problem.Z._components_name
+            else:
+                # Initialize a basis function matrix only for the required integer component
+                if len(auxiliary_reduced_V._index_to_components) is 1:
+                    components_name = auxiliary_reduced_V.index_to_components(None)
+                else:
+                    assert isinstance(component_as_int, int)
+                    components_name = auxiliary_reduced_V.index_to_components(component_as_int)
             auxiliary_basis_functions_matrix.init(components_name)
             return auxiliary_basis_functions_matrix
             

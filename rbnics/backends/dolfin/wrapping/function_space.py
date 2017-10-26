@@ -56,7 +56,19 @@ def _enable_string_components(components, function_space):
             output = self_.extract_sub_space(i_int)
         if isinstance(i, str):
             components = {i: None}
-            _init_component_to_index(components, output)
+        else:
+            components = dict()
+            if (
+                len(self_._index_to_components) is 1
+                    and
+                None in self_._index_to_components
+            ):
+                for c in self_._index_to_components[None]:
+                    components[c] = None
+            else:
+                for c in self_.index_to_components(i):
+                    components[c] = None
+        _enable_string_components(components, output)
         return output
     function_space.sub = types.MethodType(custom_sub, function_space)
     
@@ -68,7 +80,11 @@ def _enable_string_components(components, function_space):
         output = original_extract_sub_space(i_int)
         if isinstance(i, str):
             components = {i: None}
-            _init_component_to_index(components, output)
+        else:
+            components = dict()
+            for c in self_.index_to_components(i):
+                components[c] = None
+        _enable_string_components(components, output)
         return output
     function_space.extract_sub_space = types.MethodType(custom_extract_sub_space, function_space)
     
@@ -90,9 +106,17 @@ def _init_component_to_index(components, function_space):
             _init_component_to_index__recursive(component, function_space._component_to_index, index)
     else:
         function_space._component_to_index = components
+    function_space._index_to_components = dict()
+    for (component, index) in function_space._component_to_index.items():
+        components = function_space._index_to_components.get(index, list())
+        components.append(component)
+        function_space._index_to_components[index] = components
     def component_to_index(self_, i):
         return self_._component_to_index[i]
     function_space.component_to_index = types.MethodType(component_to_index, function_space)
+    def index_to_components(self_, c):
+        return self_._index_to_components[c]
+    function_space.index_to_components = types.MethodType(index_to_components, function_space)
     
     original_collapse = function_space.collapse
     def custom_collapse(self_, collapsed_dofs=False):
