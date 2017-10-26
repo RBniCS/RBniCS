@@ -45,10 +45,16 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form_unchanged = list() # of forms
         # Internal usage
         self._NaN = float("NaN")
-        # Strict mode when checking candidates to be added to coefficients which contain both parametrized and non parametrized leaves.
-        # If False (default), coefficient splitting is prevented, because separating the non parametrized part would result in more
-        # than one coefficient, and the candidate is accepted as the coefficient which contain both parametrized and non parametrized leaves.
-        # If True, coefficient is split in order to assure that all coefficients only containt parametrized terms, at the expense of
+        # Strict mode when 
+        # * checking candidates to be added to coefficients which contain both parametrized and non parametrized leaves.
+        # * checking for coefficients that are solution
+        # If False (default)
+        # * coefficient splitting is prevented, because separating the non parametrized part would result in more
+        #   than one coefficient, and the candidate is accepted as the coefficient which contain both parametrized and non parametrized leaves.
+        # * solutions are considered as parametrized
+        # If True
+        # * coefficient is split in order to assure that all coefficients only containt parametrized terms, at the expense of
+        # * solutions are prevented for being collected in coefficients
         # a larger number of coefficients
         self._strict = strict
     
@@ -126,6 +132,10 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                         elif is_problem_solution_or_problem_solution_component_type(t):
                                             if not is_problem_solution_or_problem_solution_component(t):
                                                 log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized function")
+                                                break
+                                            elif self._strict: # solutions are not allowed, break
+                                                (_, _, solution) = solution_identify_component(t)
+                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains it contains the solution of " + get_problem_from_solution(solution).name() + "and strict mode is on")
                                                 break
                                     else:
                                         at_least_one_expression_or_solution = False
