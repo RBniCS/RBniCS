@@ -19,7 +19,7 @@
 import os
 from numbers import Number
 from numpy import isclose
-from rbnics.utils.decorators import list_of, overload, tuple_of
+from rbnics.utils.decorators import dict_of, list_of, overload, tuple_of
 from rbnics.utils.io import CSVIO, TextIO
 
 def diff(reference_file, current_file):
@@ -59,6 +59,32 @@ def _diff_content(reference_items: (list_of(object), tuple_of(object)), current_
                 for d in diff_item:
                     diff_items.append(
                         tab + "@@ " + str(item_number) + " @@" + "\n" +
+                        d
+                    )
+        return diff_items
+        
+@overload
+def _diff_content(reference_items: dict_of(object, object), current_items: dict_of(object, object), tab: str):
+    if len(reference_items) != len(current_items):
+        return [
+            tab + "@@ different lengths @@" + "\n" +
+            tab + "- " + str(len(reference_items)) + "\n" +
+            tab + "+ " + str(len(current_items)) + "\n"
+        ]
+    elif reference_items.keys() != current_items.keys():
+        return [
+            tab + "@@ different keys @@" + "\n" +
+            tab + "- " + str(reference_items.keys()) + "\n" +
+            tab + "+ " + str(current_items.keys()) + "\n"
+        ]
+    else:
+        diff_items = list()
+        for item_key in reference_items:
+            diff_item = _diff_content(reference_items[item_key], current_items[item_key], tab + "\t")
+            if len(diff_item) > 0:
+                for d in diff_item:
+                    diff_items.append(
+                        tab + "@@ " + str(item_key) + " @@" + "\n" +
                         d
                     )
         return diff_items
