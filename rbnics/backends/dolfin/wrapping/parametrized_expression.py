@@ -100,7 +100,12 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         assert len(mu) >= len(expression.mu)
         mu = mu[:len(expression.mu)]
         for (p, mu_p) in enumerate(mu):
-            setattr(expression, "mu_" + str(p), mu_p)
+            assert isinstance(mu_p, (Expression, Number))
+            if isinstance(mu_p, Number):
+                setattr(expression, "mu_" + str(p), mu_p)
+            elif isinstance(mu_p, Expression):
+                assert is_parametrized_constant(mu_p)
+                setattr(expression, "mu_" + str(p), parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0]))
         expression.mu = mu
     expression.set_mu = expression_set_mu
     # Note that this override is different from the one that we use in decorated problems,
