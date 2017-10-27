@@ -72,10 +72,10 @@ class _NonlinearProblem(object):
         self.solution = solution
         self.jacobian_eval = jacobian_eval
         # We should be solving a square system
-        sample_residual = residual_eval(solution)
-        sample_jacobian = jacobian_eval(solution)
-        assert sample_jacobian.M == sample_jacobian.N
-        assert sample_jacobian.N == sample_residual.N
+        self.sample_residual = residual_eval(solution)
+        self.sample_jacobian = jacobian_eval(solution)
+        assert self.sample_jacobian.M == self.sample_jacobian.N
+        assert self.sample_jacobian.N == self.sample_residual.N
         # Prepare storage for BCs, if necessary
         self._init_bcs(bcs)
     
@@ -89,7 +89,7 @@ class _NonlinearProblem(object):
         
     @overload
     def _init_bcs(self, bcs: DictOfThetaType):
-        self.bcs = DirichletBC(bcs, self.solution.vector()._basis_component_index_to_component_name, self.solution.vector().N)
+        self.bcs = DirichletBC(bcs, self.sample_residual._basis_component_index_to_component_name, self.solution.vector().N)
         
     def residual(self, solution):
         # Convert to a matrix with one column, rather than an array
