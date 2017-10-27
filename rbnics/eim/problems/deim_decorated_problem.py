@@ -77,8 +77,8 @@ def DEIMDecoratedProblem(
                 # Note that this cannot be done in __init__, because operators may depend on self.mu,
                 # which is not defined at __init__ time. Moreover, it cannot be done either by init,
                 # because the init method is called by offline stage of the reduction method instance,
-                # but we need to DEIM approximations need to be already set up at the time the reduction
-                # method instance is built. Thus, we will call this method in the reduction method instance
+                # but we need DEIM approximations to be already set up at the time the reduction method
+                # instance is built. Thus, we will call this method in the reduction method instance
                 # constructor (having a safeguard in place to avoid repeated calls).
                 assert (
                     (len(self.DEIM_approximations) == 0)

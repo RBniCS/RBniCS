@@ -19,6 +19,7 @@
 from collections import defaultdict, namedtuple
 import itertools
 import re
+import types
 from numpy import allclose, isclose, ones as numpy_ones, zeros as numpy_zeros
 from mpi4py.MPI import Op
 from sympy import Basic as SympyBase, ccode, collect, expand_mul, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix, Number, preorder_traversal, simplify, symbols, sympify
@@ -481,8 +482,21 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 self._shape_parametrization_expressions_sympy_to_ufl = dict()
                 self._shape_parametrization_expressions_ufl_to_sympy = dict()
                 self.debug = decorator_kwargs.get("debug", False)
+                # Customize EIM and DEIM decorators so that forms are pulled back to the reference domain before applying EIM or DEIM.
+                if hasattr(self, "_init_EIM_approximations"):
+                    _original_init_EIM_approximations = self._init_EIM_approximations
+                    def _custom_init_EIM_approximations(self_):
+                        self_._init_pull_back()
+                        _original_init_EIM_approximations()
+                    self._init_EIM_approximations = types.MethodType(_custom_init_EIM_approximations, self)
+                if hasattr(self, "_init_DEIM_approximations"):
+                    _original_init_DEIM_approximations = self._init_DEIM_approximations
+                    def _custom_init_DEIM_approximations(self_):
+                        self_._init_pull_back()
+                        _original_init_DEIM_approximations()
+                    self._init_DEIM_approximations = types.MethodType(_custom_init_DEIM_approximations, self)
                 
-            def init(self):
+            def _init_pull_back(self):
                 for term in self.terms:
                     assert (term in self._pulled_back_operators) is (term in self._pulled_back_theta_factors)
                     if term not in self._pulled_back_operators: # initialize only once
@@ -568,8 +582,10 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                     assert tensors_are_close(tensor_pull_back, tensor_parametrized_domain)
                                 # Restore mu
                                 self.set_mu(mu_bak)
-                # Call parent
-                ParametrizedDifferentialProblem_DerivedClass.init(self)
+                                
+            def _init_operators(self):
+                self._init_pull_back()
+                ParametrizedDifferentialProblem_DerivedClass._init_operators(self)
                 
             def assemble_operator(self, term):
                 if term in self._pulled_back_operators:
@@ -778,7 +794,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 theta_factor_sympy = simplify(sympify(str(theta_factor_sympy), locals=locals))
                 theta_factor_sympy = simplify(convert_float_to_int_if_possible(theta_factor_sympy))
                 return theta_factor_sympy
-                
+        
         # return value (a class) for the decorator
         return PullBackFormsToReferenceDomainDecoratedProblem_Class
         
