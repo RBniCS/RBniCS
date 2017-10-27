@@ -1,4 +1,6 @@
 AdvectionDiffusionDEIM
 AdvectionDiffusionEIM
+AdvectionDiffusionExact
 StokesDEIM
 StokesEIM
+StokesExact
