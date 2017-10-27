@@ -108,9 +108,19 @@ def _init_component_to_index(components, function_space):
         function_space._component_to_index = components
     function_space._index_to_components = dict()
     for (component, index) in function_space._component_to_index.items():
-        components = function_space._index_to_components.get(index, list())
-        components.append(component)
-        function_space._index_to_components[index] = components
+        assert isinstance(index, (int, tuple)) or index is None
+        if isinstance(index, int) or index is None:
+            components = function_space._index_to_components.get(index, list())
+            components.append(component)
+            function_space._index_to_components[index] = components
+        elif isinstance(index, tuple):
+            for i in range(1, len(index) + 1):
+                index_i = index[:i] if i > 1 else index[0]
+                components = function_space._index_to_components.get(index_i, list())
+                components.append(component)
+                function_space._index_to_components[index_i] = components
+        else:
+            raise TypeError("Invalid index")
     def component_to_index(self_, i):
         return self_._component_to_index[i]
     function_space.component_to_index = types.MethodType(component_to_index, function_space)
