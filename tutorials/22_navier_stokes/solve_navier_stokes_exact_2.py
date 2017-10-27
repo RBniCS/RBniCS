@@ -20,6 +20,7 @@ from dolfin import *
 from rbnics import *
 
 @ExactParametrizedFunctions()
+@PullBackFormsToReferenceDomain()
 @ShapeParametrization(
     ("x[0]", "x[1]"), # subdomain 1
     ("x[0]", "mu[1]/2.*x[1] + (2. - mu[1])"), # subdomain 2
@@ -45,29 +46,6 @@ class NavierStokes(NavierStokesProblem):
         self.inlet = Expression(("1./2.25*(x[1] - 2)*(5 - x[1])", "0."), degree=2)
         self.f = Constant((0.0, 0.0))
         self.g = Constant(0.0)
-        # Store parametrized tensors related to shape parametrization
-        expression_mu = (1.0, 1.0)
-        scalar_element = V.sub(0).sub(0).ufl_element()
-        tensor_element = TensorElement(scalar_element)
-        det_deformation_gradient = (
-            "1.", # subdomain 1
-            "mu[1]/2."  # subdomain 2
-        )
-        tensor_kappa = (
-            (("1.", "0."), ("0.", "1.")), # subdomain 1
-            (("mu[1]/2.", "0."), ("0.", "2./mu[1]")) # subdomain 2
-        )
-        tensor_chi = (
-            (("1.", "0."), ("0.", "1.")), # subdomain 1
-            (("mu[1]/2.", "0."), ("0.", "1.")) # subdomain 2
-        )
-        self.det_deformation_gradient = list()
-        self.tensor_kappa = list()
-        self.tensor_chi = list()
-        for s in range(2):
-            self.det_deformation_gradient.append(ParametrizedExpression(self, det_deformation_gradient[s], mu=expression_mu, element=scalar_element))
-            self.tensor_kappa.append(ParametrizedExpression(self, tensor_kappa[s], mu=expression_mu, element=tensor_element))
-            self.tensor_chi.append(ParametrizedExpression(self, tensor_chi[s], mu=expression_mu, element=tensor_element))
         # Customize nonlinear solver parameters
         self._nonlinear_solver_parameters.update({
             "linear_solver": "mumps",
@@ -118,61 +96,44 @@ class NavierStokes(NavierStokesProblem):
         if term == "a":
             u = self.du
             v = self.v
-            tensor_kappa = self.tensor_kappa
-            a0 = 0
-            for s in range(2):
-                a0 += inner(grad(u)*tensor_kappa[s] + transpose(grad(u)*tensor_kappa[s]), grad(v))*dx(s + 1)
+            a0 = inner(grad(u), grad(v))*dx
             return (a0,)
         elif term == "b":
             u = self.du
             q = self.q
-            tensor_chi = self.tensor_chi
-            b0 = 0
-            for s in range(2):
-                b0 += - q*tr(tensor_chi[s]*grad(u))*dx(s + 1)
+            b0 = - q*div(u)*dx
             return (b0,)
         elif term == "bt":
             p = self.dp
             v = self.v
-            tensor_chi = self.tensor_chi
-            bt0 = 0
-            for s in range(2):
-                bt0 += - p*tr(tensor_chi[s]*grad(v))*dx(s + 1)
+            bt0 = - p*div(v)*dx
             return (bt0,)
         elif term == "c":
             u = self.u
             v = self.v
-            c0 = 0
-            for s in range(2):
-                c0 += inner(grad(u)*u, v)*dx(s + 1)
+            c0 = inner(grad(u)*u, v)*dx
             return (c0,)
         elif term == "f":
             v = self.v
-            det_deformation_gradient = self.det_deformation_gradient
-            f0 = 0
-            for s in range(2):
-                f0 += inner(self.f, v)*det_deformation_gradient[s]*dx(s + 1)
+            f0 = inner(self.f, v)*dx
             return (f0,)
         elif term == "g":
             q = self.q
-            det_deformation_gradient = self.det_deformation_gradient
-            g0 = 0
-            for s in range(2):
-                g0 += self.g*q*det_deformation_gradient[s]*dx(s + 1)
+            g0 = self.g*q*dx
             return (g0,)
         elif term == "dirichlet_bc_u":
             bc0 = [DirichletBC(self.V.sub(0), self.inlet, self.boundaries, 1),
                    DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 2)]
             return (bc0,)
         elif term == "inner_product_u":
-            du = self.du
+            u = self.du
             v = self.v
-            x0 = inner(grad(du), grad(v))*dx
+            x0 = inner(grad(u), grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":
-            dp = self.dp
+            p = self.dp
             q = self.q
-            x0 = inner(dp, q)*dx
+            x0 = inner(p, q)*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

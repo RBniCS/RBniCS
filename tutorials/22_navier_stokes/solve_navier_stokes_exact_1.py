@@ -121,14 +121,14 @@ class NavierStokes(NavierStokesProblem):
                    DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 2)]
             return (bc0,)
         elif term == "inner_product_u":
-            du = self.du
+            u = self.du
             v = self.v
-            x0 = inner(grad(du), grad(v))*dx
+            x0 = inner(grad(u), grad(v))*dx
             return (x0,)
         elif term == "inner_product_p":
-            dp = self.dp
+            p = self.dp
             q = self.q
-            x0 = inner(dp, q)*dx
+            x0 = inner(p, q)*dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
