@@ -25,7 +25,7 @@ from dolfin import assign, CellSize, Constant, cos, div, Expression, FiniteEleme
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
-from rbnics.eim.problems import EIM
+from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.base import ParametrizedProblem
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_pull_back_to_reference_domain")
@@ -47,10 +47,10 @@ def make_shape_parametrization_non_affine(shape_parametrization_expression):
         non_affine_shape_parametrization_expression.append(tuple(non_affine_shape_parametrization_expression_on_subdomain))
     return non_affine_shape_parametrization_expression
     
-def NoEIM():
-    def NoEIM_decorator(Class):
+def NoDecorator():
+    def NoDecorator_decorator(Class):
         return Class
-    return NoEIM_decorator
+    return NoDecorator_decorator
     
 def raises(ExceptionType):
     """
@@ -72,9 +72,11 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args):
     decorators = list()
     decorators.append(
         pytest.mark.parametrize("shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message", [
-            (keep_shape_parametrization_affine, NoEIM, None, None),
-            (make_shape_parametrization_non_affine, NoEIM, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"),
-            (make_shape_parametrization_non_affine, EIM, None, None)
+            (keep_shape_parametrization_affine, NoDecorator, None, None),
+            (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"),
+            (make_shape_parametrization_non_affine, DEIM, None, None),
+            (make_shape_parametrization_non_affine, EIM, None, None),
+            (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None)
         ])
     )
     for decorator_arg in decorator_args:
@@ -131,6 +133,9 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             self.terms = ["a", "f"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
             
     # Define problem with forms written on reference domain
@@ -293,6 +298,9 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             self.terms = ["a", "f"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
     
     # Define problem with forms written on reference domain
@@ -467,6 +475,9 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             self.terms = ["a", "f"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
             
     # Define problem with forms written on reference domain
@@ -594,6 +605,9 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             self.terms = ["a", "f"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
             
     # Define problem with forms written on reference domain
@@ -741,6 +755,9 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             self.terms = ["a", "b", "bt", "f", "g"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
             
     # Define problem with forms written on reference domain
@@ -954,6 +971,9 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             self.terms = ["a", "a*", "c", "c*", "m", "n", "f", "g", "h"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
             
     # Define problem with forms written on reference domain
@@ -1191,6 +1211,9 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             self.terms = ["a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "h", "l"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
     
     # Define problem with forms written on reference domain
@@ -1479,6 +1502,9 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
             self.terms = ["a", "f"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
         
     # Define problem with forms written on reference domain
@@ -1665,6 +1691,9 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
             self.terms = ["a", "b", "bt", "c", "dc", "f", "g"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
             
     # Define problem with forms written on reference domain
@@ -1865,6 +1894,9 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
             self.terms = ["a", "b", "bt", "m", "f", "g"]
             
         def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
             pass
             
     # Define problem with forms written on reference domain
