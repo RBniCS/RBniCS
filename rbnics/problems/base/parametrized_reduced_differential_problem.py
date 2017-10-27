@@ -83,12 +83,29 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
     
     def init(self, current_stage="online"):
         """
-        Calls _init_operators() and _init_basis_functions().
+        Initialize data structures required during the online phase.
         """
         self._init_operators(current_stage)
+        self._init_inner_products(current_stage)
         self._init_basis_functions(current_stage)
             
     def _init_operators(self, current_stage="online"):
+        """
+        Initialize data structures required for the online phase. Internal method.
+        """
+        assert current_stage in ("online", "offline")
+        if current_stage == "online":
+            for term in self.terms:
+                self.operator[term] = self.assemble_operator(term, "online")
+                self.Q[term] = len(self.operator[term])
+        elif current_stage == "offline":
+            for term in self.terms:
+                self.Q[term] = self.truth_problem.Q[term]
+                self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
+        else:
+            raise ValueError("Invalid stage in _init_operators().")
+            
+    def _init_inner_products(self, current_stage="online"):
         """
         Initialize data structures required for the online phase. Internal method.
         """
@@ -113,10 +130,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             else:
                 self.projection_inner_product = self.assemble_operator("projection_inner_product", "online")
             self._combined_projection_inner_product = self._combine_all_projection_inner_products()
-            # Terms
-            for term in self.terms:
-                self.operator[term] = self.assemble_operator(term, "online")
-                self.Q[term] = len(self.operator[term])
         elif current_stage == "offline":
             n_components = len(self.components)
             # Inner products
@@ -133,12 +146,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     self.projection_inner_product[component] = OnlineAffineExpansionStorage(1)
             else:
                 self.projection_inner_product = OnlineAffineExpansionStorage(1)
-            # Terms
-            for term in self.terms:
-                self.Q[term] = self.truth_problem.Q[term]
-                self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
         else:
-            raise ValueError("Invalid stage in _init_operators().")
+            raise ValueError("Invalid stage in _init_inner_products().")
             
     def _combine_all_inner_products(self):
         if len(self.components) > 1:

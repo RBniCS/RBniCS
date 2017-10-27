@@ -75,14 +75,31 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     
     def init(self):
         """
-        Calls _init_operators() and _init_dirichlet_bc().
+        Initialize data structures required during the offline phase.
         """
         self._init_operators()
+        self._init_inner_products()
         self._init_dirichlet_bc()
         
     def _init_operators(self):
         """
         Initialize operators required for the offline phase. Internal method.
+        """
+        # Assemble operators
+        for term in self.terms:
+            if term not in self.operator: # init was not called already
+                try:
+                    self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
+                except ValueError: # raised by assemble_operator if output computation is optional
+                    self.operator[term] = None
+                    self.Q[term] = 0
+                else:
+                    if term not in self.Q: # init was not called already
+                        self.Q[term] = len(self.operator[term])
+        
+    def _init_inner_products(self):
+        """
+        Initialize inner products required for the offline phase. Internal method.
         """
         # Get helper strings depending on the number of basis components
         n_components = len(self.components)
@@ -116,17 +133,6 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 self.projection_inner_product = projection_inner_product
             assert self._combined_projection_inner_product is None
             self._combined_projection_inner_product = self._combine_all_projection_inner_products()
-        # Assemble operators
-        for term in self.terms:
-            if term not in self.operator: # init was not called already
-                try:
-                    self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
-                except ValueError: # raised by assemble_operator if output computation is optional
-                    self.operator[term] = None
-                    self.Q[term] = 0
-                else:
-                    if term not in self.Q: # init was not called already
-                        self.Q[term] = len(self.operator[term])
             
     def _combine_all_inner_products(self):
         if len(self.components) > 1:

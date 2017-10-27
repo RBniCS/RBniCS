@@ -45,8 +45,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     self.folder.pop("error_estimation")
                     
                 # Initialize data structures required for the online phase
-                def init(self, current_stage="online"):
-                    ReducedParametrizedProblem_DecoratedClass.init(self, current_stage)
+                def _init_error_estimation_operators(self, current_stage="online"):
                     # The offline/online separation does not hold anymore, so in
                     # assemble_error_estimation_operators() we need to re-assemble operators.
                     # Thus, for any value of current_stage, we initialize error estimation
@@ -191,47 +190,27 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             # Precomputation of operators is disabled
             self.folder.pop("reduced_operators")
         
-        # Initialize data structures required for the online phase
-        def init(self, current_stage="online"):
-            self._init_basis_functions(current_stage)
+        def _init_operators(self, current_stage="online"):
             # The offline/online separation does not hold anymore, so in assemble_operator()
             # we need to re-assemble operators. Thus, for any value of current_stage,
             # we initialize the operators of the reduced problem as if we were offline
-            self._init_operators("offline")
-            #
-            n_components = len(self.components)
-            # Initialize (if offline) and precompute (if online) inner products.
-            # Precomputation is possible as they do not depend on the parameters
-            if n_components > 1:
-                inner_product_string = "inner_product_{c}"
-                for component in self.components:
-                    self._disable_load_and_save_for_online_storage(self.inner_product[component])
-                    if current_stage == "online":
-                        self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), "offline")
-            else:
-                self._disable_load_and_save_for_online_storage(self.inner_product)
-                if current_stage == "online":
-                    self.inner_product = self.assemble_operator("inner_product", "offline")
-            if current_stage == "online":
-                self._combined_inner_product = self._combine_all_inner_products()
-            # Initialize (if offline) and precompute (if online) projection inner products
-            # Precomputation is possible as they do not depend on the parameters
-            if n_components > 1:
-                projection_inner_product_string = "projection_inner_product_{c}"
-                for component in self.components:
-                    self._disable_load_and_save_for_online_storage(self.projection_inner_product[component])
-                    if current_stage == "online":
-                        self.projection_inner_product[component] = self.assemble_operator(projection_inner_product_string.format(c=component), "online")
-            else:
-                self._disable_load_and_save_for_online_storage(self.projection_inner_product)
-                if current_stage == "online":
-                    self.projection_inner_product = self.assemble_operator("projection_inner_product", "online")
-            if current_stage == "online":
-                self._combined_projection_inner_product = self._combine_all_projection_inner_products()
-            # Initialize terms (bot offline and online, as they cannot be precomputed)
+            ParametrizedReducedDifferentialProblem_DerivedClass._init_operators(self, "offline")
             for term in self.terms:
                 self._disable_load_and_save_for_online_storage(self.operator[term])
-
+                
+        def _init_inner_products(self, current_stage="online"):
+            # We assume that offline/online separation does hold for inner products,
+            # so it is possible to precompute them. However, we do not save the resulting
+            # reduced matrix to file
+            ParametrizedReducedDifferentialProblem_DerivedClass._init_inner_products(self, "offline")
+            if len(self.components) > 1:
+                for component in self.components:
+                    self._disable_load_and_save_for_online_storage(self.inner_product[component])
+                    self._disable_load_and_save_for_online_storage(self.projection_inner_product[component])
+            else:
+                self._disable_load_and_save_for_online_storage(self.inner_product)
+                self._disable_load_and_save_for_online_storage(self.projection_inner_product)
+                
         def _disable_load_and_save_for_online_storage(self, online_storage):
             # Make sure to disable the save() method of the operator, which is
             # called internally by assemble_operator() since it is not possible
@@ -271,11 +250,19 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             
         # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
-            if current_stage == "online": # *cannot* load from file
-                # The offline/online separation does not hold anymore, so we need to re-assemble operators,
-                # because the assemble_operator() of the truth problem *may* return parameter dependent operators.
-                # Thus, call the parent method enforcing current_stage = "offline"
-                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, "offline")
+            if current_stage == "online": 
+                if term in self.terms: # *cannot* load from file
+                    # The offline/online separation does not hold anymore, so we need to re-assemble operators,
+                    # because the assemble_operator() of the truth problem *may* return parameter dependent operators.
+                    # Thus, call the parent method enforcing current_stage = "offline"
+                    return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, "offline")
+                elif term.startswith("inner_product") or term.startswith("projection_inner_product"):
+                    # The offline/online separation does hold for inner products, but we do not save the results to file
+                    return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, "offline")
+                elif term.startswith("dirichlet_bc"):
+                    raise ValueError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
+                else:
+                    raise ValueError("Invalid term for assemble_operator().")
             else:
                 # Call parent method
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
