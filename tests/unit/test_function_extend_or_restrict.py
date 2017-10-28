@@ -263,7 +263,7 @@ def MixedSpacesExtensionFromSubElementSolveAmbiguityWithComponents(mesh, compone
     element = MixedElement(element_0, element_1)
     V = FunctionSpace(mesh, element_00)
     assert components in (tuple, str)
-    if components is None:
+    if components is tuple:
         W = FunctionSpace(mesh, element)
     else:
         W = FunctionSpace(mesh, element, components=[("ux", "uy"), "p"])
