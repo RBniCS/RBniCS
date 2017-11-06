@@ -250,7 +250,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             
         # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
-            if current_stage == "online": 
+            if current_stage == "online":
                 if term in self.terms: # *cannot* load from file
                     # The offline/online separation does not hold anymore, so we need to re-assemble operators,
                     # because the assemble_operator() of the truth problem *may* return parameter dependent operators.
