@@ -626,16 +626,16 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
                 theta_a2 = mu2*mu1
                 theta_a3 = 1.0
                 theta_a4 = mu2
-                theta_a5 = mu2/mu1*cell_size_pull_back(mu1)
-                theta_a6 = mu2*mu1*cell_size_pull_back(mu1)
+                theta_a5 = mu2/mu1**2*cell_size_pull_back(mu1)
+                theta_a6 = mu2*cell_size_pull_back(mu1)
                 theta_a7 = 1.0
-                theta_a8 = cell_size_pull_back(mu1)
+                theta_a8 = 1.0/mu1*cell_size_pull_back(mu1)
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8)
             elif term == "f":
                 theta_f0 = 1.0
                 theta_f1 = mu1
                 theta_f2 = 1.0
-                theta_f3 = mu1*cell_size_pull_back(mu1)
+                theta_f3 = cell_size_pull_back(mu1)
                 return (theta_f0, theta_f1, theta_f2, theta_f3)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -646,17 +646,17 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
                 a1 = u.dx(0)*v.dx(0)*dx(2)
                 a2 = u.dx(1)*v.dx(1)*dx(2)
                 a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2)
-                a4 = - h*inner(div(grad(u)), v)*dx(1)
-                a5 = - h*u.dx(0).dx(0)*v*dx(2)
-                a6 = - h*u.dx(1).dx(1)*v*dx(2)
-                a7 = h*vel*u.dx(0)*v*dx(1)
-                a8 = h*vel*u.dx(0)*v*dx(2)
+                a4 = - h*inner(div(grad(u)), vel*v.dx(0))*dx(1)
+                a5 = - h*u.dx(0).dx(0)*vel*v.dx(0)*dx(2)
+                a6 = - h*u.dx(1).dx(1)*vel*v.dx(0)*dx(2)
+                a7 = h*vel*u.dx(0)*vel*v.dx(0)*dx(1)
+                a8 = h*vel*u.dx(0)*vel*v.dx(0)*dx(2)
                 return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
             elif term == "f":
                 f0 = ff*v*dx(1)
                 f1 = ff*v*dx(2)
-                f2 = h*ff*v*dx(1)
-                f3 = h*ff*v*dx(2)
+                f2 = h*ff*vel*v.dx(0)*dx(1)
+                f3 = h*ff*vel*v.dx(0)*dx(2)
                 return (f0, f1, f2, f3)
             else:
                 raise ValueError("Invalid term for assemble_operator().")
@@ -684,11 +684,11 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
                 
         def assemble_operator(self, term):
             if term == "a":
-                a0 = inner(grad(u), grad(v))*dx - h*inner(div(grad(u)), v)*dx
-                a1 = vel*u.dx(0)*v*dx + h*vel*u.dx(0)*v*dx
+                a0 = inner(grad(u), grad(v))*dx - inner(div(grad(u)), h*vel*v.dx(0))*dx
+                a1 = vel*u.dx(0)*v*dx + inner(vel*u.dx(0), h*vel*v.dx(0))*dx
                 return (a0, a1)
             elif term == "f":
-                f0 = ff*v*dx + h*ff*v*dx
+                f0 = ff*v*dx + ff*h*vel*v.dx(0)*dx
                 return (f0, )
             else:
                 raise ValueError("Invalid term for assemble_operator().")
