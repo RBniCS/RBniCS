@@ -934,6 +934,196 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
         g_pull_back = theta_times_operator(problem_pull_back, "g")
         assert forms_are_close(g_on_reference_domain, g_pull_back)
         
+# Test forms pull back to reference domain for stabilization of Stokes problem
+@check_affine_and_non_affine_shape_parametrizations((
+    "CellSize, cell_size_pull_back", [
+        (lambda mesh: Constant(0.), lambda mu1: 0),
+        (lambda mesh: Constant(1.), lambda mu1: 1),
+        (CellSize, lambda mu1: sqrt(mu1))
+    ]
+))
+def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellSize, cell_size_pull_back):
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "cavity.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "cavity_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "cavity_facet_region.xml"))
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+        ("mu[0]*x[0]", "x[1]"), # subdomain 1
+    ]
+    shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
+    
+    # Define function space, test/trial functions, measures, auxiliary expressions
+    element_u = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    element = MixedElement(element_u, element_p)
+    V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
+    up = TrialFunction(V)
+    (u, p) = split(up)
+    vq = TestFunction(V)
+    (v, q) = split(vq)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    
+    ff = Constant((2., 3.))
+    gg = Constant(4.)
+    h = CellSize(mesh)
+    alpha_p = Constant(1.)
+    
+    # Define base problem
+    class StokesStabilization(ParametrizedProblem):
+        def __init__(self, folder_prefix):
+            ParametrizedProblem.__init__(self, folder_prefix)
+            self.mu = (1.,)
+            self.mu_range = [(0.5, 3)]
+            self.terms = ["a", "b", "bt", "stab", "f", "g"]
+            
+        def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
+            pass
+    
+    # Define problem with forms written on reference domain
+    @ShapeParametrization(*shape_parametrization_expression)
+    class StokesStabilizationOnReferenceDomain(StokesStabilization):
+        def __init__(self, V, **kwargs):
+            StokesStabilization.__init__(self, "StokesStabilizationOnReferenceDomain")
+            self.V = V
+            
+        def compute_theta(self, term):
+            mu = self.mu
+            mu1 = mu[0]
+            if term == "a":
+                theta_a0 = 1./mu1
+                theta_a1 = mu1
+                return (theta_a0, theta_a1)
+            elif term in ("b", "bt"):
+                theta_b0 = 1.
+                theta_b1 = mu1
+                return (theta_b0, theta_b1)
+            elif term == "stab":
+                theta_s0 = 1./mu1
+                theta_s1 = mu1
+                return (theta_s0, theta_s1)
+            elif term == "f":
+                theta_f0 = mu1
+                return (theta_f0, )
+            elif term == "g":
+                theta_g0 = mu1
+                return (theta_g0, )
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*dx
+                a1 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*dx
+                return (a0, a1)
+            elif term == "b":
+                b0 = - q*u[0].dx(0)*dx
+                b1 = - q*u[1].dx(1)*dx
+                return (b0, b1)
+            elif term == "bt":
+                bt0 = - p*v[0].dx(0)*dx
+                bt1 = - p*v[1].dx(1)*dx
+                return (bt0, bt1)
+            elif term == "stab":
+                s0 = p.dx(0)*alpha_p*h**2*q.dx(0)*dx
+                s1 = p.dx(1)*alpha_p*h**2*q.dx(1)*dx
+                return (s0, s1)
+            elif term == "f":
+                f0 = inner(ff, v)*dx
+                return (f0, )
+            elif term == "g":
+                g0 = gg*q*dx
+                return (g0, )
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Define problem with forms pulled back reference domain
+    @AdditionalProblemDecorator()
+    @PullBackFormsToReferenceDomain(debug=True)
+    @ShapeParametrization(*shape_parametrization_expression)
+    class StokesStabilizationPullBack(StokesStabilization):
+        def __init__(self, V, **kwargs):
+            StokesStabilization.__init__(self, "StokesStabilizationPullBack")
+            self.V = V
+            
+        def compute_theta(self, term):
+            if term == "a":
+                theta_a0 = 1.0
+                return (theta_a0, )
+            elif term in ("b", "bt"):
+                theta_b0 = 1.0
+                return (theta_b0, )
+            elif term == "stab":
+                theta_s0 = 1.0
+                return (theta_s0, )
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0, )
+            elif term == "g":
+                theta_g0 = 1.0
+                return (theta_g0, )
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(u), grad(v))*dx
+                return (a0, )
+            elif term == "b":
+                b0 = - q*div(u)*dx
+                return (b0, )
+            elif term == "bt":
+                bt0 = - p*div(v)*dx
+                return (bt0, )
+            elif term == "stab":
+                s0 = inner(grad(p), alpha_p*h**2*grad(q))*dx
+                return (s0, )
+            elif term == "f":
+                f0 = inner(ff, v)*dx
+                return (f0, )
+            elif term == "g":
+                g0 = q*gg*dx
+                return (g0, )
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Check forms
+    problem_on_reference_domain = StokesStabilizationOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = StokesStabilizationPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain.init()
+    problem_pull_back.init()
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        b_on_reference_domain = theta_times_operator(problem_on_reference_domain, "b")
+        b_pull_back = theta_times_operator(problem_pull_back, "b")
+        assert forms_are_close(b_on_reference_domain, b_pull_back)
+        
+        bt_on_reference_domain = theta_times_operator(problem_on_reference_domain, "bt")
+        bt_pull_back = theta_times_operator(problem_pull_back, "bt")
+        assert forms_are_close(bt_on_reference_domain, bt_pull_back)
+        
+        stab_on_reference_domain = theta_times_operator(problem_on_reference_domain, "stab")
+        stab_pull_back = theta_times_operator(problem_pull_back, "stab")
+        assert forms_are_close(stab_on_reference_domain, stab_pull_back)
+        
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
+        
+        g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
+        g_pull_back = theta_times_operator(problem_pull_back, "g")
+        assert forms_are_close(g_on_reference_domain, g_pull_back)
+        
 # Test forms pull back to reference domain for tutorial 18
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
