@@ -100,10 +100,12 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             :return: reduced_problem where all offline data are stored.
             """
             need_to_do_offline_stage = self._init_offline()
-            if not need_to_do_offline_stage:
-                self._finalize_offline()
-                return self.reduced_problem
-                        
+            if need_to_do_offline_stage:
+                self._offline()
+            self._finalize_offline()
+            return self.reduced_problem
+            
+        def _offline(self):
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " offline phase begins") + "=")
             print("==============================================================")
@@ -142,9 +144,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("=" + "{:^60}".format(self.label + " offline phase ends") + "=")
             print("==============================================================")
             print("")
-            
-            self._finalize_offline()
-            return self.reduced_problem
             
         def update_basis_matrix(self, snapshot):
             """
@@ -210,13 +209,16 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             if isinstance(N, dict):
                 N = min(N.values())
             
+            self._init_error_analysis(**kwargs)
+            self._error_analysis(N, filename, **kwargs)
+            self._finalize_error_analysis(**kwargs)
+            
+        def _error_analysis(self, N=None, filename=None, **kwargs):
             if "components" in kwargs:
                 components = kwargs["components"]
             else:
                 components = self.truth_problem.components
-            
-            self._init_error_analysis(**kwargs)
-            
+                
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " error analysis begins") + "=")
             print("==============================================================")
@@ -300,8 +302,6 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Export error analysis table
             error_analysis_table.save(self.folder["error_analysis"], "error_analysis" if filename is None else filename)
             
-            self._finalize_error_analysis(**kwargs)
-            
         def speedup_analysis(self, N=None, filename=None, **kwargs):
             """
             It computes the speedup of the reduced order approximation with respect to the full order one over the testing set.
@@ -313,7 +313,10 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 N = min(N.values())
             
             self._init_speedup_analysis(**kwargs)
+            self._speedup_analysis(N, filename, **kwargs)
+            self._finalize_speedup_analysis(**kwargs)
             
+        def _speedup_analysis(self, N=None, filename=None, **kwargs):
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " speedup analysis begins") + "=")
             print("==============================================================")
@@ -372,7 +375,5 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Export speedup analysis table
             speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
             
-            self._finalize_speedup_analysis(**kwargs)
-        
     # return value (a class) for the decorator
     return RBReduction_Class

@@ -54,6 +54,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self._training_set_parameters_to_snapshots_container_index = dict((mu, mu_index) for (mu_index, mu) in enumerate(self.training_set))
         return import_successful
     
+    # Perform the offline phase of EIM
+    def offline(self):
+        need_to_do_offline_stage = self._init_offline()
+        if need_to_do_offline_stage:
+            self._offline()
+        self._finalize_offline()
+        return self.EIM_approximation
+        
     # Initialize data structures required for the offline phase
     def _init_offline(self):
         # Prepare folders and init EIM approximation
@@ -69,18 +77,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         else:
             self.EIM_approximation.init("offline")
             return True # offline construction should be carried out
-            
-    # Finalize data structures required after the offline phase
-    def _finalize_offline(self):
-        self.EIM_approximation.init("online")
-    
-    # Perform the offline phase of EIM
-    def offline(self):
-        need_to_do_offline_stage = self._init_offline()
-        if not need_to_do_offline_stage:
-            self._finalize_offline()
-            return self.EIM_approximation
-            
+        
+    def _offline(self):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
@@ -181,8 +179,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        self._finalize_offline()
-        return self.EIM_approximation
+    # Finalize data structures required after the offline phase
+    def _finalize_offline(self):
+        self.EIM_approximation.init("online")
         
     def _print_greedy_interpolation_solve_message(self):
         print("solve interpolation for mu =", self.EIM_approximation.mu)
@@ -278,7 +277,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
         assert len(kwargs) == 0 # not used in this method
             
         self._init_error_analysis(**kwargs)
+        self._error_analysis(N, filename, **kwargs)
+        self._finalize_error_analysis(**kwargs)
         
+    def _error_analysis(self, N=None, filename=None, **kwargs):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
@@ -319,8 +321,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # Export error analysis table
         error_analysis_table.save(self.folder["error_analysis"], "error_analysis" if filename is None else filename)
         
-        self._finalize_error_analysis(**kwargs)
-        
     # Compute the speedup of the empirical interpolation approximation with respect to the
     # exact function over the testing set
     def speedup_analysis(self, N=None, filename=None, **kwargs):
@@ -329,7 +329,25 @@ class EIMApproximationReductionMethod(ReductionMethod):
         assert len(kwargs) == 0 # not used in this method
             
         self._init_speedup_analysis(**kwargs)
+        self._speedup_analysis(N, filename, **kwargs)
+        self._finalize_speedup_analysis(**kwargs)
         
+    # Initialize data structures required for the speedup analysis phase
+    def _init_speedup_analysis(self, **kwargs):
+        # Make sure to clean up snapshot cache to ensure that parametrized
+        # expression evaluation is actually carried out
+        self.EIM_approximation.snapshot_cache.clear()
+        # ... and also disable the capability of importing/exporting truth solutions
+        self._speedup_analysis__original_import_solution = self.EIM_approximation.import_solution
+        def disabled_import_solution(self_, folder=None, filename=None, solution=None):
+            return False
+        self.EIM_approximation.import_solution = types.MethodType(disabled_import_solution, self.EIM_approximation)
+        self._speedup_analysis__original_export_solution = self.EIM_approximation.export_solution
+        def disabled_export_solution(self_, folder=None, filename=None, solution=None):
+            pass
+        self.EIM_approximation.export_solution = types.MethodType(disabled_export_solution, self.EIM_approximation)
+        
+    def _speedup_analysis(self, N=None, filename=None, **kwargs):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
@@ -375,23 +393,6 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
         # Export speedup analysis table
         speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
-        
-        self._finalize_speedup_analysis(**kwargs)
-        
-    # Initialize data structures required for the speedup analysis phase
-    def _init_speedup_analysis(self, **kwargs):
-        # Make sure to clean up snapshot cache to ensure that parametrized
-        # expression evaluation is actually carried out
-        self.EIM_approximation.snapshot_cache.clear()
-        # ... and also disable the capability of importing/exporting truth solutions
-        self._speedup_analysis__original_import_solution = self.EIM_approximation.import_solution
-        def disabled_import_solution(self_, folder=None, filename=None, solution=None):
-            return False
-        self.EIM_approximation.import_solution = types.MethodType(disabled_import_solution, self.EIM_approximation)
-        self._speedup_analysis__original_export_solution = self.EIM_approximation.export_solution
-        def disabled_export_solution(self_, folder=None, filename=None, solution=None):
-            pass
-        self.EIM_approximation.export_solution = types.MethodType(disabled_export_solution, self.EIM_approximation)
         
     # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):

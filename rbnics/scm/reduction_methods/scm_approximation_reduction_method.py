@@ -51,6 +51,14 @@ class SCMApproximationReductionMethod(ReductionMethod):
         import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
         self.SCM_approximation.training_set = self.training_set
         return import_successful
+        
+    # Perform the offline phase of SCM
+    def offline(self):
+        need_to_do_offline_stage = self._init_offline()
+        if need_to_do_offline_stage:
+            self._offline()
+        self._finalize_offline()
+        return self.SCM_approximation
     
     # Initialize data structures required for the offline phase
     def _init_offline(self):
@@ -68,17 +76,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
             self.SCM_approximation.init("offline")
             return True # offline construction should be carried out
             
-    # Finalize data structures required after the offline phase
-    def _finalize_offline(self):
-        self.SCM_approximation.init("online")
-    
-    # Perform the offline phase of SCM
-    def offline(self):
-        need_to_do_offline_stage = self._init_offline()
-        if not need_to_do_offline_stage:
-            self._finalize_offline()
-            return self.SCM_approximation
-        
+    def _offline(self):
         print("==============================================================")
         print("=" + "{:^60}".format("SCM offline phase begins") + "=")
         print("==============================================================")
@@ -120,8 +118,9 @@ class SCMApproximationReductionMethod(ReductionMethod):
         print("==============================================================")
         print("")
         
-        self._finalize_offline()
-        return self.SCM_approximation
+    # Finalize data structures required after the offline phase
+    def _finalize_offline(self):
+        self.SCM_approximation.init("online")
         
     # Compute the bounding box \mathcal{B}
     def compute_bounding_box(self):
@@ -206,9 +205,12 @@ class SCMApproximationReductionMethod(ReductionMethod):
         if N is None:
             N = self.SCM_approximation.N
         assert len(kwargs) == 0 # not used in this method
-            
-        self._init_error_analysis(**kwargs)
         
+        self._init_error_analysis(**kwargs)
+        self._error_analysis(N, filename, **kwargs)
+        self._finalize_error_analysis(**kwargs)
+        
+    def _error_analysis(self, N=None, filename=None, **kwargs):
         print("==============================================================")
         print("=" + "{:^60}".format("SCM error analysis begins") + "=")
         print("==============================================================")
@@ -250,8 +252,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         # Export error analysis table
         error_analysis_table.save(self.folder["error_analysis"], "error_analysis" if filename is None else filename)
         
-        self._finalize_error_analysis(**kwargs)
-        
     # Compute the speedup of the scm approximation with respect to the
     # exact coercivity over the testing set
     def speedup_analysis(self, N=None, filename=None, **kwargs):
@@ -260,7 +260,19 @@ class SCMApproximationReductionMethod(ReductionMethod):
         assert len(kwargs) == 0 # not used in this method
             
         self._init_speedup_analysis(**kwargs)
+        self._speedup_analysis(N, filename, **kwargs)
+        self._finalize_speedup_analysis(**kwargs)
         
+    # Initialize data structures required for the speedup analysis phase
+    def _init_speedup_analysis(self, **kwargs):
+        # Make sure to clean up snapshot cache to ensure that parametrized
+        # expression evaluation is actually carried out
+        self.SCM_approximation._alpha_LB_cache.clear()
+        self.SCM_approximation._alpha_UB_cache.clear()
+        self.SCM_approximation.exact_coercivity_constant_calculator._eigenvalue_cache.clear()
+        self.SCM_approximation.exact_coercivity_constant_calculator._eigenvector_cache.clear()
+        
+    def _speedup_analysis(self, N=None, filename=None, **kwargs):
         print("==============================================================")
         print("=" + "{:^60}".format("SCM speedup analysis begins") + "=")
         print("==============================================================")
@@ -301,14 +313,3 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         # Export speedup analysis table
         speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
-        
-        self._finalize_speedup_analysis(**kwargs)
-        
-    # Initialize data structures required for the speedup analysis phase
-    def _init_speedup_analysis(self, **kwargs):
-        # Make sure to clean up snapshot cache to ensure that parametrized
-        # expression evaluation is actually carried out
-        self.SCM_approximation._alpha_LB_cache.clear()
-        self.SCM_approximation._alpha_UB_cache.clear()
-        self.SCM_approximation.exact_coercivity_constant_calculator._eigenvalue_cache.clear()
-        self.SCM_approximation.exact_coercivity_constant_calculator._eigenvector_cache.clear()
