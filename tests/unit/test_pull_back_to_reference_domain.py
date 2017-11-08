@@ -1003,8 +1003,8 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
                 theta_b1 = mu1
                 return (theta_b0, theta_b1)
             elif term == "stab":
-                theta_s0 = 1./mu1
-                theta_s1 = mu1
+                theta_s0 = 1./mu1*cell_size_pull_back(mu1)**2
+                theta_s1 = mu1*cell_size_pull_back(mu1)**2
                 return (theta_s0, theta_s1)
             elif term == "f":
                 theta_f0 = mu1

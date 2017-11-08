@@ -929,6 +929,26 @@ class ComputeAffineParameterDependentThetaFactorReplacer(Transformer):
         replaced_e = e._ufl_expr_reconstruct_(*replaced_ops)
         self.contains_placeholder[replaced_e] = contains_placeholder
         return replaced_e
+        
+    def power(self, e, *ops):
+        assert len(ops) is 2
+        replaced_ops = list()
+        assert ops[0] in self.contains_placeholder
+        assert not isinstance(ops[0], MultiIndex)
+        if self.contains_placeholder[ops[0]]:
+            replaced_ops.append(ops[0])
+            contains_placeholder = True
+        else:
+            replaced_ops0 = Constant(numpy_ones(ops[0].ufl_shape))
+            self.constants.append(replaced_ops0)
+            replaced_ops.append(replaced_ops0)
+            contains_placeholder = False
+        assert ops[1] in self.contains_placeholder
+        assert not self.contains_placeholder[ops[1]]
+        replaced_ops.append(e.ufl_operands[1]) # e.ufl_operands contains the former value of ops[1] before replacement
+        replaced_e = e._ufl_expr_reconstruct_(*replaced_ops)
+        self.contains_placeholder[replaced_e] = contains_placeholder
+        return replaced_e
     
     def terminal(self, o):
         if o in self.placeholder_to_coefficient:
