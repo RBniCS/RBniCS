@@ -22,8 +22,10 @@ from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
 from ufl.algorithms import expand_derivatives, Transformer
 from ufl.algorithms.traversal import iter_expressions
+from ufl.classes import FacetNormal
 from ufl.core.multiindex import FixedIndex, Index as MuteIndex, MultiIndex
 from ufl.corealg.traversal import pre_traversal, traverse_terminals
+from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
 from ufl.indexsum import IndexSum
 from ufl.tensors import ComponentTensor, ListTensor
@@ -54,7 +56,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         # * solutions are considered as parametrized
         # If True
         # * coefficient is split in order to assure that all coefficients only containt parametrized terms, at the expense of
-        # * solutions are prevented for being collected in coefficients
+        # * solutions and geometric quantities (except normals) are prevented for being collected in coefficients
         # a larger number of coefficients
         self._strict = strict
     
@@ -129,13 +131,16 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                         elif isinstance(t, Constant):
                                             log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a constant")
                                             break
+                                        elif isinstance(t, GeometricQuantity) and not isinstance(t, FacetNormal) and self._strict:
+                                            log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a geometric quantity and strict mode is on")
+                                            break
                                         elif is_problem_solution_or_problem_solution_component_type(t):
                                             if not is_problem_solution_or_problem_solution_component(t):
                                                 log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized function")
                                                 break
                                             elif self._strict: # solutions are not allowed, break
                                                 (_, _, solution) = solution_identify_component(t)
-                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains it contains the solution of " + get_problem_from_solution(solution).name() + "and strict mode is on")
+                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains the solution of " + get_problem_from_solution(solution).name() + "and strict mode is on")
                                                 break
                                     else:
                                         at_least_one_expression_or_solution = False
