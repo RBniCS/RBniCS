@@ -112,6 +112,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 if isinstance(other, Number):
                     self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
                 elif isinstance(other, backend.Function.Type()):
+                    output = backend.Function(output)
                     self._arithmetic_operations_preserve_attributes(other.vector(), output, other_order=1)
                 elif isinstance(other, backend.Vector.Type()):
                     self._arithmetic_operations_preserve_attributes(other, output, other_order=1)
