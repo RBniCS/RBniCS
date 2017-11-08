@@ -16,12 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from .online_rectification_decorated_reduction_method import OnlineRectificationDecoratedReductionMethod
-from .online_stabilization_decorated_reduction_method import OnlineStabilizationDecoratedReductionMethod
-from .online_vanishing_viscosity_decorated_reduction_method import OnlineVanishingViscosityDecoratedReductionMethod
+from rbnics.utils.decorators import ProblemDecoratorFor
 
-__all__ = [
-    'OnlineRectificationDecoratedReductionMethod',
-    'OnlineStabilizationDecoratedReductionMethod',
-    'OnlineVanishingViscosityDecoratedReductionMethod'
-]
+def OnlineRectificationDecoratedProblem(**decorator_kwargs):
+    from .online_rectification import OnlineRectification
+    
+    @ProblemDecoratorFor(OnlineRectification)
+    def OnlineRectificationDecoratedProblem_Decorator(EllipticCoerciveProblem_DerivedClass):                  
+        # return value (a class) for the decorator
+        return EllipticCoerciveProblem_DerivedClass
+    
+    # return the decorator itself
+    return OnlineRectificationDecoratedProblem_Decorator

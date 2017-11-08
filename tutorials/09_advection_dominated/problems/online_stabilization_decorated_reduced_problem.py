@@ -29,9 +29,8 @@ def OnlineStabilizationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             # Temporarily change value of stabilized attribute in truth problem
             bak_stabilized = self.truth_problem.stabilized
             self.truth_problem.stabilized = kwargs.get("online_stabilization", True)
-            output = EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
+            EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
             self.truth_problem.stabilized = bak_stabilized
-            return output
     
     # return value (a class) for the decorator
     return OnlineStabilizationDecoratedReducedProblem_Class
