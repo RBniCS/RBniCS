@@ -21,8 +21,6 @@ from rbnics import *
 from problems import *
 from reduction_methods import *
 
-#@SCM()
-@ExactCoercivityConstant()
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
     ("x[0]", "x[1]"), # subdomain 1
@@ -53,6 +51,10 @@ class AdvectionDominated(EllipticCoerciveProblem):
     # Return custom problem name
     def name(self):
         return "AdvectionDominated3RB"
+        
+    # Return stability factor
+    def get_stability_factor(self):
+        return 1.
         
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
@@ -133,13 +135,13 @@ advection_dominated_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(advection_dominated_problem)
-reduced_basis_method.set_Nmax(50, SCM=50)
-reduced_basis_method.set_tolerance(1e-7, SCM=1e-3)
+reduced_basis_method.set_Nmax(50)
+reduced_basis_method.set_tolerance(1e-7)
 
 # 5. Perform the offline phase
 first_mu = (1.0, 1.0)
 advection_dominated_problem.set_mu(first_mu)
-reduced_basis_method.initialize_training_set(200, SCM=250)
+reduced_basis_method.initialize_training_set(200)
 reduced_advection_dominated_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
@@ -151,7 +153,7 @@ reduced_advection_dominated_problem.solve(online_stabilization=False)
 reduced_advection_dominated_problem.export_solution(filename="online_solution_without_stabilization")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(100, SCM=100)
+reduced_basis_method.initialize_testing_set(100)
 reduced_basis_method.error_analysis(online_stabilization=True, filename="error_analysis_with_stabilization")
 reduced_basis_method.error_analysis(online_stabilization=False, filename="error_analysis_without_stabilization")
 
