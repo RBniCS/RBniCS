@@ -642,6 +642,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             solution = self._solution
         N = solution.N
         self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution, component, suffix)
+        
+    def export_error(self, folder=None, filename=None, component=None, suffix=None, **kwargs):
+        self.truth_problem.solve(**kwargs)
+        reduced_solution = self.Z[:self._solution.N]*self._solution
+        truth_solution = self.truth_problem._solution
+        error_function = truth_solution - reduced_solution
+        self.truth_problem.export_solution(folder, filename, error_function, component, suffix)
 
     def compute_theta(self, term):
         """

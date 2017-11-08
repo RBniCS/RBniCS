@@ -139,8 +139,10 @@ online_mu = (6.0, )
 reduced_advection_dominated_problem.set_mu(online_mu)
 reduced_advection_dominated_problem.solve(online_stabilization=True)
 reduced_advection_dominated_problem.export_solution(filename="online_solution_with_stabilization")
+reduced_advection_dominated_problem.export_error(filename="online_error_with_stabilization")
 reduced_advection_dominated_problem.solve(online_stabilization=False)
 reduced_advection_dominated_problem.export_solution(filename="online_solution_without_stabilization")
+reduced_advection_dominated_problem.export_error(filename="online_error_without_stabilization")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(100)
