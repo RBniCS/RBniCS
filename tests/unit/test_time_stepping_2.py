@@ -26,8 +26,8 @@ from rbnics.backends.dolfin import TimeStepping as SparseTimeStepping
 from rbnics.backends.online.numpy import Function as DenseFunction, Matrix as DenseMatrix, TimeStepping as DenseTimeStepping, Vector as DenseVector
 
 # Additional command line options for PETSc TS
-PETScOptions().set("ts_bdf_order", "3")
-PETScOptions().set("ts_bdf_adapt", "true")
+PETScOptions.set("ts_bdf_order", "3")
+PETScOptions.set("ts_bdf_adapt", "true")
 
 """
 Solve
@@ -164,7 +164,7 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
 
 # ~~~ Dense case ~~~ #
 def _test_time_stepping_2_dense(integrator_type, V, dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot):
-    x_to_dof = dict(zip(V.tabulate_dof_coordinates(), V.dofmap().dofs()))
+    x_to_dof = dict(zip(V.tabulate_dof_coordinates().flatten(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
     dof_2pi = x_to_dof[2*pi]
     min_dof_0_2pi = min(dof_0, dof_2pi)

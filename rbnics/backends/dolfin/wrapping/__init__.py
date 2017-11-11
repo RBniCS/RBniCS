@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG # easier to read in parallel  # noqa
 from rbnics.backends.dolfin.wrapping.assemble import assemble
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_derivative import assemble_operator_for_derivative
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_restriction import assemble_operator_for_restriction
@@ -140,6 +139,19 @@ __all__ = [
     'vector_mul_vector',
     'vectorized_matrix_inner_vectorized_matrix'
 ]
+
+from dolfin import has_pybind11
+if has_pybind11():
+    from dolfin.cpp.log import log, LogLevel
+    CRITICAL = LogLevel.CRITICAL
+    DEBUG = LogLevel.DEBUG
+    ERROR = LogLevel.ERROR
+    INFO = LogLevel.INFO
+    PROGRESS = LogLevel.PROGRESS
+    TRACE = LogLevel.TRACE
+    WARNING = LogLevel.WARNING
+else:
+    from dolfin import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG # easier to read in parallel  # noqa
 
 __overridden__ = {
     'rbnics': [

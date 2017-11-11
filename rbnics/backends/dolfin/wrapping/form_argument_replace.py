@@ -16,7 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Argument
+from dolfin import has_pybind11
+if has_pybind11():
+    from dolfin.function.argument import Argument
+else:
+    from dolfin import Argument
 
 def form_argument_replace(argument, reduced_V):
     return Argument(reduced_V[argument.number()], argument.number(), argument.part())

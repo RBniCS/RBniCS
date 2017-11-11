@@ -17,8 +17,12 @@
 #
 
 import pytest
-from dolfin import CellDiameter, Constant, ds, dx, Expression, Function, FunctionSpace, grad, inner, log, MPI, mpi_comm_world, PROGRESS, set_log_level, split, TensorFunctionSpace, TestFunction, TrialFunction, UnitSquareMesh, VectorFunctionSpace
-set_log_level(PROGRESS)
+from dolfin import CellDiameter, Constant, ds, dx, Expression, Function, FunctionSpace, grad, has_pybind11, inner, MPI, mpi_comm_world, split, TensorFunctionSpace, TestFunction, TrialFunction, UnitSquareMesh, VectorFunctionSpace
+if has_pybind11():
+    from dolfin.cpp.log import log, LogLevel, set_log_level
+    PROGRESS = LogLevel.PROGRESS
+else:
+    from dolfin import log, PROGRESS, set_log_level
 from rbnics.backends.dolfin import SeparatedParametrizedForm
 from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
 

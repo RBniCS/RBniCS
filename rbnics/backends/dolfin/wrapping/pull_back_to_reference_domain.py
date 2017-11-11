@@ -35,7 +35,11 @@ from ufl.corealg.multifunction import memoized_handler, MultiFunction
 from ufl.corealg.map_dag import map_expr_dag
 from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 from ufl.indexed import Indexed
-from dolfin import assemble, cells, Constant, Expression, facets, GenericMatrix, GenericVector
+from dolfin import assemble, cells, Constant, Expression, facets, has_pybind11
+if has_pybind11():
+    from dolfin.cpp.la import GenericMatrix, GenericVector
+else:
+    from dolfin import GenericMatrix, GenericVector
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
@@ -612,7 +616,9 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                     
             def _map_facet_id_to_subdomain_id(self, **kwargs):
                 mesh = self.V.mesh()
-                mpi_comm = mesh.mpi_comm().tompi4py()
+                mpi_comm = mesh.mpi_comm()
+                if not has_pybind11():
+                    mpi_comm = mpi_comm.tompi4py()
                 assert "subdomains" in kwargs
                 subdomains = kwargs["subdomains"]
                 assert "boundaries" in kwargs
@@ -636,7 +642,9 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
             def _map_facet_id_to_normal_direction_if_straight(self, **kwargs):
                 mesh = self.V.mesh()
                 dim = mesh.topology().dim()
-                mpi_comm = mesh.mpi_comm().tompi4py()
+                mpi_comm = mesh.mpi_comm()
+                if not has_pybind11():
+                    mpi_comm = mpi_comm.tompi4py()
                 assert "subdomains" in kwargs
                 subdomains = kwargs["subdomains"]
                 assert "boundaries" in kwargs
@@ -770,19 +778,26 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 for (shape_parametrization_expression_sympy, shape_parametrization_expression_ufl) in self._shape_parametrization_expressions_sympy_to_ufl.items():
                     locals[str(shape_parametrization_expression_ufl)] = shape_parametrization_expression_sympy
                 # ... add fake unity constants to locals
-                mesh_point = self.V.mesh().coordinates()[0]
                 for constant in replacer.constants:
                     assert len(constant.ufl_shape) in (0, 1, 2)
                     if len(constant.ufl_shape) is 0:
                         locals[str(constant)] = float(constant)
                     elif len(constant.ufl_shape) is 1:
-                        vals = numpy_zeros(constant.ufl_shape)
-                        constant.eval(vals, mesh_point)
+                        if has_pybind11():
+                            vals = n.values()
+                        else:
+                            mesh_point = self.V.mesh().coordinates()[0]
+                            vals = numpy_zeros(constant.ufl_shape)
+                            constant.eval(vals, mesh_point)
                         for i in range(constant.ufl_shape[0]):
                             locals[str(constant) + "[" + str(i) + "]"] = vals[i]
                     elif len(constant.ufl_shape) is 2:
-                        vals = numpy_zeros(constant.ufl_shape).reshape((-1,))
-                        constant.eval(vals, mesh_point)
+                        if has_pybind11():
+                            vals = n.values()
+                        else:
+                            mesh_point = self.V.mesh().coordinates()[0]
+                            vals = numpy_zeros(constant.ufl_shape).reshape((-1,))
+                            constant.eval(vals, mesh_point)
                         vals = vals.reshape(constant.ufl_shape)
                         for i in range(constant.ufl_shape[0]):
                             for j in range(constant.ufl_shape[1]):

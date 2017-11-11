@@ -18,7 +18,11 @@
 
 from ufl import Measure
 from ufl.geometry import GeometricQuantity
-from dolfin import Argument
+from dolfin import has_pybind11
+if has_pybind11():
+    from dolfin.function.argument import Argument
+else:
+    from dolfin import Argument
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS

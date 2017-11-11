@@ -17,7 +17,7 @@
 #
 
 from numpy import zeros
-from dolfin import Constant
+from dolfin import Constant, has_pybind11
 from rbnics.utils.decorators import get_problem_from_solution
 
 def basic_expression_description(backend, wrapping):
@@ -48,9 +48,12 @@ def basic_expression_description(backend, wrapping):
                 for parent_n in wrapping.solution_iterator(preprocessed_n):
                     visited.add(parent_n)
             elif isinstance(n, Constant):
-                x = zeros(1)
-                vals = zeros(n.value_size())
-                n.eval(vals, x)
+                if has_pybind11():
+                    vals = n.values()
+                else:
+                    x = zeros(1)
+                    vals = zeros(n.value_size())
+                    n.eval(vals, x)
                 if len(vals) == 1:
                     coefficients_repr[n] = str(vals[0])
                 else:

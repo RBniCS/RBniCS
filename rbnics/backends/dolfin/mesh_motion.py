@@ -18,7 +18,13 @@
 
 from sympy import ccode, MatrixSymbol, sympify
 from mpi4py.MPI import MAX, MIN
-from dolfin import ALE, cells, Function, FunctionSpace, log, MeshFunctionSizet, PROGRESS, VectorFunctionSpace
+from dolfin import ALE, cells, Function, FunctionSpace, has_pybind11, VectorFunctionSpace
+if has_pybind11():
+    from dolfin.cpp.log import log, LogLevel
+    from dolfin.cpp.mesh import MeshFunctionSizet
+    PROGRESS = LogLevel.PROGRESS
+else:
+    from dolfin import log, MeshFunctionSizet, PROGRESS
 from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
 from rbnics.utils.decorators import BackendFor, tuple_of
@@ -47,7 +53,9 @@ class MeshMotion(AbstractMeshMotion):
                     self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
         # In parallel some subdomains may not be present on all processors. Fill in
         # the dict with empty lists if that is the case
-        mpi_comm = self.mesh.mpi_comm().tompi4py()
+        mpi_comm = self.mesh.mpi_comm()
+        if not has_pybind11():
+            mpi_comm = mpi_comm.tompi4py()
         min_subdomain_id = mpi_comm.allreduce(min(self.subdomain_id_to_deformation_dofs.keys()), op=MIN)
         max_subdomain_id = mpi_comm.allreduce(max(self.subdomain_id_to_deformation_dofs.keys()), op=MAX)
         for subdomain_id in range(min_subdomain_id, max_subdomain_id + 1):

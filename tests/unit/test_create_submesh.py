@@ -22,7 +22,12 @@ import pytest
 from numpy import allclose, ndarray as array
 import matplotlib
 import matplotlib.pyplot as plt
-from dolfin import CellFunction, cells, FacetFunction, facets, FiniteElement, FunctionSpace, HDF5File, log, MixedElement, MPI, PROGRESS, set_log_level, UnitSquareMesh, VectorElement, vertices
+from dolfin import CellFunction, cells, FacetFunction, facets, FiniteElement, FunctionSpace, has_pybind11, HDF5File, MixedElement, MPI, UnitSquareMesh, VectorElement, vertices
+if has_pybind11():
+    from dolfin.cpp.log import log, LogLevel, set_log_level
+    PROGRESS = LogLevel.PROGRESS
+else:
+    from dolfin import log, PROGRESS, set_log_level
 set_log_level(PROGRESS)
 try:
     from fenicstools import DofMapPlotter as FEniCSToolsDofMapPlotter

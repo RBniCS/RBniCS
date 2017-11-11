@@ -17,7 +17,11 @@
 #
 
 from ufl import Form
-from dolfin import as_backend_type, assemble, GenericMatrix
+from dolfin import as_backend_type, assemble, has_pybind11
+if has_pybind11():
+    from dolfin.cpp.la import GenericMatrix
+else:
+    from dolfin import GenericMatrix
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import InvertProductOutputDirichletBC
 
@@ -50,8 +54,12 @@ def preserve_generator_attribute(operator):
             return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)
     
-for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__rtruediv__", "__itruediv__"):
-    preserve_generator_attribute(operator)
+if has_pybind11():
+    for operator in ("__add__", "__iadd__", "__sub__", "__isub__", "__mul__", "__imul__", "__truediv__", "__itruediv__"):
+        preserve_generator_attribute(operator)
+else:
+    for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__rtruediv__", "__itruediv__"):
+        preserve_generator_attribute(operator)
 
 # Allow sum and sub between matrix and form by assemblying the form. This is required because
 # affine expansion storage is not assembled if it is parametrized, and it may happen that
@@ -66,8 +74,12 @@ def arithmetic_with_form(operator):
         return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)
 
-for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
-    arithmetic_with_form(operator)
+if has_pybind11():
+    for operator in ("__add__", "__sub__"):
+        arithmetic_with_form(operator)
+else:
+    for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
+        arithmetic_with_form(operator)
 
 # Define the __and__ operator to be used in combination with __invert__ operator
 # of sum(product(theta, DirichletBCs)) to zero rows and columns associated to Dirichlet BCs

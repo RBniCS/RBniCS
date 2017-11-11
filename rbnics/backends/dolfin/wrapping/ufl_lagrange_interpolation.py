@@ -17,7 +17,7 @@
 #
 
 from mpi4py.MPI import MAX
-from dolfin import assemble, inner, dP, TestFunction
+from dolfin import assemble, inner, dP, has_pybind11, TestFunction
 
 def ufl_lagrange_interpolation(output, ufl_expression):
     V = output.function_space()
@@ -33,7 +33,9 @@ def get_global_dof_coordinates(global_dof, V, global_to_local=None, local_dof_to
     if local_dof_to_coordinates is None:
         local_dof_to_coordinates = _get_local_dof_to_coordinates_map(V)
     
-    mpi_comm = V.mesh().mpi_comm().tompi4py()
+    mpi_comm = V.mesh().mpi_comm()
+    if not has_pybind11():
+        mpi_comm = mpi_comm.tompi4py()
     dof_coordinates = None
     dof_coordinates_processor = -1
     if global_dof in global_to_local:
@@ -49,7 +51,9 @@ def get_global_dof_component(global_dof, V, global_to_local=None, local_dof_to_c
     if local_dof_to_component is None:
         local_dof_to_component = _get_local_dof_to_component_map(V)
     
-    mpi_comm = V.mesh().mpi_comm().tompi4py()
+    mpi_comm = V.mesh().mpi_comm()
+    if not has_pybind11():
+        mpi_comm = mpi_comm.tompi4py()
     dof_component = None
     dof_component_processor = -1
     if global_dof in global_to_local:

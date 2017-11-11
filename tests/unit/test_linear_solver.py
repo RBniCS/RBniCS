@@ -84,7 +84,7 @@ def _test_linear_solver_sparse(callback_type):
 # ~~~ Dense case ~~~ #
 def _test_linear_solver_dense(V, A, F, X, exact_solution):
     # Define boundary condition
-    x_to_dof = dict(zip(V.tabulate_dof_coordinates(), V.dofmap().dofs()))
+    x_to_dof = dict(zip(V.tabulate_dof_coordinates().flatten(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
     dof_2pi = x_to_dof[2*pi]
     min_dof_0_2pi = min(dof_0, dof_2pi)

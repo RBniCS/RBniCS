@@ -100,8 +100,8 @@ class Data(object):
         solver.solve()
         return self.u.copy(deepcopy=True)
         
-    def assert_backend(self, a, f, result_backend):
-        result_builtin = self.evaluate_builtin(a, f)
+    def assert_backend(self, r, j, problem_wrapper, result_backend):
+        result_builtin = self.evaluate_builtin(r, j, problem_wrapper)
         error = Function(self.V)
         error.vector().add_local(+ result_backend.vector().get_local())
         error.vector().add_local(- result_builtin.vector().get_local())

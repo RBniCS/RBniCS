@@ -25,7 +25,7 @@
 # and _get_local_dofmap is
 # Copyright (C) 2011 Garth N. Wells
 
-from dolfin import cells
+from dolfin import cells, has_pybind11
 
 def build_dof_map_writer_mapping(V, local_dofmap=None):
     def extract_first_cell(mapping_output):
@@ -56,7 +56,9 @@ def build_dof_map_reader_mapping(V, local_dofmap=None):
 build_dof_map_reader_mapping._storage = dict()
 
 def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cell_dof in dolfin
-    mpi_comm = V.mesh().mpi_comm().tompi4py()
+    mpi_comm = V.mesh().mpi_comm()
+    if not has_pybind11():
+        mpi_comm = mpi_comm.tompi4py()
     
     # Build global dof -> (global cell, local dof) map on root process
     global_dof_to_cell_dof = dict()
@@ -77,7 +79,9 @@ def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cel
     
 def _build_dof_map_reader_mapping(V, gathered_dofmap): # was build_dof_map in dolfin
     mesh = V.mesh()
-    mpi_comm = mesh.mpi_comm().tompi4py()
+    mpi_comm = mesh.mpi_comm()
+    if not has_pybind11():
+        mpi_comm = mpi_comm.tompi4py()
 
     # Build global dofmap on root process
     dof_map = dict()
@@ -99,7 +103,9 @@ def _build_dof_map_reader_mapping(V, gathered_dofmap): # was build_dof_map in do
 def _get_local_dofmap(V):
     mesh = V.mesh()
     dofmap = V.dofmap()
-    mpi_comm = mesh.mpi_comm().tompi4py()
+    mpi_comm = mesh.mpi_comm()
+    if not has_pybind11():
+        mpi_comm = mpi_comm.tompi4py()
     
     local_dofmap = list() # of integers
     

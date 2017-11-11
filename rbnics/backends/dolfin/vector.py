@@ -17,7 +17,11 @@
 #
 
 from ufl import Form
-from dolfin import assemble, GenericVector
+from dolfin import assemble, has_pybind11
+if has_pybind11():
+    from dolfin.cpp.la import GenericVector
+else:
+    from dolfin import GenericVector
 
 def Vector():
     raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
@@ -39,8 +43,12 @@ def preserve_generator_attribute(operator):
             return original_operator(self, other)
     setattr(GenericVector, operator, custom_operator)
     
-for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__rtruediv__", "__itruediv__"):
-    preserve_generator_attribute(operator)
+if has_pybind11():
+    for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__itruediv__"):
+        preserve_generator_attribute(operator)
+else:
+    for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__rtruediv__", "__itruediv__"):
+        preserve_generator_attribute(operator)
 
 # Allow sum and sub between vector and form by assemblying the form. This is required because
 # affine expansion storage is not assembled if it is parametrized, and it may happen that

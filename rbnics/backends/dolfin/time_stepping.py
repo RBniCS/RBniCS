@@ -18,7 +18,11 @@
 
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import as_backend_type, assemble, DirichletBC, GenericMatrix, GenericVector, PETScMatrix, PETScVector
+from dolfin import as_backend_type, assemble, DirichletBC, has_pybind11, PETScMatrix, PETScVector
+if has_pybind11():
+    from dolfin.cpp.la import GenericMatrix, GenericVector
+else:
+    from dolfin import GenericMatrix, GenericVector
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
 from rbnics.backends.dolfin.assign import assign
 from rbnics.backends.dolfin.function import Function

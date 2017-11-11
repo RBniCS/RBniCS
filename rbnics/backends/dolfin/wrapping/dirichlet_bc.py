@@ -18,7 +18,9 @@
 
 from numbers import Number
 from numpy import zeros
-from dolfin import Constant, DirichletBC
+from dolfin import Constant, DirichletBC, has_pybind11
+if has_pybind11():
+    from dolfin.cpp.mesh import MeshFunctionSizet
 
 original_DirichletBC__init__ = DirichletBC.__init__
 def custom_DirichletBC__init__(self, *args, **kwargs):
@@ -29,23 +31,33 @@ def custom_DirichletBC__init__(self, *args, **kwargs):
         assert len(kwargs) == 0
         _value = args[0]._value
         _function_space = args[0]._function_space
+        _domain = args[0]._domain
         _sorted_kwargs = args[0]._sorted_kwargs
         _identifier = args[0]._identifier
     else:
         _value = args[1]
         _function_space = args[0]
+        if has_pybind11():
+            if isinstance(args[2], MeshFunctionSizet):
+                _domain = args[2]
+            else:
+                assert hasattr(self, "sub_domain")
+                _domain = self.sub_domain
+        else:
+            _domain = self.domain_args
         _sorted_kwargs = list()
         for key in ["method", "check_midpoint"]:
             if key in kwargs:
                 _sorted_kwargs.append(kwargs[key])
         _identifier = list()
         _identifier.append(_function_space)
-        _identifier.extend(self.domain_args)
+        _identifier.append(_domain)
         _identifier.extend(_sorted_kwargs)
         _identifier = tuple(_identifier)
     # Assign private variable values
     self._value = _value
     self._function_space = _function_space
+    self._domain = _domain
     self._sorted_kwargs = _sorted_kwargs
     self._identifier = _identifier
 DirichletBC.__init__ = custom_DirichletBC__init__
@@ -84,7 +96,7 @@ def custom_DirichletBC_mul_by_scalar(self, other):
         args = list()
         args.append(self.function_space())
         args.append(Constant(other)*self.value())
-        args.extend(self.domain_args)
+        args.append(self._domain)
         args.extend(self._sorted_kwargs)
         return DirichletBC(*args)
     else:

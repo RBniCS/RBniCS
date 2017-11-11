@@ -18,7 +18,12 @@
 
 import pytest
 from numpy import array, isclose, nonzero, sort
-from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, inner, log, MixedElement, mpi_comm_self, Point, PROGRESS, project, set_log_level, split, TestFunction, TrialFunction, UnitSquareMesh, Vector, VectorElement
+from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, has_pybind11, inner, MixedElement, mpi_comm_self, Point, project, split, TestFunction, TrialFunction, UnitSquareMesh, Vector, VectorElement
+if has_pybind11():
+    from dolfin.cpp.log import log, LogLevel, set_log_level
+    PROGRESS = LogLevel.PROGRESS
+else:
+    from dolfin import log, PROGRESS, set_log_level
 set_log_level(PROGRESS)
 try:
     from mshr import generate_mesh, Rectangle
@@ -26,6 +31,8 @@ except ImportError:
     has_mshr = False
 else:
     has_mshr = True
+if has_pybind11():
+    has_mshr = False # TODO mshr still uses swig wrapping
 from rbnics.backends.dolfin import ReducedMesh
 from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
 

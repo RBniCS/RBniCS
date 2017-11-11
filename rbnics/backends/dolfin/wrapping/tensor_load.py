@@ -18,7 +18,7 @@
 
 import os
 from ufl import Form
-from dolfin import as_backend_type
+from dolfin import as_backend_type, has_pybind11
 from petsc4py import PETSc
 from rbnics.utils.mpi import is_io_process
 from rbnics.utils.io import Folders, PickleIO
@@ -26,7 +26,9 @@ from rbnics.utils.decorators import overload
 
 def basic_tensor_load(backend, wrapping):
     def _basic_tensor_load(tensor, directory, filename):
-        mpi_comm = tensor.mpi_comm().tompi4py()
+        mpi_comm = tensor.mpi_comm()
+        if not has_pybind11():
+            mpi_comm = mpi_comm.tompi4py()
         form = tensor.generator._form
         load_failed = False
         # Read in generator

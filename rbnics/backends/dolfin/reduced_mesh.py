@@ -17,7 +17,15 @@
 #
 
 import os
-from dolfin import CellFunction, cells, DEBUG, File, has_hdf5, has_hdf5_parallel, log, Mesh, MeshFunction, XDMFFile
+from dolfin import CellFunction, cells, File, has_hdf5, has_hdf5_parallel, has_pybind11, Mesh, MeshFunction, XDMFFile
+if has_hdf5() and has_hdf5_parallel():
+    from dolfin import HDF5File
+    hdf5_file_type = "h5" # Will be switched to "xdmf" in future, because there is currently a bug in reading back in 1D meshes from XDMF
+if has_pybind11():
+    from dolfin.cpp.log import log, LogLevel
+    DEBUG = LogLevel.DEBUG
+else:
+    from dolfin import DEBUG, log
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
 from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.wrapping import FunctionSpace
@@ -26,9 +34,6 @@ from rbnics.utils.decorators import abstractmethod, BackendFor, ModuleWrapper
 from rbnics.utils.io import ExportableList, Folders
 from rbnics.utils.mpi import is_io_process
 from mpi4py.MPI import MAX
-if has_hdf5() and has_hdf5_parallel():
-    from dolfin import HDF5File
-    hdf5_file_type = "h5" # Will be switched to "xdmf" in future, because there is currently a bug in reading back in 1D meshes from XDMF
 
 def BasicReducedMesh(backend, wrapping):
     class _BasicReducedMesh(AbstractReducedMesh):
@@ -40,7 +45,9 @@ def BasicReducedMesh(backend, wrapping):
             if len(V) == 2:
                 assert V[0].mesh().ufl_domain() == V[1].mesh().ufl_domain()
             self.mesh = V[0].mesh()
-            self.mpi_comm = self.mesh.mpi_comm().tompi4py()
+            self.mpi_comm = self.mesh.mpi_comm()
+            if not has_pybind11():
+                self.mpi_comm = self.mpi_comm.tompi4py()
             self.V = V
             self.subdomain_data = subdomain_data
             

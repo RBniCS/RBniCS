@@ -19,7 +19,14 @@
 from numpy import array, uintp, unique, where
 from scipy.spatial.ckdtree import cKDTree as KDTree
 from mpi4py.MPI import SUM
-from dolfin import Cell, cells, compile_extension_module, DEBUG, Facet, facets, FunctionSpace, Mesh, MeshEditor, MeshFunction, MeshFunctionBool, log, Vertex, vertices
+from dolfin import Cell, cells, Facet, facets, FunctionSpace, has_pybind11, Mesh, MeshEditor, MeshFunction, Vertex, vertices
+if has_pybind11():
+    from dolfin import compile_cpp_code
+    from dolfin.cpp.log import log, LogLevel
+    from dolfin.cpp.mesh import MeshFunctionBool
+    DEBUG = LogLevel.DEBUG
+else:
+    from dolfin import compile_extension_module, DEBUG, log, MeshFunctionBool
 
 # Implement an extended version of cbcpost create_submesh that:
 # a) as cbcpost version (and in contrast to standard dolfin) also works in parallel
@@ -30,7 +37,9 @@ from dolfin import Cell, cells, compile_extension_module, DEBUG, Facet, facets, 
 # Part of this code is taken from cbcpost/utils/submesh.py, with the following copyright information:
 # Copyright (C) 2010-2014 Simula Research Laboratory
 def create_submesh(mesh, markers):
-    mpi_comm = mesh.mpi_comm().tompi4py()
+    mpi_comm = mesh.mpi_comm()
+    if not has_pybind11():
+        mpi_comm = mpi_comm.tompi4py()
     assert isinstance(markers, MeshFunctionBool)
     assert markers.dim() == mesh.topology().dim()
     marker_id = True
@@ -135,7 +144,10 @@ def create_submesh(mesh, markers):
     mesh_editor.init_vertices_global(len(submesh_vertices), global_num_vertices)
     mesh_editor.init_cells_global(len(submesh_cells), global_num_cells)
     for local_index, cell_vertices in enumerate(submesh_cells):
-        mesh_editor.add_cell(local_index, *cell_vertices)
+        if has_pybind11():
+            mesh_editor.add_cell(local_index, cell_vertices)
+        else:
+            mesh_editor.add_cell(local_index, *cell_vertices)
     for local_index, (global_index, coordinates) in submesh_vertices.items():
         mesh_editor.add_vertex_global(local_index, global_index, coordinates)
     mesh_editor.close()
@@ -273,16 +285,40 @@ def create_submesh(mesh, markers):
 
             # Need an extension module to populate shared_entities because in python each call to shared_entities
             # returns a temporary.
-            cpp_code = """
-                void set_shared_entities(Mesh & submesh, std::size_t idx, const Array<std::size_t>& other_processes, std::size_t dim)
-                {
-                    std::set<unsigned int> set_other_processes;
-                    for (std::size_t i(0); i < other_processes.size(); i++)
-                        set_other_processes.insert(other_processes[i]);
-                    submesh.topology().shared_entities(dim)[idx] = set_other_processes;
-                }
-            """
-            set_shared_entities = compile_extension_module(cpp_code).set_shared_entities
+            if has_pybind11():
+                cpp_code = """
+                    #include <Eigen/Core>
+                    #include <pybind11/pybind11.h>
+                    #include <pybind11/eigen.h>
+                    #include <dolfin/mesh/Mesh.h>
+                    
+                    using OtherProcesses = Eigen::Ref<const Eigen::Matrix<std::size_t, Eigen::Dynamic, 1>>;
+                    
+                    void set_shared_entities(dolfin::Mesh & submesh, std::size_t idx, const OtherProcesses other_processes, std::size_t dim)
+                    {
+                        std::set<unsigned int> set_other_processes;
+                        for (std::size_t i(0); i < other_processes.size(); i++)
+                            set_other_processes.insert(other_processes[i]);
+                        submesh.topology().shared_entities(dim)[idx] = set_other_processes;
+                    }
+                    
+                    PYBIND11_MODULE(SIGNATURE, m)
+                    {
+                        m.def("set_shared_entities", &set_shared_entities);
+                    }
+                """
+                set_shared_entities = compile_cpp_code(cpp_code).set_shared_entities
+            else:
+                cpp_code = """
+                    void set_shared_entities(Mesh & submesh, std::size_t idx, const Array<std::size_t>& other_processes, std::size_t dim)
+                    {
+                        std::set<unsigned int> set_other_processes;
+                        for (std::size_t i(0); i < other_processes.size(); i++)
+                            set_other_processes.insert(other_processes[i]);
+                        submesh.topology().shared_entities(dim)[idx] = set_other_processes;
+                    }
+                """
+                set_shared_entities = compile_extension_module(cpp_code).set_shared_entities
             for (submesh_entity_local_index, other_processors) in submesh_shared_entities.items():
                 set_shared_entities(submesh, submesh_entity_local_index, other_processors, dim)
                 
@@ -380,7 +416,9 @@ def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, fun
                     assert submesh_dofs_to_mesh_dofs[submesh_dof] == mesh_dof
         # Broadcast in parallel
         if global_indices:
-            mpi_comm = mesh.mpi_comm().tompi4py()
+            mpi_comm = mesh.mpi_comm()
+            if not has_pybind11():
+                mpi_comm = mpi_comm.tompi4py()
             allgathered_mesh_dofs_to_submesh_dofs = mpi_comm.bcast(mesh_dofs_to_submesh_dofs, root=0)
             allgathered_submesh_dofs_to_mesh_dofs = mpi_comm.bcast(submesh_dofs_to_mesh_dofs, root=0)
             for r in range(1, mpi_comm.size):

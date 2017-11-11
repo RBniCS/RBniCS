@@ -17,7 +17,12 @@
 #
 
 from numpy import ones
-from dolfin import Constant, Expression, log, PROGRESS
+from dolfin import Constant, Expression, has_pybind11
+if has_pybind11():
+    from dolfin.cpp.log import log, LogLevel
+    PROGRESS = LogLevel.PROGRESS
+else:
+    from dolfin import log, PROGRESS
 from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
 from ufl.algorithms import expand_derivatives, Transformer

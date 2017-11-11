@@ -16,14 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import FunctionSpace
+from dolfin import FunctionSpace, has_pybind11
 from rbnics.utils.decorators import overload, tuple_of
 
 @overload
 def get_mpi_comm(V: FunctionSpace):
-    return V.mesh().mpi_comm().tompi4py()
+    mpi_comm = V.mesh().mpi_comm()
+    if not has_pybind11():
+        mpi_comm = mpi_comm.tompi4py()
+    return mpi_comm
     
 @overload
 def get_mpi_comm(V: tuple_of(FunctionSpace)):
     assert len(V) in (1, 2)
-    return V[0].mesh().mpi_comm().tompi4py()
+    return get_mpi_comm(V[0])
