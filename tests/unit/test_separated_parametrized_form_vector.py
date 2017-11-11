@@ -17,7 +17,7 @@
 #
 
 import pytest
-from dolfin import CellSize, Constant, det, dx, Expression, Function, FunctionSpace, grad, inner, log, MPI, mpi_comm_world, PROGRESS, set_log_level, TensorFunctionSpace, TestFunction, TrialFunction, UnitSquareMesh, VectorFunctionSpace
+from dolfin import CellDiameter, Constant, det, dx, Expression, Function, FunctionSpace, grad, inner, log, MPI, mpi_comm_world, PROGRESS, set_log_level, TensorFunctionSpace, TestFunction, TrialFunction, UnitSquareMesh, VectorFunctionSpace
 set_log_level(PROGRESS)
 from rbnics.backends.dolfin import SeparatedParametrizedForm
 from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
@@ -214,7 +214,7 @@ def test_separated_parametrized_forms_vector_3():
 @skip_in_parallel
 @pytest.mark.dependency(name="4", depends=["3"])
 def test_separated_parametrized_forms_vector_4():
-    h = CellSize(mesh)
+    h = CellDiameter(mesh)
     a4 = inner(expr3*h*grad(u), grad(v))*dx + inner(grad(u)*expr2*h, v)*dx + expr1*h*inner(u, v)*dx
     a4_sep = SeparatedParametrizedForm(a4)
     log(PROGRESS, "*** ###              FORM 4             ### ***")
@@ -237,9 +237,9 @@ def test_separated_parametrized_forms_vector_4():
         "\t\t" + str(a4_sep.coefficients[1][0]) + "\n" +
         "\t\t" + str(a4_sep.coefficients[2][0]) + "\n"
         )
-    assert "{ A | A_{i_{42}, i_{43}} = f_6[i_{42}, i_{43}] * 2.0 * circumradius }" == str(a4_sep.coefficients[0][0])
+    assert "{ A | A_{i_{42}, i_{43}} = diameter * f_6[i_{42}, i_{43}] }" == str(a4_sep.coefficients[0][0])
     assert "f_5" == str(a4_sep.coefficients[1][0])
-    assert "f_4 * 2.0 * circumradius" == str(a4_sep.coefficients[2][0])
+    assert "diameter * f_4" == str(a4_sep.coefficients[2][0])
     log(PROGRESS, "\tPlaceholders:\n" +
         "\t\t" + str(a4_sep._placeholders[0][0]) + "\n" +
         "\t\t" + str(a4_sep._placeholders[1][0]) + "\n" +
@@ -254,7 +254,7 @@ def test_separated_parametrized_forms_vector_4():
         "\t\t" + str(a4_sep._form_with_placeholders[2].integrals()[0].integrand()) + "\n"
         )
     assert "sum_{i_{51}} sum_{i_{50}} ({ A | A_{i_{44}, i_{45}} = sum_{i_{46}} f_44[i_{44}, i_{46}] * (grad(v_1))[i_{46}, i_{45}]  })[i_{50}, i_{51}] * (grad(v_0))[i_{50}, i_{51}]  " == str(a4_sep._form_with_placeholders[0].integrals()[0].integrand())
-    assert "sum_{i_{52}} ({ A | A_{i_{49}} = ({ A | A_{i_{47}} = sum_{i_{48}} f_45[i_{48}] * (grad(v_1))[i_{47}, i_{48}]  })[i_{49}] * 2.0 * circumradius })[i_{52}] * v_0[i_{52}] " == str(a4_sep._form_with_placeholders[1].integrals()[0].integrand())
+    assert "sum_{i_{52}} ({ A | A_{i_{49}} = diameter * ({ A | A_{i_{47}} = sum_{i_{48}} f_45[i_{48}] * (grad(v_1))[i_{47}, i_{48}]  })[i_{49}] })[i_{52}] * v_0[i_{52}] " == str(a4_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_46 * (sum_{i_{53}} v_0[i_{53}] * v_1[i_{53}] )" == str(a4_sep._form_with_placeholders[2].integrals()[0].integrand())
     log(PROGRESS, "\tLen unchanged forms:\n" +
         "\t\t" + str(len(a4_sep._form_unchanged)) + "\n"
@@ -264,7 +264,7 @@ def test_separated_parametrized_forms_vector_4():
 @skip_in_parallel
 @pytest.mark.dependency(name="5", depends=["4"])
 def test_separated_parametrized_forms_vector_5():
-    h = CellSize(mesh)
+    h = CellDiameter(mesh)
     a5 = inner((expr3*h)*grad(u), grad(v))*dx + inner(grad(u)*(expr2*h), v)*dx + (expr1*h)*inner(u, v)*dx
     a5_sep = SeparatedParametrizedForm(a5)
     log(PROGRESS, "*** ###              FORM 5             ### ***")
@@ -287,9 +287,9 @@ def test_separated_parametrized_forms_vector_5():
         "\t\t" + str(a5_sep.coefficients[1][0]) + "\n" +
         "\t\t" + str(a5_sep.coefficients[2][0]) + "\n"
         )
-    assert "{ A | A_{i_{54}, i_{55}} = f_6[i_{54}, i_{55}] * 2.0 * circumradius }" == str(a5_sep.coefficients[0][0])
-    assert "{ A | A_{i_{59}} = f_5[i_{59}] * 2.0 * circumradius }" == str(a5_sep.coefficients[1][0])
-    assert "f_4 * 2.0 * circumradius" == str(a5_sep.coefficients[2][0])
+    assert "{ A | A_{i_{54}, i_{55}} = diameter * f_6[i_{54}, i_{55}] }" == str(a5_sep.coefficients[0][0])
+    assert "{ A | A_{i_{59}} = diameter * f_5[i_{59}] }" == str(a5_sep.coefficients[1][0])
+    assert "diameter * f_4" == str(a5_sep.coefficients[2][0])
     log(PROGRESS, "\tPlaceholders:\n" +
         "\t\t" + str(a5_sep._placeholders[0][0]) + "\n" +
         "\t\t" + str(a5_sep._placeholders[1][0]) + "\n" +

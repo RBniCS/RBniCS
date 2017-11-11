@@ -29,7 +29,7 @@ from ufl.algorithms.apply_algebra_lowering import apply_algebra_lowering
 from ufl.algorithms.apply_derivatives import apply_derivatives
 from ufl.algorithms.expand_indices import expand_indices
 from ufl.algorithms.map_integrands import map_integrand_dags
-from ufl.classes import CellVolume, Circumradius, FacetArea, FacetJacobianDeterminant, FacetNormal, Grad, Jacobian, JacobianDeterminant, JacobianInverse, Sum
+from ufl.classes import CellDiameter, CellVolume, Circumradius, FacetArea, FacetJacobianDeterminant, FacetNormal, Grad, Jacobian, JacobianDeterminant, JacobianInverse, Sum
 from ufl.core.multiindex import FixedIndex, Index, indices, MultiIndex
 from ufl.corealg.multifunction import memoized_handler, MultiFunction
 from ufl.corealg.map_dag import map_expr_dag
@@ -160,6 +160,10 @@ def ShapeParametrizationFacetJacobianDeterminant(shape_parametrization_expressio
     
 @shape_parametrization_cache
 def ShapeParametrizationCircumradius(shape_parametrization_expression_on_subdomain, problem):
+    return ShapeParametrizationJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem).ufl**(1./problem.V.mesh().ufl_domain().topological_dimension())
+    
+@shape_parametrization_cache
+def ShapeParametrizationCellDiameter(shape_parametrization_expression_on_subdomain, problem):
     return ShapeParametrizationJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem).ufl**(1./problem.V.mesh().ufl_domain().topological_dimension())
     
 # ===== Pull back form measures: inspired by ufl/algorithms/apply_integral_scaling.py ===== #
@@ -327,6 +331,12 @@ class PullBackGeometricQuantities(MultiFunction): # inspired by GeometryLowering
         # This transformation is not exact. The exact transformation would not preserve affinity if the shape parametrization map was affine.
         assert self.problem.V.mesh().ufl_domain() == o.ufl_domain()
         return ShapeParametrizationCircumradius(self.shape_parametrization_expression_on_subdomain, self.problem)*Circumradius(o.ufl_domain())
+        
+    @memoized_handler
+    def cell_diameter(self, o):
+        # This transformation is not exact. The exact transformation would not preserve affinity if the shape parametrization map was affine.
+        assert self.problem.V.mesh().ufl_domain() == o.ufl_domain()
+        return ShapeParametrizationCellDiameter(self.shape_parametrization_expression_on_subdomain, self.problem)*CellDiameter(o.ufl_domain())
               
     min_cell_edge_length = _not_implemented
     max_cell_edge_length = _not_implemented
@@ -1062,6 +1072,10 @@ class DiscardInexactTermsReplacer(MultiFunction):
     
     @memoized_handler
     def circumradius(self, o):
+        return Constant(0.)
+        
+    @memoized_handler
+    def cell_diameter(self, o):
         return Constant(0.)
         
 def discard_inexact_terms(form):

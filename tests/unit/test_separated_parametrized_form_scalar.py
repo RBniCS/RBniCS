@@ -17,7 +17,7 @@
 #
 
 import pytest
-from dolfin import CellSize, Constant, ds, dx, Expression, Function, FunctionSpace, grad, inner, log, MPI, mpi_comm_world, PROGRESS, set_log_level, split, TensorFunctionSpace, TestFunction, TrialFunction, UnitSquareMesh, VectorFunctionSpace
+from dolfin import CellDiameter, Constant, ds, dx, Expression, Function, FunctionSpace, grad, inner, log, MPI, mpi_comm_world, PROGRESS, set_log_level, split, TensorFunctionSpace, TestFunction, TrialFunction, UnitSquareMesh, VectorFunctionSpace
 set_log_level(PROGRESS)
 from rbnics.backends.dolfin import SeparatedParametrizedForm
 from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
@@ -317,7 +317,7 @@ def test_separated_parametrized_forms_scalar_5():
 @skip_in_parallel
 @pytest.mark.dependency(name="6", depends=["5"])
 def test_separated_parametrized_forms_scalar_6():
-    h = CellSize(mesh)
+    h = CellDiameter(mesh)
     a6 = expr3*h*u*v*dx
     a6_sep = SeparatedParametrizedForm(a6)
     log(PROGRESS, "*** ###              FORM 6             ### ***")
@@ -334,7 +334,7 @@ def test_separated_parametrized_forms_scalar_6():
     log(PROGRESS, "\tCoefficients:\n" +
         "\t\t" + str(a6_sep.coefficients[0][0]) + "\n"
         )
-    assert "f_6 * 2.0 * circumradius" == str(a6_sep.coefficients[0][0])
+    assert "diameter * f_6" == str(a6_sep.coefficients[0][0])
     log(PROGRESS, "\tPlaceholders:\n" +
         "\t\t" + str(a6_sep._placeholders[0][0]) + "\n"
         )
@@ -454,7 +454,7 @@ def test_separated_parametrized_forms_scalar_9():
 @skip_in_parallel
 @pytest.mark.dependency(name="10", depends=["9"])
 def test_separated_parametrized_forms_scalar_10():
-    h = CellSize(mesh)
+    h = CellDiameter(mesh)
     a10 = expr9*h*u*v*dx
     a10_sep = SeparatedParametrizedForm(a10)
     log(PROGRESS, "*** ###              FORM 10             ### ***")
@@ -471,12 +471,12 @@ def test_separated_parametrized_forms_scalar_10():
     log(PROGRESS, "\tUnchanged forms:\n" +
         "\t\t" + str(a10_sep._form_unchanged[0].integrals()[0].integrand()) + "\n"
         )
-    assert "v_0 * v_1 * f_12 * 2.0 * circumradius" == str(a10_sep._form_unchanged[0].integrals()[0].integrand())
+    assert "v_0 * v_1 * diameter * f_12" == str(a10_sep._form_unchanged[0].integrals()[0].integrand())
 
 @skip_in_parallel
 @pytest.mark.dependency(name="11", depends=["10"])
 def test_separated_parametrized_forms_scalar_11():
-    h = CellSize(mesh)
+    h = CellDiameter(mesh)
     a11 = expr9*expr3*h*u*v*dx
     a11_sep = SeparatedParametrizedForm(a11)
     log(PROGRESS, "*** ###              FORM 11             ### ***")
@@ -501,7 +501,7 @@ def test_separated_parametrized_forms_scalar_11():
     log(PROGRESS, "\tForms with placeholders:\n" +
         "\t\t" + str(a11_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n"
         )
-    assert "v_0 * v_1 * 2.0 * circumradius * f_12 * f_56" == str(a11_sep._form_with_placeholders[0].integrals()[0].integrand())
+    assert "v_0 * v_1 * diameter * f_12 * f_56" == str(a11_sep._form_with_placeholders[0].integrals()[0].integrand())
     log(PROGRESS, "\tLen unchanged forms:\n" +
         "\t\t" + str(len(a11_sep._form_unchanged)) + "\n"
         )
@@ -510,7 +510,7 @@ def test_separated_parametrized_forms_scalar_11():
 @skip_in_parallel
 @pytest.mark.dependency(name="12", depends=["11"])
 def test_separated_parametrized_forms_scalar_12():
-    h = CellSize(mesh)
+    h = CellDiameter(mesh)
     a12 = expr9*(expr3*h)*u*v*dx
     a12_sep = SeparatedParametrizedForm(a12)
     log(PROGRESS, "*** ###              FORM 12             ### ***")
@@ -527,7 +527,7 @@ def test_separated_parametrized_forms_scalar_12():
     log(PROGRESS, "\tCoefficients:\n" +
         "\t\t" + str(a12_sep.coefficients[0][0]) + "\n"
         )
-    assert "f_6 * 2.0 * circumradius" == str(a12_sep.coefficients[0][0])
+    assert "diameter * f_6" == str(a12_sep.coefficients[0][0])
     log(PROGRESS, "\tPlaceholders:\n" +
         "\t\t" + str(a12_sep._placeholders[0][0]) + "\n"
         )

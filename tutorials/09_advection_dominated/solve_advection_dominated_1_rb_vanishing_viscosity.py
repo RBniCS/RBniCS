@@ -46,7 +46,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
         self.f = Constant(1.0)
         # Store terms related to stabilization
         self.delta = 0.5
-        self.h = CellSize(V.mesh())
+        self.h = CellDiameter(V.mesh())
         
     # Return custom problem name
     def name(self):

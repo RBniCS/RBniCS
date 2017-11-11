@@ -42,7 +42,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
         self.bc2 = Expression("0.0 + 1.0*(x[0] == 0.0)*(x[1] == 0.25)", element=self.V.ufl_element())
         # Store terms related to stabilization
         self.delta = 1.0
-        self.h = CellSize(V.mesh())
+        self.h = CellDiameter(V.mesh())
         
     # Return custom problem name
     def name(self):

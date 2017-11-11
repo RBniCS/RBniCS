@@ -21,7 +21,7 @@ import os
 import itertools
 import functools
 from contextlib import contextmanager
-from dolfin import assign, CellSize, Constant, cos, div, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
+from dolfin import assign, CellDiameter, Constant, cos, div, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
@@ -568,13 +568,13 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
         
 # Test forms pull back to reference domain for tutorial 9
 @check_affine_and_non_affine_shape_parametrizations((
-    "CellSize, cell_size_pull_back", [
+    "CellDiameter, cell_diameter_pull_back", [
         (lambda mesh: Constant(0.), lambda mu1: 0),
         (lambda mesh: Constant(1.), lambda mu1: 1),
-        (CellSize, lambda mu1: sqrt(mu1))
+        (CellDiameter, lambda mu1: sqrt(mu1))
     ]
 ))
-def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellSize, cell_size_pull_back):
+def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellDiameter, cell_diameter_pull_back):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "graetz.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "graetz_physical_region.xml"))
@@ -594,7 +594,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
     dx = Measure("dx")(subdomain_data=subdomains)
     vel = Expression("x[1]*(1-x[1])", element=V.ufl_element())
     ff = Constant(1.)
-    h = CellSize(V.mesh())
+    h = CellDiameter(V.mesh())
     
     # Define base problem
     class Graetz(ParametrizedProblem):
@@ -626,16 +626,16 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
                 theta_a2 = mu2*mu1
                 theta_a3 = 1.0
                 theta_a4 = mu2
-                theta_a5 = mu2/mu1**2*cell_size_pull_back(mu1)
-                theta_a6 = mu2*cell_size_pull_back(mu1)
+                theta_a5 = mu2/mu1**2*cell_diameter_pull_back(mu1)
+                theta_a6 = mu2*cell_diameter_pull_back(mu1)
                 theta_a7 = 1.0
-                theta_a8 = 1.0/mu1*cell_size_pull_back(mu1)
+                theta_a8 = 1.0/mu1*cell_diameter_pull_back(mu1)
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8)
             elif term == "f":
                 theta_f0 = 1.0
                 theta_f1 = mu1
                 theta_f2 = 1.0
-                theta_f3 = cell_size_pull_back(mu1)
+                theta_f3 = cell_diameter_pull_back(mu1)
                 return (theta_f0, theta_f1, theta_f2, theta_f3)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -936,13 +936,13 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
         
 # Test forms pull back to reference domain for stabilization of Stokes problem
 @check_affine_and_non_affine_shape_parametrizations((
-    "CellSize, cell_size_pull_back", [
+    "CellDiameter, cell_diameter_pull_back", [
         (lambda mesh: Constant(0.), lambda mu1: 0),
         (lambda mesh: Constant(1.), lambda mu1: 1),
-        (CellSize, lambda mu1: sqrt(mu1))
+        (CellDiameter, lambda mu1: sqrt(mu1))
     ]
 ))
-def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellSize, cell_size_pull_back):
+def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellDiameter, cell_diameter_pull_back):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "cavity.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "cavity_physical_region.xml"))
@@ -967,7 +967,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
     
     ff = Constant((2., 3.))
     gg = Constant(4.)
-    h = CellSize(mesh)
+    h = CellDiameter(mesh)
     alpha_p = Constant(1.)
     
     # Define base problem
@@ -1003,8 +1003,8 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
                 theta_b1 = mu1
                 return (theta_b0, theta_b1)
             elif term == "stab":
-                theta_s0 = 1./mu1*cell_size_pull_back(mu1)**2
-                theta_s1 = mu1*cell_size_pull_back(mu1)**2
+                theta_s0 = 1./mu1*cell_diameter_pull_back(mu1)**2
+                theta_s1 = mu1*cell_diameter_pull_back(mu1)**2
                 return (theta_s0, theta_s1)
             elif term == "f":
                 theta_f0 = mu1
