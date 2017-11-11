@@ -46,8 +46,8 @@ else:
 def nonzero_values(function):
     serialized_vector = Vector(mpi_comm_self())
     function.vector().gather(serialized_vector, array(range(function.function_space().dim()), "intc"))
-    indices = nonzero(serialized_vector.array())
-    return sort(serialized_vector.array()[indices])
+    indices = nonzero(serialized_vector.get_local())
+    return sort(serialized_vector.get_local()[indices])
 
 # ~~~ Elliptic case ~~~ #
 def EllipticFunctionSpace(mesh):
@@ -208,10 +208,10 @@ def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     log(PROGRESS, "f at reduced dofs:\n" + str(nonzero_values(f_reduced_dofs)))
     log(PROGRESS, "f_N at reduced dofs:\n" + str(nonzero_values(f_N_reduced_dofs)))
     log(PROGRESS, "Error:\n" + str(nonzero_values(f_dofs) - nonzero_values(f_reduced_dofs)))
-    log(PROGRESS, "Error:\n" + str(f_reduced_dofs.vector().array() - f_N_reduced_dofs.vector().array()))
+    log(PROGRESS, "Error:\n" + str(f_reduced_dofs.vector().get_local() - f_N_reduced_dofs.vector().get_local()))
     
     assert isclose(nonzero_values(f_dofs), nonzero_values(f_reduced_dofs)).all()
-    assert isclose(f_reduced_dofs.vector().array(), f_N_reduced_dofs.vector().array()).all()
+    assert isclose(f_reduced_dofs.vector().get_local(), f_N_reduced_dofs.vector().get_local()).all()
 
 # ~~~ Mixed case ~~~ #
 def MixedFunctionSpace(mesh):

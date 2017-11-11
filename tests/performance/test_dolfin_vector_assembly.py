@@ -54,7 +54,7 @@ class Data(object):
         result_builtin = F[0].copy()
         result_builtin.zero()
         for i in range(self.Q):
-            result_builtin.add_local(theta[i]*F[i].array())
+            result_builtin.add_local(theta[i]*F[i].get_local())
         result_builtin.apply("insert")
         return result_builtin
         

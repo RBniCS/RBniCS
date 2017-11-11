@@ -38,7 +38,7 @@ def function_load(fun, directory, filename, suffix=None):
                     return False
                 else:
                     extended_sub_fun = function_extend_or_restrict(sub_fun, None, fun_V, component, weight=None, copy=True)
-                    fun.vector().add_local(extended_sub_fun.vector().array())
+                    fun.vector().add_local(extended_sub_fun.vector().get_local())
                     fun.vector().apply("add")
             return True
         else:
@@ -82,7 +82,7 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, component=None, funct
                 return False
             else:
                 extended_sub_fun = function_extend_or_restrict(fun_i, None, fun_V, component, weight=None, copy=True)
-                fun.vector().add_local(extended_sub_fun.vector().array())
+                fun.vector().add_local(extended_sub_fun.vector().get_local())
                 fun.vector().apply("add")
     else:
         full_filename_checkpoint = os.path.join(str(directory), filename + "_checkpoint.xdmf")

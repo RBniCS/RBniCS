@@ -42,14 +42,14 @@ def test_scalar_1(mesh):
     (V, W) = ScalarSpaces(mesh)
     u = ScalarFunction(V)
     v = function_extend_or_restrict(u, None, W, None, weight=None, copy=False)
-    assert isclose(v.vector().array(), 1.).all()
+    assert isclose(v.vector().get_local(), 1.).all()
     assert u is v
 
 def test_scalar_2_copy(mesh):
     (V, W) = ScalarSpaces(mesh)
     u = ScalarFunction(V)
     v = function_extend_or_restrict(u, None, W, None, weight=None, copy=True)
-    assert isclose(v.vector().array(), 1.).all()
+    assert isclose(v.vector().get_local(), 1.).all()
     assert u is not v
     assert v.vector().size() == W.dim()
 
@@ -57,7 +57,7 @@ def test_scalar_3_weight_copy(mesh):
     (V, W) = ScalarSpaces(mesh)
     u = ScalarFunction(V)
     v = function_extend_or_restrict(u, None, W, None, weight=2., copy=True)
-    assert isclose(v.vector().array(), 2.).all()
+    assert isclose(v.vector().get_local(), 2.).all()
     assert u is not v
     assert v.vector().size() == W.dim()
 
@@ -76,14 +76,14 @@ def test_vector_1(mesh):
     (V, W) = VectorSpaces(mesh)
     u = VectorFunction(V)
     v = function_extend_or_restrict(u, None, W, None, weight=None, copy=False)
-    assert isclose(v.vector().array(), 1.).all()
+    assert isclose(v.vector().get_local(), 1.).all()
     assert u is v
 
 def test_vector_2_copy(mesh):
     (V, W) = VectorSpaces(mesh)
     u = VectorFunction(V)
     v = function_extend_or_restrict(u, None, W, None, weight=None, copy=True)
-    assert isclose(v.vector().array(), 1.).all()
+    assert isclose(v.vector().get_local(), 1.).all()
     assert u is not v
     assert v.vector().size() == W.dim()
 
@@ -91,7 +91,7 @@ def test_vector_3_weight_copy(mesh):
     (V, W) = VectorSpaces(mesh)
     u = VectorFunction(V)
     v = function_extend_or_restrict(u, None, W, None, weight=2., copy=True)
-    assert isclose(v.vector().array(), 2.).all()
+    assert isclose(v.vector().get_local(), 2.).all()
     assert u is not v
     assert v.vector().size() == W.dim()
 
@@ -122,8 +122,8 @@ def test_mixed_function_extension_automatic_2_copy(mesh):
     extended_s = function_extend_or_restrict(s, None, W, None, weight=None, copy=True)
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
-    assert isclose(u.vector().array(), 1.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(u.vector().get_local(), 1.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 def test_mixed_function_extension_automatic_3_weight_copy(mesh):
     (V, W) = MixedSpacesExtensionAutomatic(mesh)
@@ -131,8 +131,8 @@ def test_mixed_function_extension_automatic_3_weight_copy(mesh):
     extended_s = function_extend_or_restrict(s, None, W, None, weight=2., copy=True)
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
-    assert isclose(u.vector().array(), 2.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(u.vector().get_local(), 2.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 # ~~~ Mixed case: extension, ambiguous extension due to failing automatic detection of components ~~~ #
 def MixedSpacesExtensionAmbiguous(mesh):
@@ -182,8 +182,8 @@ def test_mixed_function_extension_non_ambiguous_vector_element_2_copy(mesh):
     extended_s = function_extend_or_restrict(s, None, W, 0, weight=None, copy=True)
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
-    assert isclose(u.vector().array(), 1.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(u.vector().get_local(), 1.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 def test_mixed_function_extension_non_ambiguous_vector_element_3_weight_copy(mesh):
     (V, W) = MixedSpacesExtensionNonAmbiguousVectorElement(mesh)
@@ -191,8 +191,8 @@ def test_mixed_function_extension_non_ambiguous_vector_element_3_weight_copy(mes
     extended_s = function_extend_or_restrict(s, None, W, 0, weight=2., copy=True)
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
-    assert isclose(u.vector().array(), 2.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(u.vector().get_local(), 2.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 # ~~~ Mixed case: extension, avoid ambiguity thanks to user provided input components ~~~ #
 def MixedSpacesExtensionSolveAmbiguityWithComponents(mesh):
@@ -221,8 +221,8 @@ def test_mixed_function_extension_solve_ambiguity_with_components_2_copy(mesh):
     extended_s = function_extend_or_restrict(s, None, W, "s", weight=None, copy=True)
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
-    assert isclose(u.vector().array(), 1.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(u.vector().get_local(), 1.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 def test_mixed_function_extension_solve_ambiguity_with_components_3_weight_copy(mesh):
     (V, W) = MixedSpacesExtensionSolveAmbiguityWithComponents(mesh)
@@ -230,8 +230,8 @@ def test_mixed_function_extension_solve_ambiguity_with_components_3_weight_copy(
     extended_s = function_extend_or_restrict(s, None, W, "s", weight=2., copy=True)
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
-    assert isclose(u.vector().array(), 2.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(u.vector().get_local(), 2.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 # ~~~ Mixed case: extension from sub element, ambiguous extension due to failing automatic detection of components ~~~ #
 def MixedSpacesExtensionFromSubElementAmbiguous(mesh):
@@ -288,9 +288,9 @@ def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_componen
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
     (ux, uy) = u.split(deepcopy=True)
-    assert isclose(ux.vector().array(), 1.).all()
-    assert isclose(uy.vector().array(), 0.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(ux.vector().get_local(), 1.).all()
+    assert isclose(uy.vector().get_local(), 0.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_components_tuple_3_weight_copy(mesh):
     (V, W) = MixedSpacesExtensionFromSubElementSolveAmbiguityWithComponents(mesh, tuple)
@@ -299,9 +299,9 @@ def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_componen
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
     (ux, uy) = u.split(deepcopy=True)
-    assert isclose(ux.vector().array(), 2.).all()
-    assert isclose(uy.vector().array(), 0.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(ux.vector().get_local(), 2.).all()
+    assert isclose(uy.vector().get_local(), 0.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_components_str_1_fail(mesh):
     (V, W) = MixedSpacesExtensionFromSubElementSolveAmbiguityWithComponents(mesh, str)
@@ -317,9 +317,9 @@ def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_componen
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
     (ux, uy) = u.split(deepcopy=True)
-    assert isclose(ux.vector().array(), 1.).all()
-    assert isclose(uy.vector().array(), 0.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(ux.vector().get_local(), 1.).all()
+    assert isclose(uy.vector().get_local(), 0.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
 
 def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_components_str_3_weight_copy(mesh):
     (V, W) = MixedSpacesExtensionFromSubElementSolveAmbiguityWithComponents(mesh, str)
@@ -328,9 +328,9 @@ def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_componen
     assert extended_s.vector().size() == W.dim()
     (u, p) = extended_s.split(deepcopy=True)
     (ux, uy) = u.split(deepcopy=True)
-    assert isclose(ux.vector().array(), 2.).all()
-    assert isclose(uy.vector().array(), 0.).all()
-    assert isclose(p.vector().array(), 0.).all()
+    assert isclose(ux.vector().get_local(), 2.).all()
+    assert isclose(uy.vector().get_local(), 0.).all()
+    assert isclose(p.vector().get_local(), 0.).all()
     
 # ~~~ Mixed case: restriction, automatic detection of components ~~~ #
 def MixedSpacesRestrictionAutomatic(mesh, sub_element):
@@ -363,14 +363,14 @@ def test_mixed_function_restriction_automatic_first_sub_element_2_copy(mesh):
     up = MixedFunctionRestrictionAutomatic(V)
     u = function_extend_or_restrict(up, None, W, None, weight=None, copy=True)
     assert u.vector().size() == W.dim()
-    assert isclose(u.vector().array(), 1.).all()
+    assert isclose(u.vector().get_local(), 1.).all()
 
 def test_mixed_function_restriction_automatic_first_sub_element_3_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionAutomatic(mesh, 0)
     up = MixedFunctionRestrictionAutomatic(V)
     u = function_extend_or_restrict(up, None, W, None, weight=2., copy=True)
     assert u.vector().size() == W.dim()
-    assert isclose(u.vector().array(), 2.).all()
+    assert isclose(u.vector().get_local(), 2.).all()
 
 def test_mixed_function_restriction_automatic_second_sub_element_1_fail(mesh):
     (V, W) = MixedSpacesRestrictionAutomatic(mesh, 1)
@@ -384,14 +384,14 @@ def test_mixed_function_restriction_automatic_second_sub_element_2_copy(mesh):
     up = MixedFunctionRestrictionAutomatic(V)
     p = function_extend_or_restrict(up, None, W, None, weight=None, copy=True)
     assert p.vector().size() == W.dim()
-    assert isclose(p.vector().array(), 2.).all()
+    assert isclose(p.vector().get_local(), 2.).all()
 
 def test_mixed_function_restriction_automatic_second_sub_element_3_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionAutomatic(mesh, 1)
     up = MixedFunctionRestrictionAutomatic(V)
     p = function_extend_or_restrict(up, None, W, None, weight=2., copy=True)
     assert p.vector().size() == W.dim()
-    assert isclose(p.vector().array(), 4.).all()
+    assert isclose(p.vector().get_local(), 4.).all()
 
 # ~~~ Mixed case: restriction, ambiguous restriction due to failing automatic detection of components ~~~ #
 def MixedSpacesRestrictionAmbiguous(mesh):
@@ -446,14 +446,14 @@ def test_mixed_function_restriction_solve_ambiguity_with_components_first_sub_el
     up = MixedFunctionRestrictionSolveAmbiguityWithComponents(V)
     u = function_extend_or_restrict(up, 0, W, None, weight=None, copy=True)
     assert u.vector().size() == W.dim()
-    assert isclose(u.vector().array(), 1.).all()
+    assert isclose(u.vector().get_local(), 1.).all()
 
 def test_mixed_function_restriction_solve_ambiguity_with_components_first_sub_element_3_int_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionSolveAmbiguityWithComponents(mesh, 0)
     up = MixedFunctionRestrictionSolveAmbiguityWithComponents(V)
     u = function_extend_or_restrict(up, 0, W, None, weight=2., copy=True)
     assert u.vector().size() == W.dim()
-    assert isclose(u.vector().array(), 2.).all()
+    assert isclose(u.vector().get_local(), 2.).all()
 
 def test_mixed_function_restriction_solve_ambiguity_with_components_first_sub_element_4_str_fail(mesh):
     (V, W) = MixedSpacesRestrictionSolveAmbiguityWithComponents(mesh, 0)
@@ -467,14 +467,14 @@ def test_mixed_function_restriction_solve_ambiguity_with_components_first_sub_el
     up = MixedFunctionRestrictionSolveAmbiguityWithComponents(V)
     u = function_extend_or_restrict(up, "u", W, None, weight=None, copy=True)
     assert u.vector().size() == W.dim()
-    assert isclose(u.vector().array(), 1.).all()
+    assert isclose(u.vector().get_local(), 1.).all()
 
 def test_mixed_function_restriction_solve_ambiguity_with_components_first_sub_element_6_str_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionSolveAmbiguityWithComponents(mesh, 0)
     up = MixedFunctionRestrictionSolveAmbiguityWithComponents(V)
     u = function_extend_or_restrict(up, "u", W, None, weight=2., copy=True)
     assert u.vector().size() == W.dim()
-    assert isclose(u.vector().array(), 2.).all()
+    assert isclose(u.vector().get_local(), 2.).all()
 
 def test_mixed_function_restriction_solve_ambiguity_with_components_second_sub_element_1_str_fail(mesh):
     (V, W) = MixedSpacesRestrictionSolveAmbiguityWithComponents(mesh, 1)
@@ -488,14 +488,14 @@ def test_mixed_function_restriction_solve_ambiguity_with_components_second_sub_e
     up = MixedFunctionRestrictionSolveAmbiguityWithComponents(V)
     p = function_extend_or_restrict(up, "p", W, None, weight=None, copy=True)
     assert p.vector().size() == W.dim()
-    assert isclose(p.vector().array(), 2.).all()
+    assert isclose(p.vector().get_local(), 2.).all()
 
 def test_mixed_function_restriction_solve_ambiguity_with_components_second_sub_element_3_str_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionSolveAmbiguityWithComponents(mesh, 1)
     up = MixedFunctionRestrictionSolveAmbiguityWithComponents(V)
     p = function_extend_or_restrict(up, "p", W, None, weight=2., copy=True)
     assert p.vector().size() == W.dim()
-    assert isclose(p.vector().array(), 4.).all()
+    assert isclose(p.vector().get_local(), 4.).all()
 
 # ~~~ Mixed case: restriction to sub element, ambiguous restriction due to failing automatic detection of components ~~~ #
 def MixedSpacesRestrictionToSubElementAmbiguous(mesh):
@@ -550,14 +550,14 @@ def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_componen
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     ux = function_extend_or_restrict(up, (0, 0), W, None, weight=None, copy=True)
     assert ux.vector().size() == W.dim()
-    assert isclose(ux.vector().array(), 1.).all()
+    assert isclose(ux.vector().get_local(), 1.).all()
 
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_3_tuple_x_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     ux = function_extend_or_restrict(up, (0, 0), W, None, weight=2., copy=True)
     assert ux.vector().size() == W.dim()
-    assert isclose(ux.vector().array(), 2.).all()
+    assert isclose(ux.vector().get_local(), 2.).all()
     
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_4_tuple_y_fail(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
@@ -571,14 +571,14 @@ def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_componen
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     uy = function_extend_or_restrict(up, (0, 1), W, None, weight=None, copy=True)
     assert uy.vector().size() == W.dim()
-    assert isclose(uy.vector().array(), 3.).all()
+    assert isclose(uy.vector().get_local(), 3.).all()
 
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_6_tuple_y_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     uy = function_extend_or_restrict(up, (0, 1), W, None, weight=2., copy=True)
     assert uy.vector().size() == W.dim()
-    assert isclose(uy.vector().array(), 6.).all()
+    assert isclose(uy.vector().get_local(), 6.).all()
 
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_1_str_x_fail(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
@@ -592,14 +592,14 @@ def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_componen
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     ux = function_extend_or_restrict(up, "ux", W, None, weight=None, copy=True)
     assert ux.vector().size() == W.dim()
-    assert isclose(ux.vector().array(), 1.).all()
+    assert isclose(ux.vector().get_local(), 1.).all()
 
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_3_str_x_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     ux = function_extend_or_restrict(up, "ux", W, None, weight=2., copy=True)
     assert ux.vector().size() == W.dim()
-    assert isclose(ux.vector().array(), 2.).all()
+    assert isclose(ux.vector().get_local(), 2.).all()
     
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_4_str_y_fail(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
@@ -613,14 +613,14 @@ def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_componen
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     uy = function_extend_or_restrict(up, "uy", W, None, weight=None, copy=True)
     assert uy.vector().size() == W.dim()
-    assert isclose(uy.vector().array(), 3.).all()
+    assert isclose(uy.vector().get_local(), 3.).all()
 
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_6_str_y_weight_copy(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     uy = function_extend_or_restrict(up, "uy", W, None, weight=2., copy=True)
     assert uy.vector().size() == W.dim()
-    assert isclose(uy.vector().array(), 6.).all()
+    assert isclose(uy.vector().get_local(), 6.).all()
 
 # ~~~ Mixed case to mixed case: copy only a component, in the same location ~~~ #
 def MixedToMixedSpacesCopyComponentToSameLocation(mesh):
@@ -650,8 +650,8 @@ def test_mixed_to_mixed_function_copy_component_to_same_location_2_int_copy(mesh
     copied_u = function_extend_or_restrict(u, 0, W, 0, weight=None, copy=True)
     assert copied_u.vector().size() == W.dim()
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
-    assert isclose(copied_ux.vector().array(), 1.).all()
-    assert isclose(copied_uy.vector().array(), 0.).all()
+    assert isclose(copied_ux.vector().get_local(), 1.).all()
+    assert isclose(copied_uy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_component_to_same_location_3_int_weight_copy(mesh):
     (V, W) = MixedToMixedSpacesCopyComponentToSameLocation(mesh)
@@ -659,8 +659,8 @@ def test_mixed_to_mixed_function_copy_component_to_same_location_3_int_weight_co
     copied_u = function_extend_or_restrict(u, 0, W, 0, weight=2., copy=True)
     assert copied_u.vector().size() == W.dim()
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
-    assert isclose(copied_ux.vector().array(), 2.).all()
-    assert isclose(copied_uy.vector().array(), 0.).all()
+    assert isclose(copied_ux.vector().get_local(), 2.).all()
+    assert isclose(copied_uy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_component_to_same_location_4_str_fail(mesh):
     (V, W) = MixedToMixedSpacesCopyComponentToSameLocation(mesh)
@@ -675,8 +675,8 @@ def test_mixed_to_mixed_function_copy_component_to_same_location_5_str_copy(mesh
     copied_u = function_extend_or_restrict(u, "ux", W, "ux", weight=None, copy=True)
     assert copied_u.vector().size() == W.dim()
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
-    assert isclose(copied_ux.vector().array(), 1.).all()
-    assert isclose(copied_uy.vector().array(), 0.).all()
+    assert isclose(copied_ux.vector().get_local(), 1.).all()
+    assert isclose(copied_uy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_component_to_same_location_6_str_weight_copy(mesh):
     (V, W) = MixedToMixedSpacesCopyComponentToSameLocation(mesh)
@@ -684,8 +684,8 @@ def test_mixed_to_mixed_function_copy_component_to_same_location_6_str_weight_co
     copied_u = function_extend_or_restrict(u, "ux", W, "ux", weight=2., copy=True)
     assert copied_u.vector().size() == W.dim()
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
-    assert isclose(copied_ux.vector().array(), 2.).all()
-    assert isclose(copied_uy.vector().array(), 0.).all()
+    assert isclose(copied_ux.vector().get_local(), 2.).all()
+    assert isclose(copied_uy.vector().get_local(), 0.).all()
 
 # ~~~ Mixed case to mixed case: copy only a component, to a different location ~~~ #
 def MixedToMixedSpacesCopyComponentToDifferentLocation(mesh):
@@ -715,8 +715,8 @@ def test_mixed_to_mixed_function_copy_component_to_different_location_2_int_copy
     copied_u = function_extend_or_restrict(u, 0, W, 1, weight=None, copy=True)
     assert copied_u.vector().size() == W.dim()
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
-    assert isclose(copied_ux.vector().array(), 0.).all()
-    assert isclose(copied_uy.vector().array(), 1.).all()
+    assert isclose(copied_ux.vector().get_local(), 0.).all()
+    assert isclose(copied_uy.vector().get_local(), 1.).all()
 
 def test_mixed_to_mixed_function_copy_component_to_different_location_3_int_weight_copy(mesh):
     (V, W) = MixedToMixedSpacesCopyComponentToDifferentLocation(mesh)
@@ -724,8 +724,8 @@ def test_mixed_to_mixed_function_copy_component_to_different_location_3_int_weig
     copied_u = function_extend_or_restrict(u, 0, W, 1, weight=2., copy=True)
     assert copied_u.vector().size() == W.dim()
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
-    assert isclose(copied_ux.vector().array(), 0.).all()
-    assert isclose(copied_uy.vector().array(), 2.).all()
+    assert isclose(copied_ux.vector().get_local(), 0.).all()
+    assert isclose(copied_uy.vector().get_local(), 2.).all()
 
 def test_mixed_to_mixed_function_copy_component_to_different_location_4_str_fail(mesh):
     (V, W) = MixedToMixedSpacesCopyComponentToDifferentLocation(mesh)
@@ -740,8 +740,8 @@ def test_mixed_to_mixed_function_copy_component_to_different_location_5_str_copy
     copied_u = function_extend_or_restrict(u, "ux", W, "uy", weight=None, copy=True)
     assert copied_u.vector().size() == W.dim()
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
-    assert isclose(copied_ux.vector().array(), 0.).all()
-    assert isclose(copied_uy.vector().array(), 1.).all()
+    assert isclose(copied_ux.vector().get_local(), 0.).all()
+    assert isclose(copied_uy.vector().get_local(), 1.).all()
 
 def test_mixed_to_mixed_function_copy_component_to_different_location_6_str_weight_copy(mesh):
     (V, W) = MixedToMixedSpacesCopyComponentToDifferentLocation(mesh)
@@ -749,8 +749,8 @@ def test_mixed_to_mixed_function_copy_component_to_different_location_6_str_weig
     copied_u = function_extend_or_restrict(u, "ux", W, "uy", weight=2., copy=True)
     assert copied_u.vector().size() == W.dim()
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
-    assert isclose(copied_ux.vector().array(), 0.).all()
-    assert isclose(copied_uy.vector().array(), 2.).all()
+    assert isclose(copied_ux.vector().get_local(), 0.).all()
+    assert isclose(copied_uy.vector().get_local(), 2.).all()
 
 # ~~~ Mixed case to mixed case: copy only a sub component, in the same location ~~~ #
 def MixedToMixedSpacesCopySubComponentToSameLocation(mesh):
@@ -782,10 +782,10 @@ def test_mixed_to_mixed_function_copy_sub_component_to_same_location_2_tuple_cop
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
     (copied_uxx, copied_uxy) = copied_ux.split(deepcopy=True)
     (copied_uyx, copied_uyy) = copied_uy.split(deepcopy=True)
-    assert isclose(copied_uxx.vector().array(), 1.).all()
-    assert isclose(copied_uxy.vector().array(), 0.).all()
-    assert isclose(copied_uyx.vector().array(), 0.).all()
-    assert isclose(copied_uyy.vector().array(), 0.).all()
+    assert isclose(copied_uxx.vector().get_local(), 1.).all()
+    assert isclose(copied_uxy.vector().get_local(), 0.).all()
+    assert isclose(copied_uyx.vector().get_local(), 0.).all()
+    assert isclose(copied_uyy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_sub_component_to_same_location_3_tuple_weight_copy(mesh):
     (V, W) = MixedToMixedSpacesCopySubComponentToSameLocation(mesh)
@@ -795,10 +795,10 @@ def test_mixed_to_mixed_function_copy_sub_component_to_same_location_3_tuple_wei
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
     (copied_uxx, copied_uxy) = copied_ux.split(deepcopy=True)
     (copied_uyx, copied_uyy) = copied_uy.split(deepcopy=True)
-    assert isclose(copied_uxx.vector().array(), 2.).all()
-    assert isclose(copied_uxy.vector().array(), 0.).all()
-    assert isclose(copied_uyx.vector().array(), 0.).all()
-    assert isclose(copied_uyy.vector().array(), 0.).all()
+    assert isclose(copied_uxx.vector().get_local(), 2.).all()
+    assert isclose(copied_uxy.vector().get_local(), 0.).all()
+    assert isclose(copied_uyx.vector().get_local(), 0.).all()
+    assert isclose(copied_uyy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_sub_component_to_same_location_4_str_fail(mesh):
     (V, W) = MixedToMixedSpacesCopySubComponentToSameLocation(mesh)
@@ -815,10 +815,10 @@ def test_mixed_to_mixed_function_copy_sub_component_to_same_location_5_str_copy(
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
     (copied_uxx, copied_uxy) = copied_ux.split(deepcopy=True)
     (copied_uyx, copied_uyy) = copied_uy.split(deepcopy=True)
-    assert isclose(copied_uxx.vector().array(), 1.).all()
-    assert isclose(copied_uxy.vector().array(), 0.).all()
-    assert isclose(copied_uyx.vector().array(), 0.).all()
-    assert isclose(copied_uyy.vector().array(), 0.).all()
+    assert isclose(copied_uxx.vector().get_local(), 1.).all()
+    assert isclose(copied_uxy.vector().get_local(), 0.).all()
+    assert isclose(copied_uyx.vector().get_local(), 0.).all()
+    assert isclose(copied_uyy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_sub_component_to_same_location_6_str_weight_copy(mesh):
     (V, W) = MixedToMixedSpacesCopySubComponentToSameLocation(mesh)
@@ -828,10 +828,10 @@ def test_mixed_to_mixed_function_copy_sub_component_to_same_location_6_str_weigh
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
     (copied_uxx, copied_uxy) = copied_ux.split(deepcopy=True)
     (copied_uyx, copied_uyy) = copied_uy.split(deepcopy=True)
-    assert isclose(copied_uxx.vector().array(), 2.).all()
-    assert isclose(copied_uxy.vector().array(), 0.).all()
-    assert isclose(copied_uyx.vector().array(), 0.).all()
-    assert isclose(copied_uyy.vector().array(), 0.).all()
+    assert isclose(copied_uxx.vector().get_local(), 2.).all()
+    assert isclose(copied_uxy.vector().get_local(), 0.).all()
+    assert isclose(copied_uyx.vector().get_local(), 0.).all()
+    assert isclose(copied_uyy.vector().get_local(), 0.).all()
 
 # ~~~ Mixed case to mixed case: copy only a sub component, to a different location ~~~ #
 def MixedToMixedSpacesCopySubComponentToDifferentLocation(mesh):
@@ -863,10 +863,10 @@ def test_mixed_to_mixed_function_copy_sub_component_to_different_location_2_tupl
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
     (copied_uxx, copied_uxy) = copied_ux.split(deepcopy=True)
     (copied_uyx, copied_uyy) = copied_uy.split(deepcopy=True)
-    assert isclose(copied_uxx.vector().array(), 0.).all()
-    assert isclose(copied_uxy.vector().array(), 0.).all()
-    assert isclose(copied_uyx.vector().array(), 1.).all()
-    assert isclose(copied_uyy.vector().array(), 0.).all()
+    assert isclose(copied_uxx.vector().get_local(), 0.).all()
+    assert isclose(copied_uxy.vector().get_local(), 0.).all()
+    assert isclose(copied_uyx.vector().get_local(), 1.).all()
+    assert isclose(copied_uyy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_sub_component_to_different_location_3_tuple_weight_copy(mesh):
     (V, W) = MixedToMixedSpacesCopySubComponentToDifferentLocation(mesh)
@@ -876,10 +876,10 @@ def test_mixed_to_mixed_function_copy_sub_component_to_different_location_3_tupl
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
     (copied_uxx, copied_uxy) = copied_ux.split(deepcopy=True)
     (copied_uyx, copied_uyy) = copied_uy.split(deepcopy=True)
-    assert isclose(copied_uxx.vector().array(), 0.).all()
-    assert isclose(copied_uxy.vector().array(), 0.).all()
-    assert isclose(copied_uyx.vector().array(), 2.).all()
-    assert isclose(copied_uyy.vector().array(), 0.).all()
+    assert isclose(copied_uxx.vector().get_local(), 0.).all()
+    assert isclose(copied_uxy.vector().get_local(), 0.).all()
+    assert isclose(copied_uyx.vector().get_local(), 2.).all()
+    assert isclose(copied_uyy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_sub_component_to_different_location_4_str_fail(mesh):
     (V, W) = MixedToMixedSpacesCopySubComponentToDifferentLocation(mesh)
@@ -896,10 +896,10 @@ def test_mixed_to_mixed_function_copy_sub_component_to_different_location_5_str_
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
     (copied_uxx, copied_uxy) = copied_ux.split(deepcopy=True)
     (copied_uyx, copied_uyy) = copied_uy.split(deepcopy=True)
-    assert isclose(copied_uxx.vector().array(), 0.).all()
-    assert isclose(copied_uxy.vector().array(), 0.).all()
-    assert isclose(copied_uyx.vector().array(), 1.).all()
-    assert isclose(copied_uyy.vector().array(), 0.).all()
+    assert isclose(copied_uxx.vector().get_local(), 0.).all()
+    assert isclose(copied_uxy.vector().get_local(), 0.).all()
+    assert isclose(copied_uyx.vector().get_local(), 1.).all()
+    assert isclose(copied_uyy.vector().get_local(), 0.).all()
 
 def test_mixed_to_mixed_function_copy_sub_component_to_different_location_6_str_weight_copy(mesh):
     (V, W) = MixedToMixedSpacesCopySubComponentToDifferentLocation(mesh)
@@ -909,7 +909,7 @@ def test_mixed_to_mixed_function_copy_sub_component_to_different_location_6_str_
     (copied_ux, copied_uy) = copied_u.split(deepcopy=True)
     (copied_uxx, copied_uxy) = copied_ux.split(deepcopy=True)
     (copied_uyx, copied_uyy) = copied_uy.split(deepcopy=True)
-    assert isclose(copied_uxx.vector().array(), 0.).all()
-    assert isclose(copied_uxy.vector().array(), 0.).all()
-    assert isclose(copied_uyx.vector().array(), 2.).all()
-    assert isclose(copied_uyy.vector().array(), 0.).all()
+    assert isclose(copied_uxx.vector().get_local(), 0.).all()
+    assert isclose(copied_uxy.vector().get_local(), 0.).all()
+    assert isclose(copied_uyx.vector().get_local(), 2.).all()
+    assert isclose(copied_uyy.vector().get_local(), 0.).all()

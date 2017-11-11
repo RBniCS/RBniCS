@@ -103,8 +103,8 @@ class Data(object):
     def assert_backend(self, a, f, result_backend):
         result_builtin = self.evaluate_builtin(a, f)
         error = Function(self.V)
-        error.vector().add_local(+ result_backend.vector().array())
-        error.vector().add_local(- result_builtin.vector().array())
+        error.vector().add_local(+ result_backend.vector().get_local())
+        error.vector().add_local(- result_builtin.vector().get_local())
         error.vector().apply("add")
         relative_error = error.vector().norm("l2")/result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)

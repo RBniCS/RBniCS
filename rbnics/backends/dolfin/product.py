@@ -96,7 +96,7 @@ def _product(thetas: ThetaType, operators: list_of(Vector.Type())):
     output.zero()
     for (theta, operator) in zip(thetas, operators):
         theta = float(theta)
-        output.add_local(theta*operator.array())
+        output.add_local(theta*operator.get_local())
     output.apply("add")
     return ProductOutput(output)
     
@@ -127,7 +127,7 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_Function):
     output.vector().zero()
     for (theta, operator) in zip(thetas, operators):
         theta = float(theta)
-        output.vector().add_local(theta*operator.vector().array())
+        output.vector().add_local(theta*operator.vector().get_local())
     output.vector().apply("add")
     return ProductOutput(output)
     

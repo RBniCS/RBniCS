@@ -42,7 +42,7 @@ def _function_from_ufl_sum(addend_1, addend_2):
     assert isinstance(addend_1, Function)
     assert isinstance(addend_2, Function)
     sum_ = addend_1.copy(deepcopy=True)
-    sum_.vector().add_local(addend_2.vector().array())
+    sum_.vector().add_local(addend_2.vector().get_local())
     sum_.vector().apply("")
     return sum_
 

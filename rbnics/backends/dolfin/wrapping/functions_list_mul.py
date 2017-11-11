@@ -31,7 +31,7 @@ def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsLis
         output_j.vector().zero()
         for (i, fun_i) in enumerate(functions_list):
             online_matrix_ij = float(online_matrix[i, j])
-            output_j.vector().add_local(fun_i.vector().array()*online_matrix_ij)
+            output_j.vector().add_local(fun_i.vector().get_local()*online_matrix_ij)
         output_j.vector().apply("add")
         output.enrich(output_j)
     return output
@@ -41,6 +41,6 @@ def functions_list_mul_online_vector(functions_list, online_vector):
     output.vector().zero()
     for (i, fun_i) in enumerate(functions_list):
         online_vector_i = float(online_vector[i])
-        output.vector().add_local(fun_i.vector().array()*online_vector_i)
+        output.vector().add_local(fun_i.vector().get_local()*online_vector_i)
     output.vector().apply("add")
     return output

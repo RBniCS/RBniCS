@@ -17,6 +17,6 @@
 #
 
 def gram_schmidt_projection_step(new_basis, X, old_basis, transpose):
-    new_basis.vector().add_local(- (transpose(new_basis)*X*old_basis) * old_basis.vector().array())
+    new_basis.vector().add_local(- (transpose(new_basis)*X*old_basis) * old_basis.vector().get_local())
     new_basis.vector().apply("add")
     return new_basis

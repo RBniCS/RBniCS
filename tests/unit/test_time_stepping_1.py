@@ -144,13 +144,13 @@ def _test_time_stepping_1_sparse(callback_type, integrator_type):
 
     # Compute the error
     sparse_error = Function(V)
-    sparse_error.vector().add_local(+ sparse_solution.vector().array())
-    sparse_error.vector().add_local(- exact_solution.vector().array())
+    sparse_error.vector().add_local(+ sparse_solution.vector().get_local())
+    sparse_error.vector().add_local(- exact_solution.vector().get_local())
     sparse_error.vector().apply("")
     sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
     sparse_error_dot = Function(V)
-    sparse_error_dot.vector().add_local(+ sparse_solution_dot.vector().array())
-    sparse_error_dot.vector().add_local(- exact_solution_dot.vector().array())
+    sparse_error_dot.vector().add_local(+ sparse_solution_dot.vector().get_local())
+    sparse_error_dot.vector().add_local(- exact_solution_dot.vector().get_local())
     sparse_error_dot.vector().apply("")
     sparse_error_dot_norm = sparse_error_dot.vector().inner(X*sparse_error_dot.vector())
     print("SparseTimeStepping error (" + callback_type + ", " + integrator_type + "):", sparse_error_norm, sparse_error_dot_norm)
@@ -176,7 +176,7 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, T, u, u_dot, g, r, j_u, 
             self._solution_from_dense_to_sparse(solution_dot, u_dot)
             g.t = t
             sparse_residual = assemble(r)
-            dense_residual_array = sparse_residual.array()
+            dense_residual_array = sparse_residual.get_local()
             dense_residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             dense_residual = DenseVector(*dense_residual_array.shape)
             dense_residual[:] = dense_residual_array.reshape((-1, 1))
@@ -201,8 +201,8 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, T, u, u_dot, g, r, j_u, 
         def ic_eval(self):
             exact_solution_expression.t = 0.
             sparse_initial_solution = project(exact_solution_expression, V)
-            dense_solution = DenseFunction(*sparse_initial_solution.vector().array().shape)
-            dense_solution.vector()[:] = sparse_initial_solution.vector().array().reshape((-1, 1))
+            dense_solution = DenseFunction(*sparse_initial_solution.vector().get_local().shape)
+            dense_solution.vector()[:] = sparse_initial_solution.vector().get_local().reshape((-1, 1))
             dense_solution_array = dense_solution.vector()
             dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             return dense_solution
@@ -232,7 +232,7 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, T, u, u_dot, g, r, j_u, 
     
     # Solve the time dependent problem
     dense_problem_wrapper = DenseProblemWrapper()
-    dense_shape = Function(V).vector().array().shape
+    dense_shape = Function(V).vector().get_local().shape
     (dense_solution, dense_solution_dot) = (DenseFunction(*dense_shape), DenseFunction(*dense_shape))
     dense_solver = DenseTimeStepping(dense_problem_wrapper, dense_solution, dense_solution_dot)
     dense_solver.set_parameters({
@@ -254,14 +254,14 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, T, u, u_dot, g, r, j_u, 
     dense_solution_dot_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = dense_solution_dot_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
     
     # Compute the error
-    dense_error = DenseFunction(*exact_solution.vector().array().shape)
-    dense_error.vector()[:] = exact_solution.vector().array().reshape((-1, 1))
+    dense_error = DenseFunction(*exact_solution.vector().get_local().shape)
+    dense_error.vector()[:] = exact_solution.vector().get_local().reshape((-1, 1))
     dense_error.vector()[:] -= dense_solution_array
     dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
     assert dense_error_norm.shape == (1, 1)
     dense_error_norm = dense_error_norm[0, 0]
-    dense_error_dot = DenseFunction(*exact_solution_dot.vector().array().shape)
-    dense_error_dot.vector()[:] = exact_solution_dot.vector().array().reshape((-1, 1))
+    dense_error_dot = DenseFunction(*exact_solution_dot.vector().get_local().shape)
+    dense_error_dot.vector()[:] = exact_solution_dot.vector().get_local().reshape((-1, 1))
     dense_error_dot.vector()[:] -= dense_solution_dot_array
     dense_error_dot_norm = dense_error_dot.vector().T.dot(X.array().dot(dense_error_dot.vector()))
     assert dense_error_dot_norm.shape == (1, 1)

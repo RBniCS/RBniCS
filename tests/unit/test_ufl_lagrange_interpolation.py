@@ -61,7 +61,7 @@ def test_scalar_1(mesh):
     e1b = e1a
     u1b = Function(V)
     ufl_lagrange_interpolation(u1b, e1b)
-    assert isclose(u1a.vector().array(), u1b.vector().array()).all()
+    assert isclose(u1a.vector().get_local(), u1b.vector().get_local()).all()
 
 def test_scalar_2(mesh):
     V = ScalarSpace(mesh)
@@ -71,7 +71,7 @@ def test_scalar_2(mesh):
     e2b = Expression("x[0] + pow(x[1], 2)", element=V.ufl_element()) + 1
     u2b = Function(V)
     ufl_lagrange_interpolation(u2b, e2b)
-    assert isclose(u2a.vector().array(), u2b.vector().array()).all()
+    assert isclose(u2a.vector().get_local(), u2b.vector().get_local()).all()
 
 def test_scalar_3(mesh, x):
     V = ScalarSpace(mesh)
@@ -81,7 +81,7 @@ def test_scalar_3(mesh, x):
     e3b = x[0] + x[1]**2
     u3b = Function(V)
     ufl_lagrange_interpolation(u3b, e3b)
-    assert isclose(u3a.vector().array(), u3b.vector().array()).all()
+    assert isclose(u3a.vector().get_local(), u3b.vector().get_local()).all()
 
 def test_scalar_4(mesh, x):
     V = ScalarSpace(mesh)
@@ -91,7 +91,7 @@ def test_scalar_4(mesh, x):
     e4b = x[0] + x[1]**2 + 1
     u4b = Function(V)
     ufl_lagrange_interpolation(u4b, e4b)
-    assert isclose(u4a.vector().array(), u4b.vector().array()).all()
+    assert isclose(u4a.vector().get_local(), u4b.vector().get_local()).all()
 
 def test_scalar_5(mesh, xs):
     V = ScalarSpace(mesh)
@@ -101,7 +101,7 @@ def test_scalar_5(mesh, xs):
     e5b = xs[0] + xs[1]**2 + xs[2]
     u5b = Function(V)
     ufl_lagrange_interpolation(u5b, e5b)
-    assert isclose(u5a.vector().array(), u5b.vector().array()).all()
+    assert isclose(u5a.vector().get_local(), u5b.vector().get_local()).all()
 
 def test_scalar_6(mesh, xs):
     V = ScalarSpace(mesh)
@@ -111,7 +111,7 @@ def test_scalar_6(mesh, xs):
     e6b = xs[0] + xs[1]**2 + xs[2] + 1
     u6b = Function(V)
     ufl_lagrange_interpolation(u6b, e6b)
-    assert isclose(u6a.vector().array(), u6b.vector().array()).all()
+    assert isclose(u6a.vector().get_local(), u6b.vector().get_local()).all()
 
 # ~~~ Vector case ~~~ #
 def VectorSpace(mesh):
@@ -125,7 +125,7 @@ def test_vector_1(mesh):
     e1b = e1a
     u1b = Function(V)
     ufl_lagrange_interpolation(u1b, e1b)
-    assert isclose(u1a.vector().array(), u1b.vector().array()).all()
+    assert isclose(u1a.vector().get_local(), u1b.vector().get_local()).all()
 
 def test_vector_2(mesh):
     V = VectorSpace(mesh)
@@ -135,7 +135,7 @@ def test_vector_2(mesh):
     e2b = Expression(("x[0] + pow(x[1], 2)", "pow(x[0], 3) + pow(x[1], 4)"), element=V.ufl_element()) + Constant((1, 2))
     u2b = Function(V)
     ufl_lagrange_interpolation(u2b, e2b)
-    assert isclose(u2a.vector().array(), u2b.vector().array()).all()
+    assert isclose(u2a.vector().get_local(), u2b.vector().get_local()).all()
 
 def test_vector_3(mesh, X):
     V = VectorSpace(mesh)
@@ -145,7 +145,7 @@ def test_vector_3(mesh, X):
     e3b = project(e3a, X)
     u3b = Function(V)
     ufl_lagrange_interpolation(u3b, e3b)
-    assert isclose(u3a.vector().array(), u3b.vector().array()).all()
+    assert isclose(u3a.vector().get_local(), u3b.vector().get_local()).all()
 
 def test_vector_4(mesh, X):
     V = VectorSpace(mesh)
@@ -155,4 +155,4 @@ def test_vector_4(mesh, X):
     e4b = project(Expression(("x[0] + pow(x[1], 2)", "pow(x[0], 3) + pow(x[1], 4)"), element=V.ufl_element()), X) + Constant((1, 2))
     u4b = Function(V)
     ufl_lagrange_interpolation(u4b, e4b)
-    assert isclose(u4a.vector().array(), u4b.vector().array()).all()
+    assert isclose(u4a.vector().get_local(), u4b.vector().get_local()).all()

@@ -73,8 +73,8 @@ def _test_linear_solver_sparse(callback_type):
 
     # Compute the error
     sparse_error = Function(V)
-    sparse_error.vector().add_local(+ sparse_solution.vector().array())
-    sparse_error.vector().add_local(- exact_solution.vector().array())
+    sparse_error.vector().add_local(+ sparse_solution.vector().get_local())
+    sparse_error.vector().add_local(- exact_solution.vector().get_local())
     sparse_error.vector().apply("")
     sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
     print("SparseLinearSolver error (" + callback_type + "):", sparse_error_norm)
@@ -97,7 +97,7 @@ def _test_linear_solver_dense(V, A, F, X, exact_solution):
     # Reorder A and F such that dof_0 and dof_2pi are in the first two rows/cols,
     # because the dense linear solver has implicitly this assumption
     dense_A_array = A.array()
-    dense_F_array = F.array()
+    dense_F_array = F.get_local()
     dense_A_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = dense_A_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
     dense_A_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_A_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
     dense_F_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_F_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
@@ -117,7 +117,7 @@ def _test_linear_solver_dense(V, A, F, X, exact_solution):
     
     # Compute the error
     dense_error = DenseFunction(*dense_F_array.shape)
-    dense_error.vector()[:] = exact_solution.vector().array().reshape((-1, 1))
+    dense_error.vector()[:] = exact_solution.vector().get_local().reshape((-1, 1))
     dense_error.vector()[:] -= dense_solution_array
     dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
     assert dense_error_norm.shape == (1, 1)

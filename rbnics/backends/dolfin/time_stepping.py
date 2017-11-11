@@ -67,14 +67,14 @@ class TimeStepping(AbstractTimeStepping):
         else:
             raise ValueError("Invalid time order in TimeStepping.solve().")
         self.solution.vector().zero()
-        self.solution.vector().add_local(all_solutions[-1].vector().array())
+        self.solution.vector().add_local(all_solutions[-1].vector().get_local())
         self.solution.vector().apply("add")
         self.solution_dot.vector().zero()
-        self.solution_dot.vector().add_local(all_solutions_dot[-1].vector().array())
+        self.solution_dot.vector().add_local(all_solutions_dot[-1].vector().get_local())
         self.solution_dot.vector().apply("add")
         if self.solution_dot_dot is not None:
             self.solution_dot_dot.vector().zero()
-            self.solution_dot_dot.vector().add_local(all_solutions_dot_dot[-1].vector().array())
+            self.solution_dot_dot.vector().add_local(all_solutions_dot_dot[-1].vector().get_local())
             self.solution_dot_dot.vector().apply("add")
         if self.time_order == 1:
             return (all_solutions_time, all_solutions, all_solutions_dot)
@@ -150,7 +150,7 @@ class _TimeDependentProblem_Base(object):
                 if len(self.all_solutions) == 1: # monitor is being called at t = 0.
                     output_solution_dot.vector().zero()
                 else:
-                    output_solution_dot.vector().add_local(- self.all_solutions[-2].vector().array())
+                    output_solution_dot.vector().add_local(- self.all_solutions[-2].vector().get_local())
                     output_solution_dot.vector().apply("add")
                     output_solution_dot.vector()[:] *= 1./self.output_dt
                 self.all_solutions_dot.append(output_solution_dot)
@@ -178,7 +178,7 @@ class _TimeDependentProblem_Base(object):
                 if len(self.all_solutions_dot) == 1: # monitor is being called at t = 0.
                     output_solution_dot_dot.vector().zero()
                 else:
-                    output_solution_dot_dot.vector().add_local(- self.all_solutions_dot[-2].vector().array())
+                    output_solution_dot_dot.vector().add_local(- self.all_solutions_dot[-2].vector().get_local())
                     output_solution_dot_dot.vector().apply("add")
                     output_solution_dot_dot.vector()[:] *= 1./self.output_dt
                 self.all_solutions_dot_dot.append(output_solution_dot_dot)

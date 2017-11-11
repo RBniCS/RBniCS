@@ -33,7 +33,7 @@ class TimeQuadrature(AbstractTimeQuadrature):
     def integrate(self):
         vector_over_time = list()
         for function in self._function_over_time:
-            vector_over_time.append(function.vector().array())
+            vector_over_time.append(function.vector().get_local())
         integrated_vector = simps(vector_over_time, dx=self._time_step_size, axis=0)
         integrated_function = function_copy(self._function_over_time[0])
         integrated_function.vector().zero()

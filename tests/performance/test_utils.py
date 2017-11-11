@@ -22,7 +22,7 @@ from rbnics.backends.online.numpy import Matrix as NumpyMatrix, Vector as NumpyV
 
 def RandomDolfinFunction(V):
     f = Function(V)
-    f.vector().set_local(_rand(f.vector().array().size))
+    f.vector().set_local(_rand(f.vector().get_local().size))
     f.vector().apply("insert")
     return f
 

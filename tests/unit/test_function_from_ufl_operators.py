@@ -114,43 +114,43 @@ def test_conversion(mesh, FunctionSpace, isclose):
     assert function_from_ufl_operators(z1) is z1
     
     _2_z1 = function_from_ufl_operators(2*z1)
-    assert isclose(_2_z1.vector().array(), 2.).all()
+    assert isclose(_2_z1.vector().get_local(), 2.).all()
     
     z1_2 = function_from_ufl_operators(z1*2)
-    assert isclose(z1_2.vector().array(), 2.).all()
+    assert isclose(z1_2.vector().get_local(), 2.).all()
     
     z1_over_2 = function_from_ufl_operators(z1/2.)
-    assert isclose(z1_over_2.vector().array(), 0.5).all()
+    assert isclose(z1_over_2.vector().get_local(), 0.5).all()
     
     z2 = Function(V)
     z2.vector()[:] = 2.
     
     z1_plus_z2 = function_from_ufl_operators(z1 + z2)
-    assert isclose(z1_plus_z2.vector().array(), 3.).all()
+    assert isclose(z1_plus_z2.vector().get_local(), 3.).all()
     
     z1_minus_z2 = function_from_ufl_operators(z1 - z2)
-    assert isclose(z1_minus_z2.vector().array(), -1.).all()
+    assert isclose(z1_minus_z2.vector().get_local(), -1.).all()
     
     z1_minus_2_z2 = function_from_ufl_operators(z1 - 2*z2)
-    assert isclose(z1_minus_2_z2.vector().array(), -3.).all()
+    assert isclose(z1_minus_2_z2.vector().get_local(), -3.).all()
     
     z1_minus_z2_2 = function_from_ufl_operators(z1 - z2*2)
-    assert isclose(z1_minus_z2_2.vector().array(), -3.).all()
+    assert isclose(z1_minus_z2_2.vector().get_local(), -3.).all()
     
     z1_minus_3_z2_2 = function_from_ufl_operators(z1 - 3*z2*2)
-    assert isclose(z1_minus_3_z2_2.vector().array(), -11.).all()
+    assert isclose(z1_minus_3_z2_2.vector().get_local(), -11.).all()
     
     z1_minus_z2_over_4 = function_from_ufl_operators(z1 - z2/4.)
-    assert isclose(z1_minus_z2_over_4.vector().array(), 0.5).all()
+    assert isclose(z1_minus_z2_over_4.vector().get_local(), 0.5).all()
     
     z1_minus_z2_over_2 = function_from_ufl_operators((z1 - z2)/2.)
-    assert isclose(z1_minus_z2_over_2.vector().array(), -0.5).all()
+    assert isclose(z1_minus_z2_over_2.vector().get_local(), -0.5).all()
     
     z3 = Function(V)
     z3.vector()[:] = 3.
     
     z1_minus_z2_plus_z3 = function_from_ufl_operators(z1 - z2 + z3)
-    assert isclose(z1_minus_z2_plus_z3.vector().array(), 2.).all()
+    assert isclose(z1_minus_z2_plus_z3.vector().get_local(), 2.).all()
 
 @pytest.mark.parametrize("FunctionSpace, bilinear_form, isclose", [
     (ScalarSpace, scalar_bilinear_form, scalar_normalization_isclose),
@@ -166,7 +166,7 @@ def test_normalization(mesh, FunctionSpace, bilinear_form, isclose):
     z1.vector()[:] = 2.
     
     z1_normalized = function_from_ufl_operators(z1/sqrt(transpose(z1)*A*z1))
-    assert isclose(z1_normalized.vector().array(), 1).all()
+    assert isclose(z1_normalized.vector().get_local(), 1).all()
     
 @pytest.mark.parametrize("FunctionSpace, bilinear_form, linear_form, isclose", [
     (ScalarSpace, scalar_bilinear_form, scalar_linear_form, scalar_transpose_isclose),

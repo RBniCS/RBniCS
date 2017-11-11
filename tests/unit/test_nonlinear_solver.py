@@ -101,8 +101,8 @@ def _test_nonlinear_solver_sparse(callback_type):
 
     # Compute the error
     sparse_form_error = Function(V)
-    sparse_form_error.vector().add_local(+ sparse_form_solution.vector().array())
-    sparse_form_error.vector().add_local(- exact_solution.vector().array())
+    sparse_form_error.vector().add_local(+ sparse_form_solution.vector().get_local())
+    sparse_form_error.vector().add_local(- exact_solution.vector().get_local())
     sparse_form_error.vector().apply("")
     sparse_form_error_norm = sparse_form_error.vector().inner(X*sparse_form_error.vector())
     print("SparseNonlinearSolver error (" + callback_type + "):", sparse_form_error_norm)
@@ -120,8 +120,8 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
     
     def dense_initial_guess():
         sparse_function = sparse_initial_guess()
-        dense_solution = DenseFunction(*sparse_function.vector().array().shape)
-        dense_solution.vector()[:] = sparse_function.vector().array().reshape((-1, 1))
+        dense_solution = DenseFunction(*sparse_function.vector().get_local().shape)
+        dense_solution.vector()[:] = sparse_function.vector().get_local().reshape((-1, 1))
         dense_solution_array = dense_solution.vector()
         dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
         return dense_solution
@@ -133,7 +133,7 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
         def residual_eval(self, solution):
             self._solution_from_dense_to_sparse(solution)
             sparse_residual = assemble(r)
-            dense_residual_array = sparse_residual.array()
+            dense_residual_array = sparse_residual.get_local()
             dense_residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             dense_residual = DenseVector(*dense_residual_array.shape)
             dense_residual[:] = dense_residual_array.reshape((-1, 1))
@@ -176,8 +176,8 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
     dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
     
     # Compute the error
-    dense_error = DenseFunction(*exact_solution.vector().array().shape)
-    dense_error.vector()[:] = exact_solution.vector().array().reshape((-1, 1))
+    dense_error = DenseFunction(*exact_solution.vector().get_local().shape)
+    dense_error.vector()[:] = exact_solution.vector().get_local().reshape((-1, 1))
     dense_error.vector()[:] -= dense_solution_array
     dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
     assert dense_error_norm.shape == (1, 1)

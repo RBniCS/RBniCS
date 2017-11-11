@@ -38,7 +38,7 @@ def basic_tensors_list_mul_online_function(backend, wrapping):
         output.zero()
         for (i, vector_i) in enumerate(tensors_list._list):
             online_vector_i = float(online_function.vector()[i])
-            output.add_local(vector_i.array()*online_vector_i)
+            output.add_local(vector_i.get_local()*online_vector_i)
         output.apply("add")
         
     return _basic_tensors_list_mul_online_function
