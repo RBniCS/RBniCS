@@ -17,7 +17,7 @@
 #
 
 import re
-from dolfin import Expression
+from dolfin import Expression, has_pybind11
 
 def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, **kwargs):
     from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
@@ -29,7 +29,14 @@ def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, 
     return ParametrizedExpression(truth_problem, parametrized_constant_code, *args, **kwargs)
     
 def is_parametrized_constant(expr):
-    return isinstance(expr, Expression) and bool(is_parametrized_constant.regex.match(expr.cppcode))
+    if not isinstance(expr, Expression):
+        return False
+    else:
+        if has_pybind11():
+            cppcode = expr._cppcode
+        else:
+            cppcode = expr.cppcode
+        return bool(is_parametrized_constant.regex.match(cppcode))
 is_parametrized_constant.regex = re.compile("^mu_[0-9]+$")
 
 def parametrized_constant_to_float(expr, point=None):

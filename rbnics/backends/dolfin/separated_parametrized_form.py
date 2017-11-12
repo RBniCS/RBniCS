@@ -130,9 +130,14 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                             if is_pull_back_expression(t) and not is_pull_back_expression_parametrized(t):
                                                 log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized pulled back expression")
                                                 break
-                                            elif "mu_0" not in t.user_parameters:
-                                                log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized expression")
-                                                break
+                                            else:
+                                                if has_pybind11():
+                                                    parameters = t._parameters
+                                                else:
+                                                    parameters = t.user_parameters
+                                                if "mu_0" not in parameters:
+                                                    log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized expression")
+                                                    break
                                         elif isinstance(t, Constant):
                                             log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a constant")
                                             break
@@ -269,7 +274,11 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                 for e in pre_traversal(integral.integrand()):
                     if isinstance(e, Expression):
                         assert not (is_pull_back_expression(e) and is_pull_back_expression_parametrized(e)), "Form " + str(integral) + " still contains a parametrized pull back expression"
-                        assert "mu_0" not in e.user_parameters, "Form " + str(integral) + " still contains a parametrized expression"
+                        if has_pybind11():
+                            parameters = e._parameters
+                        else:
+                            parameters = e.user_parameters
+                        assert "mu_0" not in parameters, "Form " + str(integral) + " still contains a parametrized expression"
         
         log(PROGRESS, "4. Prepare coefficients hash codes")
         for addend in self._coefficients:

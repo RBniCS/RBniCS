@@ -390,10 +390,18 @@ def is_pull_back_expression(expression):
     return hasattr(expression, "shape_parametrization_expression_on_subdomain")
 
 def is_pull_back_expression_parametrized(expression):
-    if "mu_0" in expression.f_no_upcast.user_parameters:
+    if has_pybind11():
+        parameters = expression.f_no_upcast._parameters
+    else:
+        parameters = expression.f_no_upcast.user_parameters
+    if "mu_0" in parameters:
         return True
     # mu[*] is provided by default to shape parametrization expressions, check if it is really used
-    shape_parametrization_expression_on_subdomain = expression.shape_parametrization_expression_on_subdomain_no_upcast.cppcode
+    shape_parametrization_expression_on_subdomain = expression.shape_parametrization_expression_on_subdomain_no_upcast
+    if has_pybind11():
+        shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain._cppcode
+    else:
+        shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain.cppcode
     for component_expression in shape_parametrization_expression_on_subdomain:
         assert isinstance(component_expression, str)
         if len(is_pull_back_expression_parametrized.regex.findall(component_expression)) > 0:
@@ -403,8 +411,12 @@ def is_pull_back_expression_parametrized(expression):
 is_pull_back_expression_parametrized.regex = re.compile(r"\bmu\[[0-9]+\]")
     
 def is_pull_back_expression_time_dependent(expression):
-    return "t" in expression.f_no_upcast.user_parameters
-
+    if has_pybind11():
+        parameters = expression.f_no_upcast._parameters
+    else:
+        parameters = expression.f_no_upcast.user_parameters
+    return "t" in parameters
+        
 class PullBackExpressions(MultiFunction):
     def __init__(self, shape_parametrization_expression_on_subdomain, problem):
         MultiFunction.__init__(self)
@@ -695,7 +707,10 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             if isinstance(node, Indexed):
                                 operand_0 = node.ufl_operands[0]
                                 if isinstance(operand_0, Expression):
-                                    node_cppcode = operand_0.cppcode
+                                    if has_pybind11():
+                                        node_cppcode = operand_0._cppcode
+                                    else:
+                                        node_cppcode = operand_0.cppcode
                                     for index in node.ufl_operands[1].indices():
                                         assert isinstance(index, FixedIndex)
                                         node_cppcode = node_cppcode[int(index)]
@@ -706,7 +721,11 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                     and
                                 node.ufl_shape == () # expressions with multiple components are visited by Indexed
                             ):
-                                if len(self._is_affine_parameter_dependent_regex.findall(node.cppcode)) > 0:
+                                if has_pybind11():
+                                    node_cppcode = node._cppcode
+                                else:
+                                    node_cppcode = node.cppcode
+                                if len(self._is_affine_parameter_dependent_regex.findall(node_cppcode)) > 0:
                                     return False
                 # The pulled back form is not affine if it contains a boundary integral on a non-straight boundary,
                 # because the normal direction would depend on x

@@ -28,8 +28,13 @@ def basic_is_time_dependent(backend, wrapping):
             if isinstance(node, Expression):
                 if is_pull_back_expression(node) and is_pull_back_expression_time_dependent(node):
                     return True
-                elif "t" in node.user_parameters:
-                    return True
+                else:
+                    if has_pybind11():
+                        parameters = node._parameters
+                    else:
+                        parameters = node.user_parameters
+                    if "t" not in parameters:
+                        return True
             # ... problem solutions related to nonlinear terms
             elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
                 if wrapping.is_problem_solution_or_problem_solution_component(node):

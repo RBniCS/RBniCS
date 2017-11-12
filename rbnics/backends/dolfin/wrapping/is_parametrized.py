@@ -26,8 +26,13 @@ def basic_is_parametrized(backend, wrapping):
             if isinstance(node, Expression):
                 if is_pull_back_expression(node) and is_pull_back_expression_parametrized(node):
                     return True
-                elif "mu_0" in node.user_parameters:
-                    return True
+                else:
+                    if has_pybind11():
+                        parameters = node._parameters
+                    else:
+                        parameters = node.user_parameters
+                    if "mu_0" not in parameters:
+                        return True
             # ... problem solutions related to nonlinear terms
             elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
                 if wrapping.is_problem_solution_or_problem_solution_component(node):

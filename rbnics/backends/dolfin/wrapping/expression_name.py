@@ -29,9 +29,13 @@ def basic_expression_name(backend, wrapping):
         for n in wrapping.expression_iterator(expression):
             if n in visited:
                 continue
-            if hasattr(n, "cppcode"):
-                coefficients_replacement[repr(n)] = str(n.cppcode)
-                str_repr += repr(n.cppcode)
+            if has_pybind11():
+                cppcode_attribute = "_cppcode"
+            else:
+                cppcode_attribute = "cppcode"
+            if hasattr(n, cppcode_attribute):
+                coefficients_replacement[repr(n)] = str(getattr(n, cppcode_attribute))
+                str_repr += repr(getattr(n, cppcode_attribute))
                 visited.add(n)
             elif wrapping.is_problem_solution_or_problem_solution_component_type(n):
                 if wrapping.is_problem_solution_or_problem_solution_component(n):

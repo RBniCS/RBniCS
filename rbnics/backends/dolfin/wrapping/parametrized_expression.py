@@ -79,7 +79,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     
     # Initialize expression
     expression = Expression(parametrized_expression_code, *args, **kwargs)
-    expression.mu = mu # to avoid repeated assignments
+    expression._mu = mu # to avoid repeated assignments
     expression.problem = truth_problem
     
     # Store ufl_domain
@@ -92,13 +92,13 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     standard_set_mu = truth_problem.set_mu
     def overridden_set_mu(self, mu):
         standard_set_mu(mu)
-        if expression.mu is not mu:
-            expression.set_mu(mu)
+        if expression._mu is not mu:
+            expression._set_mu(mu)
     truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
     def expression_set_mu(mu):
         assert isinstance(mu, tuple)
-        assert len(mu) >= len(expression.mu)
-        mu = mu[:len(expression.mu)]
+        assert len(mu) >= len(expression._mu)
+        mu = mu[:len(expression._mu)]
         for (p, mu_p) in enumerate(mu):
             assert isinstance(mu_p, (Expression, Number))
             if isinstance(mu_p, Number):
@@ -106,8 +106,8 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
             elif isinstance(mu_p, Expression):
                 assert is_parametrized_constant(mu_p)
                 setattr(expression, "mu_" + str(p), parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0]))
-        expression.mu = mu
-    expression.set_mu = expression_set_mu
+        expression._mu = mu
+    expression._set_mu = expression_set_mu
     # Note that this override is different from the one that we use in decorated problems,
     # since (1) we do not want to define a new child class, (2) we have to execute some preprocessing
     # on the data, (3) it is a one-way propagation rather than a sync.
