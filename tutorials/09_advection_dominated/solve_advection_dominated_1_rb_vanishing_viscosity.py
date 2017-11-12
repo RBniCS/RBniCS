@@ -151,7 +151,8 @@ online_mu = (6.0, )
 reduced_advection_dominated_problem.set_mu(online_mu)
 for online_vanishing_viscosity in (True, False):
     for online_rectification in (True, False):
-        filename = lambda prefix: "online_" + prefix + "_" + bool_to_string(online_vanishing_viscosity) + "_vanishing_viscosity_and_" + bool_to_string(online_rectification) + "_rectification"
+        def filename(prefix):
+            return "online_" + prefix + "_" + bool_to_string(online_vanishing_viscosity) + "_vanishing_viscosity_and_" + bool_to_string(online_rectification) + "_rectification"
         reduced_advection_dominated_problem.solve(online_vanishing_viscosity=online_vanishing_viscosity, online_rectification=online_rectification)
         reduced_advection_dominated_problem.export_solution(filename=filename("solution"))
         reduced_advection_dominated_problem.export_error(filename=filename("error"))

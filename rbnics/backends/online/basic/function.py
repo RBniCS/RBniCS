@@ -41,7 +41,7 @@ def Function(Vector):
             return function_abs
             
         def __add__(self, other):
-            if isinstance(other, _Function_Type):   
+            if isinstance(other, _Function_Type):
                 v_sum = self._v.__add__(other._v)
                 function_sum = _Function_Type.__new__(type(self), v_sum)
                 function_sum.__init__(v_sum)

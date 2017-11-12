@@ -22,7 +22,7 @@ def OnlineRectificationDecoratedProblem(**decorator_kwargs):
     from .online_rectification import OnlineRectification
     
     @ProblemDecoratorFor(OnlineRectification)
-    def OnlineRectificationDecoratedProblem_Decorator(EllipticCoerciveProblem_DerivedClass):                  
+    def OnlineRectificationDecoratedProblem_Decorator(EllipticCoerciveProblem_DerivedClass):
         # return value (a class) for the decorator
         return EllipticCoerciveProblem_DerivedClass
     

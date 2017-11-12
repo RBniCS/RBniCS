@@ -449,7 +449,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         def export_error(self, folder=None, filename=None, component=None, suffix=None, **kwargs):
             self.truth_problem.solve(**kwargs)
-            self.solve(N, **kwargs)
             error_function_over_time = list()
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
                 error_function_over_time.append(truth_solution - self.Z[:reduced_solution.N]*reduced_solution)

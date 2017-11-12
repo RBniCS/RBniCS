@@ -52,7 +52,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         self._form_unchanged = list() # of forms
         # Internal usage
         self._NaN = float("NaN")
-        # Strict mode when 
+        # Strict mode when
         # * checking candidates to be added to coefficients which contain both parametrized and non parametrized leaves.
         # * checking for coefficients that are solution
         # If False (default)

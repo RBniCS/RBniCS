@@ -784,7 +784,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                         locals[str(constant)] = float(constant)
                     elif len(constant.ufl_shape) is 1:
                         if has_pybind11():
-                            vals = n.values()
+                            vals = constant.values()
                         else:
                             mesh_point = self.V.mesh().coordinates()[0]
                             vals = numpy_zeros(constant.ufl_shape)
@@ -793,7 +793,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             locals[str(constant) + "[" + str(i) + "]"] = vals[i]
                     elif len(constant.ufl_shape) is 2:
                         if has_pybind11():
-                            vals = n.values()
+                            vals = constant.values()
                         else:
                             mesh_point = self.V.mesh().coordinates()[0]
                             vals = numpy_zeros(constant.ufl_shape).reshape((-1,))
