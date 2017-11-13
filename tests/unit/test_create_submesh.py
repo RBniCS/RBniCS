@@ -117,7 +117,17 @@ def dict_assert_equal(dic, directory, filename):
     assert isinstance(dic, dict)
     with open(os.path.join(directory, filename), "rb") as infile:
         dic_in = pickle.load(infile)
-    assert dic == dic_in
+    if has_pybind11():
+        assert dic.keys() == dic_in.keys()
+        for key in dic.keys():
+            dic_value = dic[key]
+            dic_in_value = dic_in[key]
+            if isinstance(dic_value, set) and isinstance(dic_in_value, array): # pybind11 has changed the return type of shared entities
+                assert dic_value == set(dic_in_value.tolist())
+            else:
+                assert dic_value == dic_in_value
+    else:
+        assert dic == dic_in
     
 # Auxiliary functions for list asserts
 def list_save(lis, directory, filename):

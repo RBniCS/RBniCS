@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import array, uintp, unique, where
+from numpy import array, cumsum, uintp, unique, where
 from scipy.spatial.ckdtree import cKDTree as KDTree
 from mpi4py.MPI import SUM
 from dolfin import Cell, cells, Facet, facets, FunctionSpace, has_pybind11, Mesh, MeshEditor, MeshFunction, Vertex, vertices
@@ -214,7 +214,54 @@ def create_submesh(mesh, markers):
     assert max(submesh_to_mesh_facets_local_indices.keys()) == len(submesh_to_mesh_facets_local_indices.keys()) - 1
     for submesh_facet_index in range(len(submesh_to_mesh_facets_local_indices)):
         submesh.submesh_to_mesh_facet_local_indices.append(submesh_to_mesh_facets_local_indices[submesh_facet_index])
-        
+    # == 3bis. Prepare (temporary) global indices of facets == #
+    # Wrapper to DistributedMeshTools::number_entities
+    if has_pybind11():
+        cpp_code = """
+            #include <pybind11/pybind11.h>
+            #include <dolfin/mesh/DistributedMeshTools.h>
+            #include <dolfin/mesh/Mesh.h>
+            
+            void initialize_global_indices(std::shared_ptr<dolfin::Mesh> mesh, std::size_t dim)
+            {
+                dolfin::DistributedMeshTools::number_entities(*mesh, dim);
+            }
+            
+            PYBIND11_MODULE(SIGNATURE, m)
+            {
+                m.def("initialize_global_indices", &initialize_global_indices);
+            }
+        """
+        initialize_global_indices = compile_cpp_code(cpp_code).initialize_global_indices
+    else:
+        cpp_code = """
+            void initialize_global_indices(Mesh & mesh, std::size_t dim)
+            {
+                DistributedMeshTools::number_entities(mesh, dim);
+            }
+        """
+        initialize_global_indices = compile_extension_module(cpp_code, additional_system_headers=["dolfin/mesh/DistributedMeshTools.h"]).initialize_global_indices
+    initialize_global_indices(mesh, mesh.topology().dim() - 1)
+    # Prepare global indices of facets
+    mesh_facets_local_to_global_indices = dict()
+    for mesh_cell_index in mesh_cell_indices:
+        mesh_cell = Cell(mesh, mesh_cell_index)
+        for mesh_facet in facets(mesh_cell):
+            mesh_facets_local_to_global_indices[mesh_facet.index()] = mesh_facet.global_index()
+    mesh_facets_global_indices_in_submesh = list()
+    for mesh_facet_local_index in mesh_to_submesh_facets_local_indices.keys():
+        mesh_facets_global_indices_in_submesh.append(mesh_facets_local_to_global_indices[mesh_facet_local_index])
+    allgathered__mesh_facets_global_indices_in_submesh = list()
+    for r in range(mpi_comm.size):
+        allgathered__mesh_facets_global_indices_in_submesh.extend(mpi_comm.bcast(mesh_facets_global_indices_in_submesh, root=r))
+    allgathered__mesh_facets_global_indices_in_submesh = sorted(set(allgathered__mesh_facets_global_indices_in_submesh))
+    mesh_to_submesh_facets_global_indices = dict()
+    for (submesh_facet_global_index, mesh_facet_global_index) in enumerate(allgathered__mesh_facets_global_indices_in_submesh):
+        mesh_to_submesh_facets_global_indices[mesh_facet_global_index] = submesh_facet_global_index
+    submesh_facets_local_to_global_indices = dict()
+    for (submesh_facet_local_index, mesh_facet_local_index) in submesh_to_mesh_facets_local_indices.items():
+        submesh_facets_local_to_global_indices[submesh_facet_local_index] = mesh_to_submesh_facets_global_indices[mesh_facets_local_to_global_indices[mesh_facet_local_index]]
+    
     # == 4. Assign shared vertices == #
     shared_entities_dimensions = {
         "vertex": 0,
@@ -231,16 +278,16 @@ def create_submesh(mesh, markers):
         "facet": facets,
         "cell": cells
     }
-    for entity in ["vertex", "facet", "cell"]: # do not use .keys() because the order is important
-        if entity == "facet":
-            # Make sure to initialize global indices for facets. I have yet to find a reliable way to do that,
-            # because mesh.init() seems to compute connectivities but not to initialize global indices.
-            # In the meantime, obtain this as a side effect of a function space declaration
-            FunctionSpace(mesh, "CG", 2)
-            FunctionSpace(submesh, "CG", 2)
-        dim = shared_entities_dimensions[entity]
-        class_ = shared_entities_class[entity]
-        iterator = shared_entities_iterator[entity]
+    shared_entities_submesh_global_index_getter = {
+        "vertex": lambda entity: entity.global_index(),
+        "facet": lambda entity: submesh_facets_local_to_global_indices[entity.index()],
+        "cell": lambda entity: entity.global_index()
+    }
+    for entity_type in ["vertex", "facet", "cell"]: # do not use .keys() because the order is important
+        dim = shared_entities_dimensions[entity_type]
+        class_ = shared_entities_class[entity_type]
+        iterator = shared_entities_iterator[entity_type]
+        submesh_global_index_getter = shared_entities_submesh_global_index_getter[entity_type]
         # Get shared entities from mesh. A subset of these will end being shared entities also the submesh
         # (thanks to the fact that we do not redistribute cells from one processor to another)
         if mpi_comm.size > 1: # some entities may not be initialized in serial, since they are not needed
@@ -252,12 +299,15 @@ def create_submesh(mesh, markers):
             # only one of the two cells is selected: the facet f and its vertices are not shared anymore!
             # For this reason, we create a new dict from global entity index to processors sharing them. Thus ...
             # ... first of all get global indices corresponding to local entities
-            assert submesh.topology().have_global_indices(dim), "Submesh global indices have not been initialized for dimension " + str(dim)
+            if entity_type in ["vertex", "cell"]:
+                assert submesh.topology().have_global_indices(dim), "Submesh global indices have not been initialized for dimension " + str(dim)
             submesh_local_entities_global_index = list()
             submesh_local_entities_global_to_local_index = dict()
             for entity in iterator(submesh):
-                submesh_local_entities_global_index.append(entity.global_index())
-                submesh_local_entities_global_to_local_index[entity.global_index()] = entity.index()
+                local_entity_index = entity.index()
+                global_entity_index = submesh_global_index_getter(entity)
+                submesh_local_entities_global_index.append(global_entity_index)
+                submesh_local_entities_global_to_local_index[global_entity_index] = local_entity_index
             # ... then gather all global indices from all processors
             gathered__submesh_local_entities_global_index = list() # over processor id
             for r in range(mpi_comm.size):
@@ -294,12 +344,12 @@ def create_submesh(mesh, markers):
                     
                     using OtherProcesses = Eigen::Ref<const Eigen::Matrix<std::size_t, Eigen::Dynamic, 1>>;
                     
-                    void set_shared_entities(dolfin::Mesh & submesh, std::size_t idx, const OtherProcesses other_processes, std::size_t dim)
+                    void set_shared_entities(std::shared_ptr<dolfin::Mesh> submesh, std::size_t idx, const OtherProcesses other_processes, std::size_t dim)
                     {
                         std::set<unsigned int> set_other_processes;
                         for (std::size_t i(0); i < other_processes.size(); i++)
                             set_other_processes.insert(other_processes[i]);
-                        submesh.topology().shared_entities(dim)[idx] = set_other_processes;
+                        submesh->topology().shared_entities(dim)[idx] = set_other_processes;
                     }
                     
                     PYBIND11_MODULE(SIGNATURE, m)
@@ -325,7 +375,10 @@ def create_submesh(mesh, markers):
             log(DEBUG, "Local indices of shared entities for dimension " + str(dim) + ": " + str(list(submesh.topology().shared_entities(0).keys())))
             log(DEBUG, "Global indices of shared entities for dimension " + str(dim) + ": " + str([class_(submesh, local_index).global_index() for local_index in submesh.topology().shared_entities(dim).keys()]))
     
-    # == 5. Restore backup_first_marker_id and return == #
+    # == 5. Also initialize submesh facets global indices, now that shared facets have been computed == #
+    initialize_global_indices(submesh, submesh.topology().dim() - 1) # note that DOLFIN might change the numbering when compared to the one at 3bis
+    
+    # == 6. Restore backup_first_marker_id and return == #
     if backup_first_marker_id is not None:
         markers.array()[0] = backup_first_marker_id
     return submesh
