@@ -102,11 +102,11 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
     def _solve(self):
         if self.multiply_by_theta:
             assert isinstance(self.term, str) # method untested otherwise
-            O = sum(product(self.truth_problem.compute_theta(self.term), self.operator))
+            O = sum(product(self.truth_problem.compute_theta(self.term), self.operator))  # noqa
         else:
             assert isinstance(self.term, tuple) # method untested otherwise
             assert len(self.operator) == 1
-            O = self.operator[0]
+            O = self.operator[0]  # noqa
         assert len(self.inner_product) == 1
         X = self.inner_product[0]
         
