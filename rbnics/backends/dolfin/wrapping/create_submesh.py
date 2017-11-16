@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import array, cumsum, uintp, unique, where
+from numpy import array, uintp, unique, where
 from scipy.spatial.ckdtree import cKDTree as KDTree
 from mpi4py.MPI import SUM
 from dolfin import Cell, cells, Facet, facets, FunctionSpace, has_pybind11, Mesh, MeshEditor, MeshFunction, Vertex, vertices
