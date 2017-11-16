@@ -37,6 +37,7 @@ from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 from ufl.indexed import Indexed
 from dolfin import assemble, cells, Constant, Expression, facets, has_pybind11
 if has_pybind11():
+    from dolfin import compile_cpp_code, CompiledExpression
     from dolfin.cpp.la import GenericMatrix, GenericVector
     from dolfin.function.expression import BaseExpression
 else:
@@ -361,34 +362,82 @@ def pull_back_geometric_quantities(shape_parametrization_expression_on_subdomain
     return map_expr_dag(PullBackGeometricQuantities(shape_parametrization_expression_on_subdomain, problem), integrand)
 
 # ===== Pull back expressions to reference domain: inspired by ufl/algorithms/apply_function_pullbacks.py ===== #
-pull_back_expression_code = """
-    class PullBackExpression : public Expression
-    {
-    public:
-        PullBackExpression() : Expression() {}
+if has_pybind11():
+    pull_back_expression_code = """
+        #include <Eigen/Core>
+        #include <pybind11/pybind11.h>
+        #include <pybind11/eigen.h>
+        #include <dolfin/function/Expression.h>
         
-        std::shared_ptr<Expression> f;
-        std::shared_ptr<Expression> shape_parametrization_expression_on_subdomain;
-
-        void eval(Array<double>& values, const Array<double>& x, const ufc::cell& c) const
+        namespace py = pybind11;
+        
+        class PullBackExpression : public dolfin::Expression
         {
-            Array<double> x_o(x.size());
-            shape_parametrization_expression_on_subdomain->eval(x_o, x, c);
-            f->eval(values, x_o, c);
+        public:
+            PullBackExpression(std::shared_ptr<dolfin::Expression> f, std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain) :
+                Expression(),
+                f(f),
+                shape_parametrization_expression_on_subdomain(shape_parametrization_expression_on_subdomain) {}
+
+            void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x, const ufc::cell& c) const
+            {
+                Eigen::VectorXd x_o(x.size());
+                shape_parametrization_expression_on_subdomain->eval(x_o, x, c);
+                f->eval(values, x_o, c);
+            }
+        private:
+            std::shared_ptr<dolfin::Expression> f;
+            std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain;
+        };
+        
+        PYBIND11_MODULE(SIGNATURE, m)
+        {
+            py::class_<PullBackExpression, std::shared_ptr<PullBackExpression>,
+                       dolfin::Expression>(m, "PullBackExpression", py::dynamic_attr())
+              .def(py::init<std::shared_ptr<dolfin::Expression>, std::shared_ptr<dolfin::Expression>>());
         }
-    };
-"""
+    """
+else:
+    pull_back_expression_code = """
+        class PullBackExpression : public Expression
+        {
+        public:
+            PullBackExpression() : Expression() {}
+            
+            std::shared_ptr<Expression> f;
+            std::shared_ptr<Expression> shape_parametrization_expression_on_subdomain;
+
+            void eval(Array<double>& values, const Array<double>& x, const ufc::cell& c) const
+            {
+                Array<double> x_o(x.size());
+                shape_parametrization_expression_on_subdomain->eval(x_o, x, c);
+                f->eval(values, x_o, c);
+            }
+        };
+    """
 def PullBackExpression(shape_parametrization_expression_on_subdomain, f, problem):
     shape_parametrization_expression_on_subdomain = ShapeParametrizationMap(shape_parametrization_expression_on_subdomain, problem).ufl
-    pulled_back_f = Expression(pull_back_expression_code, element=f.ufl_element())
-    pulled_back_f.f = f
-    pulled_back_f.f_no_upcast = f
-    pulled_back_f.shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain
-    pulled_back_f.shape_parametrization_expression_on_subdomain_no_upcast = shape_parametrization_expression_on_subdomain
+    if has_pybind11():
+        PullBackExpression = compile_cpp_code(pull_back_expression_code).PullBackExpression
+        pulled_back_f_cpp = PullBackExpression(f._cpp_object, shape_parametrization_expression_on_subdomain._cpp_object)
+        pulled_back_f_cpp.f_no_upcast = f
+        pulled_back_f_cpp.shape_parametrization_expression_on_subdomain_no_upcast = shape_parametrization_expression_on_subdomain
+        pulled_back_f_cpp._parameters = f._parameters
+        pulled_back_f = CompiledExpression(pulled_back_f_cpp, element=f.ufl_element())
+    else:
+        pulled_back_f = Expression(pull_back_expression_code, element=f.ufl_element())
+        pulled_back_f.f = f
+        pulled_back_f.shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain
+        pulled_back_f.f_no_upcast = f
+        pulled_back_f.shape_parametrization_expression_on_subdomain_no_upcast = shape_parametrization_expression_on_subdomain
+        pulled_back_f.user_parameters = f.user_parameters
     return pulled_back_f
     
 def is_pull_back_expression(expression):
-    return hasattr(expression, "shape_parametrization_expression_on_subdomain")
+    if has_pybind11():
+        return hasattr(expression, "shape_parametrization_expression_on_subdomain_no_upcast")
+    else:
+        return hasattr(expression, "shape_parametrization_expression_on_subdomain_no_upcast")
 
 def is_pull_back_expression_parametrized(expression):
     if has_pybind11():
