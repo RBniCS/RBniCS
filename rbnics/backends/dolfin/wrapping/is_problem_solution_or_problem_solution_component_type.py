@@ -23,11 +23,15 @@ from ufl.core.multiindex import IndexBase, MultiIndex
 from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
-from dolfin import Constant, Expression, Function
+from dolfin import Constant, Function, has_pybind11
+if has_pybind11():
+    from dolfin.function.expression import BaseExpression
+else:
+    from dolfin import Expression as BaseExpression
 from rbnics.utils.decorators import overload
 
 @overload
-def is_problem_solution_or_problem_solution_component_type(node: (Argument, Constant, ConstantValue, Expression, GeometricQuantity, IndexBase, MultiIndex, Operator)):
+def is_problem_solution_or_problem_solution_component_type(node: (Argument, BaseExpression, Constant, ConstantValue, GeometricQuantity, IndexBase, MultiIndex, Operator)):
     return False
     
 @overload

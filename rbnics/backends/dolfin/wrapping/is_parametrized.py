@@ -16,14 +16,18 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Expression
+from dolfin import has_pybind11
+if has_pybind11():
+    from dolfin.function.expression import BaseExpression
+else:
+    from dolfin import Expression as BaseExpression
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized
 
 def basic_is_parametrized(backend, wrapping):
     def _basic_is_parametrized(expression_or_form, iterator):
         for node in iterator(expression_or_form):
             # ... parametrized expressions
-            if isinstance(node, Expression):
+            if isinstance(node, BaseExpression):
                 if is_pull_back_expression(node) and is_pull_back_expression_parametrized(node):
                     return True
                 else:

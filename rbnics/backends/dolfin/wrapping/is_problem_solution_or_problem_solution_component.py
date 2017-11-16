@@ -23,7 +23,11 @@ from ufl.core.multiindex import FixedIndex, Index as MuteIndex, IndexBase, Multi
 from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
-from dolfin import Constant, Expression, Function, MixedElement, split, TensorElement
+from dolfin import Constant, Function, has_pybind11, MixedElement, split, TensorElement
+if has_pybind11():
+    from dolfin.function.expression import BaseExpression
+else:
+    from dolfin import Expression as BaseExpression
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _get_sub_elements__recursive
 from rbnics.utils.decorators import overload
 from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
@@ -55,7 +59,7 @@ def _split_function(solution, solution_split_to_component, solution_split_to_sol
             solution_split_to_solution[sub_solution] = solution
             
 @overload
-def _remove_mute_indices(node: (Argument, Constant, ConstantValue, Expression, Function, GeometricQuantity, IndexBase, MultiIndex, Operator)):
+def _remove_mute_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity, IndexBase, MultiIndex, Operator)):
     return node
     
 @overload

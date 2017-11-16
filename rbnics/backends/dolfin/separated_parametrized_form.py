@@ -17,11 +17,13 @@
 #
 
 from numpy import ones
-from dolfin import Constant, Expression, has_pybind11
+from dolfin import Constant, has_pybind11
 if has_pybind11():
     from dolfin.cpp.log import log, LogLevel
+    from dolfin.function.expression import BaseExpression
     PROGRESS = LogLevel.PROGRESS
 else:
+    from dolfin import Expression as BaseExpression
     from dolfin import log, PROGRESS
 from ufl import Argument, Form, Measure, replace
 from ufl.algebra import Sum
@@ -126,7 +128,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                 if not internal_tree_nodes_skip[d_i]:
                                     # Skip all expressions where at least one leaf is not parametrized
                                     for t in traverse_terminals(d):
-                                        if isinstance(t, Expression):
+                                        if isinstance(t, BaseExpression):
                                             if is_pull_back_expression(t) and not is_pull_back_expression_parametrized(t):
                                                 log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized pulled back expression")
                                                 break
@@ -155,7 +157,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
                                     else:
                                         at_least_one_expression_or_solution = False
                                         for t in traverse_terminals(d):
-                                            if isinstance(t, Expression): # which is parametrized, because previous for loop was not broken
+                                            if isinstance(t, BaseExpression): # which is parametrized, because previous for loop was not broken
                                                 at_least_one_expression_or_solution = True
                                                 log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the parametrized expression " + str(t))
                                                 break
@@ -272,7 +274,7 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         for form in self._form_with_placeholders:
             for integral in form.integrals():
                 for e in pre_traversal(integral.integrand()):
-                    if isinstance(e, Expression):
+                    if isinstance(e, BaseExpression):
                         assert not (is_pull_back_expression(e) and is_pull_back_expression_parametrized(e)), "Form " + str(integral) + " still contains a parametrized pull back expression"
                         if has_pybind11():
                             parameters = e._parameters

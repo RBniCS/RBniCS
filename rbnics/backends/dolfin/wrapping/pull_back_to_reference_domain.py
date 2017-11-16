@@ -38,8 +38,9 @@ from ufl.indexed import Indexed
 from dolfin import assemble, cells, Constant, Expression, facets, has_pybind11
 if has_pybind11():
     from dolfin.cpp.la import GenericMatrix, GenericVector
+    from dolfin.function.expression import BaseExpression
 else:
-    from dolfin import GenericMatrix, GenericVector
+    from dolfin import Expression as BaseExpression, GenericMatrix, GenericVector
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
@@ -426,7 +427,8 @@ class PullBackExpressions(MultiFunction):
     expr = MultiFunction.reuse_if_untouched
     
     def terminal(self, o):
-        if isinstance(o, Expression):
+        if isinstance(o, BaseExpression):
+            assert isinstance(o, Expression), "Other expression types are not handled yet"
             return PullBackExpression(self.shape_parametrization_expression_on_subdomain, o, self.problem)
         else:
             return o
@@ -706,7 +708,8 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                         for node in pre_traversal(factor):
                             if isinstance(node, Indexed):
                                 operand_0 = node.ufl_operands[0]
-                                if isinstance(operand_0, Expression):
+                                if isinstance(operand_0, BaseExpression):
+                                    assert isinstance(operand_0, Expression), "Other expression types are not handled yet"
                                     if has_pybind11():
                                         node_cppcode = operand_0._cppcode
                                     else:
@@ -717,10 +720,11 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                     if len(self._is_affine_parameter_dependent_regex.findall(node_cppcode)) > 0:
                                         return False
                             elif (
-                                isinstance(node, Expression)
+                                isinstance(node, BaseExpression)
                                     and
                                 node.ufl_shape == () # expressions with multiple components are visited by Indexed
                             ):
+                                assert isinstance(node, Expression), "Other expression types are not handled yet"
                                 if has_pybind11():
                                     node_cppcode = node._cppcode
                                 else:
