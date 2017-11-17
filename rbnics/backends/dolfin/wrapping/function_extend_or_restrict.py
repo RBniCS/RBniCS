@@ -17,8 +17,7 @@
 #
 
 from collections import OrderedDict
-from dolfin import assign
-from rbnics.backends.dolfin.function import Function
+from dolfin import assign, Function
 
 def function_extend_or_restrict(function, function_components, V, V_components, weight, copy, extended_or_restricted_function=None):
     function_V = function.function_space()
