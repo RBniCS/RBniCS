@@ -25,7 +25,7 @@ import urllib.request
 from multipledispatch import halt_ordering, restart_ordering  # noqa
 from multipledispatch.conflict import ambiguous, ambiguities, ordering  # noqa
 from multipledispatch.utils import raises
-from rbnics.utils.decorators import dict_of, dispatch, list_of, overload, tuple_of
+from rbnics.utils.decorators import dict_of, dispatch, iterable_of, list_of, overload, tuple_of
 from rbnics.utils.decorators.dispatch import AmbiguousSignatureError, consistent, Dispatcher, InvalidSignatureError, MethodDispatcher_Wrapper as MethodDispatcher, supercedes, UnavailableSignatureError
 
 # Fixture to clean up current module after test execution
@@ -210,6 +210,15 @@ def test_supercedes_2():
     assert supercedes((A, ), ((A, B), ))
     assert supercedes((B, ), ((A, B), ))
     
+    assert supercedes((iterable_of(B), ), (iterable_of(A), ))
+    assert supercedes((iterable_of((B, A)), ), (iterable_of(A), ))
+    assert supercedes((iterable_of((B, A)), ), (iterable_of((A, A)), ))
+    assert supercedes((iterable_of((B, A)), ), (iterable_of((A, B)), ))
+    assert supercedes((iterable_of((B, B)), ), (iterable_of((B)), ))
+    assert supercedes((iterable_of((B, B)), ), (iterable_of((A, B)), ))
+    assert supercedes((iterable_of(B), B), (iterable_of(A), A))
+    assert not supercedes((iterable_of(A), ), (iterable_of(B), ))
+    
     assert supercedes((list_of(B), ), (list_of(A), ))
     assert supercedes((list_of((B, A)), ), (list_of(A), ))
     assert supercedes((list_of((B, A)), ), (list_of((A, A)), ))
@@ -218,6 +227,23 @@ def test_supercedes_2():
     assert supercedes((list_of((B, B)), ), (list_of((A, B)), ))
     assert supercedes((list_of(B), B), (list_of(A), A))
     assert not supercedes((list_of(A), ), (list_of(B), ))
+    
+    assert supercedes((list_of(B), ), (iterable_of(A), ))
+    assert not supercedes((iterable_of(B), ), (list_of(A), ))
+    assert supercedes((list_of((B, A)), ), (iterable_of(A), ))
+    assert not supercedes((iterable_of((B, A)), ), (list_of(A), ))
+    assert supercedes((list_of((B, A)), ), (iterable_of((A, A)), ))
+    assert not supercedes((iterable_of((B, A)), ), (list_of((A, A)), ))
+    assert supercedes((list_of((B, A)), ), (iterable_of((A, B)), ))
+    assert not supercedes((iterable_of((B, A)), ), (list_of((A, B)), ))
+    assert supercedes((list_of((B, B)), ), (iterable_of((B)), ))
+    assert not supercedes((iterable_of((B, B)), ), (list_of((B)), ))
+    assert supercedes((list_of((B, B)), ), (iterable_of((A, B)), ))
+    assert not supercedes((iterable_of((B, B)), ), (list_of((A, B)), ))
+    assert supercedes((list_of(B), B), (iterable_of(A), A))
+    assert not supercedes((iterable_of(B), B), (list_of(A), A))
+    assert not supercedes((list_of(A), ), (iterable_of(B), ))
+    assert not supercedes((iterable_of(A), ), (list_of(B), ))
     
     assert supercedes((dict_of(B, C), ), (dict_of(A, C), ))
     assert supercedes((dict_of(B, C), ), (dict_of((A, C), C), ))
@@ -242,6 +268,15 @@ def test_consistent_2():
     assert not consistent((B, A), (B, ))
     assert not consistent((B, A), (B, C))
     
+    assert consistent((iterable_of(A), ), (iterable_of(A), ))
+    assert consistent((iterable_of(B), ), (iterable_of(B), ))
+    assert not consistent((iterable_of(A), ), (iterable_of(C), ))
+    assert consistent((iterable_of((A, B)), ), (iterable_of((A, B)), ))
+    assert consistent((iterable_of((B, A)), ), (iterable_of((A, B)), ))
+    assert consistent((iterable_of((B, A)), ), (iterable_of(B), ))
+    assert consistent((iterable_of((B, A)), ), (iterable_of(A), ))
+    assert not consistent((iterable_of((B, A)), ), (iterable_of((B, C)), ))
+    
     assert consistent((list_of(A), ), (list_of(A), ))
     assert consistent((list_of(B), ), (list_of(B), ))
     assert not consistent((list_of(A), ), (list_of(C), ))
@@ -250,6 +285,23 @@ def test_consistent_2():
     assert consistent((list_of((B, A)), ), (list_of(B), ))
     assert consistent((list_of((B, A)), ), (list_of(A), ))
     assert not consistent((list_of((B, A)), ), (list_of((B, C)), ))
+    
+    assert not consistent((list_of(A), ), (iterable_of(A), ))
+    assert not consistent((iterable_of(A), ), (list_of(A), ))
+    assert not consistent((list_of(B), ), (iterable_of(B), ))
+    assert not consistent((iterable_of(B), ), (list_of(B), ))
+    assert not consistent((list_of(A), ), (iterable_of(C), ))
+    assert not consistent((iterable_of(A), ), (list_of(C), ))
+    assert not consistent((list_of((A, B)), ), (iterable_of((A, B)), ))
+    assert not consistent((iterable_of((A, B)), ), (list_of((A, B)), ))
+    assert not consistent((list_of((B, A)), ), (iterable_of((A, B)), ))
+    assert not consistent((iterable_of((B, A)), ), (list_of((A, B)), ))
+    assert not consistent((list_of((B, A)), ), (iterable_of(B), ))
+    assert not consistent((iterable_of((B, A)), ), (list_of(B), ))
+    assert not consistent((list_of((B, A)), ), (iterable_of(A), ))
+    assert not consistent((iterable_of((B, A)), ), (list_of(A), ))
+    assert not consistent((list_of((B, A)), ), (iterable_of((B, C)), ))
+    assert not consistent((iterable_of((B, A)), ), (list_of((B, C)), ))
     
     assert consistent((dict_of(A, C), ), (dict_of(A, C), ))
     assert consistent((dict_of(B, C), ), (dict_of(B, C), ))

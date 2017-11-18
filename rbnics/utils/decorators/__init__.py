@@ -21,7 +21,7 @@ from rbnics.utils.decorators.abstract_backend import AbstractBackend, abstract_b
 from rbnics.utils.decorators.backend_for import BackendFor, backend_for
 from rbnics.utils.decorators.customize_reduction_method_for import CustomizeReductionMethodFor
 from rbnics.utils.decorators.customize_reduced_problem_for import CustomizeReducedProblemFor
-from rbnics.utils.decorators.dispatch import array_of, dict_of, dispatch, list_of, overload, set_of, tuple_of
+from rbnics.utils.decorators.dispatch import array_of, dict_of, dispatch, iterable_of, list_of, overload, set_of, tuple_of
 from rbnics.utils.decorators.exact_problem import exact_problem
 from rbnics.utils.decorators.module_wrapper import ModuleWrapper
 from rbnics.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
@@ -68,6 +68,7 @@ __all__ = [
     'get_problem_from_solution',
     'get_reduced_problem_from_problem',
     'is_training_finished',
+    'iterable_of',
     'list_of',
     'ModuleWrapper',
     'MultiLevelReducedProblem',

@@ -158,7 +158,7 @@ class Dispatcher(OriginalDispatcher):
         """
         This is a customization required by Dispatcher.__call__ method so that:
             * get_types() function is used to get input types. This handles the case of
-              array_of, dict_of, list_of, set_of, tuple_of
+              array_of, dict_of, iterable_of, list_of, set_of, tuple_of
             * a custom UnavailableSignatureError is thrown if no corresponding signature is provided
         It is based on the original multipledispatch implementation of Dispatcher.__call__
         """
@@ -411,11 +411,15 @@ def overload(*args, **kwargs):
         return dispatch(*args, **kwargs)
 
 # == Replacements for array, dict, list, tuple that allow to specify content input types == #
-class _array_or_list_or_set_of_or_tuple_of(object):
+class _iterable_of(object):
     def __init__(self, types):
         self.types = types
+        
+    def __str__(self):
+        return "iterable_of(" + str(self.types) + ")"
+    __repr__ = __str__
 
-class _array_of(_array_or_list_or_set_of_or_tuple_of):
+class _array_of(_iterable_of):
     def __str__(self):
         return "array_of(" + str(self.types) + ")"
     __repr__ = __str__
@@ -429,21 +433,22 @@ class _dict_of(object):
         return "dict_of(" + str(self.types_from) + ": " + str(self.types_to) + ")"
     __repr__ = __str__
     
-class _list_of(_array_or_list_or_set_of_or_tuple_of):
+class _list_of(_iterable_of):
     def __str__(self):
         return "list_of(" + str(self.types) + ")"
     __repr__ = __str__
 
-class _set_of(_array_or_list_or_set_of_or_tuple_of):
+class _set_of(_iterable_of):
     def __str__(self):
         return "set_of(" + str(self.types) + ")"
     __repr__ = __str__
         
-class _tuple_of(_array_or_list_or_set_of_or_tuple_of):
+class _tuple_of(_iterable_of):
     def __str__(self):
         return "tuple_of(" + str(self.types) + ")"
     __repr__ = __str__
     
+_all_iterable_of_instances = dict()
 _all_array_of_instances = dict()
 _all_dict_of_instances = dict()
 _all_list_of_instances = dict()
@@ -454,7 +459,7 @@ def _remove_repeated_types(types):
     if isinstance(types, tuple):
         all_types = set()
         for t in types:
-            assert inspect.isclass(t) or isinstance(t, (_array_of, _dict_of, _list_of, _set_of, _tuple_of))
+            assert inspect.isclass(t) or isinstance(t, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of))
             all_types.add(t)
         if len(all_types) is 0 or len(all_types) > 1:
             return (tuple(all_types), frozenset(all_types))
@@ -463,6 +468,12 @@ def _remove_repeated_types(types):
             return (types, frozenset({types}))
     else:
         return (types, frozenset({types}))
+
+def iterable_of(types):
+    (types, types_set) = _remove_repeated_types(types)
+    if types_set not in _all_iterable_of_instances:
+        _all_iterable_of_instances[types_set] = _iterable_of(types)
+    return _all_iterable_of_instances[types_set]
 
 def array_of(types):
     (types, types_set) = _remove_repeated_types(types)
@@ -514,7 +525,7 @@ def validate_types(inputs, allow_lambda):
             assert (
                 inspect.isclass(input_)
                     or
-                isinstance(input_, (_array_of, _dict_of, _list_of, _set_of, _tuple_of))
+                isinstance(input_, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of))
                     or
                 input_ is None
                     or
@@ -568,7 +579,7 @@ def get_types(inputs):
     types = tuple(types)
     return types
     
-# == Customize tuple expansion to handle array_of, dict_of, list_of, set_of, tuple_of == #
+# == Customize tuple expansion to handle array_of, dict_of, iterable_of, list_of, set_of, tuple_of == #
 def expand_tuples(L):
     if not L:
         output = {()}
@@ -581,7 +592,7 @@ def expand_arg(arg, tuple_expansion=True):
         for i in arg:
             for j in expand_arg(i):
                 yield j
-    elif isinstance(arg, (_array_of, _list_of, _set_of, _tuple_of)):
+    elif isinstance(arg, (_array_of, _list_of, _iterable_of, _set_of, _tuple_of)):
         generator_of = _generator_of[type(arg)]
         for i in powerset(arg.types):
             for j in expand_arg(i, tuple_expansion=False):
@@ -598,6 +609,7 @@ def expand_arg(arg, tuple_expansion=True):
 _generator_of = {
     _array_of: array_of,
     _dict_of: dict_of,
+    _iterable_of: iterable_of,
     _list_of: list_of,
     _set_of: set_of,
     _tuple_of: tuple_of
@@ -614,8 +626,8 @@ def supercedes(A, B):
         return False
     else:
         for (a, b) in zip(A, B):
-            if isinstance(a, (_array_of, _list_of, _set_of, _tuple_of)):
-                if type(a) == type(b):
+            if isinstance(a, (_array_of, _list_of, _iterable_of, _set_of, _tuple_of)):
+                if type(a) == type(b) or type(b) == _iterable_of:
                     if not supercedes((a.types, ), (b.types, )):
                         return False
                 elif b is object:
@@ -635,7 +647,7 @@ def supercedes(A, B):
                     if not supercedes((sub_a, ), (b, )):
                         return False
             else:
-                if isinstance(b, (_array_of, _dict_of, _list_of, _set_of, _tuple_of)):
+                if isinstance(b, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of)):
                     return False
                 elif isinstance(b, (list, tuple)):
                     for sub_b in b:
@@ -666,7 +678,7 @@ def consistent(A, B):
         return False
     else:
         for (a, b) in zip(A, B):
-            if isinstance(a, (_array_of, _list_of, _set_of, _tuple_of)):
+            if isinstance(a, (_array_of, _list_of, _iterable_of, _set_of, _tuple_of)):
                 if type(a) == type(b):
                     if not supercedes((a.types, ), (b.types, )) and not supercedes((b.types, ), (a.types, )):
                         return False
@@ -683,7 +695,7 @@ def consistent(A, B):
                 else:
                     return False
             else:
-                if isinstance(b, (_array_of, _dict_of, _list_of, _set_of, _tuple_of)):
+                if isinstance(b, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of)):
                     return False
                 elif a is None and b is None:
                     continue
