@@ -48,8 +48,8 @@ from rbnics.backends.dolfin.wrapping.function_from_ufl_operators import function
 from rbnics.backends.dolfin.wrapping.function_load import function_load
 from rbnics.backends.dolfin.wrapping.function_save import function_save
 from rbnics.backends.dolfin.wrapping.function_space import FunctionSpace
-from rbnics.backends.dolfin.wrapping.function_to_vector import function_to_vector
 from rbnics.backends.dolfin.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector
+from rbnics.backends.dolfin.wrapping.function_to_vector import function_to_vector
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
 from rbnics.backends.dolfin.wrapping.get_function_norm import get_function_norm
 from rbnics.backends.dolfin.wrapping.get_function_space import get_function_space
@@ -107,10 +107,10 @@ __all__ = [
     'function_from_ufl_operators',
     'function_load',
     'function_save',
-    'function_to_vector',
-    'FunctionSpace',
     'functions_list_mul_online_matrix',
     'functions_list_mul_online_vector',
+    'FunctionSpace',
+    'function_to_vector',
     'get_auxiliary_problem_for_non_parametrized_function',
     'get_function_norm',
     'get_function_space',

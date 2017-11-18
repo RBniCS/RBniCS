@@ -167,4 +167,4 @@ def basic_expression_on_truth_mesh(backend, wrapping):
 
 # No explicit instantiation for backend = rbnics.backends.dolfin to avoid
 # circular dependencies. The concrete instatiation will be carried out in
-# rbnics.backends.function.evaluate
+# rbnics.backends.dolfin.evaluate

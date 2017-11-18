@@ -247,4 +247,4 @@ def basic_form_on_reduced_function_space(backend, wrapping):
 
 # No explicit instantiation for backend = rbnics.backends.dolfin to avoid
 # circular dependencies. The concrete instatiation will be carried out in
-# rbnics.backends.function.evaluate
+# rbnics.backends.dolfin.evaluate

@@ -27,7 +27,6 @@ if has_pybind11():
 else:
     from dolfin import DEBUG, log
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
-from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.wrapping import FunctionSpace
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.utils.decorators import abstractmethod, BackendFor, ModuleWrapper
@@ -225,8 +224,9 @@ def BasicReducedMesh(backend, wrapping):
         def _compute_dof_to_cells(self, V_component):
             pass
             
+        @staticmethod
         @abstractmethod
-        def _get_reduced_function_space_type(self, V_component):
+        def _get_reduced_function_space_type(V_component):
             pass
         
         def save(self, directory, filename):
@@ -561,11 +561,22 @@ def BasicReducedMesh(backend, wrapping):
             else:
                 return False
                 
-        @abstractmethod
         def _load_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_problem, auxiliary_reduced_V):
-            pass
-                
-        def _init_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_problem, auxiliary_reduced_V):
+            # Get full directory name
+            full_directory = Folders.Folder(os.path.join(str(self._auxiliary_io_directory), self._auxiliary_io_filename))
+            full_directory.create()
+            # Load auxiliary basis functions matrix
+            full_directory_plus_key = Folders.Folder(full_directory + "/auxiliary_basis_functions/" + self._auxiliary_key_to_folder(key))
+            if not full_directory_plus_key.create():
+                auxiliary_basis_functions_matrix = self._init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V)
+                auxiliary_basis_functions_matrix.load(full_directory_plus_key, "auxiliary_basis")
+                self._auxiliary_basis_functions_matrix[key] = auxiliary_basis_functions_matrix
+                return True
+            else:
+                return False
+         
+        @staticmethod
+        def _init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V):
             auxiliary_basis_functions_matrix = backend.BasisFunctionsMatrix(auxiliary_reduced_V)
             components_tuple = key[1]
             assert isinstance(components_tuple, tuple)
@@ -663,8 +674,9 @@ def BasicReducedMesh(backend, wrapping):
                 assert key in self._auxiliary_dofs_to_reduced_dofs
             return self._auxiliary_reduced_function_space[key]
         
+        @staticmethod
         @abstractmethod
-        def _get_auxiliary_reduced_function_space_type(self, auxiliary_V):
+        def _get_auxiliary_reduced_function_space_type(auxiliary_V):
             pass
         
         def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, auxiliary_reduced_problem, component, index=None):
@@ -712,6 +724,7 @@ def BasicReducedMesh(backend, wrapping):
             return N
     return _BasicReducedMesh
 
+from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, convert_meshfunctions_to_submesh, convert_functionspace_to_submesh, evaluate_basis_functions_matrix_at_dofs, evaluate_sparse_function_at_dofs, map_functionspaces_between_mesh_and_submesh
 backend = ModuleWrapper(BasisFunctionsMatrix)
 wrapping = ModuleWrapper(build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, convert_meshfunctions_to_submesh, convert_functionspace_to_submesh, evaluate_sparse_function_at_dofs, map_functionspaces_between_mesh_and_submesh, evaluate_basis_functions_matrix_at_dofs=evaluate_basis_functions_matrix_at_dofs)
@@ -731,7 +744,8 @@ class ReducedMesh(ReducedMesh_Base):
                     dof_to_cells[global_dof].append(cell)
         return dof_to_cells
         
-    def _get_reduced_function_space_type(self, V_component):
+    @staticmethod
+    def _get_reduced_function_space_type(V_component):
         if hasattr(V_component, "_component_to_index"):
             def CustomFunctionSpace(mesh, element):
                 return FunctionSpace(mesh, element, components=V_component._component_to_index)
@@ -739,21 +753,8 @@ class ReducedMesh(ReducedMesh_Base):
         else:
             return FunctionSpace
             
-    def _load_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_problem, auxiliary_reduced_V):
-        # Get full directory name
-        full_directory = Folders.Folder(os.path.join(str(self._auxiliary_io_directory), self._auxiliary_io_filename))
-        full_directory.create()
-        # Load auxiliary basis functions matrix
-        full_directory_plus_key = Folders.Folder(full_directory + "/auxiliary_basis_functions/" + self._auxiliary_key_to_folder(key))
-        if not full_directory_plus_key.create():
-            auxiliary_basis_functions_matrix = self._init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V)
-            auxiliary_basis_functions_matrix.load(full_directory_plus_key, "auxiliary_basis")
-            self._auxiliary_basis_functions_matrix[key] = auxiliary_basis_functions_matrix
-            return True
-        else:
-            return False
-            
-    def _get_auxiliary_reduced_function_space_type(self, auxiliary_V):
+    @staticmethod
+    def _get_auxiliary_reduced_function_space_type(auxiliary_V):
         if hasattr(auxiliary_V, "_component_to_index"):
             def CustomFunctionSpace(mesh, element):
                 return FunctionSpace(mesh, element, components=auxiliary_V._component_to_index)

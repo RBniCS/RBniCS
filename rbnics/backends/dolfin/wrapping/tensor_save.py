@@ -111,4 +111,4 @@ def basic_tensor_save(backend, wrapping):
 
 # No explicit instantiation for backend = rbnics.backends.dolfin for symmetry
 # with tensor_load. The concrete instatiation will be carried out in
-# rbnics.backends.function.export
+# rbnics.backends.dolfin.export

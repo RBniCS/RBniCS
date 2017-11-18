@@ -174,4 +174,4 @@ def basic_tensor_load(backend, wrapping):
 
 # No explicit instantiation for backend = rbnics.backends.dolfin to avoid
 # circular dependencies. The concrete instatiation will be carried out in
-# rbnics.backends.function.import_
+# rbnics.backends.dolfin.import_
