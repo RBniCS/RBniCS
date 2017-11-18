@@ -35,7 +35,10 @@ def add_gold_options(parser):
     if "--action" not in available_options:
         parser.addoption("--action", action="store", default=None)
     if "--data-dir" not in available_options:
-        parser.addoption("--data-dir", action="store", default=os.environ.get("RBNICS_TEST_DATA", None))
+        data_dir_default = os.environ.get("RBNICS_TEST_DATA", None)
+        if data_dir_default is not None:
+            data_dir_default = os.path.join(data_dir_default, "RBniCS")
+        parser.addoption("--data-dir", action="store", default=data_dir_default)
         
 def add_performance_options(parser):
     available_options = [name for opt in parser._anonymous.options for name in opt.names()]
@@ -48,6 +51,6 @@ def process_gold_options(config):
         if config.option.data_dir is None:
             assert config.option.action is not "regold", "Please provide a data directory"
             data_dir = tempfile.mkdtemp()
-            git.Repo.clone_from("git@gitlab.com:RBniCS/RBniCS-test-data.git", data_dir)
+            git.Repo.clone_from("git@gitlab.com:RBniCS-test-data/RBniCS.git", data_dir)
             config.option.data_dir = data_dir
         patch_initialize_testing_training_set(config.option.action)
