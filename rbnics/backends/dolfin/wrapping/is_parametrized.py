@@ -35,7 +35,7 @@ def basic_is_parametrized(backend, wrapping):
                         parameters = node._parameters
                     else:
                         parameters = node.user_parameters
-                    if "mu_0" not in parameters:
+                    if "mu_0" in parameters:
                         return True
             # ... problem solutions related to nonlinear terms
             elif wrapping.is_problem_solution_or_problem_solution_component_type(node):

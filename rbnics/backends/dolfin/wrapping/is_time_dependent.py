@@ -37,7 +37,7 @@ def basic_is_time_dependent(backend, wrapping):
                         parameters = node._parameters
                     else:
                         parameters = node.user_parameters
-                    if "t" not in parameters:
+                    if "t" in parameters:
                         return True
             # ... problem solutions related to nonlinear terms
             elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
