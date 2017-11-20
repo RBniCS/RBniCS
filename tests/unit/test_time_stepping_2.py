@@ -119,8 +119,8 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
                 plt.show(block=False)
                 plt.pause(DOLFIN_EPS)
             else:
-                print("||u|| at t = " + str(t) + ": " + str(u.vector().norm("l2")))
-                print("||u_dot|| at t = " + str(t) + ": " + str(u_dot.vector().norm("l2")))
+                print("||u|| at t = " + str(t) + ": " + str(solution.vector().norm("l2")))
+                print("||u_dot|| at t = " + str(t) + ": " + str(solution_dot.vector().norm("l2")))
     
     # Solve the time dependent problem
     sparse_problem_wrapper = SparseProblemWrapper()
