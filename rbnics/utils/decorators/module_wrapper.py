@@ -16,14 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from collections import namedtuple
+from types import SimpleNamespace
 
 def ModuleWrapper(*args, **kwargs):
-    names = list()
-    names.extend(arg.__name__ for arg in args)
-    names.extend(kwarg_key for kwarg_key in kwargs)
-    BackendWrapperType = namedtuple("ModuleWrapper", names)
-    values = list()
-    values.extend(arg for arg in args)
-    values.extend(kwarg_value for (kwarg_key, kwarg_value) in kwargs.items())
-    return BackendWrapperType(*values)
+    for arg in args:
+        assert arg.__name__ not in kwargs
+        kwargs[arg.__name__] = arg
+    return SimpleNamespace(**kwargs)
