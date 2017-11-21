@@ -20,6 +20,9 @@ from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_com
 
 def solution_identify_component(node):
     node = _remove_mute_indices(node)
+    return _solution_identify_component(node)
+    
+def _solution_identify_component(node):
     assert node in _solution_split_to_component
     assert node in _solution_split_to_solution
     return (node, _solution_split_to_component[node], _solution_split_to_solution[node])
