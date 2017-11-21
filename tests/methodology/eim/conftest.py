@@ -23,7 +23,7 @@ import dolfin # otherwise the next import from rbnics would disable dolfin as a 
 from rbnics.utils.test import add_gold_options, disable_matplotlib, enable_matplotlib, process_gold_options, run_and_compare_to_gold
 
 def pytest_addoption(parser):
-    add_gold_options(parser)
+    add_gold_options(parser, "RBniCS")
     
 def pytest_configure(config):
     process_gold_options(config)
