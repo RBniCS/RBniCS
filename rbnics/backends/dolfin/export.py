@@ -27,8 +27,8 @@ from rbnics.utils.decorators import backend_for, ModuleWrapper, overload
 from rbnics.utils.io import Folders
 
 backend = ModuleWrapper(Function, Matrix, Vector)
-wrapping = ModuleWrapper(build_dof_map_writer_mapping, form_argument_space, form_name=form_name) # temporarily
-tensor_save = basic_tensor_save(backend, wrapping)
+wrapping_for_wrapping = ModuleWrapper(build_dof_map_writer_mapping, form_argument_space, form_name=form_name)
+tensor_save = basic_tensor_save(backend, wrapping_for_wrapping)
 wrapping = ModuleWrapper(function_extend_or_restrict, function_save, get_function_subspace, tensor_save=tensor_save)
 export_base = basic_export(backend, wrapping)
 

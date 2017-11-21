@@ -28,8 +28,8 @@ from rbnics.backends.online import OnlineFunction
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 backend = ModuleWrapper(Matrix, Vector)
-wrapping = ModuleWrapper(tensor_copy) # temporarily
-tensors_list_mul_online_function = basic_tensors_list_mul_online_function(backend, wrapping)
+wrapping_for_wrapping = ModuleWrapper(tensor_copy)
+tensors_list_mul_online_function = basic_tensors_list_mul_online_function(backend, wrapping_for_wrapping)
 wrapping = ModuleWrapper(get_mpi_comm, tensor_copy, tensor_load=tensor_load, tensor_save=tensor_save, tensors_list_mul_online_function=tensors_list_mul_online_function)
 online_backend = ModuleWrapper(OnlineFunction=OnlineFunction)
 online_wrapping = ModuleWrapper()
