@@ -30,7 +30,7 @@ def test_eim_approximation_09(expression_type, basis_generation):
     """
     This test is an extension of test 01.
     The aim of this script is to test the detection of parametrized expression defined using SymbolicParameters for mu and
-    SpatialCoordinates fo x.
+    SpatialCoordinates of x.
     * EIM: test the case when the expression to be interpolated is an Operator (rather than an Expression).
     * DEIM: test interpolation of form with integrand function of type Operator (rather than Expression).
     """

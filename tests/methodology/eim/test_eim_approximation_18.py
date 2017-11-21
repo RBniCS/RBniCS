@@ -18,7 +18,7 @@
 
 import os
 import pytest
-from dolfin import assemble, assign, dx, MixedElement, FiniteElement, Function, FunctionSpace, inner, Point, project, RectangleMesh, SpatialCoordinate, sqrt, TestFunction, TrialFunction, VectorElement
+from dolfin import assemble, assign, dx, FiniteElement, Function, FunctionSpace, inner, MixedElement, Point, project, RectangleMesh, SpatialCoordinate, sqrt, TestFunction, TrialFunction, VectorElement
 from rbnics import EquispacedDistribution, ExactParametrizedFunctions
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.problems.eim_approximation import EIMApproximation

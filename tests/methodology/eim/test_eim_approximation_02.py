@@ -18,7 +18,7 @@
 
 import os
 import pytest
-from dolfin import dx, FunctionSpace, Point, RectangleMesh, TrialFunction, TestFunction
+from dolfin import dx, FunctionSpace, Point, RectangleMesh, TestFunction, TrialFunction
 from rbnics import EquispacedDistribution, ParametrizedExpression
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
 from rbnics.eim.problems.eim_approximation import EIMApproximation
