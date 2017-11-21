@@ -145,11 +145,16 @@ class Dispatcher(OriginalDispatcher):
         return OriginalDispatcher.reorder(self, on_ambiguity)
     
     def __call__(self, *args, **kwargs):
-        func = self._get_func(args)
+        func = self._get_func(*args)
         return func(*args, **kwargs)
         
-    def _get_func(self, args):
-        types = get_types(args)
+    def _get_func(self, *args):
+        if len(args) > 1:
+            types = get_types(args)
+        elif len(args) is 1 and args[0] is not None:
+            types = (get_type(args[0]), )
+        else:
+            types = tuple()
         try:
             func = self._cache[types]
         except KeyError:
@@ -292,7 +297,7 @@ class MethodDispatcher(Dispatcher):
         else: # called as Class.method(instance, ...)
             obj = args[0]
             args = args[1:]
-        func = self._get_func(args)
+        func = self._get_func(*args)
         return func(obj, *args, **kwargs)
         
     @property
@@ -550,43 +555,46 @@ def get_types(inputs):
     inputs = remove_trailing_None(inputs)
     types = list()
     for input_ in inputs:
-        type_input_ = type(input_)
-        if (
-            type_input_ in (list, set, tuple) # more strict than isinstance(input_, (list, tuple)): custom types inherited from array or list or tuple should be preserved
-                or
-            (type_input_ in (array, ) and input_.dtype == object)
-        ):
-            subtypes = get_types(input_)
-            subtypes = tuple(set(subtypes)) # remove repeated types
-            if len(subtypes) == 1:
-                subtypes = subtypes[0]
-            if isinstance(input_, array):
-                types.append(array_of(subtypes))
-            elif isinstance(input_, list):
-                types.append(list_of(subtypes))
-            elif isinstance(input_, set):
-                types.append(set_of(subtypes))
-            elif isinstance(input_, tuple):
-                types.append(tuple_of(subtypes))
-            else:
-                raise TypeError("Invalid type in get_types()")
-        elif type_input_ in (dict, ): # more strict than isinstance(input_, (dict, ))
-            subtypes_from = get_types(tuple(input_.keys()))
-            subtypes_from = tuple(set(subtypes_from)) # remove repeated types
-            if len(subtypes_from) == 1:
-                subtypes_from = subtypes_from[0]
-            subtypes_to = get_types(tuple(input_.values()))
-            subtypes_to = tuple(set(subtypes_to)) # remove repeated types
-            if len(subtypes_to) == 1:
-                subtypes_to = subtypes_to[0]
-            types.append(dict_of(subtypes_from, subtypes_to))
-        else:
-            if input_ is not None:
-                types.append(type_input_)
-            else:
-                types.append(None)
+        types.append(get_type(input_))
     types = tuple(types)
     return types
+    
+def get_type(input_):
+    type_input_ = type(input_)
+    if (
+        type_input_ in (list, set, tuple) # more strict than isinstance(input_, (list, set, tuple)): custom types inherited from array or list or tuple should be preserved
+            or
+        (type_input_ in (array, ) and input_.dtype == object)
+    ):
+        subtypes = get_types(input_)
+        subtypes = tuple(set(subtypes)) # remove repeated types
+        if len(subtypes) == 1:
+            subtypes = subtypes[0]
+        if isinstance(input_, array):
+            return array_of(subtypes)
+        elif isinstance(input_, list):
+            return list_of(subtypes)
+        elif isinstance(input_, set):
+            return set_of(subtypes)
+        elif isinstance(input_, tuple):
+            return tuple_of(subtypes)
+        else:
+            raise TypeError("Invalid type in get_types()")
+    elif type_input_ in (dict, ): # more strict than isinstance(input_, (dict, ))
+        subtypes_from = get_types(tuple(input_.keys()))
+        subtypes_from = tuple(set(subtypes_from)) # remove repeated types
+        if len(subtypes_from) == 1:
+            subtypes_from = subtypes_from[0]
+        subtypes_to = get_types(tuple(input_.values()))
+        subtypes_to = tuple(set(subtypes_to)) # remove repeated types
+        if len(subtypes_to) == 1:
+            subtypes_to = subtypes_to[0]
+        return dict_of(subtypes_from, subtypes_to)
+    else:
+        if input_ is not None:
+            return type_input_
+        else:
+            return None
     
 # == Customize tuple expansion to handle array_of, dict_of, iterable_of, list_of, set_of, tuple_of == #
 def expand_tuples(L):
@@ -737,16 +745,18 @@ def restart_ordering(on_ambiguity=ambiguity_error):
 _halt_ordering_called = 0
 
 # == Helper function to remove trailing None arguments (used as default arguments) == #
-def remove_trailing_None(types):
-    if isinstance(types, set):
-        assert None not in types
-        return types
-    else:
-        assert isinstance(types, (tuple, list))
-        i = len(types)
-        while i > 0 and types[i - 1] is None:
+def remove_trailing_None(inputs):
+    assert isinstance(inputs, (list, set, tuple))
+    if isinstance(inputs, set):
+        assert None not in inputs
+        return inputs
+    elif isinstance(inputs, (list, tuple)):
+        i = len(inputs)
+        while i > 0 and inputs[i - 1] is None:
             i -= 1
-        return types[:i]
+        return inputs[:i]
+    else:
+        raise TypeError("This type is unsupported")
     
 # == Helper function to create itertools.powerset without empty tuple == #
 def powerset(types):
