@@ -17,7 +17,6 @@
 #
 
 import os
-from ufl import Form
 from dolfin import as_backend_type, has_pybind11
 from petsc4py import PETSc
 from rbnics.utils.mpi import is_io_process
@@ -65,7 +64,7 @@ def basic_tensor_load(backend, wrapping):
             # Read in content
             return _tensor_load(tensor, directory, filename, permutation)
         
-    @overload(backend.Matrix.Type(), (Folders.Folder, str), str, Form, str, object)
+    @overload(backend.Matrix.Type(), (Folders.Folder, str), str, object, str, object)
     def _permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
         if form_name not in _permutation_storage:
             if not PickleIO.exists_file(directory, "." + form_name):
@@ -94,7 +93,7 @@ def basic_tensor_load(backend, wrapping):
                 
         return (_permutation_storage[form_name], True)
                 
-    @overload(backend.Vector.Type(), (Folders.Folder, str), str, Form, str, object)
+    @overload(backend.Vector.Type(), (Folders.Folder, str), str, object, str, object)
     def _permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
         if form_name not in _permutation_storage:
             if not PickleIO.exists_file(directory, "." + form_name):

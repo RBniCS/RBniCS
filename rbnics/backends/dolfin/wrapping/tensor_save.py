@@ -18,7 +18,6 @@
 
 import os
 from petsc4py import PETSc
-from ufl import Form
 from dolfin import as_backend_type, has_pybind11
 from mpi4py.MPI import Op
 from rbnics.utils.mpi import is_io_process
@@ -48,7 +47,7 @@ def basic_tensor_save(backend, wrapping):
         # Write out content
         _tensor_save(tensor, directory, filename)
             
-    @overload(backend.Matrix.Type(), (Folders.Folder, str), Form, str, object)
+    @overload(backend.Matrix.Type(), (Folders.Folder, str), object, str, object)
     def _permutation_save(tensor, directory, form, form_name, mpi_comm):
         if not PickleIO.exists_file(directory, "." + form_name):
             V_0 = wrapping.form_argument_space(form, 0)
@@ -70,7 +69,7 @@ def basic_tensor_save(backend, wrapping):
             gathered_matrix_mapping = (gathered_matrix_row_mapping, gathered_matrix_col_mapping)
             PickleIO.save_file(gathered_matrix_mapping, directory, "." + form_name)
                 
-    @overload(backend.Vector.Type(), (Folders.Folder, str), Form, str, object)
+    @overload(backend.Vector.Type(), (Folders.Folder, str), object, str, object)
     def _permutation_save(tensor, directory, form, form_name, mpi_comm):
         if not PickleIO.exists_file(directory, "." + form_name):
             V_0 = wrapping.form_argument_space(form, 0)
