@@ -52,6 +52,6 @@ online_backend = ModuleWrapper(OnlineMatrix=OnlineMatrix, OnlineVector=OnlineVec
 online_wrapping = ModuleWrapper()
 transpose_base = basic_transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes)
 
-@backend_for("dolfin", inputs=((BasisFunctionsMatrix, Form, Function.Type(), FunctionsList, Operator, TensorsList, Vector.Type()), ))
+@backend_for("dolfin", inputs=((BasisFunctionsMatrix, Form, Function.Type(), FunctionsList, Matrix.Type(), Operator, TensorsList, Vector.Type()), ))
 def transpose(arg):
     return transpose_base(arg)
