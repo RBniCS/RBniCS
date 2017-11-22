@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import FunctionSpace
-from rbnics.backends.dolfin.wrapping.function_copy import function_copy
+from dolfin import Function, FunctionSpace
 
 def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsListType):
     V = functions_list.V_or_Z
@@ -27,8 +26,7 @@ def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsLis
     assert isinstance(online_matrix.M, int)
     for j in range(online_matrix.M):
         assert len(online_matrix[:, j]) == len(functions_list)
-        output_j = function_copy(functions_list[0])
-        output_j.vector().zero()
+        output_j = Function(V)
         for (i, fun_i) in enumerate(functions_list):
             online_matrix_ij = float(online_matrix[i, j])
             output_j.vector().add_local(fun_i.vector().get_local()*online_matrix_ij)
@@ -37,10 +35,13 @@ def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsLis
     return output
 
 def functions_list_mul_online_vector(functions_list, online_vector):
-    output = function_copy(functions_list[0])
-    output.vector().zero()
-    for (i, fun_i) in enumerate(functions_list):
-        online_vector_i = float(online_vector[i])
-        output.vector().add_local(fun_i.vector().get_local()*online_vector_i)
-    output.vector().apply("add")
-    return output
+    V = functions_list.V_or_Z
+    output = Function(V)
+    if len(functions_list) is 0:
+        return output
+    else:
+        for (i, fun_i) in enumerate(functions_list):
+            online_vector_i = float(online_vector[i])
+            output.vector().add_local(fun_i.vector().get_local()*online_vector_i)
+        output.vector().apply("add")
+        return output
