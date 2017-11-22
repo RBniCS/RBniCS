@@ -65,7 +65,7 @@ from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrize
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.backends.dolfin.wrapping.petsc_ts_integrator import PETScTSIntegrator
 from rbnics.backends.dolfin.wrapping.plot import plot
-from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import PullBackFormsToReferenceDomain
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized, PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.backends.dolfin.wrapping.tensor_copy import tensor_copy
@@ -123,6 +123,8 @@ __all__ = [
     'is_parametrized_constant',
     'is_problem_solution_or_problem_solution_component',
     'is_problem_solution_or_problem_solution_component_type',
+    'is_pull_back_expression',
+    'is_pull_back_expression_parametrized',
     'is_time_dependent',
     'map_functionspaces_between_mesh_and_submesh',
     'matrix_mul_vector',
