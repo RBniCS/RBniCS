@@ -574,36 +574,12 @@ def BasicReducedMesh(backend, wrapping):
                 return True
             else:
                 return False
-         
+                
         @staticmethod
+        @abstractmethod
         def _init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V):
-            auxiliary_basis_functions_matrix = backend.BasisFunctionsMatrix(auxiliary_reduced_V)
-            components_tuple = key[1]
-            assert isinstance(components_tuple, tuple)
-            assert len(components_tuple) > 0
-            if len(components_tuple) > 1:
-                # This handles the case where a subcomponent of a component is required
-                # (e.g., x subcomponent of the velocity field component of a (velocity, pressure) solution)
-                # Since basis are constructed with respect to components (rather than subcomponents) we
-                # use only the first entry in the tuple to detect the corresponding component name
-                assert all([isinstance(c, int) for c in components_tuple]) # there is no None and all entries are integer
-            component_as_int = components_tuple[0]
-            if component_as_int is None: # all components
-                # Initialize a basis function matrix for all components
-                components_name = auxiliary_reduced_problem.Z._components_name
-            elif len(auxiliary_reduced_problem.Z._components_name) is 1: # subcomponent of a problem with only one component
-                # Initialize a basis function matrix for all components
-                components_name = auxiliary_reduced_problem.Z._components_name
-            else:
-                # Initialize a basis function matrix only for the required integer component
-                if len(auxiliary_reduced_V._index_to_components) is 1:
-                    components_name = auxiliary_reduced_V.index_to_components(None)
-                else:
-                    assert isinstance(component_as_int, int)
-                    components_name = auxiliary_reduced_V.index_to_components(component_as_int)
-            auxiliary_basis_functions_matrix.init(components_name)
-            return auxiliary_basis_functions_matrix
-            
+            pass
+         
         def _auxiliary_key_to_folder(self, key):
             folder_path = [key[0].name()]
             assert isinstance(key[1], tuple)
@@ -754,6 +730,35 @@ class ReducedMesh(ReducedMesh_Base):
             return CustomFunctionSpace
         else:
             return FunctionSpace
+            
+    @staticmethod
+    def _init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V):
+        auxiliary_basis_functions_matrix = backend.BasisFunctionsMatrix(auxiliary_reduced_V)
+        components_tuple = key[1]
+        assert isinstance(components_tuple, tuple)
+        assert len(components_tuple) > 0
+        if len(components_tuple) > 1:
+            # This handles the case where a subcomponent of a component is required
+            # (e.g., x subcomponent of the velocity field component of a (velocity, pressure) solution)
+            # Since basis are constructed with respect to components (rather than subcomponents) we
+            # use only the first entry in the tuple to detect the corresponding component name
+            assert all([isinstance(c, int) for c in components_tuple]) # there is no None and all entries are integer
+        component_as_int = components_tuple[0]
+        if component_as_int is None: # all components
+            # Initialize a basis function matrix for all components
+            components_name = auxiliary_reduced_problem.Z._components_name
+        elif len(auxiliary_reduced_problem.Z._components_name) is 1: # subcomponent of a problem with only one component
+            # Initialize a basis function matrix for all components
+            components_name = auxiliary_reduced_problem.Z._components_name
+        else:
+            # Initialize a basis function matrix only for the required integer component
+            if len(auxiliary_reduced_V._index_to_components) is 1:
+                components_name = auxiliary_reduced_V.index_to_components(None)
+            else:
+                assert isinstance(component_as_int, int)
+                components_name = auxiliary_reduced_V.index_to_components(component_as_int)
+        auxiliary_basis_functions_matrix.init(components_name)
+        return auxiliary_basis_functions_matrix
             
     @staticmethod
     def _get_auxiliary_reduced_function_space_type(auxiliary_V):
