@@ -23,8 +23,26 @@ def assign(backend):
         @overload(backend.Function.Type(), backend.Function.Type())
         def __call__(self, object_to, object_from):
             if object_from is not object_to:
-                assert object_to.vector().N == object_from.vector().N
-                object_to.vector()[:] = object_from.vector()
+                assert isinstance(object_to.vector().N, (dict, int))
+                assert isinstance(object_to.vector().N, dict) is isinstance(object_from.vector().N, dict)
+                if isinstance(object_from.vector().N, dict):
+                    from_N_keys = set(object_from.vector().N.keys())
+                    to_N_keys = set(object_to.vector().N.keys())
+                    components_in_both = from_N_keys & to_N_keys
+                    for c in components_in_both:
+                        assert object_to.vector().N[c] == object_from.vector().N[c]
+                    components_only_in_from = from_N_keys - to_N_keys
+                    components_only_in_to = to_N_keys - from_N_keys
+                    assert len(components_only_in_to) is 0
+                    from_N_dict = dict()
+                    for c in components_in_both:
+                        from_N_dict[c] = object_from.vector().N[c]
+                    for c in components_only_in_from:
+                        from_N_dict[c] = 0
+                    object_to.vector()[:] = object_from.vector()[:from_N_dict]
+                else:
+                    assert object_to.vector().N == object_from.vector().N
+                    object_to.vector()[:] = object_from.vector()
             
         @overload(list_of(backend.Function.Type()), list_of(backend.Function.Type()))
         def __call__(self, object_to, object_from):
