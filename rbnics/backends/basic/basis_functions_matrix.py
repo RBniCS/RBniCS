@@ -141,6 +141,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             
         @overload(online_backend.OnlineMatrix.Type(), )
         def __mul__(self, other):
+            if isinstance(other.M, dict):
+                assert set(other.M.keys()) == set(self._components_name)
             def BasisFunctionsMatrixWithInit(V_or_Z):
                 output = _BasisFunctionsMatrix.__new__(type(self), V_or_Z)
                 output.__init__(V_or_Z)
@@ -148,13 +150,19 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 return output
             return wrapping.basis_functions_matrix_mul_online_matrix(self, other, BasisFunctionsMatrixWithInit)
             
-        @overload((online_backend.OnlineVector.Type(), ThetaType), )
-        def __mul__(self, other):
-            return wrapping.basis_functions_matrix_mul_online_vector(self, other)
-            
         @overload(online_backend.OnlineFunction.Type(), )
         def __mul__(self, other):
-            return wrapping.basis_functions_matrix_mul_online_vector(self, online_wrapping.function_to_vector(other))
+            return self.__mul__(online_wrapping.function_to_vector(other))
+            
+        @overload(online_backend.OnlineVector.Type(), )
+        def __mul__(self, other):
+            if isinstance(other.N, dict):
+                assert set(other.N.keys()) == set(self._components_name)
+            return wrapping.basis_functions_matrix_mul_online_vector(self, other)
+            
+        @overload(ThetaType, )
+        def __mul__(self, other):
+            return wrapping.basis_functions_matrix_mul_online_vector(self, other)
             
         def __len__(self):
             assert len(self._components_name) == 1
@@ -200,6 +208,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             
         @overload((dict_of(str, int), OnlineSizeDict))
         def _precompute_slice(self, N):
+            assert set(N.keys()) == set(self._components_name)
             N_key = tuple(N[component_name] for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()))
             if N_key not in self._precomputed_slices:
                 self._precomputed_slices[N_key] = _BasisFunctionsMatrix.__new__(type(self), self.V_or_Z)
