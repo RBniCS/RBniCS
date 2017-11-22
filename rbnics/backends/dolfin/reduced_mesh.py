@@ -733,6 +733,7 @@ ReducedMesh_Base = BasicReducedMesh(backend, wrapping)
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class ReducedMesh(ReducedMesh_Base):
     def _compute_dof_to_cells(self, V_component):
+        assert isinstance(V_component, FunctionSpace)
         dof_to_cells = dict() # from global dof to cell
         for cell in cells(self.mesh):
             local_dofs = V_component.dofmap().cell_dofs(cell.index())
@@ -746,6 +747,7 @@ class ReducedMesh(ReducedMesh_Base):
         
     @staticmethod
     def _get_reduced_function_space_type(V_component):
+        assert isinstance(V_component, FunctionSpace)
         if hasattr(V_component, "_component_to_index"):
             def CustomFunctionSpace(mesh, element):
                 return FunctionSpace(mesh, element, components=V_component._component_to_index)
@@ -755,6 +757,7 @@ class ReducedMesh(ReducedMesh_Base):
             
     @staticmethod
     def _get_auxiliary_reduced_function_space_type(auxiliary_V):
+        assert isinstance(auxiliary_V, FunctionSpace)
         if hasattr(auxiliary_V, "_component_to_index"):
             def CustomFunctionSpace(mesh, element):
                 return FunctionSpace(mesh, element, components=auxiliary_V._component_to_index)
