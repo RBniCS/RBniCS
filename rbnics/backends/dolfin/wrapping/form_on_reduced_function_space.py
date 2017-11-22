@@ -28,7 +28,7 @@ from rbnics.utils.decorators import exact_problem, get_problem_from_solution, ge
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
 
-def basic_form_on_reduced_function_space(backend, wrapping):
+def basic_form_on_reduced_function_space(backend, wrapping, online_backend, online_wrapping):
     def _basic_form_on_reduced_function_space(form_wrapper, at):
         form = form_wrapper._form
         form_name = form_wrapper._name
@@ -225,7 +225,10 @@ def basic_form_on_reduced_function_space(backend, wrapping):
             # ... and assign to reduced_mesh_solution
             for (reduced_mesh_solution, reduced_Z) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_Z[reduced_problem]):
                 solution_to = reduced_mesh_solution
-                solution_from = reduced_Z[:reduced_problem._solution.N]*reduced_problem._solution
+                solution_from_N = {c: v for c, v in reduced_problem._solution.N.items() if c in reduced_Z._components_name}
+                solution_from = online_backend.OnlineFunction(solution_from_N)
+                online_backend.online_assign(solution_from, reduced_problem._solution)
+                solution_from = reduced_Z[:solution_from_N]*solution_from
                 backend.assign(solution_to, solution_from)
         
         # Assemble and return
