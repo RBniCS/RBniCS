@@ -78,15 +78,15 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                         for i in range(N):
                             lambda_i = vanishing_viscosity_eigenvalues[i]
                             if i < N_min:
-                                viscosity_i = self._viscosity*lambda_i
+                                viscosity_i = 0.
                             elif i < N_max:
                                 viscosity_i = (
                                     self._viscosity *
-                                    (lambda_i - lambda_N_max)**2/(lambda_N_min - lambda_N_max)**3 *
-                                    (2*lambda_N_min**2 - (lambda_N_min + lambda_N_max)*lambda_i)
+                                    (lambda_i - lambda_N_min)**2/(lambda_N_max - lambda_N_min)**3 *
+                                    (2*lambda_N_max**2 - (lambda_N_min + lambda_N_max)*lambda_i)
                                 )
                             else:
-                                viscosity_i = 0.
+                                viscosity_i = self._viscosity*lambda_i
                             vanishing_viscosity_operator[i, i] = viscosity_i*lambda_i
                         # Store and save
                         self.operator["vanishing_viscosity"][0] = vanishing_viscosity_operator
