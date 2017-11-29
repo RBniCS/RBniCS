@@ -135,6 +135,9 @@ def Matrix(backend, wrapping, MatrixBaseType):
             
         def _arithmetic_operations_preserve_attributes(self, other, output, other_order=2):
             # Preserve M and N
+            if other_order is 0:
+                output.N = self.N
+                output.M = self.M
             if other_order in (1, 2):
                 assert isinstance(self.N, (int, dict))
                 if isinstance(self.N, int) and isinstance(other.N, dict):
@@ -149,6 +152,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                     assert self_N == other.N
                 else:
                     assert self.N == other.N
+                output.N = self.N
             if other_order is 2:
                 assert isinstance(self.M, (int, dict))
                 if isinstance(self.M, int) and isinstance(other.M, dict):
@@ -163,8 +167,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                     assert self_M == other.M
                 else:
                     assert self.M == other.M
-            output.M = self.M
-            output.N = self.N
+                output.M = self.M
             # Preserve auxiliary attributes related to basis functions matrix
             assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
             assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")
@@ -178,18 +181,18 @@ def Matrix(backend, wrapping, MatrixBaseType):
                         assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
                 elif other_order is 1:
                     if hasattr(other, "_basis_component_index_to_component_name"):
-                        assert self._basis_component_index_to_component_name[1] == other._basis_component_index_to_component_name
+                        assert self._basis_component_index_to_component_name[0] == other._basis_component_index_to_component_name
                     if hasattr(other, "_component_name_to_basis_component_index"):
-                        assert self._component_name_to_basis_component_index[1] == other._component_name_to_basis_component_index
+                        assert self._component_name_to_basis_component_index[0] == other._component_name_to_basis_component_index
                     if hasattr(other, "_component_name_to_basis_component_length"):
-                        assert self._component_name_to_basis_component_length[1] == other._component_name_to_basis_component_length
+                        assert self._component_name_to_basis_component_length[0] == other._component_name_to_basis_component_length
                 if other_order is 0 or other_order is 2:
                     output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
                     output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
                     output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
                 elif other_order is 1:
-                    output._basis_component_index_to_component_name = self._basis_component_index_to_component_name[1]
-                    output._component_name_to_basis_component_index = self._component_name_to_basis_component_index[1]
-                    output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[1]
+                    output._basis_component_index_to_component_name = self._basis_component_index_to_component_name[0]
+                    output._component_name_to_basis_component_index = self._component_name_to_basis_component_index[0]
+                    output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[0]
     
     return _Matrix_Type
