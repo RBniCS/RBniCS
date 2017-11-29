@@ -33,4 +33,15 @@ class LinearSolver(LinearSolver_Base):
     def solve(self):
         solution = solve(self.lhs, self.rhs)
         self.solution.vector()[:] = solution
+        # Preserve auxiliary attributes related to basis functions matrix
+        assert hasattr(self.lhs, "_basis_component_index_to_component_name") == hasattr(self.lhs, "_component_name_to_basis_component_index")
+        assert hasattr(self.lhs, "_basis_component_index_to_component_name") == hasattr(self.lhs, "_component_name_to_basis_component_length")
+        assert hasattr(self.rhs, "_basis_component_index_to_component_name") == hasattr(self.rhs, "_component_name_to_basis_component_index")
+        assert hasattr(self.rhs, "_basis_component_index_to_component_name") == hasattr(self.rhs, "_component_name_to_basis_component_length")
+        assert hasattr(self.lhs, "_basis_component_index_to_component_name") == hasattr(self.rhs, "_basis_component_index_to_component_name")
+        if hasattr(self.rhs, "_basis_component_index_to_component_name"):
+            self.solution.vector()._basis_component_index_to_component_name = self.lhs._basis_component_index_to_component_name[0]
+            self.solution.vector()._component_name_to_basis_component_index = self.lhs._component_name_to_basis_component_index[0]
+            self.solution.vector()._component_name_to_basis_component_length = self.lhs._component_name_to_basis_component_length[0]
+        # Return
         return self.solution

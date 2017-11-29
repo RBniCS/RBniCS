@@ -43,7 +43,8 @@ def assign(backend):
                 else:
                     assert object_to.vector().N == object_from.vector().N
                     object_to.vector()[:] = object_from.vector()
-            
+                self._preserve_attributes(object_to.vector(), object_from.vector())
+                
         @overload(list_of(backend.Function.Type()), list_of(backend.Function.Type()))
         def __call__(self, object_to, object_from):
             if object_from is not object_to:
@@ -56,10 +57,32 @@ def assign(backend):
                 assert object_to.N == object_from.N
                 assert object_to.M == object_from.M
                 object_to[:, :] = object_from
+                self._preserve_attributes(object_to, object_from)
         
         @overload(backend.Vector.Type(), backend.Vector.Type())
         def __call__(self, object_to, object_from):
             if object_from is not object_to:
                 assert object_to.N == object_from.N
                 object_to[:] = object_from
+                self._preserve_attributes(object_to, object_from)
+                
+        def _preserve_attributes(self, object_to, object_from):
+            # Preserve auxiliary attributes related to basis functions matrix
+            assert hasattr(object_to, "_basis_component_index_to_component_name") == hasattr(object_to, "_component_name_to_basis_component_index")
+            assert hasattr(object_to, "_basis_component_index_to_component_name") == hasattr(object_to, "_component_name_to_basis_component_length")
+            assert hasattr(object_from, "_basis_component_index_to_component_name") == hasattr(object_from, "_component_name_to_basis_component_index")
+            assert hasattr(object_from, "_basis_component_index_to_component_name") == hasattr(object_from, "_component_name_to_basis_component_length")
+            if hasattr(object_from, "_basis_component_index_to_component_name") and hasattr(object_to, "_basis_component_index_to_component_name"):
+                assert object_from._basis_component_index_to_component_name == object_to._basis_component_index_to_component_name
+                assert object_from._component_name_to_basis_component_index == object_to._component_name_to_basis_component_index
+                assert object_from._component_name_to_basis_component_length == object_to._component_name_to_basis_component_length
+            elif hasattr(object_from, "_basis_component_index_to_component_name") and not hasattr(object_to, "_basis_component_index_to_component_name"):
+                object_to._basis_component_index_to_component_name = object_from._basis_component_index_to_component_name
+                object_to._component_name_to_basis_component_index = object_from._component_name_to_basis_component_index
+                object_to._component_name_to_basis_component_length = object_from._component_name_to_basis_component_length
+            elif not hasattr(object_from, "_basis_component_index_to_component_name") and hasattr(object_to, "_basis_component_index_to_component_name"):
+                raise ValueError("This case is not valid.")
+            else:
+                pass
+                
     return _Assign()

@@ -21,6 +21,14 @@ def basic_function_copy(backend, wrapping):
         original_vector = function.vector()
         v = backend.Vector(original_vector.N)
         v[:] = original_vector
+        # Preserve auxiliary attributes related to basis functions matrix
+        assert hasattr(original_vector, "_basis_component_index_to_component_name") == hasattr(original_vector, "_component_name_to_basis_component_index")
+        assert hasattr(original_vector, "_basis_component_index_to_component_name") == hasattr(original_vector, "_component_name_to_basis_component_length")
+        if hasattr(original_vector, "_basis_component_index_to_component_name"):
+            v._basis_component_index_to_component_name = original_vector._basis_component_index_to_component_name
+            v._component_name_to_basis_component_index = original_vector._component_name_to_basis_component_index
+            v._component_name_to_basis_component_length = original_vector._component_name_to_basis_component_length
+        # Return
         return backend.Function(v)
     return _basic_function_copy
 

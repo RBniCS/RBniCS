@@ -64,6 +64,17 @@ class NonlinearSolver(AbstractNonlinearSolver):
             line_search=self._line_search, callback=self._monitor
         )
         self.problem.solution.vector()[:] = solution_vector.reshape((-1, 1))
+        # Preserve auxiliary attributes related to basis functions matrix
+        assert hasattr(self.problem.sample_jacobian, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_jacobian, "_component_name_to_basis_component_index")
+        assert hasattr(self.problem.sample_jacobian, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_jacobian, "_component_name_to_basis_component_length")
+        assert hasattr(self.problem.sample_residual, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_residual, "_component_name_to_basis_component_index")
+        assert hasattr(self.problem.sample_residual, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_residual, "_component_name_to_basis_component_length")
+        assert hasattr(self.problem.sample_jacobian, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_residual, "_basis_component_index_to_component_name")
+        if hasattr(self.problem.sample_residual, "_basis_component_index_to_component_name"):
+            self.solution.vector()._basis_component_index_to_component_name = self.problem.sample_jacobian._basis_component_index_to_component_name[0]
+            self.solution.vector()._component_name_to_basis_component_index = self.problem.sample_jacobian._component_name_to_basis_component_index[0]
+            self.solution.vector()._component_name_to_basis_component_length = self.problem.sample_jacobian._component_name_to_basis_component_length[0]
+        # Return
         return self.problem.solution
         
 class _NonlinearProblem(object):
