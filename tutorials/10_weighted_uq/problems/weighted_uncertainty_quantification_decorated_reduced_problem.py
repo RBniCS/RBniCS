@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import ReducedProblemDecoratorFor
 from .weighted_uncertainty_quantification import WeightedUncertaintyQuantification
 
 @ReducedProblemDecoratorFor(WeightedUncertaintyQuantification)
