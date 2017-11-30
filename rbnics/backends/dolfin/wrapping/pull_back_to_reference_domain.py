@@ -717,7 +717,10 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 for f in facets(mesh):
                     if boundaries[f] > 0: # skip unmarked facets
                         if f.exterior():
-                            facet_id_to_normal_directions[boundaries[f]].add(tuple([f.normal(d) for d in range(dim)]))
+                            if has_pybind11():
+                                facet_id_to_normal_directions[boundaries[f]].add(tuple([f.normal()[d] for d in range(dim)]))
+                            else:
+                                facet_id_to_normal_directions[boundaries[f]].add(tuple([f.normal(d) for d in range(dim)]))
                         else:
                             cell_id_to_subdomain_id = dict()
                             for (c_id, c) in enumerate(cells(f)):
