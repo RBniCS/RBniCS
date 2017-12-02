@@ -18,7 +18,7 @@
 
 from rbnics.backends.online.basic.wrapping.slice_to_array import _check_key, _check_length_dict
 
-def slice_to_size(obj, key, length_dict=None):
+def slice_to_size(obj, key, length_dict):
     key = _check_key(obj, key)
     length_dict = _check_length_dict(key, length_dict)
     

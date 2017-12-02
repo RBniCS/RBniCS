@@ -20,4 +20,4 @@ def matrix_mul_vector(matrix, vector):
     return matrix*vector
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    return (matrix*other_matrix).sum()
+    return (matrix.content*other_matrix.content).sum()

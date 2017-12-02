@@ -16,10 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numpy import argmax, abs as numpy_abs, unravel_index
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import backend_for, overload
-from numpy import argmax, abs as numpy_abs, unravel_index
 
 # abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max,
 # even though here we actually carry out both the max and the abs!
@@ -29,13 +29,13 @@ def abs(expression):
     
 @overload
 def _abs(matrix: Matrix.Type()):
-    abs_matrix = numpy_abs(matrix)
+    abs_matrix = numpy_abs(matrix.content)
     ij_max = unravel_index(argmax(abs_matrix), abs_matrix.shape)
     return AbsOutput(float(matrix[ij_max]), ij_max)
     
 @overload
 def _abs(vector: Vector.Type()):
-    abs_vector = numpy_abs(vector)
+    abs_vector = numpy_abs(vector.content)
     i_max = (argmax(abs_vector), )
     return AbsOutput(float(vector[i_max]), i_max)
     

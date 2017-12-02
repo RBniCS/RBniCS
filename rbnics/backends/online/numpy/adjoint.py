@@ -25,8 +25,8 @@ def adjoint(arg):
     
 @overload
 def _adjoint(arg: Matrix.Type()):
-    return arg.T
+    return Matrix.Type()(arg.M, arg.N, arg.content.T)
     
 @overload
 def _adjoint(arg: tuple_of(Matrix.Type())):
-    return tuple(a.T for a in arg)
+    return tuple(_adjoint(a) for a in arg)

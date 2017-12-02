@@ -16,13 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import FunctionSpace
-from rbnics.backends.basic import TensorBasisList as BasicTensorBasisList
-from rbnics.backends.dolfin.tensors_list import TensorsList
-from rbnics.utils.decorators import BackendFor
-
-TensorBasisList_Base = BasicTensorBasisList(TensorsList)
-
-@BackendFor("dolfin", inputs=(FunctionSpace, ))
-class TensorBasisList(TensorBasisList_Base):
-    pass
+def function_to_vector(function):
+    return function.vector()

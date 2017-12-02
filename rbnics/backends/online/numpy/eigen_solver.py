@@ -20,8 +20,9 @@ from numpy import real, imag, matrix
 from scipy.linalg import eig, eigh
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
-from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.function import Function
+from rbnics.backends.online.numpy.matrix import Matrix
+from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 
 @BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
@@ -32,8 +33,11 @@ class EigenSolver(AbstractEigenSolver):
             assert B.shape[0] == B.shape[1]
             assert A.shape[0] == B.shape[0]
         
-        self.A = A
-        self.B = B
+        self.A = A.content
+        if B is not None:
+            self.B = B.content
+        else:
+            self.B = None
         self.parameters = {}
         self.eigs = None
         self.eigv = None
@@ -67,8 +71,8 @@ class EigenSolver(AbstractEigenSolver):
     
     def get_eigenvector(self, i):
         eigv_i = matrix(self.eigv[:, i]).transpose() # as column vector
-        eigv_i_real = real(eigv_i)
-        eigv_i_imag = imag(eigv_i)
+        eigv_i_real = Vector(self.A.shape[0], real(eigv_i))
+        eigv_i_imag = Vector(self.A.shape[0], imag(eigv_i))
         eigv_i_real_fun = Function(eigv_i_real)
         eigv_i_imag_fun = Function(eigv_i_imag)
         return (eigv_i_real_fun, eigv_i_imag_fun)

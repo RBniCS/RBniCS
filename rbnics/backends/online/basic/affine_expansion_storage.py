@@ -341,10 +341,7 @@ def AffineExpansionStorage(backend, wrapping):
             ))
             if isinstance(item, backend.Function.Type()):
                 item = item.vector()
-            assert hasattr(item, "_basis_component_index_to_component_name") == hasattr(item, "_component_name_to_basis_component_index")
-            assert hasattr(item, "_component_name_to_basis_component_index") == hasattr(item, "_component_name_to_basis_component_length")
-            if hasattr(item, "_component_name_to_basis_component_index"):
-                assert isinstance(item, (backend.Matrix.Type(), backend.Vector.Type(), AbstractBasisFunctionsMatrix))
+            if isinstance(item, (backend.Matrix.Type(), backend.Vector.Type(), AbstractBasisFunctionsMatrix)):
                 assert (self._basis_component_index_to_component_name is None) == (self._component_name_to_basis_component_index is None)
                 assert (self._component_name_to_basis_component_index is None) == (self._component_name_to_basis_component_length is None)
                 if self._basis_component_index_to_component_name is None:

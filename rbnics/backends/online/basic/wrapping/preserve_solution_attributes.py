@@ -1,0 +1,48 @@
+# Copyright (C) 2015-2017 by the RBniCS authors
+#
+# This file is part of RBniCS.
+#
+# RBniCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RBniCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
+#
+
+def preserve_solution_attributes(lhs, solution, rhs):
+    # We should be solving a square system
+    assert lhs.M == lhs.N
+    assert lhs.N == rhs.N
+    # Make sure that solution preserves auxiliary attributes related to basis functions matrix
+    assert (solution.vector()._basis_component_index_to_component_name is None) == (solution.vector()._component_name_to_basis_component_index is None)
+    assert (solution.vector()._basis_component_index_to_component_name is None) == (solution.vector()._component_name_to_basis_component_length is None)
+    if solution.vector()._basis_component_index_to_component_name is None:
+        solution.vector()._basis_component_index_to_component_name = lhs._basis_component_index_to_component_name[0]
+        solution.vector()._component_name_to_basis_component_index = lhs._component_name_to_basis_component_index[0]
+        solution.vector()._component_name_to_basis_component_length = lhs._component_name_to_basis_component_length[0]
+    else:
+        assert lhs._basis_component_index_to_component_name[0] == solution.vector()._basis_component_index_to_component_name
+        assert lhs._component_name_to_basis_component_index[0] == solution.vector()._component_name_to_basis_component_index
+        assert lhs._component_name_to_basis_component_length[0] == solution.vector()._component_name_to_basis_component_length
+    # If solving a problem with one component, update solution.vector().N to be a dict
+    if (
+        solution.vector()._basis_component_index_to_component_name is not None
+            and
+        len(solution.vector()._basis_component_index_to_component_name) is 1
+    ):
+        assert isinstance(solution.vector().N, (dict, int))
+        if isinstance(solution.vector().N, dict):
+            assert solution.vector()._basis_component_index_to_component_name.keys() == solution.vector().N.keys()
+        elif isinstance(solution.vector().N, int):
+            for (_, component_name) in solution.vector()._basis_component_index_to_component_name.items():
+                break
+            solution.vector().N = {component_name: solution.vector().N}
+        else:
+            raise TypeError("Invalid solution dimension")

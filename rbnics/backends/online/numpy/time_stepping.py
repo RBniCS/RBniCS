@@ -258,7 +258,7 @@ if has_IDA:
                 if self.bc_eval is not None:
                     self.current_bc.apply_to_vector(residual_vector, self.solution.vector())
                 # Convert to an array, rather than a matrix with one column, and return
-                return asarray(residual_vector).reshape(-1)
+                return asarray(residual_vector.content).reshape(-1)
             def _assimulo_jacobian_eval(solution_dot_coefficient, t, solution, solution_dot):
                 # Store current time
                 self.set_time(t)
@@ -270,8 +270,8 @@ if has_IDA:
                 if self.bc_eval is not None:
                     self.current_bc.apply_to_matrix(jacobian_matrix)
                 # Return
-                return jacobian_matrix
-            self.problem = Implicit_Problem(_assimulo_residual_eval, self.solution.vector(), self.solution_dot.vector())
+                return jacobian_matrix.content
+            self.problem = Implicit_Problem(_assimulo_residual_eval, self.solution.vector().content, self.solution_dot.vector().content)
             self.problem.jac = _assimulo_jacobian_eval
             # Define an Assimulo IDA solver
             self.solver = IDA(self.problem)

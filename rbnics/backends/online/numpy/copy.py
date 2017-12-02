@@ -25,9 +25,9 @@ from rbnics.backends.online.numpy.wrapping.tensor_copy import basic_tensor_copy
 from rbnics.utils.decorators import backend_for, list_of, ModuleWrapper
 
 backend = ModuleWrapper(Function, Matrix, Vector)
-wrapping = ModuleWrapper() # temporarily
-function_copy = basic_function_copy(backend, wrapping)
-tensor_copy = basic_tensor_copy(backend, wrapping)
+wrapping_for_wrapping = ModuleWrapper()
+function_copy = basic_function_copy(backend, wrapping_for_wrapping)
+tensor_copy = basic_tensor_copy(backend, wrapping_for_wrapping)
 wrapping = ModuleWrapper(function_copy=function_copy, tensor_copy=tensor_copy)
 copy_base = basic_copy(backend, wrapping)
 

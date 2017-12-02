@@ -16,34 +16,23 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import matrix as MatrixBaseType, zeros as _MatrixContent_Base
+from numpy import matrix, zeros
 from rbnics.backends.online.basic import Matrix as BasicMatrix
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.wrapping import Slicer
 from rbnics.utils.decorators import backend_for, ModuleWrapper, OnlineSizeType
 
-class _Matrix_Type_Base(MatrixBaseType):
-    def __mul__(self, other):
-        if isinstance(other, Vector.Type()):
-            mat_times_other = MatrixBaseType.__mul__(self, other)
-            output = Vector(self.M)
-            output[:] = mat_times_other[:, 0]
-            return output
-        else:
-            return MatrixBaseType.__mul__(self, other)
+def MatrixBaseType(M, N):
+    return matrix(zeros((M, N)))
             
 backend = ModuleWrapper(Function, Vector)
 wrapping = ModuleWrapper(Slicer=Slicer)
-_Matrix_Type = BasicMatrix(backend, wrapping, _Matrix_Type_Base)
+_Matrix_Type = BasicMatrix(backend, wrapping, MatrixBaseType)
     
 @backend_for("numpy", inputs=(OnlineSizeType, OnlineSizeType))
 def Matrix(M, N):
-    (M_sum, N_sum) = _Matrix_Type.convert_matrix_sizes_from_dicts(M, N)
-    output = _Matrix_Type(_MatrixContent_Base((M_sum, N_sum)))
-    output.M = M
-    output.N = N
-    return output
+    return _Matrix_Type(M, N)
     
 # Attach a Type() function
 def Type():

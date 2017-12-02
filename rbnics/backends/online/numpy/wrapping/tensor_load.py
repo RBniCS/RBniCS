@@ -21,10 +21,10 @@ from rbnics.utils.io import NumpyIO
 def tensor_load(tensor, directory, filename):
     if NumpyIO.exists_file(directory, filename):
         loaded = NumpyIO.load_file(directory, filename)
-        assert len(loaded.shape) in (1, 2)
-        if len(loaded.shape) is 1:
+        assert len(tensor.shape) in (1, 2)
+        if len(tensor.shape) is 1:
             tensor[:] = loaded
-        elif len(loaded.shape) is 2:
+        elif len(tensor.shape) is 2:
             tensor[:, :] = loaded
         else:
             raise ValueError("Invalid tensor shape")

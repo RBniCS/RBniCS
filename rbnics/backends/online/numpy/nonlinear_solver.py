@@ -20,9 +20,9 @@ from numpy import asarray, dot
 from numpy.linalg import solve
 from scipy.optimize.nonlin import Jacobian, nonlin_solve
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
-from rbnics.backends.online.basic.wrapping import DirichletBC
+from rbnics.backends.online.basic.nonlinear_solver import _NonlinearProblem as _BasicNonlinearProblem
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, overload, ThetaType
+from rbnics.utils.decorators import BackendFor
 
 @BackendFor("numpy", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
@@ -56,7 +56,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
                 
     def solve(self):
         residual = self.problem.residual
-        initial_guess_vector = asarray(self.problem.solution.vector()).reshape(-1)
+        initial_guess_vector = asarray(self.problem.solution.vector().content).reshape(-1)
         jacobian = _Jacobian(self.problem.jacobian)
         solution_vector = nonlin_solve(
             residual, initial_guess_vector, jacobian=jacobian, verbose=self._report,
@@ -64,44 +64,9 @@ class NonlinearSolver(AbstractNonlinearSolver):
             line_search=self._line_search, callback=self._monitor
         )
         self.problem.solution.vector()[:] = solution_vector.reshape((-1, 1))
-        # Preserve auxiliary attributes related to basis functions matrix
-        assert hasattr(self.problem.sample_jacobian, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_jacobian, "_component_name_to_basis_component_index")
-        assert hasattr(self.problem.sample_jacobian, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_jacobian, "_component_name_to_basis_component_length")
-        assert hasattr(self.problem.sample_residual, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_residual, "_component_name_to_basis_component_index")
-        assert hasattr(self.problem.sample_residual, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_residual, "_component_name_to_basis_component_length")
-        assert hasattr(self.problem.sample_jacobian, "_basis_component_index_to_component_name") == hasattr(self.problem.sample_residual, "_basis_component_index_to_component_name")
-        if hasattr(self.problem.sample_residual, "_basis_component_index_to_component_name"):
-            self.solution.vector()._basis_component_index_to_component_name = self.problem.sample_jacobian._basis_component_index_to_component_name[0]
-            self.solution.vector()._component_name_to_basis_component_index = self.problem.sample_jacobian._component_name_to_basis_component_index[0]
-            self.solution.vector()._component_name_to_basis_component_length = self.problem.sample_jacobian._component_name_to_basis_component_length[0]
-        # Return
         return self.problem.solution
         
-class _NonlinearProblem(object):
-    def __init__(self, residual_eval, solution, bcs, jacobian_eval):
-        self.residual_eval = residual_eval
-        self.solution = solution
-        self.jacobian_eval = jacobian_eval
-        # We should be solving a square system
-        self.sample_residual = residual_eval(solution)
-        self.sample_jacobian = jacobian_eval(solution)
-        assert self.sample_jacobian.M == self.sample_jacobian.N
-        assert self.sample_jacobian.N == self.sample_residual.N
-        # Prepare storage for BCs, if necessary
-        self._init_bcs(bcs)
-    
-    @overload
-    def _init_bcs(self, bcs: None):
-        self.bcs = None
-        
-    @overload
-    def _init_bcs(self, bcs: ThetaType):
-        self.bcs = DirichletBC(bcs)
-        
-    @overload
-    def _init_bcs(self, bcs: DictOfThetaType):
-        self.bcs = DirichletBC(bcs, self.sample_residual._basis_component_index_to_component_name, self.solution.vector().N)
-        
+class _NonlinearProblem(_BasicNonlinearProblem):
     def residual(self, solution):
         # Convert to a matrix with one column, rather than an array
         self.solution.vector()[:] = solution.reshape((-1, 1))
@@ -111,7 +76,7 @@ class _NonlinearProblem(object):
         if self.bcs is not None:
             self.bcs.apply_to_vector(residual_vector, self.solution.vector())
         # Convert to an array, rather than a matrix with one column, and return
-        return asarray(residual_vector).reshape(-1)
+        return asarray(residual_vector.content).reshape(-1)
         
     def jacobian(self, solution):
         # Convert to a matrix with one column, rather than an array
@@ -122,7 +87,7 @@ class _NonlinearProblem(object):
         if self.bcs is not None:
             self.bcs.apply_to_matrix(jacobian_matrix)
         # Return
-        return jacobian_matrix
+        return jacobian_matrix.content
         
 # Adapted from scipy/optimize/nonlin.py, asjacobian method
 class _Jacobian(Jacobian):

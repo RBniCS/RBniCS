@@ -24,21 +24,29 @@ def Function(Vector):
             assert isinstance(arg, (int, dict, Vector.Type()))
             if isinstance(arg, (int, dict)):
                 self._v = Vector(arg)
-                self.N = arg
             elif isinstance(arg, Vector.Type()):
                 self._v = arg
-                self.N = arg.N
             else: # impossible to arrive here anyway, thanks to the assert
                 raise TypeError("Invalid arguments in Function")
         
         def vector(self):
             return self._v
             
+        @property
+        def N(self):
+            return self._v.N
+            
         def __abs__(self):
             v_abs = self._v.__abs__()
             function_abs = _Function_Type.__new__(type(self), v_abs)
             function_abs.__init__(v_abs)
             return function_abs
+            
+        def __neg__(self):
+            v_neg = self._v.neg()
+            function_neg = _Function_Type.__new__(type(self), v_neg)
+            function_neg.__init__(v_neg)
+            return function_neg
             
         def __add__(self, other):
             if isinstance(other, _Function_Type):
@@ -53,6 +61,16 @@ def Function(Vector):
                 return function_sum
             else:
                 return NotImplemented
+                
+        def __iadd__(self, other):
+            if isinstance(other, _Function_Type):
+                self._v.__iadd__(other._v)
+                return self
+            elif isinstance(other, Vector.Type()):
+                self._v.__iadd__(other)
+                return self
+            else:
+                return NotImplemented
             
         def __sub__(self, other):
             if isinstance(other, _Function_Type):
@@ -65,6 +83,16 @@ def Function(Vector):
                 function_sub = _Function_Type.__new__(type(self), v_sub)
                 function_sub.__init__(v_sub)
                 return function_sub
+            else:
+                return NotImplemented
+                
+        def __isub__(self, other):
+            if isinstance(other, _Function_Type):
+                self._v.__isub__(other._v)
+                return self
+            elif isinstance(other, Vector.Type()):
+                self._v.__isub__(other)
+                return self
             else:
                 return NotImplemented
             
@@ -85,11 +113,34 @@ def Function(Vector):
                 return function_rmul
             else:
                 return NotImplemented
+                
+        def __imul__(self, other):
+            if isinstance(other, Number):
+                self._v.__imul__(other)
+                return self
+            else:
+                return NotImplemented
+                
+        def __truediv__(self, other):
+            if isinstance(other, Number):
+                v_mul = self._v.__truediv__(other)
+                function_mul = _Function_Type.__new__(type(self), v_mul)
+                function_mul.__init__(v_mul)
+                return function_mul
+            else:
+                return NotImplemented
             
-        def __neg__(self):
-            v_neg = self._v.neg()
-            function_neg = _Function_Type.__new__(type(self), v_neg)
-            function_neg.__init__(v_neg)
-            return function_neg
+        def __itruediv__(self, other):
+            if isinstance(other, Number):
+                self._v.__itruediv__(other)
+                return self
+            else:
+                return NotImplemented
+            
+        def __str__(self):
+            return str(self._v)
+            
+        def __iter__(self):
+            return self._v.__iter__()
             
     return _Function_Type

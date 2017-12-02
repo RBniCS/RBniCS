@@ -16,29 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import matrix
 from rbnics.utils.decorators import backend_for, OnlineSizeType
 from rbnics.backends.online.basic import Function as BasicFunction
 from rbnics.backends.online.numpy.vector import Vector
 
-_Function_Type_Base = BasicFunction(Vector)
-
-class _Function_Type(_Function_Type_Base):
-    def __init__(self, arg):
-        assert isinstance(arg, (int, dict, Vector.Type(), matrix))
-        if isinstance(arg, (int, dict, Vector.Type())):
-            _Function_Type_Base.__init__(self, arg)
-        elif isinstance(arg, matrix): # for internal usage in EigenSolver, not exposed to the backends
-            assert arg.shape[1] == 1 # column vector
-            vec = Vector(arg.shape[0])
-            vec[:] = arg
-            _Function_Type_Base.__init__(self, vec)
-        else: # impossible to arrive here anyway, thanks to the assert
-            raise TypeError("Invalid arguments in Function")
-                    
-    def __iter__(self):
-        return map(float, self._v.flat)
-        
+_Function_Type = BasicFunction(Vector)
+            
 @backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ))
 def Function(arg):
     return _Function_Type(arg)

@@ -20,9 +20,8 @@ from numbers import Number
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
 
 def Matrix(backend, wrapping, MatrixBaseType):
-    class _Matrix_Type(MatrixBaseType):
-        @staticmethod
-        def convert_matrix_sizes_from_dicts(M, N):
+    class Matrix_Class(object):
+        def __init__(self, M, N, content=None):
             assert isinstance(M, (int, dict))
             assert isinstance(N, (int, dict))
             assert isinstance(M, dict) == isinstance(N, dict)
@@ -32,167 +31,236 @@ def Matrix(backend, wrapping, MatrixBaseType):
             else:
                 M_sum = M
                 N_sum = N
-            return (M_sum, N_sum)
+            self.M = M
+            self.N = N
+            self.shape = (M_sum, N_sum)
+            if content is None:
+                self.content = MatrixBaseType(M_sum, N_sum)
+            else:
+                self.content = content
+            # Auxiliary attributes related to basis functions matrix
+            self._basis_component_index_to_component_name = (None, None)
+            self._component_name_to_basis_component_index = (None, None)
+            self._component_name_to_basis_component_length = (None, None)
             
         def __getitem__(self, key):
             assert isinstance(key, tuple)
             assert len(key) == 2
             key_is_tuple_of_slices = all([isinstance(key_i, slice) for key_i in key])
             key_is_tuple_of_tuples_or_lists = all([isinstance(key_i, (list, tuple)) for key_i in key])
+            key_is_tuple_of_int = all([isinstance(key_i, int) for key_i in key])
             if (
-                key_is_tuple_of_slices # direct call of matrix[:5, :5]
+                key_is_tuple_of_slices # matrix[:5, :5]
                     or
-                key_is_tuple_of_tuples_or_lists # indirect call through AffineExpansionStorage
+                key_is_tuple_of_tuples_or_lists # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
             ):
                 assert key_is_tuple_of_slices is not key_is_tuple_of_tuples_or_lists
-                if key_is_tuple_of_slices: # direct call of matrix[:5, :5]
-                    # Prepare output
-                    if hasattr(self, "_component_name_to_basis_component_length"):
-                        output = MatrixBaseType.__getitem__(self, wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)))
-                        output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
-                    else:
-                        output = MatrixBaseType.__getitem__(self, wrapping.Slicer(*slice_to_array(self, key)))
-                        output_size = slice_to_size(self, key)
-                elif key_is_tuple_of_tuples_or_lists: # indirect call through AffineExpansionStorage
-                    output = MatrixBaseType.__getitem__(self, wrapping.Slicer(*key))
+                if key_is_tuple_of_slices: # matrix[:5, :5]
+                    output_content = self.content[wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))]
+                    output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
+                elif key_is_tuple_of_tuples_or_lists: # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+                    output_content = self.content[wrapping.Slicer(*key)]
                     output_size = (len(key[0]), len(key[1]))
-                # Preserve M and N
+                # Prepare output
                 assert len(output_size) == 2
-                output.M = output_size[0]
-                output.N = output_size[1]
+                output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
+                output.__init__(output_size[0], output_size[1], output_content)
                 # Preserve auxiliary attributes related to basis functions matrix
-                assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
-                assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")
-                if hasattr(self, "_basis_component_index_to_component_name"):
-                    output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
-                    output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-                    output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
+                output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
+                output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+                return output
+            elif key_is_tuple_of_int: # matrix[5, 5]
+                output = self.content[key]
+                assert isinstance(output, Number)
                 return output
             else:
-                return MatrixBaseType.__getitem__(self, key)
+                raise TypeError("Unsupported key type in Matrix.__getitem__")
                 
         def __setitem__(self, key, value):
             assert isinstance(key, tuple)
             assert len(key) == 2
-            if all([isinstance(key_i, slice) for key_i in key]): # direct call of matrix[:5, :5]
-                # Convert slices
-                if hasattr(self, "_component_name_to_basis_component_length"):
-                    converted_key = wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
-                else:
-                    converted_key = wrapping.Slicer(*slice_to_array(self, key))
-                # Set item
-                MatrixBaseType.__setitem__(self, converted_key, value)
+            key_is_tuple_of_slices = all([isinstance(key_i, slice) for key_i in key])
+            key_is_tuple_of_slice_and_int = isinstance(key[0], slice) and isinstance(key[1], int)
+            key_is_tuple_of_int_and_slice = isinstance(key[0], int) and isinstance(key[1], slice)
+            key_is_tuple_of_int = all([isinstance(key_i, int) for key_i in key])
+            if key_is_tuple_of_slices: # matrix[:5, :5]
+                converted_key = wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
+                if isinstance(value, type(self)):
+                    value = value.content
+                self.content[converted_key] = value
+            elif key_is_tuple_of_slice_and_int: # matrix[:5, 5]
+                converted_key_0 = wrapping.Slicer(slice_to_array(self, key[0], self._component_name_to_basis_component_length[0], self._component_name_to_basis_component_index[0]))
+                converted_key = (converted_key_0, key[1])
+                if isinstance(value, backend.Vector.Type()):
+                    value = value.content
+                self.content[converted_key] = value
+            elif key_is_tuple_of_int_and_slice: # matrix[5, :5]
+                converted_key_1 = wrapping.Slicer(slice_to_array(self, key[1], self._component_name_to_basis_component_length[1], self._component_name_to_basis_component_index[1]))
+                converted_key = (key[0], converted_key_1)
+                if isinstance(value, backend.Vector.Type()):
+                    value = value.content
+                self.content[converted_key] = value
+            elif key_is_tuple_of_int: # matrix[5, 5]
+                self.content[key] = value
             else:
-                MatrixBaseType.__setitem__(self, key, value)
+                raise TypeError("Unsupported key type in Matrix.__setitem__")
                 
         def __abs__(self):
-            output = MatrixBaseType.__abs__(self)
-            self._arithmetic_operations_preserve_attributes(None, output, other_order=0)
+            self._arithmetic_operations_assert_attributes(None, other_order=0)
+            output_content = self.content.__abs__()
+            output_size = (self.M, self.N)
+            output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
+            output.__init__(output_size[0], output_size[1], output_content)
+            self._arithmetic_operations_preserve_attributes(output, other_order=0)
+            return output
+            
+        def __neg__(self):
+            self._arithmetic_operations_assert_attributes(None, other_order=0)
+            output_content = self.content.__neg__()
+            output_size = (self.M, self.N)
+            output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
+            output.__init__(output_size[0], output_size[1], output_content)
+            self._arithmetic_operations_preserve_attributes(output, other_order=0)
             return output
             
         def __add__(self, other):
-            output = MatrixBaseType.__add__(self, other)
-            self._arithmetic_operations_preserve_attributes(other, output)
-            return output
+            if isinstance(other, type(self)):
+                self._arithmetic_operations_assert_attributes(other)
+                output_content = self.content.__add__(other.content)
+                output_size = (self.M, self.N)
+                output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
+                output.__init__(output_size[0], output_size[1], output_content)
+                self._arithmetic_operations_preserve_attributes(output)
+                return output
+            else:
+                return NotImplemented
+                
+        def __iadd__(self, other):
+            if isinstance(other, type(self)):
+                self._arithmetic_operations_assert_attributes(other)
+                self.content.__iadd__(other.content)
+                return self
+            else:
+                return NotImplemented
             
         def __sub__(self, other):
-            output = MatrixBaseType.__sub__(self, other)
-            self._arithmetic_operations_preserve_attributes(other, output)
-            return output
+            if isinstance(other, type(self)):
+                self._arithmetic_operations_assert_attributes(other)
+                output_content = self.content.__sub__(other.content)
+                output_size = (self.M, self.N)
+                output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
+                output.__init__(output_size[0], output_size[1], output_content)
+                self._arithmetic_operations_preserve_attributes(output)
+                return output
+            else:
+                return NotImplemented
+                
+        def __isub__(self, other):
+            if isinstance(other, type(self)):
+                self._arithmetic_operations_assert_attributes(other)
+                self.content.__isub__(other.content)
+                return self
+            else:
+                return NotImplemented
             
         def __mul__(self, other):
-            if isinstance(other, (backend.Function.Type(), backend.Vector.Type(), Number)):
-                if isinstance(other, (backend.Function.Type(), backend.Vector.Type())):
-                    if isinstance(other, backend.Function.Type()):
-                        output = MatrixBaseType.__mul__(self, other.vector())
-                    else:
-                        output = MatrixBaseType.__mul__(self, other)
-                else:
-                    output = MatrixBaseType.__mul__(self, other)
-                if isinstance(other, Number):
-                    self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
-                elif isinstance(other, backend.Function.Type()):
-                    output = backend.Function(output)
-                    self._arithmetic_operations_preserve_attributes(other.vector(), output, other_order=1)
-                elif isinstance(other, backend.Vector.Type()):
-                    self._arithmetic_operations_preserve_attributes(other, output, other_order=1)
+            if isinstance(other, Number):
+                self._arithmetic_operations_assert_attributes(other, other_order=0)
+                output_content = self.content.__mul__(other)
+                output_size = (self.M, self.N)
+                output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
+                output.__init__(output_size[0], output_size[1], output_content)
+                self._arithmetic_operations_preserve_attributes(output, other_order=0)
+                return output
+            elif isinstance(other, backend.Vector.Type()):
+                self._arithmetic_operations_assert_attributes(other, other_order=1)
+                output_content = self.content.__mul__(other.content)
+                output_size = self.M
+                output = backend.Vector.Type()(output_size, output_content)
+                self._arithmetic_operations_preserve_attributes(output, other_order=1)
+                return output
+            elif isinstance(other, backend.Function.Type()):
+                self._arithmetic_operations_assert_attributes(other, other_order=1)
+                output = backend.Function(self.__mul__(other.vector()))
+                self._arithmetic_operations_preserve_attributes(output, other_order=1)
                 return output
             else:
                 return NotImplemented
             
         def __rmul__(self, other):
             if isinstance(other, Number):
-                output = MatrixBaseType.__rmul__(self, other)
-                self._arithmetic_operations_preserve_attributes(other, output, other_order=0)
+                self._arithmetic_operations_assert_attributes(other, other_order=0)
+                output_content = self.content.__rmul__(other)
+                output_size = (self.M, self.N)
+                output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
+                output.__init__(output_size[0], output_size[1], output_content)
+                self._arithmetic_operations_preserve_attributes(output, other_order=0)
                 return output
             else:
                 return NotImplemented
+                
+        def __imul__(self, other):
+            if isinstance(other, Number):
+                self._arithmetic_operations_assert_attributes(other, other_order=0)
+                self.content.__imul__(other)
+                return self
+            elif isinstance(other, backend.Vector.Type()):
+                self._arithmetic_operations_assert_attributes(other, other_order=1)
+                self.content.__imul__(other.content)
+                return self
+            elif isinstance(other, backend.Function.Type()):
+                self._arithmetic_operations_assert_attributes(other, other_order=1)
+                return self.__imul__(other.vector())
+            else:
+                return NotImplemented
+                
+        def __truediv__(self, other):
+            if isinstance(other, Number):
+                self._arithmetic_operations_assert_attributes(other, other_order=0)
+                output_content = self.content.__truediv__(other)
+                output_size = (self.M, self.N)
+                output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
+                output.__init__(output_size[0], output_size[1], output_content)
+                self._arithmetic_operations_preserve_attributes(output, other_order=0)
+                return output
+            else:
+                return NotImplemented
+                
+        def __itruediv__(self, other):
+            if isinstance(other, Number):
+                self._arithmetic_operations_assert_attributes(other, other_order=0)
+                self.content.__itruediv__(other)
+                return self
+            else:
+                return NotImplemented
             
-        def __neg__(self):
-            output = MatrixBaseType.__neg__(self)
-            self._arithmetic_operations_preserve_attributes(None, output, other_order=0)
-            return output
-            
-        def _arithmetic_operations_preserve_attributes(self, other, output, other_order=2):
-            # Preserve M and N
-            if other_order is 0:
-                output.N = self.N
-                output.M = self.M
-            if other_order in (1, 2):
-                assert isinstance(self.N, (int, dict))
-                if isinstance(self.N, int) and isinstance(other.N, dict):
-                    assert len(other.N) == 1
-                    for (_, other_N) in other.N.items():
-                        break
-                    assert other_N == self.N
-                elif isinstance(self.N, dict) and isinstance(other.N, int):
-                    assert len(self.N) == 1
-                    for (_, self_N) in self.N.items():
-                        break
-                    assert self_N == other.N
-                else:
-                    assert self.N == other.N
-                output.N = self.N
+        def _arithmetic_operations_assert_attributes(self, other, other_order=2):
+            assert other_order in (0, 1, 2)
             if other_order is 2:
-                assert isinstance(self.M, (int, dict))
-                if isinstance(self.M, int) and isinstance(other.M, dict):
-                    assert len(other.M) == 1
-                    for (_, other_M) in other.M.items():
-                        break
-                    assert other_M == self.M
-                elif isinstance(self.M, dict) and isinstance(other.M, int):
-                    assert len(self.M) == 1
-                    for (_, self_M) in self.M.items():
-                        break
-                    assert self_M == other.M
-                else:
-                    assert self.M == other.M
-                output.M = self.M
-            # Preserve auxiliary attributes related to basis functions matrix
-            assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_index")
-            assert hasattr(self, "_basis_component_index_to_component_name") == hasattr(self, "_component_name_to_basis_component_length")
-            if hasattr(self, "_basis_component_index_to_component_name"):
-                if other_order is 2:
-                    if hasattr(other, "_basis_component_index_to_component_name"):
-                        assert self._basis_component_index_to_component_name == other._basis_component_index_to_component_name
-                    if hasattr(other, "_component_name_to_basis_component_index"):
-                        assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
-                    if hasattr(other, "_component_name_to_basis_component_length"):
-                        assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
-                elif other_order is 1:
-                    if hasattr(other, "_basis_component_index_to_component_name"):
-                        assert self._basis_component_index_to_component_name[0] == other._basis_component_index_to_component_name
-                    if hasattr(other, "_component_name_to_basis_component_index"):
-                        assert self._component_name_to_basis_component_index[0] == other._component_name_to_basis_component_index
-                    if hasattr(other, "_component_name_to_basis_component_length"):
-                        assert self._component_name_to_basis_component_length[0] == other._component_name_to_basis_component_length
-                if other_order is 0 or other_order is 2:
-                    output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
-                    output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-                    output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
-                elif other_order is 1:
-                    output._basis_component_index_to_component_name = self._basis_component_index_to_component_name[0]
-                    output._component_name_to_basis_component_index = self._component_name_to_basis_component_index[0]
-                    output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[0]
-    
-    return _Matrix_Type
+                assert self.M == other.M
+                assert self.N == other.N
+                assert self._basis_component_index_to_component_name == other._basis_component_index_to_component_name
+                assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
+                assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
+            elif other_order is 1:
+                assert self.N == other.N
+                assert self._basis_component_index_to_component_name[0] == other._basis_component_index_to_component_name
+                assert self._component_name_to_basis_component_index[0] == other._component_name_to_basis_component_index
+                assert self._component_name_to_basis_component_length[0] == other._component_name_to_basis_component_length
+                
+        def _arithmetic_operations_preserve_attributes(self, output, other_order=2):
+            assert other_order in (0, 1, 2)
+            if other_order is 0 or other_order is 2:
+                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
+                output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
+                output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+            elif other_order is 1:
+                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name[0]
+                output._component_name_to_basis_component_index = self._component_name_to_basis_component_index[0]
+                output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[0]
+        
+        def __str__(self):
+            return str(self.content)
+            
+    return Matrix_Class

@@ -19,7 +19,7 @@
 import sys
 from numpy import cumsum
 
-def slice_to_array(obj, key, length_dict=None, index_dict=None):
+def slice_to_array(obj, key, length_dict, index_dict):
     key = _check_key(obj, key)
     length_dict = _check_length_dict(key, length_dict)
     index_dict = _check_index_dict(key, index_dict)
@@ -59,9 +59,12 @@ def slice_to_array(obj, key, length_dict=None, index_dict=None):
             for (current_slice_start_component, current_slice_stop_component) in zip(current_slice_start, current_slice_stop):
                 current_slice.extend(list(range(current_slice_start_component, current_slice_stop_component)))
             slices.append(tuple(current_slice))
-    slices = tuple(slices)
     
-    return slices
+    assert len(slices) > 0
+    if len(slices) is 1:
+        return slices[0]
+    else:
+        return tuple(slices)
     
 def _check_key(obj, key):
     if not isinstance(key, tuple):

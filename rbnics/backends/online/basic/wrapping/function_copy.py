@@ -16,13 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import FunctionSpace
-from rbnics.backends.basic import TensorBasisList as BasicTensorBasisList
-from rbnics.backends.dolfin.tensors_list import TensorsList
-from rbnics.utils.decorators import BackendFor
-
-TensorBasisList_Base = BasicTensorBasisList(TensorsList)
-
-@BackendFor("dolfin", inputs=(FunctionSpace, ))
-class TensorBasisList(TensorBasisList_Base):
-    pass
+def basic_function_copy(backend, wrapping):
+    def _basic_function_copy(function):
+        original_vector = function.vector()
+        v = backend.Vector(original_vector.N)
+        v[:] = original_vector
+        # Preserve auxiliary attributes related to basis functions matrix
+        v._basis_component_index_to_component_name = original_vector._basis_component_index_to_component_name
+        v._component_name_to_basis_component_index = original_vector._component_name_to_basis_component_index
+        v._component_name_to_basis_component_length = original_vector._component_name_to_basis_component_length
+        # Return
+        return backend.Function(v)
+    return _basic_function_copy

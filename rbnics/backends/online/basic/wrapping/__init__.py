@@ -17,11 +17,15 @@
 #
 
 from rbnics.backends.online.basic.wrapping.DirichletBC import DirichletBC
+from rbnics.backends.online.basic.wrapping.function_to_vector import function_to_vector
+from rbnics.backends.online.basic.wrapping.preserve_solution_attributes import preserve_solution_attributes
 from rbnics.backends.online.basic.wrapping.slice_to_array import slice_to_array
 from rbnics.backends.online.basic.wrapping.slice_to_size import slice_to_size
 
 __all__ = [
     'DirichletBC',
+    'function_to_vector',
+    'preserve_solution_attributes',
     'slice_to_array',
     'slice_to_size'
 ]

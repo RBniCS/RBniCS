@@ -27,8 +27,8 @@ from rbnics.backends.online.numpy.wrapping.tensors_list_mul import basic_tensors
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 backend = ModuleWrapper(Function, Matrix, Vector)
-wrapping = ModuleWrapper() # temporarily
-tensors_list_mul_online_function = basic_tensors_list_mul_online_function(backend, wrapping)
+wrapping_for_wrapping = ModuleWrapper()
+tensors_list_mul_online_function = basic_tensors_list_mul_online_function(backend, wrapping_for_wrapping)
 wrapping = ModuleWrapper(get_mpi_comm, tensor_load, tensor_save, tensor_copy=tensor_copy, tensors_list_mul_online_function=tensors_list_mul_online_function)
 online_backend = ModuleWrapper(OnlineFunction=Function)
 online_wrapping = ModuleWrapper()

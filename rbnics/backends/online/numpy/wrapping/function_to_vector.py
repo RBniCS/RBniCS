@@ -16,5 +16,4 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def function_to_vector(function):
-    return function.vector()
+from rbnics.backends.online.basic.wrapping import function_to_vector
