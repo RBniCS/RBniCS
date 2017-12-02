@@ -48,7 +48,6 @@ class Data(object):
         result_builtin = theta[0]*F[0]
         for i in range(1, self.Q):
             result_builtin += theta[i]*F[i]
-        result_builtin.N = self.N
         return result_builtin
         
     def evaluate_backend(self, theta, F):
@@ -56,7 +55,7 @@ class Data(object):
         
     def assert_backend(self, theta, F, result_backend):
         result_builtin = self.evaluate_builtin(theta, F)
-        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        relative_error = norm((result_builtin - result_backend).content)/norm(result_builtin.content)
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("N", [2**i for i in range(1, 9)])

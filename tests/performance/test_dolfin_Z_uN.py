@@ -40,9 +40,9 @@ class Data(object):
         return (Z, uN)
         
     def evaluate_builtin(self, Z, uN):
-        result_builtin = uN.item(0)*Z[0].vector()
+        result_builtin = uN[0]*Z[0].vector()
         for i in range(1, self.N):
-            result_builtin.add_local(uN.item(i)*Z[i].vector().get_local())
+            result_builtin.add_local(uN[i]*Z[i].vector().get_local())
         result_builtin.apply("add")
         return result_builtin
         

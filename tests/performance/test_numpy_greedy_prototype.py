@@ -35,7 +35,7 @@ class Data(object):
         self.N = N
         self.Qa = Qa
         self.Qf = Qf
-        self.Ntrain = 100
+        self.Ntrain = 10
         
     def generate_random(self):
         aa_product = OnlineAffineExpansionStorage(self.Qa, self.Qa)
@@ -85,11 +85,11 @@ class Data(object):
                 for j in range(self.Qa):
                     for n in range(self.N):
                         for m in range(self.N):
-                            result_builtin_t += u[t].item(n)*theta_a[t][i]*aa_product_legacy[i, j, n, m]*theta_a[t][j]*v[t].item(m)
+                            result_builtin_t += u[t][n]*theta_a[t][i]*aa_product_legacy[i, j, n, m]*theta_a[t][j]*v[t][m]
             for i in range(self.Qa):
                 for j in range(self.Qf):
                     for n in range(self.N):
-                        result_builtin_t += theta_a[t][i]*af_product_legacy[i, j, n]*theta_f[t][j]*u[t].item(n)
+                        result_builtin_t += theta_a[t][i]*af_product_legacy[i, j, n]*theta_f[t][j]*u[t][n]
             for i in range(self.Qf):
                 for j in range(self.Qf):
                     result_builtin_t += theta_f[t][i]*ff_product_legacy[i, j]*theta_f[t][j]
@@ -113,9 +113,9 @@ class Data(object):
         relative_error = sum([abs(result_builtin_t - result_backend_t)/abs(result_builtin_t) for (result_builtin_t, result_backend_t) in zip(result_builtin, result_backend)])/self.Ntrain
         assert isclose(relative_error, 0., atol=1e-12)
 
-@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
-@pytest.mark.parametrize("Qa", [2 + 4*j for j in range(1, 8)])
-@pytest.mark.parametrize("Qf", [2 + 4*k for k in range(1, 8)])
+@pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 6)])
+@pytest.mark.parametrize("Qa", [2 + 4*(j + 4) for j in range(1, 4)])
+@pytest.mark.parametrize("Qf", [2 + 4*(k + 4) for k in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_numpy_greedy_prototype(N, Qa, Qf, test_type, benchmark):
     data = Data(N, Qa, Qf)

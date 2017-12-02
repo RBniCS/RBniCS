@@ -58,7 +58,7 @@ class Data(object):
         for i in range(self.Qa):
             for j in range(self.Qf):
                 for n in range(self.N):
-                    result_builtin += theta_a[i]*af_product_legacy[i, j, n]*theta_f[j]*u.item(n)
+                    result_builtin += theta_a[i]*af_product_legacy[i, j, n]*theta_f[j]*u[n]
         return result_builtin
         
     def evaluate_backend(self, theta_a, theta_f, af_product, af_product_legacy, u):
@@ -69,9 +69,9 @@ class Data(object):
         relative_error = abs(result_builtin - result_backend)/abs(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 
-@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
-@pytest.mark.parametrize("Qa", [2 + 4*j for j in range(1, 8)])
-@pytest.mark.parametrize("Qf", [2 + 4*k for k in range(1, 8)])
+@pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 6)])
+@pytest.mark.parametrize("Qa", [2 + 4*(j + 4) for j in range(1, 4)])
+@pytest.mark.parametrize("Qf", [2 + 4*(k + 4) for k in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_numpy_error_estimation_af_evaluation(N, Qa, Qf, test_type, benchmark):
     data = Data(N, Qa, Qf)

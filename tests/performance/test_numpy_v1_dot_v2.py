@@ -38,7 +38,7 @@ class Data(object):
         return (v1, v2)
         
     def evaluate_builtin(self, v1, v2):
-        return float(v1.T.dot(v2))
+        return float(v1.content.T.dot(v2.content))
         
     def evaluate_backend(self, v1, v2):
         return transpose(v1)*v2

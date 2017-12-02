@@ -17,7 +17,7 @@
 #
 
 import pytest
-from numpy import array, isclose, nonzero, sort
+from numpy import allclose, array, nonzero, sort
 from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, has_pybind11, inner, MixedElement, mpi_comm_self, Point, project, split, TestFunction, TrialFunction, UnitSquareMesh, Vector, VectorElement
 if has_pybind11():
     from dolfin.cpp.log import log, LogLevel, set_log_level
@@ -35,6 +35,7 @@ if has_pybind11():
     has_mshr = False # TODO mshr still uses swig wrapping
 from rbnics.backends.dolfin import ReducedMesh
 from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
+from rbnics.backends.online import OnlineMatrix, OnlineVector
 
 # Meshes
 def structured_mesh():
@@ -55,6 +56,13 @@ def nonzero_values(function):
     function.vector().gather(serialized_vector, array(range(function.function_space().dim()), "intc"))
     indices = nonzero(serialized_vector.get_local())
     return sort(serialized_vector.get_local()[indices])
+    
+def isclose(a, b):
+    assert type(a) is type(b)
+    if isinstance(a, (OnlineMatrix.Type(), OnlineVector.Type())):
+        return allclose(a.content, b.content)
+    else:
+        return allclose(a, b)
 
 # ~~~ Elliptic case ~~~ #
 def EllipticFunctionSpace(mesh):
@@ -113,7 +121,7 @@ def _test_reduced_mesh_elliptic_matrix(V, reduced_mesh):
     log(PROGRESS, "A_N at reduced dofs:\n" + str(A_N_reduced_dofs))
     log(PROGRESS, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
     
-    assert isclose(A_dofs, A_N_reduced_dofs).all()
+    assert isclose(A_dofs, A_N_reduced_dofs)
     
 # === Vector computation === #
 @generate_meshes
@@ -165,7 +173,7 @@ def _test_reduced_mesh_elliptic_vector(V, reduced_mesh):
     log(PROGRESS, "b_N at reduced dofs:\n" + str(b_N_reduced_dofs))
     log(PROGRESS, "Error:\n" + str(b_dofs - b_N_reduced_dofs))
     
-    assert isclose(b_dofs, b_N_reduced_dofs).all()
+    assert isclose(b_dofs, b_N_reduced_dofs)
 
 # === Function computation === #
 @generate_meshes
@@ -217,8 +225,8 @@ def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     log(PROGRESS, "Error:\n" + str(nonzero_values(f_dofs) - nonzero_values(f_reduced_dofs)))
     log(PROGRESS, "Error:\n" + str(f_reduced_dofs.vector().get_local() - f_N_reduced_dofs.vector().get_local()))
     
-    assert isclose(nonzero_values(f_dofs), nonzero_values(f_reduced_dofs)).all()
-    assert isclose(f_reduced_dofs.vector().get_local(), f_N_reduced_dofs.vector().get_local()).all()
+    assert isclose(nonzero_values(f_dofs), nonzero_values(f_reduced_dofs))
+    assert isclose(f_reduced_dofs.vector().get_local(), f_N_reduced_dofs.vector().get_local())
 
 # ~~~ Mixed case ~~~ #
 def MixedFunctionSpace(mesh):
@@ -284,7 +292,7 @@ def _test_reduced_mesh_mixed_matrix(V, reduced_mesh):
     log(PROGRESS, "A_N at reduced dofs:\n" + str(A_N_reduced_dofs))
     log(PROGRESS, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
     
-    assert isclose(A_dofs, A_N_reduced_dofs).all()
+    assert isclose(A_dofs, A_N_reduced_dofs)
     
 # === Vector computation === #
 @generate_meshes
@@ -338,7 +346,7 @@ def _test_reduced_mesh_mixed_vector(V, reduced_mesh):
     log(PROGRESS, "b_N at reduced dofs:\n" + str(b_N_reduced_dofs))
     log(PROGRESS, "Error:\n" + str(b_dofs - b_N_reduced_dofs))
     
-    assert isclose(b_dofs, b_N_reduced_dofs).all()
+    assert isclose(b_dofs, b_N_reduced_dofs)
 
 # ~~~ Collapsed case ~~~ #
 def CollapsedFunctionSpaces(mesh):
@@ -404,7 +412,7 @@ def _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh):
     log(PROGRESS, "A_N at reduced dofs:\n" + str(A_N_reduced_dofs))
     log(PROGRESS, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
     
-    assert isclose(A_dofs, A_N_reduced_dofs).all()
+    assert isclose(A_dofs, A_N_reduced_dofs)
     
 # === Vector computation === #
 @generate_meshes

@@ -219,11 +219,11 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, T, u, u_dot, g, r, j_u, 
                 plt.show(block=False)
                 plt.pause(DOLFIN_EPS)
             else:
-                print("||u|| at t = " + str(t) + ": " + str(monitor_norm(solution.vector())))
-                print("||u_dot|| at t = " + str(t) + ": " + str(monitor_norm(solution_dot.vector())))
+                print("||u|| at t = " + str(t) + ": " + str(monitor_norm(solution.vector().content)))
+                print("||u_dot|| at t = " + str(t) + ": " + str(monitor_norm(solution_dot.vector().content)))
             
         def _solution_from_dense_to_sparse(self, solution, u):
-            solution_array = asarray(solution.vector()).reshape(-1)
+            solution_array = asarray(solution.vector().content).reshape(-1)
             solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
             u.vector().zero()
             u.vector().add_local(solution_array)
@@ -257,13 +257,13 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, T, u, u_dot, g, r, j_u, 
     dense_error = DenseFunction(*exact_solution.vector().get_local().shape)
     dense_error.vector()[:] = exact_solution.vector().get_local().reshape((-1, 1))
     dense_error.vector()[:] -= dense_solution_array
-    dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
+    dense_error_norm = dense_error.vector().content.T.dot(X.array().dot(dense_error.vector().content))
     assert dense_error_norm.shape == (1, 1)
     dense_error_norm = dense_error_norm[0, 0]
     dense_error_dot = DenseFunction(*exact_solution_dot.vector().get_local().shape)
     dense_error_dot.vector()[:] = exact_solution_dot.vector().get_local().reshape((-1, 1))
     dense_error_dot.vector()[:] -= dense_solution_dot_array
-    dense_error_dot_norm = dense_error_dot.vector().T.dot(X.array().dot(dense_error_dot.vector()))
+    dense_error_dot_norm = dense_error_dot.vector().content.T.dot(X.array().dot(dense_error_dot.vector().content))
     assert dense_error_dot_norm.shape == (1, 1)
     dense_error_dot_norm = dense_error_dot_norm[0, 0]
     print("DenseTimeStepping error (" + integrator_type + "):", dense_error_norm, dense_error_dot_norm)

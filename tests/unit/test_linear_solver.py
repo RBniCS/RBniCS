@@ -119,7 +119,7 @@ def _test_linear_solver_dense(V, A, F, X, exact_solution):
     dense_error = DenseFunction(*dense_F_array.shape)
     dense_error.vector()[:] = exact_solution.vector().get_local().reshape((-1, 1))
     dense_error.vector()[:] -= dense_solution_array
-    dense_error_norm = dense_error.vector().T.dot(X.array().dot(dense_error.vector()))
+    dense_error_norm = dense_error.vector().content.T.dot(X.array().dot(dense_error.vector().content))
     assert dense_error_norm.shape == (1, 1)
     dense_error_norm = dense_error_norm[0, 0]
     print("DenseLinearSolver error:", dense_error_norm)

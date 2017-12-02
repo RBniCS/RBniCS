@@ -40,7 +40,7 @@ class Data(object):
         return (v1, v2, A)
         
     def evaluate_builtin(self, v1, v2, A):
-        return float(v1.T.dot(A*v2))
+        return float(v1.content.T.dot(A.content*v2.content))
         
     def evaluate_backend(self, v1, v2, A):
         return transpose(v1)*A*v2

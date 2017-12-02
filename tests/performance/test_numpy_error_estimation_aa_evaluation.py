@@ -59,7 +59,7 @@ class Data(object):
             for j in range(self.Q):
                 for n in range(self.N):
                     for m in range(self.N):
-                        result_builtin += u.item(n)*theta[i]*aa_product_legacy[i, j, n, m]*theta[j]*v.item(m)
+                        result_builtin += u[n]*theta[i]*aa_product_legacy[i, j, n, m]*theta[j]*v[m]
         return result_builtin
         
     def evaluate_backend(self, theta, aa_product, aa_product_legacy, u, v):
