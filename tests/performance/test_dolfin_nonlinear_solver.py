@@ -25,7 +25,7 @@ from rbnics.backends.dolfin import NonlinearSolver as DolfinNonlinearSolver
 from test_utils import RandomDolfinFunction
 
 NonlinearSolver = None
-AllNonlinearSolver = {"dolfin": FactoryNonlinearSolver, "factory": DolfinNonlinearSolver}
+AllNonlinearSolver = {"dolfin": DolfinNonlinearSolver, "factory": FactoryNonlinearSolver}
 
 class Data(object):
     def __init__(self, Th, callback_type):
@@ -109,7 +109,7 @@ class Data(object):
         relative_error = error.vector().norm("l2")/result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
         
-@pytest.mark.parametrize("Th", [2**i for i in range(3, 10)])
+@pytest.mark.parametrize("Th", [2**i for i in range(3, 9)])
 @pytest.mark.parametrize("callback_type", ["form callbacks", "tensor callbacks"])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(AllNonlinearSolver.keys()))
 def test_dolfin_linear_solver(Th, callback_type, test_type, benchmark):
