@@ -68,7 +68,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self._solution = None # OnlineFunction
         self._solution_cache = dict() # of Functions
         self._output = 0
-        self._output_cache = dict() # of floats
+        self._output_cache = dict() # of Numbers
         self._output_cache__current_cache_key = None
         
         # $$ OFFLINE DATA STRUCTURES $$ #

@@ -52,7 +52,7 @@ class _DirichletBC_ThetaType(object):
                 vector[i] = bc_i
         else:
             for (i, bc_i) in enumerate(self.bcs):
-                vector[i] = float(solution[i]) - bc_i
+                vector[i] = solution[i] - bc_i
         
     def homogeneous_apply_to_vector(self, vector):
         for (i, _) in enumerate(self.bcs):
@@ -88,7 +88,7 @@ class _DirichletBC_DictOfThetaType(object):
             for (component_name, component_bc) in self.bcs.items():
                 for (i, bc_i) in enumerate(component_bc):
                     block_i = self.bcs_base_index[component_name] + i
-                    vector[block_i] = float(solution[block_i]) - bc_i
+                    vector[block_i] = solution[block_i] - bc_i
         
     def homogeneous_apply_to_vector(self, vector):
         for (component_name, component_bc) in self.bcs.items():

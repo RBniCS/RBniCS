@@ -239,7 +239,6 @@ class SCMApproximation(ParametrizedProblem):
                     alpha_UB = obj
             
             assert alpha_UB is not None
-            alpha_UB = float(alpha_UB)
             self._alpha_UB = alpha_UB
             if "RAM" in self.cache_config:
                 self._alpha_UB_cache[cache_key] = alpha_UB

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from rbnics.eim.problems import EIM
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
@@ -60,7 +61,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Set tolerance of EIM reductions
             def setter(EIM_reduction, tol_EIM):
                 EIM_reduction.set_tolerance(max(EIM_reduction.tol, tol_EIM)) # kwargs are not needed
-            self._propagate_setter_from_kwargs_to_EIM_reductions(setter, float, **kwargs)
+            self._propagate_setter_from_kwargs_to_EIM_reductions(setter, Number, **kwargs)
             
         # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):

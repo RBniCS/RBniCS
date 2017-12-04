@@ -1144,15 +1144,15 @@ def tensors_are_close(tensor_1: GenericVector, tensor_2: GenericVector):
     return isclose(tensor_1.norm("l2"), tensor_2.norm("l2"))
     
 @overload
-def tensors_are_close(tensor_1: float, tensor_2: float):
+def tensors_are_close(tensor_1: float, tensor_2: float): # use float and not generic Number because sympy is tweaking the float object resulting in isinstance(5., Number) being false
     return isclose(tensor_1, tensor_2)
     
 def tensor_assemble(form):
-    assert isinstance(form, (Constant, float, Form))
+    assert isinstance(form, (Constant, Form, Number))
     if isinstance(form, Constant):
         assert form.ufl_shape == ()
         return float(form)
-    elif isinstance(form, float):
+    elif isinstance(form, Number):
         return form
     elif isinstance(form, Form):
         return assemble(form)

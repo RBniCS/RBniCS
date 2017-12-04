@@ -64,7 +64,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         self._solution = Function(self.V)
         self._solution_cache = dict() # of Functions
         self._output = 0
-        self._output_cache = dict() # of floats
+        self._output_cache = dict() # of Numbers
         self._output_cache__current_cache_key = None
         # I/O
         self.folder["cache"] = os.path.join(self.folder_prefix, "cache")

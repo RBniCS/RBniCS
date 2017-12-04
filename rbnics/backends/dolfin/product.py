@@ -27,7 +27,8 @@ from rbnics.backends.dolfin.wrapping import function_copy, tensor_copy
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC, ProductOutputDirichletBC
 from rbnics.utils.decorators import backend_for, ComputeThetaType, list_of, overload
 
-# Need to customize ThetaType in order to also include dolfin' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator
+# Need to customize ThetaType in order to also include dolfin' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator:
+# this is the reason why in the following theta coefficients are preprocessed by float().
 ThetaType = ComputeThetaType((Expression, Operator))
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,

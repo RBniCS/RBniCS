@@ -31,13 +31,13 @@ def abs(expression):
 def _abs(matrix: Matrix.Type()):
     abs_matrix = numpy_abs(matrix.content)
     ij_max = unravel_index(argmax(abs_matrix), abs_matrix.shape)
-    return AbsOutput(float(matrix[ij_max]), ij_max)
+    return AbsOutput(matrix[ij_max], ij_max)
     
 @overload
 def _abs(vector: Vector.Type()):
     abs_vector = numpy_abs(vector.content)
     i_max = (argmax(abs_vector), )
-    return AbsOutput(float(vector[i_max]), i_max)
+    return AbsOutput(vector[i_max], i_max)
     
 # Auxiliary class to signal to the max() function that it is dealing with an output of the abs() method
 class AbsOutput(object):
