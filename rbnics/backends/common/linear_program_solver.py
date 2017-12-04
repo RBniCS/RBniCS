@@ -122,8 +122,8 @@ if linear_programming_backends["python-glpk"]:
             for j in range(self.inequality_constraints_matrix.shape[0]):
                 # Assemble the LHS of the constraint
                 for q in range(self.inequality_constraints_matrix.shape[1]):
-                    matrix_row_index[glpk_container_size + 1] = int(j + 1)
-                    matrix_column_index[glpk_container_size + 1] = int(q + 1)
+                    matrix_row_index[glpk_container_size + 1] = j + 1
+                    matrix_column_index[glpk_container_size + 1] = q + 1
                     matrix_content[glpk_container_size + 1] = self.inequality_constraints_matrix[j, q]
                     glpk_container_size += 1
                     
