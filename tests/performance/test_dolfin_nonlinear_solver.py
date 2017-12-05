@@ -109,10 +109,10 @@ class Data(object):
         relative_error = error.vector().norm("l2")/result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
         
-@pytest.mark.parametrize("Th", [2**i for i in range(3, 9)])
+@pytest.mark.parametrize("Th", [2**i for i in range(3, 8)])
 @pytest.mark.parametrize("callback_type", ["form callbacks", "tensor callbacks"])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(AllNonlinearSolver.keys()))
-def test_dolfin_linear_solver(Th, callback_type, test_type, benchmark):
+def test_dolfin_nonlinear_solver(Th, callback_type, test_type, benchmark):
     data = Data(Th, callback_type)
     print("Th = " + str(Th) + ", Nh = " + str(data.V.dim()))
     if test_type == "builtin":

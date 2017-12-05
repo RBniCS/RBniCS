@@ -52,11 +52,14 @@ class Data(object):
         return (Z, A)
         
     def evaluate_builtin(self, Z, A):
-        result_builtin = NumpyMatrix(self.N, self.N)
+        result_builtin = NumpyMatrix({"u": self.N}, {"u": self.N})
         for j in range(self.N):
             A_Z_j = A*Z[j].vector()
             for i in range(self.N):
                 result_builtin[i, j] = Z[i].vector().inner(A_Z_j)
+        result_builtin._basis_component_index_to_component_name = (Z._basis_component_index_to_component_name, Z._basis_component_index_to_component_name)
+        result_builtin._component_name_to_basis_component_index = (Z._component_name_to_basis_component_index, Z._component_name_to_basis_component_index)
+        result_builtin._component_name_to_basis_component_length = (Z._component_name_to_basis_component_length, Z._component_name_to_basis_component_length)
         return result_builtin
         
     def evaluate_backend(self, Z, A):
@@ -64,7 +67,7 @@ class Data(object):
         
     def assert_backend(self, Z, A, result_backend):
         result_builtin = self.evaluate_builtin(Z, A)
-        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        relative_error = norm((result_builtin - result_backend).content)/norm(result_builtin.content)
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])

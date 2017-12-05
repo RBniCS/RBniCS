@@ -50,7 +50,7 @@ class Data(object):
 
 @pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
-def test_v1_dot_v2(N, test_type, benchmark):
+def test_numpy_v1_dot_v2(N, test_type, benchmark):
     data = Data(N)
     print("N = " + str(N))
     if test_type == "builtin":
