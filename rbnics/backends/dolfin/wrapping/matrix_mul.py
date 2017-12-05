@@ -16,13 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import as_backend_type
+from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
 
 def matrix_mul_vector(matrix, vector):
     return matrix*vector
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    matrix = as_backend_type(matrix).mat()
-    other_matrix = as_backend_type(other_matrix).mat()
+    matrix = to_petsc4py(matrix)
+    other_matrix = to_petsc4py(other_matrix)
     # petsc4py does not expose MatGetTrace, we do this by hand
     return matrix.transposeMatMult(other_matrix).getDiagonal().sum()

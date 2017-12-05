@@ -17,12 +17,13 @@
 #
 
 from ufl import Form
-from dolfin import as_backend_type, assemble, has_pybind11
+from dolfin import assemble, has_pybind11
 if has_pybind11():
     from dolfin.cpp.la import GenericMatrix
 else:
     from dolfin import GenericMatrix
 from rbnics.backends.dolfin.function import Function
+from rbnics.backends.dolfin.wrapping import to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import InvertProductOutputDirichletBC
 
 def Matrix():
@@ -86,7 +87,7 @@ else:
 def custom__and__(self, other):
     if isinstance(other, InvertProductOutputDirichletBC):
         output = self.copy()
-        mat = as_backend_type(output).mat()
+        mat = to_petsc4py(output)
         for bc in other.bc_list:
             constrained_dofs = [bc.function_space().dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
             mat.zeroRowsColumns(constrained_dofs, 0.)

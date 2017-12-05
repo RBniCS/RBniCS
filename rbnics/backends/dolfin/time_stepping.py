@@ -18,17 +18,22 @@
 
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import as_backend_type, assemble, DirichletBC, has_pybind11, PETScMatrix, PETScVector
+from dolfin import assemble, DirichletBC, has_pybind11, PETScMatrix, PETScVector
 if has_pybind11():
     from dolfin.cpp.la import GenericMatrix, GenericVector
 else:
     from dolfin import GenericMatrix, GenericVector
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
+from rbnics.backends.basic.wrapping.petsc_ts_integrator import BasicPETScTSIntegrator
 from rbnics.backends.dolfin.assign import assign
 from rbnics.backends.dolfin.function import Function
-from rbnics.backends.dolfin.wrapping import PETScTSIntegrator
+from rbnics.backends.dolfin.wrapping import get_mpi_comm, to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
-from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
+from rbnics.utils.decorators import BackendFor, dict_of, list_of, ModuleWrapper, overload
+
+backend = ModuleWrapper()
+wrapping_for_wrapping = ModuleWrapper(get_mpi_comm, to_petsc4py)
+PETScTSIntegrator = BasicPETScTSIntegrator(backend, wrapping_for_wrapping)
 
 @BackendFor("dolfin", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
@@ -144,7 +149,7 @@ class _TimeDependentProblem_Base(object):
             self.all_solutions_time.append(self.output_t)
             if self.time_order == 1:
                 output_solution = self.solution.copy(deepcopy=True)
-                output_solution_petsc = as_backend_type(output_solution.vector()).vec()
+                output_solution_petsc = to_petsc4py(output_solution.vector())
                 ts.interpolate(self.output_t, output_solution_petsc)
                 output_solution_petsc.assemble()
                 output_solution_petsc.ghostUpdate()
@@ -202,7 +207,7 @@ class _TimeDependentProblem_Base(object):
         if overwrite:
             self.residual_vector = residual_vector_input
         else:
-            as_backend_type(residual_vector_input).vec().swap(as_backend_type(self.residual_vector).vec())
+            to_petsc4py(residual_vector_input).swap(to_petsc4py(self.residual_vector))
             
     @overload
     def residual_bcs_apply(self, bcs: None):
@@ -232,7 +237,7 @@ class _TimeDependentProblem_Base(object):
             self.jacobian_matrix += jacobian_matrix_input
         # Make sure to keep nonzero pattern, as dolfin does by default, because this option is apparently
         # not preserved by the sum
-        as_backend_type(self.jacobian_matrix).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+        to_petsc4py(self.jacobian_matrix).setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
     
     @overload
     def jacobian_bcs_apply(self, bcs: None):

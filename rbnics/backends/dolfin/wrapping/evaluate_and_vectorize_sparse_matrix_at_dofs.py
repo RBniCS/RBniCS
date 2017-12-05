@@ -17,11 +17,11 @@
 #
 
 from mpi4py.MPI import MAX
-from dolfin import as_backend_type
 from rbnics.backends.online import OnlineVector
+from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
 
 def evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_matrix, dofs_list):
-    mat = as_backend_type(sparse_matrix).mat()
+    mat = to_petsc4py(sparse_matrix)
     row_start, row_end = mat.getOwnershipRange()
     out_size = len(dofs_list)
     out = OnlineVector(out_size)

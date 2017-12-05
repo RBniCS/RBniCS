@@ -16,32 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Function, FunctionSpace, has_pybind11
+from dolfin import as_backend_type, has_pybind11
 if has_pybind11():
     from dolfin.cpp.la import GenericMatrix, GenericVector
 else:
     from dolfin import GenericMatrix, GenericVector
-from rbnics.utils.decorators import overload, tuple_of
+from rbnics.utils.decorators import overload
 
 @overload
-def get_mpi_comm(function: Function):
-    return get_mpi_comm(function.function_space())
+def to_petsc4py(vector: GenericVector):
+    return as_backend_type(vector).vec()
     
 @overload
-def get_mpi_comm(V: FunctionSpace):
-    mpi_comm = V.mesh().mpi_comm()
-    if not has_pybind11():
-        mpi_comm = mpi_comm.tompi4py()
-    return mpi_comm
-    
-@overload
-def get_mpi_comm(V: tuple_of(FunctionSpace)):
-    assert len(V) in (1, 2)
-    return get_mpi_comm(V[0])
-    
-@overload
-def get_mpi_comm(tensor: (GenericMatrix, GenericVector)):
-    mpi_comm = tensor.mpi_comm()
-    if not has_pybind11():
-        mpi_comm = mpi_comm.tompi4py()
-    return mpi_comm
+def to_petsc4py(matrix: GenericMatrix):
+    return as_backend_type(matrix).mat()

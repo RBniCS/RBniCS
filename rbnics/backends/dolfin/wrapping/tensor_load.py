@@ -17,7 +17,7 @@
 #
 
 import os
-from dolfin import as_backend_type, has_pybind11
+from dolfin import has_pybind11
 from petsc4py import PETSc
 from rbnics.utils.mpi import is_io_process
 from rbnics.utils.io import Folders, PickleIO
@@ -121,7 +121,7 @@ def basic_tensor_load(backend, wrapping):
         if not loaded:
             return False
         else:
-            mat = as_backend_type(tensor).mat()
+            mat = wrapping.to_petsc4py(tensor)
             writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
             for writer_row in range(writer_row_start, writer_row_end):
                 row = matrix_row_permutation[writer_row]
@@ -139,7 +139,7 @@ def basic_tensor_load(backend, wrapping):
         if not loaded:
             return False
         else:
-            vec = as_backend_type(tensor).vec()
+            vec = wrapping.to_petsc4py(tensor)
             writer_row_start, writer_row_end = writer_vec.getOwnershipRange()
             for writer_row in range(writer_row_start, writer_row_end):
                 vec.setValues(vector_permutation[writer_row], writer_vec[writer_row], addv=PETSc.InsertMode.INSERT)

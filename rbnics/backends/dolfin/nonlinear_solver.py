@@ -18,13 +18,14 @@
 
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import as_backend_type, assemble, DirichletBC, has_pybind11, NonlinearProblem, PETScSNESSolver
+from dolfin import assemble, DirichletBC, has_pybind11, NonlinearProblem, PETScSNESSolver
 if has_pybind11():
     from dolfin.cpp.la import GenericMatrix, GenericVector
 else:
     from dolfin import GenericMatrix, GenericVector
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.dolfin.function import Function
+from rbnics.backends.dolfin.wrapping import to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
@@ -46,8 +47,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
         
     @overload
     def _init_workaround(self, jacobian_matrix: GenericMatrix):
-        jacobian_matrix = as_backend_type(jacobian_matrix).mat().duplicate()
-        self.solver.snes().setJacobian(None, jacobian_matrix)
+        self.solver.snes().setJacobian(None, to_petsc4py(jacobian_matrix).duplicate())
     # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
             
     def set_parameters(self, parameters):
@@ -85,7 +85,7 @@ class _NonlinearProblem(NonlinearProblem):
         
     @overload
     def _residual_vector_assemble(self, residual_vector_input: GenericVector, residual_vector_output: GenericVector):
-        as_backend_type(residual_vector_input).vec().swap(as_backend_type(residual_vector_output).vec())
+        to_petsc4py(residual_vector_input).swap(to_petsc4py(residual_vector_output))
     
     @overload
     def residual_bcs_apply(self, bcs: None, residual_vector: GenericVector):
@@ -134,7 +134,7 @@ class _NonlinearProblem(NonlinearProblem):
             jacobian_matrix_output += jacobian_matrix_input
             # Make sure to keep nonzero pattern, as dolfin does by default, because this option is apparently
             # not preserved by the sum
-            as_backend_type(jacobian_matrix_output).mat().setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+            to_petsc4py(jacobian_matrix_output).setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
             return True
     
     @overload

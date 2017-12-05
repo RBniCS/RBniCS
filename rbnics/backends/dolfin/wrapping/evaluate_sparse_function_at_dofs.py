@@ -18,8 +18,9 @@
 
 from mpi4py.MPI import MAX
 from petsc4py import PETSc
-from dolfin import as_backend_type, Function
+from dolfin import Function
 from rbnics.backends.dolfin.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
+from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
 from rbnics.backends.dolfin.wrapping.ufl_lagrange_interpolation import assert_lagrange_1
 
 def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, reduced_dofs_list=None):
@@ -32,9 +33,9 @@ def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, r
         assert_lagrange_1(input_function.function_space())
         return evaluate_sparse_vector_at_dofs(input_function.vector(), dofs_list)
     else:
-        vec = as_backend_type(input_function.vector()).vec()
+        vec = to_petsc4py(input_function.vector())
         output_function = Function(output_V)
-        out = as_backend_type(output_function.vector()).vec()
+        out = to_petsc4py(output_function.vector())
         _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list)
         return output_function
     

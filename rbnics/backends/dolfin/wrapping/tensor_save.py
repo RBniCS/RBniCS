@@ -18,7 +18,7 @@
 
 import os
 from petsc4py import PETSc
-from dolfin import as_backend_type, has_pybind11
+from dolfin import has_pybind11
 from mpi4py.MPI import Op
 from rbnics.utils.mpi import is_io_process
 from rbnics.utils.io import Folders, PickleIO
@@ -56,7 +56,7 @@ def basic_tensor_save(backend, wrapping):
             V_1__dof_map_writer_mapping = wrapping.build_dof_map_writer_mapping(V_1)
             matrix_row_mapping = dict() # from processor dependent row indices to processor independent tuple
             matrix_col_mapping = dict() # from processor dependent col indices to processor independent tuple
-            mat = as_backend_type(tensor).mat()
+            mat = wrapping.to_petsc4py(tensor)
             row_start, row_end = mat.getOwnershipRange()
             for row in range(row_start, row_end):
                 matrix_row_mapping[row] = V_0__dof_map_writer_mapping[row]
@@ -75,30 +75,17 @@ def basic_tensor_save(backend, wrapping):
             V_0 = wrapping.form_argument_space(form, 0)
             V_0__dof_map_writer_mapping = wrapping.build_dof_map_writer_mapping(V_0)
             vector_mapping = dict() # from processor dependent indices to processor independent tuple
-            vec = as_backend_type(tensor).vec()
+            vec = wrapping.to_petsc4py(tensor)
             row_start, row_end = vec.getOwnershipRange()
             for row in range(row_start, row_end):
                 vector_mapping[row] = V_0__dof_map_writer_mapping[row]
             gathered_vector_mapping = mpi_comm.reduce(vector_mapping, root=is_io_process.root, op=_dict_update_op)
             PickleIO.save_file(gathered_vector_mapping, directory, "." + form_name)
     
-    @overload(backend.Matrix.Type(), (Folders.Folder, str), str)
     def _tensor_save(tensor, directory, filename):
-        _matrix_save(tensor, directory, filename)
-        
-    @overload(backend.Vector.Type(), (Folders.Folder, str), str)
-    def _tensor_save(tensor, directory, filename):
-        _vector_save(tensor, directory, filename)
-            
-    def _matrix_save(matrix, directory, filename):
-        mat = as_backend_type(matrix).mat()
+        tensor = wrapping.to_petsc4py(tensor)
         viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "w")
-        viewer.view(mat)
-        
-    def _vector_save(vector, directory, filename):
-        vec = as_backend_type(vector).vec()
-        viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "w")
-        viewer.view(vec)
+        viewer.view(tensor)
         
     def _dict_update(dict1, dict2, datatype):
         dict1.update(dict2)

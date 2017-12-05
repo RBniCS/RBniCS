@@ -63,12 +63,12 @@ from rbnics.backends.dolfin.wrapping.is_time_dependent import is_time_dependent
 from rbnics.backends.dolfin.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, ParametrizedConstant, parametrized_constant_to_float
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
-from rbnics.backends.dolfin.wrapping.petsc_ts_integrator import PETScTSIntegrator
 from rbnics.backends.dolfin.wrapping.plot import plot
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized, PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.backends.dolfin.wrapping.tensor_copy import tensor_copy
+from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
 from rbnics.backends.dolfin.wrapping.ufl_lagrange_interpolation import assert_lagrange_1, get_global_dof_component, get_global_dof_coordinates, ufl_lagrange_interpolation
 from rbnics.backends.dolfin.wrapping.vector_mul import vector_mul_vector
 
@@ -131,12 +131,12 @@ __all__ = [
     'ParametrizedConstant',
     'parametrized_constant_to_float',
     'ParametrizedExpression',
-    'PETScTSIntegrator',
     'plot',
     'PullBackFormsToReferenceDomain',
     'solution_identify_component',
     'solution_iterator',
     'tensor_copy',
+    'to_petsc4py',
     'ufl_lagrange_interpolation',
     'vector_mul_vector',
     'vectorized_matrix_inner_vectorized_matrix'

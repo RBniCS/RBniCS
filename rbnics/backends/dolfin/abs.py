@@ -18,11 +18,10 @@
 
 from math import fabs
 from ufl.core.operator import Operator
-from dolfin import as_backend_type
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
-from rbnics.backends.dolfin.wrapping import assert_lagrange_1, function_from_ufl_operators, get_global_dof_coordinates, get_global_dof_component
+from rbnics.backends.dolfin.wrapping import assert_lagrange_1, function_from_ufl_operators, get_global_dof_coordinates, get_global_dof_component, to_petsc4py
 from rbnics.utils.decorators import backend_for, overload
 from rbnics.utils.mpi import parallel_max
 
@@ -35,7 +34,7 @@ def abs(expression):
 @overload
 def _abs(matrix: Matrix.Type()):
     # Note: PETSc offers a method MatGetRowMaxAbs, but it is not wrapped in petsc4py. We do the same by hand
-    mat = as_backend_type(matrix).mat()
+    mat = to_petsc4py(matrix)
     row_start, row_end = mat.getOwnershipRange()
     i_max, j_max = None, None
     value_max = None
@@ -57,7 +56,7 @@ def _abs(matrix: Matrix.Type()):
 @overload
 def _abs(vector: Vector.Type()):
     # Note: PETSc offers VecAbs and VecMax, but for symmetry with the matrix case we do the same by hand
-    vec = as_backend_type(vector).vec()
+    vec = to_petsc4py(vector)
     row_start, row_end = vec.getOwnershipRange()
     i_max = None
     value_max = None

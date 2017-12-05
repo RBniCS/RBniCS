@@ -16,10 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import as_backend_type, assign as dolfin_assign
+from dolfin import assign as dolfin_assign
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
+from rbnics.backends.dolfin.wrapping import to_petsc4py
 from rbnics.utils.decorators import backend_for, list_of, overload
 
 @backend_for("dolfin", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), (Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type())))
@@ -38,11 +39,6 @@ def _assign(object_to: list_of(Function.Type()), object_from: list_of(Function.T
         object_to.extend(object_from)
         
 @overload
-def _assign(object_to: Matrix.Type(), object_from: Matrix.Type()):
+def _assign(object_to: (Matrix.Type(), Vector.Type()), object_from: (Matrix.Type(), Vector.Type())):
     if object_from is not object_to:
-        as_backend_type(object_from).mat().copy(as_backend_type(object_to).mat(), as_backend_type(object_to).mat().Structure.SAME_NONZERO_PATTERN)
-        
-@overload
-def _assign(object_to: Vector.Type(), object_from: Vector.Type()):
-    if object_from is not object_to:
-        as_backend_type(object_from).vec().copy(as_backend_type(object_to).vec())
+        to_petsc4py(object_from).copy(to_petsc4py(object_to), to_petsc4py(object_to).Structure.SAME_NONZERO_PATTERN)
