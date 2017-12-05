@@ -72,9 +72,9 @@ class Config(object):
         config_files_list = list()
         config_files_list.append(os.path.join(self.rbnics_directory, ".rbnicsrc"))
         if directory is None:
-            if hasattr(sys.modules["__main__"], "__file__"): # from script
+            if hasattr(sys.modules["__main__"], "__file__") and "pytest" not in sys.modules: # from script
                 main_directory = os.path.dirname(os.path.realpath(sys.modules["__main__"].__file__))
-            else: # interactive
+            else: # interactive or pytest
                 main_directory = os.getcwd()
         else:
             main_directory = directory
