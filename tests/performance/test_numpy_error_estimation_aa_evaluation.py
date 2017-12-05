@@ -17,7 +17,7 @@
 #
 
 import pytest
-from numpy import isclose, zeros as legacy_tensor
+from numpy import asarray, einsum, isclose, zeros as legacy_tensor
 from rbnics.backends import product as factory_product, sum as factory_sum, transpose as factory_transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum, online_transpose
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum, transpose as numpy_transpose
@@ -54,13 +54,7 @@ class Data(object):
         return (theta, aa_product, aa_product_legacy, u, v)
         
     def evaluate_builtin(self, theta, aa_product, aa_product_legacy, u, v):
-        result_builtin = 0.
-        for i in range(self.Q):
-            for j in range(self.Q):
-                for n in range(self.N):
-                    for m in range(self.N):
-                        result_builtin += u[n]*theta[i]*aa_product_legacy[i, j, n, m]*theta[j]*v[m]
-        return result_builtin
+        return einsum("n,i,ijnm,j,m", asarray(u.content).reshape(-1), theta, aa_product_legacy, theta, asarray(v.content).reshape(-1), optimize=True)
         
     def evaluate_backend(self, theta, aa_product, aa_product_legacy, u, v):
         return transpose(u)*sum(product(theta, aa_product, theta))*v
@@ -68,10 +62,10 @@ class Data(object):
     def assert_backend(self, theta, aa_product, aa_product_legacy, u, v, result_backend):
         result_builtin = self.evaluate_builtin(theta, aa_product, aa_product_legacy, u, v)
         relative_error = abs(result_builtin - result_backend)/abs(result_builtin)
-        assert isclose(relative_error, 0., atol=1e-12)
+        assert isclose(relative_error, 0., atol=1e-10)
 
-@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
-@pytest.mark.parametrize("Q", [2 + 4*j for j in range(1, 8)])
+@pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
+@pytest.mark.parametrize("Q", [2 + 4*j for j in range(1, 3)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_numpy_error_estimation_aa_evaluation(N, Q, test_type, benchmark):
     data = Data(N, Q)

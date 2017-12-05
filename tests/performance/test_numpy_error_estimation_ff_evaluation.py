@@ -17,7 +17,7 @@
 #
 
 import pytest
-from numpy import isclose, zeros as legacy_tensor
+from numpy import einsum, isclose, zeros as legacy_tensor
 from rbnics.backends import product as factory_product, sum as factory_sum
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum
@@ -47,11 +47,7 @@ class Data(object):
         return (theta, ff_product, ff_product_legacy)
         
     def evaluate_builtin(self, theta, ff_product, ff_product_legacy):
-        result_builtin = 0.
-        for i in range(self.Q):
-            for j in range(self.Q):
-                result_builtin += theta[i]*ff_product_legacy[i, j]*theta[j]
-        return result_builtin
+        return einsum("i,ij,j", theta, ff_product_legacy, theta, optimize=True)
         
     def evaluate_backend(self, theta, ff_product, ff_product_legacy):
         return sum(product(theta, ff_product, theta))
@@ -59,10 +55,10 @@ class Data(object):
     def assert_backend(self, theta, ff_product, ff_product_legacy, result_backend):
         result_builtin = self.evaluate_builtin(theta, ff_product, ff_product_legacy)
         relative_error = abs(result_builtin - result_backend)/abs(result_builtin)
-        assert isclose(relative_error, 0., atol=1e-12)
+        assert isclose(relative_error, 0., atol=1e-10)
 
-@pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
-@pytest.mark.parametrize("Q", [2 + 4*j for j in range(1, 8)])
+@pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
+@pytest.mark.parametrize("Q", [2 + 4*j for j in range(1, 3)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
 def test_numpy_error_estimation_ff_evaluation(N, Q, test_type, benchmark):
     data = Data(N, Q)

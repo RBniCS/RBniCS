@@ -17,7 +17,7 @@
 #
 
 import pytest
-from numpy import isclose, zeros as legacy_tensor
+from numpy import asarray, einsum, isclose, zeros as legacy_tensor
 from rbnics.backends import product as factory_product, sum as factory_sum, transpose as factory_transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum, online_transpose
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum, transpose as numpy_transpose
@@ -54,12 +54,7 @@ class Data(object):
         return (theta_a, theta_f, af_product, af_product_legacy, u)
         
     def evaluate_builtin(self, theta_a, theta_f, af_product, af_product_legacy, u):
-        result_builtin = 0.
-        for i in range(self.Qa):
-            for j in range(self.Qf):
-                for n in range(self.N):
-                    result_builtin += theta_a[i]*af_product_legacy[i, j, n]*theta_f[j]*u[n]
-        return result_builtin
+        return einsum("i,ijn,j,n", theta_a, af_product_legacy, theta_f, asarray(u.content).reshape(-1), optimize=True)
         
     def evaluate_backend(self, theta_a, theta_f, af_product, af_product_legacy, u):
         return transpose(u)*sum(product(theta_a, af_product, theta_f))
@@ -67,11 +62,11 @@ class Data(object):
     def assert_backend(self, theta_a, theta_f, af_product, af_product_legacy, u, result_backend):
         result_builtin = self.evaluate_builtin(theta_a, theta_f, af_product, af_product_legacy, u)
         relative_error = abs(result_builtin - result_backend)/abs(result_builtin)
-        assert isclose(relative_error, 0., atol=1e-12)
+        assert isclose(relative_error, 0., atol=1e-10)
 
-@pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 6)])
-@pytest.mark.parametrize("Qa", [2 + 4*(j + 4) for j in range(1, 4)])
-@pytest.mark.parametrize("Qf", [2 + 4*(k + 4) for k in range(1, 4)])
+@pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
+@pytest.mark.parametrize("Qa", [2 + 4*j for j in range(1, 3)])
+@pytest.mark.parametrize("Qf", [2 + 4*k for k in range(1, 3)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_numpy_error_estimation_af_evaluation(N, Qa, Qf, test_type, benchmark):
     data = Data(N, Qa, Qf)
