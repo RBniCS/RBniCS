@@ -48,6 +48,9 @@ class _Vector_Type(_Vector_Type_Base):
             
     def __iter__(self):
         return map(float, self.content.flat)
+        
+    def __array__(self, dtype=None):
+        return self.content.__array__(dtype)
 
 @backend_for("numpy", inputs=(OnlineSizeType, ))
 def Vector(N):

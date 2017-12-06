@@ -28,7 +28,11 @@ def MatrixBaseType(M, N):
             
 backend = ModuleWrapper(Function, Vector)
 wrapping = ModuleWrapper(Slicer=Slicer)
-_Matrix_Type = BasicMatrix(backend, wrapping, MatrixBaseType)
+_Matrix_Type_Base = BasicMatrix(backend, wrapping, MatrixBaseType)
+
+class _Matrix_Type(_Matrix_Type_Base):
+    def __array__(self, dtype=None):
+        return self.content.__array__(dtype)
     
 @backend_for("numpy", inputs=(OnlineSizeType, OnlineSizeType))
 def Matrix(M, N):
