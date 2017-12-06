@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numpy import dot
+
 def vector_mul_vector(vector1, vector2):
-    output = vector1.content.T.dot(vector2.content)
-    assert output.shape == (1, 1)
-    return output[0, 0]
+    return dot(vector1, vector2)

@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import asarray, isclose
+from numpy import dot, isclose
 from dolfin import assemble, assign, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, Function, FunctionSpace, grad, inner, IntervalMesh, pi, project, TestFunction, TrialFunction
 from rbnics.backends.abstract import NonlinearProblemWrapper
 from rbnics.backends.dolfin import NonlinearSolver as SparseNonlinearSolver
@@ -121,7 +121,7 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
     def dense_initial_guess():
         sparse_function = sparse_initial_guess()
         dense_solution = DenseFunction(*sparse_function.vector().get_local().shape)
-        dense_solution.vector()[:] = sparse_function.vector().get_local().reshape((-1, 1))
+        dense_solution.vector()[:] = sparse_function.vector().get_local()
         dense_solution_array = dense_solution.vector()
         dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
         return dense_solution
@@ -136,7 +136,7 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
             dense_residual_array = sparse_residual.get_local()
             dense_residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             dense_residual = DenseVector(*dense_residual_array.shape)
-            dense_residual[:] = dense_residual_array.reshape((-1, 1))
+            dense_residual[:] = dense_residual_array
             return dense_residual
             
         def jacobian_eval(self, solution):
@@ -156,10 +156,10 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
                 return (2*pi, 0.)
             
         def _solution_from_dense_to_sparse(self, solution):
-            solution_array = asarray(solution.vector().content).reshape(-1)
+            solution_array = solution.vector()
             solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
             u.vector().zero()
-            u.vector().add_local(solution_array)
+            u.vector().add_local(solution_array.__array__())
             u.vector().apply("")
             solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
         
@@ -177,11 +177,9 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
     
     # Compute the error
     dense_error = DenseFunction(*exact_solution.vector().get_local().shape)
-    dense_error.vector()[:] = exact_solution.vector().get_local().reshape((-1, 1))
+    dense_error.vector()[:] = exact_solution.vector().get_local()
     dense_error.vector()[:] -= dense_solution_array
-    dense_error_norm = dense_error.vector().content.T.dot(X.array().dot(dense_error.vector().content))
-    assert dense_error_norm.shape == (1, 1)
-    dense_error_norm = dense_error_norm[0, 0]
+    dense_error_norm = dot(dense_error.vector(), dot(X.array(), dense_error.vector()))
     print("DenseNonlinearSolver error:", dense_error_norm)
     assert isclose(dense_error_norm, 0., atol=1.e-5)
     return dense_error_norm

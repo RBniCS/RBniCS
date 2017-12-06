@@ -17,7 +17,7 @@
 #
 
 
-from numpy import arange, asarray, linspace
+from numpy import arange, linspace
 try:
     from assimulo.solvers import IDA
     from assimulo.solvers.sundials import IDAError
@@ -235,8 +235,8 @@ if has_IDA:
             self.current_bc = None
             # Define an Assimulo Implicit problem
             def _store_solution_and_solution_dot(t, solution, solution_dot):
-                self.solution.vector()[:] = solution.reshape((-1, 1))
-                self.solution_dot.vector()[:] = solution_dot.reshape((-1, 1))
+                self.solution.vector()[:] = solution
+                self.solution_dot.vector()[:] = solution_dot
                 # Update current bc
                 if self.bc_eval is not None:
                     bcs_t = self.bc_eval(t)
@@ -258,7 +258,7 @@ if has_IDA:
                 if self.bc_eval is not None:
                     self.current_bc.apply_to_vector(residual_vector, self.solution.vector())
                 # Convert to an array, rather than a matrix with one column, and return
-                return asarray(residual_vector.content).reshape(-1)
+                return residual_vector.__array__()
             def _assimulo_jacobian_eval(solution_dot_coefficient, t, solution, solution_dot):
                 # Store current time
                 self.set_time(t)
@@ -270,8 +270,8 @@ if has_IDA:
                 if self.bc_eval is not None:
                     self.current_bc.apply_to_matrix(jacobian_matrix)
                 # Return
-                return jacobian_matrix.content
-            self.problem = Implicit_Problem(_assimulo_residual_eval, self.solution.vector().content, self.solution_dot.vector().content)
+                return jacobian_matrix.__array__()
+            self.problem = Implicit_Problem(_assimulo_residual_eval, self.solution.vector(), self.solution_dot.vector())
             self.problem.jac = _assimulo_jacobian_eval
             # Define an Assimulo IDA solver
             self.solver = IDA(self.problem)
@@ -354,12 +354,12 @@ if has_IDA:
             all_solutions_as_functions = list()
             all_solutions_dot_as_functions = list()
             for (t, solution) in zip(all_times, all_solutions):
-                self.solution.vector()[:] = solution.reshape((-1, 1))
+                self.solution.vector()[:] = solution
                 all_solutions_as_functions.append(function_copy(self.solution))
                 if len(all_solutions_as_functions) > 1: # monitor is being called at t > 0.
                     self.solution_dot.vector()[:] = (all_solutions_as_functions[-1].vector() - all_solutions_as_functions[-2].vector())/self._time_step_size
                 else:
-                    self.solution_dot.vector()[:] = all_solutions_dot[0].reshape((-1, 1))
+                    self.solution_dot.vector()[:] = all_solutions_dot[0]
                 all_solutions_dot_as_functions.append(function_copy(self.solution_dot))
                 if self._monitor is not None:
                     self._monitor(t, self.solution, self.solution_dot)

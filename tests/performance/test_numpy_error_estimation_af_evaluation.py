@@ -17,7 +17,7 @@
 #
 
 import pytest
-from numpy import asarray, einsum, isclose, zeros as legacy_tensor
+from numpy import einsum, isclose, zeros as legacy_tensor
 from rbnics.backends import product as factory_product, sum as factory_sum, transpose as factory_transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum, online_transpose
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum, transpose as numpy_transpose
@@ -54,7 +54,7 @@ class Data(object):
         return (theta_a, theta_f, af_product, af_product_legacy, u)
         
     def evaluate_builtin(self, theta_a, theta_f, af_product, af_product_legacy, u):
-        return einsum("i,ijn,j,n", theta_a, af_product_legacy, theta_f, asarray(u.content).reshape(-1), optimize=True)
+        return einsum("i,ijn,j,n", theta_a, af_product_legacy, theta_f, u, optimize=True)
         
     def evaluate_backend(self, theta_a, theta_f, af_product, af_product_legacy, u):
         return transpose(u)*sum(product(theta_a, af_product, theta_f))

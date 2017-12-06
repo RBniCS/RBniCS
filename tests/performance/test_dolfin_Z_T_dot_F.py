@@ -60,7 +60,7 @@ class Data(object):
         
     def assert_backend(self, Z, F, result_backend):
         result_builtin = self.evaluate_builtin(Z, F)
-        relative_error = norm((result_builtin - result_backend).content)/norm(result_builtin.content)
+        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
         
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])

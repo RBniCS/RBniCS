@@ -21,4 +21,4 @@ from rbnics.utils.io import NumpyIO
 def function_save(fun, directory, filename, suffix=None):
     if suffix is not None:
         filename = filename + "." + str(suffix)
-    NumpyIO.save_file(fun.vector().content, directory, filename)
+    NumpyIO.save_file(fun.vector(), directory, filename)

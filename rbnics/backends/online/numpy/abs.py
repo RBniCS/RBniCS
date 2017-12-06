@@ -29,13 +29,13 @@ def abs(expression):
     
 @overload
 def _abs(matrix: Matrix.Type()):
-    abs_matrix = numpy_abs(matrix.content)
+    abs_matrix = numpy_abs(matrix)
     ij_max = unravel_index(argmax(abs_matrix), abs_matrix.shape)
     return AbsOutput(matrix[ij_max], ij_max)
     
 @overload
 def _abs(vector: Vector.Type()):
-    abs_vector = numpy_abs(vector.content)
+    abs_vector = numpy_abs(vector)
     i_max = (argmax(abs_vector), )
     return AbsOutput(vector[i_max], i_max)
     

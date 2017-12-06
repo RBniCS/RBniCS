@@ -36,7 +36,7 @@ def RandomNumpyMatrix(N, M):
     
 def RandomNumpyVector(N):
     v = NumpyVector(N)
-    v[:] = _rand(N, 1)
+    v[:] = _rand(N)
     return v
     
 def RandomTuple(Q):

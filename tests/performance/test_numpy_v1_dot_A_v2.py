@@ -17,7 +17,7 @@
 #
 
 import pytest
-from numpy import isclose
+from numpy import dot, isclose
 from rbnics.backends import transpose as factory_transpose
 from rbnics.backends.online import online_transpose
 from rbnics.backends.online.numpy import transpose as numpy_transpose
@@ -40,7 +40,7 @@ class Data(object):
         return (v1, v2, A)
         
     def evaluate_builtin(self, v1, v2, A):
-        return float(v1.content.T.dot(A.content*v2.content))
+        return float(dot(v1, dot(A, v2)))
         
     def evaluate_backend(self, v1, v2, A):
         return transpose(v1)*A*v2

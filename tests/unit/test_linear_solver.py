@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import isclose
+from numpy import dot, isclose
 from dolfin import assemble, DirichletBC, DOLFIN_EPS, dx, Expression, Function, FunctionSpace, grad, inner, IntervalMesh, pi, project, TestFunction, TrialFunction
 from rbnics.backends.dolfin import LinearSolver as SparseLinearSolver
 from rbnics.backends.online.numpy import Function as DenseFunction, LinearSolver as DenseLinearSolver, Matrix as DenseMatrix, Vector as DenseVector
@@ -106,7 +106,7 @@ def _test_linear_solver_dense(V, A, F, X, exact_solution):
     dense_A = DenseMatrix(*dense_A_array.shape)
     dense_F = DenseVector(*dense_F_array.shape)
     dense_A[:, :] = dense_A_array
-    dense_F[:] = dense_F_array.reshape((-1, 1))
+    dense_F[:] = dense_F_array
     
     # Solve the linear problem
     dense_solution = DenseFunction(*dense_F_array.shape)
@@ -117,11 +117,9 @@ def _test_linear_solver_dense(V, A, F, X, exact_solution):
     
     # Compute the error
     dense_error = DenseFunction(*dense_F_array.shape)
-    dense_error.vector()[:] = exact_solution.vector().get_local().reshape((-1, 1))
+    dense_error.vector()[:] = exact_solution.vector().get_local()
     dense_error.vector()[:] -= dense_solution_array
-    dense_error_norm = dense_error.vector().content.T.dot(X.array().dot(dense_error.vector().content))
-    assert dense_error_norm.shape == (1, 1)
-    dense_error_norm = dense_error_norm[0, 0]
+    dense_error_norm = dot(dense_error.vector(), dot(X.array(), dense_error.vector()))
     print("DenseLinearSolver error:", dense_error_norm)
     assert isclose(dense_error_norm, 0., atol=1.e-5)
     return dense_error_norm

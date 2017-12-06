@@ -18,7 +18,7 @@
 
 import builtins
 import pytest
-from numpy import asarray, einsum, isclose, zeros as legacy_tensor
+from numpy import einsum, isclose, zeros as legacy_tensor
 from rbnics.backends import product as factory_product, sum as factory_sum, transpose as factory_transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum, online_transpose
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum, transpose as numpy_transpose
@@ -82,8 +82,8 @@ class Data(object):
         result_builtin = list()
         for t in range(self.Ntrain):
             result_builtin.append(
-                einsum("n,i,ijnm,j,m", asarray(u[t].content).reshape(-1), theta_a[t], aa_product_legacy, theta_a[t], asarray(v[t].content).reshape(-1), optimize=True) +
-                einsum("i,ijn,j,n", theta_a[t], af_product_legacy, theta_f[t], asarray(u[t].content).reshape(-1), optimize=True) +
+                einsum("n,i,ijnm,j,m", u[t], theta_a[t], aa_product_legacy, theta_a[t], v[t], optimize=True) +
+                einsum("i,ijn,j,n", theta_a[t], af_product_legacy, theta_f[t], u[t], optimize=True) +
                 einsum("i,ij,j", theta_f[t], ff_product_legacy, theta_f[t], optimize=True)
             )
         return result_builtin

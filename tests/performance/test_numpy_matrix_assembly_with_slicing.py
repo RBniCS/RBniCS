@@ -58,7 +58,7 @@ class Data(object):
         
     def assert_backend(self, theta, A, N, result_backend):
         result_builtin = self.evaluate_builtin(theta, A, N)
-        relative_error = norm((result_builtin - result_backend).content)/norm(result_builtin.content)
+        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("N", [2**i for i in range(1, 9)])

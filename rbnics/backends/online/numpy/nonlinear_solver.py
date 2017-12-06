@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import asarray, dot
+from numpy import dot
 from numpy.linalg import solve
 from scipy.optimize.nonlin import Jacobian, nonlin_solve
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
@@ -56,38 +56,38 @@ class NonlinearSolver(AbstractNonlinearSolver):
                 
     def solve(self):
         residual = self.problem.residual
-        initial_guess_vector = asarray(self.problem.solution.vector().content).reshape(-1)
+        initial_guess_vector = self.problem.solution.vector()
         jacobian = _Jacobian(self.problem.jacobian)
         solution_vector = nonlin_solve(
             residual, initial_guess_vector, jacobian=jacobian, verbose=self._report,
             f_tol=self._absolute_tolerance, f_rtol=self._relative_tolerance, x_rtol=self._solution_tolerance, maxiter=self._maximum_iterations,
             line_search=self._line_search, callback=self._monitor
         )
-        self.problem.solution.vector()[:] = solution_vector.reshape((-1, 1))
+        self.problem.solution.vector()[:] = solution_vector
         return self.problem.solution
         
 class _NonlinearProblem(_BasicNonlinearProblem):
     def residual(self, solution):
-        # Convert to a matrix with one column, rather than an array
-        self.solution.vector()[:] = solution.reshape((-1, 1))
+        # Store solution
+        self.solution.vector()[:] = solution
         # Compute residual
         residual_vector = self.residual_eval(self.solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
             self.bcs.apply_to_vector(residual_vector, self.solution.vector())
         # Convert to an array, rather than a matrix with one column, and return
-        return asarray(residual_vector.content).reshape(-1)
+        return residual_vector
         
     def jacobian(self, solution):
-        # Convert to a matrix with one column, rather than an array
-        self.solution.vector()[:] = solution.reshape((-1, 1))
+        # Store solution
+        self.solution.vector()[:] = solution
         # Compute jacobian
         jacobian_matrix = self.jacobian_eval(self.solution)
         # Apply BCs, if necessary
         if self.bcs is not None:
             self.bcs.apply_to_matrix(jacobian_matrix)
         # Return
-        return jacobian_matrix.content
+        return jacobian_matrix
         
 # Adapted from scipy/optimize/nonlin.py, asjacobian method
 class _Jacobian(Jacobian):

@@ -33,11 +33,8 @@ class EigenSolver(AbstractEigenSolver):
             assert B.shape[0] == B.shape[1]
             assert A.shape[0] == B.shape[0]
         
-        self.A = A.content
-        if B is not None:
-            self.B = B.content
-        else:
-            self.B = None
+        self.A = A
+        self.B = B
         self.parameters = {}
         self.eigs = None
         self.eigv = None
@@ -70,7 +67,7 @@ class EigenSolver(AbstractEigenSolver):
         return real(self.eigs[i]), imag(self.eigs[i])
     
     def get_eigenvector(self, i):
-        eigv_i = self.eigv[:, i])
+        eigv_i = self.eigv[:, i]
         eigv_i_real = Vector(self.A.shape[0], real(eigv_i))
         eigv_i_imag = Vector(self.A.shape[0], imag(eigv_i))
         eigv_i_real_fun = Function(eigv_i_real)
