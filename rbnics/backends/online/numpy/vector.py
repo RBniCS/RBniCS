@@ -30,6 +30,12 @@ wrapping = ModuleWrapper(Slicer=Slicer)
 _Vector_Type_Base = BasicVector(backend, wrapping, VectorBaseType)
 
 class _Vector_Type(_Vector_Type_Base):
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return float(_Vector_Type_Base.__getitem__(self, key)) # convert from numpy numbers wrappers
+        else:
+            return _Vector_Type_Base.__getitem__(self, key)
+            
     def __iter__(self):
         return map(float, self.content.flat)
         
