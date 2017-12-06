@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import real, imag, matrix
+from numpy import real, imag
 from scipy.linalg import eig, eigh
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
@@ -70,7 +70,7 @@ class EigenSolver(AbstractEigenSolver):
         return real(self.eigs[i]), imag(self.eigs[i])
     
     def get_eigenvector(self, i):
-        eigv_i = matrix(self.eigv[:, i]).transpose() # as column vector
+        eigv_i = self.eigv[:, i])
         eigv_i_real = Vector(self.A.shape[0], real(eigv_i))
         eigv_i_imag = Vector(self.A.shape[0], imag(eigv_i))
         eigv_i_real_fun = Function(eigv_i_real)

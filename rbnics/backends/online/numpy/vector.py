@@ -17,35 +17,19 @@
 #
 
 from numbers import Number
-from numpy import matrix, zeros
+from numpy import zeros
 from rbnics.backends.online.basic import Vector as BasicVector
 from rbnics.backends.online.numpy.wrapping import Slicer
 from rbnics.utils.decorators import backend_for, ModuleWrapper, OnlineSizeType
 
 def VectorBaseType(N):
-    return matrix(zeros((N, 1))) # as column vector
+    return zeros(N)
 
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(Slicer=Slicer)
 _Vector_Type_Base = BasicVector(backend, wrapping, VectorBaseType)
 
 class _Vector_Type(_Vector_Type_Base):
-    def __getitem__(self, key):
-        if isinstance(key, int): # numpy returns a vector with one element rather than a scalar
-            output = self.content.__getitem__(key)
-            assert output.shape == (1, 1)
-            output = output[0, 0]
-            assert isinstance(output, Number)
-            return output
-        else:
-            return _Vector_Type_Base.__getitem__(self, key)
-            
-    def __setitem__(self, key, value):
-        if isinstance(key, int): # for symmetry with __getitem__
-            self.content.__setitem__(key, value)
-        else:
-            _Vector_Type_Base.__setitem__(self, key, value)
-            
     def __iter__(self):
         return map(float, self.content.flat)
         
