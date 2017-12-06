@@ -23,13 +23,13 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
     @PreserveClassName
     class MultiLevelReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
-        additional_folder_prefix = dict({
+        additional_folder_prefix = {
             1: "",                  # remember that online data for level i-th is stored under the name of the (i-1)-th truth
             2: "Reduced",           # e.g. for the standard case it is stored in the folder ProblemName
             3: "DoubleReduced",
             4: "TripleReduced",
             5: "QuadrupleReduced"   # ... you can go on if needed ...
-        })
+        }
         
         def __init__(self, truth_problem, **kwargs):
             # Get the truth_problem recursion level: indeed a truth problem itself
