@@ -68,8 +68,8 @@ class EigenSolver(AbstractEigenSolver):
     
     def get_eigenvector(self, i):
         eigv_i = self.eigv[:, i]
-        eigv_i_real = Vector(self.A.shape[0], real(eigv_i))
-        eigv_i_imag = Vector(self.A.shape[0], imag(eigv_i))
+        eigv_i_real = Vector.Type()(self.A.shape[0], real(eigv_i))
+        eigv_i_imag = Vector.Type()(self.A.shape[0], imag(eigv_i))
         eigv_i_real_fun = Function(eigv_i_real)
         eigv_i_imag_fun = Function(eigv_i_imag)
         return (eigv_i_real_fun, eigv_i_imag_fun)
