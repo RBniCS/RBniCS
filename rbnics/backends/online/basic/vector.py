@@ -211,4 +211,7 @@ def Vector(backend, wrapping, VectorBaseType):
         def __str__(self):
             return str(self.content)
             
+        def __iter__(self):
+            return self.content.__iter__()
+            
     return Vector_Class
