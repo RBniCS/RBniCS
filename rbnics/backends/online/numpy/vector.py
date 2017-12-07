@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numbers import Number
 from numpy import zeros
 from rbnics.backends.online.basic import Vector as BasicVector
 from rbnics.backends.online.numpy.wrapping import Slicer

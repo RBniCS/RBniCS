@@ -58,9 +58,6 @@ class Data(object):
         result_builtin = NumpyVector({"u": self.N})
         for i in range(self.N):
             result_builtin[i] = Z[i].vector().inner(A_z)
-        result_builtin._basis_component_index_to_component_name = Z._basis_component_index_to_component_name
-        result_builtin._component_name_to_basis_component_index = Z._component_name_to_basis_component_index
-        result_builtin._component_name_to_basis_component_length = Z._component_name_to_basis_component_length
         return result_builtin
         
     def evaluate_backend(self, Z, A, z):

@@ -17,6 +17,7 @@
 #
 
 from rbnics.utils.decorators import list_of, overload
+from rbnics.utils.io import OnlineSizeDict
 
 def assign(backend):
     class _Assign(object):
@@ -40,6 +41,7 @@ def assign(backend):
                     for c in components_only_in_from:
                         from_N_dict[c] = 0
                     object_to.vector()[:] = object_from.vector()[:from_N_dict]
+                    self._preserve_vector_attributes(object_to.vector(), object_from.vector(), len(components_only_in_from) > 0)
                 elif isinstance(object_from.vector().N, int) and isinstance(object_to.vector().N, dict):
                     assert len(object_to.vector().N) is 1
                     raise ValueError("Refusing to assign a dict dimension N to an int dimension N")
@@ -48,12 +50,15 @@ def assign(backend):
                     for (c, N_c) in object_from.vector().N.items():
                         break
                     assert N_c == object_to.vector().N
-                    object_to.vector().N = {c: N_c}
+                    N = OnlineSizeDict()
+                    N[c] = N_c
+                    object_to.vector().N = N
                     object_to.vector()[:] = object_from.vector()
+                    self._preserve_vector_attributes(object_to.vector(), object_from.vector())
                 else: # isinstance(object_from.vector().N, int) and isinstance(object_to.vector().N, int):
                     assert object_to.vector().N == object_from.vector().N
                     object_to.vector()[:] = object_from.vector()
-                self._preserve_vector_attributes(object_to.vector(), object_from.vector())
+                    self._preserve_vector_attributes(object_to.vector(), object_from.vector())
                 
         @overload(list_of(backend.Function.Type()), list_of(backend.Function.Type()))
         def __call__(self, object_to, object_from):
@@ -76,7 +81,7 @@ def assign(backend):
                 object_to[:] = object_from
                 self._preserve_vector_attributes(object_to, object_from)
                 
-        def _preserve_vector_attributes(self, object_to, object_from):
+        def _preserve_vector_attributes(self, object_to, object_from, subset=False):
             # Preserve auxiliary attributes related to basis functions matrix
             assert (object_to._basis_component_index_to_component_name is None) == (object_to._component_name_to_basis_component_index is None)
             assert (object_to._basis_component_index_to_component_name is None) == (object_to._component_name_to_basis_component_length is None)
@@ -85,9 +90,14 @@ def assign(backend):
                 object_to._component_name_to_basis_component_index = object_from._component_name_to_basis_component_index
                 object_to._component_name_to_basis_component_length = object_from._component_name_to_basis_component_length
             else:
-                assert object_from._basis_component_index_to_component_name == object_to._basis_component_index_to_component_name
-                assert object_from._component_name_to_basis_component_index == object_to._component_name_to_basis_component_index
-                assert object_from._component_name_to_basis_component_length == object_to._component_name_to_basis_component_length
+                if not subset:
+                    assert object_from._basis_component_index_to_component_name == object_to._basis_component_index_to_component_name
+                    assert object_from._component_name_to_basis_component_index == object_to._component_name_to_basis_component_index
+                    assert object_from._component_name_to_basis_component_length == object_to._component_name_to_basis_component_length
+                else:
+                    assert object_to._basis_component_index_to_component_name.items() <= object_from._basis_component_index_to_component_name.items()
+                    assert object_to._component_name_to_basis_component_index.items() <= object_from._component_name_to_basis_component_index.items()
+                    assert object_to._component_name_to_basis_component_length.items() <= object_from._component_name_to_basis_component_length.items()
                 
         def _preserve_matrix_attributes(self, object_to, object_from):
             # Preserve auxiliary attributes related to basis functions matrix

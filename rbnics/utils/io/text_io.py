@@ -32,11 +32,14 @@ class TextIO(object):
                 
     # Load a variable from file
     @staticmethod
-    def load_file(directory, filename):
+    def load_file(directory, filename, globals=None):
         if os.path.splitext(filename)[1] == "":
             filename = filename + ".txt"
+        if globals is None:
+            globals = dict()
+        globals.update({"__builtins__": None})
         with open(os.path.join(str(directory), filename), "r") as infile:
-            return eval(infile.read(), {"__builtins__": None}, {})
+            return eval(infile.read(), globals, {})
             
     # Check if the file exists
     @staticmethod

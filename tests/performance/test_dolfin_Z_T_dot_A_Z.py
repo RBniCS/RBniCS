@@ -57,9 +57,6 @@ class Data(object):
             A_Z_j = A*Z[j].vector()
             for i in range(self.N):
                 result_builtin[i, j] = Z[i].vector().inner(A_Z_j)
-        result_builtin._basis_component_index_to_component_name = (Z._basis_component_index_to_component_name, Z._basis_component_index_to_component_name)
-        result_builtin._component_name_to_basis_component_index = (Z._component_name_to_basis_component_index, Z._component_name_to_basis_component_index)
-        result_builtin._component_name_to_basis_component_length = (Z._component_name_to_basis_component_length, Z._component_name_to_basis_component_length)
         return result_builtin
         
     def evaluate_backend(self, Z, A):

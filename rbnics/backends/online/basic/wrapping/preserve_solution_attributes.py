@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.io import OnlineSizeDict
+
 def preserve_solution_attributes(lhs, solution, rhs):
     # We should be solving a square system
     assert lhs.M == lhs.N
@@ -39,10 +41,13 @@ def preserve_solution_attributes(lhs, solution, rhs):
     ):
         assert isinstance(solution.vector().N, (dict, int))
         if isinstance(solution.vector().N, dict):
-            assert solution.vector()._basis_component_index_to_component_name.keys() == solution.vector().N.keys()
+            assert set(solution.vector()._basis_component_index_to_component_name.values()) == set(solution.vector().N.keys())
         elif isinstance(solution.vector().N, int):
             for (_, component_name) in solution.vector()._basis_component_index_to_component_name.items():
                 break
-            solution.vector().N = {component_name: solution.vector().N}
+            N_int = solution.vector().N
+            N = OnlineSizeDict()
+            N[component_name] = N_int
+            solution.vector().N = N
         else:
             raise TypeError("Invalid solution dimension")

@@ -17,6 +17,7 @@
 #
 
 from rbnics.backends.online.basic.wrapping.slice_to_array import _check_key, _check_length_dict
+from rbnics.utils.io import OnlineSizeDict
 
 def slice_to_size(obj, key, length_dict):
     key = _check_key(obj, key)
@@ -35,13 +36,13 @@ def slice_to_size(obj, key, length_dict):
                 assert len(length_dict[slice_index]) == 1
                 for (component_name, _) in length_dict[slice_index].items():
                     break
-                current_size = dict()
+                current_size = OnlineSizeDict()
                 current_size[component_name] = slice_.stop
                 size.append(current_size)
         else:
             assert isinstance(length_dict[slice_index], dict)
             assert length_dict[slice_index].keys() == slice_.stop.keys()
-            current_size = dict()
+            current_size = OnlineSizeDict()
             for (component_name, component_size) in slice_.stop.items():
                 current_size[component_name] = component_size
             size.append(current_size)

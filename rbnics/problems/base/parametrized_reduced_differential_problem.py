@@ -223,8 +223,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             # To properly initialize N and N_bc, detect how many theta terms
             # are related to boundary conditions
             if Z_loaded:
-                N = dict()
-                N_bc = dict()
+                N = OnlineSizeDict()
+                N_bc = OnlineSizeDict()
                 for component in self.components:
                     if has_non_homogeneous_dirichlet_bc(component):
                         theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
@@ -239,8 +239,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     self.N = N[self.components[0]]
                     self.N_bc = N_bc[self.components[0]]
                 else:
-                    self.N = OnlineSizeDict(N)
-                    self.N_bc = OnlineSizeDict(N_bc)
+                    self.N = N
+                    self.N_bc = N_bc
         elif current_stage == "offline":
             # Store the lifting functions in self.Z
             for component in self.components:
@@ -252,13 +252,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 self.N = 0
                 self.N_bc = len(self.Z)
             else:
-                N = dict()
-                N_bc = dict()
+                N = OnlineSizeDict()
+                N_bc = OnlineSizeDict()
                 for component in self.components:
                     N[component] = 0
                     N_bc[component] = len(self.Z[component])
-                self.N = OnlineSizeDict(N)
-                self.N_bc = OnlineSizeDict(N_bc)
+                self.N = N
+                self.N_bc = N_bc
             # Note that, however, self.N is not increased, so it will actually contain the number
             # of basis functions without the lifting ones.
         else:
@@ -400,6 +400,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                         N[component] = kwargs[component]
                         del kwargs[component]
                 else:
+                    assert isinstance(self.N, dict)
                     N = OnlineSizeDict(self.N) # copy the default dict
             else:
                 assert isinstance(N, int)
@@ -409,16 +410,20 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     N[component] = N_int
                     assert component not in kwargs, "You cannot provide both an int and kwargs for components"
         else:
+            assert len(self.components) == 1
+            component_0 = self.components[0]
             if N is None:
-                assert len(self.components) == 1
-                component_0 = self.components[0]
                 if component_0 in kwargs:
-                    N = kwargs[component_0]
+                    N_int = kwargs[component_0]
                 else:
-                    N = self.N
+                    assert isinstance(self.N, int)
+                    N_int = self.N
             else:
                 assert isinstance(N, int)
-                
+                N_int = N
+            N = OnlineSizeDict()
+            N[component_0] = N_int
+            
         return N, kwargs
         
     def _cache_key_from_N_and_kwargs(self, N, **kwargs):

@@ -17,10 +17,11 @@
 #
 
 from functools import total_ordering
+from collections import OrderedDict
 from rbnics.utils.decorators import dict_of, overload
 
 @total_ordering
-class OnlineSizeDict(dict):
+class OnlineSizeDict(OrderedDict):
     __slots__ = ()
     
     def __init__(self, *args, **kwargs):
@@ -50,11 +51,19 @@ class OnlineSizeDict(dict):
     def __contains__(self, k):
         return super(OnlineSizeDict, self).__contains__(k)
         
-    # Override N += N_bc so that it is possible to increment online size due to boundary conditions
+    # Override N += N_bc so that it is possible to increment online size due to boundary conditions (several components)
     @overload(lambda cls: cls)
     def __iadd__(self, other):
         for key in self:
             self[key] += other[key]
+        return self
+        
+    # Override N += N_bc so that it is possible to increment online size due to boundary conditions (single component)
+    @overload(int)
+    def __iadd__(self, other):
+        assert len(self) is 1
+        for key in self:
+            self[key] += other
         return self
         
     # Override __eq__ so that it is possible to check equality of dictionary with an int

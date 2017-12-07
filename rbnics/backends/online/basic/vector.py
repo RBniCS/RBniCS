@@ -17,7 +17,9 @@
 #
 
 from numbers import Number
+from collections import OrderedDict
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
+from rbnics.utils.io import OnlineSizeDict
 
 def Vector(backend, wrapping, VectorBaseType):
     class Vector_Class(object):
@@ -34,9 +36,20 @@ def Vector(backend, wrapping, VectorBaseType):
             else:
                 self.content = content
             # Auxiliary attributes related to basis functions matrix
-            self._basis_component_index_to_component_name = None
-            self._component_name_to_basis_component_index = None
-            self._component_name_to_basis_component_length = None
+            if isinstance(N, dict):
+                if len(N) > 1:
+                    assert isinstance(N, OrderedDict) # ordering is important in the definition of attributes
+                self._basis_component_index_to_component_name = OrderedDict()
+                self._component_name_to_basis_component_index = OrderedDict()
+                self._component_name_to_basis_component_length = OnlineSizeDict()
+                for (component_index, (component_name, component_length)) in enumerate(N.items()):
+                    self._basis_component_index_to_component_name[component_index] = component_name
+                    self._component_name_to_basis_component_index[component_name] = component_index
+                    self._component_name_to_basis_component_length[component_name] = component_length
+            else:
+                self._basis_component_index_to_component_name = None
+                self._component_name_to_basis_component_index = None
+                self._component_name_to_basis_component_length = None
             
         def __getitem__(self, key):
             if (
@@ -57,7 +70,20 @@ def Vector(backend, wrapping, VectorBaseType):
                 # Preserve auxiliary attributes related to basis functions matrix
                 output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-                output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+                if self._component_name_to_basis_component_length is None:
+                    output._component_name_to_basis_component_length = None
+                else:
+                    if isinstance(key, slice): # vector[:5]
+                        output._component_name_to_basis_component_length = output_size
+                    elif isinstance(key, (list, tuple)): # vector[[0, 1, 2, 3, 4]]
+                        if len(self._component_name_to_basis_component_length) is 1:
+                            for (component_name, _) in self._component_name_to_basis_component_length.items():
+                                break
+                            component_name_to_basis_component_length = OnlineSizeDict()
+                            component_name_to_basis_component_length[component_name] = len(key)
+                            output._component_name_to_basis_component_length = component_name_to_basis_component_length
+                        else:
+                            raise NotImplementedError("Vector.__getitem__ with list or tuple input arguments has not been implemented yet for the case of multiple components")
                 return output
             elif isinstance(key, int): # vector[5]
                 output = self.content[key]

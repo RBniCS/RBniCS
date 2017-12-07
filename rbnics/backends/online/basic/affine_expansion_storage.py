@@ -17,13 +17,14 @@
 #
 
 import os
+from collections import OrderedDict
 from numbers import Number
 from numpy import empty as AffineExpansionStorageContent_Base
 from numpy import nditer as AffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.decorators import overload, tuple_of
-from rbnics.utils.io import Folders, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as ContentShapeIO, TextIO as DictIO, TextIO as ScalarContentIO
+from rbnics.utils.io import Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as ContentShapeIO, TextIO as DictIO, TextIO as ScalarContentIO
 
 def AffineExpansionStorage(backend, wrapping):
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):
@@ -31,6 +32,8 @@ def AffineExpansionStorage(backend, wrapping):
             self._content = None
             self._precomputed_slices = dict() # from tuple to AffineExpansionStorage
             self._recursive = False
+            self._smallest_key = None
+            self._previous_key = None
             self._largest_key = None
             # Auxiliary storage for __getitem__ slicing
             self._basis_component_index_to_component_name = None # will be filled in in __setitem__, if required
@@ -49,20 +52,23 @@ def AffineExpansionStorage(backend, wrapping):
         def _init(self, arg1, arg2):
             self._recursive = False
             self._content = AffineExpansionStorageContent_Base((len(arg1), ), dtype=object)
+            self._smallest_key = 0
+            self._largest_key = len(arg1) - 1
             for (i, arg1i) in enumerate(arg1):
                 self[i] = arg1i
-            self._largest_key = len(arg1) - 1
             
         @overload(int, None)
         def _init(self, arg1, arg2):
             self._recursive = False
             self._content = AffineExpansionStorageContent_Base((arg1, ), dtype=object)
+            self._smallest_key = 0
             self._largest_key = arg1 - 1
         
         @overload(int, int)
         def _init(self, arg1, arg2):
             self._recursive = False
             self._content = AffineExpansionStorageContent_Base((arg1, arg2), dtype=object)
+            self._smallest_key = (0, 0)
             self._largest_key = (arg1 - 1, arg2 - 1)
             
         def save(self, directory, filename):
@@ -187,13 +193,13 @@ def AffineExpansionStorage(backend, wrapping):
             assert ContentItemShapeIO.exists_file(full_directory, "content_item_shape")
             assert content_item_type in ("matrix", "vector", "function", "scalar", "empty")
             if content_item_type == "matrix":
-                (M, N) = ContentItemShapeIO.load_file(full_directory, "content_item_shape")
+                (M, N) = ContentItemShapeIO.load_file(full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
                 return backend.Matrix(M, N)
             elif content_item_type == "vector":
-                N = ContentItemShapeIO.load_file(full_directory, "content_item_shape")
+                N = ContentItemShapeIO.load_file(full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
                 return backend.Vector(N)
             elif content_item_type == "function":
-                N = ContentItemShapeIO.load_file(full_directory, "content_item_shape")
+                N = ContentItemShapeIO.load_file(full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
                 return backend.Function(N)
             elif content_item_type == "scalar":
                 return 0.
@@ -238,11 +244,11 @@ def AffineExpansionStorage(backend, wrapping):
             
         def _load_dicts(self, full_directory):
             assert DictIO.exists_file(full_directory, "basis_component_index_to_component_name")
-            self._basis_component_index_to_component_name = DictIO.load_file(full_directory, "basis_component_index_to_component_name")
+            self._basis_component_index_to_component_name = DictIO.load_file(full_directory, "basis_component_index_to_component_name", globals={"OrderedDict": OrderedDict})
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_index")
-            self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index")
+            self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index", globals={"OrderedDict": OrderedDict})
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_length")
-            self._component_name_to_basis_component_length = DictIO.load_file(full_directory, "component_name_to_basis_component_length")
+            self._component_name_to_basis_component_length = DictIO.load_file(full_directory, "component_name_to_basis_component_length", globals={"OnlineSizeDict": OnlineSizeDict})
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             while not it.finished:
                 if self._basis_component_index_to_component_name is not None:
@@ -329,8 +335,17 @@ def AffineExpansionStorage(backend, wrapping):
         def __setitem__(self, key, item):
             assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
             assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
+            # Check that __getitem__ is not random acces but called for increasing key and store current key
+            self._assert_setitem_order(key)
+            self._update_previous_key(key)
+            # Store item
             self._content[key] = item
-            # Also store component_name_to_basis_component_* for __getitem__ slicing
+            # Reset attributes related to basis functions matrix if the size has changed
+            if key == self._smallest_key: # this assumes that __getitem__ is not random acces but called for increasing key
+                self._basis_component_index_to_component_name = None
+                self._component_name_to_basis_component_index = None
+                self._component_name_to_basis_component_length = None
+            # Also store attributes related to basis functions matrix for __getitem__ slicing
             assert isinstance(item, (
                 backend.Matrix.Type(),          # output e.g. of Z^T*A*Z
                 backend.Vector.Type(),          # output e.g. of Z^T*F
@@ -360,6 +375,43 @@ def AffineExpansionStorage(backend, wrapping):
             if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
                 self._precomputed_slices = dict()
                 self._prepare_trivial_precomputed_slice(item)
+             
+        @overload(int)
+        def _assert_setitem_order(self, current_key):
+            if self._previous_key is None:
+                assert current_key == 0
+            else:
+                assert current_key == (self._previous_key + 1) % (self._largest_key + 1)
+                
+        @overload(int, int)
+        def _assert_setitem_order(self, current_key_0, current_key_1):
+            if self._previous_key is None:
+                assert current_key_0 == 0
+                assert current_key_1 == 0
+            else:
+                expected_key_1 = (self._previous_key[1] + 1) % (self._largest_key[1] + 1)
+                if expected_key_1 is 0:
+                    expected_key_0 = (self._previous_key[0] + 1) % (self._largest_key[0] + 1)
+                else:
+                    expected_key_0 = self._previous_key[0]
+                assert current_key_0 == expected_key_0
+                assert current_key_1 == expected_key_1
+                
+        @overload(tuple_of(int))
+        def _assert_setitem_order(self, current_key):
+            self._assert_setitem_order(*current_key)
+            
+        @overload(int)
+        def _update_previous_key(self, current_key):
+            self._previous_key = current_key
+            
+        @overload(int, int)
+        def _update_previous_key(self, current_key_0, current_key_1):
+            self._previous_key = (current_key_0, current_key_1)
+                
+        @overload(tuple_of(int))
+        def _update_previous_key(self, current_key):
+            self._update_previous_key(*current_key)
             
         def __iter__(self):
             return AffineExpansionStorageContent_Iterator(self._content, flags=["refs_ok"], op_flags=["readonly"])
@@ -371,4 +423,5 @@ def AffineExpansionStorage(backend, wrapping):
         def order(self):
             assert self._content is not None
             return len(self._content.shape)
+            
     return _AffineExpansionStorage

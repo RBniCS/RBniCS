@@ -17,6 +17,7 @@
 #
 
 from numbers import Number
+from collections import OrderedDict
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType
 from rbnics.utils.io import OnlineSizeDict
@@ -28,10 +29,10 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
             self._components = dict() # of FunctionsList
             self._precomputed_slices = dict() # from tuple to FunctionsList
-            self._basis_component_index_to_component_name = dict() # filled in by init
+            self._basis_component_index_to_component_name = OrderedDict() # filled in by init
             self._components_name = list() # filled in by init
-            self._component_name_to_basis_component_index = dict() # filled in by init
-            self._component_name_to_basis_component_length = dict() # of int
+            self._component_name_to_basis_component_index = OrderedDict() # filled in by init
+            self._component_name_to_basis_component_length = OnlineSizeDict()
 
         def init(self, components_name):
             if self._components_name != components_name: # Do nothing if it was already initialize with the same dicts

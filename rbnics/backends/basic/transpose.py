@@ -295,11 +295,10 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
                     i += 1
             log(PROGRESS, "End Z^T w")
-            # Attach a private attribute to output which stores the order of components and their basis length.
-            # This is needed by OnlineAffineExpansionStorage when slicing.
-            output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
-            output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-            output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+            # Assert consistency of private attributes storing the order of components and their basis length.
+            assert output._basis_component_index_to_component_name == self._basis_component_index_to_component_name
+            assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
+            assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return
             return output
         
@@ -317,11 +316,10 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), vector)
                     i += 1
             log(PROGRESS, "End Z^T w")
-            # Attach a private attribute to output which stores the order of components and their basis length.
-            # This is needed by OnlineAffineExpansionStorage when slicing.
-            output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
-            output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-            output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+            # Assert consistency of private attributes storing the order of components and their basis length.
+            assert output._basis_component_index_to_component_name == self._basis_component_index_to_component_name
+            assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
+            assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return
             return output
         
@@ -366,11 +364,10 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
                             i += 1
                     j += 1
             log(PROGRESS, "End Z^T*A*Z")
-            # Attach a private attribute to output which stores the order of components and their basis length.
-            # This is needed by OnlineAffineExpansionStorage when slicing.
-            output._basis_component_index_to_component_name = (self._basis_component_index_to_component_name, other_basis_functions_matrix._basis_component_index_to_component_name)
-            output._component_name_to_basis_component_index = (self._component_name_to_basis_component_index, other_basis_functions_matrix._component_name_to_basis_component_index)
-            output._component_name_to_basis_component_length = (self._component_name_to_basis_component_length, other_basis_functions_matrix._component_name_to_basis_component_length)
+            # Assert consistency of private attributes storing the order of components and their basis length.
+            assert output._basis_component_index_to_component_name == (self._basis_component_index_to_component_name, other_basis_functions_matrix._basis_component_index_to_component_name)
+            assert output._component_name_to_basis_component_index == (self._component_name_to_basis_component_index, other_basis_functions_matrix._component_name_to_basis_component_index)
+            assert output._component_name_to_basis_component_length == (self._component_name_to_basis_component_length, other_basis_functions_matrix._component_name_to_basis_component_length)
             # Return
             return output
         
@@ -385,11 +382,10 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_function)
                     i += 1
             log(PROGRESS, "End Z^T*A*v")
-            # Attach a private attribute to output which stores the order of components and their basis length.
-            # This is needed by OnlineAffineExpansionStorage when slicing.
-            output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
-            output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-            output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+            # Assert consistency of private attributes storing the order of components and their basis length.
+            assert output._basis_component_index_to_component_name == self._basis_component_index_to_component_name
+            assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
+            assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return
             return output
             
@@ -404,11 +400,10 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_vector)
                     i += 1
             log(PROGRESS, "End Z^T*A*v")
-            # Attach a private attribute to output which stores the order of components and their basis length.
-            # This is needed by OnlineAffineExpansionStorage when slicing.
-            output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
-            output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-            output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+            # Assert consistency of private attributes storing the order of components and their basis length.
+            assert output._basis_component_index_to_component_name == self._basis_component_index_to_component_name
+            assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
+            assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return
             return output
         

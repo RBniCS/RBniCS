@@ -17,7 +17,9 @@
 #
 
 from numbers import Number
+from collections import OrderedDict
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
+from rbnics.utils.io import OnlineSizeDict
 
 def Matrix(backend, wrapping, MatrixBaseType):
     class Matrix_Class(object):
@@ -39,9 +41,42 @@ def Matrix(backend, wrapping, MatrixBaseType):
             else:
                 self.content = content
             # Auxiliary attributes related to basis functions matrix
-            self._basis_component_index_to_component_name = (None, None)
-            self._component_name_to_basis_component_index = (None, None)
-            self._component_name_to_basis_component_length = (None, None)
+            if isinstance(M, dict):
+                assert len(M) == len(N)
+                if len(M) > 1:
+                    # ordering is important in the definition of attributes
+                    assert isinstance(M, OrderedDict)
+                    assert isinstance(N, OrderedDict)
+                basis_component_index_to_component_name_0 = OrderedDict()
+                component_name_to_basis_component_index_0 = OrderedDict()
+                component_name_to_basis_component_length_0 = OnlineSizeDict()
+                for (component_index, (component_name, component_length)) in enumerate(M.items()):
+                    basis_component_index_to_component_name_0[component_index] = component_name
+                    component_name_to_basis_component_index_0[component_name] = component_index
+                    component_name_to_basis_component_length_0[component_name] = component_length
+                basis_component_index_to_component_name_1 = OrderedDict()
+                component_name_to_basis_component_index_1 = OrderedDict()
+                component_name_to_basis_component_length_1 = OnlineSizeDict()
+                for (component_index, (component_name, component_length)) in enumerate(N.items()):
+                    basis_component_index_to_component_name_1[component_index] = component_name
+                    component_name_to_basis_component_index_1[component_name] = component_index
+                    component_name_to_basis_component_length_1[component_name] = component_length
+                self._basis_component_index_to_component_name = (
+                    basis_component_index_to_component_name_0,
+                    basis_component_index_to_component_name_1
+                )
+                self._component_name_to_basis_component_index = (
+                    component_name_to_basis_component_index_0,
+                    component_name_to_basis_component_index_1
+                )
+                self._component_name_to_basis_component_length = (
+                    component_name_to_basis_component_length_0,
+                    component_name_to_basis_component_length_1
+                )
+            else:
+                self._basis_component_index_to_component_name = (None, None)
+                self._component_name_to_basis_component_index = (None, None)
+                self._component_name_to_basis_component_length = (None, None)
             
         def __getitem__(self, key):
             assert isinstance(key, tuple)
@@ -68,7 +103,27 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 # Preserve auxiliary attributes related to basis functions matrix
                 output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
-                output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+                if (
+                    self._component_name_to_basis_component_length[0] is None
+                        and
+                    self._component_name_to_basis_component_length[1] is None
+                ):
+                    output._component_name_to_basis_component_length = (None, None)
+                else:
+                    if key_is_tuple_of_slices: # matrix[:5, :5]
+                        output._component_name_to_basis_component_length = tuple(output_size)
+                    elif key_is_tuple_of_tuples_or_lists: # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+                        component_name_to_basis_component_length = [None, None]
+                        for i in range(2):
+                            if len(self._component_name_to_basis_component_length[i]) is 1:
+                                for (component_name, _) in self._component_name_to_basis_component_length[i].items():
+                                    break
+                                component_name_to_basis_component_length_i = OnlineSizeDict()
+                                component_name_to_basis_component_length_i[component_name] = len(key[i])
+                                component_name_to_basis_component_length[i] = component_name_to_basis_component_length_i
+                            else:
+                                raise NotImplementedError("Matrix.__getitem__ with list or tuple input arguments has not been implemented yet for the case of multiple components")
+                        output._component_name_to_basis_component_length = tuple(component_name_to_basis_component_length)
                 return output
             elif key_is_tuple_of_int: # matrix[5, 5]
                 output = self.content[key]
@@ -181,10 +236,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 self._arithmetic_operations_preserve_attributes(output, other_order=1)
                 return output
             elif isinstance(other, backend.Function.Type()):
-                self._arithmetic_operations_assert_attributes(other, other_order=1)
-                output = backend.Function(self.__mul__(other.vector()))
-                self._arithmetic_operations_preserve_attributes(output, other_order=1)
-                return output
+                return backend.Function(self.__mul__(other.vector()))
             else:
                 return NotImplemented
             
@@ -210,7 +262,6 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 self.content.__imul__(other.content)
                 return self
             elif isinstance(other, backend.Function.Type()):
-                self._arithmetic_operations_assert_attributes(other, other_order=1)
                 return self.__imul__(other.vector())
             else:
                 return NotImplemented
