@@ -101,3 +101,12 @@ class OnlineSizeDict(OrderedDict):
     @overload((lambda cls: cls, dict_of(str, int)))
     def __lt__(self, other):
         return super(OnlineSizeDict, self).__lt__(other)
+        
+    # Override __str__ to print an integer if all values are the same
+    def __str__(self):
+        if len(set(self.values())) is 1:
+            for (_, value) in self.items():
+                break
+            return str(value)
+        else:
+            return "{" +  ",".join([key + ": " + value for (key, value) in self.items()]) + "}"
