@@ -30,13 +30,15 @@ def abs(expression):
 @overload
 def _abs(matrix: Matrix.Type()):
     abs_matrix = numpy_abs(matrix)
-    ij_max = unravel_index(argmax(abs_matrix), abs_matrix.shape)
+    (i_max, j_max) = unravel_index(argmax(abs_matrix), abs_matrix.shape)
+    (i_max, j_max) = (int(i_max), int(j_max)) # numpy.intXX types are not subclasses of int, but can be converted to int
     return AbsOutput(matrix[ij_max], ij_max)
     
 @overload
 def _abs(vector: Vector.Type()):
     abs_vector = numpy_abs(vector)
-    i_max = (argmax(abs_vector), )
+    i_max = argmax(abs_vector)
+    i_max = int(i_max) # numpy.intXX types are not subclasses of int, but can be converted to int
     return AbsOutput(vector[i_max], i_max)
     
 # Auxiliary class to signal to the max() function that it is dealing with an output of the abs() method
