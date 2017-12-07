@@ -70,7 +70,7 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                         print("build reduced vanishing viscosity operator")
                         N = self.N
                         vanishing_viscosity_eigenvalues = self.vanishing_viscosity_eigenvalues
-                        vanishing_viscosity_operator = OnlineMatrix(N, N)
+                        vanishing_viscosity_operator = OnlineMatrix({"u": N}, {"u": N})
                         N_min = int(N*self._N_threshold_min)
                         N_max = int(N*self._N_threshold_max)
                         lambda_N_min = vanishing_viscosity_eigenvalues[N_min]

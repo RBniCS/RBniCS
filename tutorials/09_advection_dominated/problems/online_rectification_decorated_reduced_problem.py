@@ -70,25 +70,25 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                         
                         Z = self.Z
                         
-                        projection_truth_snapshots = OnlineMatrix(N, N)
+                        projection_truth_snapshots = OnlineMatrix({"u": N}, {"u": N})
                         for (i, snapshot_i) in enumerate(self.snapshots):
                             projected_truth_snapshot_i = OnlineFunction(N)
                             solver = LinearSolver(X_N, projected_truth_snapshot_i, transpose(Z)*X*snapshot_i)
                             solver.solve()
                             for j in range(N):
-                                projection_truth_snapshots[i, j] = projected_truth_snapshot_i.vector()[j]
+                                projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]
                         # Store and save
                         self.operator["projection_truth_snapshots"][0] = projection_truth_snapshots
                         self.operator["projection_truth_snapshots"].save(self.folder["reduced_operators"], "projection_truth_snapshots")
                     elif term == "projection_reduced_snapshots":
                         print("build projection reduced snapshots for rectification")
                         bak_mu = self.mu
-                        projection_reduced_snapshots = OnlineMatrix(N, N)
+                        projection_reduced_snapshots = OnlineMatrix({"u": N}, {"u": N})
                         for (i, mu_i) in enumerate(self.snapshots_mu):
                             self.set_mu(mu_i)
                             projected_reduced_snapshot_i = self.solve(N, online_rectification=False)
                             for j in range(N):
-                                projection_reduced_snapshots[i, j] = projected_reduced_snapshot_i.vector()[j]
+                                projection_reduced_snapshots[j, i] = projected_reduced_snapshot_i.vector()[j]
                         self.set_mu(bak_mu)
                         # Store and save
                         self.operator["projection_reduced_snapshots"][0] = projection_reduced_snapshots
