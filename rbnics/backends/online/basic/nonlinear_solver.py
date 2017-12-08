@@ -26,9 +26,9 @@ class _NonlinearProblem(object):
         self.jacobian_eval = jacobian_eval
         self._init_bcs(bcs)
         # Preserve solution auxiliary attributes
-        sample_residual = residual_eval(solution)
-        sample_jacobian = jacobian_eval(solution)
-        preserve_solution_attributes(sample_jacobian, solution, sample_residual)
+        self.residual_vector = residual_eval(solution)
+        self.jacobian_matrix = jacobian_eval(solution)
+        preserve_solution_attributes(self.jacobian_matrix, self.solution, self.residual_vector)
     
     @overload
     def _init_bcs(self, bcs: None):

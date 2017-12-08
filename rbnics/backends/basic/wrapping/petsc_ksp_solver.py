@@ -1,0 +1,49 @@
+# Copyright (C) 2015-2017 by the RBniCS authors
+#
+# This file is part of RBniCS.
+#
+# RBniCS is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# RBniCS is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
+#
+
+from petsc4py import PETSc
+
+def BasicPETScKSPSolver(backend, wrapping):
+    class _BasicPETScKSPSolver(object):
+        def __init__(self, lhs, solution, rhs):
+            self.lhs = lhs
+            self.solution = solution
+            self.rhs = rhs
+            self.ksp = PETSc.KSP().create(wrapping.get_mpi_comm(solution))
+            # Set sensible default values to parameters
+            self.set_parameters({
+                "linear_solver": "mumps"
+            })
+                 
+        def set_parameters(self, parameters):
+            for (key, value) in parameters.items():
+                if key == "linear_solver":
+                    self.ksp.setType("preonly")
+                    self.ksp.getPC().setType("lu")
+                    self.ksp.getPC().setFactorSolverPackage(value)
+                else:
+                    raise ValueError("Invalid paramater passed to PETSc KSP object.")
+            # Finally, read in additional options from the command line
+            self.ksp.setFromOptions()
+            
+        def solve(self):
+            self.ksp.setOperators(wrapping.to_petsc4py(self.lhs))
+            self.ksp.solve(wrapping.to_petsc4py(self.rhs), wrapping.to_petsc4py(self.solution))
+            return self.solution
+    
+    return _BasicPETScKSPSolver
