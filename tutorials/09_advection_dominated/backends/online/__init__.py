@@ -17,9 +17,9 @@
 #
 
 from .online_matrix import OnlineMatrix
-from .online_solve_args_generator import OnlineSolverArgsGenerator
+from .online_solve_kwargs_generator import OnlineSolveKwargsGenerator
 
 __all__ = [
     'OnlineMatrix',
-    'OnlineSolverArgsGenerator'
+    'OnlineSolveKwargsGenerator'
 ]

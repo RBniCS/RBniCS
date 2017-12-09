@@ -16,10 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from itertools import product as cartesian_product
 from rbnics.backends import LinearSolver, SnapshotsMatrix, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReducedProblemDecoratorFor
-from backends.online import OnlineMatrix, OnlineSolverArgsGenerator
+from backends.online import OnlineMatrix, OnlineSolveKwargsGenerator
 from .online_rectification import OnlineRectification
 
 @ReducedProblemDecoratorFor(OnlineRectification)
@@ -36,10 +37,19 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             self.snapshots = SnapshotsMatrix(truth_problem.V)
             
             # Extend allowed keywords argument in solve
-            self._solve_default_kwargs.update({
-                "online_rectification": True
-            })
-            self.OnlineSolveArgs = OnlineSolverArgsGenerator(**self._solve_default_kwargs)
+            self._online_solve_default_kwargs["online_rectification"] = True
+            self.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self._online_solve_default_kwargs)
+            
+            # Generate all combinations of allowed keyword arguments in solve
+            online_solve_kwargs_with_rectification = list()
+            online_solve_kwargs_without_rectification = list()
+            for other_args in cartesian_product((True, False), repeat=len(self._online_solve_default_kwargs) - 1):
+                args_with_rectification = self.OnlineSolveKwargs(*(other_args + (True, )))
+                args_without_rectification = self.OnlineSolveKwargs(*(other_args + (False, )))
+                online_solve_kwargs_with_rectification.append(args_with_rectification)
+                online_solve_kwargs_without_rectification.append(args_without_rectification)
+            self.online_solve_kwargs_with_rectification = online_solve_kwargs_with_rectification
+            self.online_solve_kwargs_without_rectification = online_solve_kwargs_without_rectification
             
         def _init_operators(self, current_stage="online"):
             # Initialize additional reduced operators
@@ -48,7 +58,8 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 self.operator["projection_reduced_snapshots"] = self.assemble_operator("projection_reduced_snapshots", "online")
             elif current_stage == "offline":
                 self.operator["projection_truth_snapshots"] = OnlineAffineExpansionStorage(1)
-                self.operator["projection_reduced_snapshots"] = OnlineAffineExpansionStorage(1)
+                assert len(self.online_solve_kwargs_with_rectification) is len(self.online_solve_kwargs_without_rectification)
+                self.operator["projection_reduced_snapshots"] = OnlineAffineExpansionStorage(len(self.online_solve_kwargs_with_rectification))
             # Call Parent
             EllipticCoerciveReducedProblem_DerivedClass._init_operators(self, current_stage)
             
@@ -89,17 +100,20 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                         self.operator["projection_truth_snapshots"].save(self.folder["reduced_operators"], "projection_truth_snapshots")
                     elif term == "projection_reduced_snapshots":
                         print("build projection reduced snapshots for rectification")
+                        # Backup mu
                         bak_mu = self.mu
-                        projection_reduced_snapshots = OnlineMatrix(N, N)
-                        for (i, mu_i) in enumerate(self.snapshots_mu):
-                            self.set_mu(mu_i)
-                            projected_reduced_snapshot_i = self.solve(N, online_rectification=False)
-                            for j in range(N):
-                                projection_reduced_snapshots[j, i] = projected_reduced_snapshot_i.vector()[j]
-                        self.set_mu(bak_mu)
-                        # Store and save
-                        self.operator["projection_reduced_snapshots"][0] = projection_reduced_snapshots
+                        # Prepare rectification for all possible online solve arguments
+                        for (q, online_solve_kwargs) in enumerate(self.online_solve_kwargs_without_rectification):
+                            projection_reduced_snapshots = OnlineMatrix(N, N)
+                            for (i, mu_i) in enumerate(self.snapshots_mu):
+                                self.set_mu(mu_i)
+                                projected_reduced_snapshot_i = self.solve(N, **online_solve_kwargs)
+                                for j in range(N):
+                                    projection_reduced_snapshots[j, i] = projected_reduced_snapshot_i.vector()[j]
+                            self.operator["projection_reduced_snapshots"][q] = projection_reduced_snapshots
+                        # Save and restore previous mu
                         self.operator["projection_reduced_snapshots"].save(self.folder["reduced_operators"], "projection_reduced_snapshots")
+                        self.set_mu(bak_mu)
                     return self.operator[term]
                 else:
                     raise ValueError("Invalid stage in assemble_operator().")
@@ -107,17 +121,18 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 return EllipticCoerciveReducedProblem_DerivedClass.assemble_operator(self, term, current_stage)
             
         def _solve(self, N, **kwargs):
+            online_solve_kwargs = self.OnlineSolveKwargs(**kwargs)
             if is_training_finished(self.truth_problem):
-                online_solve_args = self.OnlineSolveArgs(**kwargs)
                 # Solve reduced problem
-                EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
-                if online_solve_args.online_rectification:
+                EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
+                if online_solve_kwargs["online_rectification"]:
+                    q = self.online_solve_kwargs_with_rectification.index(online_solve_kwargs)
                     intermediate_solution = OnlineFunction(N)
-                    solver = LinearSolver(self.operator["projection_reduced_snapshots"][0][:N, :N], intermediate_solution, self._solution.vector())
+                    solver = LinearSolver(self.operator["projection_reduced_snapshots"][q][:N, :N], intermediate_solution, self._solution.vector())
                     solver.solve()
                     self._solution = self.operator["projection_truth_snapshots"][0][:N, :N]*intermediate_solution
             else:
-                EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
+                EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
             
     # return value (a class) for the decorator
     return OnlineRectificationDecoratedReducedProblem_Class

@@ -18,7 +18,9 @@
 
 from collections import namedtuple
 
-def OnlineSolverArgsGenerator(**kwargs):
-    OnlineSolverArgs = namedtuple("OnlineSolveArgs", kwargs.keys())
-    OnlineSolverArgs.__new__.__defaults__ = tuple(kwargs.values())
-    return OnlineSolverArgs
+def OnlineSolveKwargsGenerator(**kwargs):
+    OnlineSolveKwargsTuple = namedtuple("OnlineSolveKwargs", kwargs.keys())
+    OnlineSolveKwargsTuple.__new__.__defaults__ = tuple(kwargs.values())
+    def OnlineSolveKwargs(*args_, **kwargs_):
+        return OnlineSolveKwargsTuple(*args_, **kwargs_)._asdict()
+    return OnlineSolveKwargs

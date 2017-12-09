@@ -16,8 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from collections import OrderedDict
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
-from backends.online import OnlineSolverArgsGenerator
+from backends.online import OnlineSolveKwargsGenerator
 from .online_stabilization import OnlineStabilization
 
 @ReducedProblemDecoratorFor(OnlineStabilization)
@@ -29,17 +30,16 @@ def OnlineStabilizationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             # Call to parent
             EllipticCoerciveReducedProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Default values for keyword arguments in solve
-            self._solve_default_kwargs = {
-                "online_stabilization": True
-            }
-            self.OnlineSolveArgs = OnlineSolverArgsGenerator(**self._solve_default_kwargs)
+            self._online_solve_default_kwargs = OrderedDict()
+            self._online_solve_default_kwargs["online_stabilization"] = True
+            self.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self._online_solve_default_kwargs)
             
         def _solve(self, N, **kwargs):
-            online_solve_args = self.OnlineSolveArgs(**kwargs)
+            online_solve_kwargs = self.OnlineSolveKwargs(**kwargs)
             # Temporarily change value of stabilized attribute in truth problem
             bak_stabilized = self.truth_problem.stabilized
-            self.truth_problem.stabilized = online_solve_args.online_stabilization
-            EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
+            self.truth_problem.stabilized = online_solve_kwargs["online_stabilization"]
+            EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
             self.truth_problem.stabilized = bak_stabilized
             
     # return value (a class) for the decorator
