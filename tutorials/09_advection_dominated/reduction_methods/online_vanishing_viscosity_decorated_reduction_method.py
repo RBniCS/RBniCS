@@ -36,7 +36,7 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             Z.save(self.reduced_problem.folder["basis"], "unrotated_basis")
             
             print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline postprocessing phase begins") + "=")
+            print("=" + "{:^60}".format(self.label + " offline vanishing viscosity postprocessing phase begins") + "=")
             print("==============================================================")
             print("")
             
@@ -96,7 +96,7 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
                 self.reduced_problem.build_error_estimation_operators()
             
             print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline postprocessing phase ends") + "=")
+            print("=" + "{:^60}".format(self.label + " offline vanishing viscosity postprocessing phase ends") + "=")
             print("==============================================================")
             print("")
         

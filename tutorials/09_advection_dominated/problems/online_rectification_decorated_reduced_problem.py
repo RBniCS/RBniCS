@@ -54,66 +54,67 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
         def _init_operators(self, current_stage="online"):
             # Initialize additional reduced operators
             if current_stage == "online":
-                self.operator["projection_truth_snapshots"] = self.assemble_operator("projection_truth_snapshots", "online")
-                self.operator["projection_reduced_snapshots"] = self.assemble_operator("projection_reduced_snapshots", "online")
+                for n in range(1, self.N + 1):
+                    self.operator["projection_truth_snapshots_" + str(n)] = self.assemble_operator("projection_truth_snapshots_" + str(n), "online")
+                    self.operator["projection_reduced_snapshots_" + str(n)] = self.assemble_operator("projection_reduced_snapshots_" + str(n), "online")
             elif current_stage == "offline":
-                self.operator["projection_truth_snapshots"] = OnlineAffineExpansionStorage(1)
-                assert len(self.online_solve_kwargs_with_rectification) is len(self.online_solve_kwargs_without_rectification)
-                self.operator["projection_reduced_snapshots"] = OnlineAffineExpansionStorage(len(self.online_solve_kwargs_with_rectification))
+                pass # initialization of projection_truth_snapshots and projection_reduced_snapshots is postponed to assemble_operator (called at the end of the offline stage), because the number of selected basis functions is required
             # Call Parent
             EllipticCoerciveReducedProblem_DerivedClass._init_operators(self, current_stage)
             
-        def build_reduced_operators(self):
-            # Call Parent
-            EllipticCoerciveReducedProblem_DerivedClass.build_reduced_operators(self)
-            # Compute projection of truth and reduced snapshots
-            self.operator["projection_truth_snapshots"] = self.assemble_operator("projection_truth_snapshots", "offline")
-            self.operator["projection_reduced_snapshots"] = self.assemble_operator("projection_reduced_snapshots", "offline")
-            
         def assemble_operator(self, term, current_stage="online"):
-            if term == "projection_truth_snapshots" or term == "projection_reduced_snapshots":
+            if term.startswith("projection_truth_snapshots"):
+                self.operator[term] = OnlineAffineExpansionStorage(1)
                 assert current_stage in ("online", "offline")
                 if current_stage == "online": # load from file
-                    self.operator[term] = OnlineAffineExpansionStorage(1)
                     self.operator[term].load(self.folder["reduced_operators"], term)
                     return self.operator[term]
                 elif current_stage == "offline":
-                    N = self.N
-                    if term == "projection_truth_snapshots":
-                        print("build projection truth snapshots for rectification")
-                        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                        X = self.truth_problem.inner_product[0]
-                        assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                        X_N = self.inner_product[0]
-                        
-                        Z = self.Z
-                        
-                        projection_truth_snapshots = OnlineMatrix(N, N)
-                        for (i, snapshot_i) in enumerate(self.snapshots):
-                            projected_truth_snapshot_i = OnlineFunction(N)
-                            solver = LinearSolver(X_N, projected_truth_snapshot_i, transpose(Z)*X*snapshot_i)
-                            solver.solve()
+                    N = int(term.replace("projection_truth_snapshots_", ""))
+                    
+                    assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                    X = self.truth_problem.inner_product[0]
+                    assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                    X_N = self.inner_product[0]
+                    
+                    Z = self.Z
+                    
+                    projection_truth_snapshots = OnlineMatrix(N, N)
+                    for (i, snapshot_i) in enumerate(self.snapshots[:N]):
+                        projected_truth_snapshot_i = OnlineFunction(N)
+                        solver = LinearSolver(X_N[:N, :N], projected_truth_snapshot_i, transpose(Z[:N])*X*snapshot_i)
+                        solver.solve()
+                        for j in range(N):
+                            projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]
+                    # Store and save
+                    self.operator[term][0] = projection_truth_snapshots
+                    self.operator[term].save(self.folder["reduced_operators"], term)
+                    return self.operator[term]
+                else:
+                    raise ValueError("Invalid stage in assemble_operator().")
+            elif term.startswith("projection_reduced_snapshots"):
+                assert len(self.online_solve_kwargs_with_rectification) is len(self.online_solve_kwargs_without_rectification)
+                self.operator[term] = OnlineAffineExpansionStorage(len(self.online_solve_kwargs_with_rectification))
+                assert current_stage in ("online", "offline")
+                if current_stage == "online": # load from file
+                    self.operator[term].load(self.folder["reduced_operators"], term)
+                    return self.operator[term]
+                elif current_stage == "offline":
+                    N = int(term.replace("projection_reduced_snapshots_", ""))
+                    # Backup mu
+                    bak_mu = self.mu
+                    # Prepare rectification for all possible online solve arguments
+                    for (q, online_solve_kwargs) in enumerate(self.online_solve_kwargs_without_rectification):
+                        projection_reduced_snapshots = OnlineMatrix(N, N)
+                        for (i, mu_i) in enumerate(self.snapshots_mu[:N]):
+                            self.set_mu(mu_i)
+                            projected_reduced_snapshot_i = self.solve(N, **online_solve_kwargs)
                             for j in range(N):
-                                projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]
-                        # Store and save
-                        self.operator["projection_truth_snapshots"][0] = projection_truth_snapshots
-                        self.operator["projection_truth_snapshots"].save(self.folder["reduced_operators"], "projection_truth_snapshots")
-                    elif term == "projection_reduced_snapshots":
-                        print("build projection reduced snapshots for rectification")
-                        # Backup mu
-                        bak_mu = self.mu
-                        # Prepare rectification for all possible online solve arguments
-                        for (q, online_solve_kwargs) in enumerate(self.online_solve_kwargs_without_rectification):
-                            projection_reduced_snapshots = OnlineMatrix(N, N)
-                            for (i, mu_i) in enumerate(self.snapshots_mu):
-                                self.set_mu(mu_i)
-                                projected_reduced_snapshot_i = self.solve(N, **online_solve_kwargs)
-                                for j in range(N):
-                                    projection_reduced_snapshots[j, i] = projected_reduced_snapshot_i.vector()[j]
-                            self.operator["projection_reduced_snapshots"][q] = projection_reduced_snapshots
-                        # Save and restore previous mu
-                        self.operator["projection_reduced_snapshots"].save(self.folder["reduced_operators"], "projection_reduced_snapshots")
-                        self.set_mu(bak_mu)
+                                projection_reduced_snapshots[j, i] = projected_reduced_snapshot_i.vector()[j]
+                        self.operator[term][q] = projection_reduced_snapshots
+                    # Save and restore previous mu
+                    self.set_mu(bak_mu)
+                    self.operator[term].save(self.folder["reduced_operators"], term)
                     return self.operator[term]
                 else:
                     raise ValueError("Invalid stage in assemble_operator().")
@@ -128,9 +129,9 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 if online_solve_kwargs["online_rectification"]:
                     q = self.online_solve_kwargs_with_rectification.index(online_solve_kwargs)
                     intermediate_solution = OnlineFunction(N)
-                    solver = LinearSolver(self.operator["projection_reduced_snapshots"][q][:N, :N], intermediate_solution, self._solution.vector())
+                    solver = LinearSolver(self.operator["projection_reduced_snapshots_" + str(N)][q], intermediate_solution, self._solution.vector())
                     solver.solve()
-                    self._solution = self.operator["projection_truth_snapshots"][0][:N, :N]*intermediate_solution
+                    self._solution = self.operator["projection_truth_snapshots_" + str(N)][0]*intermediate_solution
             else:
                 EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
             

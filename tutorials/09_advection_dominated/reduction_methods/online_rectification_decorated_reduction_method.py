@@ -28,6 +28,28 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
             # Call to parent
             EllipticCoerciveReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
+        def _offline(self):
+            # Call standard offline phase
+            EllipticCoerciveReductionMethod_DerivedClass._offline(self)
+            
+            print("==============================================================")
+            print("=" + "{:^60}".format(self.label + " offline rectification postprocessing phase begins") + "=")
+            print("==============================================================")
+            print("")
+            
+            # Compute projection of truth and reduced snapshots
+            print("build projection truth snapshots for rectification")
+            for n in range(1, self.reduced_problem.N + 1):
+                self.reduced_problem.operator["projection_truth_snapshots_" + str(n)] = self.reduced_problem.assemble_operator("projection_truth_snapshots_" + str(n), "offline")
+            print("build projection reduced snapshots for rectification")
+            for n in range(1, self.reduced_problem.N + 1):
+                self.reduced_problem.operator["projection_reduced_snapshots_" + str(n)] = self.reduced_problem.assemble_operator("projection_reduced_snapshots_" + str(n), "offline")
+            
+            print("==============================================================")
+            print("=" + "{:^60}".format(self.label + " offline rectification postprocessing phase ends") + "=")
+            print("==============================================================")
+            print("")
+            
         def update_basis_matrix(self, snapshot):
             # Store
             self.reduced_problem.snapshots_mu.append(self.truth_problem.mu)
