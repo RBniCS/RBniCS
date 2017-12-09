@@ -17,8 +17,9 @@
 #
 
 from rbnics.backends import LinearSolver, SnapshotsMatrix, transpose
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineMatrix
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReducedProblemDecoratorFor
+from backends.online import OnlineMatrix, OnlineSolverArgsGenerator
 from .online_rectification import OnlineRectification
 
 @ReducedProblemDecoratorFor(OnlineRectification)
@@ -33,6 +34,12 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             # Projection of truth and reduced snapshots
             self.snapshots_mu = list()
             self.snapshots = SnapshotsMatrix(truth_problem.V)
+            
+            # Extend allowed keywords argument in solve
+            self._solve_default_kwargs.update({
+                "online_rectification": True
+            })
+            self.OnlineSolveArgs = OnlineSolverArgsGenerator(**self._solve_default_kwargs)
             
         def _init_operators(self, current_stage="online"):
             # Initialize additional reduced operators
@@ -70,7 +77,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                         
                         Z = self.Z
                         
-                        projection_truth_snapshots = OnlineMatrix({"u": N}, {"u": N})
+                        projection_truth_snapshots = OnlineMatrix(N, N)
                         for (i, snapshot_i) in enumerate(self.snapshots):
                             projected_truth_snapshot_i = OnlineFunction(N)
                             solver = LinearSolver(X_N, projected_truth_snapshot_i, transpose(Z)*X*snapshot_i)
@@ -83,7 +90,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                     elif term == "projection_reduced_snapshots":
                         print("build projection reduced snapshots for rectification")
                         bak_mu = self.mu
-                        projection_reduced_snapshots = OnlineMatrix({"u": N}, {"u": N})
+                        projection_reduced_snapshots = OnlineMatrix(N, N)
                         for (i, mu_i) in enumerate(self.snapshots_mu):
                             self.set_mu(mu_i)
                             projected_reduced_snapshot_i = self.solve(N, online_rectification=False)
@@ -101,18 +108,14 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             
         def _solve(self, N, **kwargs):
             if is_training_finished(self.truth_problem):
-                # Temporarily change value of stabilized attribute in truth problem
-                bak_stabilized = self.truth_problem.stabilized
-                self.truth_problem.stabilized = kwargs.get("online_stabilization", False)
+                online_solve_args = self.OnlineSolveArgs(**kwargs)
                 # Solve reduced problem
                 EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
-                if kwargs.get("online_rectification", True):
+                if online_solve_args.online_rectification:
                     intermediate_solution = OnlineFunction(N)
                     solver = LinearSolver(self.operator["projection_reduced_snapshots"][0][:N, :N], intermediate_solution, self._solution.vector())
                     solver.solve()
                     self._solution = self.operator["projection_truth_snapshots"][0][:N, :N]*intermediate_solution
-                # Restore original value of stabilized attribute in truth problem
-                self.truth_problem.stabilized = bak_stabilized
             else:
                 EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
             

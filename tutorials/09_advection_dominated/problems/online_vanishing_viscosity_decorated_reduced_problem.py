@@ -17,8 +17,9 @@
 #
 
 from rbnics.backends import AffineExpansionStorage, LinearSolver, product, sum
-from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineMatrix
+from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReducedProblemDecoratorFor
+from backends.online import OnlineMatrix, OnlineSolverArgsGenerator
 from .online_vanishing_viscosity import OnlineVanishingViscosity
 
 @ReducedProblemDecoratorFor(OnlineVanishingViscosity)
@@ -38,6 +39,13 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
             
             # Temporary storage for vanishing viscosity eigenvalues
             self.vanishing_viscosity_eigenvalues = list()
+            
+            # Default values for keyword arguments in solve
+            self._solve_default_kwargs = {
+                "online_stabilization": False,
+                "online_vanishing_viscosity": True
+            }
+            self.OnlineSolveArgs = OnlineSolverArgsGenerator(**self._solve_default_kwargs)
             
         def _init_operators(self, current_stage="online"):
             if current_stage == "online":
@@ -70,7 +78,7 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                         print("build reduced vanishing viscosity operator")
                         N = self.N
                         vanishing_viscosity_eigenvalues = self.vanishing_viscosity_eigenvalues
-                        vanishing_viscosity_operator = OnlineMatrix({"u": N}, {"u": N})
+                        vanishing_viscosity_operator = OnlineMatrix(N, N)
                         N_min = int(N*self._N_threshold_min)
                         N_max = int(N*self._N_threshold_max)
                         lambda_N_min = vanishing_viscosity_eigenvalues[N_min]
@@ -101,11 +109,12 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                 
         def _solve(self, N, **kwargs):
             if is_training_finished(self.truth_problem):
+                online_solve_args = self.OnlineSolveArgs(**kwargs)
                 # Temporarily change value of stabilized attribute in truth problem
                 bak_stabilized = self.truth_problem.stabilized
-                self.truth_problem.stabilized = kwargs.get("online_stabilization", False)
+                self.truth_problem.stabilized = online_solve_args.online_stabilization
                 # Solve reduced problem
-                if kwargs.get("online_vanishing_viscosity", True):
+                if online_solve_args.online_vanishing_viscosity:
                     assembled_operator = dict()
                     assembled_operator["a"] = (
                         sum(product(self.compute_theta("a"), self.operator["a"][:N, :N])) +
