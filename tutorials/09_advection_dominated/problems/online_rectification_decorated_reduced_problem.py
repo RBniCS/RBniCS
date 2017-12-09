@@ -19,7 +19,7 @@
 from itertools import product as cartesian_product
 from rbnics.backends import LinearSolver, SnapshotsMatrix, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from backends.online import OnlineMatrix, OnlineSolveKwargsGenerator
 from .online_rectification import OnlineRectification
 
@@ -123,17 +123,14 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             
         def _solve(self, N, **kwargs):
             online_solve_kwargs = self.OnlineSolveKwargs(**kwargs)
-            if is_training_finished(self.truth_problem):
-                # Solve reduced problem
-                EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
-                if online_solve_kwargs["online_rectification"]:
-                    q = self.online_solve_kwargs_with_rectification.index(online_solve_kwargs)
-                    intermediate_solution = OnlineFunction(N)
-                    solver = LinearSolver(self.operator["projection_reduced_snapshots_" + str(N)][q], intermediate_solution, self._solution.vector())
-                    solver.solve()
-                    self._solution = self.operator["projection_truth_snapshots_" + str(N)][0]*intermediate_solution
-            else:
-                EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
-            
+            # Solve reduced problem
+            EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
+            if online_solve_kwargs["online_rectification"]:
+                q = self.online_solve_kwargs_with_rectification.index(online_solve_kwargs)
+                intermediate_solution = OnlineFunction(N)
+                solver = LinearSolver(self.operator["projection_reduced_snapshots_" + str(N)][q], intermediate_solution, self._solution.vector())
+                solver.solve()
+                self._solution = self.operator["projection_truth_snapshots_" + str(N)][0]*intermediate_solution
+                
     # return value (a class) for the decorator
     return OnlineRectificationDecoratedReducedProblem_Class

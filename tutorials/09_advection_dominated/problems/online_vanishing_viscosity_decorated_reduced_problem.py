@@ -19,7 +19,7 @@
 from collections import OrderedDict
 from rbnics.backends import AffineExpansionStorage, LinearSolver, product, sum
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
-from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReducedProblemDecoratorFor
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from backends.online import OnlineMatrix, OnlineSolveKwargsGenerator
 from .online_vanishing_viscosity import OnlineVanishingViscosity
 
@@ -109,27 +109,24 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                 
         def _solve(self, N, **kwargs):
             online_solve_kwargs = self.OnlineSolveKwargs(**kwargs)
-            if is_training_finished(self.truth_problem):
-                # Temporarily change value of stabilized attribute in truth problem
-                bak_stabilized = self.truth_problem.stabilized
-                self.truth_problem.stabilized = online_solve_kwargs["online_stabilization"]
-                # Solve reduced problem
-                if online_solve_kwargs["online_vanishing_viscosity"]:
-                    assembled_operator = dict()
-                    assembled_operator["a"] = (
-                        sum(product(self.compute_theta("a"), self.operator["a"][:N, :N])) +
-                        self.operator["vanishing_viscosity"][0][:N, :N]
-                    )
-                    assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
-                    self._solution = OnlineFunction(N)
-                    solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"])
-                    solver.solve()
-                else:
-                    EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
-                # Restore original value of stabilized attribute in truth problem
-                self.truth_problem.stabilized = bak_stabilized
+            # Temporarily change value of stabilized attribute in truth problem
+            bak_stabilized = self.truth_problem.stabilized
+            self.truth_problem.stabilized = online_solve_kwargs["online_stabilization"]
+            # Solve reduced problem
+            if online_solve_kwargs["online_vanishing_viscosity"]:
+                assembled_operator = dict()
+                assembled_operator["a"] = (
+                    sum(product(self.compute_theta("a"), self.operator["a"][:N, :N])) +
+                    self.operator["vanishing_viscosity"][0][:N, :N]
+                )
+                assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
+                self._solution = OnlineFunction(N)
+                solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"])
+                solver.solve()
             else:
                 EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
+            # Restore original value of stabilized attribute in truth problem
+            self.truth_problem.stabilized = bak_stabilized
             
     # return value (a class) for the decorator
     return OnlineVanishingViscosityDecoratedReducedProblem_Class

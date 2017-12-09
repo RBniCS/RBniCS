@@ -20,6 +20,7 @@ from rbnics.backends import BasisFunctionsMatrix, transpose
 from rbnics.backends.online import OnlineEigenSolver
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.utils.io import ExportableList
+from backends.online import OnlineSolveKwargsGenerator
 from problems import OnlineVanishingViscosity
 
 @ReductionMethodDecoratorFor(OnlineVanishingViscosity)
@@ -29,6 +30,12 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
     class OnlineVanishingViscosityDecoratedReductionMethod_Class(EllipticCoerciveReductionMethod_DerivedClass):
         
         def _offline(self):
+            # Change default online solve arguments during offline stage to use online stabilization
+            # instead of vanishing viscosity one (which will be prepared in a postprocessing stage)
+            self.reduced_problem._online_solve_default_kwargs["online_stabilization"] = True
+            self.reduced_problem._online_solve_default_kwargs["online_vanishing_viscosity"] = False
+            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self.reduced_problem._online_solve_default_kwargs)
+            
             # Call standard offline phase
             EllipticCoerciveReductionMethod_DerivedClass._offline(self)
             # Backup computed basis functions
@@ -99,6 +106,11 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             print("=" + "{:^60}".format(self.label + " offline vanishing viscosity postprocessing phase ends") + "=")
             print("==============================================================")
             print("")
+            
+            # Restore default online solve arguments for online stage
+            self.reduced_problem._online_solve_default_kwargs["online_stabilization"] = False
+            self.reduced_problem._online_solve_default_kwargs["online_vanishing_viscosity"] = True
+            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self.reduced_problem._online_solve_default_kwargs)
         
     # return value (a class) for the decorator
     return OnlineVanishingViscosityDecoratedReductionMethod_Class

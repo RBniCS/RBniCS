@@ -17,6 +17,7 @@
 #
 
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
+from backends.online import OnlineSolveKwargsGenerator
 from problems import OnlineRectification
 
 @ReductionMethodDecoratorFor(OnlineRectification)
@@ -24,11 +25,12 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
     
     @PreserveClassName
     class OnlineRectificationDecoratedReductionMethod_Class(EllipticCoerciveReductionMethod_DerivedClass):
-        def __init__(self, truth_problem, **kwargs):
-            # Call to parent
-            EllipticCoerciveReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
         def _offline(self):
+            # Change default online solve arguments during offline stage to not use rectification
+            # (which will be prepared in a postprocessing stage)
+            self.reduced_problem._online_solve_default_kwargs["online_rectification"] = False
+            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self.reduced_problem._online_solve_default_kwargs)
+            
             # Call standard offline phase
             EllipticCoerciveReductionMethod_DerivedClass._offline(self)
             
@@ -49,6 +51,10 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
             print("=" + "{:^60}".format(self.label + " offline rectification postprocessing phase ends") + "=")
             print("==============================================================")
             print("")
+            
+            # Restore default online solve arguments for online stage
+            self.reduced_problem._online_solve_default_kwargs["online_rectification"] = True
+            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self.reduced_problem._online_solve_default_kwargs)
             
         def update_basis_matrix(self, snapshot):
             # Store
