@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import isclose
 from petsc4py import PETSc
 
 def BasicPETScSNESSolver(backend, wrapping):
