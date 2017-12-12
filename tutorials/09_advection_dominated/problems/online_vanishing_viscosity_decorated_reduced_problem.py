@@ -75,6 +75,9 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                     return self.operator["vanishing_viscosity"]
                 elif current_stage == "offline":
                     if len(self.vanishing_viscosity_eigenvalues) > 0: # basis was rotated
+                        assert len(self.vanishing_viscosity_eigenvalues) is self.N
+                        assert all([isinstance(vanishing_viscosity_eigenvalues_n, list) for vanishing_viscosity_eigenvalues_n in self.vanishing_viscosity_eigenvalues])
+                        assert all([len(vanishing_viscosity_eigenvalues_n) is n + 1 for (n, vanishing_viscosity_eigenvalues_n) in enumerate(self.vanishing_viscosity_eigenvalues)])
                         print("build reduced vanishing viscosity operator")
                         N = self.N
                         vanishing_viscosity_eigenvalues = self.vanishing_viscosity_eigenvalues
