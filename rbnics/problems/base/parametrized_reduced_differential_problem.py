@@ -75,7 +75,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # High fidelity problem
         self.truth_problem = truth_problem
         # Basis functions matrix
-        self.Z = BasisFunctionsMatrix(truth_problem.V)
+        self.Z = None # BasisFunctionsMatrix
         # I/O
         self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
@@ -188,6 +188,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         """
         assert current_stage in ("online", "offline")
         # Initialize basis functions mappings
+        if self.Z is None: # avoid re-initializing basis functions matrix multiple times
+            self.Z = BasisFunctionsMatrix(self.truth_problem.V)
         self.Z.init(self.components)
         # Get number of components
         n_components = len(self.components)
