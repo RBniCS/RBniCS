@@ -452,7 +452,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # Return
         return cache_key
         
-    def build_reduced_operators(self):
+    def build_reduced_operators(self, current_stage="offline"):
         """
         It asssembles the reduced order affine expansion.
         """
@@ -461,21 +461,21 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if n_components > 1:
             inner_product_string = "inner_product_{c}"
             for component in self.components:
-                self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), "offline")
+                self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), current_stage)
         else:
-            self.inner_product = self.assemble_operator("inner_product", "offline")
+            self.inner_product = self.assemble_operator("inner_product", current_stage)
         self._combined_inner_product = self._combine_all_inner_products()
         # Projection inner product
         if n_components > 1:
             projection_inner_product_string = "projection_inner_product_{c}"
             for component in self.components:
-                self.projection_inner_product[component] = self.assemble_operator(projection_inner_product_string.format(c=component), "offline")
+                self.projection_inner_product[component] = self.assemble_operator(projection_inner_product_string.format(c=component), current_stage)
         else:
-            self.projection_inner_product = self.assemble_operator("projection_inner_product", "offline")
+            self.projection_inner_product = self.assemble_operator("projection_inner_product", current_stage)
         self._combined_projection_inner_product = self._combine_all_projection_inner_products()
         # Terms
         for term in self.terms:
-            self.operator[term] = self.assemble_operator(term, "offline")
+            self.operator[term] = self.assemble_operator(term, current_stage)
         
     def compute_error(self, N=None, **kwargs):
         """
