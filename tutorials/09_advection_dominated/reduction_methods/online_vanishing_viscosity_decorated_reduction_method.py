@@ -106,14 +106,13 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             # Re-compute all reduced operators, since the basis functions have changed
             print("build reduced operators")
             self.reduced_problem.build_reduced_operators()
-            # Re-compute all error estimation operators, since the basis functions have changed
-            if hasattr(self.reduced_problem, "build_error_estimation_operators"):
-                for term in self.reduced_problem.riesz_terms:
-                    if self.reduced_problem.terms_order[term] > 1:
-                        for q in range(self.reduced_problem.Q[term]):
-                            self.reduced_problem.riesz[term][q].clear()
-                print("build operators for error estimation")
-                self.reduced_problem.build_error_estimation_operators()
+            # Compute vanishing viscosity reduced operator
+            print("build vanishing viscosity reduced operator")
+            self.reduced_problem.operator["vanishing_viscosity"] = self.reduced_problem.assemble_operator("vanishing_viscosity", "offline")
+            # Disable error estimation, which would not take int account the additional operator
+            for term in self.reduced_problem.riesz_terms:
+                for q in range(self.reduced_problem.Q[term]):
+                    self.reduced_problem.riesz[term][q].clear()
             
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " offline vanishing viscosity postprocessing phase ends") + "=")

@@ -41,11 +41,9 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
             
             # Compute projection of truth and reduced snapshots
             print("build projection truth snapshots for rectification")
-            for n in range(1, self.reduced_problem.N + 1):
-                self.reduced_problem.operator["projection_truth_snapshots_" + str(n)] = self.reduced_problem.assemble_operator("projection_truth_snapshots_" + str(n), "offline")
+            self.reduced_problem.operator["projection_truth_snapshots"] = self.reduced_problem.assemble_operator("projection_truth_snapshots", "offline")
             print("build projection reduced snapshots for rectification")
-            for n in range(1, self.reduced_problem.N + 1):
-                self.reduced_problem.operator["projection_reduced_snapshots_" + str(n)] = self.reduced_problem.assemble_operator("projection_reduced_snapshots_" + str(n), "offline")
+            self.reduced_problem.operator["projection_reduced_snapshots"] = self.reduced_problem.assemble_operator("projection_reduced_snapshots", "offline")
             
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " offline rectification postprocessing phase ends") + "=")
