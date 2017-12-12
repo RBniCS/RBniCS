@@ -96,7 +96,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         assert current_stage in ("online", "offline")
         if current_stage == "online":
             for term in self.terms:
-                self.operator[term] = self.assemble_operator(term, "online")
+                self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by assemble_operator
+                self.assemble_operator(term, "online")
                 self.Q[term] = len(self.operator[term])
         elif current_stage == "offline":
             for term in self.terms:
@@ -117,18 +118,22 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 inner_product_string = "inner_product_{c}"
                 self.inner_product = dict()
                 for component in self.components:
-                    self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), "online")
+                    self.inner_product[component] = OnlineAffineExpansionStorage(1)
+                    self.assemble_operator(inner_product_string.format(c=component), "online")
             else:
-                self.inner_product = self.assemble_operator("inner_product", "online")
+                self.inner_product = OnlineAffineExpansionStorage(1)
+                self.assemble_operator("inner_product", "online")
             self._combined_inner_product = self._combine_all_inner_products()
             # Projection inner product
             if n_components > 1:
                 projection_inner_product_string = "projection_inner_product_{c}"
                 self.projection_inner_product = dict()
                 for component in self.components:
-                    self.projection_inner_product[component] = self.assemble_operator(projection_inner_product_string.format(c=component), "online")
+                    self.projection_inner_product[component] = OnlineAffineExpansionStorage(1)
+                    self.assemble_operator(projection_inner_product_string.format(c=component), "online")
             else:
-                self.projection_inner_product = self.assemble_operator("projection_inner_product", "online")
+                self.projection_inner_product = OnlineAffineExpansionStorage(1)
+                self.assemble_operator("projection_inner_product", "online")
             self._combined_projection_inner_product = self._combine_all_projection_inner_products()
         elif current_stage == "offline":
             n_components = len(self.components)
@@ -680,8 +685,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             # EllipticCoerciveProblem, i.e. we would like to be able to use a reduced
             # problem also as a truth problem for a nested reduction
             if term in self.terms:
-                if term not in self.operator:
-                    self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by load
                 assert "reduced_operators" in self.folder
                 self.operator[term].load(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
@@ -689,15 +692,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 component = term.replace("inner_product", "").replace("_", "")
                 if component != "":
                     assert component in self.components
-                    if component not in self.inner_product:
-                        self.inner_product[component] = OnlineAffineExpansionStorage(0) # it will be resized by load
                     assert "reduced_operators" in self.folder
                     self.inner_product[component].load(self.folder["reduced_operators"], term)
                     return self.inner_product[component]
                 else:
                     assert len(self.components) == 1
-                    if self.inner_product is None:
-                        self.inner_product = OnlineAffineExpansionStorage(0) # it will be resized by load
                     assert "reduced_operators" in self.folder
                     self.inner_product.load(self.folder["reduced_operators"], term)
                     return self.inner_product
@@ -705,15 +704,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 component = term.replace("projection_inner_product", "").replace("_", "")
                 if component != "":
                     assert component in self.components
-                    if component not in self.projection_inner_product:
-                        self.projection_inner_product[component] = OnlineAffineExpansionStorage(0) # it will be resized by load
                     assert "reduced_operators" in self.folder
                     self.projection_inner_product[component].load(self.folder["reduced_operators"], term)
                     return self.projection_inner_product[component]
                 else:
                     assert len(self.components) == 1
-                    if self.projection_inner_product is None:
-                        self.projection_inner_product = OnlineAffineExpansionStorage(0) # it will be resized by load
                     assert "reduced_operators" in self.folder
                     self.projection_inner_product.load(self.folder["reduced_operators"], term)
                     return self.projection_inner_product
