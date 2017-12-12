@@ -122,11 +122,9 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 return EllipticCoerciveReducedProblem_DerivedClass.assemble_operator(self, term, current_stage)
             
         def _solve(self, N, **kwargs):
-            online_solve_kwargs = self.OnlineSolveKwargs(**kwargs)
-            # Solve reduced problem
-            EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
-            if online_solve_kwargs["online_rectification"]:
-                q = self.online_solve_kwargs_with_rectification.index(online_solve_kwargs)
+            EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
+            if kwargs["online_rectification"]:
+                q = self.online_solve_kwargs_with_rectification.index(kwargs)
                 intermediate_solution = OnlineFunction(N)
                 solver = LinearSolver(self.operator["projection_reduced_snapshots_" + str(N)][q], intermediate_solution, self._solution.vector())
                 solver.solve()

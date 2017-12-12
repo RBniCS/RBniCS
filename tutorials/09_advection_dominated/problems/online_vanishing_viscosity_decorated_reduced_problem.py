@@ -109,14 +109,18 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                     raise ValueError("Invalid stage in assemble_operator().")
             else:
                 return EllipticCoerciveReducedProblem_DerivedClass.assemble_operator(self, term, current_stage)
-                
+        
+        def _online_size_from_kwargs(self, N, **kwargs):
+            N, kwargs = EllipticCoerciveReducedProblem_DerivedClass._online_size_from_kwargs(self, N, **kwargs)
+            kwargs = self.OnlineSolveKwargs(**kwargs)
+            return N, kwargs
+        
         def _solve(self, N, **kwargs):
-            online_solve_kwargs = self.OnlineSolveKwargs(**kwargs)
             # Temporarily change value of stabilized attribute in truth problem
             bak_stabilized = self.truth_problem.stabilized
-            self.truth_problem.stabilized = online_solve_kwargs["online_stabilization"]
+            self.truth_problem.stabilized = kwargs["online_stabilization"]
             # Solve reduced problem
-            if online_solve_kwargs["online_vanishing_viscosity"]:
+            if kwargs["online_vanishing_viscosity"]:
                 assembled_operator = dict()
                 assembled_operator["a"] = (
                     sum(product(self.compute_theta("a"), self.operator["a"][:N, :N])) +
@@ -127,7 +131,7 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                 solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"])
                 solver.solve()
             else:
-                EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
+                EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
             # Restore original value of stabilized attribute in truth problem
             self.truth_problem.stabilized = bak_stabilized
             

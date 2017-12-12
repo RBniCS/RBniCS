@@ -34,12 +34,18 @@ def OnlineStabilizationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             self._online_solve_default_kwargs["online_stabilization"] = True
             self.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self._online_solve_default_kwargs)
             
+        def _online_size_from_kwargs(self, N, **kwargs):
+            N, kwargs = EllipticCoerciveReducedProblem_DerivedClass._online_size_from_kwargs(self, N, **kwargs)
+            kwargs = self.OnlineSolveKwargs(**kwargs)
+            return N, kwargs
+            
         def _solve(self, N, **kwargs):
-            online_solve_kwargs = self.OnlineSolveKwargs(**kwargs)
             # Temporarily change value of stabilized attribute in truth problem
             bak_stabilized = self.truth_problem.stabilized
-            self.truth_problem.stabilized = online_solve_kwargs["online_stabilization"]
-            EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **online_solve_kwargs)
+            self.truth_problem.stabilized = kwargs["online_stabilization"]
+            # Solve reduced problem
+            EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
+            # Restore original value of stabilized attribute in truth problem
             self.truth_problem.stabilized = bak_stabilized
             
     # return value (a class) for the decorator
