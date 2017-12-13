@@ -16,60 +16,65 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Function, FunctionSpace
 from rbnics.backends.dolfin import BasisFunctionsMatrix as DolfinBasisFunctionsMatrix
+from rbnics.backends.dolfin.wrapping import get_mpi_comm
 from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import is_io_process
 
-class NonHierarchicalBasisFunctionsMatrix(DolfinBasisFunctionsMatrix):
+class NonHierarchicalBasisFunctionsMatrix(object):
+    def __init__(self, V):
+        self.V = V
+        self._components_name = None
+        self._content = dict()
+        self.mpi_comm = get_mpi_comm(V)
+        
     def init(self, components_name):
-        assert len(self._components_name) is 0 # re-initialization is not supported here
-        # Call Parent
-        DolfinBasisFunctionsMatrix.init(self, components_name)
+        self._components_name = components_name
         
-    def enrich(self, functions, component=None, weights=None, copy=True):
-        raise RuntimeError("Enrichment is not supported here, only slice assignment")
-        
-    def clear(self):
-        raise RuntimeError("Clear is not supported here, only slice assignment")
-        
-    def _prepare_trivial_precomputed_slice(self):
-        raise RuntimeError("This method should have never been called")
+    @overload(slice) # e.g. key = :N, return the first N functions
+    def __getitem__(self, key):
+        N = self._convert_key(key)
+        assert N in self._content
+        return self._content[N]
         
     @overload(slice, object) # the second argument is object in order to handle FunctionsList's AdditionalFunctionType
     def __setitem__(self, key, item):
+        N = self._convert_key(key)
+        self._content[N] = item
+        
+    def _convert_key(self, key):
         assert key.start is None
         assert key.step is None
-        assert isinstance(key.stop, int)
-        self._precomputed_slices[key.stop] = item
-        
-    def _precompute_slice(self, N): # used by __getitem__
-        assert isinstance(N, int)
-        assert N in self._precomputed_slices
-        return self._precomputed_slices[N]
+        assert isinstance(key.stop, (dict, int))
+        if isinstance(key.stop, dict):
+            assert len(key.stop) is 1
+            assert "u" in key.stop
+            N = key.stop["u"]
+        else:
+            N = key.stop
+        return N
         
     def save(self, directory, filename):
         self._save_Nmax(directory, filename)
-        for (N, basis_N) in self._precomputed_slices.items():
+        for (N, basis_N) in self._content.items():
             basis_N.save(directory, filename + "_N=" + str(N))
             
     def _save_Nmax(self, directory, filename):
-        if len(self._precomputed_slices) > 0:
-            assert min(self._precomputed_slices.keys()) == 1
-            assert max(self._precomputed_slices.keys()) == len(self._precomputed_slices)
         if is_io_process(self.mpi_comm):
             with open(str(directory) + "/" + filename + ".length", "w") as length:
-                length.write(str(len(self._precomputed_slices)))
+                length.write(str(len(self)))
         
     def load(self, directory, filename):
-        Nmax = self._load_Nmax(directory, filename)
-        return_value = True
-        for N in range(1, Nmax + 1):
-            self._precomputed_slices[N] = DolfinBasisFunctionsMatrix(self.V_or_Z)
-            self._precomputed_slices[N].init(self._components_name)
-            return_value_N = self._precomputed_slices[N].load(directory, filename + "_N=" + str(N))
-            return_value = return_value and return_value_N
-        return return_value
+        if len(self._content) > 0: # avoid loading multiple times
+            return False
+        else:
+            Nmax = self._load_Nmax(directory, filename)
+            for N in range(1, Nmax + 1):
+                self._content[N] = DolfinBasisFunctionsMatrix(self.V)
+                self._content[N].init(self._components_name)
+                return_value = self._content[N].load(directory, filename + "_N=" + str(N))
+                assert return_value
+            return True
         
     def _load_Nmax(self, directory, filename):
         Nmax = None
@@ -78,3 +83,11 @@ class NonHierarchicalBasisFunctionsMatrix(DolfinBasisFunctionsMatrix):
                 Nmax = int(length.readline())
         Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
         return Nmax
+        
+    def __len__(self):
+        if len(self._content) > 0:
+            assert min(self._content.keys()) == 1
+            assert max(self._content.keys()) == len(self._content)
+            return len(self._content)
+        else:
+            return 0

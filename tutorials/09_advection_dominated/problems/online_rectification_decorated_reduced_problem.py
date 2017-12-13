@@ -51,29 +51,84 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             self.online_solve_kwargs_with_rectification = online_solve_kwargs_with_rectification
             self.online_solve_kwargs_without_rectification = online_solve_kwargs_without_rectification
             
+            # Flag to disable error estimation after rectification has been setup
+            self._disable_error_estimation = False
+            
         def _init_operators(self, current_stage="online"):
             # Initialize additional reduced operators related to rectification. Note that these operators
             # are not hierarchical because:
             # * the basis is possibly non-hierarchical
             # * the coefficients of the reduced solution for different reduced sizes are definitely not hierarchical
-            self.operator["projection_truth_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(1)
-            assert len(self.online_solve_kwargs_with_rectification) is len(self.online_solve_kwargs_without_rectification)
-            self.operator["projection_reduced_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(len(self.online_solve_kwargs_with_rectification))
             if current_stage == "online":
-                self.operator["projection_truth_snapshots"] = self.assemble_operator("projection_truth_snapshots", "online")
-                self.operator["projection_reduced_snapshots"] = self.assemble_operator("projection_reduced_snapshots", "online")
+                self.operator["projection_truth_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(1)
+                assert len(self.online_solve_kwargs_with_rectification) is len(self.online_solve_kwargs_without_rectification)
+                self.operator["projection_reduced_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(len(self.online_solve_kwargs_with_rectification))
+                self.assemble_operator("projection_truth_snapshots", "online")
+                self.assemble_operator("projection_reduced_snapshots", "online")
+                # Call Parent
+                EllipticCoerciveReducedProblem_DerivedClass._init_operators(self, current_stage)
             elif current_stage == "offline":
-                pass # nothing more to be done
-            # Call Parent
-            EllipticCoerciveReducedProblem_DerivedClass._init_operators(self, current_stage)
+                # Call Parent
+                EllipticCoerciveReducedProblem_DerivedClass._init_operators(self, current_stage)
+            elif current_stage == "offline_rectification_postprocessing":
+                self.operator["projection_truth_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(1)
+                assert len(self.online_solve_kwargs_with_rectification) is len(self.online_solve_kwargs_without_rectification)
+                self.operator["projection_reduced_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(len(self.online_solve_kwargs_with_rectification))
+                # We do not call Parent method as there is no need to re-initialize offline operators
+            else:
+                # Call Parent, which may eventually raise an error
+                EllipticCoerciveReducedProblem_DerivedClass._init_operators(self, current_stage)
+                
+        def _init_inner_products(self, current_stage="online"):
+            if current_stage in ("online", "offline"):
+                # Call Parent
+                EllipticCoerciveReducedProblem_DerivedClass._init_inner_products(self, current_stage)
+            elif current_stage == "offline_rectification_postprocessing":
+                pass # We do not call Parent method as there is no need to re-initialize offline inner products
+            else:
+                # Call Parent, which may eventually raise an error
+                EllipticCoerciveReducedProblem_DerivedClass._init_inner_products(self, current_stage)
+                
+        def _init_basis_functions(self, current_stage="online"):
+            if current_stage in ("online", "offline"):
+                # Call Parent
+                EllipticCoerciveReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
+            elif current_stage == "offline_rectification_postprocessing":
+                pass # We do not call Parent method as there is no need to re-initialize offline basis functions
+            else:
+                # Call Parent, which may eventually raise an error
+                EllipticCoerciveReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
+                
+        def _init_error_estimation_operators(self, current_stage="online"):
+            if current_stage in ("online", "offline_rectification_postprocessing"):
+                # Disable error estimation, which would not take into account the additional rectification
+                self._disable_error_estimation = True
+            elif current_stage == "offline":
+                # Call Parent
+                EllipticCoerciveReducedProblem_DerivedClass._init_error_estimation_operators(self, current_stage)
+            else:
+                # Call Parent, which may eventually raise an error
+                EllipticCoerciveReducedProblem_DerivedClass._init_error_estimation_operators(self, current_stage)
+            
+        def build_reduced_operators(self, current_stage="offline"):
+            if current_stage == "offline_rectification_postprocessing":
+                # Compute projection of truth and reduced snapshots
+                print("build projection truth snapshots for rectification")
+                self.operator["projection_truth_snapshots"] = self.assemble_operator("projection_truth_snapshots", "offline_rectification_postprocessing")
+                print("build projection reduced snapshots for rectification")
+                self.operator["projection_reduced_snapshots"] = self.assemble_operator("projection_reduced_snapshots", "offline_rectification_postprocessing")
+                # We do not call Parent method as there is no need to re-compute offline operators
+            else:
+                # Call Parent, which may eventually raise an error
+                EllipticCoerciveReducedProblem_DerivedClass.build_reduced_operators(self, current_stage)
             
         def assemble_operator(self, term, current_stage="online"):
             if term == "projection_truth_snapshots":
-                assert current_stage in ("online", "offline")
+                assert current_stage in ("online", "offline_rectification_postprocessing")
                 if current_stage == "online": # load from file
-                    self.operator[term].load(self.folder["reduced_operators"], term)
-                    return self.operator[term]
-                elif current_stage == "offline":
+                    self.operator["projection_truth_snapshots"].load(self.folder["reduced_operators"], "projection_truth_snapshots")
+                    return self.operator["projection_truth_snapshots"]
+                elif current_stage == "offline_rectification_postprocessing":
                     Z = self.Z
                     assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     X = self.truth_problem.inner_product[0]
@@ -81,7 +136,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                         projection_truth_snapshots_expansion = OnlineAffineExpansionStorage(1)
                         projection_truth_snapshots = OnlineMatrix(n, n)
                         for (i, snapshot_i) in enumerate(self.snapshots[:n]):
-                            projected_truth_snapshot_i = OnlineFunction(N)
+                            projected_truth_snapshot_i = OnlineFunction(n)
                             assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                             X_n = self.inner_product[:n, :n][0]
                             solver = LinearSolver(X_n, projected_truth_snapshot_i, transpose(Z[:n])*X*snapshot_i)
@@ -89,23 +144,23 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                             for j in range(n):
                                 projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]
                         projection_truth_snapshots_expansion[0] = projection_truth_snapshots
-                        self.operator[term][:n, :n] = projection_truth_snapshots_expansion
+                        self.operator["projection_truth_snapshots"][:n, :n] = projection_truth_snapshots_expansion
                     # Save
-                    self.operator[term].save(self.folder["reduced_operators"], term)
-                    return self.operator[term]
+                    self.operator["projection_truth_snapshots"].save(self.folder["reduced_operators"], "projection_truth_snapshots")
+                    return self.operator["projection_truth_snapshots"]
                 else:
                     raise ValueError("Invalid stage in assemble_operator().")
             elif term == "projection_reduced_snapshots":
-                assert current_stage in ("online", "offline")
+                assert current_stage in ("online", "offline_rectification_postprocessing")
                 if current_stage == "online": # load from file
-                    self.operator[term].load(self.folder["reduced_operators"], term)
-                    return self.operator[term]
-                elif current_stage == "offline":
+                    self.operator["projection_reduced_snapshots"].load(self.folder["reduced_operators"], "projection_reduced_snapshots")
+                    return self.operator["projection_reduced_snapshots"]
+                elif current_stage == "offline_rectification_postprocessing":
                     # Backup mu
                     bak_mu = self.mu
                     # Prepare rectification for all possible online solve arguments
                     for n in range(1, self.N + 1):
-                        projection_reduced_snapshots_expansion = OnlineNonHierarchicalAffineExpansionStorage(len(self.online_solve_kwargs_without_rectification))
+                        projection_reduced_snapshots_expansion = OnlineAffineExpansionStorage(len(self.online_solve_kwargs_without_rectification))
                         for (q, online_solve_kwargs) in enumerate(self.online_solve_kwargs_without_rectification):
                             projection_reduced_snapshots = OnlineMatrix(n, n)
                             for (i, mu_i) in enumerate(self.snapshots_mu[:n]):
@@ -114,11 +169,11 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                                 for j in range(n):
                                     projection_reduced_snapshots[j, i] = projected_reduced_snapshot_i.vector()[j]
                             projection_reduced_snapshots_expansion[q] = projection_reduced_snapshots
-                        self.operator[term][:n, :n] = projection_reduced_snapshots_expansion
+                        self.operator["projection_reduced_snapshots"][:n, :n] = projection_reduced_snapshots_expansion
                     # Save and restore previous mu
                     self.set_mu(bak_mu)
-                    self.operator[term].save(self.folder["reduced_operators"], term)
-                    return self.operator[term]
+                    self.operator["projection_reduced_snapshots"].save(self.folder["reduced_operators"], "projection_reduced_snapshots")
+                    return self.operator["projection_reduced_snapshots"]
                 else:
                     raise ValueError("Invalid stage in assemble_operator().")
             else:
@@ -132,6 +187,12 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 solver = LinearSolver(self.operator["projection_reduced_snapshots"][:N, :N][q], intermediate_solution, self._solution.vector())
                 solver.solve()
                 self._solution = self.operator["projection_truth_snapshots"][:N, :N][0]*intermediate_solution
+                
+        def estimate_error(self):
+            if self._disable_error_estimation:
+                return NotImplemented
+            else:
+                return EllipticCoerciveReducedProblem_DerivedClass.estimate_error(self)
                 
     # return value (a class) for the decorator
     return OnlineRectificationDecoratedReducedProblem_Class

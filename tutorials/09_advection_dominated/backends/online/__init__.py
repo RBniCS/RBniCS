@@ -17,9 +17,11 @@
 #
 
 from .online_matrix import OnlineMatrix
+from .online_non_hierarchical_affine_expansion_storage import OnlineNonHierarchicalAffineExpansionStorage
 from .online_solve_kwargs_generator import OnlineSolveKwargsGenerator
 
 __all__ = [
     'OnlineMatrix',
+    'OnlineNonHierarchicalAffineExpansionStorage',
     'OnlineSolveKwargsGenerator'
 ]

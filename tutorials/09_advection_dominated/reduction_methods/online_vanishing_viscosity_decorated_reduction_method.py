@@ -20,7 +20,6 @@ from rbnics.backends import BasisFunctionsMatrix, transpose
 from rbnics.backends.online import OnlineEigenSolver
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.utils.io import ExportableList
-from backends.dolfin import NonHierarchicalBasisFunctionsMatrix
 from backends.online import OnlineSolveKwargsGenerator
 from problems import OnlineVanishingViscosity
 
@@ -60,9 +59,10 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             for i in range(N_bc, N):
                 unrotated_Z.enrich(self.reduced_problem.Z[i])
                 
-            # Prepare new storage for non-hierarchical basis functions matrix
-            Z = NonHierarchicalBasisFunctionsMatrix(self.truth_problem.V)
-            Z.init(self.truth_problem.components)
+            # Prepare new storage for non-hierarchical basis functions matrix and
+            # corresponding affine expansions
+            self.reduced_problem.init("offline_vanishing_viscosity_postprocessing")
+            
             # Rotated basis functions matrix are not hierarchical, i.e. a different
             # rotation will be applied for each basis size n.
             for n in range(1, N + 1):
@@ -95,24 +95,16 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
                 for i in range(0, n):
                     (eigenvector_i, _) = rotation_eigensolver.get_eigenvector(i)
                     rotated_Z.enrich(unrotated_Z[:n]*eigenvector_i)
-                Z[:n] = rotated_Z
+                self.reduced_problem.Z[:n] = rotated_Z
                 # Attach eigenvalues to the vanishing viscosity reduced operator
                 self.reduced_problem.vanishing_viscosity_eigenvalues.append(rotation_eigenvalues)
                 
-            # Save Z and attach it to reduced problem
-            Z.save(self.reduced_problem.folder["basis"], "basis")
-            self.reduced_problem.Z = Z
+            # Save Z
+            self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
             
             # Re-compute all reduced operators, since the basis functions have changed
             print("build reduced operators")
-            self.reduced_problem.build_reduced_operators()
-            # Compute vanishing viscosity reduced operator
-            print("build vanishing viscosity reduced operator")
-            self.reduced_problem.operator["vanishing_viscosity"] = self.reduced_problem.assemble_operator("vanishing_viscosity", "offline")
-            # Disable error estimation, which would not take int account the additional operator
-            for term in self.reduced_problem.riesz_terms:
-                for q in range(self.reduced_problem.Q[term]):
-                    self.reduced_problem.riesz[term][q].clear()
+            self.reduced_problem.build_reduced_operators("offline_vanishing_viscosity_postprocessing")
             
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " offline vanishing viscosity postprocessing phase ends") + "=")
