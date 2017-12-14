@@ -109,7 +109,7 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
             else:
                 return EllipticCoerciveReducedProblem_DerivedClass._combine_all_inner_products(self)
             
-        def _combine_all_projection_inner_products(self):    
+        def _combine_all_projection_inner_products(self):
             if self._disable_inner_product_combination:
                 return NotImplemented
             else:

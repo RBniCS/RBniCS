@@ -87,27 +87,27 @@ def _test_nonlinear_solver_sparse(callback_type):
             return bc
         
     # Solve the nonlinear problem
-    sparse_form_problem_wrapper = SparseFormProblemWrapper()
-    sparse_form_solution = u
-    assign(sparse_form_solution, sparse_initial_guess())
-    sparse_form_solver = SparseNonlinearSolver(sparse_form_problem_wrapper, sparse_form_solution)
-    sparse_form_solver.set_parameters({
+    sparse_problem_wrapper = SparseFormProblemWrapper()
+    sparse_solution = u
+    assign(sparse_solution, sparse_initial_guess())
+    sparse_solver = SparseNonlinearSolver(sparse_problem_wrapper, sparse_solution)
+    sparse_solver.set_parameters({
         "linear_solver": "mumps",
         "maximum_iterations": 20,
         "report": True,
         "error_on_nonconvergence": True
     })
-    sparse_form_solver.solve()
+    sparse_solver.solve()
 
     # Compute the error
-    sparse_form_error = Function(V)
-    sparse_form_error.vector().add_local(+ sparse_form_solution.vector().get_local())
-    sparse_form_error.vector().add_local(- exact_solution.vector().get_local())
-    sparse_form_error.vector().apply("")
-    sparse_form_error_norm = sparse_form_error.vector().inner(X*sparse_form_error.vector())
-    print("SparseNonlinearSolver error (" + callback_type + "):", sparse_form_error_norm)
-    assert isclose(sparse_form_error_norm, 0., atol=1.e-5)
-    return (sparse_form_error_norm, V, u, r, j, X, sparse_initial_guess, exact_solution)
+    sparse_error = Function(V)
+    sparse_error.vector().add_local(+ sparse_solution.vector().get_local())
+    sparse_error.vector().add_local(- exact_solution.vector().get_local())
+    sparse_error.vector().apply("")
+    sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
+    print("SparseNonlinearSolver error (" + callback_type + "):", sparse_error_norm)
+    assert isclose(sparse_error_norm, 0., atol=1.e-5)
+    return (sparse_error_norm, V, u, r, j, X, sparse_initial_guess, exact_solution)
 
 # ~~~ Dense case ~~~ #
 def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solution):
