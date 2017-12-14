@@ -53,6 +53,7 @@ def BasicPETScSNESSolver(backend, wrapping):
                 elif key == "relative_tolerance":
                     snes_tolerances[1] = value
                 elif key == "report":
+                    self.snes.cancelMonitor()
                     def monitor(snes, it, fgnorm):
                         print("  " + str(it) + " SNES Function norm " + "{:e}".format(fgnorm))
                     self.snes.setMonitor(monitor)

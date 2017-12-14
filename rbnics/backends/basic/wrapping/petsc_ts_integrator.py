@@ -120,6 +120,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                         elif key_snes == "relative_tolerance":
                             snes_tolerances[1] = value_snes
                         elif key_snes == "report":
+                            snes.cancelMonitor()
                             def monitor(snes, it, fgnorm):
                                 print("  " + str(it) + " SNES Function norm " + "{:e}".format(fgnorm))
                             snes.setMonitor(monitor)
