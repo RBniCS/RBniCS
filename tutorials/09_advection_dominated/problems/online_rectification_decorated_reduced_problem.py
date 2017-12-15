@@ -17,6 +17,7 @@
 #
 
 from itertools import product as cartesian_product
+from numpy.linalg import cond
 from rbnics.backends import LinearSolver, SnapshotsMatrix, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
@@ -144,6 +145,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                             for j in range(n):
                                 projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]
                         projection_truth_snapshots_expansion[0] = projection_truth_snapshots
+                        print("\tcondition number for n = " + str(n) + ": " + str(cond(projection_truth_snapshots)))
                         self.operator["projection_truth_snapshots"][:n, :n] = projection_truth_snapshots_expansion
                     # Save
                     self.operator["projection_truth_snapshots"].save(self.folder["reduced_operators"], "projection_truth_snapshots")
@@ -160,6 +162,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                     bak_mu = self.mu
                     # Prepare rectification for all possible online solve arguments
                     for n in range(1, self.N + 1):
+                        print("\tcondition number for n = " + str(n))
                         projection_reduced_snapshots_expansion = OnlineAffineExpansionStorage(len(self.online_solve_kwargs_without_rectification))
                         for (q, online_solve_kwargs) in enumerate(self.online_solve_kwargs_without_rectification):
                             projection_reduced_snapshots = OnlineMatrix(n, n)
@@ -169,6 +172,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                                 for j in range(n):
                                     projection_reduced_snapshots[j, i] = projected_reduced_snapshot_i.vector()[j]
                             projection_reduced_snapshots_expansion[q] = projection_reduced_snapshots
+                            print("\t\tonline solve options " + str(dict(self.online_solve_kwargs_with_rectification[q])) + ": " + str(cond(projection_reduced_snapshots)))
                         self.operator["projection_reduced_snapshots"][:n, :n] = projection_reduced_snapshots_expansion
                     # Save and restore previous mu
                     self.set_mu(bak_mu)
