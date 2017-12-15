@@ -106,6 +106,10 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             print("build reduced operators")
             self.reduced_problem.build_reduced_operators("offline_vanishing_viscosity_postprocessing")
             
+            # Clean up reduced solution and output cache, since the basis has changed
+            self.reduced_problem._solution_cache.clear()
+            self.reduced_problem._output_cache.clear()
+            
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " offline vanishing viscosity postprocessing phase ends") + "=")
             print("==============================================================")
