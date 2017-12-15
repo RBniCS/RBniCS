@@ -43,6 +43,16 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
             self.reduced_problem.init("offline_rectification_postprocessing")
             self.reduced_problem.build_reduced_operators("offline_rectification_postprocessing")
             
+            # Carry out a consistency verification of the rectified solution
+            for n in range(1, self.reduced_problem.N + 1):
+                print("consistency verification of rectified solutions for n =", n)
+                for online_solve_kwargs in self.reduced_problem.online_solve_kwargs_with_rectification:
+                    print("\tonline solve options:", dict(online_solve_kwargs))
+                    for mu_i in self.reduced_problem.snapshots_mu[:n]:
+                        self.reduced_problem.set_mu(mu_i)
+                        error = self.reduced_problem.compute_error(n, **online_solve_kwargs)
+                        print("\t\tmu = " + str(mu_i) + ", absolute error = " + str(error))
+                        
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " offline rectification postprocessing phase ends") + "=")
             print("==============================================================")
