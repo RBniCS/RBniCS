@@ -42,10 +42,6 @@ class Stokes(StokesProblem):
         self.f = Constant((0.0, -10.0))
         self.g = Constant(0.0)
         
-    # Return custom problem name
-    def name(self):
-        return "StokesEIM"
-        
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
