@@ -48,7 +48,7 @@ class Top(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 1.) < DOLFIN_EPS
         
-boundaries = FacetFunction("size_t", mesh)
+boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
 top = Top()
 top.mark(boundaries, 1)

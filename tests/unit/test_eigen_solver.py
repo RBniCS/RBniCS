@@ -18,7 +18,7 @@
 
 from math import sqrt
 from numpy import isclose
-from dolfin import assemble, Constant, DirichletBC, div, DOLFIN_EPS, dx, FacetFunction, FiniteElement, FunctionSpace, grad, inner, MixedElement, split, SubDomain, TestFunction, TrialFunction, UnitSquareMesh, VectorElement
+from dolfin import assemble, Constant, DirichletBC, div, DOLFIN_EPS, dx, FiniteElement, FunctionSpace, grad, inner, MeshFunction, MixedElement, split, SubDomain, TestFunction, TrialFunction, UnitSquareMesh, VectorElement
 from rbnics.backends.dolfin import EigenSolver as SparseEigenSolver
 from rbnics.backends.online.numpy import EigenSolver as DenseEigenSolver, Matrix as DenseMatrix
 
@@ -43,7 +43,7 @@ def _test_eigen_solver_sparse(callback_type):
         def inside(self, x, on_boundary):
             return on_boundary and (x[1] < 0 + DOLFIN_EPS or x[1] > 1 - DOLFIN_EPS)
         
-    boundaries = FacetFunction("size_t", mesh)
+    boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     boundaries.set_all(0)
     wall = Wall()
     wall.mark(boundaries, 1)

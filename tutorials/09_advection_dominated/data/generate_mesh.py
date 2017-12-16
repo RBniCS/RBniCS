@@ -50,7 +50,7 @@ class Boundary2(SubDomain):
             (abs(x[0] - 0.) < DOLFIN_EPS and x[1] >= 0.25)
         )
 
-boundaries = FacetFunction("size_t", mesh)
+boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
 boundary_1 = Boundary1()
 boundary_1.mark(boundaries, 1)

@@ -25,7 +25,7 @@ domain = rectangle
 mesh = generate_mesh(domain, 20)
 
 # Create subdomains
-subdomains = CellFunction("size_t", mesh)
+subdomains = MeshFunction("size_t", mesh, mesh.topology().dim())
 subdomains.set_all(0)
 
 # Create boundaries
@@ -45,7 +45,7 @@ class Top(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 1.) < DOLFIN_EPS
         
-boundaries = FacetFunction("size_t", mesh)
+boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
 bottom = Bottom()
 bottom.mark(boundaries, 1)

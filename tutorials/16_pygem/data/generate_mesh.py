@@ -45,7 +45,7 @@ mesh = generate_mesh(domain, 46)
 # Refine the mesh around the airfoil
 refinement_box = [(0., 2.), (-1., 1.)]
 for refinements in range(1):
-    cell_markers = CellFunction("bool", mesh)
+    cell_markers = MeshFunction("bool", mesh, mesh.topology().dim())
     cell_markers.set_all(False)
     for cell in cells(mesh):
         p = cell.midpoint()
@@ -82,7 +82,7 @@ class AllBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary
         
-boundaries = FacetFunction("size_t", mesh)
+boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
 naca_boundary = AllBoundary()
 naca_boundary.mark(boundaries, 1) # this will mark all the boundary, but it will be overwritten later

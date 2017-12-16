@@ -22,7 +22,7 @@ import pytest
 from numpy import allclose, ndarray as array
 import matplotlib
 import matplotlib.pyplot as plt
-from dolfin import CellFunction, cells, FacetFunction, facets, FiniteElement, FunctionSpace, has_pybind11, HDF5File, MixedElement, MPI, UnitSquareMesh, VectorElement, vertices
+from dolfin import cells, facets, FiniteElement, FunctionSpace, has_pybind11, HDF5File, MeshFunction, MixedElement, MPI, UnitSquareMesh, VectorElement, vertices
 if has_pybind11():
     from dolfin.cpp.log import log, LogLevel, set_log_level
     PROGRESS = LogLevel.PROGRESS
@@ -52,7 +52,7 @@ def mesh():
 # Mesh subdomains
 @pytest.fixture(scope="module")
 def subdomains(mesh):
-    subdomains = CellFunction("size_t", mesh, 0)
+    subdomains = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
     for c in cells(mesh):
         subdomains.array()[c.index()] = c.global_index()
     return subdomains
@@ -60,7 +60,7 @@ def subdomains(mesh):
 # Mesh boundaries
 @pytest.fixture(scope="module")
 def boundaries(mesh):
-    boundaries = FacetFunction("size_t", mesh, 0)
+    boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1, 0)
     for f in facets(mesh):
         boundaries.array()[f.index()] = 0
         for v in vertices(f):
@@ -70,7 +70,7 @@ def boundaries(mesh):
 # Submesh markers
 @pytest.fixture(scope="module")
 def submesh_markers(mesh):
-    markers = CellFunction("bool", mesh, False)
+    markers = MeshFunction("bool", mesh, mesh.topology().dim(), False)
     hdf = HDF5File(mesh.mpi_comm(), os.path.join(data_dir, "markers.h5"), "r")
     hdf.read(markers, "/cells")
     return markers

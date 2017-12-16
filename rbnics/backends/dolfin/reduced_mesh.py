@@ -17,7 +17,7 @@
 #
 
 import os
-from dolfin import CellFunction, cells, File, has_hdf5, has_hdf5_parallel, has_pybind11, Mesh, MeshFunction, XDMFFile
+from dolfin import cells, File, has_hdf5, has_hdf5_parallel, has_pybind11, Mesh, MeshFunction, XDMFFile
 if has_hdf5() and has_hdf5_parallel():
     from dolfin import HDF5File
     hdf5_file_type = "h5" # Will be switched to "xdmf" in future, because there is currently a bug in reading back in 1D meshes from XDMF
@@ -68,7 +68,7 @@ def BasicReducedMesh(backend, wrapping):
             # ... since it is only needed offline in the append() method
             
             # Cell functions to mark cells (on the full mesh)
-            self.reduced_mesh_markers = dict() # from N to CellFunction
+            self.reduced_mesh_markers = dict() # from N to MeshFunction
             # ... which again is not initialized here for performance reasons
             
             # DOFs list (of the full mesh) that need to be added at each N
@@ -213,7 +213,7 @@ def BasicReducedMesh(backend, wrapping):
                 self.dof_to_cells = tuple(self.dof_to_cells)
             # Initialize cells marker
             N = self._get_next_index()
-            reduced_mesh_markers = CellFunction("bool", self.mesh)
+            reduced_mesh_markers = MeshFunction("bool", self.mesh, self.mesh.topology().dim())
             reduced_mesh_markers.set_all(False)
             if N > 0:
                 reduced_mesh_markers.array()[:] = self.reduced_mesh_markers[N - 1].array()
