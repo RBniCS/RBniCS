@@ -70,17 +70,8 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
     @ProblemDecoratorFor(AffineShapeParametrization, shape_parametrization_vertices_mappings=shape_parametrization_vertices_mappings)
     def AffineShapeParametrizationDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
-        AffineShapeParametrizationDecoratedProblem_Class_Base = AffineShapeParametrizationDecoratedProblem_Decorator_Base(ParametrizedDifferentialProblem_DerivedClass)
+        AffineShapeParametrizationDecoratedProblem_Class = AffineShapeParametrizationDecoratedProblem_Decorator_Base(ParametrizedDifferentialProblem_DerivedClass)
         
-        @PreserveClassName
-        class AffineShapeParametrizationDecoratedProblem_Class(AffineShapeParametrizationDecoratedProblem_Class_Base):
-        
-            def __init__(self, V, **kwargs):
-                # Call the parent initialization
-                AffineShapeParametrizationDecoratedProblem_Class_Base.__init__(self, V, **kwargs)
-                # Check mesh consistency
-                assert V.mesh().topology().dim() is dim
-                
         # return value (a class) for the decorator
         return AffineShapeParametrizationDecoratedProblem_Class
     
