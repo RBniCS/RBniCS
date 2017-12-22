@@ -18,7 +18,7 @@
 
 from rbnics.shape_parametrization.problems.shape_parametrization_decorated_problem import ShapeParametrizationDecoratedProblem
 from rbnics.shape_parametrization.utils.symbolic import affine_shape_parametrization_from_vertices_mapping, VerticesMappingIO
-from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
+from rbnics.utils.decorators import ProblemDecoratorFor
 
 def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_mappings, **decorator_kwargs):
     

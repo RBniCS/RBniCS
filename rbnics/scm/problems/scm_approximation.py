@@ -18,7 +18,7 @@
 
 import os
 import hashlib
-from rbnics.backends import export, import_, LinearProgramSolver, sum
+from rbnics.backends import export, import_, LinearProgramSolver
 from rbnics.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.config import config
