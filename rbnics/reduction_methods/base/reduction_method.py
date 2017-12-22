@@ -23,7 +23,7 @@ from rbnics.utils.io import Folders
 
 # Implementation of a class containing an offline/online decomposition of ROM for parametrized problems
 class ReductionMethod(object, metaclass=ABCMeta):
-    def __init__(self, folder_prefix, mu_range):
+    def __init__(self, folder_prefix):
         # I/O
         self.folder_prefix = folder_prefix
         self.folder = Folders()
@@ -34,13 +34,13 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # Tolerance to be used for the stopping criterion in the basis selection
         self.tol = 0.
         # Training set
-        self.training_set = ParameterSpaceSubset(mu_range)
+        self.training_set = ParameterSpaceSubset()
         # I/O
         self.folder["training_set"] = os.path.join(self.folder_prefix, "training_set")
         
         # $$ ERROR ANALYSIS AND SPEEDUP ANALYSIS DATA STRUCTURES $$ #
         # Testing set
-        self.testing_set = ParameterSpaceSubset(mu_range)
+        self.testing_set = ParameterSpaceSubset()
         # I/O
         self.folder["testing_set"] = os.path.join(self.folder_prefix, "testing_set")
         self.folder["error_analysis"] = os.path.join(self.folder_prefix, "error_analysis")
@@ -55,7 +55,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
         self.tol = tol
 
     # OFFLINE: set the elements in the training set.
-    def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+    def initialize_training_set(self, mu_range, ntrain, enable_import=True, sampling=None, **kwargs):
         # Create I/O folder
         self.folder["training_set"].create()
         # Test if can import
@@ -63,13 +63,13 @@ class ReductionMethod(object, metaclass=ABCMeta):
         if enable_import:
             import_successful = self.training_set.load(self.folder["training_set"], "training_set") and (len(self.training_set) == ntrain)
         if not import_successful:
-            self.training_set.generate(ntrain, sampling)
+            self.training_set.generate(mu_range, ntrain, sampling)
             # Export
             self.training_set.save(self.folder["training_set"], "training_set")
         return import_successful
         
     # ERROR ANALYSIS: set the elements in the testing set.
-    def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+    def initialize_testing_set(self, mu_range, ntest, enable_import=False, sampling=None, **kwargs):
         # Create I/O folder
         self.folder["testing_set"].create()
         # Test if can import
@@ -77,7 +77,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
         if enable_import:
             import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set") and (len(self.testing_set) == ntest)
         if not import_successful:
-            self.testing_set.generate(ntest, sampling)
+            self.testing_set.generate(mu_range, ntest, sampling)
             # Export
             self.testing_set.save(self.folder["testing_set"], "testing_set")
         return import_successful

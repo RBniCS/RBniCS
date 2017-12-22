@@ -18,8 +18,6 @@
 
 import os
 import hashlib
-import operator # to find closest parameters
-from math import sqrt
 from rbnics.backends import export, import_, LinearProgramSolver, sum
 from rbnics.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from rbnics.problems.base import ParametrizedProblem
@@ -250,33 +248,13 @@ class SCMApproximation(ParametrizedProblem):
         cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
         return (cache_key, cache_file)
 
-    # Auxiliary function: M parameters in the set xi closest to mu
-    @staticmethod
-    def _closest_parameters(M, xi, mu):
-        assert M <= len(xi)
-        
-        # Trivial case 1:
-        if M == 0:
-            return list()
-        
-        # Trivial case 2:
-        if M == len(xi):
-            return xi
-        
-        parameters_and_distances = list()
-        for xi_i in xi:
-            distance = sqrt(sum([(x - y)**2 for (x, y) in zip(mu, xi_i)]))
-            parameters_and_distances.append((xi_i, distance))
-        parameters_and_distances.sort(key=operator.itemgetter(1))
-        return [xi_i for (xi_i, _) in parameters_and_distances[:M]]
-        
     def _closest_selected_parameters(self, M, N, mu):
-        return self._closest_parameters(M, self.greedy_selected_parameters[:N], mu)
+        return self.greedy_selected_parameters[:N].closest(M, mu)
         
     def _closest_unselected_parameters(self, M, N, mu):
         if N not in self.greedy_selected_parameters_complement:
             self.greedy_selected_parameters_complement[N] = self.training_set.diff(self.greedy_selected_parameters[:N])
-        return self._closest_parameters(M, self.greedy_selected_parameters_complement[N], mu)
+        return self.greedy_selected_parameters_complement[N].closest(M, mu)
 
     def export_stability_factor_lower_bound(self, folder, filename):
         export([self._alpha_LB], folder, filename + "_LB")

@@ -31,14 +31,14 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         import_successful = EIMApproximationReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
         # Initialize time training set
-        time_training_set = ParameterSpaceSubset([(0., self.EIM_approximation.T), ])
+        time_training_set = ParameterSpaceSubset()
         # Test if can import
         time_import_successful = False
         if enable_import:
             time_import_successful = time_training_set.load(self.folder["training_set"], "time_training_set") and (len(time_training_set) == ntrain)
         if not time_import_successful:
             time_sampling = self._generate_time_sampling(**kwargs)
-            time_training_set.generate(ntrain, time_sampling)
+            time_training_set.generate([(0., self.EIM_approximation.T)], ntrain, time_sampling)
             # Export
             time_training_set.save(self.folder["training_set"], "time_training_set")
         # Combine both sets into one
@@ -52,14 +52,14 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
     def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
         import_successful = EIMApproximationReductionMethod.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
         # Initialize time testing set
-        time_testing_set = ParameterSpaceSubset([(0., self.EIM_approximation.T), ])
+        time_testing_set = ParameterSpaceSubset()
         # Test if can import
         time_import_successful = False
         if enable_import:
             time_import_successful = time_testing_set.load(self.folder["testing_set"], "time_testing_set") and (len(time_testing_set) == ntest)
         if not import_successful:
             time_sampling = self._generate_time_sampling(**kwargs)
-            time_testing_set.generate(ntest, time_sampling)
+            time_testing_set.generate([(0., self.EIM_approximation.T)], ntest, time_sampling)
             # Export
             time_testing_set.save(self.folder["testing_set"], "time_testing_set")
         # Combine both sets into one

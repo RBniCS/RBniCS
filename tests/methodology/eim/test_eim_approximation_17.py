@@ -86,7 +86,7 @@ def test_eim_approximation_17(expression_type, basis_generation):
     class MockReductionMethod(ReductionMethod):
         def __init__(self, truth_problem, **kwargs):
             # Call parent
-            ReductionMethod.__init__(self, os.path.join("test_eim_approximation_17_tempdir", expression_type, basis_generation, "mock_problem"), truth_problem.mu_range)
+            ReductionMethod.__init__(self, os.path.join("test_eim_approximation_17_tempdir", expression_type, basis_generation, "mock_problem"))
             # Minimal subset of a DifferentialProblemReductionMethod
             self.truth_problem = truth_problem
             self.reduced_problem = None
@@ -94,6 +94,12 @@ def test_eim_approximation_17(expression_type, basis_generation):
             self.folder["basis"] = os.path.join(self.truth_problem.folder_prefix, "basis")
             # Gram Schmidt
             self.GS = GramSchmidt(self.truth_problem.X)
+            
+        def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            return ReductionMethod.initialize_training_set(self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
+            
+        def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+            return ReductionMethod.initialize_testing_set(self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
             
         def offline(self):
             self.reduced_problem = MockReducedProblem(self.truth_problem)

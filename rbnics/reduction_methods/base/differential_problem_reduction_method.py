@@ -30,7 +30,7 @@ class DifferentialProblemReductionMethod(ReductionMethod):
     # Default initialization of members
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
-        ReductionMethod.__init__(self, truth_problem.name(), truth_problem.mu_range)
+        ReductionMethod.__init__(self, truth_problem.name())
         
         # $$ ONLINE DATA STRUCTURES $$ #
         # Reduced order problem
@@ -40,6 +40,12 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
         self.truth_problem = truth_problem
+        
+    def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+        return ReductionMethod.initialize_training_set(self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
+        
+    def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+        return ReductionMethod.initialize_testing_set(self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
     
     # Initialize data structures required for the offline phase
     def _init_offline(self):

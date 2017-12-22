@@ -28,7 +28,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     # Default initialization of members
     def __init__(self, EIM_approximation):
         # Call the parent initialization
-        ReductionMethod.__init__(self, EIM_approximation.folder_prefix, EIM_approximation.mu_range)
+        ReductionMethod.__init__(self, EIM_approximation.folder_prefix)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -47,12 +47,15 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.tol = 1e-15
     
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
-        import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
+        import_successful = ReductionMethod.initialize_training_set(self, self.EIM_approximation.mu_range, ntrain, enable_import, sampling, **kwargs)
         # Since exact evaluation is required, we cannot use a distributed training set
         self.training_set.distributed_max = False
         # Also initialize the map from parameter values to snapshots container index
         self._training_set_parameters_to_snapshots_container_index = dict((mu, mu_index) for (mu_index, mu) in enumerate(self.training_set))
         return import_successful
+        
+    def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+        return ReductionMethod.initialize_testing_set(self, self.EIM_approximation.mu_range, ntest, enable_import, sampling, **kwargs)
     
     # Perform the offline phase of EIM
     def offline(self):

@@ -30,7 +30,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
     # Default initialization of members
     def __init__(self, SCM_approximation, folder_prefix):
         # Call the parent initialization
-        ReductionMethod.__init__(self, folder_prefix, SCM_approximation.mu_range)
+        ReductionMethod.__init__(self, folder_prefix)
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -48,9 +48,12 @@ class SCMApproximationReductionMethod(ReductionMethod):
     # OFFLINE: set the elements in the training set.
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         assert enable_import
-        import_successful = ReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling)
+        import_successful = ReductionMethod.initialize_training_set(self, self.SCM_approximation.mu_range, ntrain, enable_import, sampling, **kwargs)
         self.SCM_approximation.training_set = self.training_set
         return import_successful
+        
+    def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+        return ReductionMethod.initialize_testing_set(self, self.SCM_approximation.mu_range, ntest, enable_import, sampling, **kwargs)
         
     # Perform the offline phase of SCM
     def offline(self):
