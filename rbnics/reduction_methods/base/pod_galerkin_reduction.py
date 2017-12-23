@@ -231,8 +231,9 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.reduced_problem.set_mu(mu)
                             
                 for n in range(1, N + 1): # n = 1, ... N
-                    error = self.reduced_problem.compute_error(n, **kwargs)
-                    relative_error = self.reduced_problem.compute_relative_error(n, **kwargs)
+                    self.reduced_problem.solve(n, **kwargs)
+                    error = self.reduced_problem.compute_error(**kwargs)
+                    relative_error = self.reduced_problem.compute_relative_error(**kwargs)
                     if len(components) > 1:
                         for component in components:
                             error_analysis_table["error_" + component, n, run] = error[component]
@@ -242,8 +243,9 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                         error_analysis_table["error_" + component, n, run] = error
                         error_analysis_table["relative_error_" + component, n, run] = relative_error
                     
-                    error_analysis_table["error_output", n, run] = self.reduced_problem.compute_error_output(n, **kwargs)
-                    error_analysis_table["relative_error_output", n, run] = self.reduced_problem.compute_relative_error_output(n, **kwargs)
+                    self.reduced_problem.compute_output()
+                    error_analysis_table["error_output", n, run] = self.reduced_problem.compute_error_output(**kwargs)
+                    error_analysis_table["relative_error_output", n, run] = self.reduced_problem.compute_relative_error_output(**kwargs)
             
             # Print
             print("")

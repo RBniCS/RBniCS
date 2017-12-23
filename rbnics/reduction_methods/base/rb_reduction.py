@@ -259,9 +259,10 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.reduced_problem.set_mu(mu)
                             
                 for n in range(1, N + 1): # n = 1, ... N
-                    error = self.reduced_problem.compute_error(n, **kwargs)
+                    self.reduced_problem.solve(n, **kwargs)
+                    error = self.reduced_problem.compute_error(**kwargs)
                     error_estimator = self.reduced_problem.estimate_error()
-                    relative_error = self.reduced_problem.compute_relative_error(n, **kwargs)
+                    relative_error = self.reduced_problem.compute_relative_error(**kwargs)
                     relative_error_estimator = self.reduced_problem.estimate_relative_error()
                     if len(components) > 1:
                         for component in components:
@@ -282,10 +283,11 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                         error_analysis_table["relative_error_estimator_" + component, n, run] = relative_error_estimator
                         error_analysis_table["relative_effectivity_" + component, n, run] = error_analysis_table["relative_error_estimator_" + component, n, run]/error_analysis_table["relative_error_" + component, n, run]
                     
-                    error_analysis_table["error_output", n, run] = self.reduced_problem.compute_error_output(n, **kwargs)
+                    self.reduced_problem.compute_output()
+                    error_analysis_table["error_output", n, run] = self.reduced_problem.compute_error_output(**kwargs)
                     error_analysis_table["error_estimator_output", n, run] = self.reduced_problem.estimate_error_output()
                     error_analysis_table["effectivity_output", n, run] = error_analysis_table["error_estimator_output", n, run]/error_analysis_table["error_output", n, run]
-                    error_analysis_table["relative_error_output", n, run] = self.reduced_problem.compute_relative_error_output(n, **kwargs)
+                    error_analysis_table["relative_error_output", n, run] = self.reduced_problem.compute_relative_error_output(**kwargs)
                     error_analysis_table["relative_error_estimator_output", n, run] = self.reduced_problem.estimate_relative_error_output()
                     error_analysis_table["relative_effectivity_output", n, run] = error_analysis_table["relative_error_estimator_output", n, run]/error_analysis_table["relative_error_output", n, run]
             

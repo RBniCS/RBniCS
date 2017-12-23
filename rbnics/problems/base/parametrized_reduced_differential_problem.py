@@ -477,15 +477,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         for term in self.terms:
             self.operator[term] = self.assemble_operator(term, current_stage)
         
-    def compute_error(self, N=None, **kwargs):
+    def compute_error(self, **kwargs):
         """
         Returns the function _compute_error() evaluated for the desired parameter.
         
-        :param N: dimension of reduced problem
         :return: error between online and offline solutions.
         """
         self.truth_problem.solve(**kwargs)
-        self.solve(N, **kwargs)
         return self._compute_error(**kwargs)
         
     def _compute_error(self, **kwargs):
@@ -511,14 +509,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         #
         return error
         
-    def compute_relative_error(self, N=None, **kwargs):
+    def compute_relative_error(self, **kwargs):
         """
         It returns the function _compute_relative_error() evaluated for the desired parameter.
         
-        :param N: dimension of reduced problem
         :return: relative error.
         """
-        absolute_error = self.compute_error(N, **kwargs)
+        absolute_error = self.compute_error(**kwargs)
         return self._compute_relative_error(absolute_error, **kwargs)
         
     def _compute_relative_error(self, absolute_error, **kwargs):
@@ -580,17 +577,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 
     # Compute the error of the reduced order output with respect to the full order one
     # for the current value of mu
-    def compute_error_output(self, N=None, **kwargs):
+    def compute_error_output(self, **kwargs):
         """
         It returns the function _compute_error_output() evaluated for the desired parameter.
         
-        :param N: dimension of reduced problem.
         :return: output error.
         """
         self.truth_problem.solve(**kwargs)
-        self.solve(N, **kwargs)
         self.truth_problem.compute_output()
-        self.compute_output()
         return self._compute_error_output(**kwargs)
                 
     # Internal method for output error computation
@@ -610,14 +604,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         
     # Compute the relative error of the reduced order approximation with respect to the full order one
     # for the current value of mu
-    def compute_relative_error_output(self, N=None, **kwargs):
+    def compute_relative_error_output(self, **kwargs):
         """
         It returns the function _compute_relative_error_output() evaluated for the desired parameter.
         
-        :param N: dimension of reduced problem
         :return: relative output error.
         """
-        absolute_error_output = self.compute_error_output(N, **kwargs)
+        absolute_error_output = self.compute_error_output(**kwargs)
         return self._compute_relative_error_output(absolute_error_output, **kwargs)
         
     # Internal method for output error computation
