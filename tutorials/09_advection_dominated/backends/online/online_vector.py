@@ -16,14 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from .online_matrix import OnlineMatrix
-from .online_non_hierarchical_affine_expansion_storage import OnlineNonHierarchicalAffineExpansionStorage
-from .online_solve_kwargs_generator import OnlineSolveKwargsGenerator
-from .online_vector import OnlineVector
+from rbnics.backends.online import OnlineVector as _OnlineVector
 
-__all__ = [
-    'OnlineMatrix',
-    'OnlineNonHierarchicalAffineExpansionStorage',
-    'OnlineSolveKwargsGenerator',
-    'OnlineVector'
-]
+def OnlineVector(N):
+    assert isinstance(N, int)
+    return _OnlineVector({"u": N})

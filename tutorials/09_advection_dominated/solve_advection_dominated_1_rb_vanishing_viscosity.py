@@ -23,7 +23,7 @@ from reduction_methods import *
 
 @OnlineRectification()
 @OnlineVanishingViscosity(
-    viscosity=1.e-2,
+    viscosity=1.e-6,
     N_threshold_min=1./3.,
     N_threshold_max=2./3.
 )

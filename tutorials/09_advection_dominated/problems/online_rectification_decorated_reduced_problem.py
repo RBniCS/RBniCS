@@ -21,6 +21,7 @@ from numpy.linalg import cond
 from rbnics.backends import LinearSolver, SnapshotsMatrix, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
+from rbnics.utils.io import GreedySelectedParametersList
 from backends.online import OnlineMatrix, OnlineNonHierarchicalAffineExpansionStorage, OnlineSolveKwargsGenerator
 from .online_rectification import OnlineRectification
 
@@ -33,8 +34,8 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             # Call to parent
             EllipticCoerciveReducedProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             
-            # Projection of truth and reduced snapshots
-            self.snapshots_mu = list()
+            # Copy of greedy snapshots
+            self.snapshots_mu = GreedySelectedParametersList() # the difference between this list and greedy_selected_parameters in the reduction method is that this one also stores the initial parameter
             self.snapshots = SnapshotsMatrix(truth_problem.V)
             
             # Extend allowed keywords argument in solve
@@ -130,17 +131,17 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                     self.operator["projection_truth_snapshots"].load(self.folder["reduced_operators"], "projection_truth_snapshots")
                     return self.operator["projection_truth_snapshots"]
                 elif current_stage == "offline_rectification_postprocessing":
-                    Z = self.Z
                     assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     X = self.truth_problem.inner_product[0]
                     for n in range(1, self.N + 1):
+                        assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                        X_n = self.inner_product[:n, :n][0]
+                        Z_n = self.Z[:n]
                         projection_truth_snapshots_expansion = OnlineAffineExpansionStorage(1)
                         projection_truth_snapshots = OnlineMatrix(n, n)
                         for (i, snapshot_i) in enumerate(self.snapshots[:n]):
                             projected_truth_snapshot_i = OnlineFunction(n)
-                            assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                            X_n = self.inner_product[:n, :n][0]
-                            solver = LinearSolver(X_n, projected_truth_snapshot_i, transpose(Z[:n])*X*snapshot_i)
+                            solver = LinearSolver(X_n, projected_truth_snapshot_i, transpose(Z_n)*X*snapshot_i)
                             solver.solve()
                             for j in range(n):
                                 projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]
