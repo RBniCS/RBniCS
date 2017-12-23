@@ -74,7 +74,7 @@ def Vector(backend, wrapping, VectorBaseType):
                     output._component_name_to_basis_component_length = None
                 else:
                     if isinstance(key, slice): # vector[:5]
-                        output._component_name_to_basis_component_length = output_size
+                        output._component_name_to_basis_component_length = output_size[0]
                     elif isinstance(key, (list, tuple)): # vector[[0, 1, 2, 3, 4]]
                         if len(self._component_name_to_basis_component_length) is 1:
                             for (component_name, _) in self._component_name_to_basis_component_length.items():
