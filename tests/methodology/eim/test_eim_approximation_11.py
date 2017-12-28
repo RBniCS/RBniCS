@@ -59,7 +59,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
             self.X = assemble(f*g*dx)
             
         def name(self):
-            return "MockProblem_" + expression_type + "_" + basis_generation
+            return "MockProblem_11_" + expression_type + "_" + basis_generation
             
         def init(self):
             pass
