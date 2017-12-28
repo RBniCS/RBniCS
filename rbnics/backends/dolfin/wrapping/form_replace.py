@@ -33,7 +33,7 @@ def form_replace(form, replacements, replacement_type="nodes"):
     elif replacement_type == "measures":
         replaced_form = 0
         for integral in form.integrals():
-            measure = replacements[integral.integrand()]
+            measure = replacements[integral.integrand(), integral.integral_type(), integral.subdomain_id()]
             replaced_form += integral.integrand()*measure
         return replaced_form
     else:

@@ -24,6 +24,7 @@ def basic_form_name(backend, wrapping):
         str_repr = ""
         for integral in form.integrals():
             str_repr += wrapping.expression_name(integral.integrand())
+            str_repr += "measure(" + integral.integral_type() + ")[" + str(integral.subdomain_id()) + "]"
         hash_code = hashlib.sha1(
                         (str_repr + dolfin_version).encode("utf-8")
                     ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py

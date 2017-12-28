@@ -126,7 +126,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                     subdomain_data=integral_reduced_subdomain_data,
                     metadata=integral.metadata()
                 )
-                replacements_measures[integral.integrand()] = measure
+                replacements_measures[integral.integrand(), integral.integral_type(), integral.subdomain_id()] = measure
             # ... and replace them
             replaced_form_with_replaced_measures = wrapping.form_replace(replaced_form, replacements_measures, "measures")
             
