@@ -88,26 +88,35 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         return expression._mesh.ufl_domain()
     expression.ufl_domain = types.MethodType(ufl_domain, expression)
     
+    # Cache all problem -> expression relation
+    first_parametrized_expression_for_truth_problem = (truth_problem not in _truth_problem_to_parametrized_expressions)
+    if first_parametrized_expression_for_truth_problem:
+        _truth_problem_to_parametrized_expressions[truth_problem] = list()
+    _truth_problem_to_parametrized_expressions[truth_problem].append(expression)
+    
     # Keep mu in sync
-    standard_set_mu = truth_problem.set_mu
-    def overridden_set_mu(self, mu):
-        standard_set_mu(mu)
-        if expression._mu is not mu:
-            expression._set_mu(mu)
-    truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
-    def expression_set_mu(mu):
+    if first_parametrized_expression_for_truth_problem:
+        standard_set_mu = truth_problem.set_mu
+        def overridden_set_mu(self, mu):
+            standard_set_mu(mu)
+            for expression_ in _truth_problem_to_parametrized_expressions[self]:
+                if expression_._mu is not mu:
+                    expression_._set_mu(mu)
+        truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
+        
+    def expression_set_mu(self, mu):
         assert isinstance(mu, tuple)
-        assert len(mu) >= len(expression._mu)
-        mu = mu[:len(expression._mu)]
+        assert len(mu) >= len(self._mu)
+        mu = mu[:len(self._mu)]
         for (p, mu_p) in enumerate(mu):
             assert isinstance(mu_p, (Expression, Number))
             if isinstance(mu_p, Number):
-                setattr(expression, "mu_" + str(p), mu_p)
+                setattr(self, "mu_" + str(p), mu_p)
             elif isinstance(mu_p, Expression):
                 assert is_parametrized_constant(mu_p)
-                setattr(expression, "mu_" + str(p), parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0]))
-        expression._mu = mu
-    expression._set_mu = expression_set_mu
+                setattr(self, "mu_" + str(p), parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0]))
+        self._mu = mu
+    expression._set_mu = types.MethodType(expression_set_mu, expression)
     # Note that this override is different from the one that we use in decorated problems,
     # since (1) we do not want to define a new child class, (2) we have to execute some preprocessing
     # on the data, (3) it is a one-way propagation rather than a sync.
@@ -115,12 +124,17 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     
     # Possibly also keep time in sync
     if hasattr(truth_problem, "set_time"):
-        standard_set_time = truth_problem.set_time
-        def overridden_set_time(self, t):
-            standard_set_time(t)
-            if hasattr(expression, "t"):
-                if expression.t is not t:
-                    expression.t = t
-        truth_problem.set_time = types.MethodType(overridden_set_time, truth_problem)
+        if first_parametrized_expression_for_truth_problem:
+            standard_set_time = truth_problem.set_time
+            def overridden_set_time(self, t):
+                standard_set_time(t)
+                for expression_ in _truth_problem_to_parametrized_expressions[self]:
+                    if hasattr(expression_, "t"):
+                        if expression_.t is not t:
+                            assert isinstance(expression_.t, Number)
+                            expression_.t = t
+            truth_problem.set_time = types.MethodType(overridden_set_time, truth_problem)
     
     return expression
+    
+_truth_problem_to_parametrized_expressions = dict()
