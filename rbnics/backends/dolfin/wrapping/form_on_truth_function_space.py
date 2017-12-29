@@ -89,7 +89,6 @@ def basic_form_on_truth_function_space(backend, wrapping):
             if not hasattr(truth_problem, "_is_solving"):
                 if is_training_finished(truth_problem):
                     reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                    assert not hasattr(reduced_problem, "_is_solving")
                     # Store the component
                     if reduced_problem not in reduced_problem_to_components:
                         reduced_problem_to_components[reduced_problem] = truth_problem_to_components[truth_problem]
@@ -97,7 +96,7 @@ def basic_form_on_truth_function_space(backend, wrapping):
                     if reduced_problem not in reduced_problem_to_truth_solution:
                         reduced_problem_to_truth_solution[reduced_problem] = truth_problem_to_truth_solution[truth_problem]
                     # Append to list of required reduced problems
-                    required_reduced_problems.append(reduced_problem)
+                    required_reduced_problems.append((reduced_problem, hasattr(reduced_problem, "_is_solving")))
                 else:
                     if (
                         hasattr(truth_problem, "_apply_exact_approximation_at_stages")
@@ -137,11 +136,14 @@ def basic_form_on_truth_function_space(backend, wrapping):
                 backend.assign(solution_to, solution_from)
         
         # Solve reduced problems associated to nonlinear terms
-        for reduced_problem in required_reduced_problems:
-            # Solve ...
+        for (reduced_problem, is_solving) in required_reduced_problems:
+            # Solve (if necessary) ...
             reduced_problem.set_mu(EIM_approximation.mu)
-            log(PROGRESS, "In form_on_truth_function_space, requiring reduced problem solve for problem " + str(reduced_problem))
-            reduced_problem.solve()
+            if not is_solving:
+                log(PROGRESS, "In form_on_truth_function_space, requiring reduced problem solve for problem " + str(reduced_problem))
+                reduced_problem.solve()
+            else:
+                log(PROGRESS, "In form_on_truth_function_space, loading current reduced problem solution for problem " + str(reduced_problem))
             # ... and assign to truth_solution
             truth_solution = reduced_problem_to_truth_solution[reduced_problem]
             for component in reduced_problem_to_components[reduced_problem]:
