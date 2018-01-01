@@ -64,7 +64,7 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
         args = list()
         args.append(V)
         args.append(value)
-        args.extend(item[0][0].domain_args)
+        args.extend(item[0][0]._domain)
         args.extend(item[0][0]._sorted_kwargs)
         output.append(DirichletBC(*args))
     return ProductOutput(output)

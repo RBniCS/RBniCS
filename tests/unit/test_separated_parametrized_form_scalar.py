@@ -17,7 +17,8 @@
 #
 
 import pytest
-from dolfin import CellDiameter, Constant, ds, dx, Expression, Function, FunctionSpace, grad, has_pybind11, inner, MPI, mpi_comm_world, split, TensorFunctionSpace, TestFunction, TrialFunction, UnitSquareMesh, VectorFunctionSpace
+from mpi4py import MPI
+from dolfin import CellDiameter, Constant, ds, dx, Expression, Function, FunctionSpace, grad, has_pybind11, inner, split, TensorFunctionSpace, TestFunction, TrialFunction, UnitSquareMesh, VectorFunctionSpace
 if has_pybind11():
     from dolfin.cpp.log import log, LogLevel, set_log_level
     PROGRESS = LogLevel.PROGRESS
@@ -71,7 +72,7 @@ u = TrialFunction(V)
 v = TestFunction(V)
 
 # Fixtures
-skip_in_parallel = pytest.mark.skipif(MPI.size(mpi_comm_world()) > 1, reason="Numbering of functions changes in parallel.")
+skip_in_parallel = pytest.mark.skipif(MPI.COMM_WORLD.size > 1, reason="Numbering of functions changes in parallel.")
 
 # Tests
 @skip_in_parallel

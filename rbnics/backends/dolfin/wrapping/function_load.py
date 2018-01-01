@@ -17,6 +17,7 @@
 #
 
 import os
+from ufl import product
 from dolfin import File, Function, has_hdf5_parallel, XDMFFile
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
@@ -63,7 +64,7 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, component=None, funct
     if function_name is None:
         function_name = "function"
     fun_rank = fun.value_rank()
-    fun_dim = fun.value_size()
+    fun_dim = product(fun.value_shape())
     assert fun_rank <= 2
     if (
         (fun_rank is 1 and fun_dim not in (2, 3))

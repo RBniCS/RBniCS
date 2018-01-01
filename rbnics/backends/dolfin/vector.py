@@ -44,6 +44,14 @@ def preserve_generator_attribute(operator):
     setattr(GenericVector, operator, custom_operator)
     
 if has_pybind11():
+    if has_pybind11():
+        def set_roperator(operator, roperator):
+            original_operator = getattr(GenericVector, operator)
+            def custom_roperator(self, other):
+                return original_operator(other, self)
+            setattr(GenericVector, roperator, custom_roperator)
+        for (operator, roperator) in zip(("__add__", "__sub__"), ("__radd__", "__rsub__")):
+            set_roperator(operator, roperator)
     for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__itruediv__"):
         preserve_generator_attribute(operator)
 else:
@@ -65,3 +73,9 @@ def arithmetic_with_form(operator):
 
 for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
     arithmetic_with_form(operator)
+    
+# Implement __neg__ unary operator
+if has_pybind11():
+    def custom__neg__(self):
+        return -1.*self
+    setattr(GenericVector, "__neg__", custom__neg__)

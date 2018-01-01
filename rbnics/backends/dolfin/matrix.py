@@ -76,11 +76,15 @@ def arithmetic_with_form(operator):
     setattr(GenericMatrix, operator, custom_operator)
 
 if has_pybind11():
-    for operator in ("__add__", "__sub__"):
-        arithmetic_with_form(operator)
-else:
-    for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
-        arithmetic_with_form(operator)
+    def set_roperator(operator, roperator):
+        original_operator = getattr(GenericMatrix, operator)
+        def custom_roperator(self, other):
+            return original_operator(other, self)
+        setattr(GenericMatrix, roperator, custom_roperator)
+    for (operator, roperator) in zip(("__add__", "__sub__"), ("__radd__", "__rsub__")):
+        set_roperator(operator, roperator)
+for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
+    arithmetic_with_form(operator)
 
 # Define the __and__ operator to be used in combination with __invert__ operator
 # of sum(product(theta, DirichletBCs)) to zero rows and columns associated to Dirichlet BCs

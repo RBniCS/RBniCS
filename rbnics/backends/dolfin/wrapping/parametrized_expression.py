@@ -82,11 +82,8 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     expression._mu = mu # to avoid repeated assignments
     expression.problem = truth_problem
     
-    # Store ufl_domain
+    # Store mesh
     expression._mesh = mesh
-    def ufl_domain(self):
-        return expression._mesh.ufl_domain()
-    expression.ufl_domain = types.MethodType(ufl_domain, expression)
     
     # Cache all problem -> expression relation
     first_parametrized_expression_for_truth_problem = (truth_problem not in _truth_problem_to_parametrized_expressions)

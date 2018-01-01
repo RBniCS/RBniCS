@@ -39,10 +39,10 @@ def custom_DirichletBC__init__(self, *args, **kwargs):
         _function_space = args[0]
         if has_pybind11():
             if isinstance(args[2], MeshFunctionSizet):
-                _domain = args[2]
+                _domain = args[2:]
             else:
                 assert hasattr(self, "sub_domain")
-                _domain = self.sub_domain
+                _domain = (self.sub_domain, ) + args[3:]
         else:
             _domain = self.domain_args
         _sorted_kwargs = list()

@@ -18,12 +18,13 @@
 
 import pytest
 from numpy import array, isclose, nonzero, sort
-from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, has_pybind11, inner, MixedElement, mpi_comm_self, Point, project, split, TestFunction, TrialFunction, UnitSquareMesh, Vector, VectorElement
+from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, has_pybind11, inner, MixedElement, Point, project, split, TestFunction, TrialFunction, UnitSquareMesh, Vector, VectorElement
 if has_pybind11():
+    from mpi4py import MPI
     from dolfin.cpp.log import log, LogLevel, set_log_level
     PROGRESS = LogLevel.PROGRESS
 else:
-    from dolfin import log, PROGRESS, set_log_level
+    from dolfin import log, mpi_comm_self, PROGRESS, set_log_level
 set_log_level(PROGRESS)
 try:
     from mshr import generate_mesh, Rectangle
@@ -31,8 +32,6 @@ except ImportError:
     has_mshr = False
 else:
     has_mshr = True
-if has_pybind11():
-    has_mshr = False # TODO mshr still uses swig wrapping
 from rbnics.backends.dolfin import ReducedMesh
 from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
 
@@ -51,7 +50,10 @@ else:
 
 # Helper functions
 def nonzero_values(function):
-    serialized_vector = Vector(mpi_comm_self())
+    if has_pybind11():
+        serialized_vector = Vector(MPI.COMM_SELF)
+    else:
+        serialized_vector = Vector(mpi_comm_self())
     function.vector().gather(serialized_vector, array(range(function.function_space().dim()), "intc"))
     indices = nonzero(serialized_vector.get_local())
     return sort(serialized_vector.get_local()[indices])

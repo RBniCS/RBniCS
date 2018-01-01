@@ -17,6 +17,8 @@
 #
 
 from ufl.core.operator import Operator
+from ufl.domain import extract_domains
+from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import assemble, dx, FunctionSpace, has_pybind11, inner, TensorFunctionSpace, TestFunction, TrialFunction, VectorFunctionSpace
 if has_pybind11():
     from dolfin.function.expression import BaseExpression
@@ -39,7 +41,12 @@ ParametrizedExpressionFactory_Base = BasicParametrizedExpressionFactory(backend,
 class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
     def __init__(self, expression):
         # Extract mesh from expression
-        mesh = expression.ufl_domain().ufl_cargo() # from dolfin/fem/projection.py, _extract_function_space function
+        meshes = set([ufl_domain.ufl_cargo() for ufl_domain in extract_domains(expression)]) # from dolfin/fem/projection.py, _extract_function_space function
+        for t in traverse_unique_terminals(expression): # from ufl/domain.py, extract_domains
+            if hasattr(t, "_mesh"):
+                meshes.add(t._mesh)
+        assert len(meshes) is 1
+        mesh = meshes.pop()
         # The EIM algorithm will evaluate the expression at vertices. It is thus enough
         # to use a CG1 space.
         shape = expression.ufl_shape
