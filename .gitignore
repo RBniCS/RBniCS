@@ -8,7 +8,7 @@
 *.m
 *.pvd
 *.pvtu
-*.py[cod]
+*.py[cdo]
 *.vtu
 *.xdmf
 build

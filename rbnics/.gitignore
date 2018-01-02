@@ -1,0 +1,55 @@
+# Ignore everything ...
+*
+*/
+# ... except this file ...
+!.gitignore
+# ... __init__ file of this package ...
+!__init__.py
+# ... backends subpackage ...
+!backends/
+!backends/**
+backends/**/*~
+backends/**/*.bak
+backends/**/*.py[cdo]
+# ... eim subpackage ...
+!eim/
+!eim/**
+eim/**/*~
+eim/**/*.bak
+eim/**/*.py[cdo]
+# ... problems subpackage ...
+!problems/
+!problems/**
+problems/**/*~
+problems/**/*.bak
+problems/**/*.py[cdo]
+# ... reduction_methods subpackage ...
+!reduction_methods/
+!reduction_methods/**
+reduction_methods/**/*~
+reduction_methods/**/*.bak
+reduction_methods/**/*.py[cdo]
+# ... sampling subpackage ...
+!sampling/
+!sampling/**
+sampling/**/*~
+sampling/**/*.bak
+sampling/**/*.py[cdo]
+# ... scm subpackage ...
+!scm/
+!scm/**
+scm/**/*~
+scm/**/*.bak
+scm/**/*.py[cdo]
+# ... shape_parametrization subpackage ...
+!shape_parametrization/
+!shape_parametrization/**
+shape_parametrization/**/*~
+shape_parametrization/**/*.bak
+shape_parametrization/**/*.py[cdo]
+# ... utils subpackage ...
+!utils/
+!utils/**
+utils/**/*~
+utils/**/*.bak
+utils/**/*.py[cdo]
