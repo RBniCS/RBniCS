@@ -24,7 +24,7 @@ class ThermalBlock(EllipticCoerciveCompliantProblem):
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
-        EllipticCoerciveProblem.__init__(self, V, **kwargs)
+        EllipticCoerciveCompliantProblem.__init__(self, V, **kwargs)
         # ... and also store FEniCS data structures for assembly
         assert "subdomains" in kwargs
         assert "boundaries" in kwargs
