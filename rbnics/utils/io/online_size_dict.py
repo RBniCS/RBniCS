@@ -27,6 +27,48 @@ class OnlineSizeDict(OrderedDict):
     def __init__(self, *args, **kwargs):
         super(OnlineSizeDict, self).__init__(*args, **kwargs)
         
+    @staticmethod
+    def generate_from_N_and_kwargs(components_, default, N, **kwargs): # need to add underscore to components_ becuase "components" is also a possible kwargs key
+        if len(components_) > 1:
+            if N is None:
+                all_components_in_kwargs = components_[0] in kwargs
+                for component in components_:
+                    if all_components_in_kwargs:
+                        assert component in kwargs, "You need to specify the online size of all components in kwargs"
+                    else:
+                        assert component not in kwargs, "You need to specify the online size of all components in kwargs"
+                if all_components_in_kwargs:
+                    N = OnlineSizeDict()
+                    for component in components_:
+                        N[component] = kwargs[component]
+                        del kwargs[component]
+                else:
+                    assert isinstance(default, dict)
+                    N = OnlineSizeDict(default) # copy the default dict
+            else:
+                assert isinstance(N, int)
+                N_int = N
+                N = OnlineSizeDict()
+                for component in components_:
+                    N[component] = N_int
+                    assert component not in kwargs, "You cannot provide both an int and kwargs for components"
+        else:
+            assert len(components_) == 1
+            component_0 = components_[0]
+            if N is None:
+                if component_0 in kwargs:
+                    N_int = kwargs[component_0]
+                else:
+                    assert isinstance(default, int)
+                    N_int = default
+            else:
+                assert isinstance(N, int)
+                N_int = N
+            N = OnlineSizeDict()
+            N[component_0] = N_int
+            
+        return N, kwargs
+        
     def __getitem__(self, k):
         return super(OnlineSizeDict, self).__getitem__(k)
         

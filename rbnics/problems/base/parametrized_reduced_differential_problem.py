@@ -390,48 +390,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self._output = NotImplemented
         
     def _online_size_from_kwargs(self, N, **kwargs):
-        """
-        
-        """
-        if len(self.components) > 1:
-            if N is None:
-                all_components_in_kwargs = self.components[0] in kwargs
-                for component in self.components:
-                    if all_components_in_kwargs:
-                        assert component in kwargs, "You need to specify the online size of all components in kwargs"
-                    else:
-                        assert component not in kwargs, "You need to specify the online size of all components in kwargs"
-                if all_components_in_kwargs:
-                    N = OnlineSizeDict()
-                    for component in self.components:
-                        N[component] = kwargs[component]
-                        del kwargs[component]
-                else:
-                    assert isinstance(self.N, dict)
-                    N = OnlineSizeDict(self.N) # copy the default dict
-            else:
-                assert isinstance(N, int)
-                N_int = N
-                N = OnlineSizeDict()
-                for component in self.components:
-                    N[component] = N_int
-                    assert component not in kwargs, "You cannot provide both an int and kwargs for components"
-        else:
-            assert len(self.components) == 1
-            component_0 = self.components[0]
-            if N is None:
-                if component_0 in kwargs:
-                    N_int = kwargs[component_0]
-                else:
-                    assert isinstance(self.N, int)
-                    N_int = self.N
-            else:
-                assert isinstance(N, int)
-                N_int = N
-            N = OnlineSizeDict()
-            N[component_0] = N_int
-            
-        return N, kwargs
+        return OnlineSizeDict.generate_from_N_and_kwargs(self.components, self.N, N, **kwargs)
         
     def _cache_key_from_N_and_kwargs(self, N, **kwargs):
         """
