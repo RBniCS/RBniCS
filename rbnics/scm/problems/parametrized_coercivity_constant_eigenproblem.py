@@ -108,13 +108,13 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
             assert len(self.operator) == 1
             O = self.operator[0]  # noqa
         assert len(self.inner_product) == 1
-        X = self.inner_product[0]
+        inner_product = self.inner_product[0]
         
         if self.truth_problem.dirichlet_bc is not None:
             dirichlet_bcs_sum = sum(product((0., )*len(self.truth_problem.dirichlet_bc), self.truth_problem.dirichlet_bc))
-            eigensolver = EigenSolver(self.truth_problem.V, O, X, dirichlet_bcs_sum)
+            eigensolver = EigenSolver(self.truth_problem.V, O, inner_product, dirichlet_bcs_sum)
         else:
-            eigensolver = EigenSolver(self.truth_problem.V, O, X)
+            eigensolver = EigenSolver(self.truth_problem.V, O, inner_product)
         eigensolver_parameters = dict()
         eigensolver_parameters["problem_type"] = "gen_hermitian"
         assert self.spectrum is "largest" or self.spectrum is "smallest"

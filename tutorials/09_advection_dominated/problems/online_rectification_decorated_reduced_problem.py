@@ -132,16 +132,16 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                     return self.operator["projection_truth_snapshots"]
                 elif current_stage == "offline_rectification_postprocessing":
                     assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                    X = self.truth_problem.inner_product[0]
+                    inner_product = self.truth_problem.inner_product[0]
                     for n in range(1, self.N + 1):
                         assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                        X_n = self.inner_product[:n, :n][0]
+                        inner_product_n = self.inner_product[:n, :n][0]
                         basis_functions_n = self.basis_functions[:n]
                         projection_truth_snapshots_expansion = OnlineAffineExpansionStorage(1)
                         projection_truth_snapshots = OnlineMatrix(n, n)
                         for (i, snapshot_i) in enumerate(self.snapshots[:n]):
                             projected_truth_snapshot_i = OnlineFunction(n)
-                            solver = LinearSolver(X_n, projected_truth_snapshot_i, transpose(basis_functions_n)*X*snapshot_i)
+                            solver = LinearSolver(inner_product_n, projected_truth_snapshot_i, transpose(basis_functions_n)*inner_product*snapshot_i)
                             solver.solve()
                             for j in range(n):
                                 projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]

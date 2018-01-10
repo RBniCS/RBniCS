@@ -257,9 +257,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         all_initial_conditions_thetas = None
                 assert (all_initial_conditions is None) == (all_initial_conditions_thetas is None)
                 if all_initial_conditions is not None:
-                    X_N = problem._combined_projection_inner_product[:N, :N]
+                    inner_product_N = problem._combined_projection_inner_product[:N, :N]
                     projected_initial_condition = OnlineFunction(N)
-                    solver = OnlineLinearSolver(X_N, projected_initial_condition, sum(product(all_initial_conditions_thetas, all_initial_conditions)))
+                    solver = OnlineLinearSolver(inner_product_N, projected_initial_condition, sum(product(all_initial_conditions_thetas, all_initial_conditions)))
                     solver.solve()
                     return projected_initial_condition
                 else:

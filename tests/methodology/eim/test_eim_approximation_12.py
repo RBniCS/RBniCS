@@ -58,7 +58,7 @@ def test_eim_approximation_12(expression_type, basis_generation):
             # Inner product
             f = TrialFunction(self.V)
             g = TestFunction(self.V)
-            self.X = assemble(f*g*dx)
+            self.inner_product = assemble(f*g*dx)
             
         def name(self):
             return "MockProblem_12_" + expression_type + "_" + basis_generation

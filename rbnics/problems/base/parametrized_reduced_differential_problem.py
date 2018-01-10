@@ -346,8 +346,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         N += self.N_bc
         
         # Get truth and reduced inner product matrices for projection
-        X = self.truth_problem._combined_projection_inner_product
-        X_N = self._combined_projection_inner_product[:N, :N]
+        inner_product = self.truth_problem._combined_projection_inner_product
+        inner_product_N = self._combined_projection_inner_product[:N, :N]
                 
         # Get basis
         basis_functions = self.basis_functions[:N]
@@ -357,9 +357,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         
         # Project on reduced basis
         if on_dirichlet_bc:
-            solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(basis_functions)*X*snapshot)
+            solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N, transpose(basis_functions)*inner_product*snapshot)
         else:
-            solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(basis_functions)*X*snapshot, self._combined_and_homogenized_dirichlet_bc)
+            solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N, transpose(basis_functions)*inner_product*snapshot, self._combined_and_homogenized_dirichlet_bc)
         solver.solve()
         return projected_snapshot_N
     

@@ -160,9 +160,9 @@ class SCMApproximationReductionMethod(ReductionMethod):
     # Compute the ratio between a_q(u,u) and s(u,u), for all q in vec
     def compute_UB_vector(self, u):
         Q = self.SCM_approximation.truth_problem.Q["a"]
-        X = self.SCM_approximation.truth_problem.inner_product[0]
+        inner_product = self.SCM_approximation.truth_problem.inner_product[0]
         UB_vector = OnlineVector(Q)
-        norm_S_squared = transpose(u)*X*u
+        norm_S_squared = transpose(u)*inner_product*u
         for q in range(Q):
             A_q = self.SCM_approximation.truth_problem.operator["a"][q]
             UB_vector[q] = (transpose(u)*A_q*u)/norm_S_squared

@@ -53,7 +53,7 @@ def test_eim_approximation_18(expression_type, basis_generation):
             # Inner product
             f = TrialFunction(self.V)
             g = TestFunction(self.V)
-            self.X = assemble(inner(f, g)*dx)
+            self.inner_product = assemble(inner(f, g)*dx)
             # Collapsed vector and space
             self.V0 = V.sub(0).collapse()
             self.V00 = V.sub(0).sub(0).collapse()

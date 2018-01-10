@@ -54,7 +54,7 @@ def test_eim_approximation_19(expression_type, basis_generation):
             # Inner product
             f = TrialFunction(self.V)
             g = TestFunction(self.V)
-            self.X = assemble(inner(f, g)*dx)
+            self.inner_product = assemble(inner(f, g)*dx)
             # Collapsed vector and space
             self.V0 = V.sub(0).collapse()
             self.V00 = V.sub(0).sub(0).collapse()
@@ -87,7 +87,7 @@ def test_eim_approximation_19(expression_type, basis_generation):
             # I/O
             self.folder["basis"] = os.path.join(self.truth_problem.folder_prefix, "basis")
             # Gram Schmidt
-            self.GS = GramSchmidt(self.truth_problem.X)
+            self.GS = GramSchmidt(self.truth_problem.inner_product)
             
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             return ReductionMethod.initialize_training_set(self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
@@ -135,7 +135,7 @@ def test_eim_approximation_19(expression_type, basis_generation):
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             f = self.truth_problem.solve()
-            f_N = transpose(self.basis_functions)*self.truth_problem.X*f
+            f_N = transpose(self.basis_functions)*self.truth_problem.inner_product*f
             # Return the reduced solution
             self._solution = OnlineFunction(f_N)
             delattr(self, "_is_solving")

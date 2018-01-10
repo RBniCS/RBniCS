@@ -99,12 +99,12 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                         self.initial_condition_product.load(self.folder["error_estimation"], "initial_condition_product")
                         return self.initial_condition_product
                 elif current_stage == "offline":
-                    X = self.truth_problem._combined_projection_inner_product
+                    inner_product = self.truth_problem._combined_projection_inner_product
                     assert (component0 != "") == (component1 != "")
                     if component0 != "":
                         for q0 in range(self.Q_ic[component0]):
                             for q1 in range(self.Q_ic[component1]):
-                                self.initial_condition_product[component0, component1][q0, q1] = transpose(self.truth_problem.initial_condition[component0][q0])*X*self.truth_problem.initial_condition[component1][q1]
+                                self.initial_condition_product[component0, component1][q0, q1] = transpose(self.truth_problem.initial_condition[component0][q0])*inner_product*self.truth_problem.initial_condition[component1][q1]
                         if "error_estimation" in self.folder:
                             self.initial_condition_product[component0, component1].save(self.folder["error_estimation"], "initial_condition_product_" + component0 + "_" + component1)
                         return self.initial_condition_product[component0, component1]
@@ -112,7 +112,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                         assert len(self.components) == 1
                         for q0 in range(self.Q_ic):
                             for q1 in range(self.Q_ic):
-                                self.initial_condition_product[q0, q1] = transpose(self.truth_problem.initial_condition[q0])*X*self.truth_problem.initial_condition[q1]
+                                self.initial_condition_product[q0, q1] = transpose(self.truth_problem.initial_condition[q0])*inner_product*self.truth_problem.initial_condition[q1]
                         if "error_estimation" in self.folder:
                             self.initial_condition_product.save(self.folder["error_estimation"], "initial_condition_product")
                         return self.initial_condition_product
@@ -146,9 +146,9 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     addend_1_right += sum(product(theta_ic, self.initial_condition[:N]))
             
             if at_least_one_non_homogeneous_initial_condition:
-                X_N = self._combined_projection_inner_product[:N, :N]
+                inner_product_N = self._combined_projection_inner_product[:N, :N]
                 addend_1_left = self._solution
-                addend_2 = transpose(self._solution)*X_N*self._solution
+                addend_2 = transpose(self._solution)*inner_product_N*self._solution
                 return addend_0 - 2.0*(transpose(addend_1_left)*addend_1_right) + addend_2
             else:
                 return 0.

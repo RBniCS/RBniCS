@@ -24,8 +24,8 @@ from rbnics.utils.io import ExportableList
 def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_wrapping, ParentProperOrthogonalDecomposition, SnapshotsContainerType, BasisContainerType):
     class _ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
 
-        def __init__(self, space, X, *args):
-            self.X = X
+        def __init__(self, space, inner_product, *args):
+            self.inner_product = inner_product
             self.space = space
             self.args = args
                         
@@ -34,8 +34,6 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             # Declare a list to store eigenvalues
             self.eigenvalues = ExportableList("text")
             self.retained_energy = ExportableList("text")
-            # Store inner product
-            self.X = X
             
         def clear(self):
             self.snapshots_matrix.clear()
@@ -47,12 +45,12 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
         # the tensor one.
                 
         def apply(self, Nmax, tol):
-            X = self.X
+            inner_product = self.inner_product
             snapshots_matrix = self.snapshots_matrix
             transpose = backend.transpose
             
-            if X is not None:
-                correlation = transpose(snapshots_matrix)*X*snapshots_matrix
+            if inner_product is not None:
+                correlation = transpose(snapshots_matrix)*inner_product*snapshots_matrix
             else:
                 correlation = transpose(snapshots_matrix)*snapshots_matrix
             
@@ -85,8 +83,8 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             for N in range(Nmax):
                 (eigvector, _) = eigensolver.get_eigenvector(N)
                 b = self.snapshots_matrix*eigvector
-                if X is not None:
-                    norm_b = sqrt(transpose(b)*X*b)
+                if inner_product is not None:
+                    norm_b = sqrt(transpose(b)*inner_product*b)
                 else:
                     norm_b = sqrt(transpose(b)*b)
                 if norm_b != 0.:
