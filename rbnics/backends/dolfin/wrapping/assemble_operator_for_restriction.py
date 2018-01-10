@@ -71,7 +71,7 @@ def assemble_operator_for_restriction(restricted_term_to_original_term, test=Non
                             args = list()
                             args.append(restricted_V)
                             args.append(restricted_value)
-                            args.extend(original_dirichlet_bc_i.domain_args)
+                            args.extend(original_dirichlet_bc_i._domain)
                             args.extend(original_dirichlet_bc_i._sorted_kwargs)
                             restricted_dirichlet_bc.append(DirichletBC(*args))
                         assert len(restricted_dirichlet_bc) is len(original_dirichlet_bc)
