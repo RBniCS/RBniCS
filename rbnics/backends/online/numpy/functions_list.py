@@ -32,5 +32,5 @@ FunctionsList_Base = BasicFunctionsList(backend, wrapping, online_backend, onlin
 
 @BackendFor("numpy", inputs=(AbstractFunctionsList, (str, None)))
 class FunctionsList(FunctionsList_Base):
-    def __init__(self, Z, component=None):
-        FunctionsList_Base.__init__(self, Z, component)
+    def __init__(self, basis_functions, component=None):
+        FunctionsList_Base.__init__(self, basis_functions, component)

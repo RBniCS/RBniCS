@@ -153,15 +153,15 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             """
             if len(self.truth_problem.components) > 1:
                 for component in self.truth_problem.components:
-                    self.reduced_problem.Z.enrich(snapshot, component=component)
-                    self.GS[component].apply(self.reduced_problem.Z[component], self.reduced_problem.N_bc[component])
+                    self.reduced_problem.basis_functions.enrich(snapshot, component=component)
+                    self.GS[component].apply(self.reduced_problem.basis_functions[component], self.reduced_problem.N_bc[component])
                     self.reduced_problem.N[component] += 1
-                self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+                self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
             else:
-                self.reduced_problem.Z.enrich(snapshot)
-                self.GS.apply(self.reduced_problem.Z, self.reduced_problem.N_bc)
+                self.reduced_problem.basis_functions.enrich(snapshot)
+                self.GS.apply(self.reduced_problem.basis_functions, self.reduced_problem.N_bc)
                 self.reduced_problem.N += 1
-                self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+                self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
                 
         def greedy(self):
             """

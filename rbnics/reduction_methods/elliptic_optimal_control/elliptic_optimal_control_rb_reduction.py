@@ -32,14 +32,14 @@ class EllipticOptimalControlRBReduction(EllipticOptimalControlRBReduction_Base):
         # Aggregate snapshots components related to state and adjoint
         for component_to in ("y", "p"):
             for component_from in ("y", "p"):
-                self.reduced_problem.Z.enrich(snapshot, component={component_from: component_to})
-                self.GS[component_to].apply(self.reduced_problem.Z[component_to], self.reduced_problem.N_bc[component_to])
+                self.reduced_problem.basis_functions.enrich(snapshot, component={component_from: component_to})
+                self.GS[component_to].apply(self.reduced_problem.basis_functions[component_to], self.reduced_problem.N_bc[component_to])
                 self.reduced_problem.N[component_to] += 1
                 
         # Store snapshots components related to control as usual
-        self.reduced_problem.Z.enrich(snapshot, component="u")
-        self.GS["u"].apply(self.reduced_problem.Z["u"], self.reduced_problem.N_bc["u"])
+        self.reduced_problem.basis_functions.enrich(snapshot, component="u")
+        self.GS["u"].apply(self.reduced_problem.basis_functions["u"], self.reduced_problem.N_bc["u"])
         self.reduced_problem.N["u"] += 1
         
         # Save
-        self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+        self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")

@@ -20,5 +20,5 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend
 
 @AbstractBackend
 class SymbolicParameters(object, metaclass=ABCMeta):
-    def __init__(cls, problem, V_or_Z, mu):
+    def __init__(cls, problem, space, mu):
         pass

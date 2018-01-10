@@ -24,13 +24,13 @@ from rbnics.utils.io import ExportableList
 def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_wrapping, ParentProperOrthogonalDecomposition, SnapshotsContainerType, BasisContainerType):
     class _ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
 
-        def __init__(self, V_or_Z, X, *args):
+        def __init__(self, space, X, *args):
             self.X = X
-            self.V_or_Z = V_or_Z
+            self.space = space
             self.args = args
                         
             # Declare a matrix to store the snapshots
-            self.snapshots_matrix = SnapshotsContainerType(self.V_or_Z, *args)
+            self.snapshots_matrix = SnapshotsContainerType(self.space, *args)
             # Declare a list to store eigenvalues
             self.eigenvalues = ExportableList("text")
             self.retained_energy = ExportableList("text")
@@ -56,9 +56,9 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             else:
                 correlation = transpose(snapshots_matrix)*snapshots_matrix
             
-            Z = BasisContainerType(self.V_or_Z, *self.args)
+            basis_functions = BasisContainerType(self.space, *self.args)
             
-            eigensolver = online_backend.OnlineEigenSolver(Z, correlation)
+            eigensolver = online_backend.OnlineEigenSolver(basis_functions, correlation)
             parameters = {
                 "problem_type": "hermitian",
                 "spectrum": "largest real"
@@ -91,12 +91,12 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
                     norm_b = sqrt(transpose(b)*b)
                 if norm_b != 0.:
                     b /= norm_b
-                Z.enrich(b)
+                basis_functions.enrich(b)
                 if self.retained_energy[N] > 1. - tol:
                     break
             N += 1
             
-            return (self.eigenvalues[:N], Z, N)
+            return (self.eigenvalues[:N], basis_functions, N)
                 
         def print_eigenvalues(self, N=None):
             if N is None:

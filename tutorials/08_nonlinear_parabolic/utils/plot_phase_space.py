@@ -19,7 +19,7 @@
 import os
 import matplotlib.pyplot as plt
 
-def plot_phase_space(solution_over_time, reduced_solution_over_time, Z, x, folder, filename):
+def plot_phase_space(solution_over_time, reduced_solution_over_time, basis_functions, x, folder, filename):
     plt.figure()
     (all_u1, all_u2) = (list(), list())
     (all_reduced_u1, all_reduced_u2) = (list(), list())
@@ -28,7 +28,7 @@ def plot_phase_space(solution_over_time, reduced_solution_over_time, Z, x, folde
         (u1, u2) = solution.split()
         all_u1.append(u1(x))
         all_u2.append(u2(x))
-        (reduced_u1, reduced_u2) = (Z*reduced_solution).split()
+        (reduced_u1, reduced_u2) = (basis_functions*reduced_solution).split()
         all_reduced_u1.append(reduced_u1(x))
         all_reduced_u2.append(reduced_u2(x))
     offline_line, = plt.plot(all_u1, all_u2, label="Offline solution")

@@ -16,5 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def get_mpi_comm(Z):
-    return Z.mpi_comm
+def get_mpi_comm(basis_functions):
+    return basis_functions.mpi_comm

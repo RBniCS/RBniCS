@@ -136,12 +136,12 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                     for n in range(1, self.N + 1):
                         assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                         X_n = self.inner_product[:n, :n][0]
-                        Z_n = self.Z[:n]
+                        basis_functions_n = self.basis_functions[:n]
                         projection_truth_snapshots_expansion = OnlineAffineExpansionStorage(1)
                         projection_truth_snapshots = OnlineMatrix(n, n)
                         for (i, snapshot_i) in enumerate(self.snapshots[:n]):
                             projected_truth_snapshot_i = OnlineFunction(n)
-                            solver = LinearSolver(X_n, projected_truth_snapshot_i, transpose(Z_n)*X*snapshot_i)
+                            solver = LinearSolver(X_n, projected_truth_snapshot_i, transpose(basis_functions_n)*X*snapshot_i)
                             solver.solve()
                             for j in range(n):
                                 projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]

@@ -21,7 +21,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 # Class containing the implementation of the POD
 @AbstractBackend
 class HighOrderProperOrthogonalDecomposition(object, metaclass=ABCMeta):
-    def __init__(self, V_or_Z):
+    def __init__(self, space):
         pass
         
     # Clean up

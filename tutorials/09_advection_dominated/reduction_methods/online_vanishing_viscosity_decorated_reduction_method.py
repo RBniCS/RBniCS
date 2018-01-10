@@ -45,19 +45,19 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             print("")
             
             # Prepare storage for copy of lifting basis functions matrix
-            lifting_Z = BasisFunctionsMatrix(self.truth_problem.V)
-            lifting_Z.init(self.truth_problem.components)
-            # Copy current lifting basis functions to lifting_Z
+            lifting_basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
+            lifting_basis_functions.init(self.truth_problem.components)
+            # Copy current lifting basis functions to lifting_basis_functions
             N_bc = self.reduced_problem.N_bc
             for i in range(N_bc):
-                lifting_Z.enrich(self.reduced_problem.Z[i])
+                lifting_basis_functions.enrich(self.reduced_problem.basis_functions[i])
             # Prepare storage for unrotated basis functions matrix, without lifting
-            unrotated_Z = BasisFunctionsMatrix(self.truth_problem.V)
-            unrotated_Z.init(self.truth_problem.components)
-            # Copy current basis functions (except lifting) to unrotated_Z
+            unrotated_basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
+            unrotated_basis_functions.init(self.truth_problem.components)
+            # Copy current basis functions (except lifting) to unrotated_basis_functions
             N = self.reduced_problem.N
             for i in range(N_bc, N):
-                unrotated_Z.enrich(self.reduced_problem.Z[i])
+                unrotated_basis_functions.enrich(self.reduced_problem.basis_functions[i])
                 
             # Prepare new storage for non-hierarchical basis functions matrix and
             # corresponding affine expansions
@@ -67,17 +67,17 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             # rotation will be applied for each basis size n.
             for n in range(1, N + 1):
                 # Prepare storage for rotated basis functions matrix
-                rotated_Z = BasisFunctionsMatrix(self.truth_problem.V)
-                rotated_Z.init(self.truth_problem.components)
+                rotated_basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
+                rotated_basis_functions.init(self.truth_problem.components)
                 # Rotate basis
                 print("rotate basis functions matrix for n =", n)
                 truth_operator_k = self.truth_problem.operator["k"]
                 truth_operator_m = self.truth_problem.operator["m"]
                 assert len(truth_operator_k) == 1
                 assert len(truth_operator_m) == 1
-                reduced_operator_k = transpose(unrotated_Z[:n])*truth_operator_k[0]*unrotated_Z[:n]
-                reduced_operator_m = transpose(unrotated_Z[:n])*truth_operator_m[0]*unrotated_Z[:n]
-                rotation_eigensolver = OnlineEigenSolver(unrotated_Z[:n], reduced_operator_k, reduced_operator_m)
+                reduced_operator_k = transpose(unrotated_basis_functions[:n])*truth_operator_k[0]*unrotated_basis_functions[:n]
+                reduced_operator_m = transpose(unrotated_basis_functions[:n])*truth_operator_m[0]*unrotated_basis_functions[:n]
+                rotation_eigensolver = OnlineEigenSolver(unrotated_basis_functions[:n], reduced_operator_k, reduced_operator_m)
                 parameters = {
                     "problem_type": "hermitian",
                     "spectrum": "smallest real"
@@ -91,16 +91,16 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
                     print("lambda_" + str(i) + " = " + str(rotation_eigenvalues[i]))
                 rotation_eigenvalues.save(self.folder["post_processing"], "rotation_eigs_n=" + str(n))
                 for i in range(N_bc):
-                    rotated_Z.enrich(lifting_Z[i])
+                    rotated_basis_functions.enrich(lifting_basis_functions[i])
                 for i in range(0, n):
                     (eigenvector_i, _) = rotation_eigensolver.get_eigenvector(i)
-                    rotated_Z.enrich(unrotated_Z[:n]*eigenvector_i)
-                self.reduced_problem.Z[:n] = rotated_Z
+                    rotated_basis_functions.enrich(unrotated_basis_functions[:n]*eigenvector_i)
+                self.reduced_problem.basis_functions[:n] = rotated_basis_functions
                 # Attach eigenvalues to the vanishing viscosity reduced operator
                 self.reduced_problem.vanishing_viscosity_eigenvalues.append(rotation_eigenvalues)
                 
-            # Save Z
-            self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+            # Save basis functions
+            self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
             
             # Re-compute all reduced operators, since the basis functions have changed
             print("build reduced operators")
@@ -122,10 +122,10 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             
         def update_basis_matrix(self, snapshot): # same as Parent, except a different filename is used when saving
             assert len(self.truth_problem.components) is 1
-            self.reduced_problem.Z.enrich(snapshot)
-            self.GS.apply(self.reduced_problem.Z, self.reduced_problem.N_bc)
+            self.reduced_problem.basis_functions.enrich(snapshot)
+            self.GS.apply(self.reduced_problem.basis_functions, self.reduced_problem.N_bc)
             self.reduced_problem.N += 1
-            self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "unrotated_basis")
+            self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "unrotated_basis")
         
     # return value (a class) for the decorator
     return OnlineVanishingViscosityDecoratedReductionMethod_Class

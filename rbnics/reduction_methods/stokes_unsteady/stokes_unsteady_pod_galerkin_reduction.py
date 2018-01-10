@@ -58,11 +58,11 @@ def AbstractCFDUnsteadyPODGalerkinReduction(AbstractCFDPODGalerkinReduction, Abs
             
             if self.nested_POD:
                 for component in ("u", "p"):
-                    (eigs1, Z1) = self._nested_POD_compress_time_trajectory(snapshot_over_time, component=component)
-                    self.POD[component].store_snapshot(Z1, weight=[sqrt(e) for e in eigs1], component=component)
+                    (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(snapshot_over_time, component=component)
+                    self.POD[component].store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1], component=component)
                 for component in ("s", ):
-                    (eigs1, Z1) = self._nested_POD_compress_time_trajectory(supremizer_over_time, component=component)
-                    self.POD[component].store_snapshot(Z1, weight=[sqrt(e) for e in eigs1])
+                    (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(supremizer_over_time, component=component)
+                    self.POD[component].store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1])
             else:
                 # Call the steady method, which will add all snapshots and supremizers
                 AbstractCFDPODGalerkinReduction.update_snapshots_matrix(self, (snapshot_over_time, supremizer_over_time))

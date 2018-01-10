@@ -22,10 +22,6 @@ from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType, tuple_of
 from rbnics.utils.mpi import is_io_process
 
-# Type for storing a list of functions. From the user point of view this is
-# the same as a matrix. Indeed, given a Matrix A, a Vector F
-# and a FunctionsList Z, overriding __mul__ and __rmul__ operators
-# allows to write expressions like transpose(Z)*A*Z and transpose(Z)*F
 def FunctionsList(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
     if AdditionalIsFunction is None:
         def _AdditionalIsFunction(arg):
@@ -37,12 +33,12 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
         ConvertAdditionalFunctionTypes = _ConvertAdditionalFunctionTypes
                 
     class _FunctionsList(AbstractFunctionsList):
-        def __init__(self, V_or_Z, component):
+        def __init__(self, space, component):
             if component is None:
-                self.V_or_Z = V_or_Z
+                self.space = space
             else:
-                self.V_or_Z = wrapping.get_function_subspace(V_or_Z, component)
-            self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
+                self.space = wrapping.get_function_subspace(space, component)
+            self.mpi_comm = wrapping.get_mpi_comm(space)
             self._list = list() # of functions
             self._precomputed_slices = dict() # from tuple to FunctionsList
         
@@ -88,14 +84,14 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
                 
         @overload(backend.Function.Type(), (None, str), (None, Number), bool)
         def _add_to_list(self, function, component, weight, copy):
-            self._list.append(wrapping.function_extend_or_restrict(function, component, self.V_or_Z, component, weight, copy))
+            self._list.append(wrapping.function_extend_or_restrict(function, component, self.space, component, weight, copy))
             
         @overload(backend.Function.Type(), dict_of(str, str), (None, Number), bool)
         def _add_to_list(self, function, component, weight, copy):
             assert len(component) == 1
             for (component_from, component_to) in component.items():
                 break
-            self._list.append(wrapping.function_extend_or_restrict(function, component_from, self.V_or_Z, component_to, weight, copy))
+            self._list.append(wrapping.function_extend_or_restrict(function, component_from, self.space, component_to, weight, copy))
             
         def clear(self):
             self._list = list()
@@ -117,7 +113,7 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
                 return False
             Nmax = self._load_Nmax(directory, filename)
             for index in range(Nmax):
-                function = backend.Function(self.V_or_Z)
+                function = backend.Function(self.space)
                 loaded = wrapping.function_load(function, directory, filename + "_" + str(index))
                 assert loaded
                 self.enrich(function)
@@ -159,8 +155,8 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
             if key.stop in self._precomputed_slices:
                 return self._precomputed_slices[key.stop]
             else:
-                output = _FunctionsList.__new__(type(self), self.V_or_Z)
-                output.__init__(self.V_or_Z)
+                output = _FunctionsList.__new__(type(self), self.space)
+                output.__init__(self.space)
                 output._list = self._list[key]
                 self._precomputed_slices[key.stop] = output
                 return output

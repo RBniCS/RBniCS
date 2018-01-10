@@ -24,9 +24,9 @@ from rbnics.utils.io import OnlineSizeDict
 
 def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
     class _BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
-        def __init__(self, V_or_Z):
-            self.V_or_Z = V_or_Z
-            self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
+        def __init__(self, space):
+            self.space = space
+            self.mpi_comm = wrapping.get_mpi_comm(space)
             self._components = dict() # of FunctionsList
             self._precomputed_slices = dict() # from tuple to FunctionsList
             self._basis_component_index_to_component_name = OrderedDict() # filled in by init
@@ -41,7 +41,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 # Initialize components FunctionsList
                 self._components.clear()
                 for component_name in components_name:
-                    self._components[component_name] = backend.FunctionsList(self.V_or_Z)
+                    self._components[component_name] = backend.FunctionsList(self.space)
                 # Intialize the component_name_to_basis_component_index dict, and its inverse
                 self._component_name_to_basis_component_index.clear()
                 self._basis_component_index_to_component_name.clear()
@@ -144,9 +144,9 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
         def __mul__(self, other):
             if isinstance(other.M, dict):
                 assert set(other.M.keys()) == set(self._components_name)
-            def BasisFunctionsMatrixWithInit(V_or_Z):
-                output = _BasisFunctionsMatrix.__new__(type(self), V_or_Z)
-                output.__init__(V_or_Z)
+            def BasisFunctionsMatrixWithInit(space):
+                output = _BasisFunctionsMatrix.__new__(type(self), space)
+                output.__init__(space)
                 output.init(self._components_name)
                 return output
             return wrapping.basis_functions_matrix_mul_online_matrix(self, other, BasisFunctionsMatrixWithInit)
@@ -199,8 +199,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
         def _precompute_slice(self, N):
             if N not in self._precomputed_slices:
                 assert len(self._components) == 1
-                self._precomputed_slices[N] = _BasisFunctionsMatrix.__new__(type(self), self.V_or_Z)
-                self._precomputed_slices[N].__init__(self.V_or_Z)
+                self._precomputed_slices[N] = _BasisFunctionsMatrix.__new__(type(self), self.space)
+                self._precomputed_slices[N].__init__(self.space)
                 self._precomputed_slices[N].init(self._components_name)
                 for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()):
                     self._precomputed_slices[N]._components[component_name].enrich(self._components[component_name][:N], copy=False)
@@ -212,8 +212,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             assert set(N.keys()) == set(self._components_name)
             N_key = tuple(N[component_name] for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()))
             if N_key not in self._precomputed_slices:
-                self._precomputed_slices[N_key] = _BasisFunctionsMatrix.__new__(type(self), self.V_or_Z)
-                self._precomputed_slices[N_key].__init__(self.V_or_Z)
+                self._precomputed_slices[N_key] = _BasisFunctionsMatrix.__new__(type(self), self.space)
+                self._precomputed_slices[N_key].__init__(self.space)
                 self._precomputed_slices[N_key].init(self._components_name)
                 for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()):
                     self._precomputed_slices[N_key]._components[component_name].enrich(self._components[component_name][:N[component_name]], copy=False)

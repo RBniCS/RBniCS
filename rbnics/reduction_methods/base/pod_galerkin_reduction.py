@@ -175,21 +175,21 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 for component in self.truth_problem.components:
                     print("# POD for component", component)
                     POD = self.POD[component]
-                    (_, Z, N) = POD.apply(self.Nmax, self.tol[component])
-                    self.reduced_problem.Z.enrich(Z, component=component)
+                    (_, basis_functions, N) = POD.apply(self.Nmax, self.tol[component])
+                    self.reduced_problem.basis_functions.enrich(basis_functions, component=component)
                     self.reduced_problem.N[component] += N
                     POD.print_eigenvalues(N)
                     POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
                     POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
-                self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+                self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
             else:
-                (_, Z, N) = self.POD.apply(self.Nmax, self.tol)
-                self.reduced_problem.Z.enrich(Z)
+                (_, basis_functions, N) = self.POD.apply(self.Nmax, self.tol)
+                self.reduced_problem.basis_functions.enrich(basis_functions)
                 self.reduced_problem.N += N
                 self.POD.print_eigenvalues(N)
                 self.POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
                 self.POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
-                self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+                self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
        
         def error_analysis(self, N=None, filename=None, **kwargs):
             """

@@ -75,7 +75,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # High fidelity problem
         self.truth_problem = truth_problem
         # Basis functions matrix
-        self.Z = None # BasisFunctionsMatrix
+        self.basis_functions = None # BasisFunctionsMatrix
         # I/O
         self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
@@ -188,9 +188,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         """
         assert current_stage in ("online", "offline")
         # Initialize basis functions mappings
-        if self.Z is None: # avoid re-initializing basis functions matrix multiple times
-            self.Z = BasisFunctionsMatrix(self.truth_problem.V)
-        self.Z.init(self.components)
+        if self.basis_functions is None: # avoid re-initializing basis functions matrix multiple times
+            self.basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
+        self.basis_functions.init(self.components)
         # Get number of components
         n_components = len(self.components)
         # Get helper strings depending on the number of basis components
@@ -198,14 +198,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             dirichlet_bc_string = "dirichlet_bc_{c}"
             def has_non_homogeneous_dirichlet_bc(component):
                 return self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]
-            def get_Z(component):
-                return self.Z[component]
+            def get_basis_functions(component):
+                return self.basis_functions[component]
         else:
             dirichlet_bc_string = "dirichlet_bc"
             def has_non_homogeneous_dirichlet_bc(component):
                 return self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
-            def get_Z(component):
-                return self.Z
+            def get_basis_functions(component):
+                return self.basis_functions
         # Detect how many theta terms are related to boundary conditions
         assert (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
         if self.dirichlet_bc is None: # init was not called already
@@ -226,19 +226,19 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             self._combined_and_homogenized_dirichlet_bc = self._combine_and_homogenize_all_dirichlet_bcs()
         # Load basis functions
         if current_stage == "online":
-            Z_loaded = self.Z.load(self.folder["basis"], "basis")
+            basis_functions_loaded = self.basis_functions.load(self.folder["basis"], "basis")
             # To properly initialize N and N_bc, detect how many theta terms
             # are related to boundary conditions
-            if Z_loaded:
+            if basis_functions_loaded:
                 N = OnlineSizeDict()
                 N_bc = OnlineSizeDict()
                 for component in self.components:
                     if has_non_homogeneous_dirichlet_bc(component):
                         theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
-                        N[component] = len(get_Z(component)) - len(theta_bc)
+                        N[component] = len(get_basis_functions(component)) - len(theta_bc)
                         N_bc[component] = len(theta_bc)
                     else:
-                        N[component] = len(get_Z(component))
+                        N[component] = len(get_basis_functions(component))
                         N_bc[component] = 0
                 assert len(N) == len(N_bc)
                 assert len(N) > 0
@@ -249,21 +249,21 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     self.N = N
                     self.N_bc = N_bc
         elif current_stage == "offline":
-            # Store the lifting functions in self.Z
+            # Store the lifting functions in self.basis_functions
             for component in self.components:
                 self.assemble_operator(dirichlet_bc_string.format(c=component), "offline") # no return value from assemble_operator in this case
             # Save basis functions matrix, that contains up to now only lifting functions
-            self.Z.save(self.folder["basis"], "basis")
+            self.basis_functions.save(self.folder["basis"], "basis")
             # Properly fill in self.N_bc
             if n_components == 1:
                 self.N = 0
-                self.N_bc = len(self.Z)
+                self.N_bc = len(self.basis_functions)
             else:
                 N = OnlineSizeDict()
                 N_bc = OnlineSizeDict()
                 for component in self.components:
                     N[component] = 0
-                    N_bc[component] = len(self.Z[component])
+                    N_bc[component] = len(self.basis_functions[component])
                 self.N = N
                 self.N_bc = N_bc
             # Note that, however, self.N is not increased, so it will actually contain the number
@@ -350,16 +350,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         X_N = self._combined_projection_inner_product[:N, :N]
                 
         # Get basis
-        Z = self.Z[:N]
+        basis_functions = self.basis_functions[:N]
         
         # Define storage for projected solution
         projected_snapshot_N = OnlineFunction(N)
         
         # Project on reduced basis
         if on_dirichlet_bc:
-            solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(Z)*X*snapshot)
+            solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(basis_functions)*X*snapshot)
         else:
-            solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(Z)*X*snapshot, self._combined_and_homogenized_dirichlet_bc)
+            solver = OnlineLinearSolver(X_N, projected_snapshot_N, transpose(basis_functions)*X*snapshot, self._combined_and_homogenized_dirichlet_bc)
         solver.solve()
         return projected_snapshot_N
     
@@ -455,7 +455,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # Compute the error on the solution
         if len(components) > 0:
             N = self._solution.N
-            reduced_solution = self.Z[:N]*self._solution
+            reduced_solution = self.basis_functions[:N]*self._solution
             truth_solution = self.truth_problem._solution
             error_function = truth_solution - reduced_solution
             for component in components:
@@ -605,11 +605,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if solution is None:
             solution = self._solution
         N = solution.N
-        self.truth_problem.export_solution(folder, filename, self.Z[:N]*solution, component, suffix)
+        self.truth_problem.export_solution(folder, filename, self.basis_functions[:N]*solution, component, suffix)
         
     def export_error(self, folder=None, filename=None, component=None, suffix=None, **kwargs):
         self.truth_problem.solve(**kwargs)
-        reduced_solution = self.Z[:self._solution.N]*self._solution
+        reduced_solution = self.basis_functions[:self._solution.N]*self._solution
         truth_solution = self.truth_problem._solution
         error_function = truth_solution - reduced_solution
         self.truth_problem.export_solution(folder, filename, error_function, component, suffix)
@@ -681,9 +681,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 for q in range(self.Q[term]):
                     assert self.terms_order[term] in (0, 1, 2)
                     if self.terms_order[term] == 2:
-                        self.operator[term][q] = transpose(self.Z)*self.truth_problem.operator[term][q]*self.Z
+                        self.operator[term][q] = transpose(self.basis_functions)*self.truth_problem.operator[term][q]*self.basis_functions
                     elif self.terms_order[term] == 1:
-                        self.operator[term][q] = transpose(self.Z)*self.truth_problem.operator[term][q]
+                        self.operator[term][q] = transpose(self.basis_functions)*self.truth_problem.operator[term][q]
                     elif self.terms_order[term] == 0:
                         self.operator[term][q] = self.truth_problem.operator[term][q]
                     else:
@@ -697,7 +697,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     assert component in self.components
                     assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.inner_product[component][0] = transpose(self.Z)*self.truth_problem.inner_product[component][0]*self.Z
+                    self.inner_product[component][0] = transpose(self.basis_functions)*self.truth_problem.inner_product[component][0]*self.basis_functions
                     if "reduced_operators" in self.folder:
                         self.inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.inner_product[component]
@@ -705,7 +705,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     assert len(self.components) == 1 # single component case
                     assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.inner_product[0] = transpose(self.Z)*self.truth_problem.inner_product[0]*self.Z
+                    self.inner_product[0] = transpose(self.basis_functions)*self.truth_problem.inner_product[0]*self.basis_functions
                     if "reduced_operators" in self.folder:
                         self.inner_product.save(self.folder["reduced_operators"], term)
                     return self.inner_product
@@ -715,7 +715,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     assert component in self.components
                     assert len(self.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.projection_inner_product[component][0] = transpose(self.Z)*self.truth_problem.projection_inner_product[component][0]*self.Z
+                    self.projection_inner_product[component][0] = transpose(self.basis_functions)*self.truth_problem.projection_inner_product[component][0]*self.basis_functions
                     if "reduced_operators" in self.folder:
                         self.projection_inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.projection_inner_product[component]
@@ -723,7 +723,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     assert len(self.components) == 1 # single component case
                     assert len(self.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.projection_inner_product[0] = transpose(self.Z)*self.truth_problem.projection_inner_product[0]*self.Z
+                    self.projection_inner_product[0] = transpose(self.basis_functions)*self.truth_problem.projection_inner_product[0]*self.basis_functions
                     if "reduced_operators" in self.folder:
                         self.projection_inner_product.save(self.folder["reduced_operators"], term)
                     return self.projection_inner_product
@@ -764,7 +764,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                         solve_message += " (obtained for mu = " + str(self.mu) + ") in the basis matrix"
                         print(solve_message)
                         lifting = self._lifting_truth_solve(term, i)
-                        self.Z.enrich(lifting, component=component)
+                        self.basis_functions.enrich(lifting, component=component)
                     # Restore the standard compute_theta method
                     self.truth_problem.compute_theta = standard_compute_theta
             else:

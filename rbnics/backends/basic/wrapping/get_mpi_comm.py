@@ -16,5 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def get_mpi_comm(V_or_Z):
+def get_mpi_comm(space):
     pass

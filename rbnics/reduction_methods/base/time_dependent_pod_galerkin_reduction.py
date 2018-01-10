@@ -114,11 +114,11 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             if self.nested_POD:
                 if len(self.truth_problem.components) > 1:
                     for component in self.truth_problem.components:
-                        (eigs1, Z1) = self._nested_POD_compress_time_trajectory(snapshot_over_time, component=component)
-                        self.POD[component].store_snapshot(Z1, weight=[sqrt(e) for e in eigs1], component=component)
+                        (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(snapshot_over_time, component=component)
+                        self.POD[component].store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1], component=component)
                 else:
-                    (eigs1, Z1) = self._nested_POD_compress_time_trajectory(snapshot_over_time)
-                    self.POD.store_snapshot(Z1, weight=[sqrt(e) for e in eigs1])
+                    (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(snapshot_over_time)
+                    self.POD.store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1])
             else:
                 DifferentialProblemReductionMethod_DerivedClass.update_snapshots_matrix(self, snapshot_over_time)
                 
@@ -132,7 +132,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 tol1 = self.tol1[component]
             POD_time_trajectory.clear()
             POD_time_trajectory.store_snapshot(snapshot_over_time, component=component)
-            (eigs1, Z1, N1) = POD_time_trajectory.apply(N1, tol1)
+            (eigs1, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
             POD_time_trajectory.print_eigenvalues(N1)
             if component is None:
                 POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs")
@@ -140,7 +140,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             else:
                 POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
                 POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
-            return (eigs1, Z1)
+            return (eigs1, basis_functions1)
             
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set

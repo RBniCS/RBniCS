@@ -44,7 +44,7 @@ def MultiLevelReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass
             # In case of multilevel reduction create a fake V attribute to the provided
             # truth problem, because it is been already reduced
             if self._reduction_level > 1:
-                truth_problem.V = truth_problem.Z
+                truth_problem.V = truth_problem.basis_functions
                 
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)

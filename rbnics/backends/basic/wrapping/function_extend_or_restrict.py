@@ -16,5 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def function_extend_or_restrict(function, function_components, V_or_Z, V_or_Z_components, weight, copy, extended_or_restricted_function=None):
+def function_extend_or_restrict(function, function_components, space, space_components, weight, copy, extended_or_restricted_function=None):
     pass

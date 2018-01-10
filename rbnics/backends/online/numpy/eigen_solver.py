@@ -27,7 +27,7 @@ from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 
 @BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
 class EigenSolver(AbstractEigenSolver):
-    def __init__(self, Z, A, B=None, bcs=None):
+    def __init__(self, basis_functions, A, B=None, bcs=None):
         assert A.shape[0] == A.shape[1]
         if B is not None:
             assert B.shape[0] == B.shape[1]

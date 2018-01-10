@@ -23,10 +23,10 @@ from rbnics.utils.mpi import is_io_process
 
 def TensorsList(backend, wrapping, online_backend, online_wrapping):
     class _TensorsList(AbstractTensorsList):
-        def __init__(self, V_or_Z, empty_tensor):
-            self.V_or_Z = V_or_Z
+        def __init__(self, space, empty_tensor):
+            self.space = space
             self.empty_tensor = empty_tensor
-            self.mpi_comm = wrapping.get_mpi_comm(V_or_Z)
+            self.mpi_comm = wrapping.get_mpi_comm(space)
             self._list = list() # of tensors
             self._precomputed_slices = dict() # from tuple to TensorsList
         
@@ -101,8 +101,8 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             if key.stop in self._precomputed_slices:
                 return self._precomputed_slices[key.stop]
             else:
-                output = _TensorsList.__new__(type(self), self.V_or_Z, self.empty_tensor)
-                output.__init__(self.V_or_Z, self.empty_tensor)
+                output = _TensorsList.__new__(type(self), self.space, self.empty_tensor)
+                output.__init__(self.space, self.empty_tensor)
                 output._list = self._list[key]
                 self._precomputed_slices[key.stop] = output
                 return output

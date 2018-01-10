@@ -160,10 +160,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
             
                 print("solve interpolation for basis number", self.EIM_approximation.N)
-                self.EIM_approximation._solve(self.EIM_approximation.Z[self.EIM_approximation.N])
+                self.EIM_approximation._solve(self.EIM_approximation.basis_functions[self.EIM_approximation.N])
                 
                 print("compute and locate maximum interpolation error")
-                self.EIM_approximation.snapshot = self.EIM_approximation.Z[self.EIM_approximation.N]
+                self.EIM_approximation.snapshot = self.EIM_approximation.basis_functions[self.EIM_approximation.N]
                 (error, maximum_error, maximum_location) = self.EIM_approximation.compute_maximum_interpolation_error()
                 
                 print("update locations with", maximum_location)
@@ -196,21 +196,21 @@ class EIMApproximationReductionMethod(ReductionMethod):
     # Update basis (greedy version)
     def update_basis_greedy(self, error, maximum_error):
         if abs(maximum_error) > 0.:
-            self.EIM_approximation.Z.enrich(error/maximum_error)
+            self.EIM_approximation.basis_functions.enrich(error/maximum_error)
         else:
             # Trivial case, greedy will stop at the first iteration
             assert self.EIM_approximation.N == 0
-            self.EIM_approximation.Z.enrich(error) # error is actually zero
-        self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
+            self.EIM_approximation.basis_functions.enrich(error) # error is actually zero
+        self.EIM_approximation.basis_functions.save(self.EIM_approximation.folder["basis"], "basis")
         self.EIM_approximation.N += 1
 
     # Update basis (POD version)
     def compute_basis_POD(self):
         POD = self.EIM_approximation.parametrized_expression.create_POD_container()
         POD.store_snapshot(self.snapshots_container)
-        (_, Z, N) = POD.apply(self.Nmax, self.tol)
-        self.EIM_approximation.Z.enrich(Z)
-        self.EIM_approximation.Z.save(self.EIM_approximation.folder["basis"], "basis")
+        (_, basis_functions, N) = POD.apply(self.Nmax, self.tol)
+        self.EIM_approximation.basis_functions.enrich(basis_functions)
+        self.EIM_approximation.basis_functions.save(self.EIM_approximation.folder["basis"], "basis")
         # do not increment self.EIM_approximation.N
         POD.print_eigenvalues(N)
         POD.save_eigenvalues_file(self.folder["post_processing"], "eigs")
@@ -223,7 +223,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     
     # Assemble the interpolation matrix
     def update_interpolation_matrix(self):
-        self.EIM_approximation.interpolation_matrix[0] = evaluate(self.EIM_approximation.Z[:self.EIM_approximation.N], self.EIM_approximation.interpolation_locations)
+        self.EIM_approximation.interpolation_matrix[0] = evaluate(self.EIM_approximation.basis_functions[:self.EIM_approximation.N], self.EIM_approximation.interpolation_locations)
         self.EIM_approximation.interpolation_matrix.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
             
     # Load the precomputed snapshot
@@ -241,7 +241,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # Print some additional information on the consistency of the reduced basis
         self.EIM_approximation.solve()
         self.EIM_approximation.snapshot = self.load_snapshot()
-        error = self.EIM_approximation.snapshot - self.EIM_approximation.Z*self.EIM_approximation._interpolation_coefficients
+        error = self.EIM_approximation.snapshot - self.EIM_approximation.basis_functions*self.EIM_approximation._interpolation_coefficients
         error_on_interpolation_locations = evaluate(error, self.EIM_approximation.interpolation_locations)
         (maximum_error, _) = max(abs(error))
         (maximum_error_on_interpolation_locations, _) = max(abs(error_on_interpolation_locations)) # for consistency check, should be zero

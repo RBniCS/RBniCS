@@ -20,7 +20,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class ReducedVertices(object, metaclass=ABCMeta):
-    def __init__(self, V_or_Z):
+    def __init__(self, space):
         pass
         
     @abstractmethod

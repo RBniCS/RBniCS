@@ -91,11 +91,11 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
         elif current_stage == "offline":
             if term == "output_correction_and_estimation_a":
                 for qa in range(self.primal_truth_problem.Q["a"]):
-                    self.output_correction_and_estimation["a"][qa] = transpose(self.Z)*self.primal_truth_problem.operator["a"][qa]*self.primal_reduced_problem.Z
+                    self.output_correction_and_estimation["a"][qa] = transpose(self.basis_functions)*self.primal_truth_problem.operator["a"][qa]*self.primal_reduced_problem.basis_functions
                 self.output_correction_and_estimation["a"].save(self.folder["error_estimation"], "output_correction_and_estimation_a")
             elif term == "output_correction_and_estimation_f":
                 for qf in range(self.primal_truth_problem.Q["f"]):
-                    self.output_correction_and_estimation["f"][qf] = transpose(self.Z)*self.primal_truth_problem.operator["f"][qf]
+                    self.output_correction_and_estimation["f"][qf] = transpose(self.basis_functions)*self.primal_truth_problem.operator["f"][qf]
                 self.output_correction_and_estimation["f"].save(self.folder["error_estimation"], "output_correction_and_estimation_f")
             else:
                 raise ValueError("Invalid term for assemble_output_correction_and_estimation_operators().")

@@ -106,11 +106,11 @@ def test_eim_approximation_15(expression_type, basis_generation):
                     print("solving mock problem at mu =", self.truth_problem.mu)
                     f = self.truth_problem.solve()
                     component = "u" if index % 2 == 0 else "s"
-                    self.reduced_problem.Z.enrich(f, component)
-                    self.GS.apply(self.reduced_problem.Z[component], 0)
-                self.reduced_problem.Z.save(self.folder["basis"], "basis")
+                    self.reduced_problem.basis_functions.enrich(f, component)
+                    self.GS.apply(self.reduced_problem.basis_functions[component], 0)
+                self.reduced_problem.basis_functions.save(self.folder["basis"], "basis")
             else:
-                self.reduced_problem.Z.load(self.folder["basis"], "basis")
+                self.reduced_problem.basis_functions.load(self.folder["basis"], "basis")
             self._finalize_offline()
             return self.reduced_problem
             
@@ -129,8 +129,8 @@ def test_eim_approximation_15(expression_type, basis_generation):
             ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_15_tempdir", expression_type, basis_generation, "mock_problem"))
             # Minimal subset of a ParametrizedReducedDifferentialProblem
             self.truth_problem = truth_problem
-            self.Z = BasisFunctionsMatrix(self.truth_problem.V)
-            self.Z.init(self.truth_problem.components)
+            self.basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
+            self.basis_functions.init(self.truth_problem.components)
             self._solution = None
             
         def solve(self):
@@ -138,7 +138,7 @@ def test_eim_approximation_15(expression_type, basis_generation):
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             f = self.truth_problem.solve()
-            f_N = transpose(self.Z)*self.truth_problem.X*f
+            f_N = transpose(self.basis_functions)*self.truth_problem.X*f
             # Return the reduced solution
             self._solution = OnlineFunction(f_N)
             delattr(self, "_is_solving")

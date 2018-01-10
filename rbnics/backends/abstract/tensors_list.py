@@ -20,7 +20,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class TensorsList(object, metaclass=ABCMeta):
-    def __init__(self, V_or_Z, empty_tensor):
+    def __init__(self, space, empty_tensor):
         pass
     
     @abstractmethod

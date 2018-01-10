@@ -47,7 +47,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             truth_problem_to_reduced_mesh_interpolator = dict()
             reduced_problem_to_components = dict()
             reduced_problem_to_reduced_mesh_solution = dict()
-            reduced_problem_to_reduced_Z = dict()
+            reduced_problem_to_reduced_basis_functions = dict()
             
             # Look for terminals on truth mesh
             for node in wrapping.form_iterator(form, "nodes"):
@@ -139,7 +139,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache[(form_name, reduced_V)] = truth_problem_to_reduced_mesh_interpolator
             form_on_reduced_function_space__reduced_problem_to_components_cache[(form_name, reduced_V)] = reduced_problem_to_components
             form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_mesh_solution
-            form_on_reduced_function_space__reduced_problem_to_reduced_Z_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_Z
+            form_on_reduced_function_space__reduced_problem_to_reduced_basis_functions_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_basis_functions
             
         # Extract from cache
         replaced_form_with_replaced_measures = form_on_reduced_function_space__form_cache[(form_name, reduced_V)]
@@ -150,7 +150,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         truth_problem_to_reduced_mesh_interpolator = form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache[(form_name, reduced_V)]
         reduced_problem_to_components = form_on_reduced_function_space__reduced_problem_to_components_cache[(form_name, reduced_V)]
         reduced_problem_to_reduced_mesh_solution = form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)]
-        reduced_problem_to_reduced_Z = form_on_reduced_function_space__reduced_problem_to_reduced_Z_cache[(form_name, reduced_V)]
+        reduced_problem_to_reduced_basis_functions = form_on_reduced_function_space__reduced_problem_to_reduced_basis_functions_cache[(form_name, reduced_V)]
         
         # Get list of truth and reduced problems that need to be solved, possibly updating cache
         required_truth_problems = list()
@@ -166,10 +166,10 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                     if reduced_problem not in reduced_problem_to_reduced_mesh_solution:
                         reduced_problem_to_reduced_mesh_solution[reduced_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
                     # Get reduced problem basis functions on reduced mesh
-                    if reduced_problem not in reduced_problem_to_reduced_Z:
-                        reduced_problem_to_reduced_Z[reduced_problem] = list()
+                    if reduced_problem not in reduced_problem_to_reduced_basis_functions:
+                        reduced_problem_to_reduced_basis_functions[reduced_problem] = list()
                         for component in reduced_problem_to_components[reduced_problem]:
-                            reduced_problem_to_reduced_Z[reduced_problem].append(at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem, component))
+                            reduced_problem_to_reduced_basis_functions[reduced_problem].append(at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem, component))
                     # Append to list of required reduced problems
                     required_reduced_problems.append((reduced_problem, hasattr(reduced_problem, "_is_solving")))
                 else:
@@ -224,15 +224,15 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             else:
                 log(PROGRESS, "In form_on_reduced_function_space, loading current reduced problem solution for problem " + str(reduced_problem))
             # ... and assign to reduced_mesh_solution
-            for (reduced_mesh_solution, reduced_Z) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_Z[reduced_problem]):
+            for (reduced_mesh_solution, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_basis_functions[reduced_problem]):
                 solution_to = reduced_mesh_solution
                 solution_from_N = OnlineSizeDict()
                 for c, v in reduced_problem._solution.N.items():
-                    if c in reduced_Z._components_name:
+                    if c in reduced_basis_functions._components_name:
                         solution_from_N[c] = v
                 solution_from = online_backend.OnlineFunction(solution_from_N)
                 online_backend.online_assign(solution_from, reduced_problem._solution)
-                solution_from = reduced_Z[:solution_from_N]*solution_from
+                solution_from = reduced_basis_functions[:solution_from_N]*solution_from
                 backend.assign(solution_to, solution_from)
         
         # Assemble and return
@@ -248,7 +248,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
     form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache = dict()
     form_on_reduced_function_space__reduced_problem_to_components_cache = dict()
     form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache = dict()
-    form_on_reduced_function_space__reduced_problem_to_reduced_Z_cache = dict()
+    form_on_reduced_function_space__reduced_problem_to_reduced_basis_functions_cache = dict()
     
     return _basic_form_on_reduced_function_space
 

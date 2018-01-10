@@ -160,7 +160,7 @@ def EIMDecoratedProblem(
                     for (index, addend) in enumerate(form.coefficients):
                         replacements__list = list()
                         for factor in addend:
-                            replacements__list.append(self.EIM_approximations[factor].Z)
+                            replacements__list.append(self.EIM_approximations[factor].basis_functions)
                         replacements__cartesian_product = cartesian_product(*replacements__list)
                         for new_coeffs in replacements__cartesian_product:
                             eim_forms.append(

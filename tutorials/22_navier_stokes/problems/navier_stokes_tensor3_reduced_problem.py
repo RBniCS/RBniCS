@@ -107,12 +107,12 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
                                             truth_operator_q_c_n = replace(
                                                 self.truth_problem.operator[term + "_tensor3"][truth_q],
                                                 {
-                                                    self.truth_problem._solution_placeholder_1: self.Z[c1][n1],
-                                                    self.truth_problem._solution_placeholder_2: self.Z[c2][n2],
+                                                    self.truth_problem._solution_placeholder_1: self.basis_functions[c1][n1],
+                                                    self.truth_problem._solution_placeholder_2: self.basis_functions[c2][n2],
                                                     self.truth_problem._solution_placeholder_3: test
                                                 }
                                             )
-                                            self.operator[term][reduced_q] = transpose(self.Z)*truth_operator_q_c_n
+                                            self.operator[term][reduced_q] = transpose(self.basis_functions)*truth_operator_q_c_n
                                             reduced_q += 1
                     elif term == "dc":
                         trial = TrialFunction(self.truth_problem.V)
@@ -126,12 +126,12 @@ def NavierStokesTensor3ReducedProblem(NavierStokesReducedProblem_DerivedClass):
                                     truth_operator_q_c_n = replace(
                                         self.truth_problem.operator[term + "_tensor3"][truth_q],
                                         {
-                                            self.truth_problem._solution_placeholder_1: self.Z[c][n],
+                                            self.truth_problem._solution_placeholder_1: self.basis_functions[c][n],
                                             self.truth_problem._solution_placeholder_2: trial,
                                             self.truth_problem._solution_placeholder_3: test
                                         }
                                     )
-                                    self.operator["dc"][reduced_q] = transpose(self.Z)*truth_operator_q_c_n*self.Z
+                                    self.operator["dc"][reduced_q] = transpose(self.basis_functions)*truth_operator_q_c_n*self.basis_functions
                                     reduced_q += 1
                     if "reduced_operators" in self.folder:
                         self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)

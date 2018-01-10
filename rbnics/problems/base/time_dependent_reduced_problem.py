@@ -171,7 +171,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         truth_projection_inner_product = self.truth_problem.projection_inner_product
                     assert len(truth_projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     for (q, truth_initial_condition_q) in enumerate(truth_initial_condition):
-                        initial_condition[q] = transpose(self.Z)*truth_projection_inner_product[0]*truth_initial_condition_q
+                        initial_condition[q] = transpose(self.basis_functions)*truth_projection_inner_product[0]*truth_initial_condition_q
                     if "reduced_operators" in self.folder:
                         initial_condition.save(self.folder["reduced_operators"], term)
                 else:
@@ -443,15 +443,15 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             solution_dot_over_time_as_truth_function = list()
             for (k, (solution, solution_dot)) in enumerate(zip(solution_over_time, solution_dot_over_time)):
                 N = solution.N
-                solution_over_time_as_truth_function.append(self.Z[:N]*solution)
-                solution_dot_over_time_as_truth_function.append(self.Z[:N]*solution_dot)
+                solution_over_time_as_truth_function.append(self.basis_functions[:N]*solution)
+                solution_dot_over_time_as_truth_function.append(self.basis_functions[:N]*solution_dot)
             self.truth_problem.export_solution(folder, filename, solution_over_time_as_truth_function, solution_dot_over_time_as_truth_function, component, suffix)
             
         def export_error(self, folder=None, filename=None, component=None, suffix=None, **kwargs):
             self.truth_problem.solve(**kwargs)
             error_function_over_time = list()
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
-                error_function_over_time.append(truth_solution - self.Z[:reduced_solution.N]*reduced_solution)
+                error_function_over_time.append(truth_solution - self.basis_functions[:reduced_solution.N]*reduced_solution)
             self.truth_problem.export_solution(folder, filename, error_function_over_time, None, component, suffix)
             
     # return value (a class) for the decorator

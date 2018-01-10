@@ -117,18 +117,18 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
             
         def _init_basis_functions(self, current_stage="online"):
             if current_stage == "online":
-                if self.Z is None: # avoid re-initializing basis functions matrix multiple times
-                    self.Z = NonHierarchicalBasisFunctionsMatrix(self.truth_problem.V)
-                self.Z.init(self.truth_problem.components)
-                Z_loaded = self.Z.load(self.folder["basis"], "basis")
-                if Z_loaded:
-                    self.N = len(self.Z)
+                if self.basis_functions is None: # avoid re-initializing basis functions matrix multiple times
+                    self.basis_functions = NonHierarchicalBasisFunctionsMatrix(self.truth_problem.V)
+                self.basis_functions.init(self.truth_problem.components)
+                basis_functions_loaded = self.basis_functions.load(self.folder["basis"], "basis")
+                if basis_functions_loaded:
+                    self.N = len(self.basis_functions)
                     self.N_bc = 0 # TODO handle inhomogeneous bcs
             elif current_stage == "offline":
                 EllipticCoerciveReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
             elif current_stage == "offline_vanishing_viscosity_postprocessing":
-                self.Z = NonHierarchicalBasisFunctionsMatrix(self.truth_problem.V)
-                self.Z.init(self.truth_problem.components)
+                self.basis_functions = NonHierarchicalBasisFunctionsMatrix(self.truth_problem.V)
+                self.basis_functions.init(self.truth_problem.components)
             else:
                 # Call Parent, which may eventually raise an error
                 EllipticCoerciveReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
@@ -201,11 +201,11 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                             assert self.terms_order[term] in (1, 2)
                             if self.terms_order[term] == 2:
                                 for q in range(self.Q[term]):
-                                    term_expansion[q] = transpose(self.Z[:n])*self.truth_problem.operator[term][q]*self.Z[:n]
+                                    term_expansion[q] = transpose(self.basis_functions[:n])*self.truth_problem.operator[term][q]*self.basis_functions[:n]
                                 self.operator[term][:n, :n] = term_expansion
                             elif self.terms_order[term] == 1:
                                 for q in range(self.Q[term]):
-                                    term_expansion[q] = transpose(self.Z[:n])*self.truth_problem.operator[term][q]
+                                    term_expansion[q] = transpose(self.basis_functions[:n])*self.truth_problem.operator[term][q]
                                 self.operator[term][:n] = term_expansion
                             else:
                                 raise ValueError("Invalid value for order of term " + term)
@@ -216,7 +216,7 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                         assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                         for n in range(1, self.N + 1):
                             inner_product_expansion = OnlineAffineExpansionStorage(1)
-                            inner_product_expansion[0] = transpose(self.Z[:n])*self.truth_problem.inner_product[0]*self.Z[:n]
+                            inner_product_expansion[0] = transpose(self.basis_functions[:n])*self.truth_problem.inner_product[0]*self.basis_functions[:n]
                             self.inner_product[:n, :n] = inner_product_expansion
                         self.inner_product.save(self.folder["reduced_operators"], term)
                         return self.inner_product
@@ -225,7 +225,7 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                         assert len(self.truth_problem.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                         for n in range(1, self.N + 1):
                             projection_inner_product_expansion = OnlineAffineExpansionStorage(1)
-                            projection_inner_product_expansion[0] = transpose(self.Z[:n])*self.truth_problem.projection_inner_product[0]*self.Z[:n]
+                            projection_inner_product_expansion[0] = transpose(self.basis_functions[:n])*self.truth_problem.projection_inner_product[0]*self.basis_functions[:n]
                             self.projection_inner_product[:n, :n] = projection_inner_product_expansion
                         self.projection_inner_product.save(self.folder["reduced_operators"], term)
                         return self.projection_inner_product

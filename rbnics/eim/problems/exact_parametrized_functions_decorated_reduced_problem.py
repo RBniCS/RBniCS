@@ -124,8 +124,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         def residual_eval(self, t, solution, solution_dot):
                             # Update truth solution
                             reduced_problem = self.problem
-                            assign(reduced_problem.truth_problem._solution, reduced_problem.Z[:solution.N]*solution)
-                            assign(reduced_problem.truth_problem._solution_dot, reduced_problem.Z[:solution.N]*solution_dot)
+                            assign(reduced_problem.truth_problem._solution, reduced_problem.basis_functions[:solution.N]*solution)
+                            assign(reduced_problem.truth_problem._solution_dot, reduced_problem.basis_functions[:solution.N]*solution_dot)
                             # Re-assemble
                             reduced_problem.build_reduced_operators("online")
                             # Call Parent
@@ -155,7 +155,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         def residual_eval(self, solution):
                             # Update truth solution
                             reduced_problem = self.problem
-                            assign(reduced_problem.truth_problem._solution, reduced_problem.Z[:solution.N]*solution)
+                            assign(reduced_problem.truth_problem._solution, reduced_problem.basis_functions[:solution.N]*solution)
                             # Re-assemble
                             reduced_problem.build_reduced_operators("online")
                             # Call Parent

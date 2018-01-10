@@ -175,7 +175,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                                 solver = LinearSolver(
                                     self._riesz_solve_inner_product,
                                     self._riesz_solve_storage,
-                                    -1.*self.truth_problem.operator[term][q]*self.Z[component][n],
+                                    -1.*self.truth_problem.operator[term][q]*self.basis_functions[component][n],
                                     self._riesz_solve_homogeneous_dirichlet_bc
                                 )
                                 solver.solve()
@@ -185,7 +185,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                             solver = LinearSolver(
                                 self._riesz_solve_inner_product,
                                 self._riesz_solve_storage,
-                                -1.*self.truth_problem.operator[term][q]*self.Z[n],
+                                -1.*self.truth_problem.operator[term][q]*self.basis_functions[n],
                                 self._riesz_solve_homogeneous_dirichlet_bc
                             )
                             solver.solve()

@@ -19,16 +19,16 @@
 from dolfin import Function, FunctionSpace
 
 def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matrix, BasisFunctionsMatrixType):
-    V = basis_functions_matrix.V_or_Z
-    assert isinstance(V, FunctionSpace)
+    space = basis_functions_matrix.space
+    assert isinstance(space, FunctionSpace)
     
-    output = BasisFunctionsMatrixType(V)
+    output = BasisFunctionsMatrixType(space)
     assert isinstance(online_matrix.M, dict)
     j = 0
     for (_, col_component_name) in sorted(basis_functions_matrix._basis_component_index_to_component_name.items()):
         for _ in range(online_matrix.M[col_component_name]):
             assert len(online_matrix[:, j]) == sum(len(functions_list) for functions_list in basis_functions_matrix._components)
-            output_j = Function(V)
+            output_j = Function(space)
             i = 0
             for (_, row_component_name) in sorted(basis_functions_matrix._basis_component_index_to_component_name.items()):
                 for fun_i in basis_functions_matrix._components[row_component_name]:
@@ -40,8 +40,10 @@ def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matr
     return output
 
 def basis_functions_matrix_mul_online_vector(basis_functions_matrix, online_vector):
-    V = basis_functions_matrix.V_or_Z
-    output = Function(V)
+    space = basis_functions_matrix.space
+    assert isinstance(space, FunctionSpace)
+    
+    output = Function(space)
     if sum(basis_functions_matrix._component_name_to_basis_component_length.values()) is 0:
         return output
     else:

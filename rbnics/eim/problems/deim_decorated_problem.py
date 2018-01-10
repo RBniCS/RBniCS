@@ -150,7 +150,7 @@ def DEIMDecoratedProblem(
                 deim_forms = list()
                 # Append forms computed with DEIM, if applicable
                 for (_, deim_approximation) in self.DEIM_approximations[term].items():
-                    deim_forms.extend(deim_approximation.Z)
+                    deim_forms.extend(deim_approximation.basis_functions)
                 # Append forms which did not require DEIM, if applicable
                 for (_, non_deim_form) in self.non_DEIM_forms[term].items():
                     deim_forms.append(non_deim_form)

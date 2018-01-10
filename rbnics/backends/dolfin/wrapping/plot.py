@@ -24,9 +24,9 @@ def plot(obj, *args, **kwargs):
     if isinstance(obj, OnlineFunction.Type()):
         assert "reduced_problem" in kwargs, "Please use this method as plot(reduced_solution, reduced_problem=my_reduced_problem) when plotting a reduced solution"
         N = obj.N
-        Z = kwargs["reduced_problem"].Z[:N]
+        basis_functions = kwargs["reduced_problem"].basis_functions[:N]
         del kwargs["reduced_problem"]
-        original_plot(Z*obj, *args, **kwargs)
+        original_plot(basis_functions*obj, *args, **kwargs)
     else:
         original_plot(obj, *args, **kwargs)
 dolfin.plot = plot

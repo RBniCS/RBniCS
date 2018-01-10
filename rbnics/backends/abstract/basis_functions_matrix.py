@@ -20,7 +20,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class BasisFunctionsMatrix(object, metaclass=ABCMeta):
-    def __init__(self, V_or_Z):
+    def __init__(self, space):
         pass
     
     @abstractmethod
@@ -43,7 +43,6 @@ class BasisFunctionsMatrix(object, metaclass=ABCMeta):
     def load(self, directory, filename):
         pass
         
-    # self * other [used e.g. to compute Z*u_N or S*eigv]
     @abstractmethod
     def __mul__(self, other):
         pass

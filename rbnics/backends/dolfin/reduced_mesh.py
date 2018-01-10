@@ -665,7 +665,7 @@ def BasicReducedMesh(backend, wrapping):
                 if not self._load_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V):
                     self._auxiliary_basis_functions_matrix[key] = self._init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V)
                     wrapping.evaluate_basis_functions_matrix_at_dofs(
-                        auxiliary_reduced_problem.Z, self._auxiliary_dofs_to_reduced_dofs[key].keys(),
+                        auxiliary_reduced_problem.basis_functions, self._auxiliary_dofs_to_reduced_dofs[key].keys(),
                         self._auxiliary_basis_functions_matrix[key], self._auxiliary_dofs_to_reduced_dofs[key].values()
                     )
                     # Save to file
@@ -746,10 +746,10 @@ class ReducedMesh(ReducedMesh_Base):
         component_as_int = components_tuple[0]
         if component_as_int is None: # all components
             # Initialize a basis function matrix for all components
-            components_name = auxiliary_reduced_problem.Z._components_name
-        elif len(auxiliary_reduced_problem.Z._components_name) is 1: # subcomponent of a problem with only one component
+            components_name = auxiliary_reduced_problem.basis_functions._components_name
+        elif len(auxiliary_reduced_problem.basis_functions._components_name) is 1: # subcomponent of a problem with only one component
             # Initialize a basis function matrix for all components
-            components_name = auxiliary_reduced_problem.Z._components_name
+            components_name = auxiliary_reduced_problem.basis_functions._components_name
         else:
             # Initialize a basis function matrix only for the required integer component
             if len(auxiliary_reduced_V._index_to_components) is 1:

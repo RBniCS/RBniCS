@@ -148,7 +148,7 @@ def basic_form_on_truth_function_space(backend, wrapping):
             truth_solution = reduced_problem_to_truth_solution[reduced_problem]
             for component in reduced_problem_to_components[reduced_problem]:
                 solution_to = _sub_from_tuple(truth_solution, component)
-                solution_from = _sub_from_tuple(reduced_problem.Z[:reduced_problem._solution.N]*reduced_problem._solution, component)
+                solution_from = _sub_from_tuple(reduced_problem.basis_functions[:reduced_problem._solution.N]*reduced_problem._solution, component)
                 backend.assign(solution_to, solution_from)
         
         # Assemble and return

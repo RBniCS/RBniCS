@@ -54,7 +54,7 @@ class EIMApproximation(ParametrizedProblem):
         self.snapshot = None # will be filled in by Function, Vector or Matrix as appropriate in the EIM preprocessing
         self.snapshot_cache = dict() # of Function, Vector or Matrix
         # Basis functions container
-        self.Z = parametrized_expression.create_basis_container()
+        self.basis_functions = parametrized_expression.create_basis_container()
         # I/O
         self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
         self.folder["cache"] = os.path.join(self.folder_prefix, "cache")
@@ -68,8 +68,8 @@ class EIMApproximation(ParametrizedProblem):
         if current_stage == "online":
             self.interpolation_locations.load(self.folder["reduced_operators"], "interpolation_locations")
             self.interpolation_matrix.load(self.folder["reduced_operators"], "interpolation_matrix")
-            self.Z.load(self.folder["basis"], "basis")
-            self.N = len(self.Z)
+            self.basis_functions.load(self.folder["basis"], "basis")
+            self.N = len(self.basis_functions)
         elif current_stage == "offline":
             # Nothing to be done
             pass
@@ -147,7 +147,7 @@ class EIMApproximation(ParametrizedProblem):
         
         # Compute the error (difference with the eim approximation)
         if N > 0:
-            error = self.snapshot - self.Z[:N]*self._interpolation_coefficients
+            error = self.snapshot - self.basis_functions[:N]*self._interpolation_coefficients
         else:
             error = copy(self.snapshot) # need a copy because it will be rescaled
         

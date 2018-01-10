@@ -21,21 +21,21 @@ from rbnics.backends.abstract import GramSchmidt as AbstractGramSchmidt
 
 def GramSchmidt(backend, wrapping):
     class _GramSchmidt(AbstractGramSchmidt):
-        def __init__(self, X):
+        def __init__(self, inner_product):
             # Inner product
-            self.X = X
+            self.inner_product = inner_product
             
-        def apply(self, Z, N_bc):
-            X = self.X
+        def apply(self, basis_functions, N_bc):
+            inner_product = self.inner_product
             
             transpose = backend.transpose
 
-            n_basis = len(Z)
-            b = Z[n_basis - 1]
+            n_basis = len(basis_functions)
+            b = basis_functions[n_basis - 1]
             for i in range(N_bc, n_basis - 1):
-                b = wrapping.gram_schmidt_projection_step(b, X, Z[i], transpose)
-            norm_b = sqrt(transpose(b)*X*b)
+                b = wrapping.gram_schmidt_projection_step(b, inner_product, basis_functions[i], transpose)
+            norm_b = sqrt(transpose(b)*inner_product*b)
             if norm_b != 0.:
                 b /= norm_b
-            Z[n_basis - 1] = b
+            basis_functions[n_basis - 1] = b
     return _GramSchmidt

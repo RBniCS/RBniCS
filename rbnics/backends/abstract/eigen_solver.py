@@ -20,7 +20,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class EigenSolver(object, metaclass=ABCMeta):
-    def __init__(self, V_or_Z, A, B=None, bcs=None):
+    def __init__(self, space, A, B=None, bcs=None):
         pass
         
     @abstractmethod

@@ -157,35 +157,35 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 if len(self.truth_problem.components) > 1:
                     for component in self.truth_problem.components:
                         print("# POD-Greedy for component", component)
-                        (Z1, N1) = self._POD_greedy_compute_basis_extension_with_orthogonal_snapshot(orthogonal_snapshot_over_time, component=component)
-                        self.reduced_problem.Z.enrich(Z1, component=component)
+                        (basis_functions1, N1) = self._POD_greedy_compute_basis_extension_with_orthogonal_snapshot(orthogonal_snapshot_over_time, component=component)
+                        self.reduced_problem.basis_functions.enrich(basis_functions1, component=component)
                         self.reduced_problem.N[component] += N1
                 else:
-                    (Z1, N1) = self._POD_greedy_compute_basis_extension_with_orthogonal_snapshot(orthogonal_snapshot_over_time)
-                    self.reduced_problem.Z.enrich(Z1)
+                    (basis_functions1, N1) = self._POD_greedy_compute_basis_extension_with_orthogonal_snapshot(orthogonal_snapshot_over_time)
+                    self.reduced_problem.basis_functions.enrich(basis_functions1)
                     self.reduced_problem.N += N1
             elif self.POD_greedy_basis_extension == "POD":
-                self.reduced_problem.Z.clear()
+                self.reduced_problem.basis_functions.clear()
                 if len(self.truth_problem.components) > 1:
                     for component in self.truth_problem.components:
                         print("# POD-Greedy for component", component)
-                        (Z2, N_plus_N2) = self._POD_greedy_compute_basis_extension_with_POD(snapshot_over_time, component=component)
-                        self.reduced_problem.Z.enrich(Z2, component=component)
+                        (basis_functions2, N_plus_N2) = self._POD_greedy_compute_basis_extension_with_POD(snapshot_over_time, component=component)
+                        self.reduced_problem.basis_functions.enrich(basis_functions2, component=component)
                         self.reduced_problem.N[component] = N_plus_N2
                 else:
-                    (Z2, N_plus_N2) = self._POD_greedy_compute_basis_extension_with_POD(snapshot_over_time)
-                    self.reduced_problem.Z.enrich(Z2)
+                    (basis_functions2, N_plus_N2) = self._POD_greedy_compute_basis_extension_with_POD(snapshot_over_time)
+                    self.reduced_problem.basis_functions.enrich(basis_functions2)
                     self.reduced_problem.N = N_plus_N2
                     
-            self.reduced_problem.Z.save(self.reduced_problem.folder["basis"], "basis")
+            self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
                 
         def _POD_greedy_orthogonalize_snapshot(self, snapshot_over_time):
             if self.reduced_problem.N > 0:
-                Z = self.reduced_problem.Z
+                basis_functions = self.reduced_problem.basis_functions
                 projected_snapshot_N_over_time = self.reduced_problem.project(snapshot_over_time, on_dirichlet_bc=False)
                 orthogonal_snapshot_over_time = SnapshotsMatrix(self.truth_problem.V)
                 for (snapshot, projected_snapshot_N) in zip(snapshot_over_time, projected_snapshot_N_over_time):
-                    orthogonal_snapshot_over_time.enrich(snapshot - Z*projected_snapshot_N)
+                    orthogonal_snapshot_over_time.enrich(snapshot - basis_functions*projected_snapshot_N)
                 return orthogonal_snapshot_over_time
             else:
                 return snapshot_over_time
@@ -200,7 +200,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 tol1 = self.tol1[component]
             POD_time_trajectory.clear()
             POD_time_trajectory.store_snapshot(orthogonal_snapshot_over_time, component=component)
-            (_, Z1, N1) = POD_time_trajectory.apply(N1, tol1)
+            (_, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
             POD_time_trajectory.print_eigenvalues(N1)
             if component is None:
                 POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs")
@@ -208,7 +208,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             else:
                 POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
                 POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
-            return (Z1, N1)
+            return (basis_functions1, N1)
             
         def _POD_greedy_compute_basis_extension_with_POD(self, snapshot_over_time, component=None):
             # First, compress the time trajectory stored in snapshot
@@ -221,7 +221,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 tol1 = self.tol1[component]
             POD_time_trajectory.clear()
             POD_time_trajectory.store_snapshot(snapshot_over_time, component=component)
-            (eigs1, Z1, N1) = POD_time_trajectory.apply(N1, tol1)
+            (eigs1, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
             POD_time_trajectory.print_eigenvalues(N1)
             
             # Then, compress parameter dependence (thus, we do not clear the POD object)
@@ -232,8 +232,8 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             else:
                 POD_basis = self.POD_basis[component]
                 tol2 = self.tol2[component]
-            POD_basis.store_snapshot(Z1, weight=[sqrt(e) for e in eigs1], component=component)
-            (_, Z2, N_plus_N2) = POD_basis.apply(self.reduced_problem.N + N2, tol2)
+            POD_basis.store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1], component=component)
+            (_, basis_functions2, N_plus_N2) = POD_basis.apply(self.reduced_problem.N + N2, tol2)
             POD_basis.print_eigenvalues(N_plus_N2)
             if component is None:
                 POD_basis.save_eigenvalues_file(self.folder["post_processing"], "eigs")
@@ -250,7 +250,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                         self.reduced_problem.riesz[term][q].clear()
                 
             # Return
-            return (Z2, N_plus_N2)
+            return (basis_functions2, N_plus_N2)
         
         # Choose the next parameter in the offline stage in a greedy fashion
         def _greedy(self):
