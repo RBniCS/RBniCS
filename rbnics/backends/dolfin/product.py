@@ -21,11 +21,14 @@ from ufl import Form
 from ufl.core.operator import Operator
 from dolfin import assemble, Constant, Expression, project
 from rbnics.backends.dolfin.affine_expansion_storage import AffineExpansionStorage_Base, AffineExpansionStorage_DirichletBC, AffineExpansionStorage_Form, AffineExpansionStorage_Function
+from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.matrix import Matrix
+from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping import function_copy, tensor_copy
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC, ProductOutputDirichletBC
 from rbnics.utils.decorators import backend_for, ComputeThetaType, list_of, overload
+from rbnics.eim.utils.decorators import add_to_map_from_parametrized_expression_to_problem, get_problem_from_parametrized_expression
 
 # Need to customize ThetaType in order to also include dolfin' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator:
 # this is the reason why in the following theta coefficients are preprocessed by float().
@@ -75,12 +78,56 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_Form):
 
 @overload
 def _product(thetas: ThetaType, operators: list_of(Form)):
-    # Keep the operators as Forms and delay assembly as long as possible
-    output = 0
-    for (theta, operator) in zip(thetas, operators):
-        theta = float(theta)
-        output += Constant(theta)*operator
-    return ProductOutput(output)
+    operators_key = tuple(operators)
+    try:
+        output = _product_forms_output_cache[operators_key]
+    except KeyError:
+        # Keep the operators as Forms and delay assembly as long as possible
+        output = 0
+        constants = list()
+        for (theta, operator) in zip(thetas, operators):
+            theta = float(theta)
+            constant = Constant(theta)
+            output += constant*operator
+            constants.append(constant)
+        output = ProductOutput(output)
+        _product_forms_output_cache[operators_key] = output
+        _product_forms_constants_cache[operators_key] = constants
+        return output
+    else:
+        constants = _product_forms_constants_cache[operators_key]
+        for (theta, constant) in zip(thetas, constants):
+            theta = float(theta)
+            constant.assign(theta)
+        return output
+_product_forms_output_cache = dict()
+_product_forms_constants_cache = dict()
+    
+@overload
+def _product(thetas: ThetaType, operators: list_of(ParametrizedTensorFactory)):
+    operators_as_forms = [operator._form for operator in operators]
+    operators_key = tuple(operators_as_forms)
+    try:
+        output = _product_parametrized_tensor_factories_output_cache[operators_key]
+    except KeyError:
+        # Keep the operators as ParametrizedTensorFactories and delay assembly as long as possible
+        output = _product(thetas, operators_as_forms)
+        output = ParametrizedTensorFactory(output.sum_product_return_value, False)
+        problems = [get_problem_from_parametrized_expression(operator) for operator in operators]
+        assert all([problem is problems[0] for problem in problems])
+        add_to_map_from_parametrized_expression_to_problem(output, problems[0])
+        output = ProductOutput(output)
+        _product_parametrized_tensor_factories_output_cache[operators_key] = output
+        _product_parametrized_tensor_factories_constants_cache[operators_key] = _product_forms_constants_cache[operators_key]
+        return output
+    else:
+        constants = _product_parametrized_tensor_factories_constants_cache[operators_key]
+        for (theta, constant) in zip(thetas, constants):
+            theta = float(theta)
+            constant.assign(theta)
+        return output
+_product_parametrized_tensor_factories_output_cache = dict()
+_product_parametrized_tensor_factories_constants_cache = dict()
     
 @overload
 def _product(thetas: ThetaType, operators: list_of(Matrix.Type())):
@@ -110,7 +157,7 @@ def _product(thetas: ThetaType, operators: list_of(Number)):
     return ProductOutput(output)
     
 @overload
-def _product(thetas: ThetaType, operators: (list_of((Form, Matrix.Type())), list_of((Form, Vector.Type())))):
+def _product(thetas: ThetaType, operators: (list_of((Form, Matrix.Type(), ParametrizedTensorFactory)), list_of((Form, ParametrizedTensorFactory, Vector.Type())))):
     # Since there are both forms and matrices/vectors among provided operators,
     # we are forced to assemble every form in order to sum them
     # with the other matrices/vectors
@@ -118,6 +165,8 @@ def _product(thetas: ThetaType, operators: (list_of((Form, Matrix.Type())), list
     for operator in operators:
         if isinstance(operator, Form):
             assembled_operators.append(assemble(operator, keep_diagonal=True))
+        elif isinstance(operator, ParametrizedTensorFactory):
+            assembled_operators.append(evaluate(operator))
         else:
             assembled_operators.append(operator)
     return _product(thetas, assembled_operators)

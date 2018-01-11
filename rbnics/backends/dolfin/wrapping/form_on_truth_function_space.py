@@ -22,7 +22,7 @@ from rbnics.utils.mpi import log, PROGRESS
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 
 def basic_form_on_truth_function_space(backend, wrapping):
-    def _basic_form_on_truth_function_space(form_wrapper):
+    def _basic_form_on_truth_function_space(form_wrapper, tensor=None):
         form = form_wrapper._form
         form_name = form_wrapper._name
         mu = get_problem_from_parametrized_expression(form_wrapper).mu
@@ -152,7 +152,7 @@ def basic_form_on_truth_function_space(backend, wrapping):
                 backend.assign(solution_to, solution_from)
         
         # Assemble and return
-        assembled_form = wrapping.assemble(form)
+        assembled_form = wrapping.assemble(form, tensor)
         assembled_form.generator = form_wrapper # for I/O
         form_rank = assembled_form.rank()
         return (assembled_form, form_rank)

@@ -21,12 +21,14 @@ from ufl import Form
 from dolfin import as_backend_type, assemble, DirichletBC, Function, FunctionSpace, has_pybind11, PETScMatrix, PETScVector, SLEPcEigenSolver
 if has_pybind11():
     from dolfin import compile_cpp_code
+from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.matrix import Matrix
+from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
-@BackendFor("dolfin", inputs=(FunctionSpace, (Matrix.Type(), Form), (Matrix.Type(), Form, None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
+@BackendFor("dolfin", inputs=(FunctionSpace, (Form, Matrix.Type(), ParametrizedTensorFactory), (Form, Matrix.Type(), ParametrizedTensorFactory, None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class EigenSolver(AbstractEigenSolver):
     def __init__(self, V, A, B=None, bcs=None):
         self.V = V
@@ -45,6 +47,11 @@ class EigenSolver(AbstractEigenSolver):
     @overload
     def _assemble_if_form(mat: Form):
         return assemble(mat, keep_diagonal=True)
+        
+    @staticmethod
+    @overload
+    def _assemble_if_form(mat: ParametrizedTensorFactory):
+        return evaluate(mat)
         
     @staticmethod
     @overload

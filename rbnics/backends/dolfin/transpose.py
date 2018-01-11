@@ -35,16 +35,42 @@ def AdditionalIsFunction(arg):
 def ConvertAdditionalFunctionTypes(arg):
     assert isinstance(arg, Operator)
     return function_from_ufl_operators(arg)
+    
+def IsForm(arg):
+    return isinstance(arg, Form)
+def IsParametrizedTensorFactory(arg):
+    from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory # cannot import at global scope due to cyclic dependence
+    return isinstance(arg, ParametrizedTensorFactory)
+    
 def AdditionalIsVector(arg):
-    return isinstance(arg, Form) and len(arg.arguments()) is 1
+    return (
+        (IsForm(arg) and len(arg.arguments()) is 1)
+            or
+        (IsParametrizedTensorFactory(arg) and len(arg._form.arguments()) is 1)
+    )
 def ConvertAdditionalVectorTypes(arg):
-    assert isinstance(arg, Form) and len(arg.arguments()) is 1
-    return assemble(arg)
+    if IsForm(arg):
+        assert len(arg.arguments()) is 1
+        return assemble(arg)
+    elif IsParametrizedTensorFactory(arg):
+        assert len(arg._form.arguments()) is 1
+        from rbnics.backends.dolfin.evaluate import evaluate # cannot import at global scope due to cyclic dependence
+        return evaluate(arg)
+
 def AdditionalIsMatrix(arg):
-    return isinstance(arg, Form) and len(arg.arguments()) is 2
+    return (
+        (IsForm(arg) and len(arg.arguments()) is 2)
+            or
+        (IsParametrizedTensorFactory(arg) and len(arg._form.arguments()) is 2)
+    )
 def ConvertAdditionalMatrixTypes(arg):
-    assert isinstance(arg, Form) and len(arg.arguments()) is 2
-    return assemble(arg)
+    if IsForm(arg):
+        assert len(arg.arguments()) is 2
+        return assemble(arg)
+    elif IsParametrizedTensorFactory(arg):
+        assert len(arg._form.arguments()) is 2
+        from rbnics.backends.dolfin.evaluate import evaluate # cannot import at global scope due to cyclic dependence
+        return evaluate(arg)
 
 backend = ModuleWrapper(BasisFunctionsMatrix, Function, FunctionsList, Matrix, TensorsList, Vector)
 wrapping = ModuleWrapper(function_to_vector, matrix_mul_vector, vector_mul_vector, vectorized_matrix_inner_vectorized_matrix)

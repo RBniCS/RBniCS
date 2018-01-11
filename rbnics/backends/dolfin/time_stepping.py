@@ -26,7 +26,9 @@ else:
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
 from rbnics.backends.basic.wrapping.petsc_ts_integrator import BasicPETScTSIntegrator
 from rbnics.backends.dolfin.assign import assign
+from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.function import Function
+from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.dolfin.wrapping import get_mpi_comm, to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, ModuleWrapper, overload
@@ -203,6 +205,10 @@ class _TimeDependentProblem_Base(object):
         assemble(residual_form, tensor=self.residual_vector)
         
     @overload
+    def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory, overwrite: bool):
+        evaluate(residual_form, tensor=self.residual_vector)
+        
+    @overload
     def _residual_vector_assemble(self, residual_vector_input: GenericVector, overwrite: bool):
         if overwrite:
             self.residual_vector = residual_vector_input
@@ -227,6 +233,10 @@ class _TimeDependentProblem_Base(object):
     @overload
     def _jacobian_matrix_assemble(self, jacobian_form: Form, overwrite: bool):
         assemble(jacobian_form, tensor=self.jacobian_matrix)
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory, overwrite: bool):
+        evaluate(jacobian_form, tensor=self.jacobian_matrix)
         
     @overload
     def _jacobian_matrix_assemble(self, jacobian_matrix_input: GenericMatrix, overwrite: bool):

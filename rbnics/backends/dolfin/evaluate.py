@@ -51,8 +51,8 @@ evaluate_base = basic_evaluate(backend, wrapping, online_backend, online_wrappin
 
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("dolfin", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), Operator, TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory), (ReducedMesh, ReducedVertices, None)))
-def evaluate(expression, at=None):
-    return _evaluate(expression, at)
+def evaluate(expression, at=None, **kwargs):
+    return _evaluate(expression, at, **kwargs)
     
 @overload
 def _evaluate(
@@ -69,9 +69,10 @@ def _evaluate(
         ReducedMesh,
         ReducedVertices,
         None
-    ) = None
+    ) = None,
+    **kwargs
 ):
-    return evaluate_base(expression, at)
+    return evaluate_base(expression, at, **kwargs)
     
 @overload
 def _evaluate(
@@ -80,6 +81,7 @@ def _evaluate(
         ReducedMesh,
         ReducedVertices,
         None
-    ) = None
+    ) = None,
+    **kwargs
 ):
-    return evaluate_base(function_from_ufl_operators(expression), at)
+    return evaluate_base(function_from_ufl_operators(expression), at, **kwargs)

@@ -19,13 +19,15 @@
 from ufl import Form
 from dolfin import assemble, DirichletBC, PETScLUSolver
 from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
-from rbnics.backends.dolfin.matrix import Matrix
-from rbnics.backends.dolfin.vector import Vector
+from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.function import Function
+from rbnics.backends.dolfin.matrix import Matrix
+from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
+from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
-@BackendFor("dolfin", inputs=((Matrix.Type(), Form), Function.Type(), (Vector.Type(), Form), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
+@BackendFor("dolfin", inputs=((Form, Matrix.Type(), ParametrizedTensorFactory), Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type()), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class LinearSolver(AbstractLinearSolver):
     def __init__(self, lhs, solution, rhs, bcs=None):
         self.solution = solution
@@ -36,6 +38,10 @@ class LinearSolver(AbstractLinearSolver):
     @overload
     def _init_lhs(self, lhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
         self.lhs = assemble(lhs, keep_diagonal=True)
+        
+    @overload
+    def _init_lhs(self, lhs: ParametrizedTensorFactory, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
+        self.lhs = evaluate(lhs)
         
     @overload
     def _init_lhs(self, lhs: Matrix.Type(), bcs: None):
@@ -50,6 +56,10 @@ class LinearSolver(AbstractLinearSolver):
     @overload
     def _init_rhs(self, rhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
         self.rhs = assemble(rhs)
+        
+    @overload
+    def _init_rhs(self, rhs: ParametrizedTensorFactory, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
+        self.rhs = evaluate(rhs)
         
     @overload
     def _init_rhs(self, rhs: Vector.Type(), bcs: None):

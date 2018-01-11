@@ -34,7 +34,7 @@ ParametrizedTensorFactory_Base = BasicParametrizedTensorFactory(backend, wrappin
 
 @BackendFor("dolfin", inputs=(Form, ))
 class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
-    def __init__(self, form):
+    def __init__(self, form, assemble_empty_snapshot=True):
         # Preprocess form
         form = expand_derivatives(form)
         # Extract spaces from forms
@@ -50,9 +50,12 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
                 form_argument_space(form, 0),
             )
         # Create empty snapshot
-        empty_snapshot = assemble(form)
-        empty_snapshot.zero()
-        empty_snapshot.generator = self
+        if assemble_empty_snapshot:
+            empty_snapshot = assemble(form, keep_diagonal=True)
+            empty_snapshot.zero()
+            empty_snapshot.generator = self
+        else:
+            empty_snapshot = None
         # Call Parent
         ParametrizedTensorFactory_Base.__init__(self, form, spaces, empty_snapshot)
     

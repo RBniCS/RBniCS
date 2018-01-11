@@ -69,9 +69,14 @@ else:
 def arithmetic_with_form(operator):
     original_operator = getattr(GenericMatrix, operator)
     def custom_operator(self, other):
+        from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory # cannot import at global scope due to cyclic dependence
         if isinstance(other, Form):
             assert len(other.arguments()) is 2
             other = assemble(other, keep_diagonal=True)
+        elif isinstance(other, ParametrizedTensorFactory):
+            from rbnics.backends.dolfin.evaluate import evaluate # cannot import at global scope due to cyclic dependence
+            assert len(other._form.arguments()) is 2
+            other = evaluate(other)
         return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)
 

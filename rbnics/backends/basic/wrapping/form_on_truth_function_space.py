@@ -16,5 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def form_on_truth_function_space(form_wrapper):
+def form_on_truth_function_space(form_wrapper, tensor=None):
     pass

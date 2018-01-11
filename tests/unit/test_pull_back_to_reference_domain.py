@@ -131,6 +131,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             self.mu = (1., 1., 0)
             self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.01, 1.0)]
             self.terms = ["a", "f"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -296,6 +297,7 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             self.mu = (pi/4.0, 0.01)
             self.mu_range = [(pi/4.0-pi/45.0, pi/4.0+pi/45.0), (0.01, 1.0)]
             self.terms = ["a", "f"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -473,6 +475,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             self.mu = (1., 1.)
             self.mu_range = [(0.1, 10.0), (0.01, 10.0)]
             self.terms = ["a", "f"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -603,6 +606,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             self.mu = (1., 1.)
             self.mu_range = [(0.5, 4.0), (1e-6, 1e-1)]
             self.terms = ["a", "f"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -753,6 +757,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             self.mu = (1., 1., 1., 1., 1., 0.)
             self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.0, pi/6.0)]
             self.terms = ["a", "b", "bt", "f", "g"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -977,6 +982,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
             self.mu = (1.,)
             self.mu_range = [(0.5, 3)]
             self.terms = ["a", "b", "bt", "stab", "f", "g"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -1159,6 +1165,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             self.mu = (1., 1.)
             self.mu_range = [(1.0, 3.5), (0.5, 2.5)]
             self.terms = ["a", "a*", "c", "c*", "m", "n", "f", "g", "h"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -1399,6 +1406,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             self.mu = (1.0, 1.0)
             self.mu_range = [(0.5, 2.0), (0.5, 1.5)]
             self.terms = ["a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "h", "l"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -1690,6 +1698,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
             self.mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
             self.mu_range = [(0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0.5, 1.5), (0., pi/6.)]
             self.terms = ["a", "f"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -1879,6 +1888,7 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
             self.mu = (1.0, 2.0)
             self.mu_range = [(1.0, 80.0), (1.5, 2.5)]
             self.terms = ["a", "b", "bt", "c", "dc", "f", "g"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()
@@ -2082,6 +2092,7 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
             self.mu = (1., )
             self.mu_range = [(0.5, 2.5)]
             self.terms = ["a", "b", "bt", "m", "f", "g"]
+            self.operator = dict()
             
         def init(self):
             self._init_operators()

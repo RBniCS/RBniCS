@@ -24,7 +24,9 @@ if has_pybind11():
 else:
     from dolfin import GenericMatrix, GenericVector
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
+from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.function import Function
+from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.dolfin.wrapping import to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
@@ -43,6 +45,10 @@ class NonlinearSolver(AbstractNonlinearSolver):
     # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
     @overload
     def _init_workaround(self, jacobian_form: Form):
+        pass
+        
+    @overload
+    def _init_workaround(self, jacobian_form: ParametrizedTensorFactory):
         pass
         
     @overload
@@ -84,6 +90,10 @@ class _NonlinearProblem(NonlinearProblem):
         assemble(residual_form, tensor=residual_vector)
         
     @overload
+    def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory, residual_vector: GenericVector):
+        evaluate(residual_form, tensor=residual_vector)
+        
+    @overload
     def _residual_vector_assemble(self, residual_vector_input: GenericVector, residual_vector_output: GenericVector):
         to_petsc4py(residual_vector_input).swap(to_petsc4py(residual_vector_output))
     
@@ -121,6 +131,11 @@ class _NonlinearProblem(NonlinearProblem):
     @overload
     def _jacobian_matrix_assemble(self, jacobian_form: Form, jacobian_matrix: GenericMatrix):
         assemble(jacobian_form, tensor=jacobian_matrix)
+        return True
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory, jacobian_matrix: GenericMatrix):
+        evaluate(jacobian_form, tensor=jacobian_matrix)
         return True
         
     @overload

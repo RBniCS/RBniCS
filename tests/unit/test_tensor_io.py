@@ -22,7 +22,7 @@ from dolfin import assemble, dx, FiniteElement, FunctionSpace, inner, MixedEleme
 from rbnics.backends.dolfin import evaluate as _evaluate, ParametrizedTensorFactory
 from rbnics.backends.dolfin.export import tensor_save
 from rbnics.backends.dolfin.import_ import tensor_load
-from rbnics.eim.utils.decorators import add_to_map_from_parametrized_expression_to_EIM_approximation
+from rbnics.eim.utils.decorators import add_to_map_from_parametrized_expression_to_problem
 
 # Meshes
 @pytest.fixture(scope="module")
@@ -106,9 +106,12 @@ generate_form_spaces_and_forms = pytest.mark.parametrize("generate_form_space, g
     (generate_collapsed_bilinear_form_space, generate_collapsed_bilinear_form)
 ])
     
-# Mock an EIM approximation to avoid triggering an assert
+# Mock problem to avoid triggering an assert
+class Problem(object):
+    mu = None
+
 def evaluate(tensor):
-    add_to_map_from_parametrized_expression_to_EIM_approximation(tensor, None)
+    add_to_map_from_parametrized_expression_to_problem(tensor, Problem())
     return _evaluate(tensor)
     
 # Prepare tensor storage for load
@@ -117,7 +120,7 @@ class Generator(object):
         self._form = form
         
 def zero_for_load(form):
-    tensor = assemble(form)
+    tensor = assemble(form, keep_diagonal=True)
     tensor.zero()
     tensor.generator = Generator(form)
     return tensor

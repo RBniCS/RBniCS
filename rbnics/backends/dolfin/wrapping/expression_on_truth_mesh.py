@@ -22,7 +22,7 @@ from rbnics.utils.mpi import log, PROGRESS
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 
 def basic_expression_on_truth_mesh(backend, wrapping):
-    def _basic_expression_on_truth_mesh(expression_wrapper):
+    def _basic_expression_on_truth_mesh(expression_wrapper, function=None):
         expression = expression_wrapper._expression
         expression_name = expression_wrapper._name
         mu = get_problem_from_parametrized_expression(expression_wrapper).mu
@@ -154,7 +154,10 @@ def basic_expression_on_truth_mesh(backend, wrapping):
         # Interpolate and return
         space = expression_wrapper._space
         wrapping.assert_lagrange_1(space)
-        interpolated_expression = backend.Function(space)
+        if function is None:
+            interpolated_expression = backend.Function(space)
+        else:
+            interpolated_expression = function
         wrapping.ufl_lagrange_interpolation(interpolated_expression, expression)
         return interpolated_expression
     

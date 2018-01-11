@@ -16,5 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-def expression_on_truth_mesh(expression_wrapper):
+def expression_on_truth_mesh(expression_wrapper, function=None):
     pass
