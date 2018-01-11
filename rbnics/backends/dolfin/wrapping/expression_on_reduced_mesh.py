@@ -20,13 +20,13 @@ from ufl.geometry import GeometricQuantity
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.io import OnlineSizeDict
-from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
+from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 
 def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_wrapping):
     def _basic_expression_on_reduced_mesh(expression_wrapper, at):
         expression = expression_wrapper._expression
         expression_name = expression_wrapper._name
-        EIM_approximation = get_EIM_approximation_from_parametrized_expression(expression_wrapper)
+        mu = get_problem_from_parametrized_expression(expression_wrapper).mu
         reduced_mesh = at.get_reduced_mesh()
         
         if (expression_name, reduced_mesh) not in expression_on_reduced_mesh__expression_cache:
@@ -165,7 +165,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
         # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
         for (truth_problem, is_solving) in required_truth_problems:
             # Solve (if necessary) ...
-            truth_problem.set_mu(EIM_approximation.mu)
+            truth_problem.set_mu(mu)
             if not is_solving:
                 log(PROGRESS, "In expression_on_reduced_mesh, requiring truth problem solve for problem " + str(truth_problem))
                 truth_problem.solve()
@@ -180,7 +180,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
         # Solve reduced problems associated to nonlinear terms
         for (reduced_problem, is_solving) in required_reduced_problems:
             # Solve (if necessary) ...
-            reduced_problem.set_mu(EIM_approximation.mu)
+            reduced_problem.set_mu(mu)
             if not is_solving:
                 log(PROGRESS, "In expression_on_reduced_mesh, requiring reduced problem solve for problem " + str(reduced_problem))
                 reduced_problem.solve()

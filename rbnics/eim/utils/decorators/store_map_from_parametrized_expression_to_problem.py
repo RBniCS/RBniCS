@@ -18,27 +18,27 @@
 
 from rbnics.utils.decorators import PreserveClassName
 
-def StoreMapFromParametrizedExpressionToEIMApproximation(EIMApproximation_DerivedClass):
+def StoreMapFromParametrizedExpressionToProblem(EIMApproximation_DerivedClass):
             
     @PreserveClassName
-    class StoreMapFromParametrizedExpressionToEIMApproximation_Class(EIMApproximation_DerivedClass):
+    class StoreMapFromParametrizedExpressionToProblem_Class(EIMApproximation_DerivedClass):
         
         def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):
             # Call the parent initialization
             EIMApproximation_DerivedClass.__init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation)
             
             # Populate problem name to problem map
-            add_to_map_from_parametrized_expression_to_EIM_approximation(parametrized_expression, self)
+            add_to_map_from_parametrized_expression_to_problem(parametrized_expression, truth_problem)
             
     # return value (a class) for the decorator
-    return StoreMapFromParametrizedExpressionToEIMApproximation_Class
+    return StoreMapFromParametrizedExpressionToProblem_Class
     
-def add_to_map_from_parametrized_expression_to_EIM_approximation(parametrized_expression, EIM_approximation):
-    assert parametrized_expression not in _parametrized_expression_to_EIM_approximation_map
-    _parametrized_expression_to_EIM_approximation_map[parametrized_expression] = EIM_approximation
+def add_to_map_from_parametrized_expression_to_problem(parametrized_expression, problem):
+    assert parametrized_expression not in _parametrized_expression_to_problem_map
+    _parametrized_expression_to_problem_map[parametrized_expression] = problem
     
-def get_EIM_approximation_from_parametrized_expression(parametrized_expression):
-    assert parametrized_expression in _parametrized_expression_to_EIM_approximation_map
-    return _parametrized_expression_to_EIM_approximation_map[parametrized_expression]
+def get_problem_from_parametrized_expression(parametrized_expression):
+    assert parametrized_expression in _parametrized_expression_to_problem_map
+    return _parametrized_expression_to_problem_map[parametrized_expression]
     
-_parametrized_expression_to_EIM_approximation_map = dict()
+_parametrized_expression_to_problem_map = dict()

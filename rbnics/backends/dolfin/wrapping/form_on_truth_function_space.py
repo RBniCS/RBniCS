@@ -19,13 +19,13 @@
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS
-from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
+from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 
 def basic_form_on_truth_function_space(backend, wrapping):
     def _basic_form_on_truth_function_space(form_wrapper):
         form = form_wrapper._form
         form_name = form_wrapper._name
-        EIM_approximation = get_EIM_approximation_from_parametrized_expression(form_wrapper)
+        mu = get_problem_from_parametrized_expression(form_wrapper).mu
         
         if form_name not in form_on_truth_function_space__reduced_problem_to_truth_solution_cache:
             visited = set()
@@ -122,7 +122,7 @@ def basic_form_on_truth_function_space(backend, wrapping):
         # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
         for (truth_problem, is_solving) in required_truth_problems:
             # Solve (if necessary) ...
-            truth_problem.set_mu(EIM_approximation.mu)
+            truth_problem.set_mu(mu)
             if not is_solving:
                 log(PROGRESS, "In form_on_truth_function_space, requiring truth problem solve for problem " + str(truth_problem))
                 truth_problem.solve()
@@ -138,7 +138,7 @@ def basic_form_on_truth_function_space(backend, wrapping):
         # Solve reduced problems associated to nonlinear terms
         for (reduced_problem, is_solving) in required_reduced_problems:
             # Solve (if necessary) ...
-            reduced_problem.set_mu(EIM_approximation.mu)
+            reduced_problem.set_mu(mu)
             if not is_solving:
                 log(PROGRESS, "In form_on_truth_function_space, requiring reduced problem solve for problem " + str(reduced_problem))
                 reduced_problem.solve()

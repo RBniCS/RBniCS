@@ -27,13 +27,13 @@ from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
-from rbnics.eim.utils.decorators import get_EIM_approximation_from_parametrized_expression
+from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 
 def basic_form_on_reduced_function_space(backend, wrapping, online_backend, online_wrapping):
     def _basic_form_on_reduced_function_space(form_wrapper, at):
         form = form_wrapper._form
         form_name = form_wrapper._name
-        EIM_approximation = get_EIM_approximation_from_parametrized_expression(form_wrapper)
+        mu = get_problem_from_parametrized_expression(form_wrapper).mu
         reduced_V = at.get_reduced_function_spaces()
         reduced_subdomain_data = at.get_reduced_subdomain_data()
         
@@ -202,7 +202,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
         for (truth_problem, is_solving) in required_truth_problems:
             # Solve (if necessary) ...
-            truth_problem.set_mu(EIM_approximation.mu)
+            truth_problem.set_mu(mu)
             if not is_solving:
                 log(PROGRESS, "In form_on_reduced_function_space, requiring truth problem solve for problem " + str(truth_problem))
                 truth_problem.solve()
@@ -217,7 +217,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         # Solve reduced problems associated to nonlinear terms
         for (reduced_problem, is_solving) in required_reduced_problems:
             # Solve (if necessary) ...
-            reduced_problem.set_mu(EIM_approximation.mu)
+            reduced_problem.set_mu(mu)
             if not is_solving:
                 log(PROGRESS, "In form_on_reduced_function_space, requiring reduced problem solve for problem " + str(reduced_problem))
                 reduced_problem.solve()

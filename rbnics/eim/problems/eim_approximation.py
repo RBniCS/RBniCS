@@ -23,10 +23,10 @@ from rbnics.backends import abs, copy, evaluate, export, import_, max
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
 from rbnics.utils.config import config
 from rbnics.utils.decorators import sync_setters
-from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToEIMApproximation
+from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToProblem
 
 # Empirical interpolation method for the interpolation of parametrized functions
-@StoreMapFromParametrizedExpressionToEIMApproximation
+@StoreMapFromParametrizedExpressionToProblem
 class EIMApproximation(ParametrizedProblem):
 
     # Default initialization of members

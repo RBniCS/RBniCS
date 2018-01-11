@@ -16,10 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.eim.utils.decorators.store_map_from_eim_approximation_to_parametrized_expression import add_to_map_from_parametrized_expression_to_EIM_approximation, get_EIM_approximation_from_parametrized_expression, StoreMapFromParametrizedExpressionToEIMApproximation
+from rbnics.eim.utils.decorators.store_map_from_parametrized_expression_to_problem import add_to_map_from_parametrized_expression_to_problem, get_problem_from_parametrized_expression, StoreMapFromParametrizedExpressionToProblem
+from rbnics.eim.utils.decorators.store_map_from_operators_to_problem import StoreMapFromOperatorsToProblem
 
 __all__ = [
-    'add_to_map_from_parametrized_expression_to_EIM_approximation',
-    'get_EIM_approximation_from_parametrized_expression',
-    'StoreMapFromParametrizedExpressionToEIMApproximation'
+    'add_to_map_from_parametrized_expression_to_problem',
+    'get_problem_from_parametrized_expression',
+    'StoreMapFromOperatorsToProblem',
+    'StoreMapFromParametrizedExpressionToProblem'
 ]
