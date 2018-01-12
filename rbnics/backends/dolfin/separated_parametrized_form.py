@@ -17,17 +17,9 @@
 #
 
 from numpy import ones
-from dolfin import Constant, has_pybind11
-if has_pybind11():
-    from dolfin.cpp.log import log, LogLevel
-    from dolfin.function.expression import BaseExpression
-    PROGRESS = LogLevel.PROGRESS
-else:
-    from dolfin import Expression as BaseExpression
-    from dolfin import log, PROGRESS
 from ufl import Argument, Form, Measure, replace
-from ufl.algebra import Sum
-from ufl.algorithms import expand_derivatives, Transformer
+from ufl.algebra import Division, Sum
+from ufl.algorithms import apply_transformer, expand_derivatives, Transformer
 from ufl.algorithms.traversal import iter_expressions
 from ufl.classes import FacetNormal
 from ufl.core.multiindex import FixedIndex, Index as MuteIndex, MultiIndex
@@ -36,6 +28,14 @@ from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
 from ufl.indexsum import IndexSum
 from ufl.tensors import ComponentTensor, ListTensor
+from dolfin import Constant, has_pybind11
+if has_pybind11():
+    from dolfin.cpp.log import log, LogLevel
+    from dolfin.function.expression import BaseExpression
+    PROGRESS = LogLevel.PROGRESS
+else:
+    from dolfin import Expression as BaseExpression
+    from dolfin import log, PROGRESS
 from rbnics.utils.decorators import BackendFor, get_problem_from_solution, ModuleWrapper
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 
@@ -94,15 +94,15 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                     tree_nodes_skip = [False for _ in pre_traversal_e]
                     for (n_i, n) in enumerate(pre_traversal_e):
                         if not tree_nodes_skip[n_i]:
-                            # Skip expressions which are an Argument or (only a) multiindex
+                            # Skip expressions which are trivially non parametrized
                             if isinstance(n, Argument):
                                 log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is an Argument")
                                 continue
+                            elif isinstance(n, Constant):
+                                log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is a Constant")
+                                continue
                             elif isinstance(n, MultiIndex):
                                 log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is a MultiIndex")
-                                continue
-                            if isinstance(n, Constant):
-                                log(PROGRESS, "\t\t Node " + str(n) + " is skipped because it is a Constant")
                                 continue
                             # Skip all expressions with at least one leaf which is an Argument
                             for t in traverse_terminals(n):
@@ -267,7 +267,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                         placeholders_dict[c] = self._placeholders[-1][-1]
                         log(PROGRESS, "\t\t " + str(placeholders_dict[c]) + " is the placeholder for " + str(c))
                     replacer = _SeparatedParametrizedForm_Replacer(placeholders_dict)
-                    new_integrand = replacer.visit(integral.integrand())
+                    new_integrand = apply_transformer(integral.integrand(), replacer)
                     self._form_with_placeholders.append(new_integrand*measure)
                 
             log(PROGRESS, "3. Assert that there are no parametrized expressions left")
