@@ -993,3 +993,69 @@ def test_separated_parametrized_forms_scalar_23():
         )
     assert "v_0 * (sum_{i_{69}} (grad(f_32))[0, i_{69}] * (grad(v_1))[i_{69}] )" == str(a23_sep._form_unchanged[0].integrals()[0].integrand())
     assert "v_0 * (grad(v_1))[0] * (grad(f_32))[1, 0]" == str(a23_sep._form_unchanged[1].integrals()[0].integrand())
+    
+@skip_in_parallel
+@pytest.mark.dependency(name="24", depends=["23"])
+def test_separated_parametrized_forms_scalar_24():
+    a24 = expr3/expr2*u*v*dx
+    a24_sep = SeparatedParametrizedForm(a24)
+    log(PROGRESS, "*** ###              FORM 24             ### ***")
+    log(PROGRESS, "This form tests a division between two expressions, which can be collected as one coefficient")
+    a24_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a24_sep.coefficients)) + "\n"
+        )
+    assert 1 == len(a24_sep.coefficients)
+    log(PROGRESS, "\tSublen coefficients:\n" +
+        "\t\t" + str(len(a24_sep.coefficients[0])) + "\n"
+        )
+    assert 1 == len(a24_sep.coefficients[0])
+    log(PROGRESS, "\tCoefficients:\n" +
+        "\t\t" + str(a24_sep.coefficients[0][0]) + "\n"
+        )
+    assert "f_7 / f_6" == str(a24_sep.coefficients[0][0])
+    log(PROGRESS, "\tPlaceholders:\n" +
+        "\t\t" + str(a24_sep._placeholders[0][0]) + "\n"
+        )
+    assert "f_85" == str(a24_sep._placeholders[0][0])
+    log(PROGRESS, "\tForms with placeholders:\n" +
+        "\t\t" + str(a24_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n"
+        )
+    assert "v_0 * v_1 * f_85" == str(a24_sep._form_with_placeholders[0].integrals()[0].integrand())
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a24_sep._form_unchanged)) + "\n"
+        )
+    assert 0 == len(a24_sep._form_unchanged)
+    
+@skip_in_parallel
+@pytest.mark.dependency(name="25", depends=["24"])
+def test_separated_parametrized_forms_scalar_25():
+    a25 = expr3*u*v/expr2*dx
+    a25_sep = SeparatedParametrizedForm(a25)
+    log(PROGRESS, "*** ###              FORM 25             ### ***")
+    log(PROGRESS, "This form tests a division between two expressions, which (in contrast to form 24) cannot be collected as one coefficient")
+    a25_sep.separate()
+    log(PROGRESS, "\tLen coefficients:\n" +
+        "\t\t" + str(len(a25_sep.coefficients)) + "\n"
+        )
+    assert 1 == len(a25_sep.coefficients)
+    log(PROGRESS, "\tSublen coefficients:\n" +
+        "\t\t" + str(len(a25_sep.coefficients[0]))
+        )
+    assert 2 == len(a25_sep.coefficients[0])
+    log(PROGRESS, "\tCoefficients:\n" +
+        "\t\t(" + str(a25_sep.coefficients[0][0]) + ", " + str(a25_sep.coefficients[0][1]) + ")\n"
+        )
+    assert "(f_6, f_7)" == "(" + str(a25_sep.coefficients[0][0]) + ", " + str(a25_sep.coefficients[0][1]) + ")"
+    log(PROGRESS, "\tPlaceholders:\n" +
+        "\t\t(" + str(a25_sep._placeholders[0][0]) + ", " + str(a25_sep._placeholders[0][1]) + ")\n"
+        )
+    assert "(f_86, f_87)" == "(" + str(a25_sep._placeholders[0][0]) + ", " + str(a25_sep._placeholders[0][1]) + ")"
+    log(PROGRESS, "\tForms with placeholders:\n" +
+        "\t\t" + str(a25_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n"
+        )
+    assert "v_0 * v_1 * f_87 / f_86" == str(a25_sep._form_with_placeholders[0].integrals()[0].integrand())
+    log(PROGRESS, "\tLen unchanged forms:\n" +
+        "\t\t" + str(len(a25_sep._form_unchanged)) + "\n"
+        )
+    assert 0 == len(a25_sep._form_unchanged)
