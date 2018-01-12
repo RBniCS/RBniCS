@@ -233,7 +233,8 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                             log(PROGRESS, "\t\t\t No preprocessing required for descendant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
                                             return candidate
                                     preprocessed_candidate = preprocess_candidate(candidate)
-                                    self._coefficients[-1].append(preprocessed_candidate)
+                                    if preprocessed_candidate not in self._coefficients[-1]:
+                                        self._coefficients[-1].append(preprocessed_candidate)
                                     log(PROGRESS, "\t\t\t Accepting descendant node " + str(preprocessed_candidate) + " as a coefficient of type " + str(type(preprocessed_candidate)))
                         else:
                             log(PROGRESS, "\t\t Node " + str(n) + " to be skipped because it is a descendant of a coefficient which has already been detected")
@@ -264,6 +265,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                     for c in integral_to_coefficients[integral]:
                         self._placeholders[-1].append(Constant(self._NaN*ones(c.ufl_shape)))
                         placeholders_dict[c] = self._placeholders[-1][-1]
+                        log(PROGRESS, "\t\t " + str(placeholders_dict[c]) + " is the placeholder for " + str(c))
                     replacer = _SeparatedParametrizedForm_Replacer(placeholders_dict)
                     new_integrand = replacer.visit(integral.integrand())
                     self._form_with_placeholders.append(new_integrand*measure)
