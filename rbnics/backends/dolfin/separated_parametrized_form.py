@@ -36,14 +36,16 @@ if has_pybind11():
 else:
     from dolfin import Expression as BaseExpression
     from dolfin import log, PROGRESS
-from rbnics.utils.decorators import BackendFor, get_problem_from_solution, ModuleWrapper
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
+from rbnics.backends.dolfin.wrapping import rewrite_quotients
+from rbnics.utils.decorators import BackendFor, get_problem_from_solution, ModuleWrapper
 
 def BasicSeparatedParametrizedForm(backend, wrapping):
     class _BasicSeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         def __init__(self, form, strict=False):
             AbstractSeparatedParametrizedForm.__init__(self, form)
             form = expand_derivatives(form)
+            form = rewrite_quotients(form)
             self._form = form
             self._coefficients = list() # of list of ParametrizedExpression
             self._placeholders = list() # of list of Constants

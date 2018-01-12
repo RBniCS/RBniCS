@@ -1013,7 +1013,7 @@ def test_separated_parametrized_forms_scalar_24():
     log(PROGRESS, "\tCoefficients:\n" +
         "\t\t" + str(a24_sep.coefficients[0][0]) + "\n"
         )
-    assert "f_7 / f_6" == str(a24_sep.coefficients[0][0])
+    assert "f_7 * 1.0 / f_6" == str(a24_sep.coefficients[0][0])
     log(PROGRESS, "\tPlaceholders:\n" +
         "\t\t" + str(a24_sep._placeholders[0][0]) + "\n"
         )
@@ -1046,7 +1046,7 @@ def test_separated_parametrized_forms_scalar_25():
     log(PROGRESS, "\tCoefficients:\n" +
         "\t\t(" + str(a25_sep.coefficients[0][0]) + ", " + str(a25_sep.coefficients[0][1]) + ")\n"
         )
-    assert "(f_6, f_7)" == "(" + str(a25_sep.coefficients[0][0]) + ", " + str(a25_sep.coefficients[0][1]) + ")"
+    assert "(1.0 / f_6, f_7)" == "(" + str(a25_sep.coefficients[0][0]) + ", " + str(a25_sep.coefficients[0][1]) + ")"
     log(PROGRESS, "\tPlaceholders:\n" +
         "\t\t(" + str(a25_sep._placeholders[0][0]) + ", " + str(a25_sep._placeholders[0][1]) + ")\n"
         )
@@ -1054,7 +1054,7 @@ def test_separated_parametrized_forms_scalar_25():
     log(PROGRESS, "\tForms with placeholders:\n" +
         "\t\t" + str(a25_sep._form_with_placeholders[0].integrals()[0].integrand()) + "\n"
         )
-    assert "v_0 * v_1 * f_87 / f_86" == str(a25_sep._form_with_placeholders[0].integrals()[0].integrand())
+    assert "f_86 * v_0 * v_1 * f_87" == str(a25_sep._form_with_placeholders[0].integrals()[0].integrand())
     log(PROGRESS, "\tLen unchanged forms:\n" +
         "\t\t" + str(len(a25_sep._form_unchanged)) + "\n"
         )
