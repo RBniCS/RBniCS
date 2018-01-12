@@ -296,6 +296,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("error", group_name="eim", operations=("mean", "max"))
+        error_analysis_table.add_column("relative_error", group_name="eim", operations=("mean", "max"))
         
         for (run, mu) in enumerate(self.testing_set):
             print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
@@ -309,6 +310,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 self.EIM_approximation.solve(n)
                 (_, error_analysis_table["error", n, run], _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
                 error_analysis_table["error", n, run] = abs(error_analysis_table["error", n, run])
+                (_, error_analysis_table["relative_error", n, run], _) = self.EIM_approximation.compute_maximum_interpolation_relative_error(n)
+                error_analysis_table["relative_error", n, run] = abs(error_analysis_table["relative_error", n, run])
         
         # Print
         print("")

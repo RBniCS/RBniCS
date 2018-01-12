@@ -156,6 +156,11 @@ class EIMApproximation(ParametrizedProblem):
         
         # Return
         return (error, maximum_error, maximum_location)
+        
+    def compute_maximum_interpolation_relative_error(self, N=None):
+        (absolute_error, maximum_absolute_error, maximum_location) = self.compute_maximum_interpolation_error(N)
+        (maximum_snapshot_value, _) = max(abs(self.snapshot))
+        return (absolute_error/maximum_snapshot_value, maximum_absolute_error/maximum_snapshot_value, maximum_location)
 
     # Export solution to file
     def export_solution(self, folder, filename, solution=None):
