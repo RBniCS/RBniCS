@@ -18,7 +18,7 @@
 
 from numpy import ones
 from ufl import Argument, Form, Measure, replace
-from ufl.algebra import Division, Sum
+from ufl.algebra import Sum
 from ufl.algorithms import apply_transformer, expand_derivatives, Transformer
 from ufl.algorithms.traversal import iter_expressions
 from ufl.classes import FacetNormal
