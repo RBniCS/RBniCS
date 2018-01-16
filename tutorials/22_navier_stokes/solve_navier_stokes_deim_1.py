@@ -20,7 +20,8 @@ from ufl import transpose
 from dolfin import *
 from rbnics import *
 
-@ExactParametrizedFunctions()
+@DEIM("online", basis_generation="Greedy")
+@ExactParametrizedFunctions("offline")
 class NavierStokes(NavierStokesProblem):
     
     # Default initialization of members
@@ -53,7 +54,7 @@ class NavierStokes(NavierStokesProblem):
         
     # Return custom problem name
     def name(self):
-        return "NavierStokesExact1"
+        return "NavierStokesDEIM1"
         
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivative({"dc": "c"})
@@ -165,12 +166,12 @@ navier_stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(navier_stokes_problem)
-pod_galerkin_method.set_Nmax(10)
+pod_galerkin_method.set_Nmax(10, DEIM=11)
 
 # 5. Perform the offline phase
 lifting_mu = (1.0,)
 navier_stokes_problem.set_mu(lifting_mu)
-pod_galerkin_method.initialize_training_set(100, sampling=EquispacedDistribution())
+pod_galerkin_method.initialize_training_set(100, DEIM=100, sampling=EquispacedDistribution())
 reduced_navier_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
@@ -180,7 +181,7 @@ reduced_navier_stokes_problem.solve()
 reduced_navier_stokes_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100)
+pod_galerkin_method.initialize_testing_set(100, DEIM=100)
 pod_galerkin_method.error_analysis()
 
 # 8. Perform a speedup analysis
