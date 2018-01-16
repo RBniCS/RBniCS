@@ -24,11 +24,12 @@ class _NonlinearProblem(object):
         self.residual_eval = residual_eval
         self.solution = solution
         self.jacobian_eval = jacobian_eval
-        self._init_bcs(bcs)
         # Preserve solution auxiliary attributes
         self.residual_vector = residual_eval(solution)
         self.jacobian_matrix = jacobian_eval(solution)
         preserve_solution_attributes(self.jacobian_matrix, self.solution, self.residual_vector)
+        # Initialize BCs
+        self._init_bcs(bcs)
     
     @overload
     def _init_bcs(self, bcs: None):
@@ -40,4 +41,4 @@ class _NonlinearProblem(object):
         
     @overload
     def _init_bcs(self, bcs: DictOfThetaType):
-        self.bcs = DirichletBC(bcs, self.sample_residual._basis_component_index_to_component_name, self.solution.vector().N)
+        self.bcs = DirichletBC(bcs, self.residual_vector._basis_component_index_to_component_name, self.solution.vector().N)
