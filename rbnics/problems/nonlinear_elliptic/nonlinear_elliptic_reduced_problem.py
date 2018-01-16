@@ -31,14 +31,18 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                 problem = self.problem
                 N = self.N
                 assembled_operator = dict()
-                assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N]))
+                assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
+                assembled_operator["c"] = sum(product(problem.compute_theta("c"), problem.operator["c"][:N]))
                 assembled_operator["f"] = sum(product(problem.compute_theta("f"), problem.operator["f"][:N]))
-                return assembled_operator["a"] - assembled_operator["f"]
+                return assembled_operator["a"]*solution + assembled_operator["c"] - assembled_operator["f"]
                 
             def jacobian_eval(self, solution):
                 problem = self.problem
                 N = self.N
-                return sum(product(problem.compute_theta("da"), problem.operator["da"][:N, :N]))
+                assembled_operator = dict()
+                assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
+                assembled_operator["dc"] = sum(product(problem.compute_theta("dc"), problem.operator["dc"][:N, :N]))
+                return assembled_operator["a"] + assembled_operator["dc"]
         
         # Internal method for error computation. Unlike the linear case, do not use the energy norm.
         def _compute_error(self, **kwargs):

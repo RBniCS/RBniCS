@@ -51,13 +51,15 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         return "NonlinearEllipticEIM"
         
     # Return theta multiplicative terms of the affine expansion of the problem.
-    @compute_theta_for_derivative({"da": "a"})
+    @compute_theta_for_derivative({"dc": "c"})
     def compute_theta(self, term):
         mu1 = self.mu[0]
         if term == "a":
             theta_a0 = 1.
-            theta_a1 = mu1
-            return (theta_a0, theta_a1)
+            return (theta_a0,)
+        elif term == "c":
+            theta_c0 = mu1
+            return (theta_c0,)
         elif term == "f":
             theta_f0 = 100.
             return (theta_f0,)
@@ -65,16 +67,19 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             raise ValueError("Invalid term for compute_theta().")
     
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
-    @assemble_operator_for_derivative({"da": "a"})
+    @assemble_operator_for_derivative({"dc": "c"})
     def assemble_operator(self, term):
         v = self.v
         dx = self.dx
         if term == "a":
+            du = self.du
+            a0 = inner(grad(du), grad(v))*dx
+            return (a0,)
+        elif term == "c":
             u = self.u
             mu2 = self.mu[1]
-            a0 = inner(grad(u), grad(v))*dx
-            a1 = (exp(mu2*u) - 1)/mu2*v*dx
-            return (a0, a1)
+            c1 = (exp(mu2*u) - 1)/mu2*v*dx
+            return (c0,)
         elif term == "f":
             f = self.f
             f0 = f*v*dx

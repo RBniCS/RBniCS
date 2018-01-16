@@ -61,7 +61,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
         return "FitzHughNagumoExact"
         
     # Return theta multiplicative terms of the affine expansion of the problem.
-    @compute_theta_for_derivative({"da": "a"})
+    @compute_theta_for_derivative({"dc": "c"})
     def compute_theta(self, term):
         if term == "m":
             theta_m0 = self.epsilon
@@ -73,6 +73,9 @@ class FitzHughNagumo(NonlinearParabolicProblem):
             theta_a2 = - self.b
             theta_a3 = self.gamma
             return (theta_a0, theta_a1, theta_a2, theta_a3)
+        elif term == "c":
+            theta_c0 = - 1.
+            return (theta_c0,)
         elif term == "f":
             t = self.t
             theta_f0 = self.c
@@ -82,7 +85,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
             raise ValueError("Invalid term for compute_theta().")
     
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
-    @assemble_operator_for_derivative({"da": "a"})
+    @assemble_operator_for_derivative({"dc": "c"})
     def assemble_operator(self, term):
         (v1, v2) = (self.v1, self.v2)
         dx = self.dx
@@ -94,10 +97,14 @@ class FitzHughNagumo(NonlinearParabolicProblem):
         elif term == "a":
             (u1, u2) = (self.u1, self.u2)
             a0 = inner(grad(u1), grad(v1))*dx
-            a1 = u2*v1*dx - self.f(u1)*v1*dx
+            a1 = u2*v1*dx
             a2 = u1*v2*dx
             a3 = u2*v2*dx
             return (a0, a1, a2, a3)
+        elif term == "c":
+            u1 = self.u1
+            c0 = self.f(u1)*v1*dx
+            return (c0,)
         elif term == "f":
             ds = self.ds
             f0 = v1*dx + v2*dx
