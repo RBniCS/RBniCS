@@ -236,7 +236,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 self._arithmetic_operations_preserve_attributes(output, other_order=1)
                 return output
             elif isinstance(other, backend.Function.Type()):
-                return backend.Function(self.__mul__(other.vector()))
+                return self.__mul__(other.vector())
             else:
                 return NotImplemented
             
