@@ -746,8 +746,8 @@ _halt_ordering_called = 0
 
 # == Helper function to remove trailing None arguments (used as default arguments) == #
 def remove_trailing_None(inputs):
-    assert isinstance(inputs, (list, set, tuple))
-    if isinstance(inputs, set):
+    assert isinstance(inputs, (array, list, set, tuple))
+    if isinstance(inputs, (array, set)):
         assert None not in inputs
         return inputs
     elif isinstance(inputs, (list, tuple)):
