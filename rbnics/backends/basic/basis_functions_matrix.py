@@ -17,10 +17,9 @@
 #
 
 from numbers import Number
-from collections import OrderedDict
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType
-from rbnics.utils.io import OnlineSizeDict
+from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
 def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
     class _BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
@@ -29,9 +28,9 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             self.mpi_comm = wrapping.get_mpi_comm(space)
             self._components = dict() # of FunctionsList
             self._precomputed_slices = dict() # from tuple to FunctionsList
-            self._basis_component_index_to_component_name = OrderedDict() # filled in by init
+            self._basis_component_index_to_component_name = BasisComponentIndexToComponentNameDict() # filled in by init
             self._components_name = list() # filled in by init
-            self._component_name_to_basis_component_index = OrderedDict() # filled in by init
+            self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict() # filled in by init
             self._component_name_to_basis_component_length = OnlineSizeDict()
 
         def init(self, components_name):
@@ -207,7 +206,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                     self._precomputed_slices[N]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N]._components[component_name])
             return self._precomputed_slices[N]
             
-        @overload((dict_of(str, int), OnlineSizeDict))
+        @overload(OnlineSizeDict)
         def _precompute_slice(self, N):
             assert set(N.keys()) == set(self._components_name)
             N_key = tuple(N[component_name] for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()))

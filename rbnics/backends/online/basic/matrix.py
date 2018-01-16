@@ -17,9 +17,8 @@
 #
 
 from numbers import Number
-from collections import OrderedDict
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
-from rbnics.utils.io import OnlineSizeDict
+from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
 def Matrix(backend, wrapping, MatrixBaseType):
     class Matrix_Class(object):
@@ -44,18 +43,18 @@ def Matrix(backend, wrapping, MatrixBaseType):
             if isinstance(M, dict):
                 assert len(M) == len(N)
                 if len(M) > 1:
-                    # ordering is important in the definition of attributes
-                    assert isinstance(M, OrderedDict)
-                    assert isinstance(N, OrderedDict)
-                basis_component_index_to_component_name_0 = OrderedDict()
-                component_name_to_basis_component_index_0 = OrderedDict()
+                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
+                    assert isinstance(M, OnlineSizeDict)
+                    assert isinstance(N, OnlineSizeDict)
+                basis_component_index_to_component_name_0 = BasisComponentIndexToComponentNameDict()
+                component_name_to_basis_component_index_0 = ComponentNameToBasisComponentIndexDict()
                 component_name_to_basis_component_length_0 = OnlineSizeDict()
                 for (component_index, (component_name, component_length)) in enumerate(M.items()):
                     basis_component_index_to_component_name_0[component_index] = component_name
                     component_name_to_basis_component_index_0[component_name] = component_index
                     component_name_to_basis_component_length_0[component_name] = component_length
-                basis_component_index_to_component_name_1 = OrderedDict()
-                component_name_to_basis_component_index_1 = OrderedDict()
+                basis_component_index_to_component_name_1 = BasisComponentIndexToComponentNameDict()
+                component_name_to_basis_component_index_1 = ComponentNameToBasisComponentIndexDict()
                 component_name_to_basis_component_length_1 = OnlineSizeDict()
                 for (component_index, (component_name, component_length)) in enumerate(N.items()):
                     basis_component_index_to_component_name_1[component_index] = component_name

@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.io.basis_component_index_to_component_name_dict import BasisComponentIndexToComponentNameDict
+from rbnics.utils.io.component_name_to_basis_component_index_dict import ComponentNameToBasisComponentIndexDict
 from rbnics.utils.io.csv_io import CSVIO
 from rbnics.utils.io.error_analysis_table import ErrorAnalysisTable
 from rbnics.utils.io.exportable_list import ExportableList
@@ -31,6 +33,8 @@ from rbnics.utils.io.text_io import TextIO
 from rbnics.utils.io.timer import Timer
 
 __all__ = [
+    'BasisComponentIndexToComponentNameDict',
+    'ComponentNameToBasisComponentIndexDict',
     'CSVIO',
     'ErrorAnalysisTable',
     'ExportableList',

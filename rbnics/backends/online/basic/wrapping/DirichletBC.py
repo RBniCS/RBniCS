@@ -16,8 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import dict_of, DictOfThetaType, overload, ThetaType
-from rbnics.utils.io import OnlineSizeDict
+from rbnics.utils.decorators import DictOfThetaType, overload, ThetaType
+from rbnics.utils.io import BasisComponentIndexToComponentNameDict, OnlineSizeDict
 
 # Implementation for empty bcs
 @overload(None, None, None)
@@ -64,7 +64,7 @@ class _DirichletBC_ThetaType(object):
             matrix[i, i] = 1.
 
 # Implementation for DictOfThetaType
-@overload(DictOfThetaType, dict_of(int, str), (dict_of(str, int), OnlineSizeDict))
+@overload(DictOfThetaType, BasisComponentIndexToComponentNameDict, OnlineSizeDict)
 def DirichletBC(bcs, basis_component_index_to_component_name=None, N=None):
     return _DirichletBC_DictOfThetaType(bcs, basis_component_index_to_component_name, N)
 

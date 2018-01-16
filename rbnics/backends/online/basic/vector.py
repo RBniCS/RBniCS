@@ -17,9 +17,8 @@
 #
 
 from numbers import Number
-from collections import OrderedDict
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
-from rbnics.utils.io import OnlineSizeDict
+from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
 def Vector(backend, wrapping, VectorBaseType):
     class Vector_Class(object):
@@ -38,9 +37,10 @@ def Vector(backend, wrapping, VectorBaseType):
             # Auxiliary attributes related to basis functions matrix
             if isinstance(N, dict):
                 if len(N) > 1:
-                    assert isinstance(N, OrderedDict) # ordering is important in the definition of attributes
-                self._basis_component_index_to_component_name = OrderedDict()
-                self._component_name_to_basis_component_index = OrderedDict()
+                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
+                    assert isinstance(N, OnlineSizeDict)
+                self._basis_component_index_to_component_name = BasisComponentIndexToComponentNameDict()
+                self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict()
                 self._component_name_to_basis_component_length = OnlineSizeDict()
                 for (component_index, (component_name, component_length)) in enumerate(N.items()):
                     self._basis_component_index_to_component_name[component_index] = component_name

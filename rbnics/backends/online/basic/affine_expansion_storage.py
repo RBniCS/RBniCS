@@ -17,14 +17,13 @@
 #
 
 import os
-from collections import OrderedDict
 from numbers import Number
 from numpy import empty as AffineExpansionStorageContent_Base
 from numpy import nditer as AffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.decorators import overload, tuple_of
-from rbnics.utils.io import Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as ContentShapeIO, TextIO as DictIO, TextIO as ScalarContentIO
+from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as ContentShapeIO, TextIO as DictIO, TextIO as ScalarContentIO
 
 def AffineExpansionStorage(backend, wrapping):
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):
@@ -244,9 +243,9 @@ def AffineExpansionStorage(backend, wrapping):
             
         def _load_dicts(self, full_directory):
             assert DictIO.exists_file(full_directory, "basis_component_index_to_component_name")
-            self._basis_component_index_to_component_name = DictIO.load_file(full_directory, "basis_component_index_to_component_name", globals={"OrderedDict": OrderedDict})
+            self._basis_component_index_to_component_name = DictIO.load_file(full_directory, "basis_component_index_to_component_name", globals={"BasisComponentIndexToComponentNameDict": BasisComponentIndexToComponentNameDict})
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_index")
-            self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index", globals={"OrderedDict": OrderedDict})
+            self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index", globals={"ComponentNameToBasisComponentIndexDict": ComponentNameToBasisComponentIndexDict})
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_length")
             self._component_name_to_basis_component_length = DictIO.load_file(full_directory, "component_name_to_basis_component_length", globals={"OnlineSizeDict": OnlineSizeDict})
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.io import OnlineSizeDict
+from collections import OrderedDict
 
-OnlineSizeType = (int, OnlineSizeDict)
+class BasisComponentIndexToComponentNameDict(OrderedDict):
+    pass
