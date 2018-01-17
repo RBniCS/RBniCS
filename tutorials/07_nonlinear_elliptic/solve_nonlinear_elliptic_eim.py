@@ -78,7 +78,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         elif term == "c":
             u = self.u
             mu2 = self.mu[1]
-            c1 = (exp(mu2*u) - 1)/mu2*v*dx
+            c0 = (exp(mu2*u) - 1)/mu2*v*dx
             return (c0,)
         elif term == "f":
             f = self.f

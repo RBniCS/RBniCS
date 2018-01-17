@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from ufl import transpose
 from dolfin import *
 from rbnics import *
 
