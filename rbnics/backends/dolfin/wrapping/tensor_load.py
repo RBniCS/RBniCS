@@ -125,11 +125,15 @@ def basic_tensor_load(backend, wrapping):
             writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
             for writer_row in range(writer_row_start, writer_row_end):
                 row = matrix_row_permutation[writer_row]
-                writer_cols, vals = writer_mat.getRow(writer_row)
+                writer_cols, writer_vals = writer_mat.getRow(writer_row)
                 cols = list()
-                for writer_col in writer_cols:
-                    cols.append(matrix_col_permutation[writer_col])
-                mat.setValues(row, cols, vals, addv=PETSc.InsertMode.INSERT)
+                vals = list()
+                for (writer_col, writer_val) in zip(writer_cols, writer_vals):
+                    if writer_val != 0.:
+                        cols.append(matrix_col_permutation[writer_col])
+                        vals.append(writer_val)
+                if len(cols) > 0:
+                    mat.setValues(row, cols, vals, addv=PETSc.InsertMode.INSERT)
             mat.assemble()
             return True
             
