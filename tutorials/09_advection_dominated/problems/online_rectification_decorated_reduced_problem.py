@@ -191,7 +191,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 intermediate_solution = OnlineFunction(N)
                 solver = LinearSolver(self.operator["projection_reduced_snapshots"][:N, :N][q], intermediate_solution, self._solution.vector())
                 solver.solve()
-                self._solution = self.operator["projection_truth_snapshots"][:N, :N][0]*intermediate_solution
+                self._solution.vector()[:] = self.operator["projection_truth_snapshots"][:N, :N][0]*intermediate_solution
                 
         def estimate_error(self):
             if self._disable_error_estimation:
