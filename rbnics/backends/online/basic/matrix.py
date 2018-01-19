@@ -46,6 +46,9 @@ def Matrix(backend, wrapping, MatrixBaseType):
                     # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
                     assert isinstance(M, OnlineSizeDict)
                     assert isinstance(N, OnlineSizeDict)
+                else:
+                    self.M = M = OnlineSizeDict(M)
+                    self.N = N = OnlineSizeDict(N)
                 basis_component_index_to_component_name_0 = BasisComponentIndexToComponentNameDict()
                 component_name_to_basis_component_index_0 = ComponentNameToBasisComponentIndexDict()
                 component_name_to_basis_component_length_0 = OnlineSizeDict()

@@ -39,6 +39,8 @@ def Vector(backend, wrapping, VectorBaseType):
                 if len(N) > 1:
                     # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
                     assert isinstance(N, OnlineSizeDict)
+                else:
+                    self.N = N = OnlineSizeDict(N)
                 self._basis_component_index_to_component_name = BasisComponentIndexToComponentNameDict()
                 self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict()
                 self._component_name_to_basis_component_length = OnlineSizeDict()
