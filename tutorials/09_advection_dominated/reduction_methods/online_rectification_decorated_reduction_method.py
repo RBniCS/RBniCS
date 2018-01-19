@@ -50,7 +50,8 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
                     print("\tonline solve options:", dict(online_solve_kwargs))
                     for mu_i in self.reduced_problem.snapshots_mu[:n]:
                         self.reduced_problem.set_mu(mu_i)
-                        error = self.reduced_problem.compute_error(n, **online_solve_kwargs)
+                        self.reduced_problem.solve(n, **online_solve_kwargs)
+                        error = self.reduced_problem.compute_error(**online_solve_kwargs)
                         print("\t\tmu = " + str(mu_i) + ", absolute error = " + str(error))
                         
             print("==============================================================")
