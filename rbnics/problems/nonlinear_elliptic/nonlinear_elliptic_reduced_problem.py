@@ -17,7 +17,6 @@
 #
 
 from rbnics.problems.base import NonlinearReducedProblem
-from rbnics.problems.base import ParametrizedReducedDifferentialProblem
 from rbnics.backends import product, sum
 
 def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
@@ -43,16 +42,6 @@ def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
                 assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
                 assembled_operator["dc"] = sum(product(problem.compute_theta("dc"), problem.operator["dc"][:N, :N]))
                 return assembled_operator["a"] + assembled_operator["dc"]
-        
-        # Internal method for error computation. Unlike the linear case, do not use the energy norm.
-        def _compute_error(self, **kwargs):
-            # Call parent of parent (!), in order not to use the energy norm
-            return ParametrizedReducedDifferentialProblem._compute_error(self, **kwargs)
-            
-        # Internal method for relative error computation. Unlike the linear case, do not use the energy norm.
-        def _compute_relative_error(self, absolute_error, **kwargs):
-            # Call parent of parent (!), in order not to use the energy norm
-            return ParametrizedReducedDifferentialProblem._compute_relative_error(self, absolute_error, **kwargs)
         
     # return value (a class) for the decorator
     return NonlinearEllipticReducedProblem_Class
