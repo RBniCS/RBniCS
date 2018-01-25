@@ -23,6 +23,7 @@ from rbnics import EquispacedDistribution, ParametrizedExpression
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
+from rbnics.problems.base import ParametrizedProblem
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
@@ -33,34 +34,43 @@ def test_eim_approximation_07(expression_type, basis_generation):
     * DEIM: test interpolation of form with integrand given by the inner product of a vector valued function
       and some derivative of a test/trial functions of a vector function space
     """
+    
+    class MockProblem(ParametrizedProblem):
+        def __init__(self, V, **kwargs):
+            ParametrizedProblem.__init__(self, "")
+            self.V = V
+            
+        def name(self):
+            return "MockProblem_07_" + expression_type + "_" + basis_generation
 
     class ParametrizedFunctionApproximation(EIMApproximation):
         def __init__(self, V, expression_type, basis_generation):
             self.V = V
             # Parametrized function to be interpolated
-            tensor_element = TensorElement(V.sub(0).ufl_element())
+            mock_problem = MockProblem(V)
             f_expression = (
                 ("1/sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)", "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )"),
                 ("10.*(1-x[0])*cos(3*pi*(pi+mu[1])*(1+x[1]))*exp(-(pi+mu[0])*(1+x[0]))", "sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)")
             )
-            f = ParametrizedExpression(self, f_expression, mu=(-1., -1.), element=tensor_element)
+            tensor_element = TensorElement(V.sub(0).ufl_element())
+            f = ParametrizedExpression(mock_problem, f_expression, mu=(-1., -1.), element=tensor_element)
             #
             folder_prefix = os.path.join("test_eim_approximation_07_tempdir", expression_type, basis_generation)
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor
-                EIMApproximation.__init__(self, None, ParametrizedExpressionFactory(f), folder_prefix, basis_generation)
+                EIMApproximation.__init__(self, mock_problem, ParametrizedExpressionFactory(f), folder_prefix, basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(V)
                 form = inner(f, grad(v))*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(V)
                 v = TestFunction(V)
                 form = inner(grad(u)*f, grad(v))*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             else: # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 

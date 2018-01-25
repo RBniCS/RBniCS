@@ -21,9 +21,9 @@ import pytest
 from dolfin import dx, FunctionSpace, IntervalMesh, pi, TestFunction, TrialFunction
 from rbnics import EquispacedDistribution, ParametrizedExpression
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory
-from rbnics.problems.base import ParametrizedProblem
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
+from rbnics.problems.base import ParametrizedProblem
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
@@ -45,7 +45,6 @@ def test_eim_approximation_10(expression_type, basis_generation):
             self.t = 0.
             self.dt = 0.
             self.T = 0.
-            self.set_mu_range([])
             
         def name(self):
             return "MockTimeDependentProblem_10_" + expression_type + "_" + basis_generation
@@ -66,25 +65,25 @@ def test_eim_approximation_10(expression_type, basis_generation):
         def __init__(self, V, expression_type, basis_generation):
             self.V = V
             # Parametrized function to be interpolated
-            self.mock_time_dependent_problem = MockTimeDependentProblem(V)
-            f = ParametrizedExpression(self.mock_time_dependent_problem, "(1-x[0])*cos(3*pi*(1+t)*(1+x[0]))*exp(-(1+t)*(1+x[0]))", mu=(), t=0., element=V.ufl_element())
+            mock_time_dependent_problem = MockTimeDependentProblem(V)
+            f = ParametrizedExpression(mock_time_dependent_problem, "(1-x[0])*cos(3*pi*(1+t)*(1+x[0]))*exp(-(1+t)*(1+x[0]))", mu=(), t=0., element=V.ufl_element())
             #
             folder_prefix = os.path.join("test_eim_approximation_10_tempdir", expression_type, basis_generation)
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor
-                TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedExpressionFactory(f), folder_prefix, basis_generation)
+                TimeDependentEIMApproximation.__init__(self, mock_time_dependent_problem, ParametrizedExpressionFactory(f), folder_prefix, basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(V)
                 form = f*v*dx
                 # Call Parent constructor
-                TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                TimeDependentEIMApproximation.__init__(self, mock_time_dependent_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(V)
                 v = TestFunction(V)
                 form = f*u*v*dx
                 # Call Parent constructor
-                TimeDependentEIMApproximation.__init__(self, self.mock_time_dependent_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                TimeDependentEIMApproximation.__init__(self, mock_time_dependent_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             else: # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 

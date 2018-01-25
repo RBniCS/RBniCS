@@ -87,13 +87,13 @@ def test_eim_approximation_16(expression_type, basis_generation):
                 v = TestFunction(self.V)
                 form = inner(f0, grad(v))*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(self.V)
                 v = TestFunction(self.V)
                 form = inner(f0, grad(u))*v*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, None, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             else: # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 
