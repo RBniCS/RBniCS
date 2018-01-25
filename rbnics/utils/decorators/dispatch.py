@@ -357,6 +357,7 @@ def dispatch(*types, **kwargs):
             if not hasattr(module, name):
                 setattr(module, name, Dispatcher(name))
             dispatcher = getattr(module, name)
+            assert isinstance(dispatcher, Dispatcher)
             dispatcher.add(types, func_or_class, on_ambiguity=on_ambiguity, replaces=replaces, replaces_if=replaces_if, expand_provided_signature=expand_provided_signature)
             if module_kwarg is None:
                 return dispatcher
