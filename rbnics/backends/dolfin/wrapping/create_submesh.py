@@ -433,8 +433,8 @@ def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, fun
         # Return
         return (mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs)
     else:
-        assert functionspace_on_mesh.ufl_element().family() == "Lagrange", "The current implementation has been tested only for Lagrange function spaces"
-        assert functionspace_on_submesh.ufl_element().family() == "Lagrange", "The current implementation has been tested only for Lagrange function spaces"
+        assert functionspace_on_mesh.ufl_element().family() in ("Lagrange", "Discontinuous Lagrange"), "The current implementation has been tested only for Lagrange or Discontinuous Lagrange function spaces"
+        assert functionspace_on_submesh.ufl_element().family() in ("Lagrange", "Discontinuous Lagrange"), "The current implementation has been tested only for Lagrange or Discontinuous Lagrange function spaces"
         mesh_element = functionspace_on_mesh.element()
         mesh_dofmap = functionspace_on_mesh.dofmap()
         submesh_element = functionspace_on_submesh.element()

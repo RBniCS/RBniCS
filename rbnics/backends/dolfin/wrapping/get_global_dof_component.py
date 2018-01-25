@@ -17,39 +17,14 @@
 #
 
 from mpi4py.MPI import MAX
-from dolfin import assemble, inner, dP, has_pybind11, TestFunction
+from dolfin import has_pybind11
 if has_pybind11():
     from dolfin import compile_cpp_code
+from rbnics.backends.dolfin.wrapping.get_global_dof_to_local_dof_map import get_global_dof_to_local_dof_map
 
-def ufl_lagrange_interpolation(output, ufl_expression):
-    V = output.function_space()
-    if V not in ufl_lagrange_interpolation._test_function:
-        ufl_lagrange_interpolation._test_function[V] = TestFunction(V)
-    v = ufl_lagrange_interpolation._test_function[V]
-    assemble(inner(v, ufl_expression)*dP, output.vector())
-ufl_lagrange_interpolation._test_function = dict()
-    
-def get_global_dof_coordinates(global_dof, V, global_to_local=None, local_dof_to_coordinates=None):
-    if global_to_local is None:
-        global_to_local = _get_global_dof_to_local_dof_map(V, V.dofmap())
-    if local_dof_to_coordinates is None:
-        local_dof_to_coordinates = _get_local_dof_to_coordinates_map(V)
-    
-    mpi_comm = V.mesh().mpi_comm()
-    if not has_pybind11():
-        mpi_comm = mpi_comm.tompi4py()
-    dof_coordinates = None
-    dof_coordinates_processor = -1
-    if global_dof in global_to_local:
-        dof_coordinates = local_dof_to_coordinates[global_to_local[global_dof]]
-        dof_coordinates_processor = mpi_comm.rank
-    dof_coordinates_processor = mpi_comm.allreduce(dof_coordinates_processor, op=MAX)
-    assert dof_coordinates_processor >= 0
-    return mpi_comm.bcast(dof_coordinates, root=dof_coordinates_processor)
-    
 def get_global_dof_component(global_dof, V, global_to_local=None, local_dof_to_component=None):
     if global_to_local is None:
-        global_to_local = _get_global_dof_to_local_dof_map(V, V.dofmap())
+        global_to_local = get_global_dof_to_local_dof_map(V, V.dofmap())
     if local_dof_to_component is None:
         local_dof_to_component = _get_local_dof_to_component_map(V)
     
@@ -65,27 +40,6 @@ def get_global_dof_component(global_dof, V, global_to_local=None, local_dof_to_c
     assert dof_component_processor >= 0
     return mpi_comm.bcast(dof_component, root=dof_component_processor)
     
-def assert_lagrange_1(space):
-    assert space.ufl_element().family() == "Lagrange", "The current implementation of evaluate relies on CG1 space"
-    assert space.ufl_element().degree() == 1, "The current implementation of evaluate relies on CG1 space"
-        
-# Auxiliary functions:
-
-def _get_global_dof_to_local_dof_map(V, dofmap):
-    if V not in _get_global_dof_to_local_dof_map._storage:
-        local_to_global = dofmap.tabulate_local_to_global_dofs()
-        local_size = dofmap.ownership_range()[1] - dofmap.ownership_range()[0]
-        global_to_local = {global_: local for (local, global_) in enumerate(local_to_global) if local < local_size}
-        _get_global_dof_to_local_dof_map._storage[V] = global_to_local
-    return _get_global_dof_to_local_dof_map._storage[V]
-_get_global_dof_to_local_dof_map._storage = dict()
-    
-def _get_local_dof_to_coordinates_map(V):
-    if V not in _get_local_dof_to_coordinates_map._storage:
-        _get_local_dof_to_coordinates_map._storage[V] = V.tabulate_dof_coordinates().reshape((-1, V.mesh().ufl_cell().topological_dimension()))
-    return _get_local_dof_to_coordinates_map._storage[V]
-_get_local_dof_to_coordinates_map._storage = dict()
-
 def _get_local_dof_to_component_map(V, component=None, dof_component_map=None, recursive=False):
     if V not in _get_local_dof_to_component_map._storage:
         if component is None:

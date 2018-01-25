@@ -21,7 +21,7 @@ from ufl.core.operator import Operator
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
-from rbnics.backends.dolfin.wrapping import assert_lagrange_1, function_from_ufl_operators, get_global_dof_coordinates, get_global_dof_component, to_petsc4py
+from rbnics.backends.dolfin.wrapping import function_from_ufl_operators, get_global_dof_coordinates, get_global_dof_component, to_petsc4py
 from rbnics.utils.decorators import backend_for, overload
 from rbnics.utils.mpi import parallel_max
 
@@ -76,7 +76,6 @@ def _abs(vector: Vector.Type()):
 def _abs(expression: (Function.Type(), Operator)):
     function = function_from_ufl_operators(expression)
     space = function.function_space()
-    assert_lagrange_1(space)
     abs_output = abs(function.vector())
     value_max = abs_output.max_abs_return_value
     global_dof_max = abs_output.max_abs_return_location

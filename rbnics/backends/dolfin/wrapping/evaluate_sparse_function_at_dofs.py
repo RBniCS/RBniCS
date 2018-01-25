@@ -21,7 +21,6 @@ from petsc4py import PETSc
 from dolfin import Function
 from rbnics.backends.dolfin.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
 from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
-from rbnics.backends.dolfin.wrapping.ufl_lagrange_interpolation import assert_lagrange_1
 
 def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, reduced_dofs_list=None):
     assert (
@@ -30,7 +29,6 @@ def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, r
         (reduced_dofs_list is None)
     )
     if output_V is None:
-        assert_lagrange_1(input_function.function_space())
         return evaluate_sparse_vector_at_dofs(input_function.vector(), dofs_list)
     else:
         vec = to_petsc4py(input_function.vector())

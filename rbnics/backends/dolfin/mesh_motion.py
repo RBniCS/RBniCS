@@ -18,7 +18,7 @@
 
 from sympy import ccode, MatrixSymbol, sympify
 from mpi4py.MPI import MAX, MIN
-from dolfin import ALE, cells, Function, FunctionSpace, has_pybind11, VectorFunctionSpace
+from dolfin import ALE, cells, Function, FunctionSpace, has_pybind11, LagrangeInterpolator, VectorFunctionSpace
 if has_pybind11():
     from dolfin.cpp.log import log, LogLevel
     from dolfin.cpp.mesh import MeshFunctionSizet
@@ -26,7 +26,7 @@ if has_pybind11():
 else:
     from dolfin import log, MeshFunctionSizet, PROGRESS
 from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
-from rbnics.backends.dolfin.wrapping import ParametrizedExpression, ufl_lagrange_interpolation
+from rbnics.backends.dolfin.wrapping import ParametrizedExpression
 from rbnics.utils.decorators import BackendFor, tuple_of
 
 @BackendFor("dolfin", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
@@ -118,7 +118,7 @@ class MeshMotion(AbstractMeshMotion):
         assert len(self.displacement_expression) == len(self.shape_parametrization_expression)
         for (subdomain, displacement_expression_on_subdomain) in enumerate(self.displacement_expression):
             displacement_function_on_subdomain = Function(self.deformation_V)
-            ufl_lagrange_interpolation(displacement_function_on_subdomain, displacement_expression_on_subdomain)
+            LagrangeInterpolator.interpolate(displacement_function_on_subdomain, displacement_expression_on_subdomain)
             subdomain_dofs = self.subdomain_id_to_deformation_dofs[subdomain]
             displacement.vector()[subdomain_dofs] = displacement_function_on_subdomain.vector()[subdomain_dofs]
         return displacement

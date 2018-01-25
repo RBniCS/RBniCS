@@ -16,7 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from ufl.core.operator import Operator
 from ufl.geometry import GeometricQuantity
+from dolfin import assign, has_pybind11, LagrangeInterpolator, project
+if has_pybind11():
+    from dolfin.function.expression import BaseExpression
+else:
+    from dolfin import Expression as BaseExpression
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.io import OnlineSizeDict
@@ -26,6 +32,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
     def _basic_expression_on_reduced_mesh(expression_wrapper, at):
         expression = expression_wrapper._expression
         expression_name = expression_wrapper._name
+        reduced_space = at.get_reduced_function_space()
         mu = get_problem_from_parametrized_expression(expression_wrapper).mu
         reduced_mesh = at.get_reduced_mesh()
         
@@ -198,12 +205,17 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                 solution_from = reduced_basis_functions[:solution_from_N]*solution_from
                 backend.assign(solution_to, solution_from)
         
-        # Interpolate and return
-        reduced_space = at.get_reduced_function_space()
-        wrapping.assert_lagrange_1(reduced_space)
-        interpolated_replaced_expression = backend.Function(reduced_space)
-        wrapping.ufl_lagrange_interpolation(interpolated_replaced_expression, replaced_expression)
-        return interpolated_replaced_expression
+        reduced_function = backend.Function(reduced_space)
+        assert isinstance(replaced_expression, (BaseExpression, backend.Function.Type(), Operator))
+        if isinstance(replaced_expression, BaseExpression):
+            LagrangeInterpolator.interpolate(reduced_function, replaced_expression)
+        elif isinstance(replaced_expression, backend.Function.Type()):
+            assign(reduced_function, replaced_expression)
+        elif isinstance(replaced_expression, Operator):
+            project(replaced_expression, reduced_space, function=reduced_function)
+        else:
+            raise ValueError("Invalid expression")
+        return reduced_function
         
     expression_on_reduced_mesh__expression_cache = dict()
     expression_on_reduced_mesh__truth_problems_cache = dict()

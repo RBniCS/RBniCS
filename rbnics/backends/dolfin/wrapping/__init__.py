@@ -54,6 +54,9 @@ from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_
 from rbnics.backends.dolfin.wrapping.get_function_norm import get_function_norm
 from rbnics.backends.dolfin.wrapping.get_function_space import get_function_space
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
+from rbnics.backends.dolfin.wrapping.get_global_dof_component import get_global_dof_component
+from rbnics.backends.dolfin.wrapping.get_global_dof_coordinates import get_global_dof_coordinates
+from rbnics.backends.dolfin.wrapping.get_global_dof_to_local_dof_map import get_global_dof_to_local_dof_map
 from rbnics.backends.dolfin.wrapping.get_mpi_comm import get_mpi_comm
 from rbnics.backends.dolfin.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from rbnics.backends.dolfin.wrapping.is_parametrized import is_parametrized
@@ -70,14 +73,12 @@ from rbnics.backends.dolfin.wrapping.solution_identify_component import solution
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.backends.dolfin.wrapping.tensor_copy import tensor_copy
 from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
-from rbnics.backends.dolfin.wrapping.ufl_lagrange_interpolation import assert_lagrange_1, get_global_dof_component, get_global_dof_coordinates, ufl_lagrange_interpolation
 from rbnics.backends.dolfin.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
     'assemble',
     'assemble_operator_for_derivative',
     'assemble_operator_for_restriction',
-    'assert_lagrange_1',
     'basis_functions_matrix_mul_online_matrix',
     'basis_functions_matrix_mul_online_vector',
     'build_dof_map_reader_mapping',
@@ -118,6 +119,7 @@ __all__ = [
     'get_function_subspace',
     'get_global_dof_component',
     'get_global_dof_coordinates',
+    'get_global_dof_to_local_dof_map',
     'get_mpi_comm',
     'gram_schmidt_projection_step',
     'is_parametrized',
@@ -139,7 +141,6 @@ __all__ = [
     'solution_iterator',
     'tensor_copy',
     'to_petsc4py',
-    'ufl_lagrange_interpolation',
     'vector_mul_vector',
     'vectorized_matrix_inner_vectorized_matrix'
 ]

@@ -21,7 +21,6 @@ from numpy import ndarray as array
 from dolfin import FunctionSpace
 from rbnics.backends.abstract import ReducedVertices as AbstractReducedVertices
 from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
-from rbnics.backends.dolfin.wrapping import assert_lagrange_1
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 from rbnics.utils.io import Folders
 
@@ -42,9 +41,6 @@ def BasicReducedVertices(backend, wrapping):
                 copy_from = None
                 key_as_slice = None
                 key_as_int = None
-                
-            # Check provided function space
-            wrapping.assert_lagrange_1(V)
                 
             # Storage for reduced mesh
             if copy_from is None:
@@ -110,7 +106,7 @@ def BasicReducedVertices(backend, wrapping):
     return _BasicReducedVertices
 
 backend = ModuleWrapper(ReducedMesh)
-wrapping = ModuleWrapper(assert_lagrange_1)
+wrapping = ModuleWrapper()
 ReducedVertices_Base = BasicReducedVertices(backend, wrapping)
 
 @BackendFor("dolfin", inputs=(FunctionSpace, ))

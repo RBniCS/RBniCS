@@ -31,7 +31,7 @@ from rbnics.backends.dolfin.proper_orthogonal_decomposition import ProperOrthogo
 from rbnics.backends.dolfin.reduced_vertices import ReducedVertices
 from rbnics.backends.dolfin.snapshots_matrix import SnapshotsMatrix
 from rbnics.backends.dolfin.wrapping import expression_description, expression_iterator, expression_name, is_parametrized, is_time_dependent
-from rbnics.utils.decorators import BackendFor, ModuleWrapper
+from rbnics.utils.decorators import BackendFor, ModuleWrapper, overload
 
 backend = ModuleWrapper(Function, FunctionsList, ProperOrthogonalDecomposition, ReducedVertices, SnapshotsMatrix)
 wrapping = ModuleWrapper(expression_iterator, expression_description=expression_description, expression_name=expression_name, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
@@ -40,28 +40,60 @@ ParametrizedExpressionFactory_Base = BasicParametrizedExpressionFactory(backend,
 @BackendFor("dolfin", inputs=((BaseExpression, Function.Type(), Operator), ))
 class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
     def __init__(self, expression):
-        # Extract mesh from expression
-        meshes = set([ufl_domain.ufl_cargo() for ufl_domain in extract_domains(expression)]) # from dolfin/fem/projection.py, _extract_function_space function
-        for t in traverse_unique_terminals(expression): # from ufl/domain.py, extract_domains
-            if hasattr(t, "_mesh"):
-                meshes.add(t._mesh)
-        assert len(meshes) is 1
-        mesh = meshes.pop()
-        # The EIM algorithm will evaluate the expression at vertices. It is thus enough
-        # to use a CG1 space.
-        shape = expression.ufl_shape
-        assert len(shape) in (0, 1, 2)
-        if len(shape) == 0:
-            space = FunctionSpace(mesh, "Lagrange", 1)
-        elif len(shape) == 1:
-            space = VectorFunctionSpace(mesh, "Lagrange", 1, dim=shape[0])
-        elif len(shape) == 2:
-            space = TensorFunctionSpace(mesh, "Lagrange", 1, shape=shape)
-        else:
-            raise ValueError("Invalid expression in ParametrizedExpressionFactory.__init__().")
+        # Generate space
+        space = _generate_space(expression)
         # Define inner product for POD
         f = TrialFunction(space)
         g = TestFunction(space)
         inner_product = assemble(inner(f, g)*dx)
         # Call Parent
         ParametrizedExpressionFactory_Base.__init__(self, expression, space, inner_product)
+
+# Space generation for BaseExpression
+@overload
+def _generate_space(expression: BaseExpression):
+    # Extract mesh from expression
+    assert hasattr(expression, "_mesh")
+    mesh = expression._mesh
+    # The EIM algorithm will evaluate the expression at vertices. It is thus enough
+    # to use a CG1 space.
+    shape = expression.ufl_shape
+    assert len(shape) in (0, 1, 2)
+    if len(shape) == 0:
+        space = FunctionSpace(mesh, "Lagrange", 1)
+    elif len(shape) == 1:
+        space = VectorFunctionSpace(mesh, "Lagrange", 1, dim=shape[0])
+    elif len(shape) == 2:
+        space = TensorFunctionSpace(mesh, "Lagrange", 1, shape=shape)
+    else:
+        raise ValueError("Invalid expression in ParametrizedExpressionFactory.__init__().")
+    return space
+
+# Space generation for Function
+@overload
+def _generate_space(expression: Function.Type()):
+    return expression.function_space()
+
+# Space generation for Operator
+@overload
+def _generate_space(expression: Operator):
+    # Extract mesh from expression
+    meshes = set([ufl_domain.ufl_cargo() for ufl_domain in extract_domains(expression)]) # from dolfin/fem/projection.py, _extract_function_space function
+    for t in traverse_unique_terminals(expression): # from ufl/domain.py, extract_domains
+        if hasattr(t, "_mesh"):
+            meshes.add(t._mesh)
+    assert len(meshes) is 1
+    mesh = meshes.pop()
+    # The EIM algorithm will evaluate the expression at vertices. However, since the Operator expression may
+    # contain e.g. a gradient of a solution defined in a C^0 space, we resort to DG1 spaces.
+    shape = expression.ufl_shape
+    assert len(shape) in (0, 1, 2)
+    if len(shape) == 0:
+        space = FunctionSpace(mesh, "Discontinuous Lagrange", 1)
+    elif len(shape) == 1:
+        space = VectorFunctionSpace(mesh, "Discontinuous Lagrange", 1, dim=shape[0])
+    elif len(shape) == 2:
+        space = TensorFunctionSpace(mesh, "Discontinuous Lagrange", 1, shape=shape)
+    else:
+        raise ValueError("Invalid expression in ParametrizedExpressionFactory.__init__().")
+    return space
