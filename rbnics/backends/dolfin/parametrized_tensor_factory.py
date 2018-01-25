@@ -26,6 +26,7 @@ from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
 from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
 from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, is_parametrized, is_time_dependent
+from rbnics.eim.utils.decorators import add_to_map_from_parametrized_expression_to_problem, get_problem_from_parametrized_expression
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 backend = ModuleWrapper(copy, HighOrderProperOrthogonalDecomposition, ReducedMesh, TensorBasisList, TensorSnapshotsList)
@@ -70,3 +71,17 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
             return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self, subdomain_data=subdomain_data)
         else:
             return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self)
+            
+    def __add__(self, other):
+        output = ParametrizedTensorFactory(self._form + other._form, False)
+        problems = [get_problem_from_parametrized_expression(operator) for operator in (self, other)]
+        assert all([problem is problems[0] for problem in problems])
+        add_to_map_from_parametrized_expression_to_problem(output, problems[0])
+        return output
+        
+    def __sub__(self, other):
+        output = ParametrizedTensorFactory(self._form - other._form, False)
+        problems = [get_problem_from_parametrized_expression(operator) for operator in (self, other)]
+        assert all([problem is problems[0] for problem in problems])
+        add_to_map_from_parametrized_expression_to_problem(output, problems[0])
+        return output
