@@ -48,8 +48,8 @@ def test_eim_approximation_09(expression_type, basis_generation):
         def __init__(self, mock_problem, expression_type, basis_generation):
             self.V = mock_problem.V
             # Parametrized function to be interpolated
-            mu = SymbolicParameters(mock_problem, V, (1., ))
-            x = SpatialCoordinate(V.mesh())
+            mu = SymbolicParameters(mock_problem, self.V, (1., ))
+            x = SpatialCoordinate(self.V.mesh())
             f = (1-x[0])*cos(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))
             #
             folder_prefix = os.path.join("test_eim_approximation_09_tempdir", expression_type, basis_generation)
@@ -58,13 +58,13 @@ def test_eim_approximation_09(expression_type, basis_generation):
                 # Call Parent constructor
                 EIMApproximation.__init__(self, mock_problem, ParametrizedExpressionFactory(f), folder_prefix, basis_generation)
             elif expression_type == "Vector":
-                v = TestFunction(V)
+                v = TestFunction(self.V)
                 form = f*v*dx
                 # Call Parent constructor
                 EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
-                u = TrialFunction(V)
-                v = TestFunction(V)
+                u = TrialFunction(self.V)
+                v = TestFunction(self.V)
                 form = f*u*v*dx
                 # Call Parent constructor
                 EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
