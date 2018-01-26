@@ -200,7 +200,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                 backend.assign(solution_to, solution_from)
         
         reduced_function = backend.Function(reduced_space)
-        wrapping.evaluate_expression(replaced_expression, reduced_function)
+        wrapping.evaluate_expression(expression, reduced_function, replaced_expression)
         return reduced_function
         
     expression_on_reduced_mesh__expression_cache = dict()

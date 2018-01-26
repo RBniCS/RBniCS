@@ -23,13 +23,15 @@ if has_pybind11():
 else:
     from dolfin import Expression as BaseExpression
 
-def evaluate_expression(expression, function):
+def evaluate_expression(expression, function, replaced_expression=None):
+    if replaced_expression is None:
+        replaced_expression = expression
     assert isinstance(expression, (BaseExpression, Function, Operator))
     if isinstance(expression, BaseExpression):
-        LagrangeInterpolator.interpolate(function, expression)
+        LagrangeInterpolator.interpolate(function, replaced_expression)
     elif isinstance(expression, Function):
-        assign(function, expression)
+        assign(function, replaced_expression)
     elif isinstance(expression, Operator):
-        project(expression, function.function_space(), function=function)
+        project(replaced_expression, function.function_space(), function=function)
     else:
         raise ValueError("Invalid expression")
