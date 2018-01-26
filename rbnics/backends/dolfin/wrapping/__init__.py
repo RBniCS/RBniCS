@@ -28,6 +28,7 @@ from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC
 from rbnics.backends.dolfin.wrapping.dofs_parallel_io_helpers import build_dof_map_writer_mapping, build_dof_map_reader_mapping
 from rbnics.backends.dolfin.wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs import evaluate_and_vectorize_sparse_matrix_at_dofs
 from rbnics.backends.dolfin.wrapping.evaluate_basis_functions_matrix_at_dofs import evaluate_basis_functions_matrix_at_dofs
+from rbnics.backends.dolfin.wrapping.evaluate_expression import evaluate_expression
 from rbnics.backends.dolfin.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
 from rbnics.backends.dolfin.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
 from rbnics.backends.dolfin.wrapping.expression_description import expression_description
@@ -92,6 +93,7 @@ __all__ = [
     'DirichletBC',
     'evaluate_and_vectorize_sparse_matrix_at_dofs',
     'evaluate_basis_functions_matrix_at_dofs',
+    'evaluate_expression',
     'evaluate_sparse_function_at_dofs',
     'evaluate_sparse_vector_at_dofs',
     'expression_description',

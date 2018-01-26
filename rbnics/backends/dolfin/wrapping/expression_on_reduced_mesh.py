@@ -16,13 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from ufl.core.operator import Operator
 from ufl.geometry import GeometricQuantity
-from dolfin import assign, has_pybind11, LagrangeInterpolator, project
-if has_pybind11():
-    from dolfin.function.expression import BaseExpression
-else:
-    from dolfin import Expression as BaseExpression
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.io import OnlineSizeDict
@@ -206,15 +200,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                 backend.assign(solution_to, solution_from)
         
         reduced_function = backend.Function(reduced_space)
-        assert isinstance(replaced_expression, (BaseExpression, backend.Function.Type(), Operator))
-        if isinstance(replaced_expression, BaseExpression):
-            LagrangeInterpolator.interpolate(reduced_function, replaced_expression)
-        elif isinstance(replaced_expression, backend.Function.Type()):
-            assign(reduced_function, replaced_expression)
-        elif isinstance(replaced_expression, Operator):
-            project(replaced_expression, reduced_space, function=reduced_function)
-        else:
-            raise ValueError("Invalid expression")
+        wrapping.evaluate_expression(replaced_expression, reduced_function)
         return reduced_function
         
     expression_on_reduced_mesh__expression_cache = dict()

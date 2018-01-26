@@ -16,12 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from ufl.core.operator import Operator
-from dolfin import assign, has_pybind11, LagrangeInterpolator, project
-if has_pybind11():
-    from dolfin.function.expression import BaseExpression
-else:
-    from dolfin import Expression as BaseExpression
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
 from rbnics.utils.mpi import log, PROGRESS
@@ -160,15 +154,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
         
         if function is None:
             function = backend.Function(space)
-        assert isinstance(expression, (BaseExpression, backend.Function.Type(), Operator))
-        if isinstance(expression, BaseExpression):
-            LagrangeInterpolator.interpolate(function, expression)
-        elif isinstance(expression, backend.Function.Type()):
-            assign(function, expression)
-        elif isinstance(expression, Operator):
-            project(expression, space, function=function)
-        else:
-            raise ValueError("Invalid expression")
+        wrapping.evaluate_expression(expression, function)
         return function
     
     expression_on_truth_mesh__truth_problems_cache = dict()
