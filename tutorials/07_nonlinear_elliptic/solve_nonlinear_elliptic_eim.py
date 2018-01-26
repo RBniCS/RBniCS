@@ -67,7 +67,6 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             raise ValueError("Invalid term for compute_theta().")
     
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
-    @assemble_operator_for_derivative({"dc": "c"})
     def assemble_operator(self, term):
         v = self.v
         dx = self.dx
@@ -80,6 +79,12 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             mu2 = self.mu[1]
             c0 = (exp(mu2*u) - 1)/mu2*v*dx
             return (c0,)
+        elif term == "dc": # preferred over derivative() computation which does not cancel out trivial mu2 factors
+            du = self.du
+            u = self.u
+            mu2 = self.mu[1]
+            dc0 = exp(mu2*u)*du*v*dx
+            return (dc0,)
         elif term == "f":
             f = self.f
             f0 = f*v*dx
