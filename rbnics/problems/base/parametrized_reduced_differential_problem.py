@@ -415,6 +415,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         """
         It asssembles the reduced order affine expansion.
         """
+        # Inner products and projection inner products
+        self._build_reduced_inner_products(current_stage)
+        # Terms
+        self._build_reduced_operators(current_stage)
+    
+    def _build_reduced_operators(self, current_stage="offline"):
+        for term in self.terms:
+            self.operator[term] = self.assemble_operator(term, current_stage)
+            
+    def _build_reduced_inner_products(self, current_stage="offline"):
         n_components = len(self.components)
         # Inner products
         if n_components > 1:
@@ -432,9 +442,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         else:
             self.projection_inner_product = self.assemble_operator("projection_inner_product", current_stage)
         self._combined_projection_inner_product = self._combine_all_projection_inner_products()
-        # Terms
-        for term in self.terms:
-            self.operator[term] = self.assemble_operator(term, current_stage)
         
     def compute_error(self, **kwargs):
         """

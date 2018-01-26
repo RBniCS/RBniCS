@@ -138,15 +138,17 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assert self.initial_condition_is_homogeneous == self.truth_problem.initial_condition_is_homogeneous
                 
         # Assemble the reduced order affine expansion.
-        def build_reduced_operators(self):
-            ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self)
+        def build_reduced_operators(self, current_stage="offline"):
+            ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self, current_stage)
             # Initial condition
-            n_components = len(self.components)
-            if n_components > 1:
+            self._build_reduced_initial_condition(current_stage)
+            
+        def _build_reduced_initial_condition(self, current_stage="offline"):
+            if len(self.components) > 1:
                 initial_condition_string = "initial_condition_{c}"
                 for component in self.components:
                     if not self.initial_condition_is_homogeneous[component]:
-                        self.initial_condition[component] = self.assemble_operator(initial_condition_string.format(c=component), "offline")
+                        self.initial_condition[component] = self.assemble_operator(initial_condition_string.format(c=component), current_stage)
             else:
                 if not self.initial_condition_is_homogeneous:
                     self.initial_condition = self.assemble_operator("initial_condition", "offline")

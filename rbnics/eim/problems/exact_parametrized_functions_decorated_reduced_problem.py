@@ -189,6 +189,14 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             self._solve__previous_self_N = None
             # Precomputation of operators is disabled
             self.folder.pop("reduced_operators")
+            
+        def init(self, current_stage="online"):
+            # Call the parent initialization
+            ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
+            # Since we do not save (offline/online separable) inner products to file,
+            # we still need to precompute them before the online stage begins
+            if current_stage == "online":
+                self._build_reduced_inner_products("offline")
         
         def _init_operators(self, current_stage="online"):
             # The offline/online separation does not hold anymore, so in assemble_operator()
@@ -199,11 +207,12 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 self._disable_load_and_save_for_online_storage(self.operator[term])
                 
         def _init_inner_products(self, current_stage="online"):
+            n_components = len(self.components)
             # We assume that offline/online separation does hold for inner products,
             # so it is possible to precompute them. However, we do not save the resulting
-            # reduced matrix to file
+            # reduced matrix to file, so we initialize inner products as if we were offline
             ParametrizedReducedDifferentialProblem_DerivedClass._init_inner_products(self, "offline")
-            if len(self.components) > 1:
+            if n_components > 1:
                 for component in self.components:
                     self._disable_load_and_save_for_online_storage(self.inner_product[component])
                     self._disable_load_and_save_for_online_storage(self.projection_inner_product[component])
@@ -234,13 +243,10 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
     
         # Assemble the reduced order affine expansion.
-        def build_reduced_operators(self, current_stage="offline"):
+        def _build_reduced_operators(self, current_stage="offline"):
+            # Terms
             if current_stage == "online":
                 log(PROGRESS, "build reduced operators (due to inefficient evaluation)")
-                # Inner products and projection inner products have been already precomputed, as they
-                # are not parametric dependent.
-                #
-                # Terms
                 for term in self.terms:
                     self.operator[term] = self.assemble_operator(term, "offline")
             else:
