@@ -86,6 +86,7 @@ def assign(backend):
             assert (object_to._basis_component_index_to_component_name is None) == (object_to._component_name_to_basis_component_index is None)
             assert (object_to._basis_component_index_to_component_name is None) == (object_to._component_name_to_basis_component_length is None)
             if object_to._basis_component_index_to_component_name is None:
+                assert not subset
                 object_to._basis_component_index_to_component_name = object_from._basis_component_index_to_component_name
                 object_to._component_name_to_basis_component_index = object_from._component_name_to_basis_component_index
                 object_to._component_name_to_basis_component_length = object_from._component_name_to_basis_component_length
@@ -95,8 +96,8 @@ def assign(backend):
                     assert object_from._component_name_to_basis_component_index == object_to._component_name_to_basis_component_index
                     assert object_from._component_name_to_basis_component_length == object_to._component_name_to_basis_component_length
                 else:
-                    assert object_to._basis_component_index_to_component_name.items() <= object_from._basis_component_index_to_component_name.items()
-                    assert object_to._component_name_to_basis_component_index.items() <= object_from._component_name_to_basis_component_index.items()
+                    assert set(object_to._basis_component_index_to_component_name.values()) <= set(object_from._basis_component_index_to_component_name.values())
+                    assert set(object_to._component_name_to_basis_component_index.keys()) <= set(object_from._component_name_to_basis_component_index.keys())
                     assert object_to._component_name_to_basis_component_length.items() <= object_from._component_name_to_basis_component_length.items()
                 
         def _preserve_matrix_attributes(self, object_to, object_from):
