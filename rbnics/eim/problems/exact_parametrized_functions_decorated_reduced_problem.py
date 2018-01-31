@@ -18,7 +18,7 @@
 
 
 import types
-from rbnics.backends import assign, copy, NonlinearProblemWrapper, TimeDependentProblem1Wrapper
+from rbnics.backends import assign, copy, LinearProblemWrapper, NonlinearProblemWrapper, TimeDependentProblem1Wrapper
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
@@ -150,7 +150,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
                 
                     class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
-                        # Override online jacobian evaluation to make sure that the truth solution is updated,
+                        # Override online residual evaluation to make sure that the truth solution is updated,
                         # and that operators are re-assembled
                         def residual_eval(self, solution):
                             # Update truth solution
@@ -173,8 +173,38 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                             assign(reduced_problem.truth_problem._solution, bak_truth_solution)
                         
                 return _AlsoDecorateNonlinearSolutionStorage_Class
+        elif issubclass(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, LinearProblemWrapper):
+            if issubclass(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, TimeDependentProblem1Wrapper):
+                @PreserveClassName
+                class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
+                
+                    class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
+                        # Override online residual evaluation to make sure that operators are re-assembled
+                        def residual_eval(self, t, solution, solution_dot):
+                            reduced_problem = self.problem
+                            # Re-assemble
+                            reduced_problem.build_reduced_operators("online")
+                            # Call Parent
+                            return ReducedParametrizedProblem_DecoratedClass.ProblemSolver.residual_eval(self, t, solution, solution_dot)
+                        
+                        # Note that jacobian evaluation is not overridden, as operators re-assembly has been already carried out
+                        # during residual evaluation
+                
+                return _AlsoDecorateNonlinearSolutionStorage_Class
+            else:
+                @PreserveClassName
+                class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
+                
+                    class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
+                        # Override to re-assemble operators before solving
+                        def solve(self):
+                            reduced_problem = self.problem
+                            reduced_problem.build_reduced_operators("online")
+                            ReducedParametrizedProblem_DecoratedClass.ProblemSolver.solve(self)
+                        
+                return _AlsoDecorateNonlinearSolutionStorage_Class
         else:
-            return ReducedParametrizedProblem_DecoratedClass
+            raise TypeError("Invalid reduced problem type")
            
     @_AlsoDecorateErrorEstimationOperators
     @_AlsoDecorateNonlinearSolutionStorage
@@ -232,15 +262,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             def error_load(self, folder, filename):
                 raise AttributeError("Cannot load from file due to inefficient evaluation")
             online_storage.load = types.MethodType(error_load, online_storage)
-            
-        # Perform an online solve (internal)
-        def _solve(self, N, **kwargs):
-            # The offline/online separation does not hold anymore, so at the reduced-order level
-            # we need to re-assemble operators, because the assemble_operator() *may* return
-            # parameter dependent operators.
-            self.build_reduced_operators("online")
-            # Then call Parent solve
-            ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
     
         # Assemble the reduced order affine expansion.
         def _build_reduced_operators(self, current_stage="offline"):
@@ -248,7 +269,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             if current_stage == "online":
                 log(PROGRESS, "build reduced operators (due to inefficient evaluation)")
                 for term in self.terms:
-                    self.operator[term] = self.assemble_operator(term, "offline")
+                    self.operator[term] = self.assemble_operator(term, "online")
             else:
                 # The offline/online separation does not hold anymore, so we cannot precompute
                 # reduced operators.
