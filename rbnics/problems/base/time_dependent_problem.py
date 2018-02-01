@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os
 from numbers import Number
 import types
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
@@ -78,58 +77,37 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._time_stepping_parameters["final_time"] = T
             
         # Export solution to file
-        def export_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+        def export_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if folder is None:
                 folder = self.folder_prefix
             if filename is None:
                 filename = "solution"
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
-            if solution_dot_over_time is None:
-                solution_dot_over_time = self._solution_dot_over_time
             assert suffix is None
-            for (k, (solution, solution_dot)) in enumerate(zip(solution_over_time, solution_dot_over_time)):
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, os.path.join(str(folder), filename), "solution", solution, component=component, suffix=k)
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, os.path.join(str(folder), filename), "solution_dot", solution_dot, component=component, suffix=k)
+            for (k, solution) in enumerate(solution_over_time):
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component=component, suffix=k)
                 
         # Import solution from file
-        def import_solution(self, folder=None, filename=None, solution_over_time=None, solution_dot_over_time=None, component=None, suffix=None):
+        def import_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if folder is None:
                 folder = self.folder_prefix
             if filename is None:
                 filename = "solution"
+            solution = Function(self.V)
             if solution_over_time is None:
-                solution = self._solution
                 solution_over_time = self._solution_over_time
-            else:
-                solution = Function(self.V)
-            if solution_dot_over_time is None:
-                solution_dot = self._solution_dot
-                solution_dot_over_time = self._solution_dot_over_time
-            else:
-                solution_dot = Function(self.V)
             assert suffix is None
             k = 0
             self.t = 0
-            self._time_stepping_parameters["initial_time"] = 0.
             del solution_over_time[:]
-            del solution_dot_over_time[:]
             while self.t <= self.T:
-                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, os.path.join(str(folder), filename), "solution", solution, component, suffix=k)
-                import_solution_dot = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, os.path.join(str(folder), filename), "solution_dot", solution_dot, component, suffix=k)
-                import_solution_and_solution_dot = import_solution and import_solution_dot
-                if import_solution_and_solution_dot:
-                    solution_over_time.append(copy(self._solution))
-                    solution_dot_over_time.append(copy(self._solution_dot))
+                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component, suffix=k)
+                if import_solution:
+                    solution_over_time.append(copy(solution))
                     k += 1
                     self.t += self.dt
                 else:
-                    if k > 0:
-                        k -= 1
-                        self.t -= self.dt
-                        assign(solution, solution_over_time[k])
-                        assign(solution_dot, solution_dot_over_time[k])
-                        self._time_stepping_parameters["initial_time"] = self.t
                     return False
             return True
                 
@@ -233,8 +211,14 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assign(self._solution_dot, self._solution_dot_cache[cache_key])
                 assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
                 assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
-            elif "Disk" in self.cache_config and self.import_solution(self.folder["cache"], cache_file):
+            elif "Disk" in self.cache_config and (
+                self.import_solution(self.folder["cache"], cache_file + "_solution", self._solution_over_time)
+                    and
+                self.import_solution(self.folder["cache"], cache_file + "_solution_dot", self._solution_dot_over_time)
+            ):
                 log(PROGRESS, "Loading truth solution from file")
+                assign(self._solution, self._solution_over_time[-1])
+                assign(self._solution_dot, self._solution_dot_over_time[-1])
                 if "RAM" in self.cache_config:
                     self._solution_cache[cache_key] = copy(self._solution)
                     self._solution_dot_cache[cache_key] = copy(self._solution_dot)
@@ -253,7 +237,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     self._solution_dot_cache[cache_key] = copy(self._solution_dot)
                     self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
                     self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
-                self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
+                # Note that we export to file regardless of config options, because they may change across different runs
+                self.export_solution(self.folder["cache"], cache_file + "_solution", self._solution_over_time)
+                self.export_solution(self.folder["cache"], cache_file + "_solution_dot", self._solution_dot_over_time)
             return self._solution_over_time
             
         class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
