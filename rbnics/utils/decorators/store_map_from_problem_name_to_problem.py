@@ -23,9 +23,9 @@ def StoreMapFromProblemNameToProblem(ParametrizedReducedDifferentialProblem_Deri
     @PreserveClassName
     class StoreMapFromProblemNameToProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         
-        def __init__(self, truth_problem, **kwargs):
+        def __init__(self, V, **kwargs):
             # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
+            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
             
             # Populate problem name to problem map
             add_to_map_from_problem_name_to_problem(self.name(), self)
