@@ -31,14 +31,14 @@ def function_load(fun, directory, filename, suffix=None):
         return _read_from_xml_file(fun, directory, filename, suffix)
     else:
         fun_V = fun.function_space()
-        if hasattr(fun_V, "_component_to_index") and len(fun_V._component_to_index) > 1:
-            for (component, index) in fun_V._component_to_index.items():
-                sub_fun_V = get_function_subspace(fun_V, component)
+        if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
+            for (index, components) in fun_V._index_to_components.items():
+                sub_fun_V = get_function_subspace(fun_V, components)
                 sub_fun = Function(sub_fun_V)
-                if not _read_from_xdmf_file(sub_fun, directory, filename, suffix, component, component):
+                if not _read_from_xdmf_file(sub_fun, directory, filename, suffix, components, components):
                     return False
                 else:
-                    extended_sub_fun = function_extend_or_restrict(sub_fun, None, fun_V, component, weight=None, copy=True)
+                    extended_sub_fun = function_extend_or_restrict(sub_fun, None, fun_V, components[0], weight=None, copy=True)
                     fun.vector().add_local(extended_sub_fun.vector().get_local())
                     fun.vector().apply("add")
             return True
@@ -58,9 +58,9 @@ def _read_from_xml_file(fun, directory, filename, suffix):
         file_ >> fun
     return file_exists
     
-def _read_from_xdmf_file(fun, directory, filename, suffix, component=None, function_name=None):
-    if component is not None:
-        filename = filename + "_component_" + component
+def _read_from_xdmf_file(fun, directory, filename, suffix, components=None, function_name=None):
+    if components is not None:
+        filename = filename + "_component_" + "".join(components)
     if function_name is None:
         function_name = "function"
     fun_rank = fun.value_rank()
@@ -73,7 +73,7 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, component=None, funct
     ):
         fun_V = fun.function_space()
         for i in range(fun_dim):
-            if component is not None:
+            if components is not None:
                 filename_i = filename + "_subcomponent_" + str(i)
             else:
                 filename_i = filename + "_component_" + str(i)
@@ -82,7 +82,7 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, component=None, funct
             if not _read_from_xdmf_file(fun_i, directory, filename_i, suffix, None, function_name):
                 return False
             else:
-                extended_sub_fun = function_extend_or_restrict(fun_i, None, fun_V, component, weight=None, copy=True)
+                extended_sub_fun = function_extend_or_restrict(fun_i, None, fun_V, components[0], weight=None, copy=True)
                 fun.vector().add_local(extended_sub_fun.vector().get_local())
                 fun.vector().apply("add")
     else:

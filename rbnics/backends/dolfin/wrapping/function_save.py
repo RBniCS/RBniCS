@@ -29,18 +29,18 @@ def has_hdf5():
 def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
     if not has_hdf5() or not has_hdf5_parallel():
-        if hasattr(fun_V, "_component_to_index") and len(fun_V._component_to_index) > 1:
-            for (component, index) in fun_V._component_to_index.items():
-                sub_fun = function_extend_or_restrict(fun, component, get_function_subspace(fun_V, component), None, weight=None, copy=True)
-                _write_to_pvd_file(sub_fun, directory, filename, suffix, component)
+        if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
+            for (index, components) in fun_V._index_to_components.items():
+                sub_fun = function_extend_or_restrict(fun, components[0], get_function_subspace(fun_V, components[0]), None, weight=None, copy=True)
+                _write_to_pvd_file(sub_fun, directory, filename, suffix, components)
         else:
             _write_to_pvd_file(fun, directory, filename, suffix)
         _write_to_xml_file(fun, directory, filename, suffix)
     else:
-        if hasattr(fun_V, "_component_to_index") and len(fun_V._component_to_index) > 1:
-            for (component, index) in fun_V._component_to_index.items():
-                sub_fun = function_extend_or_restrict(fun, component, get_function_subspace(fun_V, component), None, weight=None, copy=True)
-                _write_to_xdmf_file(sub_fun, directory, filename, suffix, component, component)
+        if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
+            for (index, components) in fun_V._index_to_components.items():
+                sub_fun = function_extend_or_restrict(fun, components[0], get_function_subspace(fun_V, components[0]), None, weight=None, copy=True)
+                _write_to_xdmf_file(sub_fun, directory, filename, suffix, components, components)
         else:
             _write_to_xdmf_file(fun, directory, filename, suffix)
     
@@ -51,9 +51,9 @@ def _write_to_xml_file(fun, directory, filename, suffix):
     file_ = File(full_filename)
     file_ << fun
     
-def _write_to_pvd_file(fun, directory, filename, suffix, component=None):
-    if component is not None:
-        filename = filename + "_component_" + component
+def _write_to_pvd_file(fun, directory, filename, suffix, components=None):
+    if components is not None:
+        filename = filename + "_component_" + "".join(components)
     fun_rank = fun.value_rank()
     fun_dim = product(fun.value_shape())
     assert fun_rank <= 2
@@ -64,7 +64,7 @@ def _write_to_pvd_file(fun, directory, filename, suffix, component=None):
     ):
         funs = fun.split(deepcopy=True)
         for (i, fun_i) in enumerate(funs):
-            if component is not None:
+            if components is not None:
                 filename_i = filename + "_subcomponent_" + str(i)
             else:
                 filename_i = filename + "_component_" + str(i)
@@ -88,9 +88,9 @@ def _write_to_pvd_file(fun, directory, filename, suffix, component=None):
             file_ = File(full_filename, "compressed")
             file_ << fun
     
-def _write_to_xdmf_file(fun, directory, filename, suffix, component=None, function_name=None):
-    if component is not None:
-        filename = filename + "_component_" + component
+def _write_to_xdmf_file(fun, directory, filename, suffix, components=None, function_name=None):
+    if components is not None:
+        filename = filename + "_component_" + "".join(components)
     if function_name is None:
         function_name = "function"
     fun_rank = fun.value_rank()
@@ -103,7 +103,7 @@ def _write_to_xdmf_file(fun, directory, filename, suffix, component=None, functi
     ):
         funs = fun.split(deepcopy=True)
         for (i, fun_i) in enumerate(funs):
-            if component is not None:
+            if components is not None:
                 filename_i = filename + "_subcomponent_" + str(i)
             else:
                 filename_i = filename + "_component_" + str(i)
