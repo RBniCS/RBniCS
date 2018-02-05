@@ -41,13 +41,15 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 self.content = content
             # Auxiliary attributes related to basis functions matrix
             if isinstance(M, dict):
-                assert len(M) == len(N)
                 if len(M) > 1:
                     # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
                     assert isinstance(M, OnlineSizeDict)
-                    assert isinstance(N, OnlineSizeDict)
                 else:
                     self.M = M = OnlineSizeDict(M)
+                if len(N) > 1:
+                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
+                    assert isinstance(N, OnlineSizeDict)
+                else:
                     self.N = N = OnlineSizeDict(N)
                 basis_component_index_to_component_name_0 = BasisComponentIndexToComponentNameDict()
                 component_name_to_basis_component_index_0 = ComponentNameToBasisComponentIndexDict()
@@ -298,9 +300,9 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
             elif other_order is 1:
                 assert self.N == other.N
-                assert self._basis_component_index_to_component_name[0] == other._basis_component_index_to_component_name
-                assert self._component_name_to_basis_component_index[0] == other._component_name_to_basis_component_index
-                assert self._component_name_to_basis_component_length[0] == other._component_name_to_basis_component_length
+                assert self._basis_component_index_to_component_name[1] == other._basis_component_index_to_component_name
+                assert self._component_name_to_basis_component_index[1] == other._component_name_to_basis_component_index
+                assert self._component_name_to_basis_component_length[1] == other._component_name_to_basis_component_length
                 
         def _arithmetic_operations_preserve_attributes(self, output, other_order=2):
             assert other_order in (0, 1, 2)
