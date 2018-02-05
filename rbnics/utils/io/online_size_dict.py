@@ -151,4 +151,4 @@ class OnlineSizeDict(OrderedDict):
                 break
             return str(value)
         else:
-            return "{" + ",".join([key + ": " + value for (key, value) in self.items()]) + "}"
+            return "{" + ", ".join([key + ": " + str(value) for (key, value) in self.items()]) + "}"
