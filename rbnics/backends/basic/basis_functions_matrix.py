@@ -23,8 +23,11 @@ from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNam
 
 def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
     class _BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
-        def __init__(self, space):
-            self.space = space
+        def __init__(self, space, component=None):
+            if component is not None:
+                self.space = wrapping.get_function_subspace(space, component)
+            else:
+                self.space = space
             self.mpi_comm = wrapping.get_mpi_comm(space)
             self._components = dict() # of FunctionsList
             self._precomputed_slices = dict() # from tuple to FunctionsList
@@ -34,23 +37,23 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             self._component_name_to_basis_component_length = OnlineSizeDict()
 
         def init(self, components_name):
-            if self._components_name != components_name: # Do nothing if it was already initialize with the same dicts
+            if self._components_name != components_name: # Do nothing if it was already initialized with the same dicts
                 # Store components name
                 self._components_name = components_name
                 # Initialize components FunctionsList
                 self._components.clear()
                 for component_name in components_name:
                     self._components[component_name] = backend.FunctionsList(self.space)
+                # Prepare len components
+                self._component_name_to_basis_component_length.clear()
+                for component_name in components_name:
+                    self._component_name_to_basis_component_length[component_name] = 0
                 # Intialize the component_name_to_basis_component_index dict, and its inverse
                 self._component_name_to_basis_component_index.clear()
                 self._basis_component_index_to_component_name.clear()
                 for (basis_component_index, component_name) in enumerate(components_name):
                     self._component_name_to_basis_component_index[component_name] = basis_component_index
                     self._basis_component_index_to_component_name[basis_component_index] = component_name
-                # Prepare len components
-                self._component_name_to_basis_component_length.clear()
-                for component_name in self._components_name:
-                    self._component_name_to_basis_component_length[component_name] = 0
                 # Reset precomputed slices
                 self._precomputed_slices.clear()
                 

@@ -20,7 +20,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class BasisFunctionsMatrix(object, metaclass=ABCMeta):
-    def __init__(self, space):
+    def __init__(self, space, component=None):
         pass
     
     @abstractmethod
