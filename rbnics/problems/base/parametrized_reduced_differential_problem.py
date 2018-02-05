@@ -190,7 +190,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # Initialize basis functions mappings
         if self.basis_functions is None: # avoid re-initializing basis functions matrix multiple times
             self.basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
-        self.basis_functions.init(self.components)
+            self.basis_functions.init(self.components)
         # Get number of components
         n_components = len(self.components)
         # Get helper strings depending on the number of basis components
