@@ -56,13 +56,21 @@ class StokesRBReduction(StokesRBReduction_Base):
         snapshot = snapshot_and_supremizer[0]
         supremizer = snapshot_and_supremizer[1]
         for component in ("u", "s", "p"):
+            N_component = self.reduced_problem.N[component]
+            N_bc_component = self.reduced_problem.N_bc[component]
             if component == "s":
                 self.reduced_problem.basis_functions.enrich(supremizer, component=component)
             else:
                 self.reduced_problem.basis_functions.enrich(snapshot, component=component)
-            self.GS[component].apply(self.reduced_problem.basis_functions[component], self.reduced_problem.N_bc[component])
+            self.GS[component].apply(self.reduced_problem.basis_functions[component], N_bc_component)
+            if component in ("u", "s"):
+                self.reduced_problem.basis_functions_us.enrich(
+                    self.reduced_problem.basis_functions[component][N_component + N_bc_component],
+                    component=component
+                )
             self.reduced_problem.N[component] += 1
         self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
+        self.reduced_problem.basis_functions_us.save(self.reduced_problem.folder["basis"], "basis_us")
     
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set.

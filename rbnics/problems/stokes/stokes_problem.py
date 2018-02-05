@@ -112,8 +112,10 @@ class StokesProblem(StokesProblem_Base):
         return self._cache_key_and_file_from_kwargs()
         
     def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
-        assert folder is not None
-        assert filename is not None
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "supremizer"
         if supremizer is None:
             supremizer = self._supremizer
         assert component is None or isinstance(component, str)
@@ -122,8 +124,10 @@ class StokesProblem(StokesProblem_Base):
         export(supremizer, folder, filename + "_" + component, suffix, component)
         
     def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
-        assert folder is not None
-        assert filename is not None
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "supremizer"
         if supremizer is None:
             supremizer = self._supremizer
         assert component is None or isinstance(component, str)

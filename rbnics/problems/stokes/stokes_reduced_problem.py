@@ -17,7 +17,10 @@
 #
 
 from rbnics.problems.base import LinearReducedProblem
-from rbnics.backends import product, sum
+from rbnics.backends import assign, BasisFunctionsMatrix, copy, product, sum, transpose
+from rbnics.backends.online import OnlineFunction, OnlineLinearSolver
+from rbnics.utils.io import OnlineSizeDict
+from rbnics.utils.mpi import log, PROGRESS
 
 def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
@@ -26,6 +29,32 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     # Base class containing the interface of a projection based ROM
     # for saddle point problems.
     class StokesReducedProblem_Class(StokesReducedProblem_Base):
+        
+        def __init__(self, truth_problem, **kwargs):
+            StokesReducedProblem_Base.__init__(self, truth_problem, **kwargs)
+            # Auxiliary storage for solution of reduced order supremizer problem (if requested through solve_supremizer)
+            self._basis_functions_us = None # BasisFunctionsMatrix
+            self._supremizer = None # OnlineFunction
+            self._supremizer_cache = dict() # of Functions
+            
+        def _init_basis_functions(self, current_stage="online"):
+            StokesReducedProblem_Base._init_basis_functions(self, current_stage)
+            if self._basis_functions_us is None:
+                self.basis_functions_us = BasisFunctionsMatrix(self.truth_problem.V, ["u", "s"])
+                self.basis_functions_us.init(["u", "s"])
+            if current_stage == "online":
+                # Load basis functions in self.basis_functions_us
+                self.basis_functions_us.load(self.folder["basis"], "basis_us")
+            elif current_stage == "offline":
+                # Store the lifting functions in self.basis_functions_us
+                for component in ("u", "s"):
+                    for n in range(self.N_bc[component]):
+                        self.basis_functions_us.enrich(
+                            self.basis_functions[component][n],
+                            component=component
+                        )
+                # Save basis functions matrix, that contains up to now only lifting functions
+                self.basis_functions_us.save(self.folder["basis"], "basis_us")
             
         class ProblemSolver(StokesReducedProblem_Base.ProblemSolver):
             def matrix_eval(self):
@@ -55,6 +84,46 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 # Restore and return
                 problem.components = components_bak
                 return bcs
+                
+        def solve_supremizer(self, solution):
+            N_us = OnlineSizeDict(solution.N) # create a copy
+            del N_us["p"]
+            cache_key = self._supremizer_cache_key_from_N_and_kwargs(N_us)
+            self._supremizer = OnlineFunction(N_us)
+            if "RAM" in self.cache_config and cache_key in self._supremizer_cache:
+                log(PROGRESS, "Loading reduced supremizer from cache")
+                assign(self._supremizer, self._supremizer_cache[cache_key])
+            else:
+                log(PROGRESS, "Solving supremizer reduced problem")
+                self._solve_supremizer(solution)
+                if "RAM" in self.cache_config:
+                    self._supremizer_cache[cache_key] = copy(self._supremizer)
+            return self._supremizer
+            
+        def _solve_supremizer(self, solution):
+            N_us = self._supremizer.N
+            N_usp = solution.N
+            assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+            assembled_operator_lhs = self.inner_product["s"][0][:N_us, :N_us]
+            assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"][:N_us, :N_usp]))
+            assembled_operator_rhs = assembled_operator_bt*solution
+            if self.dirichlet_bc["u"] and not self.dirichlet_bc_are_homogeneous["u"]:
+                assembled_dirichlet_bc = dict()
+                assert self.dirichlet_bc["s"]
+                assert self.dirichlet_bc_are_homogeneous["s"]
+                assembled_dirichlet_bc["u"] = self.compute_theta("dirichlet_bc_s")
+            else:
+                assembled_dirichlet_bc = None
+            solver = OnlineLinearSolver(
+                assembled_operator_lhs,
+                self._supremizer,
+                assembled_operator_rhs,
+                assembled_dirichlet_bc
+            )
+            solver.solve()
+            
+        def _supremizer_cache_key_from_N_and_kwargs(self, N, **kwargs):
+            return self._cache_key_from_N_and_kwargs(N, **kwargs)
         
         # Internal method for error computation
         def _compute_error(self, **kwargs):
@@ -74,17 +143,38 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 assert kwargs["components"] == components
             return StokesReducedProblem_Base._compute_relative_error(self, absolute_error, **kwargs)
             
+        def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
+            if supremizer is None:
+                supremizer = self._supremizer
+            N_us = supremizer.N
+            self.truth_problem.export_supremizer(folder, filename, self.basis_functions_us[:N_us]*supremizer, component, suffix)
+            
         # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
-            if term == "bt_restricted":
-                self.operator["bt_restricted"] = self.operator["bt"]
-                return self.operator["bt_restricted"]
-            elif term == "inner_product_s":
-                self.inner_product["s"] = self.inner_product["u"]
-                return self.inner_product["s"]
-            elif term == "projection_inner_product_s":
-                self.projection_inner_product["s"] = self.projection_inner_product["u"]
-                return self.projection_inner_product["s"]
+            if current_stage == "offline":
+                if term == "bt_restricted":
+                    assert self.Q["bt_restricted"] == self.truth_problem.Q["bt_restricted"]
+                    for q in range(self.Q["bt_restricted"]):
+                        self.operator["bt_restricted"][q] = transpose(self.basis_functions_us)*self.truth_problem.operator["bt_restricted"][q]*self.basis_functions
+                    if "reduced_operators" in self.folder:
+                        self.operator["bt_restricted"].save(self.folder["reduced_operators"], "operator_bt_restricted")
+                    return self.operator["bt_restricted"]
+                elif term == "inner_product_s":
+                    assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+                    self.inner_product["s"][0] = transpose(self.basis_functions_us)*self.truth_problem.inner_product["s"][0]*self.basis_functions_us
+                    if "reduced_operators" in self.folder:
+                        self.inner_product["s"].save(self.folder["reduced_operators"], "inner_product_s")
+                    return self.inner_product["s"]
+                elif term == "projection_inner_product_s":
+                    assert len(self.projection_inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.projection_inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+                    self.projection_inner_product["s"][0] = transpose(self.basis_functions_us)*self.truth_problem.projection_inner_product["s"][0]*self.basis_functions_us
+                    if "reduced_operators" in self.folder:
+                        self.projection_inner_product["s"].save(self.folder["reduced_operators"], "projection_inner_product_s")
+                    return self.projection_inner_product["s"]
+                else:
+                    return StokesReducedProblem_Base.assemble_operator(self, term, current_stage)
             else:
                 return StokesReducedProblem_Base.assemble_operator(self, term, current_stage)
                 
