@@ -28,6 +28,7 @@ def product(thetas, operators, thetas2=None):
 @overload
 def _product(thetas: ThetaType, operators: AffineExpansionStorage, thetas2: None):
     output = 0.
+    assert len(thetas) == len(operators)
     for (theta, operator) in zip(thetas, operators):
         output += theta*operator
     return ProductOutput(output)
@@ -35,6 +36,9 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage, thetas2: None
 @overload
 def _product(thetas: ThetaType, operators: AffineExpansionStorage, thetas2: ThetaType):
     output = 0.
+    # no checks here on the first dimension of operators should be equal to len(thetas), and
+    # similarly that the second dimension should be equal to len(thetas2), because the
+    # current operator interface does not provide a 2D len method
     for i, theta_i in enumerate(thetas):
         for j, theta2_j in enumerate(thetas2):
             output += theta_i*operators[i, j]*theta2_j
