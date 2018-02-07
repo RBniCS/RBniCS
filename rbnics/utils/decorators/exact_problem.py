@@ -45,6 +45,7 @@ def exact_problem(decorated_problem, preserve_class_name=True):
                         ExactProblem_Class.__init__(self, V, **kwargs)
             
             if not preserve_class_name:
+                assert not hasattr(ExactProblem_Class, "__is_exact__") # there would be no point in having class names like ExactExactProblem
                 setattr(ExactProblem_Class, "__name__", "Exact" + ExactProblem_Class.__name__)
                 @PreserveClassName
                 class ExactProblem_Class(ExactProblem_Class):
@@ -66,6 +67,7 @@ def exact_problem(decorated_problem, preserve_class_name=True):
             
             # Save
             _all_exact_problems[(decorated_problem, preserve_class_name)] = exact_problem
+            _all_exact_problems[(exact_problem, True)] = exact_problem # shortcut for generation of an exact problem from itself
         else:
             _all_exact_problems[(decorated_problem, preserve_class_name)] = decorated_problem
             
