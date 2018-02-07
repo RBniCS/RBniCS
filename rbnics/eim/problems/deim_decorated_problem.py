@@ -62,6 +62,8 @@ def DEIMDecoratedProblem(
                 assert stages != "offline", "This choice does not make any sense because it requires a DEIM offline stage which then is not used online"
                 assert stages == "online"
                 self._apply_DEIM_at_stages = (stages, )
+                assert hasattr(self, "_apply_exact_approximation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") after @DEIM(\"online\") decorator"
+                assert self._apply_exact_approximation_at_stages == ("offline", )
                 
             @overload(tuple_of(str))
             def _store_DEIM_stages(self, stage):
@@ -71,6 +73,7 @@ def DEIMDecoratedProblem(
                     assert stages[1] in ("offline", "online")
                     assert stages[0] != stages[1]
                 self._apply_DEIM_at_stages = stages
+                assert not hasattr(self, "_apply_exact_approximation_at_stages"), "This choice does not make any sense because there is at least a stage for which both DEIM and ExactParametrizedFunctions are required"
             
             def _init_DEIM_approximations(self):
                 # Preprocess each term in the affine expansions.

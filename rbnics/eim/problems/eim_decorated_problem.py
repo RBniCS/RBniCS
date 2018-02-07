@@ -64,6 +64,8 @@ def EIMDecoratedProblem(
                 assert stages != "offline", "This choice does not make any sense because it requires an EIM offline stage which then is not used online"
                 assert stages == "online"
                 self._apply_EIM_at_stages = (stages, )
+                assert hasattr(self, "_apply_exact_approximation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") after @EIM(\"online\") decorator"
+                assert self._apply_exact_approximation_at_stages == ("offline", )
                 
             @overload(tuple_of(str))
             def _store_EIM_stages(self, stage):
@@ -73,6 +75,7 @@ def EIMDecoratedProblem(
                     assert stages[1] in ("offline", "online")
                     assert stages[0] != stages[1]
                 self._apply_EIM_at_stages = stages
+                assert not hasattr(self, "_apply_exact_approximation_at_stages"), "This choice does not make any sense because there is at least a stage for which both EIM and ExactParametrizedFunctions are required"
                 
             def _init_EIM_approximations(self):
                 # Preprocess each term in the affine expansions.
