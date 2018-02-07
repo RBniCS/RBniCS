@@ -47,11 +47,8 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                         (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
                         truth_problem = get_problem_from_solution(truth_solution)
                         truth_problems.append(truth_problem)
-                        # Init truth problem (if required), as it may not have been initialized
-                        truth_problem.init()
                         # Store the corresponding exact truth problem
                         exact_truth_problem = exact_problem(truth_problem)
-                        exact_truth_problem.init()
                         truth_problem_to_exact_truth_problem[truth_problem] = exact_truth_problem
                         # Store the solution
                         truth_problem_to_truth_solution[truth_problem] = truth_solution
@@ -104,10 +101,14 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                             and
                         "offline" in truth_problem._apply_exact_approximation_at_stages
                     ):
+                        # Init truth problem (if required), as it may not have been initialized
+                        truth_problem.init()
                         # Append to list of required truth problems which are not currently solving
                         required_truth_problems.append((truth_problem, False))
                     else:
                         exact_truth_problem = truth_problem_to_exact_truth_problem[truth_problem]
+                        # Init exact truth problem (if required), as it may not have been initialized
+                        exact_truth_problem.init()
                         # Store the component
                         if exact_truth_problem not in truth_problem_to_components:
                             truth_problem_to_components[exact_truth_problem] = truth_problem_to_components[truth_problem]
