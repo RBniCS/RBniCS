@@ -274,16 +274,19 @@ class EIMApproximationReductionMethod(ReductionMethod):
     
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the testing set
-    def error_analysis(self, N=None, filename=None, **kwargs):
-        if N is None:
-            N = self.EIM_approximation.N
+    def error_analysis(self, N_generator=None, filename=None, **kwargs):
         assert len(kwargs) == 0 # not used in this method
             
         self._init_error_analysis(**kwargs)
-        self._error_analysis(N, filename, **kwargs)
+        self._error_analysis(N_generator, filename, **kwargs)
         self._finalize_error_analysis(**kwargs)
         
-    def _error_analysis(self, N=None, filename=None, **kwargs):
+    def _error_analysis(self, N_generator=None, filename=None, **kwargs):
+        if N_generator is None:
+            def N_generator(n):
+                return n
+                
+        N = self.EIM_approximation.N
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
@@ -307,7 +310,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.evaluate_parametrized_expression()
             
             for n in range(1, N + 1): # n = 1, ... N
-                self.EIM_approximation.solve(n)
+                n_arg = N_generator(n)
+                self.EIM_approximation.solve(n_arg)
                 (_, error_analysis_table["error", n, run], _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
                 error_analysis_table["error", n, run] = abs(error_analysis_table["error", n, run])
                 (_, error_analysis_table["relative_error", n, run], _) = self.EIM_approximation.compute_maximum_interpolation_relative_error(n)
@@ -329,13 +333,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
     # Compute the speedup of the empirical interpolation approximation with respect to the
     # exact function over the testing set
-    def speedup_analysis(self, N=None, filename=None, **kwargs):
-        if N is None:
-            N = self.EIM_approximation.N
+    def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
         assert len(kwargs) == 0 # not used in this method
             
         self._init_speedup_analysis(**kwargs)
-        self._speedup_analysis(N, filename, **kwargs)
+        self._speedup_analysis(N_generator, filename, **kwargs)
         self._finalize_speedup_analysis(**kwargs)
         
     # Initialize data structures required for the speedup analysis phase
@@ -353,7 +355,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
             pass
         self.EIM_approximation.export_solution = types.MethodType(disabled_export_solution, self.EIM_approximation)
         
-    def _speedup_analysis(self, N=None, filename=None, **kwargs):
+    def _speedup_analysis(self, N_generator=None, filename=None, **kwargs):
+        if N_generator is None:
+            def N_generator(n):
+                return n
+                
+        N = self.EIM_approximation.N
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
@@ -381,8 +388,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
             elapsed_evaluate = evaluate_timer.stop()
             
             for n in range(1, N + 1): # n = 1, ... N
+                n_arg = N_generator(n)
                 EIM_timer.start()
-                self.EIM_approximation.solve(n)
+                self.EIM_approximation.solve(n_arg)
                 elapsed_EIM = EIM_timer.stop()
                 speedup_analysis_table["speedup", n, run] = elapsed_evaluate/elapsed_EIM
         

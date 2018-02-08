@@ -191,26 +191,30 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
                 self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
        
-        def error_analysis(self, N=None, filename=None, **kwargs):
+        def error_analysis(self, N_generator=None, filename=None, **kwargs):
             """
             It computes the error of the reduced order approximation with respect to the full order one
             over the testing set
             
             :param N: dimension of the reduced problem.
             """
-            N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
-            if isinstance(N, dict):
-                N = min(N.values())
-            
             self._init_error_analysis(**kwargs)
-            self._error_analysis(N, filename, **kwargs)
+            self._error_analysis(N_generator, filename, **kwargs)
             self._finalize_error_analysis(**kwargs)
             
-        def _error_analysis(self, N=None, filename=None, **kwargs):
+        def _error_analysis(self, N_generator=None, filename=None, **kwargs):
+            if N_generator is None:
+                def N_generator(n):
+                    return n
+                    
             if "components" in kwargs:
                 components = kwargs["components"]
             else:
                 components = self.truth_problem.components
+                
+            N = self.reduced_problem.N
+            if isinstance(N, dict):
+                N = min(N.values())
                 
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " error analysis begins") + "=")
@@ -231,7 +235,9 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.reduced_problem.set_mu(mu)
                             
                 for n in range(1, N + 1): # n = 1, ... N
-                    self.reduced_problem.solve(n, **kwargs)
+                    n_arg = N_generator(n)
+                    
+                    self.reduced_problem.solve(n_arg, **kwargs)
                     error = self.reduced_problem.compute_error(**kwargs)
                     relative_error = self.reduced_problem.compute_relative_error(**kwargs)
                     if len(components) > 1:
@@ -260,22 +266,26 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             # Export error analysis table
             error_analysis_table.save(self.folder["error_analysis"], "error_analysis" if filename is None else filename)
         
-        def speedup_analysis(self, N=None, filename=None, **kwargs):
+        def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
             """
             It computes the speedup of the reduced order approximation with respect to the full order one
             over the testing set
             
             :param N: dimension of the reduced problem.
             """
-            N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
-            if isinstance(N, dict):
-                N = min(N.values())
-            
             self._init_speedup_analysis(**kwargs)
-            self._speedup_analysis(N, filename, **kwargs)
+            self._speedup_analysis(N_generator, filename, **kwargs)
             self._finalize_speedup_analysis(**kwargs)
             
-        def _speedup_analysis(self, N=None, filename=None, **kwargs):
+        def _speedup_analysis(self, N_generator=None, filename=None, **kwargs):
+            if N_generator is None:
+                def N_generator(n):
+                    return n
+                    
+            N = self.reduced_problem.N
+            if isinstance(N, dict):
+                N = min(N.values())
+                
             print("==============================================================")
             print("=" + "{:^60}".format(self.label + " speedup analysis begins") + "=")
             print("==============================================================")
@@ -303,8 +313,10 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 elapsed_truth_output = truth_timer.stop()
                 
                 for n in range(1, N + 1): # n = 1, ... N
+                    n_arg = N_generator(n)
+                    
                     reduced_timer.start()
-                    self.reduced_problem.solve(n, **kwargs)
+                    self.reduced_problem.solve(n_arg, **kwargs)
                     elapsed_reduced_solve = reduced_timer.stop()
                     
                     reduced_timer.start()

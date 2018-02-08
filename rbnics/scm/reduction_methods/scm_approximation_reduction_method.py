@@ -204,16 +204,20 @@ class SCMApproximationReductionMethod(ReductionMethod):
     
     # Compute the error of the scm approximation with respect to the
     # exact coercivity over the testing set
-    def error_analysis(self, N=None, filename=None, **kwargs):
-        if N is None:
-            N = self.SCM_approximation.N
+    def error_analysis(self, N_generator=None, filename=None, **kwargs):
         assert len(kwargs) == 0 # not used in this method
         
         self._init_error_analysis(**kwargs)
-        self._error_analysis(N, filename, **kwargs)
+        self._error_analysis(N_generator, filename, **kwargs)
         self._finalize_error_analysis(**kwargs)
         
-    def _error_analysis(self, N=None, filename=None, **kwargs):
+    def _error_analysis(self, N_generator=None, filename=None, **kwargs):
+        if N_generator is None:
+            def N_generator(n):
+                return n
+                
+        N = self.SCM_approximation.N
+        
         print("==============================================================")
         print("=" + "{:^60}".format("SCM error analysis begins") + "=")
         print("==============================================================")
@@ -230,8 +234,9 @@ class SCMApproximationReductionMethod(ReductionMethod):
             
             (exact, _) = self.SCM_approximation.evaluate_stability_factor()
             for n in range(1, N + 1): # n = 1, ... N
-                LB = self.SCM_approximation.get_stability_factor_lower_bound(n)
-                UB = self.SCM_approximation.get_stability_factor_upper_bound(n)
+                n_arg = N_generator(n)
+                LB = self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
+                UB = self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
                 
                 if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
                     print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " < 0")
@@ -257,13 +262,11 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
     # Compute the speedup of the scm approximation with respect to the
     # exact coercivity over the testing set
-    def speedup_analysis(self, N=None, filename=None, **kwargs):
-        if N is None:
-            N = self.SCM_approximation.N
+    def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
         assert len(kwargs) == 0 # not used in this method
             
         self._init_speedup_analysis(**kwargs)
-        self._speedup_analysis(N, filename, **kwargs)
+        self._speedup_analysis(N_generator, filename, **kwargs)
         self._finalize_speedup_analysis(**kwargs)
         
     # Initialize data structures required for the speedup analysis phase
@@ -275,7 +278,13 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.SCM_approximation.exact_coercivity_constant_calculator._eigenvalue_cache.clear()
         self.SCM_approximation.exact_coercivity_constant_calculator._eigenvector_cache.clear()
         
-    def _speedup_analysis(self, N=None, filename=None, **kwargs):
+    def _speedup_analysis(self, N_generator=None, filename=None, **kwargs):
+        if N_generator is None:
+            def N_generator(n):
+                return n
+                
+        N = self.SCM_approximation.N
+                
         print("==============================================================")
         print("=" + "{:^60}".format("SCM speedup analysis begins") + "=")
         print("==============================================================")
@@ -298,9 +307,10 @@ class SCMApproximationReductionMethod(ReductionMethod):
             elapsed_exact = exact_timer.stop()
             
             for n in range(1, N + 1): # n = 1, ... N
+                n_arg = N_generator(n)
                 SCM_timer.start()
-                self.SCM_approximation.get_stability_factor_lower_bound(n)
-                self.SCM_approximation.get_stability_factor_upper_bound(n)
+                self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
+                self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
                 elapsed_SCM = SCM_timer.stop()
                 speedup_analysis_table["speedup", n, run] = elapsed_exact/elapsed_SCM
         

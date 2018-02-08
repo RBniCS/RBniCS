@@ -97,27 +97,27 @@ def PrimalDualReductionMethod(DualProblem):
                 
             # Compute the error of the reduced order approximation with respect to the full order one
             # over the testing set
-            def error_analysis(self, N=None, filename=None, **kwargs):
+            def error_analysis(self, N_generator=None, filename=None, **kwargs):
                 # Carry out primal error analysis ...
-                DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N, filename, **kwargs)
+                DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N_generator, filename, **kwargs)
                 # ... and then dual error analysis
                 ErrorAnalysisTable.suppress_group("output_error")
                 ErrorAnalysisTable.suppress_group("output_relative_error")
                 self._replace_dual_truth_problem(**kwargs)
-                self.dual_reduction_method.error_analysis(N, filename, **kwargs)
+                self.dual_reduction_method.error_analysis(N_generator, filename, **kwargs)
                 self._undo_replace_dual_truth_problem(**kwargs)
                 ErrorAnalysisTable.clear_suppressed_groups()
                 
             # Compute the speedup of the reduced order approximation with respect to the full order one
             # over the testing set
-            def speedup_analysis(self, N=None, filename=None, **kwargs):
+            def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
                 # Carry out primal speedup analysis ...
-                DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N, filename, **kwargs)
+                DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N_generator, filename, **kwargs)
                 # ... and then dual speedup analysis
                 SpeedupAnalysisTable.suppress_group("output_error")
                 SpeedupAnalysisTable.suppress_group("output_relative_error")
                 self._replace_dual_truth_problem(**kwargs)
-                self.dual_reduction_method.speedup_analysis(N, filename, **kwargs)
+                self.dual_reduction_method.speedup_analysis(N_generator, filename, **kwargs)
                 self._undo_replace_dual_truth_problem(**kwargs)
                 SpeedupAnalysisTable.clear_suppressed_groups()
                 
