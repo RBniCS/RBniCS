@@ -46,12 +46,17 @@ class OnlineSizeDict(OrderedDict):
                     assert isinstance(default, dict)
                     N = OnlineSizeDict(default) # copy the default dict
             else:
-                assert isinstance(N, int)
-                N_int = N
-                N = OnlineSizeDict()
-                for component in components_:
-                    N[component] = N_int
-                    assert component not in kwargs, "You cannot provide both an int and kwargs for components"
+                assert isinstance(N, (int, OnlineSizeDict))
+                if isinstance(N, int):
+                    N_int = N
+                    N = OnlineSizeDict()
+                    for component in components_:
+                        N[component] = N_int
+                        assert component not in kwargs, "You cannot provide both an int and kwargs for components"
+                elif isinstance(N, OnlineSizeDict):
+                    assert list(N.keys()) == list(default.keys()) # check that components are the same, and are ordered correctly
+                else:
+                    raise TypeError("Invalid N")
         else:
             assert len(components_) == 1
             component_0 = components_[0]
