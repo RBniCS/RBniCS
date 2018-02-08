@@ -63,17 +63,17 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                         raise ValueError("Invalid stage in _init_error_estimation_operators().")
                     
         # Build operators for error estimation
-        def build_error_estimation_operators(self):
+        def build_error_estimation_operators(self, current_stage="offline"):
             # Call Parent
-            ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self)
+            ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self, current_stage)
             # Assemble initial condition product error estimation operator
             if len(self.components) > 1:
                 for component in self.components:
                     if self.initial_condition[component] and not self.initial_condition_is_homogeneous[component]:
-                        self.assemble_error_estimation_operators(("initial_condition_" + component, "initial_condition_" + component), "offline")
+                        self.assemble_error_estimation_operators(("initial_condition_" + component, "initial_condition_" + component), current_stage)
             else:
                 if self.initial_condition and not self.initial_condition_is_homogeneous:
-                    self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "offline")
+                    self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), current_stage)
         
         # Assemble operators for error estimation
         def assemble_error_estimation_operators(self, term, current_stage="online"):

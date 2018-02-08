@@ -126,7 +126,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             """
             return NotImplemented
    
-        def build_error_estimation_operators(self):
+        def build_error_estimation_operators(self, current_stage="offline"):
             """
             It builds operators for error estimation.
             """
@@ -136,7 +136,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                         # Compute the Riesz representation of terms that do not depend on the solution
                         self.compute_riesz(term)
                         # Compute the (term, term) Riesz representors product
-                        self.assemble_error_estimation_operators((term, term), "offline")
+                        self.assemble_error_estimation_operators((term, term), current_stage)
                         #
                         self.build_error_estimation_operators__initialized = True
             
@@ -147,7 +147,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
             # Update the (term1, term2) Riesz representors product with the new basis function
             for term in self.riesz_product_terms:
-                self.assemble_error_estimation_operators(term, "offline")
+                self.assemble_error_estimation_operators(term, current_stage)
         
         def compute_riesz(self, term):
             """
