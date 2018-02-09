@@ -44,7 +44,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             self.riesz_terms = list()
             self.riesz_product = dict() # from string to OnlineAffineExpansionStorage
             self.riesz_product_terms = list() # of tuple
-            self.build_error_estimation_operators__initialized = False
             
             # $$ OFFLINE DATA STRUCTURES $$ #
             # Residual terms
@@ -130,24 +129,27 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             """
             It builds operators for error estimation.
             """
-            if not self.build_error_estimation_operators__initialized: # this part does not depend on N, so we compute it only once
-                for term in self.riesz_terms:
-                    if self.terms_order[term] == 1:
-                        # Compute the Riesz representation of terms that do not depend on the solution
-                        self.compute_riesz(term, current_stage)
-                        # Compute the (term, term) Riesz representors product
-                        self.assemble_error_estimation_operators((term, term), current_stage)
-                        #
-                        self.build_error_estimation_operators__initialized = True
             
             # Update the Riesz representation with the new basis function(s)
             for term in self.riesz_terms:
-                if self.terms_order[term] > 1:
+                if self.terms_order[term] is 1:
+                    lengths = set([len(self.riesz[term][q]) for q in range(self.Q[term])])
+                    assert len(lengths) is 1
+                    length = lengths.pop()
+                    assert length in (0, 1)
+                    if length is 0: # this part does not depend on N, so we compute it only once
+                        # Compute the Riesz representation of terms that do not depend on the solution
+                        self.compute_riesz(term, current_stage)
+                        # Compute the (term, term) Riesz representors product
+                        if (term, term) in self.riesz_product_terms:
+                            self.assemble_error_estimation_operators((term, term), current_stage)
+                else: # self.terms_order[term] > 1:
                     self.compute_riesz(term, current_stage)
             
             # Update the (term1, term2) Riesz representors product with the new basis function
             for term in self.riesz_product_terms:
-                self.assemble_error_estimation_operators(term, current_stage)
+                if (self.terms_order[term[0]], self.terms_order[term[1]]) != (1, 1): # this part does not depend on N, and was computed in the previous loop
+                    self.assemble_error_estimation_operators(term, current_stage)
         
         def compute_riesz(self, term, current_stage="offline"):
             """
