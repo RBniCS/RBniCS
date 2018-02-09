@@ -134,7 +134,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 for term in self.riesz_terms:
                     if self.terms_order[term] == 1:
                         # Compute the Riesz representation of terms that do not depend on the solution
-                        self.compute_riesz(term)
+                        self.compute_riesz(term, current_stage)
                         # Compute the (term, term) Riesz representors product
                         self.assemble_error_estimation_operators((term, term), current_stage)
                         #
@@ -143,13 +143,13 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # Update the Riesz representation with the new basis function(s)
             for term in self.riesz_terms:
                 if self.terms_order[term] > 1:
-                    self.compute_riesz(term)
+                    self.compute_riesz(term, current_stage)
             
             # Update the (term1, term2) Riesz representors product with the new basis function
             for term in self.riesz_product_terms:
                 self.assemble_error_estimation_operators(term, current_stage)
         
-        def compute_riesz(self, term):
+        def compute_riesz(self, term, current_stage="offline"):
             """
             It computes the Riesz representation of term.
             
