@@ -126,7 +126,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                                                 # functions, thus he has already carried out the speedup analysis of SCM
             ):
                 SCM_N_generator = kwargs.pop("SCM_N_generator", None)
-                self.SCM_reduction.speedup_analysis(N_generator, filename)
+                self.SCM_reduction.speedup_analysis(SCM_N_generator, filename)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N_generator, filename, **kwargs)
             

@@ -150,7 +150,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
-        def speedup_analysis(self, N=None, filename=None, **kwargs):
+        def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
             # Perform first the EIM speedup analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
