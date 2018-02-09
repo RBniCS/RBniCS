@@ -84,7 +84,7 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             # Export solution to file
             export(psiq, self.name(), "yd")
         # Tracking is on the psi component
-        (psi, q) = psiq.split()
+        (psi, q) = psiq.split(deepcopy=True)
         return psi
         
     def compute_theta(self, term):
