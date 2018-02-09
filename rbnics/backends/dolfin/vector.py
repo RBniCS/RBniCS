@@ -31,6 +31,11 @@ def Type():
     return GenericVector
 Vector.Type = Type
 
+# swig wrappers prevent GenericVector from being hashable
+if not has_pybind11():
+    assert GenericVector.__hash__ is None
+    del GenericVector.__hash__
+
 # pybind11 wrappers do not implement __neg__ unary operator
 if has_pybind11():
     def custom__neg__(self):
