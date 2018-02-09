@@ -31,6 +31,12 @@ def Type():
     return GenericVector
 Vector.Type = Type
 
+# pybind11 wrappers do not implement __neg__ unary operator
+if has_pybind11():
+    def custom__neg__(self):
+        return -1.*self
+    setattr(GenericVector, "__neg__", custom__neg__)
+
 # Preserve generator attribute in algebraic operators, as required by DEIM
 def preserve_generator_attribute(operator):
     original_operator = getattr(GenericVector, operator)
@@ -43,20 +49,8 @@ def preserve_generator_attribute(operator):
             return original_operator(self, other)
     setattr(GenericVector, operator, custom_operator)
     
-if has_pybind11():
-    if has_pybind11():
-        def set_roperator(operator, roperator):
-            original_operator = getattr(GenericVector, operator)
-            def custom_roperator(self, other):
-                return original_operator(other, self)
-            setattr(GenericVector, roperator, custom_roperator)
-        for (operator, roperator) in zip(("__add__", "__sub__"), ("__radd__", "__rsub__")):
-            set_roperator(operator, roperator)
-    for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__itruediv__"):
-        preserve_generator_attribute(operator)
-else:
-    for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__rtruediv__", "__itruediv__"):
-        preserve_generator_attribute(operator)
+for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__itruediv__"):
+    preserve_generator_attribute(operator)
 
 # Allow sum and sub between vector and form by assemblying the form. This is required because
 # affine expansion storage is not assembled if it is parametrized, and it may happen that
@@ -78,9 +72,3 @@ def arithmetic_with_form(operator):
 
 for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
     arithmetic_with_form(operator)
-    
-# Implement __neg__ unary operator
-if has_pybind11():
-    def custom__neg__(self):
-        return -1.*self
-    setattr(GenericVector, "__neg__", custom__neg__)

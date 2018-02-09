@@ -34,6 +34,16 @@ def Type():
     return GenericMatrix
 Matrix.Type = Type
 
+# pybind11 wrappers do not define __radd__ and __rsub__
+if has_pybind11():
+    def set_roperator(operator, roperator):
+        original_operator = getattr(GenericMatrix, operator)
+        def custom_roperator(self, other):
+            return original_operator(other, self)
+        setattr(GenericMatrix, roperator, custom_roperator)
+    for (operator, roperator) in zip(("__add__", "__sub__"), ("__radd__", "__rsub__")):
+        set_roperator(operator, roperator)
+
 # Enable matrix*function product (i.e. matrix*function.vector())
 original__mul__ = GenericMatrix.__mul__
 def custom__mul__(self, other):
@@ -55,12 +65,8 @@ def preserve_generator_attribute(operator):
             return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)
     
-if has_pybind11():
-    for operator in ("__add__", "__iadd__", "__sub__", "__isub__", "__mul__", "__imul__", "__truediv__", "__itruediv__"):
-        preserve_generator_attribute(operator)
-else:
-    for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__rtruediv__", "__itruediv__"):
-        preserve_generator_attribute(operator)
+for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__imul__", "__truediv__", "__itruediv__"):
+    preserve_generator_attribute(operator)
 
 # Allow sum and sub between matrix and form by assemblying the form. This is required because
 # affine expansion storage is not assembled if it is parametrized, and it may happen that
@@ -80,14 +86,6 @@ def arithmetic_with_form(operator):
         return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)
 
-if has_pybind11():
-    def set_roperator(operator, roperator):
-        original_operator = getattr(GenericMatrix, operator)
-        def custom_roperator(self, other):
-            return original_operator(other, self)
-        setattr(GenericMatrix, roperator, custom_roperator)
-    for (operator, roperator) in zip(("__add__", "__sub__"), ("__radd__", "__rsub__")):
-        set_roperator(operator, roperator)
 for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
     arithmetic_with_form(operator)
 
