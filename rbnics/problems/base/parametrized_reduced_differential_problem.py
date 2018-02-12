@@ -96,13 +96,15 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         assert current_stage in ("online", "offline")
         if current_stage == "online":
             for term in self.terms:
-                self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by assemble_operator
-                self.assemble_operator(term, "online")
-                self.Q[term] = len(self.operator[term])
+                if term not in self.operator: # init was not called already
+                    self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by assemble_operator
+                    self.assemble_operator(term, "online")
+                    self.Q[term] = len(self.operator[term])
         elif current_stage == "offline":
             for term in self.terms:
-                self.Q[term] = self.truth_problem.Q[term]
-                self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
+                if term not in self.operator: # init was not called already
+                    self.Q[term] = self.truth_problem.Q[term]
+                    self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
         else:
             raise ValueError("Invalid stage in _init_operators().")
             
@@ -114,43 +116,47 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if current_stage == "online":
             n_components = len(self.components)
             # Inner products
-            if n_components > 1:
-                inner_product_string = "inner_product_{c}"
-                self.inner_product = dict()
-                for component in self.components:
-                    self.inner_product[component] = OnlineAffineExpansionStorage(1)
-                    self.assemble_operator(inner_product_string.format(c=component), "online")
-            else:
-                self.inner_product = OnlineAffineExpansionStorage(1)
-                self.assemble_operator("inner_product", "online")
-            self._combined_inner_product = self._combine_all_inner_products()
+            if self.inner_product is None: # init was not called already
+                if n_components > 1:
+                    inner_product_string = "inner_product_{c}"
+                    self.inner_product = dict()
+                    for component in self.components:
+                        self.inner_product[component] = OnlineAffineExpansionStorage(1)
+                        self.assemble_operator(inner_product_string.format(c=component), "online")
+                else:
+                    self.inner_product = OnlineAffineExpansionStorage(1)
+                    self.assemble_operator("inner_product", "online")
+                self._combined_inner_product = self._combine_all_inner_products()
             # Projection inner product
-            if n_components > 1:
-                projection_inner_product_string = "projection_inner_product_{c}"
-                self.projection_inner_product = dict()
-                for component in self.components:
-                    self.projection_inner_product[component] = OnlineAffineExpansionStorage(1)
-                    self.assemble_operator(projection_inner_product_string.format(c=component), "online")
-            else:
-                self.projection_inner_product = OnlineAffineExpansionStorage(1)
-                self.assemble_operator("projection_inner_product", "online")
-            self._combined_projection_inner_product = self._combine_all_projection_inner_products()
+            if self.projection_inner_product is None: # init was not called already
+                if n_components > 1:
+                    projection_inner_product_string = "projection_inner_product_{c}"
+                    self.projection_inner_product = dict()
+                    for component in self.components:
+                        self.projection_inner_product[component] = OnlineAffineExpansionStorage(1)
+                        self.assemble_operator(projection_inner_product_string.format(c=component), "online")
+                else:
+                    self.projection_inner_product = OnlineAffineExpansionStorage(1)
+                    self.assemble_operator("projection_inner_product", "online")
+                self._combined_projection_inner_product = self._combine_all_projection_inner_products()
         elif current_stage == "offline":
             n_components = len(self.components)
             # Inner products
-            if n_components > 1:
-                self.inner_product = dict()
-                for component in self.components:
-                    self.inner_product[component] = OnlineAffineExpansionStorage(1)
-            else:
-                self.inner_product = OnlineAffineExpansionStorage(1)
+            if self.inner_product is None: # init was not called already
+                if n_components > 1:
+                    self.inner_product = dict()
+                    for component in self.components:
+                        self.inner_product[component] = OnlineAffineExpansionStorage(1)
+                else:
+                    self.inner_product = OnlineAffineExpansionStorage(1)
             # Projection inner product
-            if n_components > 1:
-                self.projection_inner_product = dict()
-                for component in self.components:
-                    self.projection_inner_product[component] = OnlineAffineExpansionStorage(1)
-            else:
-                self.projection_inner_product = OnlineAffineExpansionStorage(1)
+            if self.projection_inner_product is None: # init was not called already
+                if n_components > 1:
+                    self.projection_inner_product = dict()
+                    for component in self.components:
+                        self.projection_inner_product[component] = OnlineAffineExpansionStorage(1)
+                else:
+                    self.projection_inner_product = OnlineAffineExpansionStorage(1)
         else:
             raise ValueError("Invalid stage in _init_inner_products().")
             
