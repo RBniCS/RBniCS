@@ -16,10 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rbnics.reduction_methods.base
-import rbnics.eim.reduction_methods
-
 def patch_initialize_testing_training_set(action):
+    import rbnics.reduction_methods.base
+    import rbnics.eim.reduction_methods
+    
     """
     Patch ReductionMethod.initialize_{testing,training}_set to always read from file if
     action == "compare", and to try first to read from file if actions == "regold"

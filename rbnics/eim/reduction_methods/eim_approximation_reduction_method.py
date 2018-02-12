@@ -17,10 +17,10 @@
 #
 
 import os
-import types
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.backends import abs, evaluate, max
 from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
+from rbnics.utils.test import PatchInstanceMethod
 
 # Empirical interpolation method for the interpolation of parametrized functions
 class EIMApproximationReductionMethod(ReductionMethod):
@@ -346,14 +346,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # expression evaluation is actually carried out
         self.EIM_approximation.snapshot_cache.clear()
         # ... and also disable the capability of importing/exporting truth solutions
-        self._speedup_analysis__original_import_solution = self.EIM_approximation.import_solution
-        def disabled_import_solution(self_, folder, filename, solution=None):
-            return False
-        self.EIM_approximation.import_solution = types.MethodType(disabled_import_solution, self.EIM_approximation)
-        self._speedup_analysis__original_export_solution = self.EIM_approximation.export_solution
-        def disabled_export_solution(self_, folder, filename, solution=None):
-            pass
-        self.EIM_approximation.export_solution = types.MethodType(disabled_export_solution, self.EIM_approximation)
+        self.disable_import_solution = PatchInstanceMethod(self.EIM_approximation, "import_solution", lambda self_, folder, filename, solution=None: False)
+        self.disable_export_solution = PatchInstanceMethod(self.EIM_approximation, "export_solution", lambda self_, folder, filename, solution=None: None)
+        self.disable_import_solution.patch()
+        self.disable_export_solution.patch()
         
     def _speedup_analysis(self, N_generator=None, filename=None, **kwargs):
         if N_generator is None:
@@ -411,7 +407,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
         # Restore the capability to import/export truth solutions
-        self.EIM_approximation.import_solution = self._speedup_analysis__original_import_solution
-        del self._speedup_analysis__original_import_solution
-        self.EIM_approximation.export_solution = self._speedup_analysis__original_export_solution
-        del self._speedup_analysis__original_export_solution
+        self.disable_import_solution.unpatch()
+        self.disable_export_solution.unpatch()
+        del self.disable_import_solution
+        del self.disable_export_solution

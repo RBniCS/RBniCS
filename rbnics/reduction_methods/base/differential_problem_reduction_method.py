@@ -16,11 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
 from rbnics.reduction_methods.base.reduction_method import ReductionMethod
 from rbnics.utils.io import Folders
 from rbnics.utils.decorators import UpdateMapFromProblemToTrainingStatus
 from rbnics.utils.factories import ReducedProblemFactory
+from rbnics.utils.test import PatchInstanceMethod
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
@@ -133,19 +133,23 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.truth_problem._output_cache.clear()
         self.reduced_problem._output_cache.clear()
         # ... and also disable the capability of importing/exporting truth solutions
-        self._speedup_analysis__original_import_solution = self.truth_problem.import_solution
-        def disabled_import_solution(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
-            return False
-        self.truth_problem.import_solution = types.MethodType(disabled_import_solution, self.truth_problem)
-        self._speedup_analysis__original_export_solution = self.truth_problem.export_solution
-        def disabled_export_solution(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
-            pass
-        self.truth_problem.export_solution = types.MethodType(disabled_export_solution, self.truth_problem)
+        self.disable_import_solution = PatchInstanceMethod(
+            self.truth_problem,
+            "import_solution",
+            lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: False
+        )
+        self.disable_export_solution = PatchInstanceMethod(
+            self.truth_problem,
+            "export_solution",
+            lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: None
+        )
+        self.disable_import_solution.patch()
+        self.disable_export_solution.patch()
         
     # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
         # Restore the capability to import/export truth solutions
-        self.truth_problem.import_solution = self._speedup_analysis__original_import_solution
-        del self._speedup_analysis__original_import_solution
-        self.truth_problem.export_solution = self._speedup_analysis__original_export_solution
-        del self._speedup_analysis__original_export_solution
+        self.disable_import_solution.unpatch()
+        self.disable_export_solution.unpatch()
+        del self.disable_import_solution
+        del self.disable_export_solution

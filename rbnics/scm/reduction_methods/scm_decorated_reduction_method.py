@@ -17,11 +17,11 @@
 #
 
 from numbers import Number
-import types
 import inspect
-from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.scm.problems import SCM
 from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod
+from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
+from rbnics.utils.test import PatchInstanceMethod
 
 @ReductionMethodDecoratorFor(SCM)
 def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -149,19 +149,28 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     assert inspect.isfunction(kwargs["with_respect_to"])
                     replaced_truth_problem = kwargs["with_respect_to"](self.truth_problem)
                     # Assume that the user wants to disable SCM and use the exact stability factor
-                    def replaced_get_stability_factor(self_):
-                        return replaced_truth_problem.get_stability_factor()
-                    self.reduced_problem.get_stability_factor = types.MethodType(replaced_get_stability_factor, self.reduced_problem)
+                    self.replace_get_stability_factor = PatchInstanceMethod(
+                        self.reduced_problem,
+                        "get_stability_factor",
+                        lambda self_: replaced_truth_problem.get_stability_factor()
+                    )
+                    self.replace_get_stability_factor.patch()
+                else:
+                    self.replace_get_stability_factor = None
             else:
                 assert isinstance(kwargs["SCM"], int)
                 # Assume that the user wants to use SCM with a prescribed number of basis functions
-                def replaced_get_stability_factor(self_):
-                    return self.truth_problem.SCM_approximation.get_stability_factor_lower_bound(kwargs["SCM"])
-                self.reduced_problem.get_stability_factor = types.MethodType(replaced_get_stability_factor, self.reduced_problem)
+                self.replace_get_stability_factor = PatchInstanceMethod(
+                    self.reduced_problem,
+                    "get_stability_factor",
+                    lambda self_: self_.truth_problem.SCM_approximation.get_stability_factor_lower_bound(kwargs["SCM"])
+                )
+                self.replace_get_stability_factor.patch()
             
         def _undo_replace_stability_factor_computation(self, **kwargs):
-            self.reduced_problem.get_stability_factor = self._replace_stability_factor_computation__get_stability_factor__original
-            del self._replace_stability_factor_computation__get_stability_factor__original
+            if self.replace_get_stability_factor is not None:
+                self.replace_get_stability_factor.unpatch()
+            del self.replace_get_stability_factor
         
     # return value (a class) for the decorator
     return SCMDecoratedReductionMethod_Class

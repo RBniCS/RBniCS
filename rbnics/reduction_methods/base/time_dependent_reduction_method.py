@@ -17,9 +17,9 @@
 #
 
 from numbers import Number
-import types
 from numpy import isclose
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
+from rbnics.utils.test import PatchInstanceMethod
 
 @RequiredBaseDecorators(None)
 def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -67,6 +67,11 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         # Initialize data structures required for the speedup analysis phase
         def _init_speedup_analysis(self, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
+            # Parent method had already patched import/export, but with the wrong signature
+            self.disable_import_solution.unpatch()
+            self.disable_export_solution.unpatch()
+            del self.disable_import_solution
+            del self.disable_export_solution
             
             # Make sure to clean up problem and reduced problem solution cache to ensure that
             # solution and reduced solution are actually computed
@@ -79,22 +84,18 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             self.truth_problem._output_over_time_cache.clear()
             self.reduced_problem._output_over_time_cache.clear()
             # ... and also disable the capability of importing/exporting truth solutions
-            self._speedup_analysis__original_import_solution = self.truth_problem.import_solution
-            def disabled_import_solution(self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
-                return False
-            self.truth_problem.import_solution = types.MethodType(disabled_import_solution, self.truth_problem)
-            self._speedup_analysis__original_export_solution = self.truth_problem.export_solution
-            def disabled_export_solution(self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
-                pass
-            self.truth_problem.export_solution = types.MethodType(disabled_export_solution, self.truth_problem)
-        
-        # Finalize data structures required after the speedup analysis phase
-        def _finalize_speedup_analysis(self, **kwargs):
-            # Restore the capability to import/export truth solutions
-            self.truth_problem.import_solution = self._speedup_analysis__original_import_solution
-            del self._speedup_analysis__original_import_solution
-            self.truth_problem.export_solution = self._speedup_analysis__original_export_solution
-            del self._speedup_analysis__original_export_solution
+            self.disable_import_solution = PatchInstanceMethod(
+                self.truth_problem,
+                "import_solution",
+                lambda self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None: False
+            )
+            self.disable_export_solution = PatchInstanceMethod(
+                self.truth_problem,
+                "export_solution",
+                lambda self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None: None
+            )
+            self.disable_import_solution.patch()
+            self.disable_export_solution.patch()
         
     # return value (a class) for the decorator
     return TimeDependentReductionMethod_Class
