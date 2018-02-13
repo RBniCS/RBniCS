@@ -72,30 +72,35 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             assert current_stage in ("online", "offline")
             if current_stage == "online":
                 for term in self.riesz_product_terms:
-                    self.riesz_product[term] = self.assemble_error_estimation_operators(term, "online")
+                    if term not in self.riesz_product: # init was not called already
+                        self.riesz_product[term] = self.assemble_error_estimation_operators(term, "online")
             elif current_stage == "offline":
                 for term in self.riesz_terms:
-                    self.riesz[term] = OnlineAffineExpansionStorage(self.Q[term])
-                    for q in range(self.Q[term]):
-                        assert self.terms_order[term] in (1, 2)
-                        if self.terms_order[term] > 1:
-                            riesz_term_q = BasisFunctionsMatrix(self.truth_problem.V)
-                            riesz_term_q.init(self.components)
-                        else:
-                            riesz_term_q = FunctionsList(self.truth_problem.V) # will be of size 1
-                        self.riesz[term][q] = riesz_term_q
+                    if term not in self.riesz: # init was not called already
+                        self.riesz[term] = OnlineAffineExpansionStorage(self.Q[term])
+                        for q in range(self.Q[term]):
+                            assert self.terms_order[term] in (1, 2)
+                            if self.terms_order[term] > 1:
+                                riesz_term_q = BasisFunctionsMatrix(self.truth_problem.V)
+                                riesz_term_q.init(self.components)
+                            else:
+                                riesz_term_q = FunctionsList(self.truth_problem.V) # will be of size 1
+                            self.riesz[term][q] = riesz_term_q
                 for term in self.riesz_product_terms:
-                    self.riesz_product[term] = OnlineAffineExpansionStorage(self.Q[term[0]], self.Q[term[1]])
+                    if term not in self.riesz_product: # init was not called already
+                        self.riesz_product[term] = OnlineAffineExpansionStorage(self.Q[term[0]], self.Q[term[1]])
                 # Also initialize inner product for Riesz solve
-                self._riesz_solve_inner_product = self.truth_problem._combined_inner_product
-                # Also setup homogeneous Dirichlet BCs for Riesz solve, if any
+                if self._riesz_solve_inner_product is None: # init was not called already
+                    self._riesz_solve_inner_product = self.truth_problem._combined_inner_product
+                # Also setup homogeneous Dirichlet BCs for Riesz solve, if any (no check if init was already called because this variable can actually be None)
                 self._riesz_solve_homogeneous_dirichlet_bc = self.truth_problem._combined_and_homogenized_dirichlet_bc
                 # Also initialize inner product for Riesz products. This is the same as the inner product for Riesz solves
                 # but setting to zero rows & columns associated to boundary conditions
-                if self._riesz_solve_homogeneous_dirichlet_bc is not None:
-                    self._riesz_product_inner_product = self._riesz_solve_inner_product & ~self._riesz_solve_homogeneous_dirichlet_bc
-                else:
-                    self._riesz_product_inner_product = self._riesz_solve_inner_product
+                if self._riesz_product_inner_product is None: # init was not called already
+                    if self._riesz_solve_homogeneous_dirichlet_bc is not None:
+                        self._riesz_product_inner_product = self._riesz_solve_inner_product & ~self._riesz_solve_homogeneous_dirichlet_bc
+                    else:
+                        self._riesz_product_inner_product = self._riesz_solve_inner_product
             else:
                 raise ValueError("Invalid stage in _init_error_estimation_operators().")
                 
