@@ -42,6 +42,13 @@ def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_Deri
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
+        def _init_offline(self):
+            # Update reduced problem to training status
+            set_map_from_problem_to_training_status_off(self.truth_problem)
+            
+            # Call the parent initialization
+            return DifferentialProblemReductionMethod_DerivedClass._init_offline(self)
+            
         def _finalize_offline(self):
             # Call the parent finalization
             DifferentialProblemReductionMethod_DerivedClass._finalize_offline(self)
@@ -54,7 +61,7 @@ def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_Deri
     
 def init_map_from_problem_to_training_status(problem):
     assert problem not in _problem_to_training_status
-    _problem_to_training_status[problem] = False
+    _problem_to_training_status[problem] = None
     
 def set_map_from_problem_to_training_status_on(problem):
     assert problem in _problem_to_training_status
@@ -63,9 +70,17 @@ def set_map_from_problem_to_training_status_on(problem):
 def set_map_from_problem_to_training_status_off(problem):
     assert problem in _problem_to_training_status
     _problem_to_training_status[problem] = False
+
+def is_training_started(problem):
+    assert problem in _problem_to_training_status
+    return _problem_to_training_status[problem] is not None
     
 def is_training_finished(problem):
     assert problem in _problem_to_training_status
-    return _problem_to_training_status[problem]
+    return (
+        _problem_to_training_status[problem] is not None
+            and
+        _problem_to_training_status[problem]
+    )
     
 _problem_to_training_status = dict()

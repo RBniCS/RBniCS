@@ -37,7 +37,7 @@ from rbnics.utils.decorators.reduction_method_for import ReductionMethodFor
 from rbnics.utils.decorators.required_base_decorators import RequiredBaseDecorators
 from rbnics.utils.decorators.store_map_from_problem_name_to_problem import add_to_map_from_problem_name_to_problem, get_problem_from_problem_name, StoreMapFromProblemNameToProblem
 from rbnics.utils.decorators.store_map_from_problem_to_reduced_problem import add_to_map_from_problem_to_reduced_problem, get_reduced_problem_from_problem, StoreMapFromProblemToReducedProblem
-from rbnics.utils.decorators.store_and_update_map_from_problem_to_training_status import is_training_finished, set_map_from_problem_to_training_status_on, set_map_from_problem_to_training_status_off, StoreMapFromProblemToTrainingStatus, UpdateMapFromProblemToTrainingStatus
+from rbnics.utils.decorators.store_and_update_map_from_problem_to_training_status import is_training_finished, is_training_started, set_map_from_problem_to_training_status_on, set_map_from_problem_to_training_status_off, StoreMapFromProblemToTrainingStatus, UpdateMapFromProblemToTrainingStatus
 from rbnics.utils.decorators.store_map_from_solution_to_problem import add_to_map_from_solution_to_problem, get_problem_from_solution, StoreMapFromSolutionToProblem
 from rbnics.utils.decorators.store_problem_decorators_for_factories import StoreProblemDecoratorsForFactories
 from rbnics.utils.decorators.sync_setters import sync_setters
@@ -68,6 +68,7 @@ __all__ = [
     'get_problem_from_solution',
     'get_reduced_problem_from_problem',
     'is_training_finished',
+    'is_training_started',
     'iterable_of',
     'list_of',
     'ModuleWrapper',
