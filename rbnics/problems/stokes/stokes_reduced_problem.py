@@ -156,22 +156,19 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     assert self.Q["bt_restricted"] == self.truth_problem.Q["bt_restricted"]
                     for q in range(self.Q["bt_restricted"]):
                         self.operator["bt_restricted"][q] = transpose(self.basis_functions_us)*self.truth_problem.operator["bt_restricted"][q]*self.basis_functions
-                    if "reduced_operators" in self.folder:
-                        self.operator["bt_restricted"].save(self.folder["reduced_operators"], "operator_bt_restricted")
+                    self.operator["bt_restricted"].save(self.folder["reduced_operators"], "operator_bt_restricted")
                     return self.operator["bt_restricted"]
                 elif term == "inner_product_s":
                     assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
                     self.inner_product["s"][0] = transpose(self.basis_functions_us)*self.truth_problem.inner_product["s"][0]*self.basis_functions_us
-                    if "reduced_operators" in self.folder:
-                        self.inner_product["s"].save(self.folder["reduced_operators"], "inner_product_s")
+                    self.inner_product["s"].save(self.folder["reduced_operators"], "inner_product_s")
                     return self.inner_product["s"]
                 elif term == "projection_inner_product_s":
                     assert len(self.projection_inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.projection_inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
                     self.projection_inner_product["s"][0] = transpose(self.basis_functions_us)*self.truth_problem.projection_inner_product["s"][0]*self.basis_functions_us
-                    if "reduced_operators" in self.folder:
-                        self.projection_inner_product["s"].save(self.folder["reduced_operators"], "projection_inner_product_s")
+                    self.projection_inner_product["s"].save(self.folder["reduced_operators"], "projection_inner_product_s")
                     return self.projection_inner_product["s"]
                 else:
                     return StokesReducedProblem_Base.assemble_operator(self, term, current_stage)

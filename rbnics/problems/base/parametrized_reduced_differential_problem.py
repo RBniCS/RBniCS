@@ -652,31 +652,26 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             # EllipticCoerciveProblem, i.e. we would like to be able to use a reduced
             # problem also as a truth problem for a nested reduction
             if term in self.terms:
-                assert "reduced_operators" in self.folder
                 self.operator[term].load(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
             elif term.startswith("inner_product"):
                 component = term.replace("inner_product", "").replace("_", "")
                 if component != "":
                     assert component in self.components
-                    assert "reduced_operators" in self.folder
                     self.inner_product[component].load(self.folder["reduced_operators"], term)
                     return self.inner_product[component]
                 else:
                     assert len(self.components) == 1
-                    assert "reduced_operators" in self.folder
                     self.inner_product.load(self.folder["reduced_operators"], term)
                     return self.inner_product
             elif term.startswith("projection_inner_product"):
                 component = term.replace("projection_inner_product", "").replace("_", "")
                 if component != "":
                     assert component in self.components
-                    assert "reduced_operators" in self.folder
                     self.projection_inner_product[component].load(self.folder["reduced_operators"], term)
                     return self.projection_inner_product[component]
                 else:
                     assert len(self.components) == 1
-                    assert "reduced_operators" in self.folder
                     self.projection_inner_product.load(self.folder["reduced_operators"], term)
                     return self.projection_inner_product
             elif term.startswith("dirichlet_bc"):
@@ -701,8 +696,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                         self.operator[term][q] = self.truth_problem.operator[term][q]
                     else:
                         raise ValueError("Invalid value for order of term " + term)
-                if "reduced_operators" in self.folder:
-                    self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
+                self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
                 return self.operator[term]
             elif term.startswith("inner_product"):
                 component = term.replace("inner_product", "").replace("_", "")
@@ -711,16 +705,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     self.inner_product[component][0] = transpose(self.basis_functions)*self.truth_problem.inner_product[component][0]*self.basis_functions
-                    if "reduced_operators" in self.folder:
-                        self.inner_product[component].save(self.folder["reduced_operators"], term)
+                    self.inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.inner_product[component]
                 else:
                     assert len(self.components) == 1 # single component case
                     assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     self.inner_product[0] = transpose(self.basis_functions)*self.truth_problem.inner_product[0]*self.basis_functions
-                    if "reduced_operators" in self.folder:
-                        self.inner_product.save(self.folder["reduced_operators"], term)
+                    self.inner_product.save(self.folder["reduced_operators"], term)
                     return self.inner_product
             elif term.startswith("projection_inner_product"):
                 component = term.replace("projection_inner_product", "").replace("_", "")
@@ -729,16 +721,14 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     assert len(self.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
                     self.projection_inner_product[component][0] = transpose(self.basis_functions)*self.truth_problem.projection_inner_product[component][0]*self.basis_functions
-                    if "reduced_operators" in self.folder:
-                        self.projection_inner_product[component].save(self.folder["reduced_operators"], term)
+                    self.projection_inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.projection_inner_product[component]
                 else:
                     assert len(self.components) == 1 # single component case
                     assert len(self.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     self.projection_inner_product[0] = transpose(self.basis_functions)*self.truth_problem.projection_inner_product[0]*self.basis_functions
-                    if "reduced_operators" in self.folder:
-                        self.projection_inner_product.save(self.folder["reduced_operators"], term)
+                    self.projection_inner_product.save(self.folder["reduced_operators"], term)
                     return self.projection_inner_product
             elif term.startswith("dirichlet_bc"):
                 component = term.replace("dirichlet_bc", "").replace("_", "")

@@ -160,7 +160,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 component = term.replace("initial_condition", "").replace("_", "")
                 if current_stage == "online": # load from file
                     initial_condition = OnlineAffineExpansionStorage(0) # it will be resized by load
-                    assert "reduced_operators" in self.folder
                     initial_condition.load(self.folder["reduced_operators"], term)
                 elif current_stage == "offline":
                     if component != "":
@@ -174,8 +173,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     assert len(truth_projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
                     for (q, truth_initial_condition_q) in enumerate(truth_initial_condition):
                         initial_condition[q] = transpose(self.basis_functions)*truth_projection_inner_product[0]*truth_initial_condition_q
-                    if "reduced_operators" in self.folder:
-                        initial_condition.save(self.folder["reduced_operators"], term)
+                    initial_condition.save(self.folder["reduced_operators"], term)
                 else:
                     raise ValueError("Invalid stage in assemble_operator().")
                 # Assign

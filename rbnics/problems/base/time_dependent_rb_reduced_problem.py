@@ -91,14 +91,12 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                         assert component1 in self.components
                         if (component0, component1) not in self.initial_condition_product:
                             self.initial_condition_product[component0, component1] = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
-                        assert "error_estimation" in self.folder
                         self.initial_condition_product[component0, component1].load(self.folder["error_estimation"], "initial_condition_product_" + component0 + "_" + component1)
                         return self.initial_condition_product[component0, component1]
                     else:
                         assert len(self.components) == 1
                         if self.initial_condition_product is None:
                             self.initial_condition_product = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
-                        assert "error_estimation" in self.folder
                         self.initial_condition_product.load(self.folder["error_estimation"], "initial_condition_product")
                         return self.initial_condition_product
                 elif current_stage == "offline":
@@ -108,16 +106,14 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                         for q0 in range(self.Q_ic[component0]):
                             for q1 in range(self.Q_ic[component1]):
                                 self.initial_condition_product[component0, component1][q0, q1] = transpose(self.truth_problem.initial_condition[component0][q0])*inner_product*self.truth_problem.initial_condition[component1][q1]
-                        if "error_estimation" in self.folder:
-                            self.initial_condition_product[component0, component1].save(self.folder["error_estimation"], "initial_condition_product_" + component0 + "_" + component1)
+                        self.initial_condition_product[component0, component1].save(self.folder["error_estimation"], "initial_condition_product_" + component0 + "_" + component1)
                         return self.initial_condition_product[component0, component1]
                     else:
                         assert len(self.components) == 1
                         for q0 in range(self.Q_ic):
                             for q1 in range(self.Q_ic):
                                 self.initial_condition_product[q0, q1] = transpose(self.truth_problem.initial_condition[q0])*inner_product*self.truth_problem.initial_condition[q1]
-                        if "error_estimation" in self.folder:
-                            self.initial_condition_product.save(self.folder["error_estimation"], "initial_condition_product")
+                        self.initial_condition_product.save(self.folder["error_estimation"], "initial_condition_product")
                         return self.initial_condition_product
                 else:
                     raise ValueError("Invalid stage in assemble_error_estimation_operators().")
