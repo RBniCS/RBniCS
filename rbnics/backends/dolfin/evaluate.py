@@ -19,6 +19,7 @@
 from ufl.core.operator import Operator
 from rbnics.backends.basic import evaluate as basic_evaluate
 from rbnics.backends.dolfin.assign import assign
+from rbnics.backends.dolfin.copy import copy
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.functions_list import FunctionsList
 from rbnics.backends.dolfin.matrix import Matrix
@@ -36,7 +37,7 @@ from rbnics.backends.dolfin.wrapping.form_on_truth_function_space import basic_f
 from rbnics.backends.online import online_assign, OnlineFunction, OnlineMatrix, OnlineVector
 from rbnics.utils.decorators import backend_for, ModuleWrapper, overload
 
-backend = ModuleWrapper(assign, Function, FunctionsList, Matrix, ParametrizedExpressionFactory, ParametrizedTensorFactory, ReducedMesh, ReducedVertices, TensorsList, Vector)
+backend = ModuleWrapper(assign, copy, Function, FunctionsList, Matrix, ParametrizedExpressionFactory, ParametrizedTensorFactory, ReducedMesh, ReducedVertices, TensorsList, Vector)
 wrapping_for_wrapping = ModuleWrapper(assemble, evaluate_expression, expression_iterator, expression_replace, form_argument_replace, form_iterator, form_replace, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, solution_identify_component, solution_iterator, get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function)
 online_backend_for_wrapping = ModuleWrapper(online_assign=online_assign, OnlineFunction=OnlineFunction)
 online_wrapping_for_wrapping = ModuleWrapper()

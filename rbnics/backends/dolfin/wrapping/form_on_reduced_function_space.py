@@ -23,11 +23,10 @@ if has_pybind11():
     from dolfin.function.argument import Argument
 else:
     from dolfin import Argument
-from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
-from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished
+from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
+from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
-from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 
 def basic_form_on_reduced_function_space(backend, wrapping, online_backend, online_wrapping):
     def _basic_form_on_reduced_function_space(form_wrapper, at):
@@ -82,7 +81,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                             truth_problem_to_reduced_mesh_interpolator[truth_problem] = list()
                         truth_problem_to_reduced_mesh_interpolator[truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
                     else:
-                        (auxiliary_problem, component) = get_auxiliary_problem_for_non_parametrized_function(node)
+                        (auxiliary_problem, component) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
                         preprocessed_node = node
                         # Get the function space corresponding to preprocessed_node on the reduced mesh
                         auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(auxiliary_problem, component)
@@ -153,9 +152,15 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         required_truth_problems = list()
         required_reduced_problems = list()
         for truth_problem in truth_problems:
-            if not hasattr(truth_problem, "_is_solving"):
+            truth_problem_is_solving = hasattr(truth_problem, "_is_solving")
+            if is_training_started(truth_problem):
+                reduced_problem = get_reduced_problem_from_problem(truth_problem)
+                reduced_problem_is_solving = hasattr(reduced_problem, "_is_solving")
+            else:
+                reduced_problem = None
+                reduced_problem_is_solving = False
+            if not truth_problem_is_solving:
                 if is_training_finished(truth_problem):
-                    reduced_problem = get_reduced_problem_from_problem(truth_problem)
                     # Store the component
                     if reduced_problem not in reduced_problem_to_components:
                         reduced_problem_to_components[reduced_problem] = truth_problem_to_components[truth_problem]
@@ -168,17 +173,17 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         for component in reduced_problem_to_components[reduced_problem]:
                             reduced_problem_to_reduced_basis_functions[reduced_problem].append(at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem, component))
                     # Append to list of required reduced problems
-                    required_reduced_problems.append((reduced_problem, hasattr(reduced_problem, "_is_solving")))
+                    required_reduced_problems.append((reduced_problem, reduced_problem_is_solving))
                 else:
                     if (
-                        hasattr(truth_problem, "_apply_exact_approximation_at_stages")
+                        hasattr(truth_problem, "_apply_exact_evaluation_at_stages")
                             and
-                        "offline" in truth_problem._apply_exact_approximation_at_stages
+                        "offline" in truth_problem._apply_exact_evaluation_at_stages
                     ):
                         # Init truth problem (if required), as it may not have been initialized
                         truth_problem.init()
                         # Append to list of required truth problems which are not currently solving
-                        required_truth_problems.append((truth_problem, False))
+                        required_truth_problems.append((truth_problem, False, reduced_problem_is_solving))
                     else:
                         exact_truth_problem = truth_problem_to_exact_truth_problem[truth_problem]
                         # Init exact truth problem (if required), as it may not have been initialized
@@ -195,24 +200,32 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                             for component in truth_problem_to_components[exact_truth_problem]:
                                 truth_problem_to_reduced_mesh_interpolator[exact_truth_problem].append(at.get_auxiliary_function_interpolator(exact_truth_problem, component))
                         # Append to list of required truth problems which are not currently solving
-                        required_truth_problems.append((exact_truth_problem, False))
+                        required_truth_problems.append((exact_truth_problem, False, reduced_problem_is_solving))
             else:
+                assert not reduced_problem_is_solving
                 # Append to list of required truth problems which are currently solving
-                required_truth_problems.append((truth_problem, True))
+                required_truth_problems.append((truth_problem, True, False))
         
         # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
-        for (truth_problem, is_solving) in required_truth_problems:
-            # Solve (if necessary) ...
-            truth_problem.set_mu(mu)
-            if not is_solving:
-                log(PROGRESS, "In form_on_reduced_function_space, requiring truth problem solve for problem " + str(truth_problem))
-                truth_problem.solve()
+        for (truth_problem, truth_problem_is_solving, reduced_problem_is_solving) in required_truth_problems:
+            if not reduced_problem_is_solving:
+                # Solve (if necessary) ...
+                truth_problem.set_mu(mu)
+                if not truth_problem_is_solving:
+                    log(PROGRESS, "In form_on_reduced_function_space, requiring truth problem solve for problem " + truth_problem.name())
+                    truth_problem.solve()
+                else:
+                    log(PROGRESS, "In form_on_reduced_function_space, loading current truth problem solution for problem " + truth_problem.name())
             else:
-                log(PROGRESS, "In form_on_reduced_function_space, loading current truth problem solution for problem " + str(truth_problem))
+                reduced_problem = get_reduced_problem_from_problem(truth_problem)
+                log(PROGRESS, "In form_on_reduced_function_space, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
             # ... and assign to reduced_mesh_solution
             for (reduced_mesh_solution, reduced_mesh_interpolator) in zip(truth_problem_to_reduced_mesh_solution[truth_problem], truth_problem_to_reduced_mesh_interpolator[truth_problem]):
                 solution_to = reduced_mesh_solution
-                solution_from = reduced_mesh_interpolator(truth_problem._solution)
+                if not reduced_problem_is_solving:
+                    solution_from = reduced_mesh_interpolator(truth_problem._solution)
+                else:
+                    solution_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution.N]*reduced_problem._solution)
                 backend.assign(solution_to, solution_from)
         
         # Solve reduced problems associated to nonlinear terms
@@ -220,10 +233,10 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             # Solve (if necessary) ...
             reduced_problem.set_mu(mu)
             if not is_solving:
-                log(PROGRESS, "In form_on_reduced_function_space, requiring reduced problem solve for problem " + str(reduced_problem))
+                log(PROGRESS, "In form_on_reduced_function_space, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
                 reduced_problem.solve()
             else:
-                log(PROGRESS, "In form_on_reduced_function_space, loading current reduced problem solution for problem " + str(reduced_problem))
+                log(PROGRESS, "In form_on_reduced_function_space, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
             # ... and assign to reduced_mesh_solution
             for (reduced_mesh_solution, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_basis_functions[reduced_problem]):
                 solution_to = reduced_mesh_solution
