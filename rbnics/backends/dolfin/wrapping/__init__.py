@@ -31,6 +31,7 @@ from rbnics.backends.dolfin.wrapping.evaluate_basis_functions_matrix_at_dofs imp
 from rbnics.backends.dolfin.wrapping.evaluate_expression import evaluate_expression
 from rbnics.backends.dolfin.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
 from rbnics.backends.dolfin.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
+from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
 from rbnics.backends.dolfin.wrapping.expression_description import expression_description
 from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
 from rbnics.backends.dolfin.wrapping.expression_name import expression_name
@@ -96,6 +97,7 @@ __all__ = [
     'evaluate_expression',
     'evaluate_sparse_function_at_dofs',
     'evaluate_sparse_vector_at_dofs',
+    'expand_sum_product',
     'expression_description',
     'expression_iterator',
     'expression_name',

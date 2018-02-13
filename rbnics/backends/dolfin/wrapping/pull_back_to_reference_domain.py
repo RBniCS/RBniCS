@@ -21,14 +21,13 @@ import itertools
 import re
 from numpy import allclose, isclose, ones as numpy_ones, zeros as numpy_zeros
 from mpi4py.MPI import Op
-from sympy import Basic as SympyBase, ccode, collect, expand_mul, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix, Number, preorder_traversal, simplify, symbols, sympify
+from sympy import Basic as SympyBase, ccode, collect, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix, Number, preorder_traversal, simplify, symbols, sympify
 from ufl import as_tensor, FiniteElement, Form, Measure, sqrt, TensorElement, VectorElement
-from ufl.algorithms import apply_transformer, Transformer
-from ufl.algorithms.apply_algebra_lowering import apply_algebra_lowering
+from ufl.algorithms import apply_transformer, expand_derivatives, Transformer
 from ufl.algorithms.apply_derivatives import apply_derivatives
 from ufl.algorithms.expand_indices import expand_indices
 from ufl.algorithms.map_integrands import map_integrand_dags
-from ufl.classes import CellDiameter, CellVolume, Circumradius, FacetArea, FacetJacobianDeterminant, FacetNormal, Grad, Jacobian, JacobianDeterminant, JacobianInverse, Sum
+from ufl.classes import CellDiameter, CellVolume, Circumradius, FacetArea, FacetJacobianDeterminant, FacetNormal, Grad, Jacobian, JacobianDeterminant, JacobianInverse
 from ufl.core.multiindex import FixedIndex, Index, indices, MultiIndex
 from ufl.corealg.multifunction import memoized_handler, MultiFunction
 from ufl.corealg.map_dag import map_expr_dag
@@ -41,6 +40,7 @@ if has_pybind11():
     from dolfin.function.expression import BaseExpression
 else:
     from dolfin import Expression as BaseExpression, GenericMatrix, GenericVector
+from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
@@ -912,91 +912,10 @@ def PullBackFormsToReferenceDomainDecoratedReducedProblem(ParametrizedReducedDif
     
 # ===== Pull back forms decorator (auxiliary functions and classes) ===== #
 def expand(form):
-    # Call UFL expander
-    expanded_form = expand_indices(apply_derivatives(apply_algebra_lowering(form)))
-    # Call sympy replacer
-    expanded_form = apply_transformer(expanded_form, SympyExpander())
-    # Split sums
-    expanded_split_form_integrals = list()
-    for integral in expanded_form.integrals():
-        split_sum_of_integrals(integral, expanded_split_form_integrals)
-    expanded_split_form = Form(expanded_split_form_integrals)
-    # Return
-    return expanded_split_form
-    
-class SympyExpander(Transformer):
-    def __init__(self):
-        Transformer.__init__(self)
-        self.ufl_to_sympy = dict()
-        self.sympy_to_ufl = dict()
-        self.sympy_id_to_ufl = dict()
-        
-    def operator(self, e, *ops):
-        self._store_sympy_symbol(e)
-        return e
-        
-    def sum(self, e, arg1, arg2):
-        def op(arg1, arg2):
-            return arg1 + arg2
-        return self._apply_sympy_simplify(e, arg1, arg2, op)
-
-    def product(self, e, arg1, arg2):
-        def op(arg1, arg2):
-            return arg1*arg2
-        return self._apply_sympy_simplify(e, arg1, arg2, op)
-    
-    def terminal(self, o):
-        self._store_sympy_symbol(o)
-        return o
-        
-    def _apply_sympy_simplify(self, e, arg1, arg2, op):
-        from rbnics.shape_parametrization.utils.symbolic import sympy_eval
-        assert arg1 in self.ufl_to_sympy
-        sympy_arg1 = self.ufl_to_sympy[arg1]
-        assert arg2 in self.ufl_to_sympy
-        sympy_arg2 = self.ufl_to_sympy[arg2]
-        sympy_expanded_e = expand_mul(op(sympy_arg1, sympy_arg2))
-        ufl_expanded_e = sympy_eval(str(sympy_expanded_e), self.sympy_id_to_ufl)
-        self.ufl_to_sympy[ufl_expanded_e] = sympy_expanded_e
-        self.sympy_to_ufl[sympy_expanded_e] = ufl_expanded_e
-        return ufl_expanded_e
-    
-    def _store_sympy_symbol(self, o):
-        if isinstance(o, MultiIndex):
-            pass
-        else:
-            assert len(o.ufl_shape) in (0, 1, 2, 3)
-            if len(o.ufl_shape) is 0:
-                self._store_sympy_scalar_symbol(o)
-            elif len(o.ufl_shape) is 1:
-                for i in range(o.ufl_shape[0]):
-                    self._store_sympy_scalar_symbol(o[i])
-            elif len(o.ufl_shape) is 2:
-                for i in range(o.ufl_shape[0]):
-                    for j in range(o.ufl_shape[1]):
-                        self._store_sympy_scalar_symbol(o[i, j])
-            elif len(o.ufl_shape) is 3:
-                for i in range(o.ufl_shape[0]):
-                    for j in range(o.ufl_shape[1]):
-                        for k in range(o.ufl_shape[2]):
-                            self._store_sympy_scalar_symbol(o[i, j, k])
-                
-    def _store_sympy_scalar_symbol(self, o):
-        assert o.ufl_shape == ()
-        if o not in self.ufl_to_sympy:
-            sympy_id = "sympy" + str(len(self.ufl_to_sympy))
-            sympy_o = symbols(sympy_id)
-            self.ufl_to_sympy[o] = sympy_o
-            self.sympy_to_ufl[sympy_o] = o
-            self.sympy_id_to_ufl[sympy_id] = o
-            
-def split_sum_of_integrals(integral, expanded_split_form_integrals):
-    integrand = integral.integrand()
-    if isinstance(integrand, Sum):
-        for operand in integrand.ufl_operands:
-            split_sum_of_integrals(integral.reconstruct(integrand=operand), expanded_split_form_integrals)
-    else:
-        expanded_split_form_integrals.append(integral)
+    form = expand_derivatives(form)
+    form = expand_sum_product(form)
+    form = expand_indices(form)
+    return form
     
 class ComputeAffineParameterDependentThetaFactorReplacer(Transformer):
     def __init__(self, coefficient, placeholder):

@@ -79,18 +79,18 @@ class Replacer(MultiFunction):
         if o in self._mapping:
             return self._mapping[o]
         else:
-            assert len(o.ufl_operands) == 2
-            assert isinstance(o.ufl_operands[1], MultiIndex)
-            if o.ufl_operands[0] in self._mapping:
-                replaced_ufl_operand_0 = self._mapping[o.ufl_operands[0]]
+            assert len(dops) == 2
+            assert isinstance(dops[1], MultiIndex)
+            if dops[0] in self._mapping:
+                replaced_ufl_operand_0 = self._mapping[dops[0]]
             else:
-                replaced_ufl_operand_0 = map_integrand_dags(self, o.ufl_operands[0])
-            return Indexed(replaced_ufl_operand_0, o.ufl_operands[1])
+                replaced_ufl_operand_0 = map_integrand_dags(self, dops[0])
+            return Indexed(replaced_ufl_operand_0, dops[1])
     
     def list_tensor(self, o, *dops):
         assert o not in self._mapping
         replaced_ufl_operands = list()
-        for ufl_operand in o.ufl_operands:
+        for ufl_operand in dops:
             if ufl_operand in self._mapping:
                 replaced_ufl_operands.append(self._mapping[ufl_operand])
             else:
@@ -99,13 +99,13 @@ class Replacer(MultiFunction):
         
     def component_tensor(self, o, *dops):
         assert o not in self._mapping
-        assert len(o.ufl_operands) == 2
-        assert isinstance(o.ufl_operands[1], MultiIndex)
-        if o.ufl_operands[0] in self._mapping:
-            replaced_ufl_operand_0 = self._mapping[o.ufl_operands[0]]
+        assert len(dops) == 2
+        assert isinstance(dops[1], MultiIndex)
+        if dops[0] in self._mapping:
+            replaced_ufl_operand_0 = self._mapping[dops[0]]
         else:
-            replaced_ufl_operand_0 = map_integrand_dags(self, o.ufl_operands[0])
-        return ComponentTensor(replaced_ufl_operand_0, o.ufl_operands[1])
+            replaced_ufl_operand_0 = map_integrand_dags(self, dops[0])
+        return ComponentTensor(replaced_ufl_operand_0, dops[1])
 
     def coefficient_derivative(self, o):
         error("Derivatives should be applied before executing replace.")

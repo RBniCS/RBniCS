@@ -18,7 +18,6 @@
 
 from numpy import ones
 from ufl import Argument, Form, Measure, replace
-from ufl.algebra import Sum
 from ufl.algorithms import apply_transformer, expand_derivatives, Transformer
 from ufl.algorithms.traversal import iter_expressions
 from ufl.classes import FacetNormal
@@ -37,7 +36,7 @@ else:
     from dolfin import Expression as BaseExpression
     from dolfin import log, PROGRESS
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from rbnics.backends.dolfin.wrapping import rewrite_quotients
+from rbnics.backends.dolfin.wrapping import expand_sum_product, rewrite_quotients
 from rbnics.utils.decorators import BackendFor, get_problem_from_solution, ModuleWrapper
 
 def BasicSeparatedParametrizedForm(backend, wrapping):
@@ -45,6 +44,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
         def __init__(self, form, strict=False):
             AbstractSeparatedParametrizedForm.__init__(self, form)
             form = expand_derivatives(form)
+            form = expand_sum_product(form)
             form = rewrite_quotients(form)
             self._form = form
             self._coefficients = list() # of list of ParametrizedExpression
@@ -88,7 +88,6 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
             integral_to_coefficients = dict()
             for integral in self._form.integrals():
                 log(PROGRESS, "\t Currently on integrand " + str(integral.integrand()))
-                assert not isinstance(integral.integrand(), Sum), "Please write your form as a*u*v*dx + b*u*v*dx rather than (a*u*v + b*u*v)*dx, otherwise skipping tree nodes may not work."
                 self._coefficients.append(list()) # of ParametrizedExpression
                 for e in iter_expressions(integral):
                     log(PROGRESS, "\t\t Expression " + str(e))
