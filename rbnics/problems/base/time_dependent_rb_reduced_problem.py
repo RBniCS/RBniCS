@@ -64,8 +64,11 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     
         # Build operators for error estimation
         def build_error_estimation_operators(self, current_stage="offline"):
-            # Call Parent
             ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self, current_stage)
+            # Initial condition
+            self._build_reduced_initial_condition_error_estimation(current_stage)
+            
+        def _build_reduced_initial_condition_error_estimation(self, current_stage="offline"):
             # Assemble initial condition product error estimation operator
             if len(self.components) > 1:
                 for component in self.components:

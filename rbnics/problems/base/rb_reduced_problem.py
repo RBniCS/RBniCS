@@ -129,8 +129,11 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             It returns an relative error bound for the current output.
             """
             return NotImplemented
-   
+            
         def build_error_estimation_operators(self, current_stage="offline"):
+            self._build_error_estimation_operators(current_stage)
+        
+        def _build_error_estimation_operators(self, current_stage="offline"):
             """
             It builds operators for error estimation.
             """
