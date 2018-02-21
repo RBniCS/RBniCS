@@ -18,19 +18,20 @@
 
 import os
 from ufl import product
-from dolfin import File, Function, has_hdf5_parallel, XDMFFile
+from dolfin import File, Function, has_hdf5, has_hdf5_parallel, XDMFFile
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 from rbnics.utils.mpi import is_io_process
 
-def has_hdf5():
-    return False # Temporarily disable output to XDMFFile until next FEniCS release
-
 def function_load(fun, directory, filename, suffix=None):
-    if not has_hdf5() or not has_hdf5_parallel():
+    fun_V = fun.function_space()
+    if (
+        not has_hdf5() or not has_hdf5_parallel()
+            or
+        fun_V.mesh().geometry().dim() is 1 # due to DOLFIN issue #892 TODO
+    ):
         return _read_from_xml_file(fun, directory, filename, suffix)
     else:
-        fun_V = fun.function_space()
         if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
             for (index, components) in fun_V._index_to_components.items():
                 sub_fun_V = get_function_subspace(fun_V, components)
@@ -63,6 +64,8 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, components=None, func
         filename = filename + "_component_" + "".join(components)
     if function_name is None:
         function_name = "function"
+    else:
+        function_name = "function_" + "".join(components)
     fun_rank = fun.value_rank()
     fun_dim = product(fun.value_shape())
     assert fun_rank <= 2
@@ -102,9 +105,8 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, components=None, func
                     _all_xdmf_latest_suffix[full_filename_checkpoint] = 0
                 _all_xdmf_files[full_filename_checkpoint].read_checkpoint(fun, function_name, suffix)
             else:
-                file_checkpoint = XDMFFile(full_filename_checkpoint)
-                file_checkpoint.read_checkpoint(fun, function_name, 0)
-                file_checkpoint.close()
+                with XDMFFile(full_filename_checkpoint) as file_checkpoint:
+                    file_checkpoint.read_checkpoint(fun, function_name, 0)
         return file_exists
     
 _all_xdmf_files = dict()

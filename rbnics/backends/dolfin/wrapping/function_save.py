@@ -18,17 +18,23 @@
 
 import os
 from ufl import product
-from dolfin import assign, File, has_hdf5_parallel, XDMFFile
+from dolfin import assign, File, has_hdf5, has_hdf5_parallel, has_pybind11, XDMFFile
+if has_pybind11():
+    from dolfin.cpp.log import get_log_level, LogLevel, set_log_level
+    WARNING = LogLevel.WARNING
+else:
+    from dolfin import get_log_level, set_log_level, WARNING
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 from rbnics.utils.mpi import is_io_process
 
-def has_hdf5():
-    return False # Temporarily disable output to XDMFFile until next FEniCS release
-
 def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
-    if not has_hdf5() or not has_hdf5_parallel():
+    if (
+        not has_hdf5() or not has_hdf5_parallel()
+            or
+        fun_V.mesh().geometry().dim() is 1 # due to DOLFIN issue #892 TODO
+    ):
         if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
             for (index, components) in fun_V._index_to_components.items():
                 sub_fun = function_extend_or_restrict(fun, components[0], get_function_subspace(fun_V, components[0]), None, weight=None, copy=True)
@@ -93,6 +99,8 @@ def _write_to_xdmf_file(fun, directory, filename, suffix, components=None, funct
         filename = filename + "_component_" + "".join(components)
     if function_name is None:
         function_name = "function"
+    else:
+        function_name = "function_" + "".join(components)
     fun_rank = fun.value_rank()
     fun_dim = product(fun.value_shape())
     assert fun_rank <= 2
@@ -129,20 +137,21 @@ def _write_to_xdmf_file(fun, directory, filename, suffix, components=None, funct
             # Make sure to always use the same function, otherwise dolfin
             # changes the numbering and visualization is difficult in ParaView
             assign(_all_xdmf_functions[full_filename_checkpoint], fun)
-            _all_xdmf_files[full_filename_visualization].write(_all_xdmf_functions[full_filename_checkpoint], suffix)
-            _all_xdmf_files[full_filename_checkpoint].write_checkpoint(_all_xdmf_functions[full_filename_checkpoint], function_name, suffix)
+            _all_xdmf_files[full_filename_visualization].write(_all_xdmf_functions[full_filename_checkpoint], float(suffix))
+            bak_log_level = get_log_level()
+            set_log_level(int(WARNING) + 1) # disable xdmf logs
+            _all_xdmf_files[full_filename_checkpoint].write_checkpoint(_all_xdmf_functions[full_filename_checkpoint], function_name, float(suffix))
+            set_log_level(bak_log_level)
         else:
             # Remove existing files if any, as new functions should not be appended,
             # but rather overwrite existing functions
             if is_io_process() and os.path.exists(full_filename_checkpoint):
                 os.remove(full_filename_checkpoint)
                 os.remove(full_filename_checkpoint.replace(".xdmf", ".h5"))
-            file_visualization = XDMFFile(full_filename_visualization)
-            file_visualization.write(fun, 0)
-            file_visualization.close()
-            file_checkpoint = XDMFFile(full_filename_checkpoint)
-            file_checkpoint.write_checkpoint(fun, function_name, 0)
-            file_checkpoint.close()
+            with XDMFFile(full_filename_visualization) as file_visualization:
+                file_visualization.write(fun, 0.)
+            with XDMFFile(full_filename_checkpoint) as file_checkpoint:
+                file_checkpoint.write_checkpoint(fun, function_name, 0.)
         
 _all_pvd_files = dict()
 _all_pvd_latest_suffix = dict()
