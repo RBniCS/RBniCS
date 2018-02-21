@@ -18,7 +18,7 @@
 
 import pytest
 from numpy import array, isclose, nonzero, sort
-from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, has_pybind11, inner, MixedElement, Point, project, split, TestFunction, TrialFunction, UnitSquareMesh, Vector, VectorElement
+from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, has_pybind11, inner, MixedElement, Point, project, split, TestFunction, TrialFunction, UnitIntervalMesh, UnitSquareMesh, Vector, VectorElement
 if has_pybind11():
     from mpi4py import MPI
     from dolfin.cpp.log import log, LogLevel, set_log_level
@@ -36,17 +36,20 @@ from rbnics.backends.dolfin import ReducedMesh
 from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
 
 # Meshes
-def structured_mesh():
+def structured_mesh_1d():
+    return UnitIntervalMesh(24)
+    
+def structured_mesh_2d():
     return UnitSquareMesh(3, 3)
     
 if has_mshr:
-    def unstructured_mesh():
+    def unstructured_mesh_2d():
         domain = Rectangle(Point(0., 0.), Point(1., 1.))
         return generate_mesh(domain, 5)
         
-    generate_meshes = pytest.mark.parametrize("mesh", [structured_mesh(), unstructured_mesh()])
+    generate_meshes = pytest.mark.parametrize("mesh", [structured_mesh_1d(), structured_mesh_2d(), unstructured_mesh_2d()])
 else:
-    generate_meshes = pytest.mark.parametrize("mesh", [structured_mesh()])
+    generate_meshes = pytest.mark.parametrize("mesh", [structured_mesh_1d(), structured_mesh_2d()])
 
 # Helper functions
 def nonzero_values(function):
@@ -204,7 +207,12 @@ def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     dofs = [d[0] for d in reduced_mesh.get_dofs_list()] # convert from 1-tuple to int
     reduced_dofs = [d[0] for d in reduced_mesh.get_reduced_dofs_list()] # convert from 1-tuple to int
     
-    e = Expression("(1+x[0])*(1+x[1])", element=V.ufl_element())
+    mesh_dim = V.mesh().geometry().dim()
+    assert mesh_dim in (1, 2)
+    if mesh_dim is 1:
+        e = Expression("1+x[0]", element=V.ufl_element())
+    else:
+        e = Expression("(1+x[0])*(1+x[1])", element=V.ufl_element())
     
     f = project(e, V)
     f_N = project(e, reduced_V[0])
@@ -224,7 +232,7 @@ def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
 
 # ~~~ Mixed case ~~~ #
 def MixedFunctionSpace(mesh):
-    element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2, dim=2)
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
     element = MixedElement(element_0, element_1)
     return FunctionSpace(mesh, element)
@@ -344,7 +352,7 @@ def _test_reduced_mesh_mixed_vector(V, reduced_mesh):
 
 # ~~~ Collapsed case ~~~ #
 def CollapsedFunctionSpaces(mesh):
-    element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2, dim=2)
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
     element = MixedElement(element_0, element_1)
     U = FunctionSpace(mesh, element)
