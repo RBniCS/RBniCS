@@ -80,8 +80,10 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             else:
                 self.retained_energy.extend([1. for _ in range(Neigs)]) # trivial case, all snapshots are zero
             
+            eigenvectors = list()
             for N in range(Nmax):
                 (eigvector, _) = eigensolver.get_eigenvector(N)
+                eigenvectors.append(eigvector)
                 b = self.snapshots_matrix*eigvector
                 if inner_product is not None:
                     norm_b = sqrt(transpose(b)*inner_product*b)
@@ -94,7 +96,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
                     break
             N += 1
             
-            return (self.eigenvalues[:N], basis_functions, N)
+            return (self.eigenvalues[:N], eigenvectors, basis_functions, N)
                 
         def print_eigenvalues(self, N=None):
             if N is None:

@@ -208,7 +208,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def compute_basis_POD(self):
         POD = self.EIM_approximation.parametrized_expression.create_POD_container()
         POD.store_snapshot(self.snapshots_container)
-        (_, basis_functions, N) = POD.apply(self.Nmax, self.tol)
+        (_, _, basis_functions, N) = POD.apply(self.Nmax, self.tol)
         self.EIM_approximation.basis_functions.enrich(basis_functions)
         self.EIM_approximation.basis_functions.save(self.EIM_approximation.folder["basis"], "basis")
         # do not increment self.EIM_approximation.N

@@ -132,7 +132,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 tol1 = self.tol1[component]
             POD_time_trajectory.clear()
             POD_time_trajectory.store_snapshot(snapshot_over_time, component=component)
-            (eigs1, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
+            (eigs1, _, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
             POD_time_trajectory.print_eigenvalues(N1)
             if component is None:
                 POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs")

@@ -200,7 +200,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 tol1 = self.tol1[component]
             POD_time_trajectory.clear()
             POD_time_trajectory.store_snapshot(orthogonal_snapshot_over_time, component=component)
-            (_, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
+            (_, _, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
             POD_time_trajectory.print_eigenvalues(N1)
             if component is None:
                 POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs")
@@ -221,7 +221,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 tol1 = self.tol1[component]
             POD_time_trajectory.clear()
             POD_time_trajectory.store_snapshot(snapshot_over_time, component=component)
-            (eigs1, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
+            (eigs1, _, basis_functions1, N1) = POD_time_trajectory.apply(N1, tol1)
             POD_time_trajectory.print_eigenvalues(N1)
             
             # Then, compress parameter dependence (thus, we do not clear the POD object)
@@ -233,7 +233,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 POD_basis = self.POD_basis[component]
                 tol2 = self.tol2[component]
             POD_basis.store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1], component=component)
-            (_, basis_functions2, N_plus_N2) = POD_basis.apply(self.reduced_problem.N + N2, tol2)
+            (_, _, basis_functions2, N_plus_N2) = POD_basis.apply(self.reduced_problem.N + N2, tol2)
             POD_basis.print_eigenvalues(N_plus_N2)
             if component is None:
                 POD_basis.save_eigenvalues_file(self.folder["post_processing"], "eigs")
