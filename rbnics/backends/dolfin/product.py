@@ -28,7 +28,7 @@ from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping import function_copy, tensor_copy
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC, ProductOutputDirichletBC
 from rbnics.utils.decorators import backend_for, ComputeThetaType, list_of, overload
-from rbnics.eim.utils.decorators import add_to_map_from_parametrized_expression_to_problem, get_problem_from_parametrized_expression
+from rbnics.eim.utils.decorators import add_to_map_from_parametrized_operator_to_problem, get_problem_from_parametrized_operator
 
 # Need to customize ThetaType in order to also include dolfin' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator:
 # this is the reason why in the following theta coefficients are preprocessed by float().
@@ -113,9 +113,9 @@ def _product(thetas: ThetaType, operators: list_of(ParametrizedTensorFactory)):
         # Keep the operators as ParametrizedTensorFactories and delay assembly as long as possible
         output = _product(thetas, operators_as_forms)
         output = ParametrizedTensorFactory(output.sum_product_return_value, False)
-        problems = [get_problem_from_parametrized_expression(operator) for operator in operators]
+        problems = [get_problem_from_parametrized_operator(operator) for operator in operators]
         assert all([problem is problems[0] for problem in problems])
-        add_to_map_from_parametrized_expression_to_problem(output, problems[0])
+        add_to_map_from_parametrized_operator_to_problem(output, problems[0])
         output = ProductOutput(output)
         _product_parametrized_tensor_factories_output_cache[operators_key] = output
         _product_parametrized_tensor_factories_constants_cache[operators_key] = _product_forms_constants_cache[operators_key]

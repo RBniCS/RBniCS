@@ -34,8 +34,12 @@ def StoreMapFromParametrizedExpressionToProblem(EIMApproximation_DerivedClass):
     return StoreMapFromParametrizedExpressionToProblem_Class
     
 def add_to_map_from_parametrized_expression_to_problem(parametrized_expression, problem):
-    assert parametrized_expression not in _parametrized_expression_to_problem_map
-    _parametrized_expression_to_problem_map[parametrized_expression] = problem
+    if hasattr(type(problem), "__is_exact__"):
+        problem = problem.__decorated_problem__
+    if parametrized_expression not in _parametrized_expression_to_problem_map:
+        _parametrized_expression_to_problem_map[parametrized_expression] = problem
+    else:
+        assert _parametrized_expression_to_problem_map[parametrized_expression] is problem
     
 def get_problem_from_parametrized_expression(parametrized_expression):
     assert parametrized_expression in _parametrized_expression_to_problem_map

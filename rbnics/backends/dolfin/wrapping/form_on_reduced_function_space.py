@@ -23,7 +23,7 @@ if has_pybind11():
     from dolfin.function.argument import Argument
 else:
     from dolfin import Argument
-from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
+from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
@@ -32,7 +32,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
     def _basic_form_on_reduced_function_space(form_wrapper, at):
         form = form_wrapper._form
         form_name = form_wrapper._name
-        mu = get_problem_from_parametrized_expression(form_wrapper).mu
+        mu = get_problem_from_parametrized_operator(form_wrapper).mu
         reduced_V = at.get_reduced_function_spaces()
         reduced_subdomain_data = at.get_reduced_subdomain_data()
         

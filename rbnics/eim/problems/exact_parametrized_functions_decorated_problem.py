@@ -17,8 +17,9 @@
 #
 
 from rbnics.backends import SymbolicParameters
+from rbnics.eim.backends import OfflineOnlineClassMethod, OfflineOnlineExpansionStorage, OfflineOnlineExpansionStorageSize, OfflineOnlineSwitch
+from rbnics.eim.utils.decorators import StoreMapFromParametrizedOperatorsToProblem, StoreMapFromParametrizedOperatorsToTermAndIndex
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
-from rbnics.eim.utils.decorators import StoreMapFromOperatorsToProblem
 
 def ExactParametrizedFunctions_OfflineAndOnline(**kwargs):
     # Enable exact parametrized functions evaluation both offline and online
@@ -36,7 +37,8 @@ def ExactParametrizedFunctionsDecoratedProblem(
     @ProblemDecoratorFor(ExactParametrizedFunctions, ExactAlgorithm=ExactParametrizedFunctions_OfflineAndOnline, stages=stages)
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
-        @StoreMapFromOperatorsToProblem
+        @StoreMapFromParametrizedOperatorsToProblem
+        @StoreMapFromParametrizedOperatorsToTermAndIndex
         @PreserveClassName
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
