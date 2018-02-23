@@ -56,6 +56,7 @@ from rbnics.backends.dolfin.linear_solver import LinearSolver
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.max import max
 from rbnics.backends.dolfin.mesh_motion import MeshMotion
+from rbnics.backends.dolfin.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.dolfin.nonlinear_solver import NonlinearSolver
 from rbnics.backends.dolfin.parametrized_expression_factory import ParametrizedExpressionFactory
 from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
@@ -94,6 +95,7 @@ __all__ = [
     'Matrix',
     'max',
     'MeshMotion',
+    'NonAffineExpansionStorage',
     'NonlinearSolver',
     'ParametrizedExpressionFactory',
     'ParametrizedTensorFactory',

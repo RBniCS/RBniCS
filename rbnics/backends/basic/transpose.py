@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends.basic.wrapping import DelayedTranspose
 from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -322,6 +323,11 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return
             return output
+            
+        @overload(backend.NonAffineExpansionStorage.Item, )
+        def __mul__(self, other):
+            delayed_transpose = DelayedTranspose(self.basis_functions_matrix)
+            return delayed_transpose*other
         
         @overload(object, )
         def __mul__(self, other):
@@ -418,7 +424,7 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
     return _BasisFunctionsMatrix_Transpose__times__Matrix
-            
+    
 # Auxiliary: transpose of a vectorized matrix (i.e. vector obtained by stacking its columns)
 def VectorizedMatrix_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsMatrix, ConvertAdditionalMatrixTypes):
     class _VectorizedMatrix_Transpose(object):

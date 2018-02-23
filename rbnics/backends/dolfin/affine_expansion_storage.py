@@ -22,7 +22,6 @@ from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExp
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
-from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.utils.config import config
 from rbnics.utils.decorators import backend_for, list_of, overload, tuple_of
 
@@ -63,6 +62,7 @@ class AffineExpansionStorage_Form(AffineExpansionStorage_Base):
         # Get config value
         delay_assembly = config.get("backends", "delay assembly")
         # Check if arguments are parametrized
+        from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory # cannot import at global scope due to cyclic dependence
         are_form = list()
         are_parametrized = list()
         parametrized_tensor_factories = list()

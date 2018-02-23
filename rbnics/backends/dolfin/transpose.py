@@ -24,6 +24,7 @@ from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.functions_list import FunctionsList
 from rbnics.backends.dolfin.matrix import Matrix
+from rbnics.backends.dolfin.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.dolfin.tensors_list import TensorsList
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping import function_from_ufl_operators, function_to_vector, matrix_mul_vector, vector_mul_vector, vectorized_matrix_inner_vectorized_matrix
@@ -72,7 +73,7 @@ def ConvertAdditionalMatrixTypes(arg):
         from rbnics.backends.dolfin.evaluate import evaluate # cannot import at global scope due to cyclic dependence
         return evaluate(arg)
 
-backend = ModuleWrapper(BasisFunctionsMatrix, Function, FunctionsList, Matrix, TensorsList, Vector)
+backend = ModuleWrapper(BasisFunctionsMatrix, Function, FunctionsList, Matrix, NonAffineExpansionStorage, TensorsList, Vector)
 wrapping = ModuleWrapper(function_to_vector, matrix_mul_vector, vector_mul_vector, vectorized_matrix_inner_vectorized_matrix)
 online_backend = ModuleWrapper(OnlineMatrix=OnlineMatrix, OnlineVector=OnlineVector)
 online_wrapping = ModuleWrapper()

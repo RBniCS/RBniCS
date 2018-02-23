@@ -16,22 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.basic.affine_expansion_storage import AffineExpansionStorage
-from rbnics.backends.online.basic.assign import assign
-from rbnics.backends.online.basic.evaluate import evaluate
-from rbnics.backends.online.basic.function import Function
-from rbnics.backends.online.basic.linear_solver import LinearSolver
-from rbnics.backends.online.basic.non_affine_expansion_storage import NonAffineExpansionStorage
-from rbnics.backends.online.basic.matrix import Matrix
-from rbnics.backends.online.basic.vector import Vector
+from rbnics.backends.online.basic import NonAffineExpansionStorage as BasicNonAffineExpansionStorage
+from rbnics.backends.online.numpy.affine_expansion_storage import AffineExpansionStorage
+from rbnics.utils.decorators import BackendFor
 
-__all__ = [
-    'AffineExpansionStorage',
-    'assign',
-    'evaluate',
-    'Function',
-    'LinearSolver',
-    'NonAffineExpansionStorage',
-    'Matrix',
-    'Vector'
-]
+NonAffineExpansionStorage_Base = BasicNonAffineExpansionStorage
+
+@BackendFor("numpy", inputs=(AffineExpansionStorage, ))
+class NonAffineExpansionStorage(NonAffineExpansionStorage_Base):
+    pass

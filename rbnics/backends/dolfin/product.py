@@ -23,6 +23,7 @@ from dolfin import assemble, Constant, Expression, project
 from rbnics.backends.dolfin.affine_expansion_storage import AffineExpansionStorage_Base, AffineExpansionStorage_DirichletBC, AffineExpansionStorage_Form, AffineExpansionStorage_Function
 from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.matrix import Matrix
+from rbnics.backends.dolfin.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping import function_copy, tensor_copy
@@ -36,7 +37,7 @@ ThetaType = ComputeThetaType((Expression, Operator))
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
-@backend_for("dolfin", inputs=(ThetaType, AffineExpansionStorage_Base, None))
+@backend_for("dolfin", inputs=(ThetaType, (AffineExpansionStorage_Base, NonAffineExpansionStorage), None))
 def product(thetas, operators, thetas2=None):
     assert len(thetas) == len(operators)
     return _product(thetas, operators)
@@ -73,9 +74,9 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
     return ProductOutput(output)
     
 @overload
-def _product(thetas: ThetaType, operators: AffineExpansionStorage_Form):
+def _product(thetas: ThetaType, operators: (AffineExpansionStorage_Form, NonAffineExpansionStorage)):
     return _product(thetas, operators._content)
-
+    
 @overload
 def _product(thetas: ThetaType, operators: list_of(Form)):
     operators_key = tuple(operators)

@@ -35,6 +35,7 @@ from rbnics.backends.abstract.linear_solver import LinearProblemWrapper, LinearS
 from rbnics.backends.abstract.matrix import Matrix
 from rbnics.backends.abstract.max import max
 from rbnics.backends.abstract.mesh_motion import MeshMotion
+from rbnics.backends.abstract.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.abstract.nonlinear_solver import NonlinearProblemWrapper, NonlinearSolver
 from rbnics.backends.abstract.parametrized_expression_factory import ParametrizedExpressionFactory
 from rbnics.backends.abstract.parametrized_tensor_factory import ParametrizedTensorFactory
@@ -75,6 +76,7 @@ __all__ = [
     'Matrix',
     'max',
     'MeshMotion',
+    'NonAffineExpansionStorage',
     'NonlinearProblemWrapper',
     'NonlinearSolver',
     'ParametrizedExpressionFactory',

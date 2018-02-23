@@ -33,6 +33,7 @@ from rbnics.backends.online.numpy.import_ import import_
 from rbnics.backends.online.numpy.linear_solver import LinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.max import max
+from rbnics.backends.online.numpy.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver
 from rbnics.backends.online.numpy.product import product
 from rbnics.backends.online.numpy.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
@@ -64,6 +65,7 @@ __all__ = [
     'LinearSolver',
     'Matrix',
     'max',
+    'NonAffineExpansionStorage',
     'NonlinearSolver',
     'product',
     'ProperOrthogonalDecomposition',

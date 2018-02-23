@@ -26,6 +26,7 @@ from rbnics.backends.common.separated_parametrized_form import SeparatedParametr
 from rbnics.backends.common.sum import sum
 from rbnics.backends.common.symbolic_parameters import SymbolicParameters
 from rbnics.backends.common.time_quadrature import TimeQuadrature
+from rbnics.backends.common.transpose import transpose
 
 __all__ = [
     'abs',
@@ -37,5 +38,6 @@ __all__ = [
     'SeparatedParametrizedForm',
     'sum',
     'SymbolicParameters',
-    'TimeQuadrature'
+    'TimeQuadrature',
+    'transpose'
 ]

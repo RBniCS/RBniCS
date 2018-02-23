@@ -16,22 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.basic.affine_expansion_storage import AffineExpansionStorage
-from rbnics.backends.online.basic.assign import assign
-from rbnics.backends.online.basic.evaluate import evaluate
-from rbnics.backends.online.basic.function import Function
-from rbnics.backends.online.basic.linear_solver import LinearSolver
-from rbnics.backends.online.basic.non_affine_expansion_storage import NonAffineExpansionStorage
-from rbnics.backends.online.basic.matrix import Matrix
-from rbnics.backends.online.basic.vector import Vector
+from rbnics.backends.basic.wrapping.delayed_product import DelayedProduct
 
-__all__ = [
-    'AffineExpansionStorage',
-    'assign',
-    'evaluate',
-    'Function',
-    'LinearSolver',
-    'NonAffineExpansionStorage',
-    'Matrix',
-    'Vector'
-]
+class DelayedSum(object):
+    def __init__(self, arg):
+        self._args = [arg]
+        
+    def __iadd__(self, other):
+        assert isinstance(other, DelayedProduct)
+        self._args.append(other)
+        return self

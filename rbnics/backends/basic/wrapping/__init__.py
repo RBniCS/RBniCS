@@ -17,6 +17,12 @@
 #
 
 from rbnics.backends.basic.wrapping.basis_functions_matrix_mul import basis_functions_matrix_mul_online_matrix, basis_functions_matrix_mul_online_vector
+from rbnics.backends.basic.wrapping.delayed_basis_functions_matrix import DelayedBasisFunctionsMatrix
+from rbnics.backends.basic.wrapping.delayed_functions_list import DelayedFunctionsList
+from rbnics.backends.basic.wrapping.delayed_linear_solver import DelayedLinearSolver
+from rbnics.backends.basic.wrapping.delayed_product import DelayedProduct
+from rbnics.backends.basic.wrapping.delayed_sum import DelayedSum
+from rbnics.backends.basic.wrapping.delayed_transpose import DelayedTranspose
 from rbnics.backends.basic.wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs import evaluate_and_vectorize_sparse_matrix_at_dofs
 from rbnics.backends.basic.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
 from rbnics.backends.basic.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
@@ -42,6 +48,7 @@ from rbnics.backends.basic.wrapping.gram_schmidt_projection_step import gram_sch
 from rbnics.backends.basic.wrapping.is_parametrized import is_parametrized
 from rbnics.backends.basic.wrapping.is_time_dependent import is_time_dependent
 from rbnics.backends.basic.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
+from rbnics.backends.basic.wrapping.non_affine_expansion_storage_item import NonAffineExpansionStorageItem
 from rbnics.backends.basic.wrapping.tensor_copy import tensor_copy
 from rbnics.backends.basic.wrapping.tensor_load import tensor_load
 from rbnics.backends.basic.wrapping.tensor_save import tensor_save
@@ -51,6 +58,12 @@ from rbnics.backends.basic.wrapping.vector_mul import vector_mul_vector
 __all__ = [
     'basis_functions_matrix_mul_online_matrix',
     'basis_functions_matrix_mul_online_vector',
+    'DelayedBasisFunctionsMatrix',
+    'DelayedFunctionsList',
+    'DelayedLinearSolver',
+    'DelayedProduct',
+    'DelayedSum',
+    'DelayedTranspose',
     'evaluate_and_vectorize_sparse_matrix_at_dofs',
     'evaluate_sparse_function_at_dofs',
     'evaluate_sparse_vector_at_dofs',
@@ -77,6 +90,7 @@ __all__ = [
     'is_parametrized',
     'is_time_dependent',
     'matrix_mul_vector',
+    'NonAffineExpansionStorageItem',
     'tensor_copy',
     'tensor_load',
     'tensor_save',

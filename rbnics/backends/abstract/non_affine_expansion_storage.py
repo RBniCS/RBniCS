@@ -16,22 +16,33 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.basic.affine_expansion_storage import AffineExpansionStorage
-from rbnics.backends.online.basic.assign import assign
-from rbnics.backends.online.basic.evaluate import evaluate
-from rbnics.backends.online.basic.function import Function
-from rbnics.backends.online.basic.linear_solver import LinearSolver
-from rbnics.backends.online.basic.non_affine_expansion_storage import NonAffineExpansionStorage
-from rbnics.backends.online.basic.matrix import Matrix
-from rbnics.backends.online.basic.vector import Vector
+from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod, abstractonlinemethod
 
-__all__ = [
-    'AffineExpansionStorage',
-    'assign',
-    'evaluate',
-    'Function',
-    'LinearSolver',
-    'NonAffineExpansionStorage',
-    'Matrix',
-    'Vector'
-]
+@AbstractBackend
+class NonAffineExpansionStorage(object, metaclass=ABCMeta):
+    def __init__(self):
+        pass
+        
+    @abstractonlinemethod
+    def save(self, directory, filename):
+        pass
+        
+    @abstractonlinemethod
+    def load(self, directory, filename):
+        pass
+        
+    @abstractmethod
+    def __getitem__(self, key):
+        pass
+        
+    @abstractmethod
+    def __iter__(self):
+        pass
+        
+    @abstractonlinemethod
+    def __setitem__(self, key, item):
+        pass
+        
+    @abstractmethod
+    def __len__(self):
+        pass

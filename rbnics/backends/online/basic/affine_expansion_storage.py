@@ -18,8 +18,7 @@
 
 import os
 from numbers import Number
-from numpy import empty as AffineExpansionStorageContent_Base
-from numpy import nditer as AffineExpansionStorageContent_Iterator
+from numpy import empty as AffineExpansionStorageContent_Base, nditer as AffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.decorators import overload, tuple_of
@@ -319,18 +318,17 @@ def AffineExpansionStorage(backend, wrapping):
             """
             return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
             """
-            slices = slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+            slices = slice_to_array(self._content[it.multi_index], key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
             
             if slices in self._precomputed_slices:
                 return self._precomputed_slices[slices]
             else:
                 output = _AffineExpansionStorage.__new__(type(self), *self._content.shape)
                 output.__init__(*self._content.shape)
-                it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
                 while not it.finished:
-                    item = self._content[it.multi_index]
                     # Slice content and assign
-                    output[it.multi_index] = self._do_slicing(item, key)
+                    output[it.multi_index] = self._do_slicing(self._content[it.multi_index], key)
                     # Increment
                     it.iternext()
                 self._precomputed_slices[slices] = output

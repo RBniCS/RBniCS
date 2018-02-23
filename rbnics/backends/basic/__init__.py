@@ -23,6 +23,7 @@ from rbnics.backends.basic.export import export
 from rbnics.backends.basic.functions_list import FunctionsList
 from rbnics.backends.basic.gram_schmidt import GramSchmidt
 from rbnics.backends.basic.import_ import import_
+from rbnics.backends.basic.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.basic.parametrized_expression_factory import ParametrizedExpressionFactory
 from rbnics.backends.basic.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.basic.proper_orthogonal_decomposition_base import ProperOrthogonalDecompositionBase
@@ -40,6 +41,7 @@ __all__ = [
     'FunctionsList',
     'GramSchmidt',
     'import_',
+    'NonAffineExpansionStorage',
     'ParametrizedExpressionFactory',
     'ParametrizedTensorFactory',
     'ProperOrthogonalDecompositionBase',
