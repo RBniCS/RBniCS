@@ -16,283 +16,183 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-import types
-from rbnics.backends import assign, copy, LinearProblemWrapper, NonlinearProblemWrapper, TimeDependentProblem1Wrapper
-from rbnics.utils.mpi import log, PROGRESS
-from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
+import inspect
 from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
+from rbnics.eim.utils.decorators import StoreMapFromBasisFunctionsToReducedProblem, StoreMapFromEachBasisFunctionToComponentAndIndex, StoreMapFromRieszStorageToReducedProblem
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
+from rbnics.utils.test import PatchInstanceMethod
 
-def _problem_is_online_exact(truth_problem, reduction_method, **kwargs):
-    return "online" in truth_problem._apply_exact_approximation_at_stages
-
-@ReducedProblemDecoratorFor(ExactParametrizedFunctions) # if problem is only offline exact
-def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    return ParametrizedReducedDifferentialProblem_DerivedClass
-
-@ReducedProblemDecoratorFor(ExactParametrizedFunctions, replaces=ExactParametrizedFunctionsDecoratedReducedProblem, replaces_if=_problem_is_online_exact) # if problem is also online exact
+@ReducedProblemDecoratorFor(ExactParametrizedFunctions)
 def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
-    def _AlsoDecorateErrorEstimationOperators(ReducedParametrizedProblem_DecoratedClass):
-        if hasattr(ReducedParametrizedProblem_DecoratedClass, "assemble_error_estimation_operators"):
-        
+    def _AlsoDecorateErrorEstimationOperators(ParametrizedReducedDifferentialProblem_DecoratedClass):
+        if hasattr(ParametrizedReducedDifferentialProblem_DecoratedClass, "assemble_error_estimation_operators"):
+            
+            @StoreMapFromEachBasisFunctionToComponentAndIndex
+            @StoreMapFromRieszStorageToReducedProblem
             @PreserveClassName
-            class _AlsoDecorateErrorEstimationOperators_Class(ReducedParametrizedProblem_DecoratedClass):
-                def __init__(self, truth_problem, **kwargs):
-                    # Call the parent initialization
-                    ReducedParametrizedProblem_DecoratedClass.__init__(self, truth_problem, **kwargs)
-                    # Precomputation of error estimation operators is disabled
-                    self.folder.pop("error_estimation")
+            class _AlsoDecorateErrorEstimationOperators_Class(ParametrizedReducedDifferentialProblem_DecoratedClass):
+                
+                def init(self, current_stage="online"):
+                    has_disable_init_error_estimation_operators = hasattr(self, "disable_init_error_estimation_operators") # may be shared between EIM/DEIM and exact evaluation
+                    # Call parent's method (enforcing an empty parent call to _init_error_estimation_operators)
+                    if not has_disable_init_error_estimation_operators:
+                        self.disable_init_error_estimation_operators = PatchInstanceMethod(self, "_init_error_estimation_operators", lambda self_, current_stage="online": None)
+                    self.disable_init_error_estimation_operators.patch()
+                    ParametrizedReducedDifferentialProblem_DecoratedClass.init(self, current_stage)
+                    self.disable_init_error_estimation_operators.unpatch()
+                    if not has_disable_init_error_estimation_operators:
+                        del self.disable_init_error_estimation_operators
+                    # Then, initialize error estimation operators associated to exact operators
+                    self._init_error_estimation_operators_exact(current_stage)
                     
-                # Initialize data structures required for the online phase
-                def _init_error_estimation_operators(self, current_stage="online"):
-                    # The offline/online separation does not hold anymore, so in
-                    # assemble_error_estimation_operators() we need to re-assemble operators.
-                    # Thus, for any value of current_stage, we initialize error estimation
-                    # operators of the reduced problem as if we were offline
-                    ReducedParametrizedProblem_DecoratedClass._init_error_estimation_operators(self, "offline")
-                    for term in self.riesz_product_terms:
-                        self._disable_load_and_save_for_online_storage(self.riesz_product[term])
-                                                    
-                # Return the error estimator for the current solution
-                def estimate_error(self, **kwargs):
-                    self._rebuild_error_estimation_operators()
-                    return ReducedParametrizedProblem_DecoratedClass.estimate_error(self, **kwargs)
-                    
-                # Return the relative error estimator for the current solution
-                def estimate_relative_error(self, **kwargs):
-                    self._rebuild_error_estimation_operators()
-                    return ReducedParametrizedProblem_DecoratedClass.estimate_relative_error(self, **kwargs)
-                    
-                # Return the error estimator for the current output
-                def estimate_error_output(self, **kwargs):
-                    self._rebuild_error_estimation_operators()
-                    return ReducedParametrizedProblem_DecoratedClass.estimate_error_output(self, **kwargs)
-                    
-                # Return the relative error estimator for the current output
-                def estimate_relative_error_output(self, **kwargs):
-                    self._rebuild_error_estimation_operators()
-                    return ReducedParametrizedProblem_DecoratedClass.estimate_relative_error_output(self, **kwargs)
-                    
-                def _rebuild_error_estimation_operators(self):
-                    # The offline/online separation does not hold anymore, so, similarly to what we did in
-                    # the truth problem, also at the reduced-order level we need to re-assemble operators,
-                    # because the assemble_operator() *may* return parameter dependent operators.
-                    self.build_error_estimation_operators("online")
-                        
-                # Build operators for error estimation
-                def build_error_estimation_operators(self, current_stage="offline"):
+                def _init_error_estimation_operators_exact(self, current_stage="online"):
+                    # Initialize offline/online switch storage only once (may be shared between EIM/DEIM and exact evaluation)
+                    OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
+                    OfflineOnlineRieszSolver = self.offline_online_backend.OfflineOnlineRieszSolver
+                    OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
+                    if not isinstance(self.riesz, OfflineOnlineSwitch):
+                        assert isinstance(self.riesz, dict)
+                        assert len(self.riesz) is 0
+                        self.riesz = OfflineOnlineExpansionStorage()
+                    if not isinstance(self.error_estimation_operator, OfflineOnlineSwitch):
+                        assert isinstance(self.error_estimation_operator, dict)
+                        assert len(self.error_estimation_operator) is 0
+                        self.error_estimation_operator = OfflineOnlineExpansionStorage()
+                    if not isinstance(self.RieszSolver, OfflineOnlineSwitch):
+                        assert inspect.isclass(self.RieszSolver)
+                        self.RieszSolver = OfflineOnlineRieszSolver()
+                    # Setup offline/online operators storage with exact operators
+                    assert current_stage in ("online", "offline")
+                    apply_exact_evaluation_at_stages = self.truth_problem._apply_exact_evaluation_at_stages
                     if current_stage == "online":
-                        log(PROGRESS, "build operators for error estimation (due to inefficient evaluation)")
-                        for term in self.riesz_terms:
-                            for q in range(self.truth_problem.Q[term]):
-                                self.riesz[term][q].clear()
-                        self.build_error_estimation_operators__initialized = False
-                        ReducedParametrizedProblem_DecoratedClass.build_error_estimation_operators(self)
-                    else:
-                        # The offline/online separation does not hold anymore, so we cannot precompute
-                        # reduced operators.
-                        print("... skipped due to inefficient evaluation")
+                        apply_exact_evaluation_at_stages = ("online", ) if "online" in apply_exact_evaluation_at_stages else ()
+                    for stage_exact in apply_exact_evaluation_at_stages:
+                        OfflineOnlineSwitch.set_current_stage(stage_exact)
+                        OfflineOnlineExpansionStorage.set_is_affine(False)
+                        # Delay Riesz solver computations
+                        self.RieszSolver.attach(delay=True)
+                        # Setup offline/online error estimation operators storage with exact operators
+                        self._init_error_estimation_operators(current_stage)
+                        OfflineOnlineExpansionStorage.unset_is_affine()
+                    # Update current stage in offline/online switch
+                    OfflineOnlineSwitch.set_current_stage(current_stage)
                     
-                # Assemble operators for error estimation
-                def assemble_error_estimation_operators(self, term, current_stage="online"):
-                    if current_stage == "online": # *cannot* load from file
-                        # The offline/online separation does not hold anymore, so we need to re-assemble operators,
-                        # because the assemble_error_estimation_operators() of the truth problem *may*
-                        # return parameter dependent operators.
-                        # Thus, call the parent method enforcing current_stage = "offline"
-                        output = ReducedParametrizedProblem_DecoratedClass.assemble_error_estimation_operators(self, term, "offline")
-                        # Return
-                        return output
-                    else:
-                        # Call parent method
-                        return ReducedParametrizedProblem_DecoratedClass.assemble_error_estimation_operators(self, term, current_stage)
-                                
+                def build_error_estimation_operators(self, current_stage="offline"):
+                    has_disable_build_error_estimation_operators = hasattr(self, "disable_build_error_estimation_operators") # may be shared between EIM/DEIM and exact evaluation
+                    # Call parent's method (enforcing an empty parent call to _build_error_estimation_operators)
+                    if not has_disable_build_error_estimation_operators:
+                        self.disable_build_error_estimation_operators = PatchInstanceMethod(self, "_build_error_estimation_operators", lambda self_, current_stage="offline": None)
+                    self.disable_build_error_estimation_operators.patch()
+                    ParametrizedReducedDifferentialProblem_DecoratedClass.build_error_estimation_operators(self, current_stage)
+                    self.disable_build_error_estimation_operators.unpatch()
+                    if not has_disable_build_error_estimation_operators:
+                        del self.disable_build_error_estimation_operators
+                    # Then, build exact operators
+                    self._build_error_estimation_operators_exact(current_stage)
+                        
+                def _build_error_estimation_operators_exact(self, current_stage="offline"):
+                    # Build offline/online operators storage from exact operators
+                    OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
+                    assert current_stage == "offline"
+                    for stage_exact in self.truth_problem._apply_exact_evaluation_at_stages:
+                        OfflineOnlineSwitch.set_current_stage(stage_exact)
+                        self._build_error_estimation_operators(current_stage)
+                        OfflineOnlineSwitch.set_current_stage(current_stage)
+                        
             return _AlsoDecorateErrorEstimationOperators_Class
         else:
-            return ReducedParametrizedProblem_DecoratedClass
+            return ParametrizedReducedDifferentialProblem_DecoratedClass
             
-    def _AlsoDecorateNonlinearSolutionStorage(ReducedParametrizedProblem_DecoratedClass):
-        if issubclass(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, NonlinearProblemWrapper):
-            if issubclass(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, TimeDependentProblem1Wrapper):
-                @PreserveClassName
-                class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
-                
-                    class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
-                        # Override online jacobian evaluation to make sure that the truth solution and truth solution dot
-                        # are updated, and that operators are re-assembled
-                        def residual_eval(self, t, solution, solution_dot):
-                            # Update truth solution
-                            reduced_problem = self.problem
-                            assign(reduced_problem.truth_problem._solution, reduced_problem.basis_functions[:solution.N]*solution)
-                            assign(reduced_problem.truth_problem._solution_dot, reduced_problem.basis_functions[:solution.N]*solution_dot)
-                            # Re-assemble
-                            reduced_problem.build_reduced_operators("online")
-                            # Call Parent
-                            return ReducedParametrizedProblem_DecoratedClass.ProblemSolver.residual_eval(self, t, solution, solution_dot)
-                        
-                        # Note that jacobian evaluation is not overridden, as truth solution and truth solution dot update
-                        # and operators re-assembly have been already carried out during residual evaluation
-                            
-                        # Override to make sure that truth_problem solution and solution_dot are backed up
-                        # and restored after the reduced solve
-                        def solve(self):
-                            reduced_problem = self.problem
-                            bak_truth_solution = copy(reduced_problem.truth_problem._solution)
-                            bak_truth_solution_dot = copy(reduced_problem.truth_problem._solution_dot)
-                            ReducedParametrizedProblem_DecoratedClass.ProblemSolver.solve(self)
-                            assign(reduced_problem.truth_problem._solution, bak_truth_solution)
-                            assign(reduced_problem.truth_problem._solution_dot, bak_truth_solution_dot)
-                
-                return _AlsoDecorateNonlinearSolutionStorage_Class
-            else:
-                @PreserveClassName
-                class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
-                
-                    class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
-                        # Override online residual evaluation to make sure that the truth solution is updated,
-                        # and that operators are re-assembled
-                        def residual_eval(self, solution):
-                            # Update truth solution
-                            reduced_problem = self.problem
-                            assign(reduced_problem.truth_problem._solution, reduced_problem.basis_functions[:solution.N]*solution)
-                            # Re-assemble
-                            reduced_problem.build_reduced_operators("online")
-                            # Call Parent
-                            return ReducedParametrizedProblem_DecoratedClass.ProblemSolver.residual_eval(self, solution)
-                        
-                        # Note that jacobian evaluation is not overridden, as truth solution update and operators
-                        # re-assembly have been already carried out during residual evaluation
-                    
-                        # Override to make sure that truth_problem solution is backed up and restored
-                        # after the reduced solve
-                        def solve(self):
-                            reduced_problem = self.problem
-                            bak_truth_solution = copy(reduced_problem.truth_problem._solution)
-                            ReducedParametrizedProblem_DecoratedClass.ProblemSolver.solve(self)
-                            assign(reduced_problem.truth_problem._solution, bak_truth_solution)
-                        
-                return _AlsoDecorateNonlinearSolutionStorage_Class
-        elif issubclass(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, LinearProblemWrapper):
-            if issubclass(ReducedParametrizedProblem_DecoratedClass.ProblemSolver, TimeDependentProblem1Wrapper):
-                @PreserveClassName
-                class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
-                
-                    class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
-                        # Override online residual evaluation to make sure that operators are re-assembled
-                        def residual_eval(self, t, solution, solution_dot):
-                            reduced_problem = self.problem
-                            # Re-assemble
-                            reduced_problem.build_reduced_operators("online")
-                            # Call Parent
-                            return ReducedParametrizedProblem_DecoratedClass.ProblemSolver.residual_eval(self, t, solution, solution_dot)
-                        
-                        # Note that jacobian evaluation is not overridden, as operators re-assembly has been already carried out
-                        # during residual evaluation
-                
-                return _AlsoDecorateNonlinearSolutionStorage_Class
-            else:
-                @PreserveClassName
-                class _AlsoDecorateNonlinearSolutionStorage_Class(ReducedParametrizedProblem_DecoratedClass):
-                
-                    class ProblemSolver(ReducedParametrizedProblem_DecoratedClass.ProblemSolver):
-                        # Override to re-assemble operators before solving
-                        def solve(self):
-                            reduced_problem = self.problem
-                            reduced_problem.build_reduced_operators("online")
-                            ReducedParametrizedProblem_DecoratedClass.ProblemSolver.solve(self)
-                        
-                return _AlsoDecorateNonlinearSolutionStorage_Class
-        else:
-            raise TypeError("Invalid reduced problem type")
-           
     @_AlsoDecorateErrorEstimationOperators
-    @_AlsoDecorateNonlinearSolutionStorage
+    @StoreMapFromBasisFunctionsToReducedProblem
     @PreserveClassName
     class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        # Default initialization of members
+        
         def __init__(self, truth_problem, **kwargs):
-            # Call the parent initialization
+            # Call parent's method
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-            # Avoid useless assemblies
-            self._solve__previous_mu = None
-            self._solve__previous_self_N = None
-            # Precomputation of operators is disabled
-            self.folder.pop("reduced_operators")
+            
+            # Copy offline online backend for current problem
+            self.offline_online_backend = truth_problem.offline_online_backend
             
         def init(self, current_stage="online"):
-            # Call the parent initialization
+            has_disable_init_operators = hasattr(self, "disable_init_operators") # may be shared between EIM/DEIM and exact evaluation
+            # Call parent's method (enforcing an empty parent call to _init_operators)
+            if not has_disable_init_operators:
+                self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_, current_stage="online": None)
+            self.disable_init_operators.patch()
             ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
-            # Since we do not save (offline/online separable) inner products to file,
-            # we still need to precompute them before the online stage begins
-            if current_stage == "online":
-                self._build_reduced_inner_products("offline")
-        
-        def _init_operators(self, current_stage="online"):
-            # The offline/online separation does not hold anymore, so in assemble_operator()
-            # we need to re-assemble operators. Thus, for any value of current_stage,
-            # we initialize the operators of the reduced problem as if we were offline
-            ParametrizedReducedDifferentialProblem_DerivedClass._init_operators(self, "offline")
-            for term in self.terms:
-                self._disable_load_and_save_for_online_storage(self.operator[term])
-                
-        def _init_inner_products(self, current_stage="online"):
-            n_components = len(self.components)
-            # We assume that offline/online separation does hold for inner products,
-            # so it is possible to precompute them. However, we do not save the resulting
-            # reduced matrix to file, so we initialize inner products as if we were offline
-            ParametrizedReducedDifferentialProblem_DerivedClass._init_inner_products(self, "offline")
-            if n_components > 1:
-                for component in self.components:
-                    self._disable_load_and_save_for_online_storage(self.inner_product[component])
-                    self._disable_load_and_save_for_online_storage(self.projection_inner_product[component])
-            else:
-                self._disable_load_and_save_for_online_storage(self.inner_product)
-                self._disable_load_and_save_for_online_storage(self.projection_inner_product)
-                
-        def _disable_load_and_save_for_online_storage(self, online_storage):
-            # Make sure to disable the save() method of the operator, which is
-            # called internally by assemble_operator() since it is not possible
-            # to precompute operators, and thus they should not be saved
-            def disabled_save(self, folder, filename):
-                raise AttributeError("Cannot save to file due to inefficient evaluation")
-            online_storage.save = types.MethodType(disabled_save, online_storage)
-            # Make sure to raise an error if the load() method of the operator,
-            # since we have not saved anything and it should never be called
-            def error_load(self, folder, filename):
-                raise AttributeError("Cannot load from file due to inefficient evaluation")
-            online_storage.load = types.MethodType(error_load, online_storage)
-    
-        # Assemble the reduced order affine expansion.
-        def _build_reduced_operators(self, current_stage="offline"):
-            # Terms
-            if current_stage == "online":
-                log(PROGRESS, "build reduced operators (due to inefficient evaluation)")
-                for term in self.terms:
-                    self.operator[term] = self.assemble_operator(term, "online")
-            else:
-                # The offline/online separation does not hold anymore, so we cannot precompute
-                # reduced operators.
-                print("... skipped due to inefficient evaluation")
+            self.disable_init_operators.unpatch()
+            if not has_disable_init_operators:
+                del self.disable_init_operators
+            # Then, initialize exact operators
+            self._init_operators_exact(current_stage)
             
-        # Assemble the reduced order affine expansion
-        def assemble_operator(self, term, current_stage="online"):
+        def _init_operators_exact(self, current_stage="online"):
+            # Initialize offline/online switch storage only once (may be shared between EIM/DEIM and exact evaluation)
+            OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
+            OfflineOnlineExpansionStorageSize = self.offline_online_backend.OfflineOnlineExpansionStorageSize
+            OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
+            if not isinstance(self.Q, OfflineOnlineSwitch):
+                assert isinstance(self.Q, dict)
+                assert len(self.Q) is 0
+                self.Q = OfflineOnlineExpansionStorageSize()
+            if not isinstance(self.operator, OfflineOnlineSwitch):
+                assert isinstance(self.operator, dict)
+                assert len(self.operator) is 0
+                self.operator = OfflineOnlineExpansionStorage()
+            # Setup offline/online operators storage with exact operators
+            assert current_stage in ("online", "offline")
+            apply_exact_evaluation_at_stages = self.truth_problem._apply_exact_evaluation_at_stages
             if current_stage == "online":
-                if term in self.terms: # *cannot* load from file
-                    # The offline/online separation does not hold anymore, so we need to re-assemble operators,
-                    # because the assemble_operator() of the truth problem *may* return parameter dependent operators.
-                    # Thus, call the parent method enforcing current_stage = "offline"
-                    return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, "offline")
-                elif term.startswith("inner_product") or term.startswith("projection_inner_product"):
-                    # The offline/online separation does hold for inner products, but we do not save the results to file
-                    return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, "offline")
-                elif term.startswith("dirichlet_bc"):
-                    raise ValueError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
-                else:
-                    raise ValueError("Invalid term for assemble_operator().")
-            else:
-                # Call parent method
-                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_operator(self, term, current_stage)
+                apply_exact_evaluation_at_stages = ("online", ) if "online" in apply_exact_evaluation_at_stages else ()
+            for stage_exact in apply_exact_evaluation_at_stages:
+                OfflineOnlineSwitch.set_current_stage(stage_exact)
+                OfflineOnlineExpansionStorage.set_is_affine(False)
+                self._init_operators(current_stage)
+                OfflineOnlineExpansionStorage.unset_is_affine()
+            # Update current stage in offline/online switch
+            OfflineOnlineSwitch.set_current_stage(current_stage)
+            
+        def build_reduced_operators(self, current_stage="offline"):
+            has_disable_build_reduced_operators = hasattr(self, "disable_build_reduced_operators") # may be shared between EIM/DEIM and exact evaluation
+            # Call parent's method (enforcing an empty parent call to _build_reduced_operators)
+            if not has_disable_build_reduced_operators:
+                self.disable_build_reduced_operators = PatchInstanceMethod(self, "_build_reduced_operators", lambda self_, current_stage="offline": None)
+            self.disable_build_reduced_operators.patch()
+            ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self, current_stage)
+            self.disable_build_reduced_operators.unpatch()
+            if not has_disable_build_reduced_operators:
+                del self.disable_build_reduced_operators
+            # Then, build exact operators
+            self._build_reduced_operators_exact(current_stage)
                 
+        def _build_reduced_operators_exact(self, current_stage="offline"):
+            # Build offline/online operators storage from exact operators
+            OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
+            OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
+            assert current_stage == "offline"
+            for stage_exact in self.truth_problem._apply_exact_evaluation_at_stages:
+                OfflineOnlineSwitch.set_current_stage(stage_exact)
+                OfflineOnlineExpansionStorage.set_is_affine(False)
+                self._build_reduced_operators(current_stage)
+                OfflineOnlineExpansionStorage.unset_is_affine()
+            # Update current stage in offline/online switch
+            OfflineOnlineSwitch.set_current_stage(current_stage)
+            
+        def _cache_key_from_N_and_kwargs(self, N, **kwargs):
+            if len(self.truth_problem._apply_exact_evaluation_at_stages) is 1: # uses EIM/DEIM online and exact evaluation offline
+                cache_key = ParametrizedReducedDifferentialProblem_DerivedClass._cache_key_from_N_and_kwargs(self, N, **kwargs)
+                # Append current stage to cache key
+                OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
+                cache_key = cache_key + (OfflineOnlineSwitch.get_current_stage(), )
+                # Update current cache_key to be used when computing output
+                self._output_cache__current_cache_key = cache_key
+                # Return
+                return cache_key
+            else:
+                return ParametrizedReducedDifferentialProblem_DerivedClass._cache_key_from_N_and_kwargs(self, N, **kwargs)
+            
     # return value (a class) for the decorator
     return ExactParametrizedFunctionsDecoratedReducedProblem_Class
