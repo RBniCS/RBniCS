@@ -27,6 +27,18 @@ def ParametrizedTensorFactory(backend, wrapping):
             self._description = PrettyTuple(self._form, wrapping.form_description(self._form), self._name)
             self._spaces = spaces
             self._empty_snapshot = empty_snapshot
+            
+        def __eq__(self, other):
+            return (
+                isinstance(other, type(self))
+                    and
+                self._name == other._name
+                    and
+                self._spaces == other._spaces
+            )
+            
+        def __hash__(self):
+            return hash((self._name, self._spaces))
         
         def create_interpolation_locations_container(self, **kwargs):
             return backend.ReducedMesh(self._spaces, **kwargs)

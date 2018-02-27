@@ -27,6 +27,20 @@ def ParametrizedExpressionFactory(backend, wrapping):
             self._description = PrettyTuple(self._expression, wrapping.expression_description(self._expression), self._name)
             self._space = space
             self._inner_product = inner_product
+            
+        def __eq__(self, other):
+            return (
+                isinstance(other, type(self))
+                    and
+                self._name == other._name
+                    and
+                self._space == other._space
+                    and
+                self._inner_product == other._inner_product
+            )
+            
+        def __hash__(self):
+            return hash((self._name, self._space, self._inner_product))
                 
         def create_interpolation_locations_container(self):
             return backend.ReducedVertices(self._space)
