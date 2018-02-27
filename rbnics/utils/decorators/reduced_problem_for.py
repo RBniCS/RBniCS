@@ -33,9 +33,6 @@ def ReducedProblemFor(Problem, ReductionMethod, replaces=None, replaces_if=None)
         ReducedProblemGenerator = _ReducedProblemGenerator(ReducedProblem)
         # Add to cache.
         dispatch(*(Problem, ReductionMethod), name="ReducedProblem", module=_cache, replaces=replaces, replaces_if=replaces_if)(ReducedProblemGenerator)
-        # The current reduced problem can also be used as a truth problem for multilevel reduction. Add also
-        # that case to cache. No replacement is needed in this case (even if provided), because the reduced problem types differ.
-        dispatch(*(ReducedProblem, ReductionMethod), name="ReducedProblem", module=_cache)(ReducedProblemGenerator)
         # Return unchanged reduced problem
         return ReducedProblem
     return ReducedProblemFor_Decorator

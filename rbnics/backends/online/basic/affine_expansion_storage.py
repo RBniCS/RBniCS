@@ -30,7 +30,6 @@ def AffineExpansionStorage(backend, wrapping):
         def __init__(self, arg1, arg2):
             self._content = None
             self._precomputed_slices = dict() # from tuple to AffineExpansionStorage
-            self._recursive = False
             self._smallest_key = None
             self._previous_key = None
             self._largest_key = None
@@ -40,16 +39,9 @@ def AffineExpansionStorage(backend, wrapping):
             self._component_name_to_basis_component_length = None # will be filled in in __setitem__, if required
             # Initialize arguments from inputs
             self._init(arg1, arg2)
-        
-        @overload(lambda cls: cls, None)
-        def _init(self, arg1, arg2):
-            self._recursive = True
-            self._content = arg1._content
-            self._precomputed_slices = arg1._precomputed_slices
             
         @overload((tuple_of(backend.Matrix.Type()), tuple_of(backend.Vector.Type())), None)
         def _init(self, arg1, arg2):
-            self._recursive = False
             self._content = AffineExpansionStorageContent_Base((len(arg1), ), dtype=object)
             self._smallest_key = 0
             self._largest_key = len(arg1) - 1
@@ -58,20 +50,17 @@ def AffineExpansionStorage(backend, wrapping):
             
         @overload(int, None)
         def _init(self, arg1, arg2):
-            self._recursive = False
             self._content = AffineExpansionStorageContent_Base((arg1, ), dtype=object)
             self._smallest_key = 0
             self._largest_key = arg1 - 1
         
         @overload(int, int)
         def _init(self, arg1, arg2):
-            self._recursive = False
             self._content = AffineExpansionStorageContent_Base((arg1, arg2), dtype=object)
             self._smallest_key = (0, 0)
             self._largest_key = (arg1 - 1, arg2 - 1)
             
         def save(self, directory, filename):
-            assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
             # Get full directory name
             full_directory = Folders.Folder(os.path.join(str(directory), filename))
             full_directory.create()
@@ -168,7 +157,6 @@ def AffineExpansionStorage(backend, wrapping):
             DictIO.save_file(self._component_name_to_basis_component_length, full_directory, "component_name_to_basis_component_length")
             
         def load(self, directory, filename):
-            assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
             if self._content is not None: # avoid loading multiple times
                 if self._content.size > 0:
                     it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
@@ -368,7 +356,6 @@ def AffineExpansionStorage(backend, wrapping):
             return backend.Function(item.vector()[key])
             
         def __setitem__(self, key, item):
-            assert not self._recursive # this method is used when employing this class online, while the recursive one is used offline
             assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
             # Check that __getitem__ is not random acces but called for increasing key and store current key
             self._assert_setitem_order(key)

@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import MultiLevelReducedProblem
 from rbnics.utils.decorators.customize_reduced_problem_for import _cache as customize_reduced_problem_cache
 from rbnics.utils.decorators.reduced_problem_for import _cache as reduced_problem_cache
 from rbnics.utils.decorators.reduced_problem_decorator_for import _cache as reduced_problem_decorator_cache
@@ -69,8 +68,5 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     for t in range(1, len(TypesList)):
         ComposedType = TypesList[t](ComposedType)
         
-    # Decorate with multilevel reduced problem
-    ComposedType = MultiLevelReducedProblem(ComposedType)
-    
     # Finally, return an instance of the generated class
     return ComposedType(truth_problem, **kwargs)

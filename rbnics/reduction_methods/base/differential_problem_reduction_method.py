@@ -16,6 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import inspect
+from rbnics.backends import assign
 from rbnics.reduction_methods.base.reduction_method import ReductionMethod
 from rbnics.utils.io import Folders
 from rbnics.utils.decorators import UpdateMapFromProblemToTrainingStatus
@@ -115,41 +117,85 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Create folder to store the results
         self.folder["error_analysis"].create()
         
+        # Patch truth solve if with_respect_to kwarg is provided
+        self._patch_truth_solve(False, **kwargs)
+        
+    def _finalize_error_analysis(self, **kwargs):
+        # Undo patch to truth solve in case with_respect_to kwarg was provided
+        self._undo_patch_truth_solve(False, **kwargs)
+        
     # Initialize data structures required for the speedup analysis phase
     def _init_speedup_analysis(self, **kwargs):
         # Initialize the affine expansion in the truth problem
         self.truth_problem.init()
-        
+
         # Initialize reduced order data structures in the reduced problem
         self.reduced_problem.init("online")
         
         # Create folder to store the results
         self.folder["speedup_analysis"].create()
         
-        # Make sure to clean up problem and reduced problem solution cache to ensure that
-        # solution and reduced solution are actually computed
-        self.truth_problem._solution_cache.clear()
-        self.reduced_problem._solution_cache.clear()
-        self.truth_problem._output_cache.clear()
-        self.reduced_problem._output_cache.clear()
-        # ... and also disable the capability of importing/exporting truth solutions
-        self.disable_import_solution = PatchInstanceMethod(
-            self.truth_problem,
-            "import_solution",
-            lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: False
-        )
-        self.disable_export_solution = PatchInstanceMethod(
-            self.truth_problem,
-            "export_solution",
-            lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: None
-        )
-        self.disable_import_solution.patch()
-        self.disable_export_solution.patch()
+        # Patch truth solve if with_respect_to kwarg is provided
+        self._patch_truth_solve(True, **kwargs)
         
     # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
-        # Restore the capability to import/export truth solutions
-        self.disable_import_solution.unpatch()
-        self.disable_export_solution.unpatch()
-        del self.disable_import_solution
-        del self.disable_export_solution
+        # Undo patch to truth solve in case with_respect_to kwarg was provided
+        self._undo_patch_truth_solve(True, **kwargs)
+        
+    def _patch_truth_solve(self, force, **kwargs):
+        if "with_respect_to" in kwargs:
+            assert inspect.isfunction(kwargs["with_respect_to"])
+            other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
+            def patched_truth_solve(self_, **kwargs_):
+                other_truth_problem.solve(**kwargs_)
+                assign(self.truth_problem._solution, other_truth_problem._solution)
+                return self.truth_problem._solution
+                
+            self.patch_truth_solve = PatchInstanceMethod(
+                self.truth_problem,
+                "solve",
+                patched_truth_solve
+            )
+            self.patch_truth_solve.patch()
+            
+            # Initialize the affine expansion in the other truth problem
+            other_truth_problem.init()
+        else:
+            other_truth_problem = self.truth_problem
+            
+        # Clean up solution caching and disable I/O
+        if force:
+            # Make sure to clean up problem and reduced problem solution cache to ensure that
+            # solution and reduced solution are actually computed
+            other_truth_problem._solution_cache.clear()
+            other_truth_problem._output_cache.clear()
+            self.reduced_problem._solution_cache.clear()
+            self.reduced_problem._output_cache.clear()
+            
+            # Disable the capability of importing/exporting truth solutions
+            self.disable_import_solution = PatchInstanceMethod(
+                other_truth_problem,
+                "import_solution",
+                lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: False
+            )
+            self.disable_export_solution = PatchInstanceMethod(
+                other_truth_problem,
+                "export_solution",
+                lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: None
+            )
+            self.disable_import_solution.patch()
+            self.disable_export_solution.patch()
+        
+    def _undo_patch_truth_solve(self, force, **kwargs):
+        if "with_respect_to" in kwargs:
+            self.patch_truth_solve.unpatch()
+            del self.patch_truth_solve
+            
+        # Restore solution I/O
+        if force:
+            # Restore the capability to import/export truth solutions
+            self.disable_import_solution.unpatch()
+            self.disable_export_solution.unpatch()
+            del self.disable_import_solution
+            del self.disable_export_solution

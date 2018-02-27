@@ -103,9 +103,7 @@ def PrimalDualReductionMethod(DualProblem):
                 # ... and then dual error analysis
                 ErrorAnalysisTable.suppress_group("output_error")
                 ErrorAnalysisTable.suppress_group("output_relative_error")
-                self._replace_dual_truth_problem(**kwargs)
                 self.dual_reduction_method.error_analysis(N_generator, filename, **kwargs)
-                self._undo_replace_dual_truth_problem(**kwargs)
                 ErrorAnalysisTable.clear_suppressed_groups()
                 
             # Compute the speedup of the reduced order approximation with respect to the full order one
@@ -116,25 +114,65 @@ def PrimalDualReductionMethod(DualProblem):
                 # ... and then dual speedup analysis
                 SpeedupAnalysisTable.suppress_group("output_error")
                 SpeedupAnalysisTable.suppress_group("output_relative_error")
-                self._replace_dual_truth_problem(**kwargs)
                 self.dual_reduction_method.speedup_analysis(N_generator, filename, **kwargs)
-                self._undo_replace_dual_truth_problem(**kwargs)
                 SpeedupAnalysisTable.clear_suppressed_groups()
                 
-            def _replace_dual_truth_problem(self, **kwargs):
+            def _patch_truth_solve(self, force, **kwargs):
+                DifferentialProblemReductionMethod_DerivedClass._patch_truth_solve(self, **kwargs)
                 if "with_respect_to" in kwargs:
-                    if not hasattr(self, "_replace_dual_truth_problem__bak_dual_truth_problem"):
-                        self._replace_dual_truth_problem__bak_dual_truth_problem = self.dual_truth_problem
-                        assert inspect.isfunction(kwargs["with_respect_to"])
-                        self.dual_truth_problem = kwargs["with_respect_to"](self.dual_truth_problem)
-                        self.dual_reduced_problem.truth_problem = self.dual_truth_problem
+                    assert inspect.isfunction(kwargs["with_respect_to"])
+                    other_dual_truth_problem = kwargs["with_respect_to"](self.dual_truth_problem)
+                    def patched_dual_truth_solve(self_, **kwargs_):
+                        other_dual_truth_problem.solve(**kwargs_)
+                        assign(self.dual_truth_problem._solution, other_dual_truth_problem._solution)
+                        return self.dual_truth_problem._solution
+                        
+                    self.patch_dual_truth_solve = PatchInstanceMethod(
+                        self.dual_truth_problem,
+                        "solve",
+                        patched_dual_truth_solve
+                    )
+                    self.patch_dual_truth_solve.patch()
+                    
+                    # Initialize the affine expansion in the other dual truth problem
+                    other_dual_truth_problem.init()
+                else:
+                    other_dual_truth_problem = self.dual_truth_problem
+                    
+                # Clean up solution caching and disable I/O
+                if force:
+                    # Make sure to clean up problem and reduced problem solution cache to ensure that
+                    # solution and reduced solution are actually computed
+                    other_dual_truth_problem._solution_cache.clear()
+                    other_dual_truth_problem._output_cache.clear()
+                    
+                    # Disable the capability of importing/exporting dual truth solutions
+                    self.disable_import_dual_solution = PatchInstanceMethod(
+                        other_dual_truth_problem,
+                        "import_solution",
+                        lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: False
+                    )
+                    self.disable_export_dual_solution = PatchInstanceMethod(
+                        other_dual_truth_problem,
+                        "export_solution",
+                        lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: None
+                    )
+                    self.disable_import_dual_solution.patch()
+                    self.disable_export_dual_solution.patch()
                 
-            def _undo_replace_dual_truth_problem(self, **kwargs):
+            def _undo_patch_truth_solve(self, force, **kwargs):
+                DifferentialProblemReductionMethod_DerivedClass._undo_patch_truth_solve(self, **kwargs)
                 if "with_respect_to" in kwargs:
-                    if hasattr(self, "_replace_dual_truth_problem__bak_dual_truth_problem"):
-                        self.dual_truth_problem = self._replace_dual_truth_problem__bak_dual_truth_problem
-                        self.dual_reduced_problem.truth_problem = self.dual_truth_problem
-                        del self._replace_dual_truth_problem__bak_dual_truth_problem
+                    self.patch_dual_truth_solve.unpatch()
+                    del self.patch_dual_truth_solve
+                    
+                # Restore solution I/O
+                if force:
+                    # Restore the capability to import/export dual truth solutions
+                    self.disable_import_dual_solution.unpatch()
+                    self.disable_export_dual_solution.unpatch()
+                    del self.disable_import_dual_solution
+                    del self.disable_export_dual_solution
                         
         # return value (a class) for the decorator
         return PrimalDualReductionMethod_Class

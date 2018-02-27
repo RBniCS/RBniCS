@@ -24,8 +24,6 @@ from rbnics.utils.decorators.customize_reduced_problem_for import CustomizeReduc
 from rbnics.utils.decorators.dispatch import array_of, dict_of, dispatch, iterable_of, list_of, overload, set_of, tuple_of
 from rbnics.utils.decorators.exact_problem import exact_problem
 from rbnics.utils.decorators.module_wrapper import ModuleWrapper
-from rbnics.utils.decorators.multi_level_reduced_problem import MultiLevelReducedProblem
-from rbnics.utils.decorators.multi_level_reduction_method import MultiLevelReductionMethod
 from rbnics.utils.decorators.online_size_type import OnlineSizeType
 from rbnics.utils.decorators.parameters_type import ParametersType
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
@@ -72,8 +70,6 @@ __all__ = [
     'iterable_of',
     'list_of',
     'ModuleWrapper',
-    'MultiLevelReducedProblem',
-    'MultiLevelReductionMethod',
     'OnlineSizeType',
     'overload',
     'ParametersType',

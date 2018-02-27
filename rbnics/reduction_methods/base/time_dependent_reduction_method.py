@@ -18,6 +18,7 @@
 
 from numbers import Number
 from numpy import isclose
+from rbnics.backends import assign
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -64,38 +65,62 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 postprocessed_snapshot.append(postprocessed_snapshot_k)
             return postprocessed_snapshot
         
-        # Initialize data structures required for the speedup analysis phase
-        def _init_speedup_analysis(self, **kwargs):
-            DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
-            # Parent method had already patched import/export, but with the wrong signature
-            self.disable_import_solution.unpatch()
-            self.disable_export_solution.unpatch()
-            del self.disable_import_solution
-            del self.disable_export_solution
-            
-            # Make sure to clean up problem and reduced problem solution cache to ensure that
-            # solution and reduced solution are actually computed
-            self.truth_problem._solution_dot_cache.clear()
-            self.reduced_problem._solution_dot_cache.clear()
-            self.truth_problem._solution_over_time_cache.clear()
-            self.reduced_problem._solution_over_time_cache.clear()
-            self.truth_problem._solution_dot_over_time_cache.clear()
-            self.reduced_problem._solution_dot_over_time_cache.clear()
-            self.truth_problem._output_over_time_cache.clear()
-            self.reduced_problem._output_over_time_cache.clear()
-            # ... and also disable the capability of importing/exporting truth solutions
-            self.disable_import_solution = PatchInstanceMethod(
-                self.truth_problem,
-                "import_solution",
-                lambda self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None: False
-            )
-            self.disable_export_solution = PatchInstanceMethod(
-                self.truth_problem,
-                "export_solution",
-                lambda self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None: None
-            )
-            self.disable_import_solution.patch()
-            self.disable_export_solution.patch()
+        def _patch_truth_solve(self, force, **kwargs):
+            if "with_respect_to" in kwargs:
+                assert inspect.isfunction(kwargs["with_respect_to"])
+                other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
+                def patched_truth_solve(self_, **kwargs_):
+                    other_truth_problem.solve(**kwargs_)
+                    assign(self.truth_problem._solution, other_truth_problem._solution)
+                    assign(self.truth_problem._solution_dot, other_truth_problem._solution_dot)
+                    assign(self.truth_problem._solution_over_time, other_truth_problem._solution_over_time)
+                    assign(self.truth_problem._solution_dot_over_time, other_truth_problem._solution_dot_over_time)
+                    return self.truth_problem._solution_over_time
+                    
+                self.patch_truth_solve = PatchInstanceMethod(
+                    self.truth_problem,
+                    "solve",
+                    patched_truth_solve
+                )
+                self.patch_truth_solve.patch()
+                
+                # Initialize the affine expansion in the other truth problem
+                other_truth_problem.init()
+            else:
+                other_truth_problem = self.truth_problem
+                
+            # Clean up solution caching and disable I/O
+            if force:
+                # Make sure to clean up problem and reduced problem solution cache to ensure that
+                # solution and reduced solution are actually computed
+                other_truth_problem._solution_dot_cache.clear()
+                other_truth_problem._solution_over_time_cache.clear()
+                other_truth_problem._solution_dot_over_time_cache.clear()
+                other_truth_problem._output_over_time_cache.clear()
+                self.reduced_problem._solution_dot_cache.clear()
+                self.reduced_problem._solution_over_time_cache.clear()
+                self.reduced_problem._solution_dot_over_time_cache.clear()
+                self.reduced_problem._output_over_time_cache.clear()
+                
+                # Parent method had already patched import/export, but with the wrong signature
+                self.disable_import_solution.unpatch()
+                self.disable_export_solution.unpatch()
+                del self.disable_import_solution
+                del self.disable_export_solution
+                
+                # Disable the capability of importing/exporting truth solutions
+                self.disable_import_solution = PatchInstanceMethod(
+                    other_truth_problem,
+                    "import_solution",
+                    lambda self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None: False
+                )
+                self.disable_export_solution = PatchInstanceMethod(
+                    other_truth_problem,
+                    "export_solution",
+                    lambda self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None: None
+                )
+                self.disable_import_solution.patch()
+                self.disable_export_solution.patch()
         
     # return value (a class) for the decorator
     return TimeDependentReductionMethod_Class

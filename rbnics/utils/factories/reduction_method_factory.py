@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import MultiLevelReductionMethod
 from rbnics.utils.decorators.customize_reduction_method_for import _cache as customize_reduction_method_cache
 from rbnics.utils.decorators.reduction_method_for import _cache as reduction_method_cache
 from rbnics.utils.decorators.reduction_method_decorator_for import _cache as reduction_method_decorator_cache
@@ -69,9 +68,6 @@ def ReductionMethodFactory(truth_problem, category, **kwargs):
     for t in range(1, len(TypesList)):
         ComposedType = TypesList[t](ComposedType)
         
-    # Decorate with multilevel reduction method
-    ComposedType = MultiLevelReductionMethod(ComposedType)
-    
     # Finally, return an instance of the generated class
     return ComposedType(truth_problem, **kwargs)
     

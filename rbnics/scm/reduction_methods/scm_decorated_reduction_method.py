@@ -147,12 +147,12 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             if "SCM" not in kwargs:
                 if "with_respect_to" in kwargs:
                     assert inspect.isfunction(kwargs["with_respect_to"])
-                    replaced_truth_problem = kwargs["with_respect_to"](self.truth_problem)
+                    other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
                     # Assume that the user wants to disable SCM and use the exact stability factor
                     self.replace_get_stability_factor = PatchInstanceMethod(
                         self.reduced_problem,
                         "get_stability_factor",
-                        lambda self_: replaced_truth_problem.get_stability_factor()
+                        lambda self_: other_truth_problem.get_stability_factor()
                     )
                     self.replace_get_stability_factor.patch()
                 else:
