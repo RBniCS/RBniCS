@@ -21,8 +21,8 @@ from numpy import isclose
 from rbnics.backends import transpose
 from rbnics.backends.online import OnlineVector
 from rbnics.reduction_methods.base import ReductionMethod
-from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from rbnics.scm.problems import ParametrizedCoercivityConstantEigenProblem
+from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedyErrorEstimatorsList, SpeedupAnalysisTable, TextBox, TextLine, Timer
 
 # Empirical interpolation method for the interpolation of parametrized functions
 class SCMApproximationReductionMethod(ReductionMethod):
@@ -80,9 +80,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
             return True # offline construction should be carried out
             
     def _offline(self):
-        print("==============================================================")
-        print("=" + "{:^60}".format("SCM offline phase begins") + "=")
-        print("==============================================================")
+        print(TextBox("SCM offline phase begins", fill="="))
         print("")
         
         # Compute the bounding box \mathcal{B}
@@ -94,7 +92,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         relative_error_estimator_max = 2.*self.tol
         
         while self.SCM_approximation.N < self.Nmax and relative_error_estimator_max >= self.tol:
-            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM N =", self.SCM_approximation.N, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print(TextLine("SCM N = " + str(self.SCM_approximation.N), fill="~"))
             
             # Store the greedy parameter
             self.store_greedy_selected_parameters()
@@ -115,10 +113,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
             print("maximum SCM relative error estimator =", relative_error_estimator_max)
             
             print("")
-        
-        print("==============================================================")
-        print("=" + "{:^60}".format("SCM offline phase ends") + "=")
-        print("==============================================================")
+            
+        print(TextBox("SCM offline phase ends", fill="="))
         print("")
         
     # Finalize data structures required after the offline phase
@@ -218,17 +214,15 @@ class SCMApproximationReductionMethod(ReductionMethod):
                 
         N = self.SCM_approximation.N
         
-        print("==============================================================")
-        print("=" + "{:^60}".format("SCM error analysis begins") + "=")
-        print("==============================================================")
+        print(TextBox("SCM error analysis begins", fill="="))
         print("")
         
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
         error_analysis_table.set_Nmax(N)
         error_analysis_table.add_column("normalized_error", group_name="scm", operations=("min", "mean", "max"))
         
-        for (run, mu) in enumerate(self.testing_set):
-            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        for (mu_index, mu) in enumerate(self.testing_set):
+            print(TextLine("SCM " + str(mu_index), fill="~"))
             
             self.SCM_approximation.set_mu(mu)
             
@@ -245,16 +239,14 @@ class SCMApproximationReductionMethod(ReductionMethod):
                 if LB/exact > 1 and not isclose(LB/exact, 1.): # if LB/exact >> 1
                     print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " > exact =" + str(exact))
                 
-                error_analysis_table["normalized_error", n, run] = (exact - LB)/UB
+                error_analysis_table["normalized_error", n, mu_index] = (exact - LB)/UB
         
         # Print
         print("")
         print(error_analysis_table)
         
         print("")
-        print("==============================================================")
-        print("=" + "{:^60}".format("SCM error analysis ends") + "=")
-        print("==============================================================")
+        print(TextBox("SCM error analysis ends", fill="="))
         print("")
         
         # Export error analysis table
@@ -285,9 +277,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
                 
         N = self.SCM_approximation.N
                 
-        print("==============================================================")
-        print("=" + "{:^60}".format("SCM speedup analysis begins") + "=")
-        print("==============================================================")
+        print(TextBox("SCM speedup analysis begins", fill="="))
         print("")
         
         speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
@@ -297,8 +287,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
         exact_timer = Timer("parallel")
         SCM_timer = Timer("serial")
         
-        for (run, mu) in enumerate(self.testing_set):
-            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SCM run =", run, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        for (mu_index, mu) in enumerate(self.testing_set):
+            print(TextLine("SCM " + str(mu_index), fill="~"))
             
             self.SCM_approximation.set_mu(mu)
             
@@ -312,16 +302,14 @@ class SCMApproximationReductionMethod(ReductionMethod):
                 self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
                 self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
                 elapsed_SCM = SCM_timer.stop()
-                speedup_analysis_table["speedup", n, run] = elapsed_exact/elapsed_SCM
+                speedup_analysis_table["speedup", n, mu_index] = elapsed_exact/elapsed_SCM
         
         # Print
         print("")
         print(speedup_analysis_table)
         
         print("")
-        print("==============================================================")
-        print("=" + "{:^60}".format("SCM speedup analysis ends") + "=")
-        print("==============================================================")
+        print(TextBox("SCM speedup analysis ends", fill="="))
         print("")
         
         # Export speedup analysis table

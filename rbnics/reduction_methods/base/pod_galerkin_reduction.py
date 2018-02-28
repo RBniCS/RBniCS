@@ -19,8 +19,8 @@
 import os
 from numbers import Number
 from rbnics.backends import ProperOrthogonalDecomposition
-from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, Timer
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
+from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, TextBox, TextLine, Timer
 
 @RequiredBaseDecorators(None)
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
@@ -121,28 +121,26 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             return self.reduced_problem
             
         def _offline(self):
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline phase begins") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " offline phase begins", fill="="))
             print("")
             
-            for (run, mu) in enumerate(self.training_set):
-                print("############################## run =", run, "######################################")
+            for (mu_index, mu) in enumerate(self.training_set):
+                print(TextLine(str(mu_index), fill="#"))
                 
                 self.truth_problem.set_mu(mu)
                 
                 print("truth solve for mu =", self.truth_problem.mu)
                 snapshot = self.truth_problem.solve()
-                self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(run), snapshot)
-                snapshot = self.postprocess_snapshot(snapshot, run)
+                self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(mu_index), snapshot)
+                snapshot = self.postprocess_snapshot(snapshot, mu_index)
                 
                 print("update snapshots matrix")
                 self.update_snapshots_matrix(snapshot)
 
                 print("")
-                run += 1
+                mu_index += 1
                 
-            print("############################## perform POD ######################################")
+            print(TextLine("perform POD", fill="#"))
             self.compute_basis_functions()
             
             print("")
@@ -150,9 +148,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.reduced_problem.build_reduced_operators()
             
             print("")
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline phase ends") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " offline phase ends", fill="="))
             print("")
 
         def update_snapshots_matrix(self, snapshot):
@@ -216,9 +212,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             if isinstance(N, dict):
                 N = min(N.values())
                 
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " error analysis begins") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " error analysis begins", fill="="))
             print("")
             
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
@@ -229,8 +223,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             error_analysis_table.add_column("error_output", group_name="output", operations=("mean", "max"))
             error_analysis_table.add_column("relative_error_output", group_name="output", operations=("mean", "max"))
             
-            for (run, mu) in enumerate(self.testing_set):
-                print("############################## run =", run, "######################################")
+            for (mu_index, mu) in enumerate(self.testing_set):
+                print(TextLine(str(mu_index), fill="#"))
                 
                 self.reduced_problem.set_mu(mu)
                             
@@ -242,25 +236,23 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     relative_error = self.reduced_problem.compute_relative_error(**kwargs)
                     if len(components) > 1:
                         for component in components:
-                            error_analysis_table["error_" + component, n, run] = error[component]
-                            error_analysis_table["relative_error_" + component, n, run] = relative_error[component]
+                            error_analysis_table["error_" + component, n, mu_index] = error[component]
+                            error_analysis_table["relative_error_" + component, n, mu_index] = relative_error[component]
                     else:
                         component = components[0]
-                        error_analysis_table["error_" + component, n, run] = error
-                        error_analysis_table["relative_error_" + component, n, run] = relative_error
+                        error_analysis_table["error_" + component, n, mu_index] = error
+                        error_analysis_table["relative_error_" + component, n, mu_index] = relative_error
                     
                     self.reduced_problem.compute_output()
-                    error_analysis_table["error_output", n, run] = self.reduced_problem.compute_error_output(**kwargs)
-                    error_analysis_table["relative_error_output", n, run] = self.reduced_problem.compute_relative_error_output(**kwargs)
+                    error_analysis_table["error_output", n, mu_index] = self.reduced_problem.compute_error_output(**kwargs)
+                    error_analysis_table["relative_error_output", n, mu_index] = self.reduced_problem.compute_relative_error_output(**kwargs)
             
             # Print
             print("")
             print(error_analysis_table)
             
             print("")
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " error analysis ends") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " error analysis ends", fill="="))
             print("")
             
             # Export error analysis table
@@ -286,9 +278,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             if isinstance(N, dict):
                 N = min(N.values())
                 
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " speedup analysis begins") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " speedup analysis begins", fill="="))
             print("")
             
             speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
@@ -299,8 +289,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             truth_timer = Timer("parallel")
             reduced_timer = Timer("serial")
                         
-            for (run, mu) in enumerate(self.testing_set):
-                print("############################## run =", run, "######################################")
+            for (mu_index, mu) in enumerate(self.testing_set):
+                print(TextLine(str(mu_index), fill="#"))
                 
                 self.reduced_problem.set_mu(mu)
                 
@@ -323,20 +313,18 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     self.reduced_problem.compute_output()
                     elapsed_reduced_output = reduced_timer.stop()
                     
-                    speedup_analysis_table["speedup_solve", n, run] = elapsed_truth_solve/elapsed_reduced_solve
+                    speedup_analysis_table["speedup_solve", n, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
                     if self.reduced_problem._output is not NotImplemented:
-                        speedup_analysis_table["speedup_output", n, run] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
+                        speedup_analysis_table["speedup_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
                     else:
-                        speedup_analysis_table["speedup_output", n, run] = NotImplemented
+                        speedup_analysis_table["speedup_output", n, mu_index] = NotImplemented
             
             # Print
             print("")
             print(speedup_analysis_table)
             
             print("")
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " speedup analysis ends") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " speedup analysis ends", fill="="))
             print("")
             
             # Export speedup analysis table

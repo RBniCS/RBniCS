@@ -19,8 +19,8 @@
 import os
 from math import sqrt
 from rbnics.backends import GramSchmidt
-from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
+from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, TextBox, TextLine, Timer
 from rbnics.utils.mpi import log, DEBUG
 
 @RequiredBaseDecorators(None)
@@ -106,24 +106,22 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             return self.reduced_problem
             
         def _offline(self):
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline phase begins") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " offline phase begins", fill="="))
             print("")
             
-            run = 0
+            iteration = 0
             relative_error_estimator_max = 2.*self.tol
             while self.reduced_problem.N < self.Nmax and relative_error_estimator_max >= self.tol:
-                print("############################## N =", self.reduced_problem.N, "######################################")
+                print(TextLine("N = " + str(self.reduced_problem.N), fill="#"))
                 
                 print("truth solve for mu =", self.truth_problem.mu)
                 snapshot = self.truth_problem.solve()
-                self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(run), snapshot)
-                snapshot = self.postprocess_snapshot(snapshot, run)
+                self.truth_problem.export_solution(self.folder["snapshots"], "truth_" + str(iteration), snapshot)
+                snapshot = self.postprocess_snapshot(snapshot, iteration)
                 
                 print("update basis matrix")
                 self.update_basis_matrix(snapshot)
-                run += 1
+                iteration += 1
                 
                 print("build reduced operators")
                 self.reduced_problem.build_reduced_operators()
@@ -140,9 +138,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
 
                 print("")
                 
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline phase ends") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " offline phase ends", fill="="))
             print("")
             
         def update_basis_matrix(self, snapshot):
@@ -223,9 +219,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             if isinstance(N, dict):
                 N = min(N.values())
                 
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " error analysis begins") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " error analysis begins", fill="="))
             print("")
             
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
@@ -257,8 +251,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             error_analysis_table.add_column("relative_error_estimator_output", group_name="output_relative_error", operations=("mean", "max"))
             error_analysis_table.add_column("relative_effectivity_output", group_name="output_relative_error", operations=("min", "mean", "max"))
             
-            for (run, mu) in enumerate(self.testing_set):
-                print("############################## run =", run, "######################################")
+            for (mu_index, mu) in enumerate(self.testing_set):
+                print(TextLine(str(mu_index), fill="#"))
                 
                 self.reduced_problem.set_mu(mu)
                             
@@ -272,39 +266,37 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     relative_error_estimator = self.reduced_problem.estimate_relative_error()
                     if len(components) > 1:
                         for component in components:
-                            error_analysis_table["error_" + component, n, run] = error[component]
-                            error_analysis_table["relative_error_" + component, n, run] = relative_error[component]
-                        error_analysis_table["error_" + all_components_string, n, run] = sqrt(sum([error[component]**2 for component in components]))
-                        error_analysis_table["error_estimator_" + all_components_string, n, run] = error_estimator
-                        error_analysis_table["effectivity_" + all_components_string, n, run] = error_analysis_table["error_estimator_" + all_components_string, n, run]/error_analysis_table["error_" + all_components_string, n, run]
-                        error_analysis_table["relative_error_" + all_components_string, n, run] = sqrt(sum([relative_error[component]**2 for component in components]))
-                        error_analysis_table["relative_error_estimator_" + all_components_string, n, run] = relative_error_estimator
-                        error_analysis_table["relative_effectivity_" + all_components_string, n, run] = error_analysis_table["relative_error_estimator_" + all_components_string, n, run]/error_analysis_table["relative_error_" + all_components_string, n, run]
+                            error_analysis_table["error_" + component, n, mu_index] = error[component]
+                            error_analysis_table["relative_error_" + component, n, mu_index] = relative_error[component]
+                        error_analysis_table["error_" + all_components_string, n, mu_index] = sqrt(sum([error[component]**2 for component in components]))
+                        error_analysis_table["error_estimator_" + all_components_string, n, mu_index] = error_estimator
+                        error_analysis_table["effectivity_" + all_components_string, n, mu_index] = error_analysis_table["error_estimator_" + all_components_string, n, mu_index]/error_analysis_table["error_" + all_components_string, n, mu_index]
+                        error_analysis_table["relative_error_" + all_components_string, n, mu_index] = sqrt(sum([relative_error[component]**2 for component in components]))
+                        error_analysis_table["relative_error_estimator_" + all_components_string, n, mu_index] = relative_error_estimator
+                        error_analysis_table["relative_effectivity_" + all_components_string, n, mu_index] = error_analysis_table["relative_error_estimator_" + all_components_string, n, mu_index]/error_analysis_table["relative_error_" + all_components_string, n, mu_index]
                     else:
                         component = components[0]
-                        error_analysis_table["error_" + component, n, run] = error
-                        error_analysis_table["error_estimator_" + component, n, run] = error_estimator
-                        error_analysis_table["effectivity_" + component, n, run] = error_analysis_table["error_estimator_" + component, n, run]/error_analysis_table["error_" + component, n, run]
-                        error_analysis_table["relative_error_" + component, n, run] = relative_error
-                        error_analysis_table["relative_error_estimator_" + component, n, run] = relative_error_estimator
-                        error_analysis_table["relative_effectivity_" + component, n, run] = error_analysis_table["relative_error_estimator_" + component, n, run]/error_analysis_table["relative_error_" + component, n, run]
+                        error_analysis_table["error_" + component, n, mu_index] = error
+                        error_analysis_table["error_estimator_" + component, n, mu_index] = error_estimator
+                        error_analysis_table["effectivity_" + component, n, mu_index] = error_analysis_table["error_estimator_" + component, n, mu_index]/error_analysis_table["error_" + component, n, mu_index]
+                        error_analysis_table["relative_error_" + component, n, mu_index] = relative_error
+                        error_analysis_table["relative_error_estimator_" + component, n, mu_index] = relative_error_estimator
+                        error_analysis_table["relative_effectivity_" + component, n, mu_index] = error_analysis_table["relative_error_estimator_" + component, n, mu_index]/error_analysis_table["relative_error_" + component, n, mu_index]
                     
                     self.reduced_problem.compute_output()
-                    error_analysis_table["error_output", n, run] = self.reduced_problem.compute_error_output(**kwargs)
-                    error_analysis_table["error_estimator_output", n, run] = self.reduced_problem.estimate_error_output()
-                    error_analysis_table["effectivity_output", n, run] = error_analysis_table["error_estimator_output", n, run]/error_analysis_table["error_output", n, run]
-                    error_analysis_table["relative_error_output", n, run] = self.reduced_problem.compute_relative_error_output(**kwargs)
-                    error_analysis_table["relative_error_estimator_output", n, run] = self.reduced_problem.estimate_relative_error_output()
-                    error_analysis_table["relative_effectivity_output", n, run] = error_analysis_table["relative_error_estimator_output", n, run]/error_analysis_table["relative_error_output", n, run]
+                    error_analysis_table["error_output", n, mu_index] = self.reduced_problem.compute_error_output(**kwargs)
+                    error_analysis_table["error_estimator_output", n, mu_index] = self.reduced_problem.estimate_error_output()
+                    error_analysis_table["effectivity_output", n, mu_index] = error_analysis_table["error_estimator_output", n, mu_index]/error_analysis_table["error_output", n, mu_index]
+                    error_analysis_table["relative_error_output", n, mu_index] = self.reduced_problem.compute_relative_error_output(**kwargs)
+                    error_analysis_table["relative_error_estimator_output", n, mu_index] = self.reduced_problem.estimate_relative_error_output()
+                    error_analysis_table["relative_effectivity_output", n, mu_index] = error_analysis_table["relative_error_estimator_output", n, mu_index]/error_analysis_table["relative_error_output", n, mu_index]
             
             # Print
             print("")
             print(error_analysis_table)
             
             print("")
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " error analysis ends") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " error analysis ends", fill="="))
             print("")
             
             # Export error analysis table
@@ -329,9 +321,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             if isinstance(N, dict):
                 N = min(N.values())
                 
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " speedup analysis begins") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " speedup analysis begins", fill="="))
             print("")
             
             speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
@@ -342,8 +332,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             truth_timer = Timer("parallel")
             reduced_timer = Timer("serial")
                         
-            for (run, mu) in enumerate(self.testing_set):
-                print("############################## run =", run, "######################################")
+            for (mu_index, mu) in enumerate(self.testing_set):
+                print(TextLine(str(mu_index), fill="#"))
                 
                 self.reduced_problem.set_mu(mu)
                 
@@ -370,20 +360,18 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     self.reduced_problem.estimate_relative_error_output()
                     elapsed_reduced_output = reduced_timer.stop()
                     
-                    speedup_analysis_table["speedup_solve", n, run] = elapsed_truth_solve/elapsed_reduced_solve
+                    speedup_analysis_table["speedup_solve", n, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
                     if self.reduced_problem._output is not NotImplemented:
-                        speedup_analysis_table["speedup_output", n, run] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
+                        speedup_analysis_table["speedup_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
                     else:
-                        speedup_analysis_table["speedup_output", n, run] = NotImplemented
+                        speedup_analysis_table["speedup_output", n, mu_index] = NotImplemented
             
             # Print
             print("")
             print(speedup_analysis_table)
             
             print("")
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " speedup analysis ends") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " speedup analysis ends", fill="="))
             print("")
             
             # Export speedup analysis table

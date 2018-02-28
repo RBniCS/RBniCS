@@ -19,7 +19,7 @@
 import os
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.backends import abs, evaluate, max
-from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, Timer
+from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, TextBox, TextLine, Timer
 from rbnics.utils.test import PatchInstanceMethod
 
 # Empirical interpolation method for the interpolation of parametrized functions
@@ -86,20 +86,17 @@ class EIMApproximationReductionMethod(ReductionMethod):
         description = self.EIM_approximation.parametrized_expression.description()
         
         # Evaluate the parametrized expression for all parameters in the training set
-        print("==============================================================")
-        print("=" + "{:^60}".format(interpolation_method_name + " preprocessing phase begins for") + "=")
-        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
-        print("==============================================================")
+        print(TextBox(interpolation_method_name + " preprocessing phase begins for" + "\n" + "\n".join(description), fill="="))
         print("")
         
-        for (run, mu) in enumerate(self.training_set):
-            print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
+        for (mu_index, mu) in enumerate(self.training_set):
+            print(TextLine(interpolation_method_name + " " + str(mu_index), fill=":"))
             
             self.EIM_approximation.set_mu(mu)
             
             print("evaluate parametrized expression at mu =", mu)
             self.EIM_approximation.evaluate_parametrized_expression()
-            self.EIM_approximation.export_solution(self.folder["snapshots"], "truth_" + str(run))
+            self.EIM_approximation.export_solution(self.folder["snapshots"], "truth_" + str(mu_index))
             
             print("add to snapshots")
             self.add_to_snapshots(self.EIM_approximation.snapshot)
@@ -112,16 +109,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
             N_POD = self.compute_basis_POD()
             print("")
         
-        print("==============================================================")
-        print("=" + "{:^60}".format(interpolation_method_name + " preprocessing phase ends for") + "=")
-        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
-        print("==============================================================")
+        print(TextBox(interpolation_method_name + " preprocessing phase ends for" + "\n" + "\n".join(description), fill="="))
         print("")
         
-        print("==============================================================")
-        print("=" + "{:^60}".format(interpolation_method_name + " offline phase begins for") + "=")
-        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
-        print("==============================================================")
+        print(TextBox(interpolation_method_name + " offline phase begins for" + "\n" + "\n".join(description), fill="="))
         print("")
         
         if self.EIM_approximation.basis_generation == "Greedy":
@@ -131,8 +122,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
             # Carry out greedy selection
             relative_error_max = 2.*self.tol
             while self.EIM_approximation.N < self.Nmax and relative_error_max >= self.tol:
-                print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
-            
+                print(TextLine(interpolation_method_name + " N = " + str(self.EIM_approximation.N), fill=":"))
+                
                 self._print_greedy_interpolation_solve_message()
                 self.EIM_approximation.solve()
                 
@@ -154,10 +145,9 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 print("maximum interpolation relative error =", relative_error_max)
                 
                 print("")
-                
         else:
             while self.EIM_approximation.N < N_POD:
-                print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " N =", self.EIM_approximation.N, "::::::::::::::::::::::::::::::")
+                print(TextLine(interpolation_method_name + " N = " + str(self.EIM_approximation.N), fill=":"))
             
                 print("solve interpolation for basis number", self.EIM_approximation.N)
                 self.EIM_approximation._solve(self.EIM_approximation.basis_functions[self.EIM_approximation.N])
@@ -175,11 +165,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 self.update_interpolation_matrix()
                 
                 print("")
-            
-        print("==============================================================")
-        print("=" + "{:^60}".format(interpolation_method_name + " offline phase ends for") + "=")
-        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
-        print("==============================================================")
+                
+        print(TextBox(interpolation_method_name + " offline phase ends for" + "\n" + "\n".join(description), fill="="))
         print("")
         
     # Finalize data structures required after the offline phase
@@ -290,10 +277,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
-        print("==============================================================")
-        print("=" + "{:^60}".format(interpolation_method_name + " error analysis begins for") + "=")
-        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
-        print("==============================================================")
+        print(TextBox(interpolation_method_name + " error analysis begins for" + "\n" + "\n".join(description), fill="="))
         print("")
         
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
@@ -301,8 +285,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         error_analysis_table.add_column("error", group_name="eim", operations=("mean", "max"))
         error_analysis_table.add_column("relative_error", group_name="eim", operations=("mean", "max"))
         
-        for (run, mu) in enumerate(self.testing_set):
-            print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
+        for (mu_index, mu) in enumerate(self.testing_set):
+            print(TextLine(interpolation_method_name + " " + str(mu_index), fill=":"))
             
             self.EIM_approximation.set_mu(mu)
             
@@ -312,20 +296,17 @@ class EIMApproximationReductionMethod(ReductionMethod):
             for n in range(1, N + 1): # n = 1, ... N
                 n_arg = N_generator(n)
                 self.EIM_approximation.solve(n_arg)
-                (_, error_analysis_table["error", n, run], _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
-                error_analysis_table["error", n, run] = abs(error_analysis_table["error", n, run])
-                (_, error_analysis_table["relative_error", n, run], _) = self.EIM_approximation.compute_maximum_interpolation_relative_error(n)
-                error_analysis_table["relative_error", n, run] = abs(error_analysis_table["relative_error", n, run])
+                (_, error_analysis_table["error", n, mu_index], _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
+                error_analysis_table["error", n, mu_index] = abs(error_analysis_table["error", n, mu_index])
+                (_, error_analysis_table["relative_error", n, mu_index], _) = self.EIM_approximation.compute_maximum_interpolation_relative_error(n)
+                error_analysis_table["relative_error", n, mu_index] = abs(error_analysis_table["relative_error", n, mu_index])
         
         # Print
         print("")
         print(error_analysis_table)
         
         print("")
-        print("==============================================================")
-        print("=" + "{:^60}".format(interpolation_method_name + " error analysis ends for") + "=")
-        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
-        print("==============================================================")
+        print(TextBox(interpolation_method_name + " error analysis ends for" + "\n" + "\n".join(description), fill="="))
         print("")
         
         # Export error analysis table
@@ -360,10 +341,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
-        print("==============================================================")
-        print("=" + "{:^60}".format(interpolation_method_name + " speedup analysis begins for") + "=")
-        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
-        print("==============================================================")
+        print(TextBox(interpolation_method_name + " speedup analysis begins for" + "\n" + "\n".join(description), fill="="))
         print("")
         
         speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
@@ -373,8 +351,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         evaluate_timer = Timer("parallel")
         EIM_timer = Timer("serial")
         
-        for (run, mu) in enumerate(self.testing_set):
-            print(":::::::::::::::::::::::::::::: " + interpolation_method_name + " run =", run, "::::::::::::::::::::::::::::::")
+        for (mu_index, mu) in enumerate(self.testing_set):
+            print(TextLine(interpolation_method_name + " " + str(mu_index), fill=":"))
             
             self.EIM_approximation.set_mu(mu)
             
@@ -388,17 +366,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 EIM_timer.start()
                 self.EIM_approximation.solve(n_arg)
                 elapsed_EIM = EIM_timer.stop()
-                speedup_analysis_table["speedup", n, run] = elapsed_evaluate/elapsed_EIM
+                speedup_analysis_table["speedup", n, mu_index] = elapsed_evaluate/elapsed_EIM
         
         # Print
         print("")
         print(speedup_analysis_table)
         
         print("")
-        print("==============================================================")
-        print("=" + "{:^60}".format(interpolation_method_name + " speedup analysis ends for") + "=")
-        print("=" + "=\n=".join('{:^60}'.format(s) for s in description) + "=")
-        print("==============================================================")
+        print(TextBox(interpolation_method_name + " speedup analysis ends for" + "\n" + "\n".join(description), fill="="))
         print("")
         
         # Export speedup analysis table

@@ -29,7 +29,9 @@ from rbnics.utils.io.performance_table import PerformanceTable
 from rbnics.utils.io.online_size_dict import OnlineSizeDict
 from rbnics.utils.io.pickle_io import PickleIO
 from rbnics.utils.io.speedup_analysis_table import SpeedupAnalysisTable
+from rbnics.utils.io.text_box import TextBox
 from rbnics.utils.io.text_io import TextIO
+from rbnics.utils.io.text_line import TextLine
 from rbnics.utils.io.timer import Timer
 
 __all__ = [
@@ -46,6 +48,8 @@ __all__ = [
     'PerformanceTable',
     'PickleIO',
     'SpeedupAnalysisTable',
+    'TextBox',
     'TextIO',
+    'TextLine',
     'Timer'
 ]

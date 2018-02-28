@@ -81,10 +81,10 @@ class PerformanceTable(object):
         assert len(args) == 3
         column_name = args[0]
         N = args[1]
-        run = args[2]
+        mu_index = args[2]
         assert self._columns_not_implemented[column_name] in (True, False)
         if not self._columns_not_implemented[column_name]:
-            return self._columns[column_name][N - self._Nmin, run]
+            return self._columns[column_name][N - self._Nmin, mu_index]
         else:
             return CustomNotImplementedAfterDiv
         
@@ -92,7 +92,7 @@ class PerformanceTable(object):
         assert len(args) == 3
         column_name = args[0]
         N = args[1]
-        run = args[2]
+        mu_index = args[2]
         if is_not_implemented(value):
             assert self._columns_not_implemented[column_name] in (None, True)
             if self._columns_not_implemented[column_name] is None:
@@ -102,9 +102,9 @@ class PerformanceTable(object):
             if self._columns_not_implemented[column_name] is None:
                 self._columns_not_implemented[column_name] = False
             if column_name not in self._preprocessor_setitem:
-                self._columns[column_name][N - self._Nmin, run] = value
+                self._columns[column_name][N - self._Nmin, mu_index] = value
             else:
-                self._columns[column_name][N - self._Nmin, run] = self._preprocessor_setitem[column_name](value)
+                self._columns[column_name][N - self._Nmin, mu_index] = self._preprocessor_setitem[column_name](value)
             
     def _process(self):
         groups_content = collections.OrderedDict()
