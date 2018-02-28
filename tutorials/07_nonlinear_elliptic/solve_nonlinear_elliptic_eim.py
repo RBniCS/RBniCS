@@ -142,7 +142,7 @@ reduced_nonlinear_elliptic_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(50, EIM=60)
-pod_galerkin_method.error_analysis()
+pod_galerkin_method.error_analysis(with_respect_to=exact_problem)
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis()
+pod_galerkin_method.speedup_analysis(with_respect_to=exact_problem)
