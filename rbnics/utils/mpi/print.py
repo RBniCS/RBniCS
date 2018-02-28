@@ -23,5 +23,6 @@ from rbnics.utils.mpi.mpi import is_io_process
 builtin_print = builtins.print
 def print(*args, **kwargs):
     if is_io_process():
+        kwargs["flush"] = True
         return builtin_print(*args, **kwargs)
 builtins.print = print
