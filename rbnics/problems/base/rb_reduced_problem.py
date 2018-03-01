@@ -165,44 +165,40 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
             :param term: the forms of the truth problem.
             """
+            solver = self.RieszSolver(self)
             # Compute the Riesz representor
             assert self.terms_order[term] in (1, 2)
             if self.terms_order[term] == 1:
                 for q in range(self.Q[term]):
-                    solver = LinearSolver(
-                        self._riesz_solve_inner_product,
-                        self._riesz_solve_storage,
-                        self.truth_problem.operator[term][q],
-                        self._riesz_solve_homogeneous_dirichlet_bc
+                    self.riesz[term][q].enrich(
+                        solver.solve(self.truth_problem.operator[term][q])
                     )
-                    solver.solve()
-                    self.riesz[term][q].enrich(self._riesz_solve_storage)
             elif self.terms_order[term] == 2:
                 for q in range(self.Q[term]):
                     if len(self.components) > 1:
                         for component in self.components:
                             for n in range(len(self.riesz[term][q][component]), self.N[component] + self.N_bc[component]):
-                                solver = LinearSolver(
-                                    self._riesz_solve_inner_product,
-                                    self._riesz_solve_storage,
-                                    -1.*self.truth_problem.operator[term][q]*self.basis_functions[component][n],
-                                    self._riesz_solve_homogeneous_dirichlet_bc
+                                self.riesz[term][q].enrich(
+                                    solver.solve(-1.*self.truth_problem.operator[term][q]*self.basis_functions[component][n]),
+                                    component={None: component}
                                 )
-                                solver.solve()
-                                self.riesz[term][q].enrich(self._riesz_solve_storage, component={None: component})
                     else:
                         for n in range(len(self.riesz[term][q]), self.N + self.N_bc):
-                            solver = LinearSolver(
-                                self._riesz_solve_inner_product,
-                                self._riesz_solve_storage,
-                                -1.*self.truth_problem.operator[term][q]*self.basis_functions[n],
-                                self._riesz_solve_homogeneous_dirichlet_bc
+                            self.riesz[term][q].enrich(
+                                solver.solve(-1.*self.truth_problem.operator[term][q]*self.basis_functions[n])
                             )
-                            solver.solve()
-                            self.riesz[term][q].enrich(self._riesz_solve_storage)
             else:
                 raise ValueError("Invalid value for order of term " + term)
-        
+                
+        class RieszSolver(object):
+            def __init__(self, problem):
+                self.problem = problem
+            
+            def solve(self, rhs):
+                problem = self.problem
+                solver = LinearSolver(problem._riesz_solve_inner_product, problem._riesz_solve_storage, rhs, problem._riesz_solve_homogeneous_dirichlet_bc)
+                return solver.solve()
+                
         def assemble_error_estimation_operators(self, term, current_stage="online"):
             """
             It assembles operators for error estimation.
