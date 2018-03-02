@@ -157,19 +157,19 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     assert length in (0, 1)
                     if length is 0: # this part does not depend on N, so we compute it only once
                         # Compute the Riesz representation of terms that do not depend on the solution
-                        self.compute_riesz(term, current_stage)
+                        self.compute_riesz_representation(term, current_stage)
                         # Compute the (term, term) Riesz representors product
                         if (term, term) in self.riesz_product_terms:
                             self.assemble_error_estimation_operators((term, term), current_stage)
                 else: # self.terms_order[term] > 1:
-                    self.compute_riesz(term, current_stage)
+                    self.compute_riesz_representation(term, current_stage)
             
             # Update the (term1, term2) Riesz representors product with the new basis function
             for term in self.riesz_product_terms:
                 if (self.terms_order[term[0]], self.terms_order[term[1]]) != (1, 1): # this part does not depend on N, and was computed in the previous loop
                     self.assemble_error_estimation_operators(term, current_stage)
         
-        def compute_riesz(self, term, current_stage="offline"):
+        def compute_riesz_representation(self, term, current_stage="offline"):
             """
             It computes the Riesz representation of term.
             
