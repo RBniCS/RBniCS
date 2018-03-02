@@ -42,20 +42,19 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
         
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
-        mu1 = self.mu[0]
-        mu2 = self.mu[1]
+        mu = self.mu
         if term == "m":
             theta_m0 = 1.
             return (theta_m0, )
         elif term == "a":
-            theta_a0 = mu1
+            theta_a0 = mu[0]
             theta_a1 = 1.
             return (theta_a0, theta_a1)
         elif term == "f":
-            theta_f0 = mu2
+            theta_f0 = mu[1]
             return (theta_f0,)
         elif term == "initial_condition":
-            theta_ic0 = - mu2
+            theta_ic0 = - mu[1]
             return (theta_ic0,)
         else:
             raise ValueError("Invalid term for compute_theta().")

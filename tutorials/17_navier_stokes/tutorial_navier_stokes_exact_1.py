@@ -60,7 +60,6 @@ class NavierStokes(NavierStokesProblem):
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
         mu = self.mu
-        mu1 = mu[0]
         if term == "a":
             theta_a0 = 1.
             return (theta_a0,)
@@ -77,7 +76,7 @@ class NavierStokes(NavierStokesProblem):
             theta_g0 = 1.
             return (theta_g0,)
         elif term == "dirichlet_bc_u":
-            theta_bc00 = mu1
+            theta_bc00 = mu[0]
             return (theta_bc00,)
         else:
             raise ValueError("Invalid term for compute_theta().")

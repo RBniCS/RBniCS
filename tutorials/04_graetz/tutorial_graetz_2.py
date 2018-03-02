@@ -48,19 +48,17 @@ class Graetz(EllipticCoerciveProblem):
         
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
-        mu2 = self.mu[1]
-        mu3 = self.mu[2]
-        mu4 = self.mu[3]
+        mu = self.mu
         if term == "a":
-            theta_a0 = mu2
+            theta_a0 = mu[1]
             theta_a1 = 1.0
             return (theta_a0, theta_a1)
         elif term == "f":
             theta_f0 = 1.0
             return (theta_f0, )
         elif term == "dirichlet_bc":
-            theta_bc0 = mu3
-            theta_bc1 = mu4
+            theta_bc0 = mu[2]
+            theta_bc1 = mu[3]
             return (theta_bc0, theta_bc1)
         elif term == "s":
             theta_s0 = 1.0

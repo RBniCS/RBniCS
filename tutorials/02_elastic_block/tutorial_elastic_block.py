@@ -43,32 +43,21 @@ class ElasticBlock(EllipticCoerciveProblem):
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
-        mu1 = mu[0]
-        mu2 = mu[1]
-        mu3 = mu[2]
-        mu4 = mu[3]
-        mu5 = mu[4]
-        mu6 = mu[5]
-        mu7 = mu[6]
-        mu8 = mu[7]
-        mu9 = mu[8]
-        mu10 = mu[9]
-        mu11 = mu[10]
         if term == "a":
-            theta_a0 = mu1
-            theta_a1 = mu2
-            theta_a2 = mu3
-            theta_a3 = mu4
-            theta_a4 = mu5
-            theta_a5 = mu6
-            theta_a6 = mu7
-            theta_a7 = mu8
+            theta_a0 = mu[0]
+            theta_a1 = mu[1]
+            theta_a2 = mu[2]
+            theta_a3 = mu[3]
+            theta_a4 = mu[4]
+            theta_a5 = mu[5]
+            theta_a6 = mu[6]
+            theta_a7 = mu[7]
             theta_a8 = 1.
             return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8)
         elif term == "f":
-            theta_f0 = mu9
-            theta_f1 = mu10
-            theta_f2 = mu11
+            theta_f0 = mu[8]
+            theta_f1 = mu[9]
+            theta_f2 = mu[10]
             return (theta_f0, theta_f1, theta_f2)
         else:
             raise ValueError("Invalid term for compute_theta().")

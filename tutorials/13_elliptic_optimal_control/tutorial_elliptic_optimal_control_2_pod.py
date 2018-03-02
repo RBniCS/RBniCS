@@ -46,11 +46,9 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
-        mu1 = self.mu[0]
-        mu2 = self.mu[1]
-        mu3 = self.mu[2]
+        mu = self.mu
         if term in ("a", "a*"):
-            theta_a0 = 1.0/mu1
+            theta_a0 = 1.0/mu[0]
             theta_a1 = 1.0
             return (theta_a0, theta_a1)
         elif term in ("c", "c*"):
@@ -66,11 +64,11 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             theta_f0 = 1.0
             return (theta_f0,)
         elif term == "g":
-            theta_g0 = mu2
-            theta_g1 = mu3
+            theta_g0 = mu[1]
+            theta_g1 = mu[2]
             return (theta_g0, theta_g1)
         elif term == "h":
-            theta_h0 = 0.24*mu2**2 + 0.52*mu3**2
+            theta_h0 = 0.24*mu[1]**2 + 0.52*mu[2]**2
             return (theta_h0,)
         elif term == "dirichlet_bc_y":
             theta_bc0 = 1.

@@ -50,19 +50,18 @@ class AdvectionDominated(EllipticCoerciveProblem):
         
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
-        mu1 = self.mu[0]
-        mu2 = 10**(-self.mu[1])
+        mu = self.mu
         if term == "a":
-            theta_a0 = mu2
-            theta_a1 = cos(mu1)
-            theta_a2 = sin(mu1)
+            theta_a0 = 10**(- mu[1])
+            theta_a1 = cos(mu[0])
+            theta_a2 = sin(mu[0])
             if self.stabilized:
                 delta = self.delta
-                theta_a3 = - delta*mu2*cos(mu1)
-                theta_a4 = - delta*mu2*sin(mu1)
-                theta_a5 = delta*cos(mu1)**2
-                theta_a6 = delta*cos(mu1)*sin(mu1)
-                theta_a7 = delta*sin(mu1)**2
+                theta_a3 = - delta*10**(- mu[1])*cos(mu[0])
+                theta_a4 = - delta*10**(- mu[1])*sin(mu[0])
+                theta_a5 = delta*cos(mu[0])**2
+                theta_a6 = delta*cos(mu[0])*sin(mu[0])
+                theta_a7 = delta*sin(mu[0])**2
             else:
                 theta_a3 = 0.0
                 theta_a4 = 0.0
@@ -74,8 +73,8 @@ class AdvectionDominated(EllipticCoerciveProblem):
             theta_f0 = 1.0
             if self.stabilized:
                 delta = self.delta
-                theta_f1 = delta*cos(mu1)
-                theta_f2 = delta*sin(mu1)
+                theta_f1 = delta*cos(mu[0])
+                theta_f2 = delta*sin(mu[0])
             else:
                 theta_f1 = 0.0
                 theta_f2 = 0.0

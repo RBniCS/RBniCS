@@ -36,12 +36,11 @@ class Geostrophic(GeostrophicProblem):
         self.f = Expression("-sin(pi*x[1])", element=W.sub(0).ufl_element())
         
     def compute_theta(self, term):
-        mu1 = self.mu[0]
-        mu2 = self.mu[1]
+        mu = self.mu
         if term == "a":
             theta_a1 = 1.
-            theta_a2 = mu1
-            theta_a3 = mu2
+            theta_a2 = mu[0]
+            theta_a3 = mu[1]
             theta_a4 = 1.
             theta_a5 = 1.
             return (theta_a1, theta_a2, theta_a3, theta_a4, theta_a5)

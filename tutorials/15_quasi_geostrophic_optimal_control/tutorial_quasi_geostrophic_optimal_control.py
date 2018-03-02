@@ -88,12 +88,11 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
         return psi
         
     def compute_theta(self, term):
-        mu1 = self.mu[0]
-        mu2 = self.mu[1]
+        mu = self.mu
         if term == "a" or term == "a*":
             theta_a0 = 1.0
-            theta_a1 = mu1
-            theta_a2 = mu2
+            theta_a1 = mu[0]
+            theta_a2 = mu[1]
             theta_a3 = 1.0
             return (theta_a0, theta_a1, theta_a2, theta_a3)
         elif term == "c" or term == "c*":

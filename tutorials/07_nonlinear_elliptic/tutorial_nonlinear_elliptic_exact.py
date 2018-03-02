@@ -52,12 +52,12 @@ class NonlinearElliptic(NonlinearEllipticProblem):
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivative({"dc": "c"})
     def compute_theta(self, term):
-        mu1 = self.mu[0]
+        mu = self.mu
         if term == "a":
             theta_a0 = 1.
             return (theta_a0,)
         elif term == "c":
-            theta_c0 = mu1
+            theta_c0 = mu[0]
             return (theta_c0,)
         elif term == "f":
             theta_f0 = 100.
@@ -76,8 +76,8 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             return (a0,)
         elif term == "c":
             u = self.u
-            mu2 = self.mu[1]
-            c0 = (exp(mu2*u) - 1)/mu2*v*dx
+            mu = self.mu
+            c0 = (exp(mu[1]*u) - 1)/mu[1]*v*dx
             return (c0,)
         elif term == "f":
             f = self.f

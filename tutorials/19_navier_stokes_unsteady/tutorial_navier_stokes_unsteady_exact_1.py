@@ -59,9 +59,8 @@ class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     def compute_theta(self, term):
         mu = self.mu
-        mu1 = mu[0]
         if term == "a":
-            theta_a0 = mu1
+            theta_a0 = mu[0]
             return (theta_a0,)
         elif term in ("b", "bt"):
             theta_b0 = 1.

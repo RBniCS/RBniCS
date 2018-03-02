@@ -157,35 +157,33 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             self.V = V
             
         def compute_theta(self, term):
-            m1 = self.mu[0]
-            m2 = self.mu[1]
-            m3 = self.mu[2]
+            mu = self.mu
             if term == "a":
                 # subdomains 1 and 7
-                theta_a0 = - (m2 - 2)/m1 - (2*(2*m1 - 2)*(m1 - 1))/(m1*(m2 - 2)) # K11
-                theta_a1 = -m1/(m2 - 2) # K22
-                theta_a2 = -(2*(m1 - 1))/(m2 - 2) # K12 and K21
+                theta_a0 = - (mu[1] - 2)/mu[0] - (2*(2*mu[0] - 2)*(mu[0] - 1))/(mu[0]*(mu[1] - 2)) # K11
+                theta_a1 = -mu[0]/(mu[1] - 2) # K22
+                theta_a2 = -(2*(mu[0] - 1))/(mu[1] - 2) # K12 and K21
                 # subdomains 2 and 8
-                theta_a3 = 2 - (m1 - 1)*(m1 - 1)/(m2 - 2) - m2
-                theta_a4 = -1/(m2 - 2)
-                theta_a5 = (m1 - 1)/(m2 - 2)
+                theta_a3 = 2 - (mu[0] - 1)*(mu[0] - 1)/(mu[1] - 2) - mu[1]
+                theta_a4 = -1/(mu[1] - 2)
+                theta_a5 = (mu[0] - 1)/(mu[1] - 2)
                 # subdomains 3 and 5
-                theta_a6 = -m2/(m1 - 2)
-                theta_a7 = - (m1 - 2)/m2 - (2*(2*m2 - 2)*(m2 - 1))/(m2*(m1 - 2))
-                theta_a8 = -(2*(m2 - 1))/(m1 - 2)
+                theta_a6 = -mu[1]/(mu[0] - 2)
+                theta_a7 = - (mu[0] - 2)/mu[1] - (2*(2*mu[1] - 2)*(mu[1] - 1))/(mu[1]*(mu[0] - 2))
+                theta_a8 = -(2*(mu[1] - 1))/(mu[0] - 2)
                 # subdomains 4 and 6
-                theta_a9 = -1/(m1 - 2)
-                theta_a10 = 2 - (m2 - 1)*(m2 - 1)/(m1 - 2) - m1
-                theta_a11 = (m2 - 1)/(m1 - 2)
+                theta_a9 = -1/(mu[0] - 2)
+                theta_a10 = 2 - (mu[1] - 1)*(mu[1] - 1)/(mu[0] - 2) - mu[0]
+                theta_a11 = (mu[1] - 1)/(mu[0] - 2)
                 # boundaries 5, 6, 7 and 8
-                theta_a12 = m3
+                theta_a12 = mu[2]
                 # Return
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12)
             elif term == "f":
-                theta_f0 = m1 # boundary 1
-                theta_f1 = m2 # boundary 2
-                theta_f2 = m1 # boundary 3
-                theta_f3 = m2 # boundary 4
+                theta_f0 = mu[0] # boundary 1
+                theta_f1 = mu[1] # boundary 2
+                theta_f2 = mu[0] # boundary 3
+                theta_f3 = mu[1] # boundary 4
                 # Return
                 return (theta_f0, theta_f1, theta_f2, theta_f3)
             else:
@@ -233,10 +231,10 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             self.V = V
             
         def compute_theta(self, term):
-            m3 = self.mu[2]
+            mu = self.mu
             if term == "a":
                 theta_a0 = 1.0
-                theta_a1 = m3
+                theta_a1 = mu[2]
                 return (theta_a0, theta_a1)
             elif term == "f":
                 theta_f0 = 1.0
@@ -333,37 +331,36 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             
         def compute_theta(self, term):
             mu = self.mu
-            mu1 = mu[0]
-            mu2 = mu[1]
+            mu[0] = mu[0]
             if term == "a":
-                theta_a0 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu1) + 8*sqrt(2.0)*cos(mu1) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu1)))
-                theta_a1 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu1))
-                theta_a2 = (-2*sqrt(2.0) + 4*sin(mu1))/(sqrt(2.0) - 4*cos(mu1))
-                theta_a3 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu1) + 4*sqrt(2.0)*cos(mu1) - 5)/(sqrt(2.0)*cos(mu1) - 2)
-                theta_a4 = -1/(sqrt(2.0)*cos(mu1) - 2)
-                theta_a5 = (sqrt(2.0)*sin(mu1) - 1)/(sqrt(2.0)*cos(mu1) - 2)
-                theta_a6 = -sqrt(2.0)/(sqrt(2.0) - 4*sin(mu1))
-                theta_a7 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu1) + 16*sqrt(2.0)*cos(mu1) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*sin(mu1)))
-                theta_a8 = (-2*sqrt(2.0) + 4*cos(mu1))/(sqrt(2.0) - 4*sin(mu1))
-                theta_a9 = -1/(sqrt(2.0)*sin(mu1) - 2)
-                theta_a10 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu1) + 2*sqrt(2.0)*cos(mu1) - 5)/(sqrt(2.0)*sin(mu1) - 2)
-                theta_a11 = (sqrt(2.0)*cos(mu1) - 1)/(sqrt(2.0)*sin(mu1) - 2)
-                theta_a12 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu1))
-                theta_a13 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu1) + 8*sqrt(2.0)*cos(mu1) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu1)))
-                theta_a14 = 2*(sqrt(2.0) - 2*sin(mu1))/(sqrt(2.0) - 4*cos(mu1))
-                theta_a15 = -1/(sqrt(2.0)*cos(mu1) - 2)
-                theta_a16 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu1) + 4*sqrt(2.0)*cos(mu1) - 5)/(sqrt(2.0)*cos(mu1) - 2)
-                theta_a17 = (-sqrt(2.0)*sin(mu1) + 1)/(sqrt(2.0)*cos(mu1) - 2)
-                theta_a18 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu1) + 16*sqrt(2.0)*cos(mu1) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*sin(mu1)))
-                theta_a19 = -sqrt(2.0)/(sqrt(2.0) - 4*sin(mu1))
-                theta_a20 = 2*(sqrt(2.0) - 2*cos(mu1))/(sqrt(2.0) - 4*sin(mu1))
-                theta_a21 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu1) + 2*sqrt(2.0)*cos(mu1) - 5)/(sqrt(2.0)*sin(mu1) - 2)
-                theta_a22 = -1/(sqrt(2.0)*sin(mu1) - 2)
-                theta_a23 = (-sqrt(2.0)*cos(mu1) + 1)/(sqrt(2.0)*sin(mu1) - 2)
-                theta_a24 = mu2
-                theta_a25 = mu2
-                theta_a26 = mu2
-                theta_a27 = mu2
+                theta_a0 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu[0]) + 8*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu[0])))
+                theta_a1 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu[0]))
+                theta_a2 = (-2*sqrt(2.0) + 4*sin(mu[0]))/(sqrt(2.0) - 4*cos(mu[0]))
+                theta_a3 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu[0]) + 4*sqrt(2.0)*cos(mu[0]) - 5)/(sqrt(2.0)*cos(mu[0]) - 2)
+                theta_a4 = -1/(sqrt(2.0)*cos(mu[0]) - 2)
+                theta_a5 = (sqrt(2.0)*sin(mu[0]) - 1)/(sqrt(2.0)*cos(mu[0]) - 2)
+                theta_a6 = -sqrt(2.0)/(sqrt(2.0) - 4*sin(mu[0]))
+                theta_a7 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu[0]) + 16*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*sin(mu[0])))
+                theta_a8 = (-2*sqrt(2.0) + 4*cos(mu[0]))/(sqrt(2.0) - 4*sin(mu[0]))
+                theta_a9 = -1/(sqrt(2.0)*sin(mu[0]) - 2)
+                theta_a10 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu[0]) + 2*sqrt(2.0)*cos(mu[0]) - 5)/(sqrt(2.0)*sin(mu[0]) - 2)
+                theta_a11 = (sqrt(2.0)*cos(mu[0]) - 1)/(sqrt(2.0)*sin(mu[0]) - 2)
+                theta_a12 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu[0]))
+                theta_a13 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu[0]) + 8*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu[0])))
+                theta_a14 = 2*(sqrt(2.0) - 2*sin(mu[0]))/(sqrt(2.0) - 4*cos(mu[0]))
+                theta_a15 = -1/(sqrt(2.0)*cos(mu[0]) - 2)
+                theta_a16 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu[0]) + 4*sqrt(2.0)*cos(mu[0]) - 5)/(sqrt(2.0)*cos(mu[0]) - 2)
+                theta_a17 = (-sqrt(2.0)*sin(mu[0]) + 1)/(sqrt(2.0)*cos(mu[0]) - 2)
+                theta_a18 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu[0]) + 16*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*sin(mu[0])))
+                theta_a19 = -sqrt(2.0)/(sqrt(2.0) - 4*sin(mu[0]))
+                theta_a20 = 2*(sqrt(2.0) - 2*cos(mu[0]))/(sqrt(2.0) - 4*sin(mu[0]))
+                theta_a21 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu[0]) + 2*sqrt(2.0)*cos(mu[0]) - 5)/(sqrt(2.0)*sin(mu[0]) - 2)
+                theta_a22 = -1/(sqrt(2.0)*sin(mu[0]) - 2)
+                theta_a23 = (-sqrt(2.0)*cos(mu[0]) + 1)/(sqrt(2.0)*sin(mu[0]) - 2)
+                theta_a24 = mu[1]
+                theta_a25 = mu[1]
+                theta_a26 = mu[1]
+                theta_a27 = mu[1]
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12, theta_a13, theta_a14, theta_a15, theta_a16, theta_a17, theta_a18, theta_a19, theta_a20, theta_a21, theta_a22, theta_a23, theta_a24, theta_a25, theta_a26, theta_a27)
             elif term == "f":
                 theta_f0 = 1.0
@@ -425,10 +422,9 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             
         def compute_theta(self, term):
             mu = self.mu
-            mu2 = mu[1]
             if term == "a":
                 theta_a0 = 1.0
-                theta_a1 = mu2
+                theta_a1 = mu[1]
                 return (theta_a0, theta_a1)
             elif term == "f":
                 theta_f0 = 1.0
@@ -519,17 +515,16 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             self.V = V
             
         def compute_theta(self, term):
-            mu1 = self.mu[0]
-            mu2 = self.mu[1]
+            mu = self.mu
             if term == "a":
-                theta_a0 = mu2
-                theta_a1 = mu2/mu1
-                theta_a2 = mu1*mu2
+                theta_a0 = mu[1]
+                theta_a1 = mu[1]/mu[0]
+                theta_a2 = mu[0]*mu[1]
                 theta_a3 = 1.0
                 return (theta_a0, theta_a1, theta_a2, theta_a3)
             elif term == "f":
                 theta_f0 = 1.0
-                theta_f1 = mu1
+                theta_f1 = mu[0]
                 return (theta_f0, theta_f1)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -558,9 +553,9 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             self.V = V
             
         def compute_theta(self, term):
-            mu2 = self.mu[1]
+            mu = self.mu
             if term == "a":
-                theta_a0 = mu2
+                theta_a0 = mu[1]
                 theta_a1 = 1.0
                 return (theta_a0, theta_a1)
             elif term == "f":
@@ -600,9 +595,9 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
 # Test forms pull back to reference domain for tutorial 09
 @check_affine_and_non_affine_shape_parametrizations((
     "CellDiameter, cell_diameter_pull_back", [
-        (lambda mesh: Constant(0.), lambda mu1: 0),
-        (lambda mesh: Constant(1.), lambda mu1: 1),
-        (CellDiameter, lambda mu1: sqrt(mu1))
+        (lambda mesh: Constant(0.), lambda mu: 0),
+        (lambda mesh: Constant(1.), lambda mu: 1),
+        (CellDiameter, lambda mu: sqrt(mu))
     ]
 ))
 def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellDiameter, cell_diameter_pull_back):
@@ -659,24 +654,23 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             self.V = V
             
         def compute_theta(self, term):
-            mu1 = self.mu[0]
-            mu2 = self.mu[1]
+            mu = self.mu
             if term == "a":
-                theta_a0 = mu2
-                theta_a1 = mu2/mu1
-                theta_a2 = mu2*mu1
+                theta_a0 = mu[1]
+                theta_a1 = mu[1]/mu[0]
+                theta_a2 = mu[1]*mu[0]
                 theta_a3 = 1.0
-                theta_a4 = mu2
-                theta_a5 = mu2/mu1**2*cell_diameter_pull_back(mu1)
-                theta_a6 = mu2*cell_diameter_pull_back(mu1)
+                theta_a4 = mu[1]
+                theta_a5 = mu[1]/mu[0]**2*cell_diameter_pull_back(mu[0])
+                theta_a6 = mu[1]*cell_diameter_pull_back(mu[0])
                 theta_a7 = 1.0
-                theta_a8 = 1.0/mu1*cell_diameter_pull_back(mu1)
+                theta_a8 = 1.0/mu[0]*cell_diameter_pull_back(mu[0])
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8)
             elif term == "f":
                 theta_f0 = 1.0
-                theta_f1 = mu1
+                theta_f1 = mu[0]
                 theta_f2 = 1.0
-                theta_f3 = cell_diameter_pull_back(mu1)
+                theta_f3 = cell_diameter_pull_back(mu[0])
                 return (theta_f0, theta_f1, theta_f2, theta_f3)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -712,9 +706,9 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             self.V = V
             
         def compute_theta(self, term):
-            mu2 = self.mu[1]
+            mu = self.mu
             if term == "a":
-                theta_a0 = mu2
+                theta_a0 = mu[1]
                 theta_a1 = 1.0
                 return (theta_a0, theta_a1)
             elif term == "f":
@@ -820,33 +814,27 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             
         def compute_theta(self, term):
             mu = self.mu
-            mu1 = mu[0]
-            mu2 = mu[1]
-            mu3 = mu[2]
-            mu4 = mu[3]
-            mu5 = mu[4]
-            mu6 = mu[5]
             if term == "a":
-                theta_a0 = nu*(mu1/mu5)
-                theta_a1 = nu*(-tan(mu6))
-                theta_a2 = nu*(mu5*(tan(mu6)**2 + 1)/mu1)
-                theta_a3 = nu*(mu4/mu2)
-                theta_a4 = nu*(mu2/mu4)
-                theta_a5 = nu*(mu1/mu2)
-                theta_a6 = nu*(mu2/mu1)
-                theta_a7 = nu*(mu3/mu2)
-                theta_a8 = nu*(mu2/mu3)
+                theta_a0 = nu*(mu[0]/mu[4])
+                theta_a1 = nu*(-tan(mu[5]))
+                theta_a2 = nu*(mu[4]*(tan(mu[5])**2 + 1)/mu[0])
+                theta_a3 = nu*(mu[3]/mu[1])
+                theta_a4 = nu*(mu[1]/mu[3])
+                theta_a5 = nu*(mu[0]/mu[1])
+                theta_a6 = nu*(mu[1]/mu[0])
+                theta_a7 = nu*(mu[2]/mu[1])
+                theta_a8 = nu*(mu[1]/mu[2])
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8)
             elif term in ("b", "bt"):
-                theta_b0 = mu1
-                theta_b1 = -tan(mu6)*mu5
-                theta_b2 = mu5
-                theta_b3 = mu4
-                theta_b4 = mu2
-                theta_b5 = mu1
-                theta_b6 = mu2
-                theta_b7 = mu3
-                theta_b8 = mu2
+                theta_b0 = mu[0]
+                theta_b1 = -tan(mu[5])*mu[4]
+                theta_b2 = mu[4]
+                theta_b3 = mu[3]
+                theta_b4 = mu[1]
+                theta_b5 = mu[0]
+                theta_b6 = mu[1]
+                theta_b7 = mu[2]
+                theta_b8 = mu[1]
                 return (theta_b0, theta_b1, theta_b2, theta_b3, theta_b4, theta_b5, theta_b6, theta_b7, theta_b8)
             elif term == "f":
                 theta_f0 = mu[0]*mu[4]
@@ -988,9 +976,9 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
 # Test forms pull back to reference domain for stabilization of Stokes problem
 @check_affine_and_non_affine_shape_parametrizations((
     "CellDiameter, cell_diameter_pull_back", [
-        (lambda mesh: Constant(0.), lambda mu1: 0),
-        (lambda mesh: Constant(1.), lambda mu1: 1),
-        (CellDiameter, lambda mu1: sqrt(mu1))
+        (lambda mesh: Constant(0.), lambda mu: 0),
+        (lambda mesh: Constant(1.), lambda mu: 1),
+        (CellDiameter, lambda mu: sqrt(mu))
     ]
 ))
 def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellDiameter, cell_diameter_pull_back):
@@ -1054,24 +1042,23 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
             
         def compute_theta(self, term):
             mu = self.mu
-            mu1 = mu[0]
             if term == "a":
-                theta_a0 = 1./mu1
-                theta_a1 = mu1
+                theta_a0 = 1./mu[0]
+                theta_a1 = mu[0]
                 return (theta_a0, theta_a1)
             elif term in ("b", "bt"):
                 theta_b0 = 1.
-                theta_b1 = mu1
+                theta_b1 = mu[0]
                 return (theta_b0, theta_b1)
             elif term == "stab":
-                theta_s0 = 1./mu1*cell_diameter_pull_back(mu1)**2
-                theta_s1 = mu1*cell_diameter_pull_back(mu1)**2
+                theta_s0 = 1./mu[0]*cell_diameter_pull_back(mu[0])**2
+                theta_s1 = mu[0]*cell_diameter_pull_back(mu[0])**2
                 return (theta_s0, theta_s1)
             elif term == "f":
-                theta_f0 = mu1
+                theta_f0 = mu[0]
                 return (theta_f0, )
             elif term == "g":
-                theta_g0 = mu1
+                theta_g0 = mu[0]
                 return (theta_g0, )
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -1245,35 +1232,34 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             self.V = V
             
         def compute_theta(self, term):
-            mu1 = self.mu[0]
-            mu2 = self.mu[1]
+            mu = self.mu
             if term in ("a", "a*"):
                 theta_a0 = 1.0
-                theta_a1 = 1.0/mu1
-                theta_a2 = mu1
+                theta_a1 = 1.0/mu[0]
+                theta_a2 = mu[0]
                 return (theta_a0, theta_a1, theta_a2)
             elif term in ("c", "c*"):
                 theta_c0 = 1.0
-                theta_c1 = mu1
+                theta_c1 = mu[0]
                 return (theta_c0, theta_c1)
             elif term == "m":
                 theta_m0 = 1.0
-                theta_m1 = mu1
+                theta_m1 = mu[0]
                 return (theta_m0, theta_m1)
             elif term == "n":
                 theta_n0 = alpha
-                theta_n1 = alpha*mu1
+                theta_n1 = alpha*mu[0]
                 return (theta_n0, theta_n1)
             elif term == "f":
                 theta_f0 = 1.0
-                theta_f1 = mu1
+                theta_f1 = mu[0]
                 return (theta_f0, theta_f1)
             elif term == "g":
                 theta_g0 = 1.0
-                theta_g1 = mu1*mu2
+                theta_g1 = mu[0]*mu[1]
                 return (theta_g0, theta_g1)
             elif term == "h":
-                theta_h0 = 1.0 + mu1*mu2**2
+                theta_h0 = 1.0 + mu[0]*mu[1]**2
                 return (theta_h0,)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -1329,7 +1315,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             self.V = V
             
         def compute_theta(self, term):
-            mu2 = self.mu[1]
+            mu = self.mu
             if term in ("a", "a*"):
                 theta_a0 = 1.0
                 return (theta_a0,)
@@ -1347,11 +1333,11 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 return (theta_f0,)
             elif term == "g":
                 theta_g0 = 1.0
-                theta_g1 = mu2
+                theta_g1 = mu[1]
                 return (theta_g0, theta_g1)
             elif term == "h":
                 theta_h0 = 1.0
-                theta_h1 = mu2**2
+                theta_h1 = mu[1]**2
                 return (theta_h0, theta_h1)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -1495,36 +1481,35 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             self.V = V
             
         def compute_theta(self, term):
-            mu1 = self.mu[0]
-            mu2 = self.mu[1]
+            mu = self.mu
             if term in ("a", "a*"):
-                theta_a0 = nu*mu1
-                theta_a1 = nu/mu1
+                theta_a0 = nu*mu[0]
+                theta_a1 = nu/mu[0]
                 return (theta_a0, theta_a1)
             elif term in ("b", "b*", "bt", "bt*"):
-                theta_b0 = mu1
+                theta_b0 = mu[0]
                 theta_b1 = 1.0
                 return (theta_b0, theta_b1)
             elif term in ("c", "c*"):
-                theta_c0 = mu1
+                theta_c0 = mu[0]
                 return (theta_c0,)
             elif term == "m":
-                theta_m0 = mu1
+                theta_m0 = mu[0]
                 return (theta_m0,)
             elif term == "n":
-                theta_n0 = alpha*mu1
+                theta_n0 = alpha*mu[0]
                 return (theta_n0,)
             elif term == "f":
-                theta_f0 = - mu1*mu2
+                theta_f0 = - mu[0]*mu[1]
                 return (theta_f0,)
             elif term == "g":
-                theta_g0 = mu1**2
+                theta_g0 = mu[0]**2
                 return (theta_g0,)
             elif term == "l":
-                theta_l0 = mu1
+                theta_l0 = mu[0]
                 return (theta_l0,)
             elif term == "h":
-                theta_h0 = mu1**3/3.
+                theta_h0 = mu[0]**3/3.
                 return (theta_h0,)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -1591,7 +1576,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             self.V = V
             
         def compute_theta(self, term):
-            mu2 = self.mu[1]
+            mu = self.mu
             if term in ("a", "a*"):
                 theta_a0 = nu*1.0
                 return (theta_a0,)
@@ -1608,7 +1593,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
                 theta_n0 = alpha*1.0
                 return (theta_n0,)
             elif term == "f":
-                theta_f0 = - mu2
+                theta_f0 = - mu[1]
                 return (theta_f0,)
             elif term == "g":
                 theta_g0 = 1.0
@@ -1797,48 +1782,42 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
             
         def compute_theta(self, term):
             mu = self.mu
-            mu1 = mu[0]
-            mu2 = mu[1]
-            mu3 = mu[2]
-            mu4 = mu[3]
-            mu5 = mu[4]
-            mu6 = mu[5]
             if term == "a":
                 # inner(grad(c), grad(d))*dx
-                theta_a0 = mu1/mu5
-                theta_a1 = mu5/(mu1*cos(mu6)**2)
-                theta_a2 = -tan(mu6)
-                theta_a3 = mu1/mu5
-                theta_a4 = mu5/(mu1*cos(mu6)**2)
-                theta_a5 = -tan(mu6)
-                theta_a6 = mu4/mu2
-                theta_a7 = mu2/mu4
-                theta_a8 = mu4/mu2
-                theta_a9 = mu2/mu4
-                theta_a10 = mu1/mu2
-                theta_a11 = mu2/mu1
-                theta_a12 = mu1/mu2
-                theta_a13 = mu2/mu1
-                theta_a14 = mu3/mu2
-                theta_a15 = mu2/mu3
-                theta_a16 = mu3/mu2
-                theta_a17 = mu2/mu3
+                theta_a0 = mu[0]/mu[4]
+                theta_a1 = mu[4]/(mu[0]*cos(mu[5])**2)
+                theta_a2 = -tan(mu[5])
+                theta_a3 = mu[0]/mu[4]
+                theta_a4 = mu[4]/(mu[0]*cos(mu[5])**2)
+                theta_a5 = -tan(mu[5])
+                theta_a6 = mu[3]/mu[1]
+                theta_a7 = mu[1]/mu[3]
+                theta_a8 = mu[3]/mu[1]
+                theta_a9 = mu[1]/mu[3]
+                theta_a10 = mu[0]/mu[1]
+                theta_a11 = mu[1]/mu[0]
+                theta_a12 = mu[0]/mu[1]
+                theta_a13 = mu[1]/mu[0]
+                theta_a14 = mu[2]/mu[1]
+                theta_a15 = mu[1]/mu[2]
+                theta_a16 = mu[2]/mu[1]
+                theta_a17 = mu[1]/mu[2]
                 # inner(vel, grad(c))*d*dx
-                theta_a18 = mu1
-                theta_a19 = mu4
-                theta_a20 = mu5*tan(mu6)
-                theta_a21 = mu4
-                theta_a22 = mu2
-                theta_a23 = mu1
-                theta_a24 = mu2
-                theta_a25 = mu3
-                theta_a26 = mu2
+                theta_a18 = mu[0]
+                theta_a19 = mu[3]
+                theta_a20 = mu[4]*tan(mu[5])
+                theta_a21 = mu[3]
+                theta_a22 = mu[1]
+                theta_a23 = mu[0]
+                theta_a24 = mu[1]
+                theta_a25 = mu[2]
+                theta_a26 = mu[1]
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12, theta_a13, theta_a14, theta_a15, theta_a16, theta_a17, theta_a18, theta_a19, theta_a20, theta_a21, theta_a22, theta_a23, theta_a24, theta_a25, theta_a26)
             elif term == "f":
-                theta_f0 = mu1*mu5
-                theta_f1 = mu2*mu4
-                theta_f2 = mu1*mu2
-                theta_f3 = mu2*mu3
+                theta_f0 = mu[0]*mu[4]
+                theta_f1 = mu[1]*mu[3]
+                theta_f2 = mu[0]*mu[1]
+                theta_f3 = mu[1]*mu[2]
                 return (theta_f0, theta_f1, theta_f2, theta_f3)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -1998,29 +1977,28 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
         @compute_theta_for_derivative({"dc": "c"})
         def compute_theta(self, term):
             mu = self.mu
-            mu2 = mu[1]
             if term == "a":
                 theta_a0 = nu*1.0
-                theta_a1 = nu*(mu2/2.0)
-                theta_a2 = nu*(2.0/mu2)
+                theta_a1 = nu*(mu[1]/2.0)
+                theta_a2 = nu*(2.0/mu[1])
                 return (theta_a0, theta_a1, theta_a2)
             elif term in ("b", "bt"):
                 theta_b0 = 1.0
-                theta_b1 = mu2/2.0
+                theta_b1 = mu[1]/2.0
                 theta_b2 = 1.0
                 return (theta_b0, theta_b1, theta_b2)
             elif term == "c":
                 theta_c0 = 1.0
-                theta_c1 = mu2/2.0
+                theta_c1 = mu[1]/2.0
                 theta_c2 = 1.0
                 return (theta_c0, theta_c1, theta_c2)
             elif term == "f":
                 theta_f0 = 1.0
-                theta_f1 = mu2/2.0
+                theta_f1 = mu[1]/2.0
                 return (theta_f0, theta_f1)
             elif term == "g":
                 theta_g0 = 1.0
-                theta_g1 = mu2/2.0
+                theta_g1 = mu[1]/2.0
                 return (theta_g0, theta_g1)
             else:
                 raise ValueError("Invalid term for compute_theta().")
@@ -2209,23 +2187,22 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
             
         def compute_theta(self, term):
             mu = self.mu
-            mu1 = mu[0]
             if term == "a":
-                theta_a0 = 1./mu1
-                theta_a1 = mu1
+                theta_a0 = 1./mu[0]
+                theta_a1 = mu[0]
                 return (theta_a0, theta_a1)
             elif term in ("b", "bt"):
                 theta_b0 = 1.
-                theta_b1 = mu1
+                theta_b1 = mu[0]
                 return (theta_b0, theta_b1)
             elif term == "f":
-                theta_f0 = mu1
+                theta_f0 = mu[0]
                 return (theta_f0, )
             elif term == "g":
-                theta_g0 = mu1
+                theta_g0 = mu[0]
                 return (theta_g0, )
             elif term == "m":
-                theta_m0 = mu1
+                theta_m0 = mu[0]
                 return (theta_m0, )
             else:
                 raise ValueError("Invalid term for compute_theta().")

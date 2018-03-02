@@ -54,8 +54,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
     @compute_theta_for_restriction({"bt_restricted": "bt"})
     @compute_theta_for_restriction({"bt*_restricted": "bt*"})
     def compute_theta(self, term):
-        mu1 = self.mu[0]
-        mu2 = self.mu[1]
+        mu = self.mu
         if term in ("a", "a*"):
             theta_a0 = self.nu*1.0
             return (theta_a0,)
@@ -72,7 +71,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             theta_n0 = self.alpha*1.0
             return (theta_n0,)
         elif term == "f":
-            theta_f0 = - mu2
+            theta_f0 = - mu[1]
             return (theta_f0,)
         elif term == "g":
             theta_g0 = 1.0
@@ -84,7 +83,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             theta_h0 = 1.0
             return (theta_h0,)
         elif term == "dirichlet_bc_v":
-            theta_bc0 = mu1
+            theta_bc0 = mu[0]
             return (theta_bc0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
