@@ -36,7 +36,7 @@ def symbolic_equal(expression1, expression2, x, mu):
             difference = difference.subs(node, round(node, 10))
     return difference == 0
 
-# Test affine shape parametrization for tutorial 3
+# Test affine shape parametrization for tutorial 03
 def test_affine_shape_parametrization_from_vertices_mapping_hole():
     filename = "vertices_mapping_hole"
     assert VerticesMappingIO.exists_file(data_dir, filename)
@@ -80,7 +80,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_hole():
     assert symbolic_equal(shape_parametrization_expression[7][X], "2*mu[0] - 2 + x[0] + (1 - mu[0])*x[1]", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "2*mu[1] - 2 + (2 - mu[1])*x[1]", x, mu)
     
-# Test affine shape parametrization for tutorial 3 rotation
+# Test affine shape parametrization for tutorial 03 rotation
 def test_affine_shape_parametrization_from_vertices_mapping_hole_rotation():
     vertices_mappings = [
         {
@@ -163,7 +163,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_hole_rotation():
     assert symbolic_equal(shape_parametrization_expression[7][X], "2*sqrt(2.0)*cos(mu[0]) + x[0] + x[1]*(-sqrt(2.0)*cos(mu[0]) + 1) - 2", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "2*sqrt(2.0)*sin(mu[0]) + x[1]*(-sqrt(2.0)*sin(mu[0]) + 2) - 2", x, mu)
     
-# Test affine shape parametrization for tutorial 4
+# Test affine shape parametrization for tutorial 04
 def test_affine_shape_parametrization_from_vertices_mapping_graetz():
     vertices_mappings = [
         {
@@ -210,7 +210,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_graetz():
     assert symbolic_equal(shape_parametrization_expression[3][X], "mu[0]*(x[0] - 1) + 1", x, mu)
     assert symbolic_equal(shape_parametrization_expression[3][Y], "x[1]", x, mu)
     
-# Test affine shape parametrization for tutorial 17
+# Test affine shape parametrization for tutorial 12
 def test_affine_shape_parametrization_from_vertices_mapping_stokes():
     filename = "vertices_mapping_stokes"
     assert VerticesMappingIO.exists_file(data_dir, filename)
@@ -254,7 +254,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_stokes():
     assert symbolic_equal(shape_parametrization_expression[7][X], "mu[1]*x[0]", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "mu[2]*x[1]", x, mu)
     
-# Test affine shape parametrization for tutorial 22
+# Test affine shape parametrization for tutorial 17
 def test_affine_shape_parametrization_from_vertices_mapping_navier_stokes():
     vertices_mappings = [
         {

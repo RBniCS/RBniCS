@@ -20,7 +20,7 @@ from sympy import MatrixSymbol
 from rbnics.shape_parametrization.utils.symbolic import compute_shape_parametrization_gradient
 from test_affine_shape_parametrization_from_vertices_mapping import symbolic_equal, X, Y
 
-# Test shape parametrization gradient computation for tutorial 3
+# Test shape parametrization gradient computation for tutorial 03
 def test_compute_shape_parametrization_gradient_hole():
     shape_parametrization_expression = [
         ("2 - 2*mu[0] + mu[0]*x[0] + (2 - 2*mu[0])*x[1]", "2 - 2*mu[1] + (2 - mu[1])*x[1]"), # subdomain 1
@@ -103,7 +103,7 @@ def test_compute_shape_parametrization_gradient_hole():
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][Y], "2 - mu[1]", x, mu)
     
-# Test shape parametrization gradient computation for tutorial 3 rotation
+# Test shape parametrization gradient computation for tutorial 03 rotation
 def test_compute_shape_parametrization_gradient_hole_rotation():
     shape_parametrization_expression = [
         ("-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) + 2", "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2) + x[1]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2) + 2"), # subdomain 1
@@ -186,7 +186,7 @@ def test_compute_shape_parametrization_gradient_hole_rotation():
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][Y], "-sqrt(2.0)*sin(mu[0]) + 2", x, mu)
     
-# Test shape parametrization gradient computation for tutorial 4
+# Test shape parametrization gradient computation for tutorial 04
 def test_compute_shape_parametrization_gradient_graetz():
     shape_parametrization_expression = [
         ("x[0]", "x[1]"), # subdomain 1
@@ -215,7 +215,7 @@ def test_compute_shape_parametrization_gradient_graetz():
     assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][Y], "1", x, mu)
     
-# Test shape parametrization gradient computation for tutorial 17
+# Test shape parametrization gradient computation for tutorial 12
 def test_compute_shape_parametrization_gradient_stokes():
     shape_parametrization_expression = [
         ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - tan(mu[5]) - mu[0]"), # subdomain 1
@@ -298,7 +298,7 @@ def test_compute_shape_parametrization_gradient_stokes():
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][Y], "mu[2]", x, mu)
     
-# Test shape parametrization gradient computation for tutorial 22
+# Test shape parametrization gradient computation for tutorial 17
 def test_compute_shape_parametrization_gradient_navier_stokes():
     shape_parametrization_expression = [
         ("x[0]", "x[1]"), # subdomain 1 bottom
