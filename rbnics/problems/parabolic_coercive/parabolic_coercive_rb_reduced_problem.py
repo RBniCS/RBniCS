@@ -40,7 +40,7 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
         
         # Skip useless Riesz products
         self.riesz_terms.append("m")
-        self.riesz_product_terms.extend([("m", "f"), ("m", "a"), ("m", "m")])
+        self.error_estimation_terms.extend([("m", "f"), ("m", "a"), ("m", "m")])
         
     # Return an error bound for the current solution
     def estimate_error(self):
@@ -92,9 +92,9 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
                 theta_f = self.compute_theta("f")
                 residual_norm_squared_over_time.append(
                       elliptic_residual_norm_squared
-                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["m", "f"][:N], theta_f)))
-                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["m", "a"][:N, :N], theta_a))*self._solution)
-                    + transpose(self._solution_dot)*sum(product(theta_m, self.riesz_product["m", "m"][:N, :N], theta_m))*self._solution_dot
+                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "f"][:N], theta_f)))
+                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "a"][:N, :N], theta_a))*self._solution)
+                    + transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "m"][:N, :N], theta_m))*self._solution_dot
                 )
             else:
                 # Error estimator on initial condition does not use the residual

@@ -40,7 +40,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         
         # Skip useless Riesz products
         self.riesz_terms = ["f", "a"]
-        self.riesz_product_terms = [("f", "f"), ("a", "f"), ("a", "a")]
+        self.error_estimation_terms = [("f", "f"), ("a", "f"), ("a", "a")]
     
     # Return an error bound for the current solution
     def estimate_error(self):
@@ -68,9 +68,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
         theta_a = self.compute_theta("a")
         theta_f = self.compute_theta("f")
         return (
-              sum(product(theta_f, self.riesz_product["f", "f"], theta_f))
-            + 2.0*(transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "f"][:N], theta_f)))
-            + transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "a"][:N, :N], theta_a))*self._solution
+              sum(product(theta_f, self.error_estimation_operator["f", "f"], theta_f))
+            + 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))
+            + transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "a"][:N, :N], theta_a))*self._solution
         )
     
 # Add dual reduced problem if an output is provided in the term "s"

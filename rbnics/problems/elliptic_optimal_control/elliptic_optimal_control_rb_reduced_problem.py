@@ -38,7 +38,7 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
         
         # Riesz terms names
         self.riesz_terms = ["a", "a*", "c", "c*", "m", "n", "g", "f"]
-        self.riesz_product_terms = [("g", "g"), ("f", "f"), ("m", "g"), ("a*", "g"), ("a", "f"), ("c", "f"), ("m", "a*"), ("n", "c*"), ("a", "c"), ("m", "m"), ("a*", "a*"), ("n", "n"), ("c*", "c*"), ("a", "a"), ("c", "c")]
+        self.error_estimation_terms = [("g", "g"), ("f", "f"), ("m", "g"), ("a*", "g"), ("a", "f"), ("c", "f"), ("m", "a*"), ("n", "c*"), ("a", "c"), ("m", "m"), ("a*", "a*"), ("n", "n"), ("c*", "c*"), ("a", "a"), ("c", "c")]
         
     # Return an error bound for the current solution
     def estimate_error(self):
@@ -73,19 +73,19 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
         theta_g = self.compute_theta("g")
         
         return (
-              sum(product(theta_g, self.riesz_product["g", "g"], theta_g))
-            + sum(product(theta_f, self.riesz_product["f", "f"], theta_f))
-            + 2.0*(transpose(self._solution)*sum(product(theta_m, self.riesz_product["m", "g"][:N], theta_g)))
-            + 2.0*(transpose(self._solution)*sum(product(theta_at, self.riesz_product["a*", "g"][:N], theta_g)))
-            + 2.0*(transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "f"][:N], theta_f)))
-            - 2.0*(transpose(self._solution)*sum(product(theta_c, self.riesz_product["c", "f"][:N], theta_f)))
-            + transpose(self._solution)*sum(product(theta_m, self.riesz_product["m", "m"][:N, :N], theta_m))*self._solution
-            + transpose(self._solution)*sum(product(theta_at, self.riesz_product["a*", "a*"][:N, :N], theta_at))*self._solution
-            + 2.0*(transpose(self._solution)*sum(product(theta_m, self.riesz_product["m", "a*"][:N, :N], theta_at))*self._solution)
-            + transpose(self._solution)*sum(product(theta_n, self.riesz_product["n", "n"][:N, :N], theta_n))*self._solution
-            + transpose(self._solution)*sum(product(theta_ct, self.riesz_product["c*", "c*"][:N, :N], theta_ct))*self._solution
-            - 2.0*(transpose(self._solution)*sum(product(theta_n, self.riesz_product["n", "c*"][:N, :N], theta_ct))*self._solution)
-            + transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "a"][:N, :N], theta_a))*self._solution
-            + transpose(self._solution)*sum(product(theta_c, self.riesz_product["c", "c"][:N, :N], theta_c))*self._solution
-            - 2.0*(transpose(self._solution)*sum(product(theta_a, self.riesz_product["a", "c"][:N, :N], theta_c))*self._solution)
+              sum(product(theta_g, self.error_estimation_operator["g", "g"], theta_g))
+            + sum(product(theta_f, self.error_estimation_operator["f", "f"], theta_f))
+            + 2.0*(transpose(self._solution)*sum(product(theta_m, self.error_estimation_operator["m", "g"][:N], theta_g)))
+            + 2.0*(transpose(self._solution)*sum(product(theta_at, self.error_estimation_operator["a*", "g"][:N], theta_g)))
+            + 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))
+            - 2.0*(transpose(self._solution)*sum(product(theta_c, self.error_estimation_operator["c", "f"][:N], theta_f)))
+            + transpose(self._solution)*sum(product(theta_m, self.error_estimation_operator["m", "m"][:N, :N], theta_m))*self._solution
+            + transpose(self._solution)*sum(product(theta_at, self.error_estimation_operator["a*", "a*"][:N, :N], theta_at))*self._solution
+            + 2.0*(transpose(self._solution)*sum(product(theta_m, self.error_estimation_operator["m", "a*"][:N, :N], theta_at))*self._solution)
+            + transpose(self._solution)*sum(product(theta_n, self.error_estimation_operator["n", "n"][:N, :N], theta_n))*self._solution
+            + transpose(self._solution)*sum(product(theta_ct, self.error_estimation_operator["c*", "c*"][:N, :N], theta_ct))*self._solution
+            - 2.0*(transpose(self._solution)*sum(product(theta_n, self.error_estimation_operator["n", "c*"][:N, :N], theta_ct))*self._solution)
+            + transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "a"][:N, :N], theta_a))*self._solution
+            + transpose(self._solution)*sum(product(theta_c, self.error_estimation_operator["c", "c"][:N, :N], theta_c))*self._solution
+            - 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "c"][:N, :N], theta_c))*self._solution)
         )
