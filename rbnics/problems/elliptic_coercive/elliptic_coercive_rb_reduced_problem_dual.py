@@ -46,13 +46,13 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
         
     def _init_output_correction_and_estimation_operators(self, current_stage="online"):
         # Also initialize data structures related to output correction and output error estimation
+        self.output_correction_and_estimation["a"] = OnlineAffineExpansionStorage(self.primal_truth_problem.Q["a"])
+        self.output_correction_and_estimation["f"] = OnlineAffineExpansionStorage(self.primal_truth_problem.Q["f"])
         assert current_stage in ("online", "offline")
         if current_stage == "online":
-            self.output_correction_and_estimation["a"] = self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_a", "online")
-            self.output_correction_and_estimation["f"] = self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_f", "online")
+            self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_a", "online")
+            self.assemble_output_correction_and_estimation_operators("output_correction_and_estimation_f", "online")
         elif current_stage == "offline":
-            self.output_correction_and_estimation["a"] = OnlineAffineExpansionStorage(self.primal_truth_problem.Q["a"])
-            self.output_correction_and_estimation["f"] = OnlineAffineExpansionStorage(self.primal_truth_problem.Q["f"])
             # Save empty files to avoid triggering an assert while finalizing dual offline stage
             self.output_correction_and_estimation["a"].save(self.folder["error_estimation"], "output_correction_and_estimation_a")
             self.output_correction_and_estimation["f"].save(self.folder["error_estimation"], "output_correction_and_estimation_f")
@@ -79,8 +79,6 @@ class EllipticCoerciveRBReducedProblem_Dual(EllipticCoerciveRBReducedProblem_Dua
         assert current_stage in ("online", "offline")
         short_term = term.replace("output_correction_and_estimation_", "")
         if current_stage == "online": # load from file
-            if term not in self.output_correction_and_estimation:
-                self.output_correction_and_estimation[short_term] = OnlineAffineExpansionStorage(0, 0) # it will be resized by load
             if term == "output_correction_and_estimation_a":
                 self.output_correction_and_estimation["a"].load(self.folder["error_estimation"], "output_correction_and_estimation_a")
             elif term == "output_correction_and_estimation_f":

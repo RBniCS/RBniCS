@@ -23,7 +23,7 @@ from numpy import nditer as AffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.decorators import overload, tuple_of
-from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as ContentShapeIO, TextIO as DictIO, TextIO as ScalarContentIO
+from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as DictIO, TextIO as ScalarContentIO
 
 def AffineExpansionStorage(backend, wrapping):
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):
@@ -75,8 +75,6 @@ def AffineExpansionStorage(backend, wrapping):
             # Get full directory name
             full_directory = Folders.Folder(os.path.join(str(directory), filename))
             full_directory.create()
-            # Save content shape
-            self._save_content_shape(full_directory)
             # Exit in the trivial case of empty affine expansion
             if self._content.size is 0:
                 return
@@ -88,9 +86,6 @@ def AffineExpansionStorage(backend, wrapping):
             self._save_content(self._content[it.multi_index], it, full_directory)
             # Save dicts
             self._save_dicts(full_directory)
-            
-        def _save_content_shape(self, full_directory):
-            ContentShapeIO.save_file(self._content.shape, full_directory, "content_shape")
         
         @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
@@ -110,6 +105,16 @@ def AffineExpansionStorage(backend, wrapping):
         @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("scalar", full_directory, "content_item_type")
+            ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
+        
+        @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
+        def _save_content_item_type_shape(self, item, it, full_directory):
+            ContentItemTypeIO.save_file("functions_list", full_directory, "content_item_type")
+            ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
+            
+        @overload(AbstractBasisFunctionsMatrix, AffineExpansionStorageContent_Iterator, Folders.Folder)
+        def _save_content_item_type_shape(self, item, it, full_directory):
+            ContentItemTypeIO.save_file("basis_functions_matrix", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
         
         @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)
@@ -140,6 +145,18 @@ def AffineExpansionStorage(backend, wrapping):
             while not it.finished:
                 ScalarContentIO.save_file(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
+                
+        @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
+        def _save_content(self, item, it, full_directory):
+            while not it.finished:
+                self._content[it.multi_index].save(full_directory, "content_item_" + str(it.index))
+                it.iternext()
+                
+        @overload(AbstractBasisFunctionsMatrix, AffineExpansionStorageContent_Iterator, Folders.Folder)
+        def _save_content(self, item, it, full_directory):
+            while not it.finished:
+                self._content[it.multi_index].save(full_directory, "content_item_" + str(it.index))
+                it.iternext()
         
         @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
@@ -157,14 +174,17 @@ def AffineExpansionStorage(backend, wrapping):
                     it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
                     while not it.finished:
                         if self._content[it.multi_index] is not None: # ... but only if there is at least one element different from None
-                            return False
+                            if isinstance(self._content[it.multi_index], AbstractFunctionsList):
+                                if len(self._content[it.multi_index]) > 0: # ... unless it is an empty FunctionsList
+                                    return False
+                            elif isinstance(self._content[it.multi_index], AbstractBasisFunctionsMatrix):
+                                if sum(self._content[it.multi_index]._component_name_to_basis_component_length.values()) > 0: # ... unless it is an empty BasisFunctionsMatrix
+                                    return False
+                            else:
+                                return False
                         it.iternext()
             # Get full directory name
             full_directory = Folders.Folder(os.path.join(str(directory), filename))
-            # Load content shape
-            content_shape = self._load_content_shape(full_directory)
-            # Prepare content
-            self._content = AffineExpansionStorageContent_Base(content_shape, dtype=object)
             # Exit in the trivial case of empty affine expansion
             if self._content.size is 0:
                 return True
@@ -182,15 +202,11 @@ def AffineExpansionStorage(backend, wrapping):
             # Return
             return True
             
-        def _load_content_shape(self, full_directory):
-            assert ContentShapeIO.exists_file(full_directory, "content_shape")
-            return ContentShapeIO.load_file(full_directory, "content_shape")
-            
         def _load_content_item_type_shape(self, full_directory):
             assert ContentItemTypeIO.exists_file(full_directory, "content_item_type")
             content_item_type = ContentItemTypeIO.load_file(full_directory, "content_item_type")
             assert ContentItemShapeIO.exists_file(full_directory, "content_item_shape")
-            assert content_item_type in ("matrix", "vector", "function", "scalar", "empty")
+            assert content_item_type in ("matrix", "vector", "function", "scalar", "functions_list", "basis_functions_matrix", "empty")
             if content_item_type == "matrix":
                 (M, N) = ContentItemShapeIO.load_file(full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
                 return backend.Matrix(M, N)
@@ -202,6 +218,12 @@ def AffineExpansionStorage(backend, wrapping):
                 return backend.Function(N)
             elif content_item_type == "scalar":
                 return 0.
+            elif content_item_type == "functions_list": # self._content has already been populated with empty items
+                assert isinstance(self._content[self._smallest_key], AbstractFunctionsList)
+                return self._content[self._smallest_key]
+            elif content_item_type == "basis_functions_matrix": # self._content has already been populated with empty items
+                assert isinstance(self._content[self._smallest_key], AbstractBasisFunctionsMatrix)
+                return self._content[self._smallest_key]
             elif content_item_type == "empty":
                 return None
             else: # impossible to arrive here anyway thanks to the assert
@@ -235,6 +257,20 @@ def AffineExpansionStorage(backend, wrapping):
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = ScalarContentIO.load_file(full_directory, "content_item_" + str(it.index))
+                it.iternext()
+                
+        @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
+        def _load_content(self, item, it, full_directory):
+            while not it.finished:
+                loaded = self._content[it.multi_index].load(full_directory, "content_item_" + str(it.index))
+                assert loaded
+                it.iternext()
+            
+        @overload(AbstractBasisFunctionsMatrix, AffineExpansionStorageContent_Iterator, Folders.Folder)
+        def _load_content(self, item, it, full_directory):
+            while not it.finished:
+                loaded = self._content[it.multi_index].load(full_directory, "content_item_" + str(it.index))
+                assert loaded
                 it.iternext()
         
         @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)

@@ -93,18 +93,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         """
         Initialize data structures required for the online phase. Internal method.
         """
+        for term in self.terms:
+            if term not in self.operator: # init was not called already
+                self.Q[term] = self.truth_problem.Q[term]
+                self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
         assert current_stage in ("online", "offline")
         if current_stage == "online":
             for term in self.terms:
-                if term not in self.operator: # init was not called already
-                    self.operator[term] = OnlineAffineExpansionStorage(0) # it will be resized by assemble_operator
-                    self.assemble_operator(term, "online")
-                    self.Q[term] = len(self.operator[term])
+                self.assemble_operator(term, "online")
         elif current_stage == "offline":
-            for term in self.terms:
-                if term not in self.operator: # init was not called already
-                    self.Q[term] = self.truth_problem.Q[term]
-                    self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
+            pass # Nothing else to be done
         else:
             raise ValueError("Invalid stage in _init_operators().")
             
