@@ -135,6 +135,9 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             self.operator = dict()
             self.Q = dict()
             
+        def name(self):
+            return self.folder_prefix
+            
         def init(self):
             self._init_operators()
             
@@ -308,6 +311,9 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             self.operator = dict()
             self.Q = dict()
             
+        def name(self):
+            return self.folder_prefix
+            
         def init(self):
             self._init_operators()
             
@@ -331,7 +337,6 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             
         def compute_theta(self, term):
             mu = self.mu
-            mu[0] = mu[0]
             if term == "a":
                 theta_a0 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu[0]) + 8*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu[0])))
                 theta_a1 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu[0]))
@@ -493,6 +498,9 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             self.operator = dict()
             self.Q = dict()
             
+        def name(self):
+            return self.folder_prefix
+            
         def init(self):
             self._init_operators()
             
@@ -623,7 +631,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
     h = CellDiameter(V.mesh())
     
     # Define base problem
-    class Graetz(ParametrizedProblem, metaclass=ABCMeta):
+    class AdvectionDominated(ParametrizedProblem, metaclass=ABCMeta):
         def __init__(self, folder_prefix):
             ParametrizedProblem.__init__(self, folder_prefix)
             self.mu = (1., 1.)
@@ -631,6 +639,9 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             self.terms = ["a", "f"]
             self.operator = dict()
             self.Q = dict()
+            
+        def name(self):
+            return self.folder_prefix
             
         def init(self):
             self._init_operators()
@@ -648,9 +659,9 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             
     # Define problem with forms written on reference domain
     @ShapeParametrization(*shape_parametrization_expression)
-    class GraetzOnReferenceDomain(Graetz):
+    class AdvectionDominatedOnReferenceDomain(AdvectionDominated):
         def __init__(self, V, **kwargs):
-            Graetz.__init__(self, "GraetzOnReferenceDomain")
+            AdvectionDominated.__init__(self, "AdvectionDominatedOnReferenceDomain")
             self.V = V
             
         def compute_theta(self, term):
@@ -700,9 +711,9 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
     @AdditionalProblemDecorator()
     @PullBackFormsToReferenceDomain(debug=True)
     @ShapeParametrization(*shape_parametrization_expression)
-    class GraetzPullBack(Graetz):
+    class AdvectionDominatedPullBack(AdvectionDominated):
         def __init__(self, V, **kwargs):
-            Graetz.__init__(self, "GraetzPullBack")
+            AdvectionDominated.__init__(self, "AdvectionDominatedPullBack")
             self.V = V
             
         def compute_theta(self, term):
@@ -729,8 +740,8 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
                 raise ValueError("Invalid term for assemble_operator().")
     
     # Check forms
-    problem_on_reference_domain = GraetzOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
-    problem_pull_back = GraetzPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain = AdvectionDominatedOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = AdvectionDominatedPullBack(V, subdomains=subdomains, boundaries=boundaries)
     problem_on_reference_domain.init()
     problem_pull_back.init()
     for mu in itertools.product(*problem_on_reference_domain.mu_range):
@@ -790,6 +801,9 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             self.terms = ["a", "b", "bt", "f", "g"]
             self.operator = dict()
             self.Q = dict()
+            
+        def name(self):
+            return self.folder_prefix
             
         def init(self):
             self._init_operators()
@@ -1019,6 +1033,9 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
             self.operator = dict()
             self.Q = dict()
             
+        def name(self):
+            return self.folder_prefix
+            
         def init(self):
             self._init_operators()
             
@@ -1209,6 +1226,9 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             self.terms = ["a", "a*", "c", "c*", "m", "n", "f", "g", "h"]
             self.operator = dict()
             self.Q = dict()
+            
+        def name(self):
+            return self.folder_prefix
             
         def init(self):
             self._init_operators()
@@ -1458,6 +1478,9 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             self.terms = ["a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "h", "l"]
             self.operator = dict()
             self.Q = dict()
+            
+        def name(self):
+            return self.folder_prefix
             
         def init(self):
             self._init_operators()
@@ -1759,6 +1782,9 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
             self.operator = dict()
             self.Q = dict()
             
+        def name(self):
+            return self.folder_prefix
+            
         def init(self):
             self._init_operators()
             
@@ -1951,6 +1977,9 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
             self.terms = ["a", "b", "bt", "c", "dc", "f", "g"]
             self.operator = dict()
             self.Q = dict()
+            
+        def name(self):
+            return self.folder_prefix
             
         def init(self):
             self._init_operators()
@@ -2163,6 +2192,9 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
             self.terms = ["a", "b", "bt", "m", "f", "g"]
             self.operator = dict()
             self.Q = dict()
+            
+        def name(self):
+            return self.folder_prefix
             
         def init(self):
             self._init_operators()
