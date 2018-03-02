@@ -79,9 +79,9 @@ for i in range(3):
     bottom.mark(boundaries, 1)
 
 # Save
-File("elastic.xml") << mesh
-File("elastic_physical_region.xml") << subdomains
-File("elastic_facet_region.xml") << boundaries
-XDMFFile("elastic.xdmf").write(mesh)
-XDMFFile("elastic_physical_region.xdmf").write(subdomains)
-XDMFFile("elastic_facet_region.xdmf").write(boundaries)
+File("elastic_block.xml") << mesh
+File("elastic_block_physical_region.xml") << subdomains
+File("elastic_block_facet_region.xml") << boundaries
+XDMFFile("elastic_block.xdmf").write(mesh)
+XDMFFile("elastic_block_physical_region.xdmf").write(subdomains)
+XDMFFile("elastic_block_facet_region.xdmf").write(boundaries)

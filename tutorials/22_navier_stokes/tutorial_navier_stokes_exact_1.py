@@ -158,7 +158,7 @@ element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 element = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
-# 3. Allocate an object of the Elastic Block class
+# 3. Allocate an object of the NavierStokes class
 navier_stokes_problem = NavierStokes(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(1.0, 80.0)]
 navier_stokes_problem.set_mu_range(mu_range)

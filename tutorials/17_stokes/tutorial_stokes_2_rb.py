@@ -129,7 +129,7 @@ element_p = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 element = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
-# 3. Allocate an object of the Elastic Block class
+# 3. Allocate an object of the Stokes class
 stokes_problem = Stokes(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [
     (0.5, 1.5),

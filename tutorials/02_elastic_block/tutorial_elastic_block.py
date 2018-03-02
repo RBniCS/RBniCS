@@ -113,14 +113,14 @@ class ElasticBlock(EllipticCoerciveProblem):
         return 2.0*lambda_2*inner(sym(grad(u)), sym(grad(v))) + lambda_1*tr(sym(grad(u)))*tr(sym(grad(v)))
         
 # 1. Read the mesh for this problem
-mesh = Mesh("data/elastic.xml")
-subdomains = MeshFunction("size_t", mesh, "data/elastic_physical_region.xml")
-boundaries = MeshFunction("size_t", mesh, "data/elastic_facet_region.xml")
+mesh = Mesh("data/elastic_block.xml")
+subdomains = MeshFunction("size_t", mesh, "data/elastic_block_physical_region.xml")
+boundaries = MeshFunction("size_t", mesh, "data/elastic_block_facet_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1, two components)
 V = VectorFunctionSpace(mesh, "Lagrange", 1)
 
-# 3. Allocate an object of the Elastic Block class
+# 3. Allocate an object of the ElasticBlock class
 elastic_block_problem = ElasticBlock(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [
     (1.0, 100.0),

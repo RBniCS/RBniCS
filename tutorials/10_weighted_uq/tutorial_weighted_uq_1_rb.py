@@ -105,9 +105,9 @@ class WeightedThermalBlock(EllipticCoerciveCompliantProblem):
             raise ValueError("Invalid term for assemble_operator().")
         
 # 1. Read the mesh for this problem
-mesh = Mesh("data/tblock.xml")
-subdomains = MeshFunction("size_t", mesh, "data/tblock_physical_region.xml")
-boundaries = MeshFunction("size_t", mesh, "data/tblock_facet_region.xml")
+mesh = Mesh("data/thermal_block.xml")
+subdomains = MeshFunction("size_t", mesh, "data/thermal_block_physical_region.xml")
+boundaries = MeshFunction("size_t", mesh, "data/thermal_block_facet_region.xml")
 
 # 2. Create Finite Element space (Lagrange P1)
 V = FunctionSpace(mesh, "Lagrange", 1)

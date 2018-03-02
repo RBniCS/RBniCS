@@ -59,9 +59,9 @@ top = Top()
 top.mark(boundaries, 3)
 
 # Save
-File("tblock.xml") << mesh
-File("tblock_physical_region.xml") << subdomains
-File("tblock_facet_region.xml") << boundaries
-XDMFFile("tblock.xdmf").write(mesh)
-XDMFFile("tblock_physical_region.xdmf").write(subdomains)
-XDMFFile("tblock_facet_region.xdmf").write(boundaries)
+File("thermal_block.xml") << mesh
+File("thermal_block_physical_region.xml") << subdomains
+File("thermal_block_facet_region.xml") << boundaries
+XDMFFile("thermal_block.xdmf").write(mesh)
+XDMFFile("thermal_block_physical_region.xdmf").write(subdomains)
+XDMFFile("thermal_block_facet_region.xdmf").write(boundaries)

@@ -69,8 +69,8 @@ def test_eim_approximation_04(expression_type, basis_generation):
                 raise AssertionError("Invalid expression_type")
 
     # 1. Create the mesh for this test
-    mesh = Mesh("../../../tutorials/01_tblock/data/tblock.xml")
-    subdomains = MeshFunction("size_t", mesh, "../../../tutorials/01_tblock/data/tblock_physical_region.xml")
+    mesh = Mesh("../../../tutorials/01_thermal_block/data/thermal_block.xml")
+    subdomains = MeshFunction("size_t", mesh, "../../../tutorials/01_thermal_block/data/thermal_block_physical_region.xml")
 
     # 2. Create Finite Element space (Lagrange P1)
     V = FunctionSpace(mesh, "Lagrange", 1)
