@@ -18,13 +18,13 @@
 
 from abc import ABCMeta, abstractmethod
 import os
-import types
 import hashlib
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
 from rbnics.utils.config import config
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import log, PROGRESS
+from rbnics.utils.test import PatchInstanceMethod
 
 # Base class containing the definition of elliptic coercive problems
 @StoreMapFromProblemNameToProblem
@@ -204,7 +204,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                                 else:
                                     return standard_compute_theta(term)
                             return modified_compute_theta
-                        self.compute_theta = types.MethodType(generate_modified_compute_theta(component), self)
+                        PatchInstanceMethod(self, "compute_theta", generate_modified_compute_theta(component)).patch()
                         dirichlet_bc_are_homogeneous[component] = True
                     else:
                         dirichlet_bc_are_homogeneous[component] = False

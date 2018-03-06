@@ -16,9 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
 import ufl
 from dolfin import FunctionSpace
+from rbnics.utils.test import AttachInstanceMethod, PatchInstanceMethod
 
 original_FunctionSpace__init__ = FunctionSpace.__init__
 def custom_FunctionSpace__init__(self, *args, **kwargs):
@@ -47,7 +47,7 @@ def _enable_string_components(components, function_space):
             def custom_collapse(self_, collapsed_dofs=False):
                 assert not collapsed_dofs
                 return self_
-            self_.collapse = types.MethodType(custom_collapse, self_)
+            PatchInstanceMethod(self_, "collapse", custom_collapse).patch()
             return self_
         assert isinstance(i_int, (int, tuple))
         if isinstance(i_int, int):
@@ -70,7 +70,7 @@ def _enable_string_components(components, function_space):
                     components[c] = None
         _enable_string_components(components, output)
         return output
-    function_space.sub = types.MethodType(custom_sub, function_space)
+    PatchInstanceMethod(function_space, "sub", custom_sub).patch()
     
     _preserve_root_space_after_sub(function_space, None)
     
@@ -86,7 +86,7 @@ def _enable_string_components(components, function_space):
                 components[c] = None
         _enable_string_components(components, output)
         return output
-    function_space.extract_sub_space = types.MethodType(custom_extract_sub_space, function_space)
+    PatchInstanceMethod(function_space, "extract_sub_space", custom_extract_sub_space).patch()
     
 def _preserve_root_space_after_sub(function_space, root_space_after_sub):
     function_space._root_space_after_sub = root_space_after_sub
@@ -96,7 +96,7 @@ def _preserve_root_space_after_sub(function_space, root_space_after_sub):
         output = original_sub(i)
         _preserve_root_space_after_sub(output, self_)
         return output
-    function_space.sub = types.MethodType(custom_sub, function_space)
+    PatchInstanceMethod(function_space, "sub", custom_sub).patch()
     
 def _init_component_to_index(components, function_space):
     assert isinstance(components, (list, dict))
@@ -123,10 +123,10 @@ def _init_component_to_index(components, function_space):
             raise TypeError("Invalid index")
     def component_to_index(self_, i):
         return self_._component_to_index[i]
-    function_space.component_to_index = types.MethodType(component_to_index, function_space)
+    AttachInstanceMethod(function_space, "component_to_index", component_to_index).attach()
     def index_to_components(self_, c):
         return self_._index_to_components[c]
-    function_space.index_to_components = types.MethodType(index_to_components, function_space)
+    AttachInstanceMethod(function_space, "index_to_components", index_to_components).attach()
     
     original_collapse = function_space.collapse
     def custom_collapse(self_, collapsed_dofs=False):
@@ -140,7 +140,7 @@ def _init_component_to_index(components, function_space):
             return output
         else:
             return output, collapsed_dofs_dict
-    function_space.collapse = types.MethodType(custom_collapse, function_space)
+    PatchInstanceMethod(function_space, "collapse", custom_collapse).patch()
     
 def _init_component_to_index__recursive(components, component_to_index, index):
     assert isinstance(components, (str, tuple, list))

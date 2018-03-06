@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.test.attach_instance_method import AttachInstanceMethod
 from rbnics.utils.test.diff import diff
 from rbnics.utils.test.matplotlib import disable_matplotlib, enable_matplotlib
 from rbnics.utils.test.options import add_gold_options, add_performance_options, process_gold_options
@@ -28,6 +29,7 @@ from rbnics.utils.test.tempdir import load_tempdir, save_tempdir, tempdir
 __all__ = [
     'add_gold_options',
     'add_performance_options',
+    'AttachInstanceMethod',
     'diff',
     'disable_matplotlib',
     'enable_matplotlib',

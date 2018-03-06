@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import types
+from rbnics.utils.test import PatchInstanceMethod
 
 def sync_setters__internal(other_object__name__or__instance, method__name, private_attribute__name, method__decorator=None):
     def sync_setters_decorator(__init__):
@@ -96,9 +96,9 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                     for method__decorator_i in _synced_setters__decorators[method__name]:
                         overridden_method = method__decorator_i(overridden_method)
                 if all_synced_setters_for_method_self is None or method__decorator__changed:
-                    setattr(self, method__name, types.MethodType(overridden_method, self))
+                    PatchInstanceMethod(self, method__name, overridden_method).patch()
                 if all_synced_setters_for_method_other_object is None or method__decorator__changed:
-                    setattr(other_object, method__name, types.MethodType(overridden_method, other_object))
+                    PatchInstanceMethod(other_object, method__name, overridden_method).patch()
                 # Make sure that the value of my attribute is in sync with the value that is currently
                 # stored in other_object, because it was set before overriding was carried out
                 getattr(self, method__name)(getattr(other_object, private_attribute__name))

@@ -17,14 +17,14 @@
 #
 
 from numbers import Number
-import types
 from dolfin import Expression
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
+from rbnics.utils.test import AttachInstanceMethod, PatchInstanceMethod
 
 # This ideally should be a subclass of Expression. However, dolfin manual
 # states that subclassing Expression may be significantly slower than using
 # JIT-compiled expressions. To this end we avoid subclassing expression and
-# just add the set_mu method using the types library
+# just add the set_mu method by patching the expression instance
 def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *args, **kwargs):
     if parametrized_expression_code is None:
         return None
@@ -99,7 +99,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
             for expression_ in _truth_problem_to_parametrized_expressions[self]:
                 if expression_._mu is not mu:
                     expression_._set_mu(mu)
-        truth_problem.set_mu = types.MethodType(overridden_set_mu, truth_problem)
+        PatchInstanceMethod(truth_problem, "set_mu", overridden_set_mu).patch()
         
     def expression_set_mu(self, mu):
         assert isinstance(mu, tuple)
@@ -113,7 +113,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
                 assert is_parametrized_constant(mu_p)
                 setattr(self, "mu_" + str(p), parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0]))
         self._mu = mu
-    expression._set_mu = types.MethodType(expression_set_mu, expression)
+    AttachInstanceMethod(expression, "_set_mu", expression_set_mu).attach()
     # Note that this override is different from the one that we use in decorated problems,
     # since (1) we do not want to define a new child class, (2) we have to execute some preprocessing
     # on the data, (3) it is a one-way propagation rather than a sync.
@@ -130,7 +130,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
                         if expression_.t is not t:
                             assert isinstance(expression_.t, Number)
                             expression_.t = t
-            truth_problem.set_time = types.MethodType(overridden_set_time, truth_problem)
+            PatchInstanceMethod(truth_problem, "set_time", overridden_set_time).patch()
     
     return expression
     

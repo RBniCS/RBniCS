@@ -19,7 +19,6 @@
 from collections import defaultdict, namedtuple
 import itertools
 import re
-import types
 from numpy import allclose, isclose, ones as numpy_ones, zeros as numpy_zeros
 from mpi4py.MPI import Op
 from sympy import Basic as SympyBase, ccode, collect, expand_mul, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix, Number, preorder_traversal, simplify, symbols, sympify
@@ -565,13 +564,13 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                     def _custom_init_EIM_approximations(self_):
                         self_._init_pull_back()
                         _original_init_EIM_approximations()
-                    self._init_EIM_approximations = types.MethodType(_custom_init_EIM_approximations, self)
+                    PatchInstanceMethod(self, "_init_EIM_approximations", _custom_init_EIM_approximations).patch()
                 if hasattr(self, "_init_DEIM_approximations"):
                     _original_init_DEIM_approximations = self._init_DEIM_approximations
                     def _custom_init_DEIM_approximations(self_):
                         self_._init_pull_back()
                         _original_init_DEIM_approximations()
-                    self._init_DEIM_approximations = types.MethodType(_custom_init_DEIM_approximations, self)
+                    PatchInstanceMethod(self, "_init_DEIM_approximations", _custom_init_DEIM_approximations).patch()
                 
             def _init_pull_back(self):
                 for term in self.terms:

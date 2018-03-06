@@ -17,10 +17,10 @@
 #
 
 from numbers import Number
-import types
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.mpi import log, PROGRESS
+from rbnics.utils.test import PatchInstanceMethod
 
 @RequiredBaseDecorators(None)
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
@@ -186,7 +186,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                                 else:
                                     return standard_compute_theta(term)
                             return modified_compute_theta
-                        self.compute_theta = types.MethodType(generate_modified_compute_theta(component), self)
+                        PatchInstanceMethod(self, "compute_theta", generate_modified_compute_theta(component)).patch()
                     elif has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition: # case c)
                         pass
                     elif not has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition: # case d)

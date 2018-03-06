@@ -17,10 +17,9 @@
 #
 
 import os
-import types
 import pytest
 import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa
-from rbnics.utils.test import add_gold_options, disable_matplotlib, enable_matplotlib, process_gold_options, run_and_compare_to_gold
+from rbnics.utils.test import add_gold_options, disable_matplotlib, enable_matplotlib, PatchInstanceMethod, process_gold_options, run_and_compare_to_gold
 
 def pytest_addoption(parser):
     add_gold_options(parser, "RBniCS")
@@ -65,4 +64,4 @@ def patch_test_item(test_item):
         original_runtest()
         enable_matplotlib()
         
-    test_item.runtest = types.MethodType(runtest, test_item)
+    PatchInstanceMethod(test_item, "runtest", runtest).patch()

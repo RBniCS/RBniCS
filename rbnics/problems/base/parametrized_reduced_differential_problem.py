@@ -18,7 +18,6 @@
 
 from abc import ABCMeta, abstractmethod
 import os
-import types
 from math import sqrt
 from numpy import isclose
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
@@ -28,6 +27,7 @@ from rbnics.utils.config import config
 from rbnics.utils.decorators import StoreMapFromProblemToReducedProblem, sync_setters
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
+from rbnics.utils.test import PatchInstanceMethod
 
 @StoreMapFromProblemToReducedProblem
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
@@ -768,7 +768,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                                 return tuple(modified_theta_bc)
                             else:
                                 return standard_compute_theta(term_)
-                        self.truth_problem.compute_theta = types.MethodType(modified_compute_theta, self.truth_problem)
+                        PatchInstanceMethod(self.truth_problem, "compute_theta", modified_compute_theta).patch()
                         # ... and store the solution of the truth problem corresponding to that boundary condition
                         # as lifting function
                         solve_message = "Computing and storing lifting function n. " + str(i)
