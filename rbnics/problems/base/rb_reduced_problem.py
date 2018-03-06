@@ -189,9 +189,8 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     if len(self.components) > 1:
                         for component in self.components:
                             for n in range(len(self.riesz[term][q][component]), self.N[component] + self.N_bc[component]):
-                                self.riesz[term][q].enrich(
-                                    solver.solve(-1.*self.truth_problem.operator[term][q]*self.basis_functions[component][n]),
-                                    component={None: component}
+                                self.riesz[term][q][component].enrich(
+                                    solver.solve(-1.*self.truth_problem.operator[term][q]*self.basis_functions[component][n])
                                 )
                     else:
                         for n in range(len(self.riesz[term][q]), self.N + self.N_bc):

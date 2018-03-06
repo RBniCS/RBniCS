@@ -20,6 +20,7 @@ from numbers import Number
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType
 from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, OnlineSizeDict
+from rbnics.utils.test import PatchInstanceMethod
 
 def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
     class _BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
@@ -56,15 +57,27 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                     self._basis_component_index_to_component_name[basis_component_index] = component_name
                 # Reset precomputed slices
                 self._precomputed_slices.clear()
+                # Patch FunctionsList.enrich() to update internal attributes
+                def patch_functions_list_enrich(component_name, basis_functions):
+                    original_functions_list_enrich = basis_functions.enrich
+                    def patched_functions_list_enrich(self_, functions, component=None, weights=None, copy=True):
+                        # Append to storage
+                        original_functions_list_enrich(functions, component, weights, copy)
+                        # Update component name to basis component length
+                        self._update_component_name_to_basis_component_length(component_name if component is None else component)
+                        # Reset precomputed slices
+                        self._precomputed_slices.clear()
+                        # Prepare trivial precomputed slice
+                        self._prepare_trivial_precomputed_slice()
+                    basis_functions.enrich_patch = PatchInstanceMethod(basis_functions, "enrich", patched_functions_list_enrich)
+                    basis_functions.enrich_patch.patch()
+                for component_name in components_name:
+                    patch_functions_list_enrich(component_name, self._components[component_name])
                 
         def enrich(self, functions, component=None, weights=None, copy=True):
             assert copy is True
             # Append to storage
             self._enrich(functions, component, weights, copy)
-            # Reset precomputed slices
-            self._precomputed_slices.clear()
-            # Prepare trivial precomputed slice
-            self._prepare_trivial_precomputed_slice()
         
         @overload(object, None, (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
         def _enrich(self, functions, component, weights, copy):
@@ -72,27 +85,39 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             assert len(self._components_name) == 1
             component_0 = self._components_name[0]
             self._components[component_0].enrich(functions, None, weights, copy)
-            self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
             
         @overload(object, str, (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
         def _enrich(self, functions, component, weights, copy):
             assert component in self._components
             self._components[component].enrich(functions, component, weights, copy)
-            self._component_name_to_basis_component_length[component] = len(self._components[component])
             
         @overload(object, dict_of(str, str), (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
         def _enrich(self, functions, component, weights, copy):
             assert len(component) == 1
-            for (component_from, component_to) in component.items():
+            for (_, component_to) in component.items():
                 break
-            assert component_from is None or component_from in self._components
             assert component_to in self._components
-            if component_from is None:
-                self._components[component_to].enrich(functions, None, weights, copy)
-            else:
-                self._components[component_to].enrich(functions, component, weights)
+            self._components[component_to].enrich(functions, component, weights)
+            
+        @overload(None)
+        def _update_component_name_to_basis_component_length(self, component):
+            assert len(self._components) == 1
+            assert len(self._components_name) == 1
+            component_0 = self._components_name[0]
+            self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
+            
+        @overload(str)
+        def _update_component_name_to_basis_component_length(self, component):
+            self._component_name_to_basis_component_length[component] = len(self._components[component])
+            
+        @overload(dict_of(str, str))
+        def _update_component_name_to_basis_component_length(self, component):
+            assert len(component) == 1
+            for (_, component_to) in component.items():
+                break
+            assert component_to in self._components
             self._component_name_to_basis_component_length[component_to] = len(self._components[component_to])
-                
+            
         def _prepare_trivial_precomputed_slice(self):
             if len(self._components) == 1:
                 assert len(self._components_name) == 1
@@ -131,10 +156,17 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 def filename_and_component(component_name):
                     return filename
             for (component_name, basis_functions) in self._components.items():
+                # Skip updating internal attributes while reading in basis functions, we will do that
+                # only once at the end
+                assert hasattr(basis_functions, "enrich_patch")
+                basis_functions.enrich_patch.unpatch()
+                # Load each component
                 return_value_component = basis_functions.load(directory, filename_and_component(component_name))
                 return_value = return_value and return_value_component
-                # Also populate component length
-                self._component_name_to_basis_component_length[component_name] = len(basis_functions)
+                # Populate component length
+                self._update_component_name_to_basis_component_length(component_name)
+                # Restore patched enrich method
+                basis_functions.enrich_patch.patch()
             # Reset precomputed slices
             self._precomputed_slices.clear()
             # Prepare trivial precomputed slice
