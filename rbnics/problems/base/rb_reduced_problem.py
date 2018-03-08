@@ -69,6 +69,11 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             """
             Initialize data structures related to error estimation.
             """
+            # Initialize inner product for Riesz solve
+            if self._riesz_solve_inner_product is None: # init was not called already
+                self._riesz_solve_inner_product = self.truth_problem._combined_inner_product
+            # Setup homogeneous Dirichlet BCs for Riesz solve, if any (no check if init was already called because this variable can actually be None)
+            self._riesz_solve_homogeneous_dirichlet_bc = self.truth_problem._combined_and_homogenized_dirichlet_bc
             # Initialize Riesz representation
             for term in self.riesz_terms:
                 if term not in self.riesz: # init was not called already
@@ -89,11 +94,13 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 pass # Nothing else to be done
             else:
                 raise ValueError("Invalid stage in _init_error_estimation_operators().")
-            # Also initialize inner product for Riesz solve
-            if self._riesz_solve_inner_product is None: # init was not called already
-                self._riesz_solve_inner_product = self.truth_problem._combined_inner_product
-            # Also setup homogeneous Dirichlet BCs for Riesz solve, if any (no check if init was already called because this variable can actually be None)
-            self._riesz_solve_homogeneous_dirichlet_bc = self.truth_problem._combined_and_homogenized_dirichlet_bc
+            # Initialize inner product for Riesz products. This is the same as the inner product for Riesz solves
+            # but setting to zero rows & columns associated to boundary conditions
+            if self._error_estimation_inner_product is None: # init was not called already
+                if self._riesz_solve_homogeneous_dirichlet_bc is not None:
+                    self._error_estimation_inner_product = self._riesz_solve_inner_product & ~self._riesz_solve_homogeneous_dirichlet_bc
+                else:
+                    self._error_estimation_inner_product = self._riesz_solve_inner_product
             # Initialize error estimation operators
             for term in self.error_estimation_terms:
                 if term not in self.error_estimation_operator: # init was not called already
@@ -106,13 +113,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 pass # Nothing else to be done
             else:
                 raise ValueError("Invalid stage in _init_error_estimation_operators().")
-            # Also initialize inner product for Riesz products. This is the same as the inner product for Riesz solves
-            # but setting to zero rows & columns associated to boundary conditions
-            if self._error_estimation_inner_product is None: # init was not called already
-                if self._riesz_solve_homogeneous_dirichlet_bc is not None:
-                    self._error_estimation_inner_product = self._riesz_solve_inner_product & ~self._riesz_solve_homogeneous_dirichlet_bc
-                else:
-                    self._error_estimation_inner_product = self._riesz_solve_inner_product
                 
         @abstractmethod
         def estimate_error(self):
