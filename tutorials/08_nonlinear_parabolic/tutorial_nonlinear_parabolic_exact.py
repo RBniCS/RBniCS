@@ -95,7 +95,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
             m1 = u2*v2*dx
             return (m0, m1)
         elif term == "a":
-            (u1, u2) = (self.u1, self.u2)
+            (u1, u2) = (self.du1, self.du2)
             a0 = inner(grad(u1), grad(v1))*dx
             a1 = u2*v1*dx
             a2 = u1*v2*dx
