@@ -44,6 +44,7 @@ from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_produc
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
+from rbnics.utils.test import PatchInstanceMethod
 
 # ===== Helper function for sympy/ufl conversion ===== #
 @overload

@@ -160,6 +160,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             if term.startswith("initial_condition"):
                 component = term.replace("initial_condition", "").replace("_", "")
                 if current_stage == "online": # load from file
+                    initial_condition = self.initial_condition[component]
                     initial_condition.load(self.folder["reduced_operators"], term)
                 elif current_stage == "offline":
                     if component != "":

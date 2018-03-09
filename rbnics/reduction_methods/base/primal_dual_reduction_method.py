@@ -17,8 +17,10 @@
 #
 
 import inspect
+from rbnics.backends import assign
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable
 from rbnics.utils.decorators import PreserveClassName
+from rbnics.utils.test import PatchInstanceMethod
 
 def PrimalDualReductionMethod(DualProblem):
     def PrimalDualReductionMethod_Decorator(DifferentialProblemReductionMethod_DerivedClass):

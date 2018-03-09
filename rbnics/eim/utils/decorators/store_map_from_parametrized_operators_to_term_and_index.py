@@ -40,8 +40,9 @@ def add_to_map_from_parametrized_operator_to_term_and_index(operator, term, inde
     if operator not in _parametrized_operator_to_term_and_index_map:
         _parametrized_operator_to_term_and_index_map[operator] = (term, index)
     else:
-        pass # for simple problems the same operator may correspond to more than one term, we only care about one
-             # of them anyway since we are going to use this function to only export the term name
+        # for simple problems the same operator may correspond to more than one term, we only care about one
+        # of them anyway since we are going to use this function to only export the term name
+        pass
     
 def get_term_and_index_from_parametrized_operator(operator):
     assert operator in _parametrized_operator_to_term_and_index_map

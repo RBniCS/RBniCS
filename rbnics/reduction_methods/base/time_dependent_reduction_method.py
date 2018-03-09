@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import inspect
 from numbers import Number
 from numpy import isclose
 from rbnics.backends import assign

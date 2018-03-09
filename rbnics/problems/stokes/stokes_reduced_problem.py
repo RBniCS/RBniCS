@@ -17,7 +17,7 @@
 #
 
 from rbnics.problems.base import LinearReducedProblem
-from rbnics.backends import assign, BasisFunctionsMatrix, copy, product, sum, transpose
+from rbnics.backends import assign, copy, product, sum, transpose
 from rbnics.backends.online import OnlineFunction, OnlineLinearSolver
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS

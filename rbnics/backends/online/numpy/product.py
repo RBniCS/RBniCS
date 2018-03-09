@@ -18,8 +18,7 @@
 
 from itertools import product as cartesian_product
 from numbers import Number
-from numpy import nditer as NonAffineExpansionStorageContent_Iterator
-from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedLinearSolver, DelayedTranspose
+from rbnics.backends.basic.wrapping import DelayedTranspose
 from rbnics.backends.online.numpy.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.non_affine_expansion_storage import NonAffineExpansionStorage
