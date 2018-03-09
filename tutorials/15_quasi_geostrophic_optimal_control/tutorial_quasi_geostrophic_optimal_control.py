@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
+
 from dolfin import *
 from rbnics import *
 from rbnics.backends import export, import_
@@ -44,7 +45,7 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
         """
         # State space
         state_element = MixedElement(scalar_element, scalar_element)
-        W = FunctionSpace(mesh, state_element)
+        W = FunctionSpace(mesh, state_element, components=["psi", "q"])
         # Solution
         psiq = Function(W)
         # Import solution from file, if possible
