@@ -31,6 +31,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 self.space = space
             self.mpi_comm = wrapping.get_mpi_comm(space)
             self._components = dict() # of FunctionsList
+            self._precomputed_sub_components = dict() # from tuple to FunctionsList
             self._precomputed_slices = dict() # from tuple to FunctionsList
             self._components_name = list() # filled in by init
             self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict() # filled in by init
@@ -52,6 +53,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 self._component_name_to_basis_component_index.clear()
                 for (basis_component_index, component_name) in enumerate(components_name):
                     self._component_name_to_basis_component_index[component_name] = basis_component_index
+                # Reset precomputed sub components
+                self._precomputed_sub_components.clear()
                 # Reset precomputed slices
                 self._precomputed_slices.clear()
                 # Patch FunctionsList.enrich() to update internal attributes
@@ -62,6 +65,10 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                         original_functions_list_enrich(functions, component, weights, copy)
                         # Update component name to basis component length
                         self._update_component_name_to_basis_component_length(component_name if component is None else component)
+                        # Reset precomputed sub components
+                        self._precomputed_sub_components.clear()
+                        # Prepare trivial precomputed sub components
+                        self._prepare_trivial_precomputed_sub_components()
                         # Reset precomputed slices
                         self._precomputed_slices.clear()
                         # Prepare trivial precomputed slice
@@ -115,6 +122,9 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             assert component_to in self._components
             self._component_name_to_basis_component_length[component_to] = len(self._components[component_to])
             
+        def _prepare_trivial_precomputed_sub_components(self):
+            self._precomputed_sub_components[tuple(self._components_name)] = self
+            
         def _prepare_trivial_precomputed_slice(self):
             if len(self._components) == 1:
                 assert len(self._components_name) == 1
@@ -164,6 +174,10 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 self._update_component_name_to_basis_component_length(component_name)
                 # Restore patched enrich method
                 basis_functions.enrich_patch.patch()
+            # Reset precomputed sub components
+            self._precomputed_sub_components.clear()
+            # Prepare trivial precomputed sub components
+            self._prepare_trivial_precomputed_sub_components()
             # Reset precomputed slices
             self._precomputed_slices.clear()
             # Prepare trivial precomputed slice
@@ -214,6 +228,10 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             # return all basis functions for each component, then the user may use __getitem__ of FunctionsList to extract a single basis function
             return self._components[key]
             
+        @overload(list_of(str))
+        def __getitem__(self, key):
+            return self._precompute_sub_components(key)
+            
         @overload(slice) # e.g. key = :N, return the first N functions
         def __getitem__(self, key):
             assert key.start is None
@@ -230,12 +248,12 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
         def _precompute_slice(self, N):
             if N not in self._precomputed_slices:
                 assert len(self._components) == 1
-                self._precomputed_slices[N] = _BasisFunctionsMatrix.__new__(type(self), self.space)
-                self._precomputed_slices[N].__init__(self.space)
-                self._precomputed_slices[N].init(self._components_name)
+                output = _BasisFunctionsMatrix.__new__(type(self), self.space)
+                output.__init__(self.space)
+                output.init(self._components_name)
                 for component_name in self._components_name:
-                    self._precomputed_slices[N]._components[component_name].enrich(self._components[component_name][:N], copy=False)
-                    self._precomputed_slices[N]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N]._components[component_name])
+                    output._components[component_name].enrich(self._components[component_name][:N], copy=False)
+                self._precomputed_slices[N] = output
             return self._precomputed_slices[N]
             
         @overload(OnlineSizeDict)
@@ -243,13 +261,25 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             assert set(N.keys()) == set(self._components_name)
             N_key = tuple(N[component_name] for component_name in self._components_name)
             if N_key not in self._precomputed_slices:
-                self._precomputed_slices[N_key] = _BasisFunctionsMatrix.__new__(type(self), self.space)
-                self._precomputed_slices[N_key].__init__(self.space)
-                self._precomputed_slices[N_key].init(self._components_name)
+                output = _BasisFunctionsMatrix.__new__(type(self), self.space)
+                output.__init__(self.space)
+                output.init(self._components_name)
                 for component_name in self._components_name:
-                    self._precomputed_slices[N_key]._components[component_name].enrich(self._components[component_name][:N[component_name]], copy=False)
-                    self._precomputed_slices[N_key]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N_key]._components[component_name])
+                    output._components[component_name].enrich(self._components[component_name][:N[component_name]], copy=False)
+                self._precomputed_slices[N_key] = output
             return self._precomputed_slices[N_key]
+            
+        def _precompute_sub_components(self, sub_components):
+            sub_components_key = tuple(sub_components)
+            if sub_components_key not in self._precomputed_sub_components:
+                assert set(sub_components).issubset(self._components_name)
+                output = _BasisFunctionsMatrix.__new__(type(self), self.space, sub_components)
+                output.__init__(self.space, sub_components)
+                output.init(sub_components)
+                for component_name in sub_components:
+                    output._components[component_name].enrich(self._components[component_name], copy=True)
+                self._precomputed_sub_components[sub_components_key] = output
+            return self._precomputed_sub_components[sub_components_key]
             
         def __iter__(self):
             raise NotImplementedError("BasisFunctionsMatrix.iter() has not been implemented yet")

@@ -60,18 +60,6 @@ class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
         for component in ("s", ):
             self.POD[component].store_snapshot(supremizer)
             
-    def compute_basis_functions(self):
-        StokesPODGalerkinReduction_Base.compute_basis_functions(self)
-        for component in ("u", "s"):
-            N_component = self.reduced_problem.N[component]
-            N_bc_component = self.reduced_problem.N_bc[component]
-            for n in range(N_component):
-                self.reduced_problem.basis_functions_us.enrich(
-                    self.reduced_problem.basis_functions[component][n + N_bc_component],
-                    component=component
-                )
-        self.reduced_problem.basis_functions_us.save(self.reduced_problem.folder["basis"], "basis_us")
-
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set.
     # Note that we cannot move this method to the parent class because error analysis is defined
