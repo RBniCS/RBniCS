@@ -83,36 +83,28 @@ def assign(backend):
                 
         def _preserve_vector_attributes(self, object_to, object_from, subset=False):
             # Preserve auxiliary attributes related to basis functions matrix
-            assert (object_to._basis_component_index_to_component_name is None) == (object_to._component_name_to_basis_component_index is None)
-            assert (object_to._basis_component_index_to_component_name is None) == (object_to._component_name_to_basis_component_length is None)
-            if object_to._basis_component_index_to_component_name is None:
+            assert (object_to._component_name_to_basis_component_index is None) == (object_to._component_name_to_basis_component_length is None)
+            if object_to._component_name_to_basis_component_index is None:
                 assert not subset
-                object_to._basis_component_index_to_component_name = object_from._basis_component_index_to_component_name
                 object_to._component_name_to_basis_component_index = object_from._component_name_to_basis_component_index
                 object_to._component_name_to_basis_component_length = object_from._component_name_to_basis_component_length
             else:
                 if not subset:
-                    assert object_from._basis_component_index_to_component_name == object_to._basis_component_index_to_component_name
                     assert object_from._component_name_to_basis_component_index == object_to._component_name_to_basis_component_index
                     assert object_from._component_name_to_basis_component_length == object_to._component_name_to_basis_component_length
                 else:
-                    assert set(object_to._basis_component_index_to_component_name.values()) <= set(object_from._basis_component_index_to_component_name.values())
                     assert set(object_to._component_name_to_basis_component_index.keys()) <= set(object_from._component_name_to_basis_component_index.keys())
                     assert object_to._component_name_to_basis_component_length.items() <= object_from._component_name_to_basis_component_length.items()
                 
         def _preserve_matrix_attributes(self, object_to, object_from):
             # Preserve auxiliary attributes related to basis functions matrix
-            assert (object_to._basis_component_index_to_component_name[0] is None) == (object_to._basis_component_index_to_component_name[1] is None)
+            assert (object_to._component_name_to_basis_component_index[0] is None) == (object_to._component_name_to_basis_component_length[0] is None)
             assert (object_to._component_name_to_basis_component_index[0] is None) == (object_to._component_name_to_basis_component_index[1] is None)
             assert (object_to._component_name_to_basis_component_length[0] is None) == (object_to._component_name_to_basis_component_length[1] is None)
-            assert (object_to._basis_component_index_to_component_name[0] is None) == (object_to._component_name_to_basis_component_index[0] is None)
-            assert (object_to._basis_component_index_to_component_name[0] is None) == (object_to._component_name_to_basis_component_length[0] is None)
-            if object_to._basis_component_index_to_component_name[0] is None:
-                object_to._basis_component_index_to_component_name = object_from._basis_component_index_to_component_name
+            if object_to._component_name_to_basis_component_index[0] is None:
                 object_to._component_name_to_basis_component_index = object_from._component_name_to_basis_component_index
                 object_to._component_name_to_basis_component_length = object_from._component_name_to_basis_component_length
             else:
-                assert object_from._basis_component_index_to_component_name == object_to._basis_component_index_to_component_name
                 assert object_from._component_name_to_basis_component_index == object_to._component_name_to_basis_component_index
                 assert object_from._component_name_to_basis_component_length == object_to._component_name_to_basis_component_length
     return _Assign()

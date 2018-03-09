@@ -41,4 +41,4 @@ class _NonlinearProblem(object):
         
     @overload
     def _init_bcs(self, bcs: DictOfThetaType):
-        self.bcs = DirichletBC(bcs, self.residual_vector._basis_component_index_to_component_name, self.solution.vector().N)
+        self.bcs = DirichletBC(bcs, self.residual_vector._component_name_to_basis_component_index, self.solution.vector().N)

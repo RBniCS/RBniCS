@@ -62,7 +62,7 @@ class DelayedBasisFunctionsMatrix(object):
             precomputed_slice_key = self._component_name_to_basis_component_length[component_0]
         else:
             precomputed_slice_key = list()
-            for (component_name, basis_component_index) in sorted(self._component_name_to_basis_component_index.items()):
+            for component_name in self._components_name:
                 precomputed_slice_key.append(self._component_name_to_basis_component_length[component_name])
             precomputed_slice_key = tuple(precomputed_slice_key)
         self._precomputed_slices[precomputed_slice_key] = self
@@ -85,7 +85,7 @@ class DelayedBasisFunctionsMatrix(object):
             assert len(self._enrich_memory) == 1
             self._precomputed_slices[N] = DelayedBasisFunctionsMatrix(self.space)
             self._precomputed_slices[N].init(self._components_name)
-            for (component_name, basis_component_index) in sorted(self._component_name_to_basis_component_index.items()):
+            for component_name in self._components_name:
                 self._precomputed_slices[N]._enrich_memory[component_name].enrich(self._enrich_memory[component_name][:N])
                 self._precomputed_slices[N]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N]._enrich_memory[component_name])
         return self._precomputed_slices[N]
@@ -93,11 +93,11 @@ class DelayedBasisFunctionsMatrix(object):
     @overload(OnlineSizeDict)
     def _precompute_slice(self, N):
         assert set(N.keys()) == set(self._components_name)
-        N_key = tuple(N[component_name] for (component_name, basis_component_index) in sorted(self._component_name_to_basis_component_index.items()))
+        N_key = tuple(N[component_name] for component_name in self._components_name)
         if N_key not in self._precomputed_slices:
             self._precomputed_slices[N_key] = DelayedBasisFunctionsMatrix(self.space)
             self._precomputed_slices[N_key].init(self._components_name)
-            for (component_name, basis_component_index) in sorted(self._component_name_to_basis_component_index.items()):
+            for component_name in self._components_name:
                 self._precomputed_slices[N_key]._enrich_memory[component_name].enrich(self._enrich_memory[component_name][:N[component_name]])
                 self._precomputed_slices[N_key]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N_key]._enrich_memory[component_name])
         return self._precomputed_slices[N_key]

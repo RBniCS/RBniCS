@@ -22,7 +22,6 @@ def basic_function_copy(backend, wrapping):
         v = backend.Vector(original_vector.N)
         v[:] = original_vector
         # Preserve auxiliary attributes related to basis functions matrix
-        v._basis_component_index_to_component_name = original_vector._basis_component_index_to_component_name
         v._component_name_to_basis_component_index = original_vector._component_name_to_basis_component_index
         v._component_name_to_basis_component_length = original_vector._component_name_to_basis_component_length
         # Return

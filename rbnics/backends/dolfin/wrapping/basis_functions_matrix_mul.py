@@ -25,12 +25,12 @@ def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matr
     output = BasisFunctionsMatrixType(space)
     assert isinstance(online_matrix.M, dict)
     j = 0
-    for (_, col_component_name) in sorted(basis_functions_matrix._basis_component_index_to_component_name.items()):
+    for col_component_name in basis_functions_matrix._components_name:
         for _ in range(online_matrix.M[col_component_name]):
             assert len(online_matrix[:, j]) == sum(len(functions_list) for functions_list in basis_functions_matrix._components)
             output_j = Function(space)
             i = 0
-            for (_, row_component_name) in sorted(basis_functions_matrix._basis_component_index_to_component_name.items()):
+            for row_component_name in basis_functions_matrix._components_name:
                 for fun_i in basis_functions_matrix._components[row_component_name]:
                     output_j.vector().add_local(fun_i.vector().get_local()*online_matrix[i, j])
                     i += 1
@@ -48,7 +48,7 @@ def basis_functions_matrix_mul_online_vector(basis_functions_matrix, online_vect
         return output
     else:
         i = 0
-        for (_, component_name) in sorted(basis_functions_matrix._basis_component_index_to_component_name.items()):
+        for component_name in basis_functions_matrix._components_name:
             for fun_i in basis_functions_matrix._components[component_name]:
                 output.vector().add_local(fun_i.vector().get_local()*online_vector[i])
                 i += 1

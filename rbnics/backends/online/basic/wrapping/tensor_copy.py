@@ -24,7 +24,6 @@ def basic_tensor_copy(backend, wrapping):
         m = backend.Matrix(tensor.M, tensor.N)
         m[:, :] = tensor
         # Preserve auxiliary attributes related to basis functions matrix
-        m._basis_component_index_to_component_name = tensor._basis_component_index_to_component_name
         m._component_name_to_basis_component_index = tensor._component_name_to_basis_component_index
         m._component_name_to_basis_component_length = tensor._component_name_to_basis_component_length
         # Return
@@ -35,7 +34,6 @@ def basic_tensor_copy(backend, wrapping):
         v = backend.Vector(tensor.N)
         v[:] = tensor
         # Preserve auxiliary attributes related to basis functions matrix
-        v._basis_component_index_to_component_name = tensor._basis_component_index_to_component_name
         v._component_name_to_basis_component_index = tensor._component_name_to_basis_component_index
         v._component_name_to_basis_component_length = tensor._component_name_to_basis_component_length
         # Return

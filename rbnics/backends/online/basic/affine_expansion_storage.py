@@ -22,7 +22,7 @@ from numpy import empty as AffineExpansionStorageContent_Base, nditer as AffineE
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.decorators import overload, tuple_of
-from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as DictIO, TextIO as ScalarContentIO
+from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as DictIO, TextIO as ScalarContentIO
 
 def AffineExpansionStorage(backend, wrapping):
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):
@@ -33,7 +33,6 @@ def AffineExpansionStorage(backend, wrapping):
             self._previous_key = None
             self._largest_key = None
             # Auxiliary storage for __getitem__ slicing
-            self._basis_component_index_to_component_name = None # will be filled in in __setitem__, if required
             self._component_name_to_basis_component_index = None # will be filled in in __setitem__, if required
             self._component_name_to_basis_component_length = None # will be filled in in __setitem__, if required
             # Initialize arguments from inputs
@@ -151,7 +150,6 @@ def AffineExpansionStorage(backend, wrapping):
             pass
             
         def _save_dicts(self, full_directory):
-            DictIO.save_file(self._basis_component_index_to_component_name, full_directory, "basis_component_index_to_component_name")
             DictIO.save_file(self._component_name_to_basis_component_index, full_directory, "component_name_to_basis_component_index")
             DictIO.save_file(self._component_name_to_basis_component_length, full_directory, "component_name_to_basis_component_length")
             
@@ -265,16 +263,12 @@ def AffineExpansionStorage(backend, wrapping):
             pass
             
         def _load_dicts(self, full_directory):
-            assert DictIO.exists_file(full_directory, "basis_component_index_to_component_name")
-            self._basis_component_index_to_component_name = DictIO.load_file(full_directory, "basis_component_index_to_component_name", globals={"BasisComponentIndexToComponentNameDict": BasisComponentIndexToComponentNameDict})
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_index")
             self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index", globals={"ComponentNameToBasisComponentIndexDict": ComponentNameToBasisComponentIndexDict})
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_length")
             self._component_name_to_basis_component_length = DictIO.load_file(full_directory, "component_name_to_basis_component_length", globals={"OnlineSizeDict": OnlineSizeDict})
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             while not it.finished:
-                if self._basis_component_index_to_component_name is not None:
-                    self._content[it.multi_index]._basis_component_index_to_component_name = self._basis_component_index_to_component_name
                 if self._component_name_to_basis_component_index is not None:
                     self._content[it.multi_index]._component_name_to_basis_component_index = self._component_name_to_basis_component_index
                 if self._component_name_to_basis_component_length is not None:
@@ -362,7 +356,6 @@ def AffineExpansionStorage(backend, wrapping):
             self._content[key] = item
             # Reset attributes related to basis functions matrix if the size has changed
             if key == self._smallest_key: # this assumes that __getitem__ is not random acces but called for increasing key
-                self._basis_component_index_to_component_name = None
                 self._component_name_to_basis_component_index = None
                 self._component_name_to_basis_component_length = None
             # Also store attributes related to basis functions matrix for __getitem__ slicing
@@ -377,18 +370,14 @@ def AffineExpansionStorage(backend, wrapping):
             if isinstance(item, backend.Function.Type()):
                 item = item.vector()
             if isinstance(item, (backend.Matrix.Type(), backend.Vector.Type(), AbstractBasisFunctionsMatrix)):
-                assert (self._basis_component_index_to_component_name is None) == (self._component_name_to_basis_component_index is None)
                 assert (self._component_name_to_basis_component_index is None) == (self._component_name_to_basis_component_length is None)
-                if self._basis_component_index_to_component_name is None:
-                    self._basis_component_index_to_component_name = item._basis_component_index_to_component_name
+                if self._component_name_to_basis_component_index is None:
                     self._component_name_to_basis_component_index = item._component_name_to_basis_component_index
                     self._component_name_to_basis_component_length = item._component_name_to_basis_component_length
                 else:
-                    assert self._basis_component_index_to_component_name == item._basis_component_index_to_component_name
                     assert self._component_name_to_basis_component_index == item._component_name_to_basis_component_index
                     assert self._component_name_to_basis_component_length == item._component_name_to_basis_component_length
             else:
-                assert self._basis_component_index_to_component_name is None
                 assert self._component_name_to_basis_component_index is None
                 assert self._component_name_to_basis_component_length is None
             # Reset and prepare precomputed slices

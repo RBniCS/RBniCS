@@ -18,7 +18,7 @@
 
 from numbers import Number
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
-from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, OnlineSizeDict
+from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
 def Vector(backend, wrapping, VectorBaseType):
     class Vector_Class(object):
@@ -41,15 +41,12 @@ def Vector(backend, wrapping, VectorBaseType):
                     assert isinstance(N, OnlineSizeDict)
                 else:
                     self.N = N = OnlineSizeDict(N)
-                self._basis_component_index_to_component_name = BasisComponentIndexToComponentNameDict()
                 self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict()
                 self._component_name_to_basis_component_length = OnlineSizeDict()
                 for (component_index, (component_name, component_length)) in enumerate(N.items()):
-                    self._basis_component_index_to_component_name[component_index] = component_name
                     self._component_name_to_basis_component_index[component_name] = component_index
                     self._component_name_to_basis_component_length[component_name] = component_length
             else:
-                self._basis_component_index_to_component_name = None
                 self._component_name_to_basis_component_index = None
                 self._component_name_to_basis_component_length = None
             
@@ -70,7 +67,6 @@ def Vector(backend, wrapping, VectorBaseType):
                 output = Vector_Class.__new__(type(self), output_size[0], output_content)
                 output.__init__(output_size[0], output_content)
                 # Preserve auxiliary attributes related to basis functions matrix
-                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
                 if self._component_name_to_basis_component_length is None:
                     output._component_name_to_basis_component_length = None
@@ -226,13 +222,11 @@ def Vector(backend, wrapping, VectorBaseType):
             assert other_order in (0, 1)
             if other_order is 1:
                 assert self.N == other.N
-                assert self._basis_component_index_to_component_name == other._basis_component_index_to_component_name
                 assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
         
         def _arithmetic_operations_preserve_attributes(self, output, other_order=1):
             assert other_order in (0, 1)
-            output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
             output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
             output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
         

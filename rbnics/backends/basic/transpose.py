@@ -282,7 +282,6 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
         @overload(backend.BasisFunctionsMatrix, )
         def __init__(self, basis_functions_matrix):
             self.basis_functions_matrix = basis_functions_matrix
-            self._basis_component_index_to_component_name = basis_functions_matrix._basis_component_index_to_component_name
             self._component_name_to_basis_component_index = basis_functions_matrix._component_name_to_basis_component_index
             self._component_name_to_basis_component_length = basis_functions_matrix._component_name_to_basis_component_length
         
@@ -291,13 +290,12 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
             log(PROGRESS, "Begin Z^T w")
             output = online_backend.OnlineVector(self.basis_functions_matrix._component_name_to_basis_component_length)
             i = 0
-            for (_, component_name) in sorted(self.basis_functions_matrix._basis_component_index_to_component_name.items()):
+            for component_name in self.basis_functions_matrix._components_name:
                 for fun_i in self.basis_functions_matrix._components[component_name]:
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
                     i += 1
             log(PROGRESS, "End Z^T w")
             # Assert consistency of private attributes storing the order of components and their basis length.
-            assert output._basis_component_index_to_component_name == self._basis_component_index_to_component_name
             assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return
@@ -312,13 +310,12 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
             log(PROGRESS, "Begin Z^T w")
             output = online_backend.OnlineVector(self.basis_functions_matrix._component_name_to_basis_component_length)
             i = 0
-            for (_, component_name) in sorted(self.basis_functions_matrix._basis_component_index_to_component_name.items()):
+            for component_name in self.basis_functions_matrix._components_name:
                 for fun_i in self.basis_functions_matrix._components[component_name]:
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), vector)
                     i += 1
             log(PROGRESS, "End Z^T w")
             # Assert consistency of private attributes storing the order of components and their basis length.
-            assert output._basis_component_index_to_component_name == self._basis_component_index_to_component_name
             assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return
@@ -351,7 +348,6 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
         def __init__(self, basis_functions_matrix, matrix):
             self.basis_functions_matrix = basis_functions_matrix
             self.matrix = matrix
-            self._basis_component_index_to_component_name = basis_functions_matrix._basis_component_index_to_component_name
             self._component_name_to_basis_component_index = basis_functions_matrix._component_name_to_basis_component_index
             self._component_name_to_basis_component_length = basis_functions_matrix._component_name_to_basis_component_length
         
@@ -360,18 +356,17 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
             log(PROGRESS, "Begin Z^T*A*Z")
             output = online_backend.OnlineMatrix(self.basis_functions_matrix._component_name_to_basis_component_length, other_basis_functions_matrix._component_name_to_basis_component_length)
             j = 0
-            for (_, other_component_name) in sorted(other_basis_functions_matrix._basis_component_index_to_component_name.items()):
+            for other_component_name in other_basis_functions_matrix._components_name:
                 for fun_j in other_basis_functions_matrix._components[other_component_name]:
                     matrix_times_fun_j = wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(fun_j))
                     i = 0
-                    for (_, self_component_name) in sorted(self.basis_functions_matrix._basis_component_index_to_component_name.items()):
+                    for self_component_name in self.basis_functions_matrix._components_name:
                         for fun_i in self.basis_functions_matrix._components[self_component_name]:
                             output[i, j] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_fun_j)
                             i += 1
                     j += 1
             log(PROGRESS, "End Z^T*A*Z")
             # Assert consistency of private attributes storing the order of components and their basis length.
-            assert output._basis_component_index_to_component_name == (self._basis_component_index_to_component_name, other_basis_functions_matrix._basis_component_index_to_component_name)
             assert output._component_name_to_basis_component_index == (self._component_name_to_basis_component_index, other_basis_functions_matrix._component_name_to_basis_component_index)
             assert output._component_name_to_basis_component_length == (self._component_name_to_basis_component_length, other_basis_functions_matrix._component_name_to_basis_component_length)
             # Return
@@ -383,13 +378,12 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
             output = online_backend.OnlineVector(self.basis_functions_matrix._component_name_to_basis_component_length)
             matrix_times_function = wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(function))
             i = 0
-            for (_, component_name) in sorted(self.basis_functions_matrix._basis_component_index_to_component_name.items()):
+            for component_name in self.basis_functions_matrix._components_name:
                 for fun_i in self.basis_functions_matrix._components[component_name]:
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_function)
                     i += 1
             log(PROGRESS, "End Z^T*A*v")
             # Assert consistency of private attributes storing the order of components and their basis length.
-            assert output._basis_component_index_to_component_name == self._basis_component_index_to_component_name
             assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return
@@ -401,13 +395,12 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
             output = online_backend.OnlineVector(self.basis_functions_matrix._component_name_to_basis_component_length)
             matrix_times_vector = wrapping.matrix_mul_vector(self.matrix, vector)
             i = 0
-            for (_, component_name) in sorted(self.basis_functions_matrix._basis_component_index_to_component_name.items()):
+            for component_name in self.basis_functions_matrix._components_name:
                 for fun_i in self.basis_functions_matrix._components[component_name]:
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_vector)
                     i += 1
             log(PROGRESS, "End Z^T*A*v")
             # Assert consistency of private attributes storing the order of components and their basis length.
-            assert output._basis_component_index_to_component_name == self._basis_component_index_to_component_name
             assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
             # Return

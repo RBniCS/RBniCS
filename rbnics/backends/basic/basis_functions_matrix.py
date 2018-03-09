@@ -19,7 +19,7 @@
 from numbers import Number
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType
-from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, OnlineSizeDict
+from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 from rbnics.utils.test import PatchInstanceMethod
 
 def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
@@ -32,7 +32,6 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             self.mpi_comm = wrapping.get_mpi_comm(space)
             self._components = dict() # of FunctionsList
             self._precomputed_slices = dict() # from tuple to FunctionsList
-            self._basis_component_index_to_component_name = BasisComponentIndexToComponentNameDict() # filled in by init
             self._components_name = list() # filled in by init
             self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict() # filled in by init
             self._component_name_to_basis_component_length = OnlineSizeDict()
@@ -49,12 +48,10 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 self._component_name_to_basis_component_length.clear()
                 for component_name in components_name:
                     self._component_name_to_basis_component_length[component_name] = 0
-                # Intialize the component_name_to_basis_component_index dict, and its inverse
+                # Intialize the component_name_to_basis_component_index dict
                 self._component_name_to_basis_component_index.clear()
-                self._basis_component_index_to_component_name.clear()
                 for (basis_component_index, component_name) in enumerate(components_name):
                     self._component_name_to_basis_component_index[component_name] = basis_component_index
-                    self._basis_component_index_to_component_name[basis_component_index] = component_name
                 # Reset precomputed slices
                 self._precomputed_slices.clear()
                 # Patch FunctionsList.enrich() to update internal attributes
@@ -125,7 +122,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 precomputed_slice_key = self._component_name_to_basis_component_length[component_0]
             else:
                 precomputed_slice_key = list()
-                for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()):
+                for component_name in self._components_name:
                     precomputed_slice_key.append(self._component_name_to_basis_component_length[component_name])
                 precomputed_slice_key = tuple(precomputed_slice_key)
             self._precomputed_slices[precomputed_slice_key] = self
@@ -236,7 +233,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 self._precomputed_slices[N] = _BasisFunctionsMatrix.__new__(type(self), self.space)
                 self._precomputed_slices[N].__init__(self.space)
                 self._precomputed_slices[N].init(self._components_name)
-                for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()):
+                for component_name in self._components_name:
                     self._precomputed_slices[N]._components[component_name].enrich(self._components[component_name][:N], copy=False)
                     self._precomputed_slices[N]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N]._components[component_name])
             return self._precomputed_slices[N]
@@ -244,12 +241,12 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
         @overload(OnlineSizeDict)
         def _precompute_slice(self, N):
             assert set(N.keys()) == set(self._components_name)
-            N_key = tuple(N[component_name] for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()))
+            N_key = tuple(N[component_name] for component_name in self._components_name)
             if N_key not in self._precomputed_slices:
                 self._precomputed_slices[N_key] = _BasisFunctionsMatrix.__new__(type(self), self.space)
                 self._precomputed_slices[N_key].__init__(self.space)
                 self._precomputed_slices[N_key].init(self._components_name)
-                for (basis_component_index, component_name) in sorted(self._basis_component_index_to_component_name.items()):
+                for component_name in self._components_name:
                     self._precomputed_slices[N_key]._components[component_name].enrich(self._components[component_name][:N[component_name]], copy=False)
                     self._precomputed_slices[N_key]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N_key]._components[component_name])
             return self._precomputed_slices[N_key]

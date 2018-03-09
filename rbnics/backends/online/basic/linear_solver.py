@@ -41,10 +41,9 @@ class LinearSolver(AbstractLinearSolver):
     @overload
     def _apply_bcs(self, bcs: DictOfThetaType):
         # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
-        assert self.rhs._basis_component_index_to_component_name == self.lhs._basis_component_index_to_component_name[0]
         assert self.rhs._component_name_to_basis_component_index == self.lhs._component_name_to_basis_component_index[0]
         assert self.rhs._component_name_to_basis_component_length == self.lhs._component_name_to_basis_component_length[0]
         # Provide auxiliary dicts to DirichletBC constructor, and apply
-        bcs = DirichletBC(bcs, self.rhs._basis_component_index_to_component_name, self.rhs.N)
+        bcs = DirichletBC(bcs, self.rhs._component_name_to_basis_component_index, self.rhs.N)
         bcs.apply_to_vector(self.rhs)
         bcs.apply_to_matrix(self.lhs)

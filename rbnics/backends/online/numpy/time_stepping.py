@@ -244,7 +244,7 @@ if has_IDA:
                     if isinstance(bcs_t, tuple):
                         self.current_bc = DirichletBC(bcs_t)
                     elif isinstance(bcs_t, dict):
-                        self.current_bc = DirichletBC(bcs_t, self.sample_residual._basis_component_index_to_component_name, self.solution.vector().N)
+                        self.current_bc = DirichletBC(bcs_t, self.sample_residual._component_name_to_basis_component_index, self.solution.vector().N)
                     else:
                         raise TypeError("Invalid bc in _LinearSolver.__init__().")
             def _assimulo_residual_eval(t, solution, solution_dot):

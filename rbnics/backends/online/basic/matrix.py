@@ -18,7 +18,7 @@
 
 from numbers import Number
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
-from rbnics.utils.io import BasisComponentIndexToComponentNameDict, ComponentNameToBasisComponentIndexDict, OnlineSizeDict
+from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
 def Matrix(backend, wrapping, MatrixBaseType):
     class Matrix_Class(object):
@@ -51,24 +51,16 @@ def Matrix(backend, wrapping, MatrixBaseType):
                     assert isinstance(N, OnlineSizeDict)
                 else:
                     self.N = N = OnlineSizeDict(N)
-                basis_component_index_to_component_name_0 = BasisComponentIndexToComponentNameDict()
                 component_name_to_basis_component_index_0 = ComponentNameToBasisComponentIndexDict()
                 component_name_to_basis_component_length_0 = OnlineSizeDict()
                 for (component_index, (component_name, component_length)) in enumerate(M.items()):
-                    basis_component_index_to_component_name_0[component_index] = component_name
                     component_name_to_basis_component_index_0[component_name] = component_index
                     component_name_to_basis_component_length_0[component_name] = component_length
-                basis_component_index_to_component_name_1 = BasisComponentIndexToComponentNameDict()
                 component_name_to_basis_component_index_1 = ComponentNameToBasisComponentIndexDict()
                 component_name_to_basis_component_length_1 = OnlineSizeDict()
                 for (component_index, (component_name, component_length)) in enumerate(N.items()):
-                    basis_component_index_to_component_name_1[component_index] = component_name
                     component_name_to_basis_component_index_1[component_name] = component_index
                     component_name_to_basis_component_length_1[component_name] = component_length
-                self._basis_component_index_to_component_name = (
-                    basis_component_index_to_component_name_0,
-                    basis_component_index_to_component_name_1
-                )
                 self._component_name_to_basis_component_index = (
                     component_name_to_basis_component_index_0,
                     component_name_to_basis_component_index_1
@@ -78,7 +70,6 @@ def Matrix(backend, wrapping, MatrixBaseType):
                     component_name_to_basis_component_length_1
                 )
             else:
-                self._basis_component_index_to_component_name = (None, None)
                 self._component_name_to_basis_component_index = (None, None)
                 self._component_name_to_basis_component_length = (None, None)
             
@@ -105,7 +96,6 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 output = Matrix_Class.__new__(type(self), output_size[0], output_size[1], output_content)
                 output.__init__(output_size[0], output_size[1], output_content)
                 # Preserve auxiliary attributes related to basis functions matrix
-                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
                 if (
                     self._component_name_to_basis_component_length[0] is None
@@ -295,23 +285,19 @@ def Matrix(backend, wrapping, MatrixBaseType):
             if other_order is 2:
                 assert self.M == other.M
                 assert self.N == other.N
-                assert self._basis_component_index_to_component_name == other._basis_component_index_to_component_name
                 assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
             elif other_order is 1:
                 assert self.N == other.N
-                assert self._basis_component_index_to_component_name[1] == other._basis_component_index_to_component_name
                 assert self._component_name_to_basis_component_index[1] == other._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length[1] == other._component_name_to_basis_component_length
                 
         def _arithmetic_operations_preserve_attributes(self, output, other_order=2):
             assert other_order in (0, 1, 2)
             if other_order is 0 or other_order is 2:
-                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
                 output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
             elif other_order is 1:
-                output._basis_component_index_to_component_name = self._basis_component_index_to_component_name[0]
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index[0]
                 output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[0]
         

@@ -17,15 +17,15 @@
 #
 
 from rbnics.utils.decorators import DictOfThetaType, overload, ThetaType
-from rbnics.utils.io import BasisComponentIndexToComponentNameDict, OnlineSizeDict
+from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
 # Implementation for empty bcs
 @overload(None, None, None)
-def DirichletBC(bcs, basis_component_index_to_component_name=None, N=None):
-    return _DirichletBC_Empty(bcs, basis_component_index_to_component_name, N)
+def DirichletBC(bcs, component_name_to_basis_component_index=None, N=None):
+    return _DirichletBC_Empty(bcs, component_name_to_basis_component_index, N)
 
 class _DirichletBC_Empty(object):
-    def __init__(self, bcs, basis_component_index_to_component_name=None, N=None):
+    def __init__(self, bcs, component_name_to_basis_component_index=None, N=None):
         pass
         
     def apply_to_vector(self, vector, solution=None):
@@ -39,11 +39,11 @@ class _DirichletBC_Empty(object):
 
 # Implementation for ThetaType
 @overload(ThetaType, None, None)
-def DirichletBC(bcs, basis_component_index_to_component_name=None, N=None):
-    return _DirichletBC_ThetaType(bcs, basis_component_index_to_component_name, N)
+def DirichletBC(bcs, component_name_to_basis_component_index=None, N=None):
+    return _DirichletBC_ThetaType(bcs, component_name_to_basis_component_index, N)
 
 class _DirichletBC_ThetaType(object):
-    def __init__(self, bcs, basis_component_index_to_component_name=None, N=None):
+    def __init__(self, bcs, component_name_to_basis_component_index=None, N=None):
         self.bcs = bcs
         
     def apply_to_vector(self, vector, solution=None):
@@ -64,16 +64,16 @@ class _DirichletBC_ThetaType(object):
             matrix[i, i] = 1.
 
 # Implementation for DictOfThetaType
-@overload(DictOfThetaType, BasisComponentIndexToComponentNameDict, OnlineSizeDict)
-def DirichletBC(bcs, basis_component_index_to_component_name=None, N=None):
-    return _DirichletBC_DictOfThetaType(bcs, basis_component_index_to_component_name, N)
+@overload(DictOfThetaType, ComponentNameToBasisComponentIndexDict, OnlineSizeDict)
+def DirichletBC(bcs, component_name_to_basis_component_index=None, N=None):
+    return _DirichletBC_DictOfThetaType(bcs, component_name_to_basis_component_index, N)
 
 class _DirichletBC_DictOfThetaType(object):
-    def __init__(self, bcs, basis_component_index_to_component_name=None, N=None):
+    def __init__(self, bcs, component_name_to_basis_component_index=None, N=None):
         self.bcs = bcs
         bcs_base_index = dict() # from component name to first index
         current_bcs_base_index = 0
-        for (basis_component_index, component_name) in sorted(basis_component_index_to_component_name.items()):
+        for (component_name, basis_component_index) in component_name_to_basis_component_index.items():
             bcs_base_index[component_name] = current_bcs_base_index
             current_bcs_base_index += N[component_name]
         self.bcs_base_index = bcs_base_index
