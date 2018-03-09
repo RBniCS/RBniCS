@@ -163,6 +163,8 @@ class DelayedLinearSolver(object):
         bcs_problem = get_problem_from_problem_name(bcs_problem_name)
         bcs_reduced_problem = get_reduced_problem_from_problem(bcs_problem)
         self._bcs = bcs_reduced_problem._riesz_solve_homogeneous_dirichlet_bc
+        # Return
+        return True
         
     def get_problem_name(self):
         return get_reduced_problem_from_riesz_solve_storage(self._solution).truth_problem.name()

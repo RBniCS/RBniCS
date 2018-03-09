@@ -31,7 +31,7 @@ def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsD
             # Patch BasisFunctionsMatrix's __getitem__ to store component and index before returning
             def patch_getitem(input_):
                 Type = type(input_) # note that we need to patch the type (and not the instance) because __getitem__ is a magic method
-                if not hasattr(Type, "getitem_patched"):
+                if not hasattr(Type, "getitem_patched_for_int_and_str"):
                     original_getitem = Type.__getitem__
                     def patched_getitem(self_, key):
                         output = original_getitem(self_, key)
@@ -44,7 +44,7 @@ def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsD
                         return output
                     # Apply patch
                     Type.__getitem__ = patched_getitem
-                    Type.getitem_patched = True
+                    Type.getitem_patched_for_int_and_str = True
             patch_getitem(self.basis_functions)
             
     # return value (a class) for the decorator

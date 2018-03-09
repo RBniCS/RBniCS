@@ -20,6 +20,7 @@ from rbnics.backends.basic.wrapping.delayed_functions_list import DelayedFunctio
 from rbnics.backends.basic.wrapping.delayed_linear_solver import DelayedLinearSolver
 from rbnics.utils.decorators import overload
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
+from rbnics.utils.test import PatchInstanceMethod
 
 class DelayedBasisFunctionsMatrix(object):
     def __init__(self, space):
@@ -31,12 +32,28 @@ class DelayedBasisFunctionsMatrix(object):
         self._precomputed_slices = dict() # from tuple to FunctionsList
         
     def init(self, components_name):
+        # Patch DelayedFunctionsList.enrich() to update internal attributes
+        def patch_delayed_functions_list_enrich(component_name, memory):
+            original_delayed_functions_list_enrich = memory.enrich
+            def patched_delayed_functions_list_enrich(self_, functions, component=None, weights=None, copy=True):
+                # Append to storage
+                original_delayed_functions_list_enrich(functions, component, weights, copy)
+                # Update component name to basis component length
+                self._update_component_name_to_basis_component_length(component_name if component is None else component)
+                # Reset precomputed slices
+                self._precomputed_slices.clear()
+                # Prepare trivial precomputed slice
+                self._prepare_trivial_precomputed_slice()
+            memory.enrich_patch = PatchInstanceMethod(memory, "enrich", patched_delayed_functions_list_enrich)
+            memory.enrich_patch.patch()
+            
         assert len(self._components_name) is 0
         self._components_name = components_name
         for (basis_component_index, component_name) in enumerate(components_name):
             self._component_name_to_basis_component_index[component_name] = basis_component_index
             self._component_name_to_basis_component_length[component_name] = 0
             self._enrich_memory[component_name] = DelayedFunctionsList(self.space)
+            patch_delayed_functions_list_enrich(component_name, self._enrich_memory[component_name])
         
     def enrich(self, function, component=None, weight=None, copy=True):
         assert isinstance(function, DelayedLinearSolver)
@@ -48,12 +65,17 @@ class DelayedBasisFunctionsMatrix(object):
         component_0 = self._components_name[0]
         # Append to storage
         self._enrich_memory[component_0].enrich(function, component, weight, copy)
-        # Update component name to basis component length
-        self._component_name_to_basis_component_length[component_0] += 1
-        # Reset precomputed slices
-        self._precomputed_slices.clear()
-        # Prepare trivial precomputed slice
-        self._prepare_trivial_precomputed_slice()
+        
+    @overload(None)
+    def _update_component_name_to_basis_component_length(self, component):
+        assert len(self._components) == 1
+        assert len(self._components_name) == 1
+        component_0 = self._components_name[0]
+        self._component_name_to_basis_component_length[component_0] = len(self._enrich_memory[component_0])
+        
+    @overload(str)
+    def _update_component_name_to_basis_component_length(self, component):
+        self._component_name_to_basis_component_length[component] = len(self._enrich_memory[component])
         
     def _prepare_trivial_precomputed_slice(self):
         if len(self._enrich_memory) == 1:
@@ -73,6 +95,10 @@ class DelayedBasisFunctionsMatrix(object):
         assert key.step is None
         return self._precompute_slice(key.stop)
         
+    @overload(str)
+    def __getitem__(self, key):
+        return self._enrich_memory[key]
+        
     def __len__(self):
         assert len(self._components_name) == 1
         assert len(self._enrich_memory) == 1
@@ -83,11 +109,11 @@ class DelayedBasisFunctionsMatrix(object):
     def _precompute_slice(self, N):
         if N not in self._precomputed_slices:
             assert len(self._enrich_memory) == 1
-            self._precomputed_slices[N] = DelayedBasisFunctionsMatrix(self.space)
-            self._precomputed_slices[N].init(self._components_name)
+            output = DelayedBasisFunctionsMatrix(self.space)
+            output.init(self._components_name)
             for component_name in self._components_name:
-                self._precomputed_slices[N]._enrich_memory[component_name].enrich(self._enrich_memory[component_name][:N])
-                self._precomputed_slices[N]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N]._enrich_memory[component_name])
+                output._enrich_memory[component_name].enrich(self._enrich_memory[component_name][:N])
+            self._precomputed_slices[N] = output
         return self._precomputed_slices[N]
         
     @overload(OnlineSizeDict)
@@ -95,11 +121,11 @@ class DelayedBasisFunctionsMatrix(object):
         assert set(N.keys()) == set(self._components_name)
         N_key = tuple(N[component_name] for component_name in self._components_name)
         if N_key not in self._precomputed_slices:
-            self._precomputed_slices[N_key] = DelayedBasisFunctionsMatrix(self.space)
-            self._precomputed_slices[N_key].init(self._components_name)
+            output = DelayedBasisFunctionsMatrix(self.space)
+            output.init(self._components_name)
             for component_name in self._components_name:
-                self._precomputed_slices[N_key]._enrich_memory[component_name].enrich(self._enrich_memory[component_name][:N[component_name]])
-                self._precomputed_slices[N_key]._component_name_to_basis_component_length[component_name] = len(self._precomputed_slices[N_key]._enrich_memory[component_name])
+                output._enrich_memory[component_name].enrich(self._enrich_memory[component_name][:N[component_name]])
+            self._precomputed_slices[N_key] = output
         return self._precomputed_slices[N_key]
 
     def save(self, directory, filename):
@@ -107,9 +133,25 @@ class DelayedBasisFunctionsMatrix(object):
             memory.save(directory, filename + "_" + component)
         
     def load(self, directory, filename):
+        return_value = True
         for (component, memory) in self._enrich_memory.items():
-            memory.load(directory, filename + "_" + component)
-            
+            # Skip updating internal attributes while reading in basis functions, we will do that
+            # only once at the end
+            assert hasattr(memory, "enrich_patch")
+            memory.enrich_patch.unpatch()
+            # Load each component
+            return_value_component = memory.load(directory, filename + "_" + component)
+            return_value = return_value and return_value_component
+            # Populate component length
+            self._update_component_name_to_basis_component_length(component)
+            # Restore patched enrich method
+            memory.enrich_patch.patch()
+        # Reset precomputed slices
+        self._precomputed_slices.clear()
+        # Prepare trivial precomputed slice
+        self._prepare_trivial_precomputed_slice()
+        return return_value
+        
     def get_problem_name(self):
         problem_name = None
         for (_, memory) in self._enrich_memory.items():

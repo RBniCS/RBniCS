@@ -58,8 +58,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 # Reset precomputed slices
                 self._precomputed_slices.clear()
                 # Patch FunctionsList.enrich() to update internal attributes
-                def patch_functions_list_enrich(component_name, basis_functions):
-                    original_functions_list_enrich = basis_functions.enrich
+                def patch_functions_list_enrich(component_name, functions_list):
+                    original_functions_list_enrich = functions_list.enrich
                     def patched_functions_list_enrich(self_, functions, component=None, weights=None, copy=True):
                         # Append to storage
                         original_functions_list_enrich(functions, component, weights, copy)
@@ -73,8 +73,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                         self._precomputed_slices.clear()
                         # Prepare trivial precomputed slice
                         self._prepare_trivial_precomputed_slice()
-                    basis_functions.enrich_patch = PatchInstanceMethod(basis_functions, "enrich", patched_functions_list_enrich)
-                    basis_functions.enrich_patch.patch()
+                    functions_list.enrich_patch = PatchInstanceMethod(functions_list, "enrich", patched_functions_list_enrich)
+                    functions_list.enrich_patch.patch()
                 for component_name in components_name:
                     patch_functions_list_enrich(component_name, self._components[component_name])
                 
@@ -150,8 +150,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             else:
                 def filename_and_component(component_name):
                     return filename
-            for (component_name, basis_functions) in self._components.items():
-                basis_functions.save(directory, filename_and_component(component_name))
+            for (component_name, functions_list) in self._components.items():
+                functions_list.save(directory, filename_and_component(component_name))
             
         def load(self, directory, filename):
             return_value = True
@@ -162,18 +162,18 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             else:
                 def filename_and_component(component_name):
                     return filename
-            for (component_name, basis_functions) in self._components.items():
+            for (component_name, functions_list) in self._components.items():
                 # Skip updating internal attributes while reading in basis functions, we will do that
                 # only once at the end
-                assert hasattr(basis_functions, "enrich_patch")
-                basis_functions.enrich_patch.unpatch()
+                assert hasattr(functions_list, "enrich_patch")
+                functions_list.enrich_patch.unpatch()
                 # Load each component
-                return_value_component = basis_functions.load(directory, filename_and_component(component_name))
+                return_value_component = functions_list.load(directory, filename_and_component(component_name))
                 return_value = return_value and return_value_component
                 # Populate component length
                 self._update_component_name_to_basis_component_length(component_name)
                 # Restore patched enrich method
-                basis_functions.enrich_patch.patch()
+                functions_list.enrich_patch.patch()
             # Reset precomputed sub components
             self._precomputed_sub_components.clear()
             # Prepare trivial precomputed sub components

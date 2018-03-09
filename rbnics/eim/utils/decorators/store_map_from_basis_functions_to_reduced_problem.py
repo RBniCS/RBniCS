@@ -30,6 +30,20 @@ def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecorat
             # Populate basis functions to reduced problem map
             add_to_map_from_basis_functions_to_reduced_problem(self.basis_functions, self)
             
+            # Patch BasisFunctionsMatrix's __getitem__ to store the sub components basis function before returning
+            def patch_getitem(input_):
+                Type = type(input_) # note that we need to patch the type (and not the instance) because __getitem__ is a magic method
+                if not hasattr(Type, "getitem_patched_for_list_of_str"):
+                    original_getitem = Type.__getitem__
+                    def patched_getitem(self_, key):
+                        output = original_getitem(self_, key)
+                        if isinstance(key, list) and all(isinstance(k, str) for k in key):
+                            add_to_map_from_basis_functions_to_reduced_problem(output, self)
+                        return output
+                    # Apply patch
+                    Type.__getitem__ = patched_getitem
+                    Type.getitem_patched_for_list_of_str = True
+            patch_getitem(self.basis_functions)
             
     # return value (a class) for the decorator
     return StoreMapFromBasisFunctionsToReducedProblem_Class
