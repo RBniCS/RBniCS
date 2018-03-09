@@ -178,7 +178,7 @@ class _ScipyImplicitEuler(object):
             elif key == "report":
                 if value is True:
                     def print_time(t):
-                        print("# t = " + str(t))
+                        print("# t = {0:g}".format(t))
                     self._report = print_time
                 else:
                     self._report = None

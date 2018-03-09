@@ -93,7 +93,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                         def print_time(ts):
                             t = ts.getTime()
                             dt = ts.getTimeStep()
-                            print("# t = " + str(t + dt))
+                            print("# t = {0:g}".format(t + dt))
                         self.ts.setPreStep(print_time)
                     else:
                         def do_nothing(ts):

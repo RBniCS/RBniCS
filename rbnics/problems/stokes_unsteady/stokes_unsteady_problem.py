@@ -40,7 +40,7 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             return copy(AbstractCFDUnsteadyProblem_Base.solve_supremizer(self, solution))
             
         def _solve_supremizer(self, solution):
-            print("# t =", self.t)
+            print("# t = {0:g}".format(self.t))
             AbstractCFDUnsteadyProblem_Base._solve_supremizer(self, solution)
         
         def _supremizer_cache_key_and_file(self):
