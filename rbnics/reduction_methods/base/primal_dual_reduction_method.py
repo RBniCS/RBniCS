@@ -114,8 +114,9 @@ def PrimalDualReductionMethod(DualProblem):
                 # Carry out primal speedup analysis ...
                 DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N_generator, filename, **kwargs)
                 # ... and then dual speedup analysis
-                SpeedupAnalysisTable.suppress_group("output_error")
-                SpeedupAnalysisTable.suppress_group("output_relative_error")
+                SpeedupAnalysisTable.suppress_group("speedup_output")
+                SpeedupAnalysisTable.suppress_group("speedup_output_and_estimate_error_output")
+                SpeedupAnalysisTable.suppress_group("speedup_output_and_estimate_relative_error_output")
                 self.dual_reduction_method.speedup_analysis(N_generator, filename, **kwargs)
                 SpeedupAnalysisTable.clear_suppressed_groups()
                 

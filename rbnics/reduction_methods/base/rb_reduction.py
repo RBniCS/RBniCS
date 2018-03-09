@@ -327,7 +327,11 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
             speedup_analysis_table.set_Nmax(N)
             speedup_analysis_table.add_column("speedup_solve", group_name="speedup_solve", operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column("speedup_solve_and_estimate_error", group_name="speedup_solve_and_estimate_error", operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column("speedup_solve_and_estimate_relative_error", group_name="speedup_solve_and_estimate_relative_error", operations=("min", "mean", "max"))
             speedup_analysis_table.add_column("speedup_output", group_name="speedup_output", operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column("speedup_output_and_estimate_error_output", group_name="speedup_output_and_estimate_error_output", operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column("speedup_output_and_estimate_relative_error_output", group_name="speedup_output_and_estimate_relative_error_output", operations=("min", "mean", "max"))
             
             truth_timer = Timer("parallel")
             reduced_timer = Timer("serial")
@@ -350,21 +354,67 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     
                     reduced_timer.start()
                     self.reduced_problem.solve(n_arg, **kwargs)
-                    self.reduced_problem.estimate_error()
-                    self.reduced_problem.estimate_relative_error()
                     elapsed_reduced_solve = reduced_timer.stop()
+                    
+                    truth_timer.start()
+                    self.reduced_problem.compute_error(**kwargs)
+                    elapsed_error = truth_timer.stop()
+                    
+                    reduced_timer.start()
+                    error_estimator = self.reduced_problem.estimate_error()
+                    elapsed_error_estimator = reduced_timer.stop()
+                    
+                    truth_timer.start()
+                    self.reduced_problem.compute_relative_error(**kwargs)
+                    elapsed_relative_error = truth_timer.stop()
+                    
+                    reduced_timer.start()
+                    relative_error_estimator = self.reduced_problem.estimate_relative_error()
+                    elapsed_relative_error_estimator = reduced_timer.stop()
                     
                     reduced_timer.start()
                     self.reduced_problem.compute_output()
-                    self.reduced_problem.estimate_error_output()
-                    self.reduced_problem.estimate_relative_error_output()
                     elapsed_reduced_output = reduced_timer.stop()
                     
+                    truth_timer.start()
+                    self.reduced_problem.compute_error_output(**kwargs)
+                    elapsed_error_output = truth_timer.stop()
+                    
+                    reduced_timer.start()
+                    error_estimator_output = self.reduced_problem.estimate_error_output()
+                    elapsed_error_estimator_output = reduced_timer.stop()
+                    
+                    truth_timer.start()
+                    self.reduced_problem.compute_relative_error_output(**kwargs)
+                    elapsed_relative_error_output = truth_timer.stop()
+                    
+                    reduced_timer.start()
+                    relative_error_estimator_output = self.reduced_problem.estimate_relative_error_output()
+                    elapsed_relative_error_estimator_output = reduced_timer.stop()
+                    
                     speedup_analysis_table["speedup_solve", n, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
+                    if error_estimator is not NotImplemented:
+                        speedup_analysis_table["speedup_solve_and_estimate_error", n, mu_index] = (elapsed_truth_solve + elapsed_error)/(elapsed_reduced_solve + elapsed_error_estimator)
+                    else:
+                        speedup_analysis_table["speedup_solve_and_estimate_error", n, mu_index] = NotImplemented
+                    if relative_error_estimator is not NotImplemented:
+                        speedup_analysis_table["speedup_solve_and_estimate_relative_error", n, mu_index] = (elapsed_truth_solve + elapsed_relative_error)/(elapsed_reduced_solve + elapsed_relative_error_estimator)
+                    else:
+                        speedup_analysis_table["speedup_solve_and_estimate_relative_error", n, mu_index] = NotImplemented
                     if self.reduced_problem._output is not NotImplemented:
                         speedup_analysis_table["speedup_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
                     else:
                         speedup_analysis_table["speedup_output", n, mu_index] = NotImplemented
+                    if error_estimator_output is not NotImplemented:
+                        assert self.reduced_problem._output is not NotImplemented
+                        speedup_analysis_table["speedup_output_and_estimate_error_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output + elapsed_error_output)/(elapsed_reduced_solve + elapsed_reduced_output + elapsed_error_estimator_output)
+                    else:
+                        speedup_analysis_table["speedup_output_and_estimate_error_output", n, mu_index] = NotImplemented
+                    if relative_error_estimator_output is not NotImplemented:
+                        assert self.reduced_problem._output is not NotImplemented
+                        speedup_analysis_table["speedup_output_and_estimate_relative_error_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output + elapsed_relative_error_output)/(elapsed_reduced_solve + elapsed_reduced_output + elapsed_relative_error_estimator_output)
+                    else:
+                        speedup_analysis_table["speedup_output_and_estimate_relative_error_output", n, mu_index] = NotImplemented
             
             # Print
             print("")
