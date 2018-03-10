@@ -24,10 +24,6 @@ __all__ = list()
 
 # Helper function to load required backends
 def load_backends(required_backends):
-    # Temporarily stop dispatch ordering
-    from rbnics.utils.decorators.dispatch import halt_ordering
-    halt_ordering()
-    
     # Clean up backends cache
     from rbnics.utils.decorators.backend_for import _cache as backends_cache
     for class_or_function_name in backends_cache.__all__:
@@ -94,10 +90,6 @@ def load_backends(required_backends):
         dispatcher = getattr(sys.modules[__name__], dispatcher_name)
         if isinstance(getattr(backends_cache, dispatcher_name), Dispatcher): # if there was at least a concrete implementation by @BackendFor or @backend_for
             assert isinstance(dispatcher, Dispatcher)
-        
-    # Resume dispatch ordering
-    from rbnics.utils.decorators.dispatch import restart_ordering
-    restart_ordering()
 
 # Get the list of required backends
 from rbnics.utils.config import config

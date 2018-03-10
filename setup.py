@@ -96,7 +96,7 @@ setup(name="RBniCS",
       install_requires=[
           "cvxopt",
           "mpi4py",
-          "multipledispatch",
+          "multipledispatch>=0.5.0",
           "pytest-runner",
           "sympy",
           "toposort"

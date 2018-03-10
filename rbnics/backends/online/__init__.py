@@ -25,10 +25,6 @@ __all__ = list()
 
 # Helper function to set the online backend
 def set_online_backend(online_backend):
-    # Temporarily stop dispatch ordering
-    from rbnics.utils.decorators.dispatch import halt_ordering
-    halt_ordering()
-    
     # Clean up previously defined online backend classes and functions
     if hasattr(sys.modules[__name__], "__all__"):
         __all__cleaned_up = list()
@@ -56,10 +52,6 @@ def set_online_backend(online_backend):
     
     # Also copy the online wrapping module, without prefixes
     sys.modules[__name__ + ".wrapping"] = sys.modules[__name__ + "." + online_backend].wrapping
-    
-    # Resume dispatch ordering
-    from rbnics.utils.decorators.dispatch import restart_ordering
-    restart_ordering()
 
 # Get the online backend name
 from rbnics.utils.config import config

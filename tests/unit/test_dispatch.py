@@ -22,7 +22,6 @@ import types
 import inspect
 import warnings  # noqa
 import urllib.request
-from multipledispatch import halt_ordering, restart_ordering  # noqa
 from multipledispatch.conflict import ambiguous, ambiguities, ordering  # noqa
 from multipledispatch.utils import raises
 from rbnics.utils.decorators import dict_of, dispatch, iterable_of, list_of, overload, tuple_of
@@ -112,10 +111,14 @@ def test_competing_ambiguous_try():
     def f(x, y):
         return 2
 
+    @dispatch(C, A)
+    def f(x, y):
+        return 2
+        
+    assert f(A(), C()) == f(C(), A()) == 2
+
     try:
-        @dispatch(C, A)
-        def f(x, y):
-            return 2
+        f(C(), C())
     except AmbiguousSignatureError:
         pass # this has failed has expected
     else:
@@ -188,6 +191,34 @@ def test_source_copy():
 
     assert 'x + y' in f._source(1, 1)
     assert 'x - y' in f._source(1.0, 1.0)
+    
+# Add back subset of upstream test_dispatcher_3only.py, which is not tested fully because of our different implementation of dispatching through annotations
+def test_function_annotation_dispatch():
+    @dispatch()
+    def inc2(x: int):
+        return x + 1
+
+    @dispatch()
+    def inc2(x: float):
+        return x - 1
+
+    assert inc2(1) == 2
+    assert inc2(1.0) == 0.0
+    
+def test_method_annotations():
+    class Foo(object):
+        @dispatch()
+        def f(self, x: int):
+            return x + 1
+
+        @dispatch()
+        def f(self, x: float):
+            return x - 1
+
+    foo = Foo()
+
+    assert foo.f(1) == 2
+    assert foo.f(1.0) == 0.0
     
 # Test on supercedes
 def test_supercedes_2():

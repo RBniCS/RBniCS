@@ -21,7 +21,7 @@ import itertools
 from numpy import ndarray as array
 import multipledispatch.conflict
 from multipledispatch.core import dispatch as original_dispatch, ismethod
-from multipledispatch.dispatcher import Dispatcher as OriginalDispatcher, halt_ordering as original_halt_ordering, restart_ordering as original_restart_ordering
+from multipledispatch.dispatcher import Dispatcher as OriginalDispatcher
 
 # == Signature to string == #
 def str_signature(sig):
@@ -45,7 +45,7 @@ class UnavailableSignatureError(NotImplementedError):
 # == Exception for ambiguous signature == #
 class AmbiguousSignatureError(NotImplementedError):
     def __init__(self, name, available_signatures, ambiguous_signatures):
-        error_message = "Could not find signature for " + name + ".\n"
+        error_message = "Ambiguous signature signature for " + name + ".\n"
         error_message += "Available signatures are:\n"
         for available_signature in available_signatures:
             error_message += "\t" + str_signature(available_signature) + "\n"
@@ -77,21 +77,25 @@ class InvalidSignatureError(TypeError):
 
 # == Customize Dispatcher == #
 class Dispatcher(OriginalDispatcher):
-    __slots__ = '__name__', 'name', 'funcs', 'ordering', '_cache', 'doc', 'signature_to_provided_signature' # extended with new private members
+    __slots__ = '__name__', 'name', 'funcs', '_ordering', '_cache', 'doc', 'signature_to_provided_signature' # extended with new private members
     
     def __init__(self, name, doc=None):
         OriginalDispatcher.__init__(self, name, doc)
         self.signature_to_provided_signature = dict()
         
-    def add(self, signature, func, on_ambiguity=ambiguity_error, replaces=None, replaces_if=None, expand_provided_signature=False):
+    def add(self, signature, func, replaces=None, replaces_if=None, expand_provided_signature=False):
         for types in expand_tuples(signature):
             if not expand_provided_signature:
                 self._add(types, signature, func, replaces, replaces_if)
             else:
                 if types not in self.funcs:
                     self._add(types, types, func, replaces, replaces_if)
-        self.reorder(on_ambiguity=on_ambiguity)
+        # Trigger reordering, if needed
         self._cache.clear()
+        try:
+            del self._ordering
+        except AttributeError:
+            pass
         
     def _add(self, types, provided_signature, func, replaces=None, replaces_if=None):
         try:
@@ -198,7 +202,7 @@ class MethodDispatcher_Wrapper(object):
         self.lambda_funcs = dict()
         self.dispatchers = dict()
         
-    def add(self, signature, func, on_ambiguity=ambiguity_error, expand_provided_signature=False):
+    def add(self, signature, func, expand_provided_signature=False):
         for types in expand_tuples(signature):
             if not expand_provided_signature:
                 self._add(types, signature, func)
@@ -250,7 +254,7 @@ class MethodDispatcher_Wrapper(object):
         return dispatcher
         
 class MethodDispatcher(Dispatcher):
-    __slots__ = '__name__', 'name', 'funcs', 'ordering', '_cache', 'doc', 'signature_to_provided_signature', 'origin', 'obj' # extended with new private members
+    __slots__ = '__name__', 'name', 'funcs', '_ordering', '_cache', 'doc', 'signature_to_provided_signature', 'origin', 'obj' # extended with new private members
     
     def __init__(self, origin, cls, name, doc=None):
         Dispatcher.__init__(self, name, doc)
@@ -284,12 +288,16 @@ class MethodDispatcher(Dispatcher):
         for (key, func) in standard_funcs.items():
             self._add(key[0], key[1], func)
         # Add all lambda functions
-        # NOTE: it is not possible to change the underlying type return by lambda after this loop has been processed
+        # NOTE: it is not possible to change the underlying type returned by lambda after this loop has been processed
         for (signature_lambda, lambda_func) in lambda_funcs.items():
             signature = tuple([typ(cls) if islambda(typ) else typ for typ in signature_lambda])
             self._add(signature, signature, lambda_func)
-        # Reorder
-        self.reorder(on_ambiguity=ambiguity_error)
+        # Trigger reordering, if needed
+        self._cache.clear()
+        try:
+            del self._ordering
+        except AttributeError:
+            pass
         
     def __call__(self, *args, **kwargs):
         if self.obj is not None: # called as instance.method(...)
@@ -308,7 +316,6 @@ class MethodDispatcher(Dispatcher):
 def dispatch(*types, **kwargs):
     name = kwargs.get("name", None)
     module_kwarg = kwargs.get("module", None)
-    on_ambiguity = kwargs.get("on_ambiguity", ambiguity_error)
     replaces = kwargs.get("replaces", None)
     replaces_if = kwargs.get("replaces_if", None)
     frame_back_times = kwargs.get("frame_back_times", 1)
@@ -342,7 +349,7 @@ def dispatch(*types, **kwargs):
             for _ in range(frame_back_times):
                 frame = frame.f_back
             dispatcher = frame.f_locals.get(name, MethodDispatcher_Wrapper(name))
-            dispatcher.add(types, func_or_class, on_ambiguity=on_ambiguity, expand_provided_signature=expand_provided_signature)
+            dispatcher.add(types, func_or_class, expand_provided_signature=expand_provided_signature)
             return dispatcher
         else: # is function or class
             if is_class:
@@ -358,7 +365,7 @@ def dispatch(*types, **kwargs):
                 setattr(module, name, Dispatcher(name))
             dispatcher = getattr(module, name)
             assert isinstance(dispatcher, Dispatcher)
-            dispatcher.add(types, func_or_class, on_ambiguity=on_ambiguity, replaces=replaces, replaces_if=replaces_if, expand_provided_signature=expand_provided_signature)
+            dispatcher.add(types, func_or_class, replaces=replaces, replaces_if=replaces_if, expand_provided_signature=expand_provided_signature)
             if module_kwarg is None:
                 return dispatcher
             else:
@@ -728,22 +735,6 @@ def consistent(A, B):
         else:
             return True
 multipledispatch.conflict.consistent = consistent
-
-# == Halt and restart ordering, possibly recursively == #
-def halt_ordering():
-    global _halt_ordering_called
-    if _halt_ordering_called == 0:
-        original_halt_ordering()
-    _halt_ordering_called += 1
-    
-def restart_ordering(on_ambiguity=ambiguity_error):
-    global _halt_ordering_called
-    assert _halt_ordering_called > 0
-    _halt_ordering_called -= 1
-    if _halt_ordering_called == 0:
-        original_restart_ordering(on_ambiguity=on_ambiguity)
-    
-_halt_ordering_called = 0
 
 # == Helper function to remove trailing None arguments (used as default arguments) == #
 def remove_trailing_None(inputs):
