@@ -23,9 +23,6 @@ AllLinearProgramSolver = list()
 if linear_programming_backends["cvxopt"]:
     from rbnics.backends.common.linear_program_solver import CVXOPTLinearProgramSolver
     AllLinearProgramSolver.append(CVXOPTLinearProgramSolver)
-if linear_programming_backends["python-glpk"]:
-    from rbnics.backends.common.linear_program_solver import PythonGLPKLinearProgramSolver
-    AllLinearProgramSolver.append(PythonGLPKLinearProgramSolver)
 if linear_programming_backends["scipy"]:
     from rbnics.backends.common.linear_program_solver import SciPyLinearProgramSolver
     AllLinearProgramSolver.append(SciPyLinearProgramSolver)
