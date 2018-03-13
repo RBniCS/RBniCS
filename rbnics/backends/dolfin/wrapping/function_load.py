@@ -18,7 +18,7 @@
 
 import os
 from ufl import product
-from dolfin import File, Function, has_hdf5, has_hdf5_parallel, XDMFFile
+from dolfin import assign, File, Function, has_hdf5, has_hdf5_parallel, XDMFFile
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 from rbnics.utils.mpi import is_io_process
@@ -84,9 +84,8 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, components=None):
             if not _read_from_xdmf_file(fun_i, directory, filename_i, suffix, None):
                 return False
             else:
-                extended_sub_fun = function_extend_or_restrict(fun_i, None, fun_V, components[0], weight=None, copy=True)
-                fun.vector().add_local(extended_sub_fun.vector().get_local())
-                fun.vector().apply("add")
+                assign(fun.sub(i), fun_i)
+        return True
     else:
         full_filename_checkpoint = os.path.join(str(directory), filename + "_checkpoint.xdmf")
         file_exists = False
