@@ -29,6 +29,7 @@ def BasicPETScSNESSolver(backend, wrapping):
             self.snes.setFunction(self.problem.residual_vector_eval, wrapping.to_petsc4py(self.problem.residual_vector))
             self.snes.setJacobian(self.problem.jacobian_matrix_eval, wrapping.to_petsc4py(self.problem.jacobian_matrix))
             # Set sensible default values to parameters
+            self._report = None
             self.set_parameters({
                 "linear_solver": "mumps",
                 "report": True
@@ -53,6 +54,7 @@ def BasicPETScSNESSolver(backend, wrapping):
                 elif key == "relative_tolerance":
                     snes_tolerances[1] = value
                 elif key == "report":
+                    self._report = value
                     self.snes.cancelMonitor()
                     def monitor(snes, it, fgnorm):
                         print("  " + str(it) + " SNES Function norm " + "{:e}".format(fgnorm))
@@ -67,6 +69,13 @@ def BasicPETScSNESSolver(backend, wrapping):
             
         def solve(self):
             self.snes.solve(None, wrapping.to_petsc4py(self.solution))
+            if self._report:
+                reason = self.snes.getConvergedReason()
+                its = self.snes.getIterationNumber()
+                if reason > 0:
+                    print("PETSc SNES solver converged in " + str(its) + " iterations with convergence reason " + str(reason) + ".")
+                else:
+                    print("PETSc SNES solver diverged in " + str(its) + " iterations with divergence reason " + str(reason) + ".")
             return self.solution
     
     return _BasicPETScSNESSolver
