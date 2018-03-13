@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import hashlib
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 from rbnics.utils.decorators.sync_setters import sync_setters
 
@@ -57,21 +56,6 @@ def exact_problem(decorated_problem, preserve_class_name=True):
                 class ExactProblem_Class(ExactProblem_Class_Base):
                     def name(self):
                         return "Exact" + decorated_problem.name()
-            else:
-                ExactProblem_Class_Base = ExactProblem_Class
-                
-                @PreserveClassName
-                class ExactProblem_Class(ExactProblem_Class_Base):
-                    def _cache_key_and_file_from_kwargs(self, **kwargs):
-                        # Make sure not to mix cached solutions from exact and original problem when reading from file
-                        (cache_key, cache_file) = ExactProblem_Class_Base._cache_key_and_file_from_kwargs(self, **kwargs)
-                        # Append current stage to cache key
-                        cache_key = cache_key + ("__is_exact__", )
-                        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
-                        # Update current cache_key to be used when computing output
-                        self._output_cache__current_cache_key = cache_key
-                        # Return
-                        return (cache_key, cache_file)
                         
             setattr(ExactProblem_Class, "__is_exact__", True)
             setattr(ExactProblem_Class, "__DecoratedProblem__", DecoratedProblem)
