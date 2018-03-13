@@ -19,7 +19,7 @@
 from ufl import Argument
 from ufl.constantvalue import ConstantValue
 from ufl.core.operator import Operator
-from ufl.core.multiindex import FixedIndex, Index as MuteIndex, IndexBase, MultiIndex
+from ufl.core.multiindex import IndexBase, MultiIndex
 from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
@@ -34,7 +34,7 @@ from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution
 
 def is_problem_solution_or_problem_solution_component(node):
     _prepare_solution_split_storage()
-    node = _remove_mute_indices(node)
+    node = _remove_all_indices(node)
     return node in _solution_split_to_component
     
 def _prepare_solution_split_storage():
@@ -59,29 +59,20 @@ def _split_function(solution, solution_split_to_component, solution_split_to_sol
             solution_split_to_solution[sub_solution] = solution
             
 @overload
-def _remove_mute_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity, IndexBase, MultiIndex, Operator)):
+def _remove_all_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity, IndexBase, MultiIndex, Operator)):
     return node
     
 @overload
-def _remove_mute_indices(node: Indexed):
+def _remove_all_indices(node: Indexed):
     assert len(node.ufl_operands) == 2
     assert isinstance(node.ufl_operands[1], MultiIndex)
-    indices = node.ufl_operands[1].indices()
-    is_fixed = isinstance(indices[0], FixedIndex)
-    assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
-    is_mute = isinstance(indices[0], MuteIndex) # mute index for sum
-    assert all([isinstance(index, MuteIndex) == is_mute for index in indices])
-    assert (is_fixed and not is_mute) or (not is_fixed and is_mute)
-    if is_fixed:
-        return node
-    elif is_mute:
-        return _remove_mute_indices(node.ufl_operands[0])
-    else:
-        raise TypeError("Invalid index")
-        
+    return _remove_all_indices(node.ufl_operands[0])
+    
 @overload
-def _remove_mute_indices(node: ListTensor):
-    return node._ufl_expr_reconstruct_(*[_remove_mute_indices(operand) for operand in node.ufl_operands])
+def _remove_all_indices(node: ListTensor):
+    output = {_remove_all_indices(operand) for operand in node.ufl_operands}
+    assert len(output) is 1
+    return output.pop()
         
 # the difference between this function and the one in function_extend_or_restrict is that the
 # _get_sub_elements() in function_extend_or_restrict.py stores only the leaves of the elements tree, while

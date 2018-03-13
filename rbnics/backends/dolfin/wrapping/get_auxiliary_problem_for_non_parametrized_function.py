@@ -21,7 +21,8 @@ from ufl.core.multiindex import MultiIndex
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
 from dolfin import Function
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import _remove_mute_indices, _split_function
+from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import _split_function
+from rbnics.backends.dolfin.wrapping.solution_identify_component import _remove_mute_indices
 
 def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping):
     def _basic_get_auxiliary_problem_for_non_parametrized_function(function):
