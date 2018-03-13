@@ -182,6 +182,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
     # 6. Prepare reduction with EIM
     parametrized_function_reduction_method = EIMApproximationReductionMethod(parametrized_function_approximation)
     parametrized_function_reduction_method.set_Nmax(12)
+    parametrized_function_reduction_method.set_tolerance(0.)
 
     # 7. Perform EIM offline phase
     parametrized_function_reduction_method.initialize_training_set(51, sampling=EquispacedDistribution())

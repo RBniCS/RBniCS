@@ -103,6 +103,7 @@ def test_eim_approximation_10(expression_type, basis_generation):
     # 4. Prepare reduction with EIM
     parametrized_function_reduction_method = TimeDependentEIMApproximationReductionMethod(parametrized_function_approximation)
     parametrized_function_reduction_method.set_Nmax(30)
+    parametrized_function_reduction_method.set_tolerance(0.)
 
     # 5. Perform the offline phase
     parametrized_function_reduction_method.initialize_training_set(51, time_sampling=EquispacedDistribution())
