@@ -19,7 +19,7 @@
 import os
 import pytest
 from dolfin import assemble, assign, cos, dx, exp, FiniteElement, Function, FunctionSpace, inner, IntervalMesh, MixedElement, pi, project, sin, SpatialCoordinate, split, TestFunction, TrialFunction, VectorElement
-from rbnics import EquispacedDistribution, ExactParametrizedFunctions
+from rbnics import EquispacedDistribution
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
@@ -36,7 +36,6 @@ def test_eim_approximation_14(expression_type, basis_generation):
     that the high fidelity solution is used in place of the reduced order one.
     """
 
-    @ExactParametrizedFunctions("offline")
     @StoreMapFromProblemNameToProblem
     @StoreMapFromProblemToTrainingStatus
     @StoreMapFromSolutionToProblem

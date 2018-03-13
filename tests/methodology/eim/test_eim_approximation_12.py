@@ -19,7 +19,7 @@
 import os
 import pytest
 from dolfin import assemble, cos, dx, exp, Function, FunctionSpace, IntervalMesh, pi, project, SpatialCoordinate, TestFunction, TrialFunction
-from rbnics import EquispacedDistribution, ExactParametrizedFunctions
+from rbnics import EquispacedDistribution
 from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
@@ -39,7 +39,6 @@ def test_eim_approximation_12(expression_type, basis_generation):
     * DEIM: the form to be interpolated contains the solution of the nonlinear high fidelity problem.
     """
 
-    @ExactParametrizedFunctions("offline")
     @StoreMapFromProblemNameToProblem
     @StoreMapFromProblemToTrainingStatus
     @StoreMapFromSolutionToProblem
