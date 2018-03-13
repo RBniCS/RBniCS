@@ -56,10 +56,24 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
             empty_snapshot = assemble(form, keep_diagonal=True)
             empty_snapshot.zero()
             empty_snapshot.generator = self
+            init_name_and_description = True
         else:
             empty_snapshot = None
+            init_name_and_description = False
         # Call Parent
-        ParametrizedTensorFactory_Base.__init__(self, form, spaces, empty_snapshot)
+        ParametrizedTensorFactory_Base.__init__(self, form, spaces, empty_snapshot, init_name_and_description)
+        
+    def __eq__(self, other):
+        return (
+            isinstance(other, type(self))
+                and
+            self._form.equals(other._form)
+                and
+            self._spaces == other._spaces
+        )
+        
+    def __hash__(self):
+        return hash((self._form, self._spaces))
     
     def create_interpolation_locations_container(self):
         # Populate subdomain data

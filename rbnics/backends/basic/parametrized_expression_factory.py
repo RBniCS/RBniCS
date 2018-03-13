@@ -23,16 +23,16 @@ def ParametrizedExpressionFactory(backend, wrapping):
         def __init__(self, expression, space, inner_product):
             AbstractParametrizedExpressionFactory.__init__(self, expression)
             self._expression = expression
-            self._name = wrapping.expression_name(expression)
-            self._description = PrettyTuple(self._expression, wrapping.expression_description(self._expression), self._name)
             self._space = space
             self._inner_product = inner_product
+            self._name = wrapping.expression_name(expression)
+            self._description = PrettyTuple(self._expression, wrapping.expression_description(self._expression), self._name)
             
         def __eq__(self, other):
             return (
                 isinstance(other, type(self))
                     and
-                self._name == other._name
+                self._expression == other._expression
                     and
                 self._space == other._space
                     and

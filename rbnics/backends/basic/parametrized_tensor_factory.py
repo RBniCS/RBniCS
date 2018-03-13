@@ -20,25 +20,29 @@ from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParame
 
 def ParametrizedTensorFactory(backend, wrapping):
     class _ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
-        def __init__(self, form, spaces, empty_snapshot):
+        def __init__(self, form, spaces, empty_snapshot, init_name_and_description=True):
             AbstractParametrizedTensorFactory.__init__(self, form)
             self._form = form
-            self._name = wrapping.form_name(form)
-            self._description = PrettyTuple(self._form, wrapping.form_description(self._form), self._name)
             self._spaces = spaces
             self._empty_snapshot = empty_snapshot
+            if init_name_and_description:
+                self._name = wrapping.form_name(form)
+                self._description = PrettyTuple(self._form, wrapping.form_description(self._form), self._name)
+            else:
+                self._name = None
+                self._description = None
             
         def __eq__(self, other):
             return (
                 isinstance(other, type(self))
                     and
-                self._name == other._name
+                self._form == other._form
                     and
                 self._spaces == other._spaces
             )
             
         def __hash__(self):
-            return hash((self._name, self._spaces))
+            return hash((self._form, self._spaces))
         
         def create_interpolation_locations_container(self, **kwargs):
             return backend.ReducedMesh(self._spaces, **kwargs)
