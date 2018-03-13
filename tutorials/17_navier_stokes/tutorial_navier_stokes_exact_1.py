@@ -47,7 +47,7 @@ class NavierStokes(NavierStokesProblem):
             "linear_solver": "mumps",
             "maximum_iterations": 20,
             "report": True,
-            "line_search": "bt",
+            "line_search": "basic",
             "error_on_nonconvergence": True
         })
         
@@ -141,7 +141,7 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
             ReducedNavierStokes_Base.__init__(self, truth_problem, **kwargs)
             self._nonlinear_solver_parameters.update({
                 "report": True,
-                "line_search": "wolfe"
+                "line_search": False
             })
             
     return ReducedNavierStokes
@@ -179,7 +179,7 @@ reduced_navier_stokes_problem.solve()
 reduced_navier_stokes_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100)
+pod_galerkin_method.initialize_testing_set(16, sampling=EquispacedDistribution())
 pod_galerkin_method.error_analysis()
 
 # 8. Perform a speedup analysis

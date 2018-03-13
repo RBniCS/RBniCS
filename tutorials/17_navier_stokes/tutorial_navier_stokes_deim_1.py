@@ -48,7 +48,7 @@ class NavierStokes(NavierStokesProblem):
             "linear_solver": "mumps",
             "maximum_iterations": 20,
             "report": True,
-            "line_search": "bt",
+            "line_search": "basic",
             "error_on_nonconvergence": True
         })
         
@@ -142,7 +142,7 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
             ReducedNavierStokes_Base.__init__(self, truth_problem, **kwargs)
             self._nonlinear_solver_parameters.update({
                 "report": True,
-                "line_search": "wolfe"
+                "line_search": False
             })
             
     return ReducedNavierStokes
@@ -165,7 +165,7 @@ navier_stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
 pod_galerkin_method = PODGalerkin(navier_stokes_problem)
-pod_galerkin_method.set_Nmax(10, DEIM=11)
+pod_galerkin_method.set_Nmax(10, DEIM=20)
 
 # 5. Perform the offline phase
 lifting_mu = (1.0,)
@@ -180,8 +180,8 @@ reduced_navier_stokes_problem.solve()
 reduced_navier_stokes_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100, DEIM=100)
-pod_galerkin_method.error_analysis()
+pod_galerkin_method.initialize_testing_set(16, DEIM=16, sampling=EquispacedDistribution())
+pod_galerkin_method.error_analysis(with_respect_to=exact_problem)
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis()
+pod_galerkin_method.speedup_analysis(with_respect_to=exact_problem)

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from ufl import transpose
 from dolfin import *
 from rbnics import *
 
@@ -51,7 +52,7 @@ class NavierStokes(NavierStokesProblem):
             "linear_solver": "mumps",
             "maximum_iterations": 20,
             "report": True,
-            "line_search": "bt",
+            "line_search": "basic",
             "error_on_nonconvergence": True
         })
         
@@ -95,7 +96,7 @@ class NavierStokes(NavierStokesProblem):
         if term == "a":
             u = self.du
             v = self.v
-            a0 = inner(grad(u), grad(v))*dx
+            a0 = inner(grad(u) + transpose(grad(u)), grad(v))*dx
             return (a0,)
         elif term == "b":
             u = self.du
@@ -145,7 +146,7 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
             ReducedNavierStokes_Base.__init__(self, truth_problem, **kwargs)
             self._nonlinear_solver_parameters.update({
                 "report": True,
-                "line_search": "wolfe"
+                "line_search": False
             })
             
     return ReducedNavierStokes
@@ -163,7 +164,7 @@ V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the NavierStokes class
 navier_stokes_problem = NavierStokes(V, subdomains=subdomains, boundaries=boundaries)
-mu_range = [(1.0, 80.0), (1.5, 2.5)]
+mu_range = [(1.0, 70.0), (1.5, 2.5)]
 navier_stokes_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
@@ -177,13 +178,13 @@ pod_galerkin_method.initialize_training_set(100, sampling=EquispacedDistribution
 reduced_navier_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = (80.0, 1.5)
+online_mu = (70.0, 1.5)
 reduced_navier_stokes_problem.set_mu(online_mu)
 reduced_navier_stokes_problem.solve()
 reduced_navier_stokes_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100)
+pod_galerkin_method.initialize_testing_set(36, sampling=EquispacedDistribution())
 pod_galerkin_method.error_analysis()
 
 # 8. Perform a speedup analysis
