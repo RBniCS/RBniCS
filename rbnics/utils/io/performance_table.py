@@ -18,7 +18,7 @@
 
 import os
 import collections
-from numpy import exp, log, max, mean, min, zeros as Content
+from numpy import exp, isnan, log, max, mean, min, nan, zeros as Content
 from rbnics.utils.io.csv_io import CSVIO
 from rbnics.utils.io.folders import Folders
 
@@ -32,6 +32,7 @@ class PerformanceTable(object):
         self._columns = dict() # string to Content matrix
         self._columns_operations = dict() # string to tuple
         self._columns_not_implemented = dict() # string to bool
+        self._rows_not_implemented = dict() # string to dict of bool
         self._groups = dict() # string to list
         self._group_names_sorted = list()
         self._len_testing_set = len(testing_set)
@@ -50,6 +51,7 @@ class PerformanceTable(object):
         assert column_name not in self._columns and column_name not in self._columns_operations
         self._columns[column_name] = Content((self._Nmax - self._Nmin + 1, self._len_testing_set))
         self._columns_not_implemented[column_name] = None # will be set to a bool
+        self._rows_not_implemented[column_name] = {n: None for n in range(self._Nmax - self._Nmin + 1)} # will be set to a bool
         if group_name not in self._groups:
             self._groups[group_name] = list()
             self._group_names_sorted.append(group_name) # preserve the ordering provided by the user
@@ -83,7 +85,12 @@ class PerformanceTable(object):
         N = args[1]
         mu_index = args[2]
         assert self._columns_not_implemented[column_name] in (True, False)
-        if not self._columns_not_implemented[column_name]:
+        assert self._rows_not_implemented[column_name][N - self._Nmin] in (True, False)
+        if (
+            not self._columns_not_implemented[column_name]
+                and
+            not self._rows_not_implemented[column_name][N - self._Nmin]
+        ):
             return self._columns[column_name][N - self._Nmin, mu_index]
         else:
             return CustomNotImplementedAfterDiv
@@ -94,13 +101,19 @@ class PerformanceTable(object):
         N = args[1]
         mu_index = args[2]
         if is_not_implemented(value):
-            assert self._columns_not_implemented[column_name] in (None, True)
+            assert self._columns_not_implemented[column_name] in (None, True, False)
             if self._columns_not_implemented[column_name] is None:
                 self._columns_not_implemented[column_name] = True
+            assert self._rows_not_implemented[column_name][N - self._Nmin] in (None, True)
+            if self._rows_not_implemented[column_name][N - self._Nmin] is None:
+                self._rows_not_implemented[column_name][N - self._Nmin] = True
         else:
-            assert self._columns_not_implemented[column_name] in (None, False)
-            if self._columns_not_implemented[column_name] is None:
+            assert self._columns_not_implemented[column_name] in (None, True, False)
+            if self._columns_not_implemented[column_name] in (None, True):
                 self._columns_not_implemented[column_name] = False
+            assert self._rows_not_implemented[column_name][N - self._Nmin] in (None, False)
+            if self._rows_not_implemented[column_name][N - self._Nmin] is None:
+                self._rows_not_implemented[column_name][N - self._Nmin] = False
             if column_name not in self._preprocessor_setitem:
                 self._columns[column_name][N - self._Nmin, mu_index] = value
             else:
@@ -147,15 +160,19 @@ class PerformanceTable(object):
                     # Compute the required operation of each column over the second index (testing set)
                     table_content[current_table_index] = Content((self._Nmax - self._Nmin + 1,))
                     for n in range(self._Nmin, self._Nmax + 1):
-                        if operation == "min":
-                            current_table_content = min(self._columns[column][n - self._Nmin, :])
-                        elif operation == "mean":
-                            current_table_content = exp(mean(log(self._columns[column][n - self._Nmin, :])))
-                        elif operation == "max":
-                            current_table_content = max(self._columns[column][n - self._Nmin, :])
+                        assert self._rows_not_implemented[column][n - self._Nmin] in (True, False)
+                        if self._rows_not_implemented[column][n - self._Nmin] is False:
+                            if operation == "min":
+                                current_table_content = min(self._columns[column][n - self._Nmin, :])
+                            elif operation == "mean":
+                                current_table_content = exp(mean(log(self._columns[column][n - self._Nmin, :])))
+                            elif operation == "max":
+                                current_table_content = max(self._columns[column][n - self._Nmin, :])
+                            else:
+                                raise ValueError("Invalid operation in PerformanceTable")
+                            table_content[current_table_index][n - self._Nmin] = current_table_content
                         else:
-                            raise ValueError("Invalid operation in PerformanceTable")
-                        table_content[current_table_index][n - self._Nmin] = current_table_content
+                            table_content[current_table_index][n - self._Nmin] = nan
                     # Get the width of the columns
                     column_size[current_table_index] = max([max([len(str(x)) for x in table_content[current_table_index]]), len(current_table_header)])
             # Save content
@@ -167,6 +184,7 @@ class PerformanceTable(object):
         groups_content = self._process()
         output = ""
         for (group, (table_index, table_header, table_content, column_size)) in groups_content.items():
+            table_index_without_N = table_index[1:]
             # Prepare formatter for string conversion
             formatter = ""
             for (column_index, column_name) in enumerate(table_index):
@@ -178,12 +196,15 @@ class PerformanceTable(object):
             for t in table_index:
                 current_line.append(table_header[t])
             output += formatter.format(*current_line, **column_size) + "\n"
-            # Print the content
+            # Print the current row, only if its content was set to NotImplemented
             for n in range(self._Nmin, self._Nmax + 1):
                 current_line = list()
-                for t in table_index:
-                    current_line.append(table_content[t][n - self._Nmin])
-                output += formatter.format(*current_line, **column_size) + "\n"
+                all_not_implemented = all(isnan(table_content[t][n - self._Nmin]) for t in table_index_without_N)
+                assert any(isnan(table_content[t][n - self._Nmin]) for t in table_index_without_N) is all_not_implemented
+                if not all_not_implemented:
+                    for t in table_index:
+                        current_line.append(table_content[t][n - self._Nmin])
+                    output += formatter.format(*current_line, **column_size) + "\n"
             output += "\n"
         return output[:-2] # remove the last two newlines
         
@@ -192,12 +213,16 @@ class PerformanceTable(object):
         full_directory.create()
         groups_content = self._process()
         for (group, (table_index, table_header, table_content, _)) in groups_content.items():
+            table_index_without_N = table_index[1:]
             current_file = list()
             # Store the header
             current_file.append([table_header[t] for t in table_index])
-            # Store the content
+            # Store the current row, only if its content was set to NotImplemented
             for n in range(self._Nmin, self._Nmax + 1):
-                current_file.append([table_content[t][n - self._Nmin] for t in table_index])
+                all_not_implemented = all(isnan(table_content[t][n - self._Nmin]) for t in table_index_without_N)
+                assert any(isnan(table_content[t][n - self._Nmin]) for t in table_index_without_N) is all_not_implemented
+                if not all_not_implemented:
+                    current_file.append([table_content[t][n - self._Nmin] for t in table_index])
             # Save
             CSVIO.save_file(current_file, full_directory, group)
     

@@ -231,9 +231,25 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 for n in range(1, N + 1): # n = 1, ... N
                     n_arg = N_generator(n)
                     
-                    self.reduced_problem.solve(n_arg, **kwargs)
-                    error = self.reduced_problem.compute_error(**kwargs)
-                    relative_error = self.reduced_problem.compute_relative_error(**kwargs)
+                    if n_arg is not None:
+                        self.reduced_problem.solve(n_arg, **kwargs)
+                        error = self.reduced_problem.compute_error(**kwargs)
+                        relative_error = self.reduced_problem.compute_relative_error(**kwargs)
+                        
+                        self.reduced_problem.compute_output()
+                        error_output = self.reduced_problem.compute_error_output(**kwargs)
+                        relative_error_output = self.reduced_problem.compute_relative_error_output(**kwargs)
+                    else:
+                        if len(components) > 1:
+                            error = {component: NotImplemented for component in components}
+                            relative_error = {component: NotImplemented for component in components}
+                        else:
+                            error = NotImplemented
+                            relative_error = NotImplemented
+                        
+                        error_output = NotImplemented
+                        relative_error_output = NotImplemented
+                        
                     if len(components) > 1:
                         for component in components:
                             error_analysis_table["error_" + component, n, mu_index] = error[component]
@@ -243,9 +259,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                         error_analysis_table["error_" + component, n, mu_index] = error
                         error_analysis_table["relative_error_" + component, n, mu_index] = relative_error
                     
-                    self.reduced_problem.compute_output()
-                    error_analysis_table["error_output", n, mu_index] = self.reduced_problem.compute_error_output(**kwargs)
-                    error_analysis_table["relative_error_output", n, mu_index] = self.reduced_problem.compute_relative_error_output(**kwargs)
+                    error_analysis_table["error_output", n, mu_index] = error_output
+                    error_analysis_table["relative_error_output", n, mu_index] = relative_error_output
             
             # Print
             print("")
@@ -305,16 +320,23 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 for n in range(1, N + 1): # n = 1, ... N
                     n_arg = N_generator(n)
                     
-                    reduced_timer.start()
-                    self.reduced_problem.solve(n_arg, **kwargs)
-                    elapsed_reduced_solve = reduced_timer.stop()
+                    if n_arg is not None:
+                        reduced_timer.start()
+                        solution = self.reduced_problem.solve(n_arg, **kwargs)
+                        elapsed_reduced_solve = reduced_timer.stop()
+                        
+                        reduced_timer.start()
+                        output = self.reduced_problem.compute_output()
+                        elapsed_reduced_output = reduced_timer.stop()
+                    else:
+                        solution = NotImplemented
+                        output = NotImplemented
                     
-                    reduced_timer.start()
-                    self.reduced_problem.compute_output()
-                    elapsed_reduced_output = reduced_timer.stop()
-                    
-                    speedup_analysis_table["speedup_solve", n, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
-                    if self.reduced_problem._output is not NotImplemented:
+                    if solution is not NotImplemented:
+                        speedup_analysis_table["speedup_solve", n, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
+                    else:
+                        speedup_analysis_table["speedup_solve", n, mu_index] = NotImplemented
+                    if output is not NotImplemented:
                         speedup_analysis_table["speedup_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
                     else:
                         speedup_analysis_table["speedup_output", n, mu_index] = NotImplemented

@@ -295,11 +295,16 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             for n in range(1, N + 1): # n = 1, ... N
                 n_arg = N_generator(n)
-                self.EIM_approximation.solve(n_arg)
-                (_, error_analysis_table["error", n, mu_index], _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
-                error_analysis_table["error", n, mu_index] = abs(error_analysis_table["error", n, mu_index])
-                (_, error_analysis_table["relative_error", n, mu_index], _) = self.EIM_approximation.compute_maximum_interpolation_relative_error(n)
-                error_analysis_table["relative_error", n, mu_index] = abs(error_analysis_table["relative_error", n, mu_index])
+                
+                if n_arg is not None:
+                    self.EIM_approximation.solve(n_arg)
+                    (_, error, _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
+                    (_, relative_error, _) = self.EIM_approximation.compute_maximum_interpolation_relative_error(n)
+                    error_analysis_table["error", n, mu_index] = abs(error)
+                    error_analysis_table["relative_error", n, mu_index] = abs(relative_error)
+                else:
+                    error_analysis_table["error", n, mu_index] = NotImplemented
+                    error_analysis_table["relative_error", n, mu_index] = NotImplemented
         
         # Print
         print("")
@@ -363,10 +368,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
             
             for n in range(1, N + 1): # n = 1, ... N
                 n_arg = N_generator(n)
-                EIM_timer.start()
-                self.EIM_approximation.solve(n_arg)
-                elapsed_EIM = EIM_timer.stop()
-                speedup_analysis_table["speedup", n, mu_index] = elapsed_evaluate/elapsed_EIM
+                
+                if n_arg is not None:
+                    EIM_timer.start()
+                    self.EIM_approximation.solve(n_arg)
+                    elapsed_EIM = EIM_timer.stop()
+                    speedup_analysis_table["speedup", n, mu_index] = elapsed_evaluate/elapsed_EIM
+                else:
+                    speedup_analysis_table["speedup", n, mu_index] = NotImplemented
         
         # Print
         print("")

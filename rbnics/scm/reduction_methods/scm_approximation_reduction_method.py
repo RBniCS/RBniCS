@@ -229,17 +229,21 @@ class SCMApproximationReductionMethod(ReductionMethod):
             (exact, _) = self.SCM_approximation.evaluate_stability_factor()
             for n in range(1, N + 1): # n = 1, ... N
                 n_arg = N_generator(n)
-                LB = self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
-                UB = self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
                 
-                if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
-                    print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " < 0")
-                if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
-                    print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " > UB = " + str(UB))
-                if LB/exact > 1 and not isclose(LB/exact, 1.): # if LB/exact >> 1
-                    print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " > exact =" + str(exact))
-                
-                error_analysis_table["normalized_error", n, mu_index] = (exact - LB)/UB
+                if n_arg is not None:
+                    LB = self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
+                    UB = self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
+                    
+                    if LB/UB < 0 and not isclose(LB/UB, 0.): # if LB/UB << 0
+                        print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " < 0")
+                    if LB/UB > 1 and not isclose(LB/UB, 1.): # if LB/UB >> 1
+                        print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " > UB = " + str(UB))
+                    if LB/exact > 1 and not isclose(LB/exact, 1.): # if LB/exact >> 1
+                        print("SCM warning at mu = " + str(mu) + ": LB = " + str(LB) + " > exact =" + str(exact))
+                    
+                    error_analysis_table["normalized_error", n, mu_index] = (exact - LB)/UB
+                else:
+                    error_analysis_table["normalized_error", n, mu_index] = NotImplemented
         
         # Print
         print("")
@@ -298,11 +302,15 @@ class SCMApproximationReductionMethod(ReductionMethod):
             
             for n in range(1, N + 1): # n = 1, ... N
                 n_arg = N_generator(n)
-                SCM_timer.start()
-                self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
-                self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
-                elapsed_SCM = SCM_timer.stop()
-                speedup_analysis_table["speedup", n, mu_index] = elapsed_exact/elapsed_SCM
+                
+                if n_arg is not None:
+                    SCM_timer.start()
+                    self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
+                    self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
+                    elapsed_SCM = SCM_timer.stop()
+                    speedup_analysis_table["speedup", n, mu_index] = elapsed_exact/elapsed_SCM
+                else:
+                    speedup_analysis_table["speedup", n, mu_index] = NotImplemented
         
         # Print
         print("")

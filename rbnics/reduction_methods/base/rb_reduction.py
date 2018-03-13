@@ -225,9 +225,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
             error_analysis_table.set_Nmax(N)
             if len(components) > 1:
-                all_components_string = ""
+                all_components_string = "".join(components)
                 for component in components:
-                    all_components_string += component
                     error_analysis_table.add_column("error_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
                     error_analysis_table.add_column("relative_error_" + component, group_name="solution_" + component + "_relative_error", operations=("mean", "max"))
                 error_analysis_table.add_column("error_" + all_components_string, group_name="solution_" + all_components_string + "_error", operations=("mean", "max"))
@@ -259,19 +258,49 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 for n in range(1, N + 1): # n = 1, ... N
                     n_arg = N_generator(n)
                     
-                    self.reduced_problem.solve(n_arg, **kwargs)
-                    error = self.reduced_problem.compute_error(**kwargs)
-                    error_estimator = self.reduced_problem.estimate_error()
-                    relative_error = self.reduced_problem.compute_relative_error(**kwargs)
-                    relative_error_estimator = self.reduced_problem.estimate_relative_error()
+                    if n_arg is not None:
+                        self.reduced_problem.solve(n_arg, **kwargs)
+                        error = self.reduced_problem.compute_error(**kwargs)
+                        if len(components) > 1:
+                            error[all_components_string] = sqrt(sum([error[component]**2 for component in components]))
+                        error_estimator = self.reduced_problem.estimate_error()
+                        relative_error = self.reduced_problem.compute_relative_error(**kwargs)
+                        if len(components) > 1:
+                            relative_error[all_components_string] = sqrt(sum([relative_error[component]**2 for component in components]))
+                        relative_error_estimator = self.reduced_problem.estimate_relative_error()
+                        
+                        self.reduced_problem.compute_output()
+                        error_output = self.reduced_problem.compute_error_output(**kwargs)
+                        error_output_estimator = self.reduced_problem.estimate_error_output()
+                        relative_error_output = self.reduced_problem.compute_relative_error_output(**kwargs)
+                        relative_error_output_estimator = self.reduced_problem.estimate_relative_error_output()
+                    else:
+                        if len(components) > 1:
+                            error = {component: NotImplemented for component in components}
+                            error[all_components_string] = NotImplemented
+                        else:
+                            error = NotImplemented
+                        error_estimator = NotImplemented
+                        if len(components) > 1:
+                            relative_error = {component: NotImplemented for component in components}
+                            relative_error[all_components_string] = NotImplemented
+                        else:
+                            relative_error = NotImplemented
+                        relative_error_estimator = NotImplemented
+                        
+                        error_output = NotImplemented
+                        error_output_estimator = NotImplemented
+                        relative_error_output = NotImplemented
+                        relative_error_output_estimator = NotImplemented
+                        
                     if len(components) > 1:
                         for component in components:
                             error_analysis_table["error_" + component, n, mu_index] = error[component]
                             error_analysis_table["relative_error_" + component, n, mu_index] = relative_error[component]
-                        error_analysis_table["error_" + all_components_string, n, mu_index] = sqrt(sum([error[component]**2 for component in components]))
+                        error_analysis_table["error_" + all_components_string, n, mu_index] = error[all_components_string]
                         error_analysis_table["error_estimator_" + all_components_string, n, mu_index] = error_estimator
                         error_analysis_table["effectivity_" + all_components_string, n, mu_index] = error_analysis_table["error_estimator_" + all_components_string, n, mu_index]/error_analysis_table["error_" + all_components_string, n, mu_index]
-                        error_analysis_table["relative_error_" + all_components_string, n, mu_index] = sqrt(sum([relative_error[component]**2 for component in components]))
+                        error_analysis_table["relative_error_" + all_components_string, n, mu_index] = relative_error[all_components_string]
                         error_analysis_table["relative_error_estimator_" + all_components_string, n, mu_index] = relative_error_estimator
                         error_analysis_table["relative_effectivity_" + all_components_string, n, mu_index] = error_analysis_table["relative_error_estimator_" + all_components_string, n, mu_index]/error_analysis_table["relative_error_" + all_components_string, n, mu_index]
                     else:
@@ -283,12 +312,11 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                         error_analysis_table["relative_error_estimator_" + component, n, mu_index] = relative_error_estimator
                         error_analysis_table["relative_effectivity_" + component, n, mu_index] = error_analysis_table["relative_error_estimator_" + component, n, mu_index]/error_analysis_table["relative_error_" + component, n, mu_index]
                     
-                    self.reduced_problem.compute_output()
-                    error_analysis_table["error_output", n, mu_index] = self.reduced_problem.compute_error_output(**kwargs)
-                    error_analysis_table["error_estimator_output", n, mu_index] = self.reduced_problem.estimate_error_output()
+                    error_analysis_table["error_output", n, mu_index] = error_output
+                    error_analysis_table["error_estimator_output", n, mu_index] = error_output_estimator
                     error_analysis_table["effectivity_output", n, mu_index] = error_analysis_table["error_estimator_output", n, mu_index]/error_analysis_table["error_output", n, mu_index]
-                    error_analysis_table["relative_error_output", n, mu_index] = self.reduced_problem.compute_relative_error_output(**kwargs)
-                    error_analysis_table["relative_error_estimator_output", n, mu_index] = self.reduced_problem.estimate_relative_error_output()
+                    error_analysis_table["relative_error_output", n, mu_index] = relative_error_output
+                    error_analysis_table["relative_error_estimator_output", n, mu_index] = relative_error_output_estimator
                     error_analysis_table["relative_effectivity_output", n, mu_index] = error_analysis_table["relative_error_estimator_output", n, mu_index]/error_analysis_table["relative_error_output", n, mu_index]
             
             # Print
@@ -352,47 +380,59 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 for n in range(1, N + 1): # n = 1, ... N
                     n_arg = N_generator(n)
                     
-                    reduced_timer.start()
-                    self.reduced_problem.solve(n_arg, **kwargs)
-                    elapsed_reduced_solve = reduced_timer.stop()
-                    
-                    truth_timer.start()
-                    self.reduced_problem.compute_error(**kwargs)
-                    elapsed_error = truth_timer.stop()
-                    
-                    reduced_timer.start()
-                    error_estimator = self.reduced_problem.estimate_error()
-                    elapsed_error_estimator = reduced_timer.stop()
-                    
-                    truth_timer.start()
-                    self.reduced_problem.compute_relative_error(**kwargs)
-                    elapsed_relative_error = truth_timer.stop()
-                    
-                    reduced_timer.start()
-                    relative_error_estimator = self.reduced_problem.estimate_relative_error()
-                    elapsed_relative_error_estimator = reduced_timer.stop()
-                    
-                    reduced_timer.start()
-                    self.reduced_problem.compute_output()
-                    elapsed_reduced_output = reduced_timer.stop()
-                    
-                    truth_timer.start()
-                    self.reduced_problem.compute_error_output(**kwargs)
-                    elapsed_error_output = truth_timer.stop()
-                    
-                    reduced_timer.start()
-                    error_estimator_output = self.reduced_problem.estimate_error_output()
-                    elapsed_error_estimator_output = reduced_timer.stop()
-                    
-                    truth_timer.start()
-                    self.reduced_problem.compute_relative_error_output(**kwargs)
-                    elapsed_relative_error_output = truth_timer.stop()
-                    
-                    reduced_timer.start()
-                    relative_error_estimator_output = self.reduced_problem.estimate_relative_error_output()
-                    elapsed_relative_error_estimator_output = reduced_timer.stop()
-                    
-                    speedup_analysis_table["speedup_solve", n, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
+                    if n_arg is not None:
+                        reduced_timer.start()
+                        solution = self.reduced_problem.solve(n_arg, **kwargs)
+                        elapsed_reduced_solve = reduced_timer.stop()
+                        
+                        truth_timer.start()
+                        self.reduced_problem.compute_error(**kwargs)
+                        elapsed_error = truth_timer.stop()
+                        
+                        reduced_timer.start()
+                        error_estimator = self.reduced_problem.estimate_error()
+                        elapsed_error_estimator = reduced_timer.stop()
+                        
+                        truth_timer.start()
+                        self.reduced_problem.compute_relative_error(**kwargs)
+                        elapsed_relative_error = truth_timer.stop()
+                        
+                        reduced_timer.start()
+                        relative_error_estimator = self.reduced_problem.estimate_relative_error()
+                        elapsed_relative_error_estimator = reduced_timer.stop()
+                        
+                        reduced_timer.start()
+                        output = self.reduced_problem.compute_output()
+                        elapsed_reduced_output = reduced_timer.stop()
+                        
+                        truth_timer.start()
+                        self.reduced_problem.compute_error_output(**kwargs)
+                        elapsed_error_output = truth_timer.stop()
+                        
+                        reduced_timer.start()
+                        error_estimator_output = self.reduced_problem.estimate_error_output()
+                        elapsed_error_estimator_output = reduced_timer.stop()
+                        
+                        truth_timer.start()
+                        self.reduced_problem.compute_relative_error_output(**kwargs)
+                        elapsed_relative_error_output = truth_timer.stop()
+                        
+                        reduced_timer.start()
+                        relative_error_estimator_output = self.reduced_problem.estimate_relative_error_output()
+                        elapsed_relative_error_estimator_output = reduced_timer.stop()
+                    else:
+                        solution = NotImplemented
+                        error_estimator = NotImplemented
+                        relative_error_estimator = NotImplemented
+                        
+                        output = NotImplemented
+                        error_estimator_output = NotImplemented
+                        relative_error_estimator_output = NotImplemented
+                        
+                    if solution is not NotImplemented:
+                        speedup_analysis_table["speedup_solve", n, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
+                    else:
+                        speedup_analysis_table["speedup_solve", n, mu_index] = NotImplemented
                     if error_estimator is not NotImplemented:
                         speedup_analysis_table["speedup_solve_and_estimate_error", n, mu_index] = (elapsed_truth_solve + elapsed_error)/(elapsed_reduced_solve + elapsed_error_estimator)
                     else:
@@ -401,17 +441,17 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                         speedup_analysis_table["speedup_solve_and_estimate_relative_error", n, mu_index] = (elapsed_truth_solve + elapsed_relative_error)/(elapsed_reduced_solve + elapsed_relative_error_estimator)
                     else:
                         speedup_analysis_table["speedup_solve_and_estimate_relative_error", n, mu_index] = NotImplemented
-                    if self.reduced_problem._output is not NotImplemented:
+                    if output is not NotImplemented:
                         speedup_analysis_table["speedup_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
                     else:
                         speedup_analysis_table["speedup_output", n, mu_index] = NotImplemented
                     if error_estimator_output is not NotImplemented:
-                        assert self.reduced_problem._output is not NotImplemented
+                        assert output is not NotImplemented
                         speedup_analysis_table["speedup_output_and_estimate_error_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output + elapsed_error_output)/(elapsed_reduced_solve + elapsed_reduced_output + elapsed_error_estimator_output)
                     else:
                         speedup_analysis_table["speedup_output_and_estimate_error_output", n, mu_index] = NotImplemented
                     if relative_error_estimator_output is not NotImplemented:
-                        assert self.reduced_problem._output is not NotImplemented
+                        assert output is not NotImplemented
                         speedup_analysis_table["speedup_output_and_estimate_relative_error_output", n, mu_index] = (elapsed_truth_solve + elapsed_truth_output + elapsed_relative_error_output)/(elapsed_reduced_solve + elapsed_reduced_output + elapsed_relative_error_estimator_output)
                     else:
                         speedup_analysis_table["speedup_output_and_estimate_relative_error_output", n, mu_index] = NotImplemented
