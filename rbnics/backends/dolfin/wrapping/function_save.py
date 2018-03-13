@@ -46,7 +46,7 @@ def function_save(fun, directory, filename, suffix=None):
         if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
             for (index, components) in fun_V._index_to_components.items():
                 sub_fun = function_extend_or_restrict(fun, components[0], get_function_subspace(fun_V, components[0]), None, weight=None, copy=True)
-                _write_to_xdmf_file(sub_fun, directory, filename, suffix, components, components)
+                _write_to_xdmf_file(sub_fun, directory, filename, suffix, components)
         else:
             _write_to_xdmf_file(fun, directory, filename, suffix)
     
@@ -94,13 +94,12 @@ def _write_to_pvd_file(fun, directory, filename, suffix, components=None):
             file_ = File(full_filename, "compressed")
             file_ << fun
     
-def _write_to_xdmf_file(fun, directory, filename, suffix, components=None, function_name=None):
+def _write_to_xdmf_file(fun, directory, filename, suffix, components=None):
     if components is not None:
         filename = filename + "_component_" + "".join(components)
-    if function_name is None:
-        function_name = "function"
-    else:
         function_name = "function_" + "".join(components)
+    else:
+        function_name = "function"
     fun_rank = fun.value_rank()
     fun_dim = product(fun.value_shape())
     assert fun_rank <= 2
@@ -115,7 +114,7 @@ def _write_to_xdmf_file(fun, directory, filename, suffix, components=None, funct
                 filename_i = filename + "_subcomponent_" + str(i)
             else:
                 filename_i = filename + "_component_" + str(i)
-            _write_to_xdmf_file(fun_i, directory, filename_i, suffix, None, function_name)
+            _write_to_xdmf_file(fun_i, directory, filename_i, suffix, None)
     else:
         full_filename_visualization = os.path.join(str(directory), filename + ".xdmf")
         full_filename_checkpoint = os.path.join(str(directory), filename + "_checkpoint.xdmf")

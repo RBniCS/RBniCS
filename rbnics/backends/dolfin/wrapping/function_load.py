@@ -36,7 +36,7 @@ def function_load(fun, directory, filename, suffix=None):
             for (index, components) in fun_V._index_to_components.items():
                 sub_fun_V = get_function_subspace(fun_V, components)
                 sub_fun = Function(sub_fun_V)
-                if not _read_from_xdmf_file(sub_fun, directory, filename, suffix, components, components):
+                if not _read_from_xdmf_file(sub_fun, directory, filename, suffix, components):
                     return False
                 else:
                     extended_sub_fun = function_extend_or_restrict(sub_fun, None, fun_V, components[0], weight=None, copy=True)
@@ -59,13 +59,12 @@ def _read_from_xml_file(fun, directory, filename, suffix):
         file_ >> fun
     return file_exists
     
-def _read_from_xdmf_file(fun, directory, filename, suffix, components=None, function_name=None):
+def _read_from_xdmf_file(fun, directory, filename, suffix, components=None):
     if components is not None:
         filename = filename + "_component_" + "".join(components)
-    if function_name is None:
-        function_name = "function"
-    else:
         function_name = "function_" + "".join(components)
+    else:
+        function_name = "function"
     fun_rank = fun.value_rank()
     fun_dim = product(fun.value_shape())
     assert fun_rank <= 2
@@ -82,7 +81,7 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, components=None, func
                 filename_i = filename + "_component_" + str(i)
             fun_i_V = get_function_subspace(fun_V, i)
             fun_i = Function(fun_i_V)
-            if not _read_from_xdmf_file(fun_i, directory, filename_i, suffix, None, function_name):
+            if not _read_from_xdmf_file(fun_i, directory, filename_i, suffix, None):
                 return False
             else:
                 extended_sub_fun = function_extend_or_restrict(fun_i, None, fun_V, components[0], weight=None, copy=True)
