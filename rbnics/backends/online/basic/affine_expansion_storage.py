@@ -284,12 +284,12 @@ def AffineExpansionStorage(backend, wrapping):
         @overload(backend.Vector.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             slice_0 = tuple(range(item.shape[0]))
-            self._precomputed_slices[(slice_0, )] = self
+            self._precomputed_slices[slice_0] = self
             
         @overload(backend.Function.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             slice_0 = tuple(range(item.vector().shape[0]))
-            self._precomputed_slices[(slice_0, )] = self
+            self._precomputed_slices[slice_0] = self
             
         @overload(Number, )
         def _prepare_trivial_precomputed_slice(self, item):
