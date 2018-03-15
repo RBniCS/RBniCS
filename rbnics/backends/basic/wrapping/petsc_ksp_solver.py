@@ -25,16 +25,14 @@ def BasicPETScKSPSolver(backend, wrapping):
             self.solution = solution
             self.rhs = rhs
             self.ksp = PETSc.KSP().create(wrapping.get_mpi_comm(solution))
-            # Set sensible default values to parameters
-            self.set_parameters({
-                "linear_solver": "mumps"
-            })
                  
         def set_parameters(self, parameters):
             for (key, value) in parameters.items():
                 if key == "linear_solver":
                     self.ksp.setType("preonly")
                     self.ksp.getPC().setType("lu")
+                    if value == "default":
+                        value = wrapping.get_default_linear_solver()
                     self.ksp.getPC().setFactorSolverPackage(value)
                 else:
                     raise ValueError("Invalid paramater passed to PETSc KSP object.")

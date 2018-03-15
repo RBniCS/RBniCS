@@ -66,6 +66,10 @@ class TimeStepping(AbstractTimeStepping):
         self.solution_dot_dot = solution_dot_dot
         # Store time order input
         self.time_order = problem_wrapper.time_order()
+        # Set default linear solver
+        self.set_parameters({
+            "linear_solver": "default"
+        })
             
     def set_parameters(self, parameters):
         self.solver.set_parameters(parameters)

@@ -31,7 +31,6 @@ def BasicPETScSNESSolver(backend, wrapping):
             # Set sensible default values to parameters
             self._report = None
             self.set_parameters({
-                "linear_solver": "mumps",
                 "report": True
             })
              
@@ -44,6 +43,8 @@ def BasicPETScSNESSolver(backend, wrapping):
                     ksp = self.snes.getKSP()
                     ksp.setType("preonly")
                     ksp.getPC().setType("lu")
+                    if value == "default":
+                        value = wrapping.get_default_linear_solver()
                     ksp.getPC().setFactorSolverPackage(value)
                 elif key == "line_search":
                     raise ValueError("Line search is not wrapped yet by petsc4py")

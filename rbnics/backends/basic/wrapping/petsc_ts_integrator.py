@@ -45,7 +45,6 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 "exact_final_time": "stepover",
                 "integrator_type": "beuler",
                 "problem_type": "linear",
-                "linear_solver": "mumps",
                 "report": True
             }
             self.set_parameters(default_parameters)
@@ -73,6 +72,8 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     ksp = snes.getKSP()
                     ksp.setType("preonly")
                     ksp.getPC().setType("lu")
+                    if value == "default":
+                        value = wrapping.get_default_linear_solver()
                     ksp.getPC().setFactorSolverPackage(value)
                 elif key == "max_time_steps":
                     self.ts.setMaxSteps(value)
@@ -110,6 +111,8 @@ def BasicPETScTSIntegrator(backend, wrapping):
                             ksp = snes.getKSP()
                             ksp.setType("preonly")
                             ksp.getPC().setType("lu")
+                            if value == "default":
+                                value = wrapping.get_default_linear_solver()
                             ksp.getPC().setFactorSolverPackage(value_snes)
                         elif key_snes == "line_search":
                             raise ValueError("Line search is not wrapped yet by petsc4py")

@@ -30,10 +30,6 @@ def BasicSLEPcEPSSolver(backend, wrapping):
                 self.A = wrapping.to_petsc4py(A)
                 self.B = None
                 self.eps.setOperators(self.A)
-            # Set sensible default values to parameters
-            self.set_parameters({
-                "linear_solver": "mumps"
-            })
             
         def set_parameters(self, parameters):
             eps_tolerances = [None, None]
@@ -42,6 +38,8 @@ def BasicSLEPcEPSSolver(backend, wrapping):
                     ksp = self.eps.getST().getKSP()
                     ksp.setType("preonly")
                     ksp.getPC().setType("lu")
+                    if value == "default":
+                        value = wrapping.get_default_linear_solver()
                     ksp.getPC().setFactorSolverPackage(value)
                 elif key == "maximum_iterations":
                     eps_tolerances[1] = value
