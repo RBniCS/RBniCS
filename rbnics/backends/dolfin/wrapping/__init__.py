@@ -53,6 +53,7 @@ from rbnics.backends.dolfin.wrapping.function_space import FunctionSpace
 from rbnics.backends.dolfin.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector
 from rbnics.backends.dolfin.wrapping.function_to_vector import function_to_vector
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
+from rbnics.backends.dolfin.wrapping.get_default_linear_solver import get_default_linear_solver
 from rbnics.backends.dolfin.wrapping.get_function_norm import get_function_norm
 from rbnics.backends.dolfin.wrapping.get_function_space import get_function_space
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
@@ -118,6 +119,7 @@ __all__ = [
     'FunctionSpace',
     'function_to_vector',
     'get_auxiliary_problem_for_non_parametrized_function',
+    'get_default_linear_solver',
     'get_function_norm',
     'get_function_space',
     'get_function_subspace',
