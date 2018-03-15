@@ -261,6 +261,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     inner_product_N = problem._combined_projection_inner_product[:N, :N]
                     projected_initial_condition = OnlineFunction(N)
                     solver = OnlineLinearSolver(inner_product_N, projected_initial_condition, sum(product(all_initial_conditions_thetas, all_initial_conditions)))
+                    solver.set_parameters(problem._linear_solver_parameters)
                     solver.solve()
                     return projected_initial_condition
                 else:

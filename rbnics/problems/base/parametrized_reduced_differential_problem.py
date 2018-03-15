@@ -364,6 +364,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N, transpose(basis_functions)*inner_product*snapshot)
         else:
             solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N, transpose(basis_functions)*inner_product*snapshot, self._combined_and_homogenized_dirichlet_bc)
+        solver.set_parameters(self._linear_solver_parameters)
         solver.solve()
         return projected_snapshot_N
     

@@ -100,6 +100,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 assembled_operator_rhs,
                 assembled_dirichlet_bc
             )
+            solver.set_parameters(self._linear_solver_parameters)
             solver.solve()
             
         def _supremizer_cache_key_from_N_and_kwargs(self, N, **kwargs):

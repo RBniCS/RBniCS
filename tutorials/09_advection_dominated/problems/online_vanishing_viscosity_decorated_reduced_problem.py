@@ -255,6 +255,7 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                 assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
                 self._solution = OnlineFunction(N)
                 solver = LinearSolver(assembled_operator["a"], self._solution, assembled_operator["f"])
+                solver.set_parameters(self._linear_solver_parameters)
                 solver.solve()
             else:
                 EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)

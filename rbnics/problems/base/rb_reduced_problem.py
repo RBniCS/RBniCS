@@ -208,6 +208,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             def solve(self, rhs):
                 problem = self.problem
                 solver = LinearSolver(problem._riesz_solve_inner_product, problem._riesz_solve_storage, rhs, problem._riesz_solve_homogeneous_dirichlet_bc)
+                solver.set_parameters(problem._linear_solver_parameters)
                 return solver.solve()
                 
         def assemble_error_estimation_operators(self, term, current_stage="online"):

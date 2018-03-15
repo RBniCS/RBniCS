@@ -142,6 +142,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                         for (i, snapshot_i) in enumerate(self.snapshots[:n]):
                             projected_truth_snapshot_i = OnlineFunction(n)
                             solver = LinearSolver(inner_product_n, projected_truth_snapshot_i, transpose(basis_functions_n)*inner_product*snapshot_i)
+                            solver.set_parameters(self._linear_solver_parameters)
                             solver.solve()
                             for j in range(n):
                                 projection_truth_snapshots[j, i] = projected_truth_snapshot_i.vector()[j]
@@ -190,6 +191,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 q = self.online_solve_kwargs_with_rectification.index(kwargs)
                 intermediate_solution = OnlineFunction(N)
                 solver = LinearSolver(self.operator["projection_reduced_snapshots"][:N, :N][q], intermediate_solution, self._solution.vector())
+                solver.set_parameters(self._linear_solver_parameters)
                 solver.solve()
                 self._solution.vector()[:] = self.operator["projection_truth_snapshots"][:N, :N][0]*intermediate_solution
                 

@@ -23,7 +23,7 @@ from rbnics.backends.basic.wrapping.delayed_sum import DelayedSum
 from rbnics.backends.basic.wrapping.non_affine_expansion_storage_item import NonAffineExpansionStorageItem
 from rbnics.eim.utils.decorators import get_component_and_index_from_basis_function, get_reduced_problem_from_riesz_solve_homogeneous_dirichlet_bc, get_reduced_problem_from_riesz_solve_inner_product, get_reduced_problem_from_riesz_solve_storage, get_term_and_index_from_parametrized_operator, get_problem_from_parametrized_operator
 from rbnics.utils.decorators import get_problem_from_problem_name, get_reduced_problem_from_problem
-from rbnics.utils.io import Folders, TextIO as BCsIO, TextIO as LHSIO, TextIO as RHSIO, TextIO as SolutionIO
+from rbnics.utils.io import Folders, TextIO as BCsIO, TextIO as LHSIO, TextIO as ParametersIO, TextIO as RHSIO, TextIO as SolutionIO
 
 class DelayedLinearSolver(object):
     def __init__(self, lhs=None, solution=None, rhs=None, bcs=None):
@@ -36,6 +36,10 @@ class DelayedLinearSolver(object):
         )
         self._rhs = rhs
         self._bcs = bcs
+        self._parameters = dict()
+        
+    def set_parameters(self, parameters):
+        self._parameters = parameters
         
     def solve(self):
         from rbnics.backends import AffineExpansionStorage, LinearSolver, product, sum
@@ -66,6 +70,7 @@ class DelayedLinearSolver(object):
         operators = AffineExpansionStorage(tuple(operators))
         rhs = sum(product(thetas, operators))
         solver = LinearSolver(self._lhs, self._solution, rhs, self._bcs)
+        solver.set_parameters(self._parameters)
         return solver.solve()
         
     def save(self, directory, filename):
@@ -106,6 +111,8 @@ class DelayedLinearSolver(object):
             raise TypeError("Invalid rhs")
         # Save problem corresponding to self._bcs
         BCsIO.save_file(get_reduced_problem_from_riesz_solve_homogeneous_dirichlet_bc(self._bcs).truth_problem.name(), full_directory, "bcs_problem_name")
+        # Save parameters
+        ParametersIO.save_file(self._parameters, full_directory, "parameters")
         
     def load(self, directory, filename):
         # Get full directory name
@@ -163,6 +170,10 @@ class DelayedLinearSolver(object):
         bcs_problem = get_problem_from_problem_name(bcs_problem_name)
         bcs_reduced_problem = get_reduced_problem_from_problem(bcs_problem)
         self._bcs = bcs_reduced_problem._riesz_solve_homogeneous_dirichlet_bc
+        # Load parameters
+        assert len(self._parameters) is 0
+        assert ParametersIO.exists_file(full_directory, "parameters")
+        self._parameters = ParametersIO.load_file(full_directory, "parameters")
         # Return
         return True
         

@@ -34,6 +34,7 @@ class LinearSolver(AbstractLinearSolver):
         self._init_lhs(lhs, bcs)
         self._init_rhs(rhs, bcs)
         self._apply_bcs(bcs)
+        self._linear_solver = "default"
     
     @overload
     def _init_lhs(self, lhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
@@ -87,9 +88,12 @@ class LinearSolver(AbstractLinearSolver):
                 bc.apply(self.lhs, self.rhs)
                 
     def set_parameters(self, parameters):
-        assert len(parameters) == 0, "dolfin linear solver does not accept parameters yet"
+        assert len(parameters) in (0, 1)
+        if len(parameters) is 1:
+            assert "linear_solver" in parameters
+        self._linear_solver = parameters.get("linear_solver", "default")
         
     def solve(self):
-        solver = PETScLUSolver("mumps")
+        solver = PETScLUSolver(self._linear_solver)
         solver.solve(self.lhs, self.solution.vector(), self.rhs)
         return self.solution

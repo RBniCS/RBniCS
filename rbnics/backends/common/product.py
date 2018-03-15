@@ -62,11 +62,13 @@ def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_
             raise TypeError("Invalid rhs")
         if output is None:
             output = DelayedLinearSolver(operator._lhs, operator._solution, DelayedSum(rhs), operator._bcs)
+            output.set_parameters(output._parameters)
         else:
             assert output._lhs is operator._lhs
             assert output._solution is operator._solution
             output._rhs += rhs
             assert output._bcs is operator._bcs
+            assert output._parameters is operator._parameters
     output = output.solve()
     return ProductOutput(output)
     
