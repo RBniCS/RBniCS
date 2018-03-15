@@ -20,6 +20,8 @@ from ufl import transpose
 from dolfin import *
 from rbnics import *
 
+PETScOptions.set("snes_linesearch_type", "basic")
+
 @DEIM("online", basis_generation="Greedy")
 @ExactParametrizedFunctions("offline")
 class NavierStokes(NavierStokesProblem):
@@ -47,9 +49,7 @@ class NavierStokes(NavierStokesProblem):
         self._nonlinear_solver_parameters.update({
             "linear_solver": "mumps",
             "maximum_iterations": 20,
-            "report": True,
-            "line_search": "basic",
-            "error_on_nonconvergence": True
+            "report": True
         })
         
     # Return custom problem name

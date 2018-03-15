@@ -29,12 +29,12 @@ from rbnics.backends.dolfin.assign import assign
 from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
-from rbnics.backends.dolfin.wrapping import get_mpi_comm, to_petsc4py
+from rbnics.backends.dolfin.wrapping import get_default_linear_solver, get_mpi_comm, to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, ModuleWrapper, overload
 
 backend = ModuleWrapper()
-wrapping_for_wrapping = ModuleWrapper(get_mpi_comm, to_petsc4py)
+wrapping_for_wrapping = ModuleWrapper(get_default_linear_solver, get_mpi_comm, to_petsc4py)
 PETScTSIntegrator = BasicPETScTSIntegrator(backend, wrapping_for_wrapping)
 
 @BackendFor("dolfin", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
@@ -109,9 +109,6 @@ class _TimeDependentProblem_Base(object):
         self.set_time = set_time
         # Storage for derivatives
         self.V = solution.function_space()
-        # Storage for residual and jacobian
-        self.residual_vector = PETScVector()
-        self.jacobian_matrix = PETScMatrix()
         # Storage for solutions
         self.all_solutions_time = list()
         self.all_solutions = list()
@@ -205,79 +202,103 @@ class _TimeDependentProblem_Base(object):
             at_final_time_step = False
         
     @overload
-    def _residual_vector_assemble(self, residual_form: Form, overwrite: bool):
+    def _residual_vector_assemble(self, residual_form: Form):
+        return assemble(residual_form)
+        
+    @overload
+    def _residual_vector_assemble(self, residual_form: Form, petsc_residual: PETSc.Vec):
+        self.residual_vector = PETScVector(petsc_residual)
         assemble(residual_form, tensor=self.residual_vector)
         
     @overload
-    def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory, overwrite: bool):
+    def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory):
+        return evaluate(residual_form)
+        
+    @overload
+    def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory, petsc_residual: PETSc.Vec):
+        self.residual_vector = PETScVector(petsc_residual)
         evaluate(residual_form, tensor=self.residual_vector)
         
     @overload
-    def _residual_vector_assemble(self, residual_vector_input: GenericVector, overwrite: bool):
-        if overwrite:
-            self.residual_vector = residual_vector_input
-        else:
-            to_petsc4py(residual_vector_input).swap(to_petsc4py(self.residual_vector))
-            
+    def _residual_vector_assemble(self, residual_vector: GenericVector):
+        return residual_vector
+        
     @overload
-    def residual_bcs_apply(self, bcs: None):
+    def _residual_vector_assemble(self, residual_vector_input: GenericVector, petsc_residual: PETSc.Vec):
+        self.residual_vector = PETScVector(petsc_residual)
+        to_petsc4py(residual_vector_input).swap(petsc_residual)
+        
+    @overload
+    def _residual_bcs_apply(self, bcs: None):
         pass
         
     @overload
-    def residual_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
+    def _residual_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
         for bc in bcs:
             bc.apply(self.residual_vector, self.solution.vector())
             
     @overload
-    def residual_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+    def _residual_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         for key in bcs:
             for bc in bcs[key]:
                 bc.apply(self.residual_vector, self.solution.vector())
         
     @overload
-    def _jacobian_matrix_assemble(self, jacobian_form: Form, overwrite: bool):
+    def _jacobian_matrix_assemble(self, jacobian_form: Form):
+        return assemble(jacobian_form)
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_form: Form, petsc_jacobian: PETSc.Mat):
+        self.jacobian_matrix = PETScMatrix(petsc_jacobian)
         assemble(jacobian_form, tensor=self.jacobian_matrix)
         
     @overload
-    def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory, overwrite: bool):
+    def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory):
+        return evaluate(jacobian_form)
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory, petsc_jacobian: PETSc.Mat):
+        self.jacobian_matrix = PETScMatrix(petsc_jacobian)
         evaluate(jacobian_form, tensor=self.jacobian_matrix)
         
     @overload
-    def _jacobian_matrix_assemble(self, jacobian_matrix_input: GenericMatrix, overwrite: bool):
-        if overwrite:
-            self.jacobian_matrix = jacobian_matrix_input
-        else:
-            self.jacobian_matrix.zero()
-            self.jacobian_matrix += jacobian_matrix_input
+    def _jacobian_matrix_assemble(self, jacobian_matrix: GenericMatrix):
+        return jacobian_matrix
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_matrix_input: GenericMatrix, petsc_jacobian: PETSc.Mat):
+        self.jacobian_matrix = PETScMatrix(petsc_jacobian)
+        self.jacobian_matrix.zero()
+        self.jacobian_matrix += jacobian_matrix_input
         # Make sure to keep nonzero pattern, as dolfin does by default, because this option is apparently
         # not preserved by the sum
-        to_petsc4py(self.jacobian_matrix).setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
+        petsc_jacobian.setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
     
     @overload
-    def jacobian_bcs_apply(self, bcs: None):
+    def _jacobian_bcs_apply(self, bcs: None):
         pass
         
     @overload
-    def jacobian_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
+    def _jacobian_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
         for bc in bcs:
             bc.apply(self.jacobian_matrix)
             
     @overload
-    def jacobian_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+    def _jacobian_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         for key in bcs:
             for bc in bcs[key]:
                 bc.apply(self.jacobian_matrix)
         
-    def update_solution(self, solution):
-        solution.ghostUpdate()
+    def update_solution(self, petsc_solution):
+        petsc_solution.ghostUpdate()
         self.solution.vector().zero()
-        self.solution.vector().add_local(solution.getArray())
+        self.solution.vector().add_local(petsc_solution.getArray())
         self.solution.vector().apply("add")
         
-    def update_solution_dot(self, solution_dot):
-        solution_dot.ghostUpdate()
+    def update_solution_dot(self, petsc_solution_dot):
+        petsc_solution_dot.ghostUpdate()
         self.solution_dot.vector().zero()
-        self.solution_dot.vector().add_local(solution_dot.getArray())
+        self.solution_dot.vector().add_local(petsc_solution_dot.getArray())
         self.solution_dot.vector().apply("add")
         
 class _TimeDependentProblem1(_TimeDependentProblem_Base):
@@ -286,10 +307,10 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         # Auxiliary storage for time order
         self.time_order = 1
         # Make sure that residual vector and jacobian matrix are properly initialized
-        self.residual_vector_assemble(0., self.solution, self.solution_dot, overwrite=True)
-        self.jacobian_matrix_assemble(0., self.solution, self.solution_dot, 0., overwrite=True)
+        self.residual_vector = self._residual_vector_assemble(self.residual_eval(0., self.solution, self.solution_dot))
+        self.jacobian_matrix = self._jacobian_matrix_assemble(self.jacobian_eval(0., self.solution, self.solution_dot, 0.))
    
-    def residual_vector_eval(self, ts, t, solution, solution_dot, residual):
+    def residual_vector_eval(self, ts, t, petsc_solution, petsc_solution_dot, petsc_residual):
         """
            TSSetIFunction - Set the function to compute F(t,U,U_t) where F() = 0 is the DAE to be solved.
 
@@ -314,20 +335,15 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         """
         # 1. Store solution and solution_dot in dolfin data structures, as well as current time
         self.set_time(t)
-        self.update_solution(solution)
-        self.update_solution_dot(solution_dot)
+        self.update_solution(petsc_solution)
+        self.update_solution_dot(petsc_solution_dot)
         # 2. Assemble the residual
-        self.residual_vector = PETScVector(residual)
-        self.residual_vector_assemble(t, self.solution, self.solution_dot)
+        self._residual_vector_assemble(self.residual_eval(t, self.solution, self.solution_dot), petsc_residual)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        self.residual_bcs_apply(bcs)
+        self._residual_bcs_apply(bcs)
         
-    def residual_vector_assemble(self, t, solution, solution_dot, overwrite=False):
-        residual_form_or_vector = self.residual_eval(t, solution, solution_dot)
-        self._residual_vector_assemble(residual_form_or_vector, overwrite)
-        
-    def jacobian_matrix_eval(self, ts, t, solution, solution_dot, solution_dot_coefficient, jacobian, preconditioner):
+    def jacobian_matrix_eval(self, ts, t, petsc_solution, petsc_solution_dot, solution_dot_coefficient, petsc_jacobian, petsc_preconditioner):
         """
            TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
                             provided with TSSetIFunction().
@@ -371,16 +387,11 @@ class _TimeDependentProblem1(_TimeDependentProblem_Base):
         # 1. There is no need to store solution and solution_dot in dolfin data structures, nor current time,
         #    since this has already been done by the residual
         # 2. Assemble the jacobian
-        assert jacobian == preconditioner
-        self.jacobian_matrix = PETScMatrix(jacobian)
-        self.jacobian_matrix_assemble(t, self.solution, self.solution_dot, solution_dot_coefficient)
+        assert petsc_jacobian == petsc_preconditioner
+        self._jacobian_matrix_assemble(self.jacobian_eval(t, self.solution, self.solution_dot, solution_dot_coefficient), petsc_jacobian)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        self.jacobian_bcs_apply(bcs)
-        
-    def jacobian_matrix_assemble(self, t, solution, solution_dot, solution_dot_coefficient, overwrite=False):
-        jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_coefficient)
-        self._jacobian_matrix_assemble(jacobian_form_or_matrix, overwrite)
+        self._jacobian_bcs_apply(bcs)
         
 class _TimeDependentProblem2(_TimeDependentProblem_Base):
     def __init__(self, residual_eval, solution, solution_dot, solution_dot_dot, bc_eval, jacobian_eval, set_time):
@@ -390,12 +401,12 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         # Auxiliary storage for time order
         self.time_order = 2
         # Make sure that residual vector and jacobian matrix are properly initialized
-        self.residual_vector_assemble(0., self.solution, self.solution_dot, self.solution_dot_dot, overwrite=True)
-        self.jacobian_matrix_assemble(0., self.solution, self.solution_dot, self.solution_dot_dot, 0., 0., overwrite=True)
+        self.residual_vector = self._residual_vector_assemble(self.residual_eval(0., self.solution, self.solution_dot, self.solution_dot_dot))
+        self.jacobian_matrix = self._jacobian_matrix_assemble(self.jacobian_eval(0., self.solution, self.solution_dot, self.solution_dot_dot, 0., 0.))
         # Storage for solutions
         self.all_solutions_dot_dot = list()
         
-    def residual_vector_eval(self, ts, t, solution, solution_dot, solution_dot_dot, residual):
+    def residual_vector_eval(self, ts, t, petsc_solution, petsc_solution_dot, petsc_solution_dot_dot, petsc_residual):
         """
            TSSetI2Function - Set the function to compute F(t,U,U_t,U_tt) where F = 0 is the DAE to be solved.
 
@@ -421,21 +432,16 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         """
         # 1. Store solution and solution_dot in dolfin data structures, as well as current time
         self.set_time(t)
-        self.update_solution(solution)
-        self.update_solution_dot(solution_dot)
-        self.update_solution_dot_dot(solution_dot_dot)
+        self.update_solution(petsc_solution)
+        self.update_solution_dot(petsc_solution_dot)
+        self.update_solution_dot_dot(petsc_solution_dot_dot)
         # 2. Assemble the residual
-        self.residual_vector = PETScVector(residual)
-        self.residual_vector_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot)
+        self._residual_vector_assemble(self.residual_eval(t, self.solution, self.solution_dot, self.solution_dot_dot), petsc_residual)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        self.residual_bcs_apply(bcs)
+        self._residual_bcs_apply(bcs)
             
-    def residual_vector_assemble(self, t, solution, solution_dot, solution_dot_dot, overwrite=False):
-        residual_form_or_vector = self.residual_eval(t, solution, solution_dot, solution_dot_dot)
-        self._residual_vector_assemble(residual_form_or_vector, overwrite)
-        
-    def jacobian_matrix_eval(self, ts, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient, jacobian, preconditioner):
+    def jacobian_matrix_eval(self, ts, t, petsc_solution, petsc_solution_dot, petsc_solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient, petsc_jacobian, petsc_preconditioner):
         """
            TSSetI2Jacobian - Set the function to compute the matrix dF/dU + v*dF/dU_t  + a*dF/dU_tt
                 where F(t,U,U_t,U_tt) is the function you provided with TSSetI2Function().
@@ -475,19 +481,14 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         # 1. There is no need to store solution, solution_dot and solution_dot_dot in dolfin data structures,
         #    nor current time, since this has already been done by the residual
         # 2. Assemble the jacobian
-        assert jacobian == preconditioner
-        self.jacobian_matrix = PETScMatrix(jacobian)
-        self.jacobian_matrix_assemble(t, self.solution, self.solution_dot, self.solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)
+        assert petsc_jacobian == petsc_preconditioner
+        self._jacobian_matrix_assemble(self.jacobian_eval(t, self.solution, self.solution_dot, self.solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient), petsc_jacobian)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
-        self.jacobian_bcs_apply(bcs)
+        self._jacobian_bcs_apply(bcs)
             
-    def jacobian_matrix_assemble(self, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient, overwrite=False):
-        jacobian_form_or_matrix = self.jacobian_eval(t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient)
-        self._jacobian_matrix_assemble(jacobian_form_or_matrix, overwrite)
-            
-    def update_solution_dot_dot(self, solution_dot_dot):
-        solution_dot_dot.ghostUpdate()
+    def update_solution_dot_dot(self, petsc_solution_dot_dot):
+        petsc_solution_dot_dot.ghostUpdate()
         self.solution_dot_dot.vector().zero()
-        self.solution_dot_dot.vector().add_local(solution_dot_dot.getArray())
+        self.solution_dot_dot.vector().add_local(petsc_solution_dot_dot.getArray())
         self.solution_dot_dot.vector().apply("add")

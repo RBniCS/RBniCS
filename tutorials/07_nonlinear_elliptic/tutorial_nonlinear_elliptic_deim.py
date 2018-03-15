@@ -42,8 +42,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         self._nonlinear_solver_parameters.update({
             "linear_solver": "mumps",
             "maximum_iterations": 20,
-            "report": True,
-            "error_on_nonconvergence": True
+            "report": True
         })
         
     # Return custom problem name

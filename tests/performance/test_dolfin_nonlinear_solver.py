@@ -81,8 +81,7 @@ class Data(object):
                 "snes_solver": {
                     "linear_solver": "mumps",
                     "maximum_iterations": 20,
-                    "report": True,
-                    "error_on_nonconvergence": True
+                    "report": True
                 }
             }
         )
@@ -94,8 +93,7 @@ class Data(object):
         solver.set_parameters({
             "linear_solver": "mumps",
             "maximum_iterations": 20,
-            "report": True,
-            "error_on_nonconvergence": True
+            "report": True
         })
         solver.solve()
         return self.u.copy(deepcopy=True)

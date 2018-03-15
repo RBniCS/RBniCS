@@ -18,151 +18,154 @@
 
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import assemble, DirichletBC, has_pybind11, NonlinearProblem, PETScSNESSolver
+from dolfin import assemble, DirichletBC, has_pybind11, PETScMatrix, PETScVector
 if has_pybind11():
     from dolfin.cpp.la import GenericMatrix, GenericVector
 else:
     from dolfin import GenericMatrix, GenericVector
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
+from rbnics.backends.basic.wrapping.petsc_snes_solver import BasicPETScSNESSolver
 from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
-from rbnics.backends.dolfin.wrapping import to_petsc4py
+from rbnics.backends.dolfin.wrapping import get_default_linear_solver, get_mpi_comm, to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
-from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
+from rbnics.utils.decorators import BackendFor, dict_of, list_of, ModuleWrapper, overload
+
+backend = ModuleWrapper()
+wrapping_for_wrapping = ModuleWrapper(get_default_linear_solver, get_mpi_comm, to_petsc4py)
+PETScSNESSolver = BasicPETScSNESSolver(backend, wrapping_for_wrapping)
 
 @BackendFor("dolfin", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):
         self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
-        self.solver = PETScSNESSolver(solution.vector().mpi_comm())
-        # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
-        # Make sure to use a matrix with proper sparsity pattern if matrix_eval returns a matrix (rather than a Form)
-        jacobian_form_or_matrix = self.problem.jacobian_eval(self.problem.solution)
-        self._init_workaround(jacobian_form_or_matrix)
-        # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
+        self.solver = PETScSNESSolver(self.problem, self.problem.solution.vector().copy()) # create copies to avoid internal storage overwriting by linesearch
         
-    # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
-    @overload
-    def _init_workaround(self, jacobian_form: Form):
-        pass
-        
-    @overload
-    def _init_workaround(self, jacobian_form: ParametrizedTensorFactory):
-        pass
-        
-    @overload
-    def _init_workaround(self, jacobian_matrix: GenericMatrix):
-        self.solver.snes().setJacobian(None, to_petsc4py(jacobian_matrix).duplicate())
-    # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
-            
     def set_parameters(self, parameters):
-        self.solver.parameters.update(parameters)
+        self.solver.set_parameters(parameters)
         
     def solve(self):
-        self.solver.solve(self.problem, self.problem.solution.vector())
+        self.solver.solve()
         return self.problem.solution
     
-class _NonlinearProblem(NonlinearProblem):
+class _NonlinearProblem(object):
     def __init__(self, residual_eval, solution, bcs, jacobian_eval):
-        NonlinearProblem.__init__(self)
         # Store input arguments
         self.residual_eval = residual_eval
         self.solution = solution
         self.bcs = bcs
         self.jacobian_eval = jacobian_eval
-        # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
-        self._J_assemble_failed_in_init = False
-        # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
+        # Prepare storage for residual and jacobian
+        self.residual_vector = self._residual_vector_assemble(residual_eval(solution))
+        self.jacobian_matrix = self._jacobian_matrix_assemble(jacobian_eval(solution))
                
-    def F(self, residual_vector, solution):
-        # Assemble the residual
-        self.residual_vector_assemble(residual_vector, self.solution)
-        # Apply boundary conditions
-        self.residual_bcs_apply(self.bcs, residual_vector)
-            
-    def residual_vector_assemble(self, residual_vector, solution):
-        residual_form_or_vector = self.residual_eval(solution)
-        self._residual_vector_assemble(residual_form_or_vector, residual_vector)
+    def residual_vector_eval(self, snes, petsc_solution, petsc_residual):
+        # 1. Store solution in dolfin data structures
+        self.update_solution(petsc_solution)
+        # 2. Assemble the residual
+        self._residual_vector_assemble(self.residual_eval(self.solution), petsc_residual)
+        # 3. Apply boundary conditions
+        self._residual_bcs_apply(self.bcs)
         
     @overload
-    def _residual_vector_assemble(self, residual_form: Form, residual_vector: GenericVector):
-        assemble(residual_form, tensor=residual_vector)
+    def _residual_vector_assemble(self, residual_form: Form):
+        return assemble(residual_form)
         
     @overload
-    def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory, residual_vector: GenericVector):
-        evaluate(residual_form, tensor=residual_vector)
+    def _residual_vector_assemble(self, residual_form: Form, petsc_residual: PETSc.Vec):
+        self.residual_vector = PETScVector(petsc_residual)
+        assemble(residual_form, tensor=self.residual_vector)
         
     @overload
-    def _residual_vector_assemble(self, residual_vector_input: GenericVector, residual_vector_output: GenericVector):
-        to_petsc4py(residual_vector_input).swap(to_petsc4py(residual_vector_output))
+    def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory):
+        return evaluate(residual_form)
+        
+    @overload
+    def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory, petsc_residual: PETSc.Vec):
+        self.residual_vector = PETScVector(petsc_residual)
+        evaluate(residual_form, tensor=self.residual_vector)
+        
+    @overload
+    def _residual_vector_assemble(self, residual_vector: GenericVector):
+        return residual_vector
+        
+    @overload
+    def _residual_vector_assemble(self, residual_vector_input: GenericVector, petsc_residual: PETSc.Vec):
+        self.residual_vector = PETScVector(petsc_residual)
+        to_petsc4py(residual_vector_input).swap(petsc_residual)
     
     @overload
-    def residual_bcs_apply(self, bcs: None, residual_vector: GenericVector):
+    def _residual_bcs_apply(self, bcs: None):
         pass
         
     @overload
-    def residual_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC), residual_vector: GenericVector):
+    def _residual_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
         for bc in self.bcs:
-            bc.apply(residual_vector, self.solution.vector())
+            bc.apply(self.residual_vector, self.solution.vector())
         
     @overload
-    def residual_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC)), residual_vector: GenericVector):
+    def _residual_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         for key in self.bcs:
             for bc in self.bcs[key]:
-                bc.apply(residual_vector, self.solution.vector())
+                bc.apply(self.residual_vector, self.solution.vector())
         
-    def J(self, jacobian_matrix, solution):
-        # Assemble the jacobian
-        assembled = self.jacobian_matrix_assemble(jacobian_matrix, self.solution)
-        # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
-        if not assembled:
-            assert not self._J_assemble_failed_in_init # This should happen only once
-            self._J_assemble_failed_in_init = True
-            return
-        # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
-        # Apply boundary conditions
-        self.jacobian_bcs_apply(self.bcs, jacobian_matrix)
-        
-    def jacobian_matrix_assemble(self, jacobian_matrix, solution):
-        jacobian_form_or_matrix = self.jacobian_eval(solution)
-        return self._jacobian_matrix_assemble(jacobian_form_or_matrix, jacobian_matrix)
+    def jacobian_matrix_eval(self, snes, petsc_solution, petsc_jacobian, petsc_preconditioner):
+        # 1. There is no need to store solution, since this has already been done by the residual
+        # 2. Assemble the jacobian
+        assert petsc_jacobian == petsc_preconditioner
+        self._jacobian_matrix_assemble(self.jacobian_eval(self.solution), petsc_jacobian)
+        # 3. Apply BCs, if necessary
+        self._jacobian_bcs_apply(self.bcs)
         
     @overload
-    def _jacobian_matrix_assemble(self, jacobian_form: Form, jacobian_matrix: GenericMatrix):
-        assemble(jacobian_form, tensor=jacobian_matrix)
-        return True
+    def _jacobian_matrix_assemble(self, jacobian_form: Form):
+        return assemble(jacobian_form)
         
     @overload
-    def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory, jacobian_matrix: GenericMatrix):
-        evaluate(jacobian_form, tensor=jacobian_matrix)
-        return True
+    def _jacobian_matrix_assemble(self, jacobian_form: Form, petsc_jacobian: PETSc.Mat):
+        self.jacobian_matrix = PETScMatrix(petsc_jacobian)
+        assemble(jacobian_form, tensor=self.jacobian_matrix)
         
     @overload
-    def _jacobian_matrix_assemble(self, jacobian_matrix_input: GenericMatrix, jacobian_matrix_output: GenericMatrix):
-        # =========== PETScSNESSolver::init() workaround for assembled matrices =========== #
-        if jacobian_matrix_output.empty():
-            return False
-        # === end === PETScSNESSolver::init() workaround for assembled matrices === end === #
-        else:
-            jacobian_matrix_output.zero()
-            jacobian_matrix_output += jacobian_matrix_input
-            # Make sure to keep nonzero pattern, as dolfin does by default, because this option is apparently
-            # not preserved by the sum
-            to_petsc4py(jacobian_matrix_output).setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
-            return True
+    def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory):
+        return evaluate(jacobian_form)
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory, petsc_jacobian: PETSc.Mat):
+        self.jacobian_matrix = PETScMatrix(petsc_jacobian)
+        evaluate(jacobian_form, tensor=self.jacobian_matrix)
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_matrix: GenericMatrix):
+        return jacobian_matrix
+        
+    @overload
+    def _jacobian_matrix_assemble(self, jacobian_matrix_input: GenericMatrix, petsc_jacobian: PETSc.Mat):
+        self.jacobian_matrix = PETScMatrix(petsc_jacobian)
+        self.jacobian_matrix.zero()
+        self.jacobian_matrix += jacobian_matrix_input
+        # Make sure to keep nonzero pattern, as dolfin does by default, because this option is apparently
+        # not preserved by the sum
+        petsc_jacobian.setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
     
     @overload
-    def jacobian_bcs_apply(self, bcs: None, jacobian_matrix: GenericMatrix):
+    def _jacobian_bcs_apply(self, bcs: None):
         pass
     
     @overload
-    def jacobian_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC), jacobian_matrix: GenericMatrix):
+    def _jacobian_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
         for bc in self.bcs:
-            bc.apply(jacobian_matrix)
+            bc.apply(self.jacobian_matrix)
     
     @overload
-    def jacobian_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC)), jacobian_matrix: GenericMatrix):
+    def _jacobian_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         for key in self.bcs:
             for bc in self.bcs[key]:
-                bc.apply(jacobian_matrix)
+                bc.apply(self.jacobian_matrix)
+                
+    def update_solution(self, petsc_solution):
+        petsc_solution.ghostUpdate()
+        self.solution.vector().zero()
+        self.solution.vector().add_local(petsc_solution.getArray())
+        self.solution.vector().apply("add")

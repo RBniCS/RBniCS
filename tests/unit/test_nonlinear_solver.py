@@ -94,8 +94,7 @@ def _test_nonlinear_solver_sparse(callback_type):
     sparse_solver.set_parameters({
         "linear_solver": "mumps",
         "maximum_iterations": 20,
-        "report": True,
-        "error_on_nonconvergence": True
+        "report": True
     })
     sparse_solver.solve()
 

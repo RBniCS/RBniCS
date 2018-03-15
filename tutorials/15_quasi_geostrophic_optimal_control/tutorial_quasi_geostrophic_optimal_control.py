@@ -76,8 +76,7 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             snes_solver_parameters = {"nonlinear_solver": "snes",
                                       "snes_solver": {"linear_solver": "mumps",
                                                       "maximum_iterations": 20,
-                                                      "report": True,
-                                                      "error_on_nonconvergence": True}}
+                                                      "report": True}}
             problem = NonlinearVariationalProblem(F, psiq, bc, J)
             solver = NonlinearVariationalSolver(problem)
             solver.parameters.update(snes_solver_parameters)
