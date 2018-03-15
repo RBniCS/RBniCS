@@ -99,7 +99,7 @@ class OnlineNonHierarchicalAffineExpansionStorage(object):
         return NmaxIO.load_file(full_directory, "Nmax")
         
     def _load_content(self, N, directory, filename):
-        affine_expansion_N = OnlineAffineExpansionStorage(0) # it will be resized by load
+        affine_expansion_N = OnlineAffineExpansionStorage(self._len)
         loaded = affine_expansion_N.load(directory, filename + "_N=" + str(N))
         assert loaded is True
         return affine_expansion_N
