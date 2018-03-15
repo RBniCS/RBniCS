@@ -277,7 +277,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 output.__init__(self.space, sub_components)
                 output.init(sub_components)
                 for component_name in sub_components:
-                    output._components[component_name].enrich(self._components[component_name], copy=True)
+                    output._components[component_name].enrich(self._components[component_name], component=component_name, copy=True)
                 self._precomputed_sub_components[sub_components_key] = output
             return self._precomputed_sub_components[sub_components_key]
             
