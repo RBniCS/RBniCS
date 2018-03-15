@@ -142,18 +142,18 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             return (as0, as1, as2, as3)
         elif term == "c":
             u = self.u
-            qpsi = self.qpsi
-            c0 = u*qpsi*dx
+            qq = self.qq
+            c0 = u*qq*dx
             return (c0,)
         elif term == "c*":
             v = self.v
-            ppsi = self.ppsi
-            cs0 = v*ppsi*dx
+            pq = self.pq
+            cs0 = v*pq*dx
             return (cs0,)
         elif term == "m":
             ypsi = self.ypsi
-            zq = self.zq
-            m0 = ypsi*zq*dx
+            zpsi = self.zpsi
+            m0 = ypsi*zpsi*dx
             return (m0,)
         elif term == "n":
             u = self.u
@@ -166,8 +166,8 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             return (f0,)
         elif term == "g":
             yd = self.yd
-            zq = self.zq
-            g0 = yd*zq*dx
+            zpsi = self.zpsi
+            g0 = yd*zpsi*dx
             return (g0,)
         elif term == "h":
             yd = self.yd
