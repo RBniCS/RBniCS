@@ -18,7 +18,7 @@
 
 import pytest
 from numpy import isclose
-from dolfin import assemble, derivative, dx, Expression, Function, FunctionSpace, grad, inner, project, solve, TestFunction, TrialFunction, UnitSquareMesh
+from dolfin import assemble, derivative, dx, Expression, Function, FunctionSpace, grad, inner, PETScOptions, project, solve, TestFunction, TrialFunction, UnitSquareMesh
 from rbnics.backends import NonlinearSolver as FactoryNonlinearSolver
 from rbnics.backends.abstract import NonlinearProblemWrapper
 from rbnics.backends.dolfin import NonlinearSolver as DolfinNonlinearSolver
@@ -26,6 +26,8 @@ from test_utils import RandomDolfinFunction
 
 NonlinearSolver = None
 AllNonlinearSolver = {"dolfin": DolfinNonlinearSolver, "factory": FactoryNonlinearSolver}
+
+PETScOptions.set("snes_linesearch_type", "basic")
 
 class Data(object):
     def __init__(self, Th, callback_type):
@@ -81,6 +83,9 @@ class Data(object):
                 "snes_solver": {
                     "linear_solver": "mumps",
                     "maximum_iterations": 20,
+                    "relative_tolerance": 1e-9,
+                    "absolute_tolerance": 1e-9,
+                    "maximum_residual_evaluations": 10000,
                     "report": True
                 }
             }
@@ -93,6 +98,8 @@ class Data(object):
         solver.set_parameters({
             "linear_solver": "mumps",
             "maximum_iterations": 20,
+            "relative_tolerance": 1e-9,
+            "absolute_tolerance": 1e-9,
             "report": True
         })
         solver.solve()
