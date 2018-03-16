@@ -51,9 +51,11 @@ class Data(object):
         # Generate random rhs
         g = RandomDolfinFunction(self.V)
         # Return
-        return (self.callback(self.a), self.callback(self.f(g)))
+        return (self.a, self.f(g))
         
     def evaluate_builtin(self, a, f):
+        a = self.callback(a)
+        f = self.callback(f)
         result_builtin = Function(self.V)
         if self.callback_type == "form callbacks":
             solve(a == f, result_builtin, solver_parameters={"linear_solver": "mumps"})
@@ -62,8 +64,13 @@ class Data(object):
         return result_builtin
         
     def evaluate_backend(self, a, f):
+        a = self.callback(a)
+        f = self.callback(f)
         result_backend = Function(self.V)
         solver = LinearSolver(a, result_backend, f)
+        solver.set_parameters({
+            "linear_solver": "mumps"
+        })
         solver.solve()
         return result_backend
         
