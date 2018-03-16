@@ -83,13 +83,9 @@ class Dispatcher(OriginalDispatcher):
         OriginalDispatcher.__init__(self, name, doc)
         self.signature_to_provided_signature = dict()
         
-    def add(self, signature, func, replaces=None, replaces_if=None, expand_provided_signature=False):
+    def add(self, signature, func, replaces=None, replaces_if=None):
         for types in expand_tuples(signature):
-            if not expand_provided_signature:
-                self._add(types, signature, func, replaces, replaces_if)
-            else:
-                if types not in self.funcs:
-                    self._add(types, types, func, replaces, replaces_if)
+            self._add(types, signature, func, replaces, replaces_if)
         # Trigger reordering, if needed
         self._cache.clear()
         try:
@@ -202,13 +198,9 @@ class MethodDispatcher_Wrapper(object):
         self.lambda_funcs = dict()
         self.dispatchers = dict()
         
-    def add(self, signature, func, expand_provided_signature=False):
+    def add(self, signature, func):
         for types in expand_tuples(signature):
-            if not expand_provided_signature:
-                self._add(types, signature, func)
-            else:
-                if (types, types) not in self.standard_funcs:
-                    self._add(types, types, func)
+            self._add(types, signature, func)
         
     def _add(self, types, provided_signature, func):
         if any(islambda(typ) for typ in types):
@@ -319,7 +311,6 @@ def dispatch(*types, **kwargs):
     replaces = kwargs.get("replaces", None)
     replaces_if = kwargs.get("replaces_if", None)
     frame_back_times = kwargs.get("frame_back_times", 1)
-    expand_provided_signature = kwargs.get("expand_provided_signature", False)
     
     def _(func_or_class):
         nonlocal name
@@ -349,7 +340,7 @@ def dispatch(*types, **kwargs):
             for _ in range(frame_back_times):
                 frame = frame.f_back
             dispatcher = frame.f_locals.get(name, MethodDispatcher_Wrapper(name))
-            dispatcher.add(types, func_or_class, expand_provided_signature=expand_provided_signature)
+            dispatcher.add(types, func_or_class)
             return dispatcher
         else: # is function or class
             if is_class:
@@ -365,7 +356,7 @@ def dispatch(*types, **kwargs):
                 setattr(module, name, Dispatcher(name))
             dispatcher = getattr(module, name)
             assert isinstance(dispatcher, Dispatcher)
-            dispatcher.add(types, func_or_class, replaces=replaces, replaces_if=replaces_if, expand_provided_signature=expand_provided_signature)
+            dispatcher.add(types, func_or_class, replaces=replaces, replaces_if=replaces_if)
             if module_kwarg is None:
                 return dispatcher
             else:

@@ -644,29 +644,6 @@ def test_enabled_list_of_multiple_ambiguous():
     assert F([4, 3.]).arg == 8 and isinstance(F([4, 3.]).arg, int)
     assert F([2., "a"]).arg == 6. and isinstance(F([2., "a"]).arg, float)
     
-    # Ambiguity can be fixed by explicitly providing expand_provided_signature=True to the
-    # second dispatch, which automatically generates the missing list_of(int) case
-    class G(object):
-        @dispatch(list_of(float))
-        def __init__(self, arg):
-            self.arg = arg[0]
-            
-        @dispatch(list_of((float, int)), expand_provided_signature=True)
-        def __init__(self, arg):
-            self.arg = 2*arg[0]
-            
-        @dispatch(list_of((float, int, str)), expand_provided_signature=True)
-        def __init__(self, arg):
-            self.arg = 3*arg[0]
-            
-    assert G([1.]).arg == 1. and isinstance(G([1., 2.]).arg, float)
-    assert G(["a"]).arg == "aaa"
-    assert G([1]).arg == 2 and isinstance(G([1]).arg, int)
-    assert G([1., 2.]).arg == 1. and isinstance(G([1., 2.]).arg, float)
-    assert G([4., 3]).arg == 8. and isinstance(G([4., 3]).arg, float)
-    assert G([4, 3.]).arg == 8 and isinstance(G([4, 3.]).arg, int)
-    assert G([2., "a"]).arg == 6. and isinstance(G([2., "a"]).arg, float)
-    
 # Try to dispatch twice on the same argument type for class
 def test_dispatch_twice_class():
     module = types.ModuleType("module", "A runtime generated module")
