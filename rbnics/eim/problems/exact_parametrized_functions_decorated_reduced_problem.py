@@ -54,11 +54,11 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     if not isinstance(self.riesz, OfflineOnlineSwitch):
                         assert isinstance(self.riesz, dict)
                         assert len(self.riesz) is 0
-                        self.riesz = OfflineOnlineExpansionStorage()
+                        self.riesz = OfflineOnlineExpansionStorage(self, "RieszExpansionStorage")
                     if not isinstance(self.error_estimation_operator, OfflineOnlineSwitch):
                         assert isinstance(self.error_estimation_operator, dict)
                         assert len(self.error_estimation_operator) is 0
-                        self.error_estimation_operator = OfflineOnlineExpansionStorage()
+                        self.error_estimation_operator = OfflineOnlineExpansionStorage(self, "ErrorEstimationOperatorExpansionStorage")
                     if not isinstance(self.RieszSolver, OfflineOnlineSwitch):
                         assert inspect.isclass(self.RieszSolver)
                         self.RieszSolver = OfflineOnlineRieszSolver()
@@ -69,12 +69,13 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                         apply_exact_evaluation_at_stages = ("online", ) if "online" in apply_exact_evaluation_at_stages else ()
                     for stage_exact in apply_exact_evaluation_at_stages:
                         OfflineOnlineSwitch.set_current_stage(stage_exact)
-                        OfflineOnlineExpansionStorage.set_is_affine(False)
-                        # Delay Riesz solver computations
-                        self.RieszSolver.attach(delay=True)
-                        # Setup offline/online error estimation operators storage with exact operators
+                        self.riesz.set_is_affine(False)
+                        self.error_estimation_operator.set_is_affine(False)
+                        self.RieszSolver.set_is_affine(False)
                         self._init_error_estimation_operators(current_stage)
-                        OfflineOnlineExpansionStorage.unset_is_affine()
+                        self.riesz.unset_is_affine()
+                        self.error_estimation_operator.unset_is_affine()
+                        self.RieszSolver.unset_is_affine()
                     # Update current stage in offline/online switch
                     OfflineOnlineSwitch.set_current_stage(current_stage)
                     
@@ -141,7 +142,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             if not isinstance(self.operator, OfflineOnlineSwitch):
                 assert isinstance(self.operator, dict)
                 assert len(self.operator) is 0
-                self.operator = OfflineOnlineExpansionStorage()
+                self.operator = OfflineOnlineExpansionStorage(self, "OperatorExpansionStorage")
             # Setup offline/online operators storage with exact operators
             assert current_stage in ("online", "offline")
             apply_exact_evaluation_at_stages = self.truth_problem._apply_exact_evaluation_at_stages
@@ -149,9 +150,9 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 apply_exact_evaluation_at_stages = ("online", ) if "online" in apply_exact_evaluation_at_stages else ()
             for stage_exact in apply_exact_evaluation_at_stages:
                 OfflineOnlineSwitch.set_current_stage(stage_exact)
-                OfflineOnlineExpansionStorage.set_is_affine(False)
+                self.operator.set_is_affine(False)
                 self._init_operators(current_stage)
-                OfflineOnlineExpansionStorage.unset_is_affine()
+                self.operator.unset_is_affine()
             # Update current stage in offline/online switch
             OfflineOnlineSwitch.set_current_stage(current_stage)
             
@@ -170,14 +171,11 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 
         def _build_reduced_operators_exact(self, current_stage="offline"):
             # Build offline/online operators storage from exact operators
-            OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
             OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
             assert current_stage == "offline"
             for stage_exact in self.truth_problem._apply_exact_evaluation_at_stages:
                 OfflineOnlineSwitch.set_current_stage(stage_exact)
-                OfflineOnlineExpansionStorage.set_is_affine(False)
                 self._build_reduced_operators(current_stage)
-                OfflineOnlineExpansionStorage.unset_is_affine()
             # Update current stage in offline/online switch
             OfflineOnlineSwitch.set_current_stage(current_stage)
             

@@ -48,11 +48,11 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
                     if not isinstance(self.riesz, OfflineOnlineSwitch):
                         assert isinstance(self.riesz, dict)
                         assert len(self.riesz) is 0
-                        self.riesz = OfflineOnlineExpansionStorage()
+                        self.riesz = OfflineOnlineExpansionStorage(self, "RieszExpansionStorage")
                     if not isinstance(self.error_estimation_operator, OfflineOnlineSwitch):
                         assert isinstance(self.error_estimation_operator, dict)
                         assert len(self.error_estimation_operator) is 0
-                        self.error_estimation_operator = OfflineOnlineExpansionStorage()
+                        self.error_estimation_operator = OfflineOnlineExpansionStorage(self, "ErrorEstimationOperatorExpansionStorage")
                     if not isinstance(self.RieszSolver, OfflineOnlineSwitch):
                         assert inspect.isclass(self.RieszSolver)
                         self.RieszSolver = OfflineOnlineRieszSolver()
@@ -63,12 +63,13 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
                         apply_EIM_at_stages = ("online", ) if "online" in apply_EIM_at_stages else ()
                     for stage_EIM in apply_EIM_at_stages:
                         OfflineOnlineSwitch.set_current_stage(stage_EIM)
-                        OfflineOnlineExpansionStorage.set_is_affine(True)
-                        # Do not delay Riesz solver computations
-                        self.RieszSolver.attach(delay=False)
-                        # Setup offline/online error estimation operators storage with EIM operators
+                        self.riesz.set_is_affine(True)
+                        self.error_estimation_operator.set_is_affine(True)
+                        self.RieszSolver.set_is_affine(True)
                         self._init_error_estimation_operators(current_stage)
-                        OfflineOnlineExpansionStorage.unset_is_affine()
+                        self.riesz.unset_is_affine()
+                        self.error_estimation_operator.unset_is_affine()
+                        self.RieszSolver.unset_is_affine()
                     # Update current stage in offline/online switch
                     OfflineOnlineSwitch.set_current_stage(current_stage)
                     
@@ -128,7 +129,7 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
             if not isinstance(self.operator, OfflineOnlineSwitch):
                 assert isinstance(self.operator, dict)
                 assert len(self.operator) is 0
-                self.operator = OfflineOnlineExpansionStorage()
+                self.operator = OfflineOnlineExpansionStorage(self, "OperatorExpansionStorage")
             # Setup offline/online operators storage with EIM operators
             assert current_stage in ("online", "offline")
             apply_EIM_at_stages = self.truth_problem._apply_EIM_at_stages
@@ -136,9 +137,9 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
                 apply_EIM_at_stages = ("online", ) if "online" in apply_EIM_at_stages else ()
             for stage_EIM in apply_EIM_at_stages:
                 OfflineOnlineSwitch.set_current_stage(stage_EIM)
-                OfflineOnlineExpansionStorage.set_is_affine(True)
+                self.operator.set_is_affine(True)
                 self._init_operators(current_stage)
-                OfflineOnlineExpansionStorage.unset_is_affine()
+                self.operator.unset_is_affine()
             # Update current stage in offline/online switch
             OfflineOnlineSwitch.set_current_stage(current_stage)
                 
@@ -161,14 +162,11 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
             
         def _build_reduced_operators_EIM(self, current_stage="offline"):
             # Build offline/online operators storage from EIM operators
-            OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
             OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
             assert current_stage == "offline"
             for stage_EIM in self.truth_problem._apply_EIM_at_stages:
                 OfflineOnlineSwitch.set_current_stage(stage_EIM)
-                OfflineOnlineExpansionStorage.set_is_affine(True)
                 self._build_reduced_operators(current_stage)
-                OfflineOnlineExpansionStorage.unset_is_affine()
             # Update current stage in offline/online switch
             OfflineOnlineSwitch.set_current_stage(current_stage)
                 

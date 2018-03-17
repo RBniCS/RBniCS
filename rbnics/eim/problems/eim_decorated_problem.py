@@ -153,25 +153,24 @@ def EIMDecoratedProblem(
                 if not isinstance(self.operator, OfflineOnlineSwitch):
                     assert isinstance(self.operator, dict)
                     assert len(self.operator) is 0
-                    self.operator = OfflineOnlineExpansionStorage()
+                    self.operator = OfflineOnlineExpansionStorage(self, "OperatorExpansionStorage")
                 if not isinstance(self.assemble_operator, OfflineOnlineSwitch):
                     assert inspect.ismethod(self.assemble_operator)
-                    self.assemble_operator = OfflineOnlineClassMethod(self.assemble_operator)
+                    self.assemble_operator = OfflineOnlineClassMethod(self, "assemble_operator")
                 if not isinstance(self.compute_theta, OfflineOnlineSwitch):
                     assert inspect.ismethod(self.compute_theta)
-                    self.compute_theta = OfflineOnlineClassMethod(self.compute_theta)
+                    self.compute_theta = OfflineOnlineClassMethod(self, "compute_theta")
                 # Setup offline/online switches
                 former_stage = OfflineOnlineSwitch.get_current_stage()
                 for stage_EIM in self._apply_EIM_at_stages:
                     OfflineOnlineSwitch.set_current_stage(stage_EIM)
-                    OfflineOnlineExpansionStorage.set_is_affine(True)
                     # Replace assemble_operator and compute_theta with EIM computations
                     self.assemble_operator.attach(self._assemble_operator_EIM, lambda term: term in self.separated_forms)
                     self.compute_theta.attach(self._compute_theta_EIM, lambda term: term in self.separated_forms)
                     # Setup offline/online operators storage with EIM operators
+                    self.operator.set_is_affine(True)
                     self._init_operators()
-                    # Unset affinity boolean
-                    OfflineOnlineExpansionStorage.unset_is_affine()
+                    self.operator.unset_is_affine()
                 # Restore former stage in offline/online switch storage
                 OfflineOnlineSwitch.set_current_stage(former_stage)
                     

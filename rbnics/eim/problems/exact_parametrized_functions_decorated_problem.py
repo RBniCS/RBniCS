@@ -110,15 +110,15 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 if not isinstance(self.operator, OfflineOnlineSwitch):
                     assert isinstance(self.operator, dict)
                     assert len(self.operator) is 0
-                    self.operator = OfflineOnlineExpansionStorage()
+                    self.operator = OfflineOnlineExpansionStorage(self, "OperatorExpansionStorage")
                 if not isinstance(self.assemble_operator, OfflineOnlineSwitch):
                     assert inspect.ismethod(self.assemble_operator)
                     self._assemble_operator_exact = self.assemble_operator
-                    self.assemble_operator = OfflineOnlineClassMethod(self.assemble_operator)
+                    self.assemble_operator = OfflineOnlineClassMethod(self, "assemble_operator")
                 if not isinstance(self.compute_theta, OfflineOnlineSwitch):
                     assert inspect.ismethod(self.compute_theta)
                     self._compute_theta_exact = self.compute_theta
-                    self.compute_theta = OfflineOnlineClassMethod(self.compute_theta)
+                    self.compute_theta = OfflineOnlineClassMethod(self, "compute_theta")
                 # Temporarily replace float parameters with symbols, so that the forms do not hardcode
                 # the current value of the parameter while assemblying.
                 mu_float = self.mu
@@ -127,14 +127,13 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 former_stage = OfflineOnlineSwitch.get_current_stage()
                 for stage_exact in self._apply_exact_evaluation_at_stages:
                     OfflineOnlineSwitch.set_current_stage(stage_exact)
-                    OfflineOnlineExpansionStorage.set_is_affine(False)
                     # Enforce exact evaluation of assemble_operator and compute_theta
                     self.assemble_operator.attach(self._assemble_operator_exact, lambda term: True)
                     self.compute_theta.attach(self._compute_theta_exact, lambda term: True)
                     # Setup offline/online operators storage with exact operators
+                    self.operator.set_is_affine(False)
                     self._init_operators()
-                    # Unset affinity boolean
-                    OfflineOnlineExpansionStorage.unset_is_affine()
+                    self.operator.unset_is_affine()
                 # Restore former stage in offline/online switch storage
                 OfflineOnlineSwitch.set_current_stage(former_stage)
                 # Restore float parameters
