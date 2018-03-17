@@ -17,8 +17,7 @@
 #
 
 import os
-from rbnics.backends import NonAffineExpansionStorage
-from rbnics.backends.abstract import NonAffineExpansionStorage as AbstractNonAffineExpansionStorage
+from rbnics.backends import AffineExpansionStorage, NonAffineExpansionStorage
 from rbnics.eim.backends.offline_online_switch import OfflineOnlineSwitch
 from rbnics.utils.io import Folders
 from rbnics.utils.test import PatchInstanceMethod
@@ -27,23 +26,26 @@ def OfflineOnlineExpansionStorage(problem_name):
     if problem_name not in _offline_online_expansion_storage_cache:
         _OfflineOnlineExpansionStorage_Base = OfflineOnlineSwitch(problem_name)
         class _OfflineOnlineExpansionStorage(_OfflineOnlineExpansionStorage_Base):
-            _is_affine = None
             
-            def __init__(self):
+            def __init__(self, problem, expansion_storage_type_attribute):
                 _OfflineOnlineExpansionStorage_Base.__init__(self)
                 self._content = {
                     "offline": dict(),
                     "online": dict()
                 }
+                self._problem = problem
+                self._expansion_storage_type_attribute = expansion_storage_type_attribute
+                setattr(problem, expansion_storage_type_attribute, None)
             
-            @classmethod
-            def set_is_affine(cls, is_affine):
+            def set_is_affine(self, is_affine):
                 assert isinstance(is_affine, bool)
-                cls._is_affine = is_affine
+                if is_affine:
+                    setattr(self._problem, self._expansion_storage_type_attribute, AffineExpansionStorage)
+                else:
+                    setattr(self._problem, self._expansion_storage_type_attribute, NonAffineExpansionStorage)
                 
-            @classmethod
-            def unset_is_affine(cls):
-                cls._is_affine = None
+            def unset_is_affine(self):
+                setattr(self._problem, self._expansion_storage_type_attribute, None)
                 
             def __getitem__(self, term):
                 return self._content[_OfflineOnlineExpansionStorage_Base._current_stage][term]
@@ -71,20 +73,8 @@ def OfflineOnlineExpansionStorage(problem_name):
                         for method in ("save", "load"):
                             _patch_save_load(expansion_storage, method)
                         
-                assert _OfflineOnlineExpansionStorage._is_affine is not None
-                if not _OfflineOnlineExpansionStorage._is_affine:
-                    if not isinstance(expansion_storage, AbstractNonAffineExpansionStorage):
-                        if expansion_storage is not None:
-                            expansion_storage = NonAffineExpansionStorage(expansion_storage)
-                        else:
-                            expansion_storage = None
-                        patch_save_load(expansion_storage)
-                        self._content[_OfflineOnlineExpansionStorage_Base._current_stage][term] = expansion_storage
-                    else:
-                        assert expansion_storage is self._content[_OfflineOnlineExpansionStorage_Base._current_stage][term]
-                else:
-                    patch_save_load(expansion_storage)
-                    self._content[_OfflineOnlineExpansionStorage_Base._current_stage][term] = expansion_storage
+                patch_save_load(expansion_storage)
+                self._content[_OfflineOnlineExpansionStorage_Base._current_stage][term] = expansion_storage
                     
             def __contains__(self, term):
                 return term in self._content[_OfflineOnlineExpansionStorage_Base._current_stage]

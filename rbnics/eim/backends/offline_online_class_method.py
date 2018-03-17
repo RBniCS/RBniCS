@@ -22,9 +22,10 @@ def OfflineOnlineClassMethod(problem_name):
     if problem_name not in _offline_online_class_method_cache:
         _OfflineOnlineClassMethod_Base = OfflineOnlineSwitch(problem_name)
         class _OfflineOnlineClassMethod(_OfflineOnlineClassMethod_Base):
-            def __init__(self, original_class_method):
+            def __init__(self, problem, original_class_method_name):
                 _OfflineOnlineClassMethod_Base.__init__(self)
-                self._original_class_method = original_class_method
+                assert hasattr(problem, original_class_method_name)
+                self._original_class_method = getattr(problem, original_class_method_name)
                 self._replacement_condition = dict()
                 
             def __call__(self, term):
