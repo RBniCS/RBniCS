@@ -30,7 +30,6 @@ def test_config(tempdir):
     print("===============")
 
     # Change options
-    config.set("backends", "delay assembly", True)
     config.set("backends", "online backend", "online")
     config.set("problems", "cache", {"Disk"})
 

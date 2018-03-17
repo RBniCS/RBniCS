@@ -28,7 +28,6 @@ class Config(object):
     # Set class defaults
     defaults = {
         "backends": {
-            "delay assembly": False,
             "online backend": "numpy",
             "required backends": None
         },
