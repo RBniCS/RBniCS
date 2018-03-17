@@ -16,12 +16,5 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.basic import sum as basic_sum
-from rbnics.backends.online.numpy.product import ProductOutput
-from rbnics.utils.decorators import backend_for
-
-# product function to assemble truth/reduced affine expansions. To be used in combination with product,
-# even though product actually carries out both the sum and the product!
-@backend_for("numpy", inputs=(ProductOutput, ))
 def sum(product_output):
-    return basic_sum(product_output)
+    return product_output.sum_product_return_value

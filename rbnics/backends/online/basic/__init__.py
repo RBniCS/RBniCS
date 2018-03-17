@@ -23,6 +23,8 @@ from rbnics.backends.online.basic.function import Function
 from rbnics.backends.online.basic.linear_solver import LinearSolver
 from rbnics.backends.online.basic.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.online.basic.matrix import Matrix
+from rbnics.backends.online.basic.product import product
+from rbnics.backends.online.basic.sum import sum
 from rbnics.backends.online.basic.vector import Vector
 
 __all__ = [
@@ -33,5 +35,7 @@ __all__ = [
     'LinearSolver',
     'NonAffineExpansionStorage',
     'Matrix',
+    'product',
+    'sum',
     'Vector'
 ]
