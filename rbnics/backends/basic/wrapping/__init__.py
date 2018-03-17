@@ -48,7 +48,6 @@ from rbnics.backends.basic.wrapping.gram_schmidt_projection_step import gram_sch
 from rbnics.backends.basic.wrapping.is_parametrized import is_parametrized
 from rbnics.backends.basic.wrapping.is_time_dependent import is_time_dependent
 from rbnics.backends.basic.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
-from rbnics.backends.basic.wrapping.non_affine_expansion_storage_item import NonAffineExpansionStorageItem
 from rbnics.backends.basic.wrapping.tensor_copy import tensor_copy
 from rbnics.backends.basic.wrapping.tensor_load import tensor_load
 from rbnics.backends.basic.wrapping.tensor_save import tensor_save
@@ -90,7 +89,6 @@ __all__ = [
     'is_parametrized',
     'is_time_dependent',
     'matrix_mul_vector',
-    'NonAffineExpansionStorageItem',
     'tensor_copy',
     'tensor_load',
     'tensor_save',

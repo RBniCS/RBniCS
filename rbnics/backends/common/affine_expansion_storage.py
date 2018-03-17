@@ -24,10 +24,6 @@ from rbnics.utils.decorators import BackendFor, tuple_of
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def __init__(self, args):
         self._content = args
-        self._type = "Scalar"
-        
-    def type(self):
-        return self._type
         
     def __getitem__(self, key):
         return self._content[key]

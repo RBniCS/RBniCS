@@ -21,7 +21,6 @@ from rbnics.backends.common.affine_expansion_storage import AffineExpansionStora
 from rbnics.backends.common.export import export
 from rbnics.backends.common.import_ import import_
 from rbnics.backends.common.linear_program_solver import LinearProgramSolver
-from rbnics.backends.common.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.common.product import product
 from rbnics.backends.common.separated_parametrized_form import SeparatedParametrizedForm
 from rbnics.backends.common.sum import sum
@@ -35,7 +34,6 @@ __all__ = [
     'export',
     'import_',
     'LinearProgramSolver',
-    'NonAffineExpansionStorage',
     'product',
     'SeparatedParametrizedForm',
     'sum',

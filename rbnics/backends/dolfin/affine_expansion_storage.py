@@ -22,7 +22,6 @@ from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExp
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
-from rbnics.utils.config import config
 from rbnics.utils.decorators import backend_for, list_of, overload, tuple_of
 
 # Generic backend
@@ -59,38 +58,15 @@ def _AffineExpansionStorage(args: tuple_of(list_of(DirichletBC))):
 class AffineExpansionStorage_Form(AffineExpansionStorage_Base):
     def __init__(self, args):
         AffineExpansionStorage_Base.__init__(self, args)
-        # Get config value
-        delay_assembly = config.get("backends", "delay assembly")
-        # Check if arguments are parametrized
-        from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory # cannot import at global scope due to cyclic dependence
-        are_form = list()
-        are_parametrized = list()
-        parametrized_tensor_factories = list()
+        content = list()
         for arg in args:
             if isinstance(arg, Form):
-                are_form.append(True)
-                parametrized_tensor_factory = ParametrizedTensorFactory(arg, False)
-                are_parametrized.append(parametrized_tensor_factory.is_parametrized())
-                parametrized_tensor_factories.append(parametrized_tensor_factory)
+                content.append(assemble(arg, keep_diagonal=True))
             elif isinstance(arg, (Matrix.Type(), Vector.Type())):
-                are_form.append(False)
-                are_parametrized.append(False)
-                parametrized_tensor_factories.append(None)
+                content.append(arg)
             else:
                 raise RuntimeError("Invalid argument to AffineExpansionStorage")
-        # Pre-assemble if the provided arguments are not parametrized
-        self._content = list()
-        for (arg, arg_is_form, arg_is_parametrized, parametrized_tensor_factory) in zip(args, are_form, are_parametrized, parametrized_tensor_factories):
-            if arg_is_form:
-                if arg_is_parametrized:
-                    self._content.append(parametrized_tensor_factory)
-                else:
-                    if delay_assembly:
-                        self._content.append(arg)
-                    else:
-                        self._content.append(assemble(arg, keep_diagonal=True))
-            else:
-                self._content.append(arg)
+        self._content = tuple(content)
 
 @overload
 def _AffineExpansionStorage(args: (

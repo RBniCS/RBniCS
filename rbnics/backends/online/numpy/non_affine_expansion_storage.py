@@ -17,11 +17,12 @@
 #
 
 from rbnics.backends.online.basic import NonAffineExpansionStorage as BasicNonAffineExpansionStorage
-from rbnics.backends.online.numpy.affine_expansion_storage import AffineExpansionStorage
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.online.numpy.matrix import Matrix
+from rbnics.backends.online.numpy.vector import Vector
+from rbnics.utils.decorators import BackendFor, tuple_of
 
 NonAffineExpansionStorage_Base = BasicNonAffineExpansionStorage
 
-@BackendFor("numpy", inputs=(AffineExpansionStorage, ))
+@BackendFor("numpy", inputs=((int, tuple_of(Matrix.Type()), tuple_of(Vector.Type())), (int, None)))
 class NonAffineExpansionStorage(NonAffineExpansionStorage_Base):
     pass

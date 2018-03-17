@@ -18,22 +18,15 @@
 
 import os
 from numpy import empty as NonAffineExpansionStorageContent_Base, nditer as NonAffineExpansionStorageContent_Iterator
-from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList, NonAffineExpansionStorage as AbstractNonAffineExpansionStorage
-from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedFunctionsList, DelayedLinearSolver, DelayedTranspose, NonAffineExpansionStorageItem
+from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList, NonAffineExpansionStorage as AbstractNonAffineExpansionStorage, ParametrizedTensorFactory as AbstractParametrizedTensorFactory
+from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedFunctionsList, DelayedLinearSolver, DelayedTranspose
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator, get_reduced_problem_from_basis_functions, get_reduced_problem_from_error_estimation_inner_product, get_term_and_index_from_parametrized_operator
 from rbnics.utils.decorators import get_problem_from_problem_name, get_reduced_problem_from_problem, overload, tuple_of
 from rbnics.utils.io import Folders, TextIO as BasisFunctionsContentLengthIO, TextIO as BasisFunctionsProblemNameIO, TextIO as DelayedFunctionsProblemNameIO, TextIO as DelayedFunctionsTypeIO, TextIO as ErrorEstimationInnerProductIO, TextIO as TruthContentItemIO, TextIO as TypeIO
 
 class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
-    Item = (DelayedBasisFunctionsMatrix, DelayedFunctionsList, DelayedTranspose)
-    
-    def __init__(self, content=None, shape=None):
-        if shape is None:
-            assert content is not None
-            shape = content._content.shape
-        else:
-            assert content is None
+    def __init__(self, *shape):
         self._shape = shape
         self._type = "empty"
         self._content = dict()
@@ -84,8 +77,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             it = NonAffineExpansionStorageContent_Iterator(self._content["truth_operators"], flags=["c_index", "multi_index", "refs_ok"], op_flags=["readonly"])
             while not it.finished:
                 operator = self._content["truth_operators"][it.multi_index]
-                assert isinstance(operator, NonAffineExpansionStorageItem)
-                operator = operator._item
+                assert isinstance(operator, AbstractParametrizedTensorFactory)
                 problem_name = get_problem_from_parametrized_operator(operator).name()
                 (term, index) = get_term_and_index_from_parametrized_operator(operator)
                 TruthContentItemIO.save_file((problem_name, term, index), full_directory, "truth_operator_" + str(it.index))
@@ -261,8 +253,8 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             if slice_ in self._precomputed_slices:
                 return self._precomputed_slices[slice_]
             else:
-                output = NonAffineExpansionStorage.__new__(type(self), shape=self._shape)
-                output.__init__(shape=self._shape)
+                output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
+                output.__init__(*self._shape)
                 output._type = self._type
                 output._content["inner_product_matrix"] = self._content["inner_product_matrix"]
                 output._content["delayed_functions"] = [NonAffineExpansionStorageContent_Base(self._shape[0], dtype=object), NonAffineExpansionStorageContent_Base(self._shape[1], dtype=object)]
@@ -283,8 +275,8 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             if slice_ in self._precomputed_slices:
                 return self._precomputed_slices[slice_]
             else:
-                output = NonAffineExpansionStorage.__new__(type(self), shape=self._shape)
-                output.__init__(shape=self._shape)
+                output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
+                output.__init__(*self._shape)
                 output._type = self._type
                 output._content["truth_operators"] = self._content["truth_operators"]
                 output._content["truth_operators_as_expansion_storage"] = self._content["truth_operators_as_expansion_storage"]
@@ -310,8 +302,8 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             if slice_ in self._precomputed_slices:
                 return self._precomputed_slices[slice_]
             else:
-                output = NonAffineExpansionStorage.__new__(type(self), shape=self._shape)
-                output.__init__(shape=self._shape)
+                output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
+                output.__init__(*self._shape)
                 output._type = self._type
                 output._content["inner_product_matrix"] = self._content["inner_product_matrix"]
                 output._content["delayed_functions"] = [NonAffineExpansionStorageContent_Base(self._shape[0], dtype=object), NonAffineExpansionStorageContent_Base(self._shape[1], dtype=object)]
@@ -333,8 +325,8 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             if slices in self._precomputed_slices:
                 return self._precomputed_slices[slices]
             else:
-                output = NonAffineExpansionStorage.__new__(type(self), shape=self._shape)
-                output.__init__(shape=self._shape)
+                output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
+                output.__init__(*self._shape)
                 output._type = self._type
                 output._content["truth_operators"] = self._content["truth_operators"]
                 output._content["truth_operators_as_expansion_storage"] = self._content["truth_operators_as_expansion_storage"]
@@ -484,18 +476,12 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             raise TypeError("Invalid arguments to NonAffineExpansionStorage")
         
     def _prepare_truth_operators_as_expansion_storage(self):
-        from rbnics.backends import AffineExpansionStorage, NonAffineExpansionStorage
+        from rbnics.backends import NonAffineExpansionStorage
         assert self._type == "operators"
         assert self.order() is 1
-        def extract_item(op):
-            assert isinstance(op, NonAffineExpansionStorageItem)
-            if hasattr(op._item, "_form"): # i.e. isinstance ParametrizedTensorFactory
-                return op._item._form
-            else:
-                return op._item
-        extracted_operators = tuple(extract_item(op) for op in self._content["truth_operators"])
+        extracted_operators = tuple(op._form for op in self._content["truth_operators"])
         assert "truth_operators_as_expansion_storage" not in self._content
-        self._content["truth_operators_as_expansion_storage"] = NonAffineExpansionStorage(AffineExpansionStorage(extracted_operators))
+        self._content["truth_operators_as_expansion_storage"] = NonAffineExpansionStorage(extracted_operators)
         
     def __len__(self):
         assert self._type == "operators"
