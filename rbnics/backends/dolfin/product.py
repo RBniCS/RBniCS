@@ -19,7 +19,7 @@
 from numbers import Number
 from ufl import Form
 from ufl.core.operator import Operator
-from dolfin import assemble, Constant, Expression, project
+from dolfin import Constant, Expression
 from rbnics.backends.dolfin.affine_expansion_storage import AffineExpansionStorage_Base, AffineExpansionStorage_DirichletBC, AffineExpansionStorage_Form, AffineExpansionStorage_Function
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.non_affine_expansion_storage import NonAffineExpansionStorage
@@ -54,22 +54,18 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
     # Sum them
     output = ProductOutputDirichletBC()
     for (key, item) in combined.items():
-        value = 0
+        value = function_copy(item[0][0].value())
+        value.vector().zero()
         for addend in item:
             theta = float(thetas[addend[1]])
             fun = addend[0].value()
-            value += Constant(theta)*fun
-        V = item[0][0].function_space()
-        if len(V.component()) == 0: # FunctionSpace
-            value = project(value, V)
-        else: # subspace of a FunctionSpace
-            value = project(value, V.collapse())
+            value.vector().add_local(theta*fun.vector().get_local())
+        value.vector().apply("add")
         args = list()
-        args.append(V)
+        args.append(item[0][0].function_space())
         args.append(value)
         args.extend(item[0][0]._domain)
-        args.extend(item[0][0]._sorted_kwargs)
-        output.append(DirichletBC(*args))
+        output.append(DirichletBC(*args, **item[0][0]._kwargs))
     return ProductOutput(output)
     
 @overload

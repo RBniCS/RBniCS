@@ -18,47 +18,44 @@
 
 from numbers import Number
 from numpy import zeros
-from dolfin import Constant, DirichletBC, has_pybind11
-if has_pybind11():
-    from dolfin.cpp.mesh import MeshFunctionSizet
+from dolfin import Constant, DirichletBC, Function, project
 
 original_DirichletBC__init__ = DirichletBC.__init__
 def custom_DirichletBC__init__(self, *args, **kwargs):
-    # Call the constructor
-    original_DirichletBC__init__(self, *args, **kwargs)
-    # Deduce private variable values from arguments
+    # Deduce private member values from arguments
     if len(args) == 1 and isinstance(args[0], DirichletBC):
         assert len(kwargs) == 0
         _value = args[0]._value
         _function_space = args[0]._function_space
         _domain = args[0]._domain
-        _sorted_kwargs = args[0]._sorted_kwargs
+        _kwargs = args[0]._kwargs
         _identifier = args[0]._identifier
     else:
-        _value = args[1]
         _function_space = args[0]
-        if has_pybind11():
-            if isinstance(args[2], MeshFunctionSizet):
-                _domain = args[2:]
-            else:
-                assert hasattr(self, "sub_domain")
-                _domain = (self.sub_domain, ) + args[3:]
-        else:
-            _domain = self.domain_args
-        _sorted_kwargs = list()
-        for key in ["method", "check_midpoint"]:
-            if key in kwargs:
-                _sorted_kwargs.append(kwargs[key])
+        _value = args[1]
+        if not isinstance(_value, Function):
+            if len(_function_space.component()) == 0: # FunctionSpace
+                _value = project(_value, _function_space)
+            else: # subspace of a FunctionSpace
+                _value = project(_value, _function_space.collapse())
+        _domain = args[2:]
+        _kwargs = kwargs
         _identifier = list()
         _identifier.append(_function_space)
-        _identifier.append(_domain)
-        _identifier.extend(_sorted_kwargs)
+        _identifier.extend(_domain)
+        _identifier.extend(_kwargs)
         _identifier = tuple(_identifier)
+    # Call the constructor
+    _args = list()
+    _args.append(_function_space)
+    _args.append(_value)
+    _args.extend(_domain)
+    original_DirichletBC__init__(self, *_args, **_kwargs)
     # Assign private variable values
     self._value = _value
     self._function_space = _function_space
     self._domain = _domain
-    self._sorted_kwargs = _sorted_kwargs
+    self._kwargs = _kwargs
     self._identifier = _identifier
 DirichletBC.__init__ = custom_DirichletBC__init__
 
@@ -96,9 +93,8 @@ def custom_DirichletBC_mul_by_scalar(self, other):
         args = list()
         args.append(self.function_space())
         args.append(Constant(other)*self.value())
-        args.append(self._domain)
-        args.extend(self._sorted_kwargs)
-        return DirichletBC(*args)
+        args.extend(self._domain)
+        return DirichletBC(*args, **self._kwargs)
     else:
         return NotImplemented
 DirichletBC.__mul__ = custom_DirichletBC_mul_by_scalar
