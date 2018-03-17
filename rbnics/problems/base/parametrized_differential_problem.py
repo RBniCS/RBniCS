@@ -52,7 +52,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         # Number of terms in the affine expansion
         self.Q = dict() # from string to integer
         # Matrices/vectors resulting from the truth discretization
-        self.operator = dict() # from string to AffineExpansionStorage
+        self.OperatorExpansionStorage = AffineExpansionStorage
+        self.operator = dict() # from string to OperatorExpansionStorage
         self.inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
         self._combined_inner_product = None
         self.projection_inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
@@ -89,7 +90,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         for term in self.terms:
             if term not in self.operator: # init was not called already
                 try:
-                    self.operator[term] = AffineExpansionStorage(self.assemble_operator(term))
+                    self.operator[term] = self.OperatorExpansionStorage(self.assemble_operator(term))
                 except ValueError: # raised by assemble_operator if output computation is optional
                     self.operator[term] = None
                     self.Q[term] = 0

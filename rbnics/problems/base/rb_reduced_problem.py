@@ -40,9 +40,11 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
             # $$ ONLINE DATA STRUCTURES $$ #
             # Residual terms
-            self.riesz = dict() # from string to FunctionsList
+            self.RieszExpansionStorage = OnlineAffineExpansionStorage
+            self.riesz = dict() # from string to RieszExpansionStorage
             self.riesz_terms = list()
-            self.error_estimation_operator = dict() # from string to OnlineAffineExpansionStorage
+            self.ErrorEstimationOperatorExpansionStorage = OnlineAffineExpansionStorage
+            self.error_estimation_operator = dict() # from string to ErrorEstimationOperatorExpansionStorage
             self.error_estimation_terms = list() # of tuple
             
             # $$ OFFLINE DATA STRUCTURES $$ #
@@ -77,7 +79,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # Initialize Riesz representation
             for term in self.riesz_terms:
                 if term not in self.riesz: # init was not called already
-                    self.riesz[term] = OnlineAffineExpansionStorage(self.Q[term])
+                    self.riesz[term] = self.RieszExpansionStorage(self.Q[term])
                     for q in range(self.Q[term]):
                         assert self.terms_order[term] in (1, 2)
                         if self.terms_order[term] > 1:
@@ -104,7 +106,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # Initialize error estimation operators
             for term in self.error_estimation_terms:
                 if term not in self.error_estimation_operator: # init was not called already
-                    self.error_estimation_operator[term] = OnlineAffineExpansionStorage(self.Q[term[0]], self.Q[term[1]])
+                    self.error_estimation_operator[term] = self.ErrorEstimationOperatorExpansionStorage(self.Q[term[0]], self.Q[term[1]])
             assert current_stage in ("online", "offline")
             if current_stage == "online":
                 for term in self.error_estimation_terms:

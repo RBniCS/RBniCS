@@ -59,7 +59,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # Number of terms in the affine expansion
         self.Q = dict() # from string to integer
         # Reduced order operators
-        self.operator = dict() # from string to OnlineAffineExpansionStorage
+        self.OperatorExpansionStorage = OnlineAffineExpansionStorage
+        self.operator = dict() # from string to OperatorExpansionStorage
         self.inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
         self._combined_inner_product = None
         self.projection_inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
@@ -96,7 +97,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         for term in self.terms:
             if term not in self.operator: # init was not called already
                 self.Q[term] = self.truth_problem.Q[term]
-                self.operator[term] = OnlineAffineExpansionStorage(self.Q[term])
+                self.operator[term] = self.OperatorExpansionStorage(self.Q[term])
         assert current_stage in ("online", "offline")
         if current_stage == "online":
             for term in self.terms:
