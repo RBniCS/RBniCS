@@ -16,11 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from abc import ABCMeta, abstractmethod
 import os
+from abc import ABCMeta, abstractmethod
+from numbers import Number
 from rbnics.backends import BasisFunctionsMatrix, Function, FunctionsList, LinearSolver, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage
-from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
+from rbnics.utils.decorators import overload, PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -192,12 +193,12 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                         for component in self.components:
                             for n in range(len(self.riesz[term][q][component]), self.N[component] + self.N_bc[component]):
                                 self.riesz[term][q][component].enrich(
-                                    solver.solve(-1.*self.truth_problem.operator[term][q]*self.basis_functions[component][n])
+                                    solver.solve(-1., self.truth_problem.operator[term][q], self.basis_functions[component][n])
                                 )
                     else:
                         for n in range(len(self.riesz[term][q]), self.N + self.N_bc):
                             self.riesz[term][q].enrich(
-                                solver.solve(-1.*self.truth_problem.operator[term][q]*self.basis_functions[n])
+                                solver.solve(-1., self.truth_problem.operator[term][q], self.basis_functions[n])
                             )
                 self.riesz[term].save(self.folder["error_estimation"], "riesz_" + term)
             else:
@@ -207,11 +208,16 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             def __init__(self, problem):
                 self.problem = problem
             
-            def solve(self, rhs):
+            @overload
+            def solve(self, rhs: object):
                 problem = self.problem
                 solver = LinearSolver(problem._riesz_solve_inner_product, problem._riesz_solve_storage, rhs, problem._riesz_solve_homogeneous_dirichlet_bc)
                 solver.set_parameters(problem._linear_solver_parameters)
                 return solver.solve()
+                
+            @overload
+            def solve(self, coef: Number, matrix: object, basis_function: object):
+                return self.solve(coef*matrix*basis_function)
                 
         def assemble_error_estimation_operators(self, term, current_stage="online"):
             """
