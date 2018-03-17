@@ -31,7 +31,7 @@ from rbnics.utils.mpi import log, PROGRESS
 def basic_form_on_reduced_function_space(backend, wrapping, online_backend, online_wrapping):
     def _basic_form_on_reduced_function_space(form_wrapper, at):
         form = form_wrapper._form
-        form_name = form_wrapper._name
+        form_name = form_wrapper.name()
         mu = get_problem_from_parametrized_operator(form_wrapper).mu
         reduced_V = at.get_reduced_function_spaces()
         reduced_subdomain_data = at.get_reduced_subdomain_data()

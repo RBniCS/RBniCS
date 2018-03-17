@@ -25,7 +25,7 @@ from rbnics.utils.mpi import log, PROGRESS
 def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_wrapping):
     def _basic_expression_on_reduced_mesh(expression_wrapper, at):
         expression = expression_wrapper._expression
-        expression_name = expression_wrapper._name
+        expression_name = expression_wrapper.name()
         reduced_space = at.get_reduced_function_space()
         mu = get_problem_from_parametrized_expression(expression_wrapper).mu
         reduced_mesh = at.get_reduced_mesh()

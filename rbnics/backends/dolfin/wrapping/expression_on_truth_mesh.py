@@ -24,7 +24,7 @@ from rbnics.utils.mpi import log, PROGRESS
 def basic_expression_on_truth_mesh(backend, wrapping):
     def _basic_expression_on_truth_mesh(expression_wrapper, function=None):
         expression = expression_wrapper._expression
-        expression_name = expression_wrapper._name
+        expression_name = expression_wrapper.name()
         space = expression_wrapper._space
         mu = get_problem_from_parametrized_expression(expression_wrapper).mu
         

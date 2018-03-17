@@ -24,7 +24,7 @@ from rbnics.utils.mpi import log, PROGRESS
 def basic_form_on_truth_function_space(backend, wrapping):
     def _basic_form_on_truth_function_space(form_wrapper, tensor=None):
         form = form_wrapper._form
-        form_name = form_wrapper._name
+        form_name = form_wrapper.name()
         mu = get_problem_from_parametrized_operator(form_wrapper).mu
         
         if form_name not in form_on_truth_function_space__reduced_problem_to_truth_solution_cache:
