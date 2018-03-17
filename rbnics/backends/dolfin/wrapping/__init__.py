@@ -36,7 +36,6 @@ from rbnics.backends.dolfin.wrapping.expression_description import expression_de
 from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
 from rbnics.backends.dolfin.wrapping.expression_name import expression_name
 from rbnics.backends.dolfin.wrapping.expression_replace import expression_replace
-import rbnics.backends.dolfin.wrapping.form_and
 from rbnics.backends.dolfin.wrapping.form_argument_replace import form_argument_replace
 from rbnics.backends.dolfin.wrapping.form_argument_space import form_argument_space
 from rbnics.backends.dolfin.wrapping.form_description import form_description
