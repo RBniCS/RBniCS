@@ -27,16 +27,15 @@ from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
 from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
 from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, is_parametrized, is_time_dependent
-from rbnics.eim.utils.decorators import add_to_map_from_parametrized_operator_to_problem, get_problem_from_parametrized_operator
-from rbnics.utils.decorators import BackendFor, ModuleWrapper, overload
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
-backend = ModuleWrapper(copy, HighOrderProperOrthogonalDecomposition, ReducedMesh, TensorBasisList, TensorSnapshotsList)
+backend = ModuleWrapper(copy, Function, HighOrderProperOrthogonalDecomposition, ReducedMesh, TensorBasisList, TensorSnapshotsList)
 wrapping = ModuleWrapper(form_iterator, form_description=form_description, form_name=form_name, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
 ParametrizedTensorFactory_Base = BasicParametrizedTensorFactory(backend, wrapping)
 
 @BackendFor("dolfin", inputs=(Form, ))
 class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
-    def __init__(self, form, assemble_empty_snapshot=True):
+    def __init__(self, form):
         # Preprocess form
         form = expand_derivatives(form)
         # Extract spaces from forms
@@ -52,16 +51,13 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
                 form_argument_space(form, 0),
             )
         # Create empty snapshot
-        if assemble_empty_snapshot:
+        def assemble_empty_snapshot():
             empty_snapshot = assemble(form, keep_diagonal=True)
             empty_snapshot.zero()
             empty_snapshot.generator = self
-            init_name_and_description = True
-        else:
-            empty_snapshot = None
-            init_name_and_description = False
+            return empty_snapshot
         # Call Parent
-        ParametrizedTensorFactory_Base.__init__(self, form, spaces, empty_snapshot, init_name_and_description)
+        ParametrizedTensorFactory_Base.__init__(self, form, spaces, assemble_empty_snapshot)
         
     def __eq__(self, other):
         return (
@@ -86,25 +82,3 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
             return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self, subdomain_data=subdomain_data)
         else:
             return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self)
-            
-    @overload(lambda cls: cls)
-    def __add__(self, other):
-        output = ParametrizedTensorFactory(self._form + other._form, False)
-        problems = [get_problem_from_parametrized_operator(operator) for operator in (self, other)]
-        assert all([problem is problems[0] for problem in problems])
-        add_to_map_from_parametrized_operator_to_problem(output, problems[0])
-        return output
-        
-    @overload(lambda cls: cls)
-    def __sub__(self, other):
-        output = ParametrizedTensorFactory(self._form - other._form, False)
-        problems = [get_problem_from_parametrized_operator(operator) for operator in (self, other)]
-        assert all([problem is problems[0] for problem in problems])
-        add_to_map_from_parametrized_operator_to_problem(output, problems[0])
-        return output
-        
-    @overload(Function.Type())
-    def __mul__(self, other):
-        output = ParametrizedTensorFactory(self._form*other, False)
-        add_to_map_from_parametrized_operator_to_problem(output, get_problem_from_parametrized_operator(self))
-        return output
