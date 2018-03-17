@@ -100,6 +100,10 @@ def ParametrizedTensorFactory(backend, wrapping):
             return output
             
         @overload(Number)
+        def __mul__(self, other):
+            return other*self
+            
+        @overload(Number)
         def __rmul__(self, other):
             form_mul = other*self._form
             output = _ParametrizedTensorFactory.__new__(type(self), form_mul)
