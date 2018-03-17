@@ -321,11 +321,6 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
             # Return
             return output
             
-        @overload(backend.NonAffineExpansionStorage.Item, )
-        def __mul__(self, other):
-            delayed_transpose = DelayedTranspose(self.basis_functions_matrix)
-            return delayed_transpose*other
-        
         @overload(object, )
         def __mul__(self, other):
             if AdditionalIsFunction(other):
@@ -339,6 +334,14 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
                 return self.__mul__(vector)
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
+                
+    if hasattr(backend, "ParametrizedTensorFactory"):
+        class _BasisFunctionsMatrix_Transpose(_BasisFunctionsMatrix_Transpose):
+            @overload(backend.ParametrizedTensorFactory, )
+            def __mul__(self, other):
+                delayed_transpose = DelayedTranspose(self.basis_functions_matrix)
+                return delayed_transpose*other
+                
     return _BasisFunctionsMatrix_Transpose
     
 # Auxiliary: multiplication of the transpose of a BasisFunctionsMatrix with a Matrix
