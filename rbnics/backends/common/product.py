@@ -16,7 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedLinearSolver, DelayedProduct, DelayedSum, NonAffineExpansionStorageItem
+from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
+from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedLinearSolver, DelayedProduct, DelayedSum
 from rbnics.backends.common.affine_expansion_storage import AffineExpansionStorage
 from rbnics.utils.decorators import array_of, backend_for, list_of, overload, ThetaType
 
@@ -50,14 +51,17 @@ def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_
     output = None
     assert len(thetas) == len(operators)
     for (theta, operator) in zip(thetas, operators):
-        assert isinstance(operator._rhs, (DelayedProduct, NonAffineExpansionStorageItem))
-        if isinstance(operator._rhs, NonAffineExpansionStorageItem):
-            rhs = theta*operator._rhs
+        assert isinstance(operator._rhs, (AbstractParametrizedTensorFactory, DelayedProduct))
+        if isinstance(operator._rhs, AbstractParametrizedTensorFactory):
+            rhs = DelayedProduct(theta)
+            rhs *= operator._rhs
         elif isinstance(operator._rhs, DelayedProduct):
             assert len(operator._rhs._args) is 3
             assert operator._rhs._args[0] == -1
-            assert isinstance(operator._rhs._args[1], NonAffineExpansionStorageItem)
-            rhs = (theta*operator._rhs._args[0])*operator._rhs._args[1]*operator._rhs._args[2]
+            assert isinstance(operator._rhs._args[1], AbstractParametrizedTensorFactory)
+            rhs = DelayedProduct(theta*operator._rhs._args[0])
+            rhs *= operator._rhs._args[1]
+            rhs *= operator._rhs._args[2]
         else:
             raise TypeError("Invalid rhs")
         if output is None:

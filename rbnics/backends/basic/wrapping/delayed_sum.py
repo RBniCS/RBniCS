@@ -20,6 +20,7 @@ from rbnics.backends.basic.wrapping.delayed_product import DelayedProduct
 
 class DelayedSum(object):
     def __init__(self, arg):
+        assert not isinstance(arg, DelayedSum)
         self._args = [arg]
         
     def __iadd__(self, other):

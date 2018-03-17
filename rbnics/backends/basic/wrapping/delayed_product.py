@@ -18,8 +18,10 @@
 
 class DelayedProduct(object):
     def __init__(self, arg):
+        assert not isinstance(arg, DelayedProduct)
         self._args = [arg]
         
-    def __mul__(self, other):
+    def __imul__(self, other):
+        assert not isinstance(other, DelayedProduct)
         self._args.append(other)
         return self
