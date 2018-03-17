@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from ufl import Form
-from dolfin import assemble, has_pybind11
+from dolfin import has_pybind11
 if has_pybind11():
     from dolfin.cpp.la import GenericMatrix
 else:
@@ -67,27 +66,6 @@ def preserve_generator_attribute(operator):
     
 for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__imul__", "__truediv__", "__itruediv__"):
     preserve_generator_attribute(operator)
-
-# Allow sum and sub between matrix and form by assemblying the form. This is required because
-# affine expansion storage is not assembled if it is parametrized, and it may happen that
-# some terms are parametrized (and thus not assembled) while others are not parametrized
-# (and thus assembled).
-def arithmetic_with_form(operator):
-    original_operator = getattr(GenericMatrix, operator)
-    def custom_operator(self, other):
-        from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory # cannot import at global scope due to cyclic dependence
-        if isinstance(other, Form):
-            assert len(other.arguments()) is 2
-            other = assemble(other, keep_diagonal=True)
-        elif isinstance(other, ParametrizedTensorFactory):
-            from rbnics.backends.dolfin.evaluate import evaluate # cannot import at global scope due to cyclic dependence
-            assert len(other._form.arguments()) is 2
-            other = evaluate(other)
-        return original_operator(self, other)
-    setattr(GenericMatrix, operator, custom_operator)
-
-for operator in ("__add__", "__radd__", "__sub__", "__rsub__"):
-    arithmetic_with_form(operator)
 
 # Define the __and__ operator to be used in combination with __invert__ operator
 # of sum(product(theta, DirichletBCs)) to zero rows and columns associated to Dirichlet BCs
