@@ -58,12 +58,22 @@ class NonlinearSolver(AbstractNonlinearSolver):
         residual = self.problem.residual
         initial_guess_vector = self.problem.solution.vector()
         jacobian = _Jacobian(self.problem.jacobian)
-        solution_vector = nonlin_solve(
-            residual, initial_guess_vector, jacobian=jacobian, verbose=self._report,
-            f_tol=self._absolute_tolerance, f_rtol=self._relative_tolerance, x_rtol=self._solution_tolerance, maxiter=self._maximum_iterations,
-            line_search=self._line_search, callback=self._monitor
-        )
-        self.problem.solution.vector()[:] = solution_vector
+        try:
+            solution_vector, info = nonlin_solve(
+                residual, initial_guess_vector, jacobian=jacobian, verbose=self._report,
+                f_tol=self._absolute_tolerance, f_rtol=self._relative_tolerance, x_rtol=self._solution_tolerance, maxiter=self._maximum_iterations,
+                line_search=self._line_search, callback=self._monitor,
+                full_output=True, raise_exception=False
+            )
+            if self._report:
+                if info["success"]:
+                    print("scipy solver converged in " + str(info["nit"]) + " iterations.")
+                else:
+                    print("scipy solver diverged in " + str(info["nit"]) + " iterations.")
+            self.problem.solution.vector()[:] = solution_vector
+        except ArithmeticError as error:
+            if self._report:
+                print("scipy solver diverged due to arithmetic error " + str(error))
         return self.problem.solution
         
 class _NonlinearProblem(_BasicNonlinearProblem):
