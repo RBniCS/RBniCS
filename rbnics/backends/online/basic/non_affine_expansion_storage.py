@@ -503,7 +503,6 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
 class DelayedTransposeShape(object):
     def __init__(self, basis_functions):
         assert len(basis_functions) in (1, 2)
-        shape = list()
         component_name_to_basis_component_index = list()
         component_name_to_basis_component_length = list()
         found_delayed_linear_solver = False
@@ -511,21 +510,25 @@ class DelayedTransposeShape(object):
             assert isinstance(basis_functions_i, (AbstractBasisFunctionsMatrix, DelayedBasisFunctionsMatrix, DelayedLinearSolver))
             if isinstance(basis_functions_i, (AbstractBasisFunctionsMatrix, DelayedBasisFunctionsMatrix)):
                 assert not found_delayed_linear_solver # delayed functions should come after basis functions
-                shape.append(sum(basis_functions_i._component_name_to_basis_component_length.values()))
                 component_name_to_basis_component_index.append(basis_functions_i._component_name_to_basis_component_index)
                 component_name_to_basis_component_length.append(basis_functions_i._component_name_to_basis_component_length)
             elif isinstance(basis_functions_i, DelayedLinearSolver):
                 found_delayed_linear_solver = True
             else:
                 raise TypeError("Invalid basis functions")
-        self.shape = tuple(shape)
+        assert len(component_name_to_basis_component_length) in (1, 2)
+        if len(component_name_to_basis_component_length) is 1:
+            self.N = component_name_to_basis_component_length[0]
+        elif len(component_name_to_basis_component_length) is 2:
+            self.M = component_name_to_basis_component_length[0]
+            self.N = component_name_to_basis_component_length[1]
+        else:
+            raise ValueError("Invalid length")
         self._component_name_to_basis_component_index = tuple(component_name_to_basis_component_index)
         self._component_name_to_basis_component_length = tuple(component_name_to_basis_component_length)
         
     def __eq__(self, other):
         return (
-            self.shape == other.shape
-                and
             self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 and
             self._component_name_to_basis_component_length == other._component_name_to_basis_component_length

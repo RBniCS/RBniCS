@@ -277,19 +277,21 @@ def AffineExpansionStorage(backend, wrapping):
         
         @overload(backend.Matrix.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
-            slice_0 = tuple(range(item.shape[0]))
-            slice_1 = tuple(range(item.shape[1]))
-            self._precomputed_slices[(slice_0, slice_1)] = self
+            empty_slice = slice(None)
+            slices = slice_to_array(item, (empty_slice, empty_slice), self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            self._precomputed_slices[slices] = self
         
         @overload(backend.Vector.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
-            slice_0 = tuple(range(item.shape[0]))
-            self._precomputed_slices[slice_0] = self
+            empty_slice = slice(None)
+            slices = slice_to_array(item, empty_slice, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            self._precomputed_slices[slices] = self
             
         @overload(backend.Function.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
-            slice_0 = tuple(range(item.vector().shape[0]))
-            self._precomputed_slices[slice_0] = self
+            empty_slice = slice(None)
+            slices = slice_to_array(item.vector, empty_slice, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            self._precomputed_slices[slices] = self
             
         @overload(Number, )
         def _prepare_trivial_precomputed_slice(self, item):

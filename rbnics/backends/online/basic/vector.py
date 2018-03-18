@@ -29,7 +29,6 @@ def Vector(backend, wrapping, VectorBaseType):
             else:
                 N_sum = N
             self.N = N
-            self.shape = (N_sum, )
             if content is None:
                 self.content = VectorBaseType(N_sum)
             else:

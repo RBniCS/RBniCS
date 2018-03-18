@@ -71,6 +71,7 @@ def _check_key(obj, key):
         key = (key,)
     assert isinstance(key, tuple)
     assert all([isinstance(key_i, slice) for key_i in key])
+    shape_attribute = _slice_shape_attribute[len(key)]
     converted_key = list()
     for (slice_index, slice_) in enumerate(key):
         assert slice_.start is None or slice_.start == 0
@@ -86,12 +87,22 @@ def _check_key(obj, key):
                 or
             slice_.stop is None
         ):
-            stop = obj.shape[slice_index]
+            stop = getattr(obj, shape_attribute[slice_index])
         else:
             stop = slice_.stop
         converted_slice = slice(start, stop, step)
         converted_key.append(converted_slice)
     return converted_key
+    
+_slice_shape_attribute = {
+    1: {
+        0: "N",
+    },
+    2: {
+        0: "M",
+        1: "N"
+    }
+}
     
 def _check_length_dict(key, length_dict):
     if length_dict is None:

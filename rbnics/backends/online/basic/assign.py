@@ -35,7 +35,7 @@ def assign(backend):
                     components_only_in_from = from_N_keys - to_N_keys
                     components_only_in_to = to_N_keys - from_N_keys
                     assert len(components_only_in_to) is 0
-                    from_N_dict = dict()
+                    from_N_dict = OnlineSizeDict()
                     for c in components_in_both:
                         from_N_dict[c] = object_from.vector().N[c]
                     for c in components_only_in_from:

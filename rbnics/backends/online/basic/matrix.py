@@ -34,7 +34,6 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 N_sum = N
             self.M = M
             self.N = N
-            self.shape = (M_sum, N_sum)
             if content is None:
                 self.content = MatrixBaseType(M_sum, N_sum)
             else:

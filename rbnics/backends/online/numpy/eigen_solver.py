@@ -28,10 +28,10 @@ from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 @BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
 class EigenSolver(AbstractEigenSolver):
     def __init__(self, basis_functions, A, B=None, bcs=None):
-        assert A.shape[0] == A.shape[1]
+        assert A.N == A.M
         if B is not None:
-            assert B.shape[0] == B.shape[1]
-            assert A.shape[0] == B.shape[0]
+            assert B.N == B.M
+            assert A.N == B.M
         
         self.A = A
         self.B = B
@@ -68,8 +68,8 @@ class EigenSolver(AbstractEigenSolver):
     
     def get_eigenvector(self, i):
         eigv_i = self.eigv[:, i]
-        eigv_i_real = Vector.Type()(self.A.shape[0], real(eigv_i))
-        eigv_i_imag = Vector.Type()(self.A.shape[0], imag(eigv_i))
+        eigv_i_real = Vector.Type()(self.A.N, real(eigv_i))
+        eigv_i_imag = Vector.Type()(self.A.N, imag(eigv_i))
         eigv_i_real_fun = Function(eigv_i_real)
         eigv_i_imag_fun = Function(eigv_i_imag)
         return (eigv_i_real_fun, eigv_i_imag_fun)
