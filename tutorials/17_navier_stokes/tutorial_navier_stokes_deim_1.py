@@ -181,7 +181,7 @@ reduced_navier_stokes_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(16, DEIM=16, sampling=EquispacedDistribution())
-pod_galerkin_method.error_analysis(with_respect_to=exact_problem)
+pod_galerkin_method.error_analysis()
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis(with_respect_to=exact_problem)
+pod_galerkin_method.speedup_analysis()

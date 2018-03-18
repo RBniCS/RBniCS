@@ -139,6 +139,30 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 # Restore float parameters
                 self.mu = mu_float
                 
+            def solve(self, **kwargs):
+                # Exact operators should be used regardless of the current stage
+                OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
+                former_stage = OfflineOnlineSwitch.get_current_stage()
+                OfflineOnlineSwitch.set_current_stage("offline")
+                # Call Parent method
+                solution = ParametrizedDifferentialProblem_DerivedClass.solve(self, **kwargs)
+                # Restore former stage in offline/online switch storage
+                OfflineOnlineSwitch.set_current_stage(former_stage)
+                # Return
+                return solution
+                
+            def compute_output(self):
+                # Exact operators should be used regardless of the current stage
+                OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
+                former_stage = OfflineOnlineSwitch.get_current_stage()
+                OfflineOnlineSwitch.set_current_stage("offline")
+                # Call Parent method
+                output = ParametrizedDifferentialProblem_DerivedClass.compute_output(self)
+                # Restore former stage in offline/online switch storage
+                OfflineOnlineSwitch.set_current_stage(former_stage)
+                # Return
+                return output
+                
             def _cache_key_and_file_from_kwargs(self, **kwargs):
                 (cache_key, cache_file) = ParametrizedDifferentialProblem_DerivedClass._cache_key_and_file_from_kwargs(self, **kwargs)
                 # Change cache key depending on current stage
