@@ -60,9 +60,6 @@ class Graetz(EllipticCoerciveProblem):
             theta_bc0 = mu[2]
             theta_bc1 = mu[3]
             return (theta_bc0, theta_bc1)
-        elif term == "s":
-            theta_s0 = 1.0
-            return (theta_s0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
                     
@@ -79,10 +76,6 @@ class Graetz(EllipticCoerciveProblem):
         elif term == "f":
             f0 = Constant(0.0)*v*dx
             return (f0,)
-        elif term == "s":
-            ds = self.ds
-            s0 = v*ds(4)
-            return (s0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1),
                    DirichletBC(self.V, Constant(1.0), self.boundaries, 2),
