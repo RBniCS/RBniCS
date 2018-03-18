@@ -78,7 +78,9 @@ def _test_time_stepping_4_sparse(callback_type):
     j_u_dot_dot = derivative(r_u_dot_dot, u_dot_dot, du_dot_dot)
     r = r_u_dot_dot + r_u - g*v*dx
     x = inner(du, v)*dx
-    bc = [DirichletBC(V, exact_solution_expression, boundary)]
+    def bc(t):
+        exact_solution_expression.t = t
+        return [DirichletBC(V, exact_solution_expression, boundary)]
 
     # Assemble inner product matrix
     X = assemble(x)
@@ -103,8 +105,7 @@ def _test_time_stepping_4_sparse(callback_type):
             
         # Define boundary condition
         def bc_eval(self, t):
-            exact_solution_expression.t = t
-            return bc
+            return bc(t)
             
         # Define initial condition
         def ic_eval(self):
