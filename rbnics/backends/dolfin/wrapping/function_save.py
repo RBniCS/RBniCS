@@ -27,6 +27,7 @@ else:
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 from rbnics.utils.mpi import is_io_process
+from rbnics.utils.io import TextIO as SuffixIO
 
 def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
@@ -141,6 +142,8 @@ def _write_to_xdmf_file(fun, directory, filename, suffix, components=None):
             set_log_level(int(WARNING) + 1) # disable xdmf logs
             _all_xdmf_files[full_filename_checkpoint].write_checkpoint(_all_xdmf_functions[full_filename_checkpoint], function_name, float(suffix))
             set_log_level(bak_log_level)
+            # Write out current suffix as well
+            SuffixIO.save_file(suffix, directory, filename + "_suffix")
         else:
             # Remove existing files if any, as new functions should not be appended,
             # but rather overwrite existing functions

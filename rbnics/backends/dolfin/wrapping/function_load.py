@@ -21,7 +21,9 @@ from ufl import product
 from dolfin import assign, File, Function, has_hdf5, has_hdf5_parallel, XDMFFile
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
+from rbnics.backends.dolfin.wrapping.function_save import _all_xdmf_latest_suffix, _all_xdmf_files
 from rbnics.utils.mpi import is_io_process
+from rbnics.utils.io import TextIO as SuffixIO
 
 def function_load(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
@@ -94,18 +96,23 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, components=None):
         file_exists = is_io_process.mpi_comm.bcast(file_exists, root=is_io_process.root)
         if file_exists:
             if suffix is not None:
-                if full_filename_checkpoint in _all_xdmf_files:
-                    assert _all_xdmf_latest_suffix[full_filename_checkpoint] == suffix - 1
-                    _all_xdmf_latest_suffix[full_filename_checkpoint] = suffix
+                assert SuffixIO.exists_file(directory, filename + "_suffix")
+                last_suffix = SuffixIO.load_file(directory, filename + "_suffix")
+                if suffix <= last_suffix:
+                    if full_filename_checkpoint in _all_xdmf_files:
+                        assert _all_xdmf_latest_suffix[full_filename_checkpoint] == suffix - 1
+                        _all_xdmf_latest_suffix[full_filename_checkpoint] = suffix
+                    else:
+                        assert suffix == 0
+                        _all_xdmf_files[full_filename_checkpoint] = XDMFFile(full_filename_checkpoint)
+                        _all_xdmf_latest_suffix[full_filename_checkpoint] = 0
+                    _all_xdmf_files[full_filename_checkpoint].read_checkpoint(fun, function_name, suffix)
+                    return True
                 else:
-                    assert suffix == 0
-                    _all_xdmf_files[full_filename_checkpoint] = XDMFFile(full_filename_checkpoint)
-                    _all_xdmf_latest_suffix[full_filename_checkpoint] = 0
-                _all_xdmf_files[full_filename_checkpoint].read_checkpoint(fun, function_name, suffix)
+                    return False
             else:
                 with XDMFFile(full_filename_checkpoint) as file_checkpoint:
                     file_checkpoint.read_checkpoint(fun, function_name, 0)
-        return file_exists
-    
-_all_xdmf_files = dict()
-_all_xdmf_latest_suffix = dict()
+                return True
+        else:
+            return False
