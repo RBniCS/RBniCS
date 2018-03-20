@@ -60,8 +60,10 @@ def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_Deri
     return UpdateMapFromProblemToTrainingStatus_Class
     
 def init_map_from_problem_to_training_status(problem):
-    assert problem not in _problem_to_training_status
-    _problem_to_training_status[problem] = None
+    if problem not in _problem_to_training_status:
+        _problem_to_training_status[problem] = None
+    else:
+        assert _problem_to_training_status[problem] is None
     
 def set_map_from_problem_to_training_status_on(problem):
     assert problem in _problem_to_training_status

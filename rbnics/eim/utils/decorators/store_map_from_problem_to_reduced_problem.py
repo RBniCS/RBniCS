@@ -39,8 +39,7 @@ def add_to_map_from_problem_to_reduced_problem(problem, reduced_problem):
             problem = problem.__decorated_problem__
         _problem_to_reduced_problem_map[problem] = reduced_problem
     else:
-        # this happens with multiple inheritance
-        assert _problem_to_reduced_problem_map[problem] == reduced_problem
+        assert _problem_to_reduced_problem_map[problem] is reduced_problem
     
 def get_reduced_problem_from_problem(problem):
     assert problem in _problem_to_reduced_problem_map

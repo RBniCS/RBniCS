@@ -24,12 +24,11 @@ from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import assign, BasisFunctionsMatrix, copy, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
 from rbnics.utils.config import config
-from rbnics.utils.decorators import StoreMapFromProblemToReducedProblem, sync_setters
+from rbnics.utils.decorators import sync_setters
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.test import PatchInstanceMethod
 
-@StoreMapFromProblemToReducedProblem
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
     Base class containing the interface of a projection based ROM for elliptic coercive problems.

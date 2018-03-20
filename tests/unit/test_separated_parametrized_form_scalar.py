@@ -26,7 +26,7 @@ else:
     from dolfin import log, PROGRESS, set_log_level
 set_log_level(PROGRESS)
 from rbnics.backends.dolfin import SeparatedParametrizedForm
-from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
+from rbnics.eim.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
 
 # Common variables
 mesh = UnitSquareMesh(10, 10)

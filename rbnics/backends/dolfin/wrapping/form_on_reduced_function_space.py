@@ -23,8 +23,8 @@ if has_pybind11():
     from dolfin.function.argument import Argument
 else:
     from dolfin import Argument
-from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator
-from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.utils.decorators import exact_problem
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
 

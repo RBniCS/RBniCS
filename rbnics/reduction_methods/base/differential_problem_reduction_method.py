@@ -20,13 +20,11 @@ import inspect
 from rbnics.backends import assign
 from rbnics.reduction_methods.base.reduction_method import ReductionMethod
 from rbnics.utils.io import Folders
-from rbnics.utils.decorators import UpdateMapFromProblemToTrainingStatus
 from rbnics.utils.factories import ReducedProblemFactory
 from rbnics.utils.test import PatchInstanceMethod
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@UpdateMapFromProblemToTrainingStatus
 class DifferentialProblemReductionMethod(ReductionMethod):
     
     # Default initialization of members

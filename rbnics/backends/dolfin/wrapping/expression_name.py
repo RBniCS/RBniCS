@@ -19,7 +19,7 @@
 from numpy import zeros
 from dolfin import __version__ as dolfin_version, Constant, has_pybind11
 import hashlib
-from rbnics.utils.decorators import get_problem_from_solution
+from rbnics.eim.utils.decorators import get_problem_from_solution
 
 def basic_expression_name(backend, wrapping):
     def _basic_expression_name(expression):

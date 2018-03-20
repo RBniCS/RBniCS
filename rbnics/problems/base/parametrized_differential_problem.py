@@ -22,14 +22,10 @@ import hashlib
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
 from rbnics.utils.config import config
-from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.test import PatchInstanceMethod
 
 # Base class containing the definition of elliptic coercive problems
-@StoreMapFromProblemNameToProblem
-@StoreMapFromProblemToTrainingStatus
-@StoreMapFromSolutionToProblem
 class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
     Abstract class describing a parametrized differential problem.

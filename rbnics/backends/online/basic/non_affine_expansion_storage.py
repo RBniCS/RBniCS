@@ -21,8 +21,8 @@ from numpy import empty as NonAffineExpansionStorageContent_Base, nditer as NonA
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList, NonAffineExpansionStorage as AbstractNonAffineExpansionStorage, ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedFunctionsList, DelayedLinearSolver, DelayedTranspose
 from rbnics.backends.online.basic.wrapping import slice_to_array
-from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator, get_reduced_problem_from_basis_functions, get_reduced_problem_from_error_estimation_inner_product, get_term_and_index_from_parametrized_operator
-from rbnics.utils.decorators import get_problem_from_problem_name, get_reduced_problem_from_problem, overload, tuple_of
+from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator, get_problem_from_problem_name, get_reduced_problem_from_basis_functions, get_reduced_problem_from_error_estimation_inner_product, get_reduced_problem_from_problem, get_term_and_index_from_parametrized_operator
+from rbnics.utils.decorators import overload, tuple_of
 from rbnics.utils.io import Folders, TextIO as BasisFunctionsContentLengthIO, TextIO as BasisFunctionsProblemNameIO, TextIO as DelayedFunctionsProblemNameIO, TextIO as DelayedFunctionsTypeIO, TextIO as ErrorEstimationInnerProductIO, TextIO as TruthContentItemIO, TextIO as TypeIO
 
 class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):

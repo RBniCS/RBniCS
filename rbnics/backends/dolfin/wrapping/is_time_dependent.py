@@ -21,7 +21,7 @@ if has_pybind11():
     from dolfin.function.expression import BaseExpression
 else:
     from dolfin import Expression as BaseExpression
-from rbnics.utils.decorators import get_problem_from_solution
+from rbnics.eim.utils.decorators import get_problem_from_solution
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_time_dependent
 
 def basic_is_time_dependent(backend, wrapping):

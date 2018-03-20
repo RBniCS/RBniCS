@@ -52,7 +52,7 @@ def add_to_map_from_basis_functions_to_reduced_problem(basis_functions, reduced_
     if basis_functions not in _basis_functions_to_reduced_problem_map:
         _basis_functions_to_reduced_problem_map[basis_functions] = reduced_problem
     else:
-        assert reduced_problem is _basis_functions_to_reduced_problem_map[basis_functions]
+        assert _basis_functions_to_reduced_problem_map[basis_functions] is reduced_problem
     
 def get_reduced_problem_from_basis_functions(basis_functions):
     assert basis_functions in _basis_functions_to_reduced_problem_map

@@ -23,6 +23,7 @@ from rbnics.backends import ParametrizedExpressionFactory, SeparatedParametrized
 from rbnics.eim.backends import OfflineOnlineBackend
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
+from rbnics.eim.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
@@ -42,7 +43,10 @@ def EIMDecoratedProblem(
     
     @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactEIMAlgorithm, stages=stages, basis_generation=basis_generation)
     def EIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-                
+        
+        @StoreMapFromProblemNameToProblem
+        @StoreMapFromProblemToTrainingStatus
+        @StoreMapFromSolutionToProblem
         @PreserveClassName
         class EIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             

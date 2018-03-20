@@ -37,7 +37,8 @@ else:
     from dolfin import log, PROGRESS
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 from rbnics.backends.dolfin.wrapping import expand_sum_product, rewrite_quotients
-from rbnics.utils.decorators import BackendFor, get_problem_from_solution, ModuleWrapper
+from rbnics.eim.utils.decorators import get_problem_from_solution
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 def BasicSeparatedParametrizedForm(backend, wrapping):
     class _BasicSeparatedParametrizedForm(AbstractSeparatedParametrizedForm):

@@ -18,6 +18,7 @@
 
 import inspect
 from rbnics.eim.problems.eim import EIM
+from rbnics.eim.utils.decorators import StoreMapFromProblemToReducedProblem
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -97,6 +98,7 @@ def EIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
             return ParametrizedReducedDifferentialProblem_DecoratedClass
     
     @_AlsoDecorateErrorEstimationOperators
+    @StoreMapFromProblemToReducedProblem
     @PreserveClassName
     class EIMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         

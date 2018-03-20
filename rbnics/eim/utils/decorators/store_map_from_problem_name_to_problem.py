@@ -39,8 +39,10 @@ def add_to_map_from_problem_name_to_problem(problem_name, problem):
         problem_name = problem.__decorated_problem__.name()
         assert problem_name in _problem_name_to_problem_map
     else:
-        assert problem_name not in _problem_name_to_problem_map
-        _problem_name_to_problem_map[problem_name] = problem
+        if problem_name not in _problem_name_to_problem_map:
+            _problem_name_to_problem_map[problem_name] = problem
+        else:
+            assert _problem_name_to_problem_map[problem_name] is problem
     
 def get_problem_from_problem_name(problem_name):
     assert problem_name in _problem_name_to_problem_map
