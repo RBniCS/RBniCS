@@ -136,7 +136,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -158,6 +158,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
         def __init__(self, V, **kwargs):
             Hole.__init__(self, "HoleOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -232,6 +233,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
         def __init__(self, V, **kwargs):
             Hole.__init__(self, "HolePullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -312,7 +314,7 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -334,6 +336,7 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
         def __init__(self, V, **kwargs):
             HoleRotation.__init__(self, "HoleRotationOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -424,6 +427,7 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
         def __init__(self, V, **kwargs):
             HoleRotation.__init__(self, "HoleRotationPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -499,7 +503,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -521,6 +525,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
         def __init__(self, V, **kwargs):
             Graetz.__init__(self, "GraetzOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -559,6 +564,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
         def __init__(self, V, **kwargs):
             Graetz.__init__(self, "GraetzPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -641,7 +647,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__, str(cell_diameter_pull_back(4.))])
             
         def init(self):
             self._init_operators()
@@ -663,6 +669,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
         def __init__(self, V, **kwargs):
             AdvectionDominated.__init__(self, "AdvectionDominatedOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -715,6 +722,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
         def __init__(self, V, **kwargs):
             AdvectionDominated.__init__(self, "AdvectionDominatedPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -803,7 +811,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -825,6 +833,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
         def __init__(self, V, **kwargs):
             Stokes.__init__(self, "StokesOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -922,6 +931,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
         def __init__(self, V, **kwargs):
             Stokes.__init__(self, "StokesPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             if term == "a":
@@ -1034,7 +1044,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__, str(cell_diameter_pull_back(4.))])
             
         def init(self):
             self._init_operators()
@@ -1056,6 +1066,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
         def __init__(self, V, **kwargs):
             StokesStabilization.__init__(self, "StokesStabilizationOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -1114,6 +1125,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
         def __init__(self, V, **kwargs):
             StokesStabilization.__init__(self, "StokesStabilizationPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             if term == "a":
@@ -1228,7 +1240,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -1250,6 +1262,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
         def __init__(self, V, **kwargs):
             EllipticOptimalControl.__init__(self, "EllipticOptimalControlOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -1333,6 +1346,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
         def __init__(self, V, **kwargs):
             EllipticOptimalControl.__init__(self, "EllipticOptimalControlPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -1480,7 +1494,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -1502,6 +1516,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
         def __init__(self, V, **kwargs):
             StokesOptimalControl.__init__(self, "StokesOptimalControlOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -1597,6 +1612,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
         def __init__(self, V, **kwargs):
             StokesOptimalControl.__init__(self, "StokesOptimalControlPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -1783,7 +1799,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -1805,6 +1821,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
         def __init__(self, V, **kwargs):
             AdvectionDiffusion.__init__(self, "AdvectionDiffusionOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -1897,6 +1914,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
         def __init__(self, V, **kwargs):
             AdvectionDiffusion.__init__(self, "AdvectionDiffusionPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             if term == "a":
@@ -1979,7 +1997,7 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -2194,7 +2212,7 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
             self.Q = dict()
             
         def name(self):
-            return self.folder_prefix
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
             
         def init(self):
             self._init_operators()
@@ -2216,6 +2234,7 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
         def __init__(self, V, **kwargs):
             StokesUnsteady.__init__(self, "StokesUnsteadyOnReferenceDomain")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             mu = self.mu
@@ -2272,6 +2291,7 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
         def __init__(self, V, **kwargs):
             StokesUnsteady.__init__(self, "StokesUnsteadyPullBack")
             self.V = V
+            self._solution = Function(V)
             
         def compute_theta(self, term):
             if term == "a":
