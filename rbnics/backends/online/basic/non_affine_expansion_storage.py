@@ -516,8 +516,10 @@ class DelayedTransposeShape(object):
                 found_delayed_linear_solver = True
             else:
                 raise TypeError("Invalid basis functions")
-        assert len(component_name_to_basis_component_length) in (1, 2)
-        if len(component_name_to_basis_component_length) is 1:
+        assert len(component_name_to_basis_component_length) in (0, 1, 2)
+        if len(component_name_to_basis_component_length) is 0:
+            pass
+        elif len(component_name_to_basis_component_length) is 1:
             self.N = component_name_to_basis_component_length[0]
         elif len(component_name_to_basis_component_length) is 2:
             self.M = component_name_to_basis_component_length[0]
