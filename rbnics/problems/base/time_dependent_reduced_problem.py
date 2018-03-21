@@ -122,12 +122,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         initial_condition_is_homogeneous[component] = False
                         Q_ic[component] = len(theta_ic)
                         initial_condition[component] = OnlineAffineExpansionStorage(Q_ic[component])
-                        if current_stage == "online":
-                            self.assemble_operator(initial_condition_string.format(c=component), "online")
-                        elif current_stage == "offline":
-                            pass # Nothing else to be done
-                        else:
-                            raise ValueError("Invalid stage in _init_initial_condition().")
                 if n_components == 1:
                     self.initial_condition = initial_condition[self.components[0]]
                     self.initial_condition_is_homogeneous = initial_condition_is_homogeneous[self.components[0]]
@@ -137,6 +131,15 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     self.initial_condition_is_homogeneous = initial_condition_is_homogeneous
                     self.Q_ic = Q_ic
                 assert self.initial_condition_is_homogeneous == self.truth_problem.initial_condition_is_homogeneous
+                # Load initial conditions from file if we are online
+                if current_stage == "online":
+                    for component in self.components:
+                        if not initial_condition_is_homogeneous[component]:
+                            self.assemble_operator(initial_condition_string.format(c=component), "online")
+                elif current_stage == "offline":
+                    pass # Nothing else to be done
+                else:
+                    raise ValueError("Invalid stage in _init_initial_condition().")
                 
         # Assemble the reduced order affine expansion.
         def build_reduced_operators(self, current_stage="offline"):
@@ -160,7 +163,10 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             if term.startswith("initial_condition"):
                 component = term.replace("initial_condition", "").replace("_", "")
                 if current_stage == "online": # load from file
-                    initial_condition = self.initial_condition[component]
+                    if component != "":
+                        initial_condition = self.initial_condition[component]
+                    else:
+                        initial_condition = self.initial_condition
                     initial_condition.load(self.folder["reduced_operators"], term)
                 elif current_stage == "offline":
                     if component != "":
