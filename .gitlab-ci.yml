@@ -1,0 +1,65 @@
+stages:
+  - build
+  - test
+  - release
+
+variables:
+  TESTING_IMAGE: $CI_REGISTRY_IMAGE:testing-$CI_COMMIT_SHA
+  RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+
+build:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: build
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build --pull -t $TESTING_IMAGE -f docker/Dockerfile .
+    - docker push $TESTING_IMAGE
+    
+flake8:
+  image:
+    name: $TESTING_IMAGE
+    entrypoint: ["/sbin/my_init","--quiet","--","/sbin/setuser","fenics"]
+  stage: test
+  before_script:
+    - source $FENICS_HOME/fenics.env.conf
+    - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
+    - python3 -c "import dolfin; import rbnics"
+  script:
+    - pytest --flake8 -m flake8 -n auto -vv --html=pytest_flake8.html --self-contained-html
+  artifacts:
+    paths:
+      - pytest_flake8.html
+    when: on_failure
+    
+tests_unit_serial:
+  image:
+    name: $TESTING_IMAGE
+    entrypoint: ["/sbin/my_init","--quiet","--","/sbin/setuser","fenics"]
+  stage: test
+  before_script:
+    - source $FENICS_HOME/fenics.env.conf
+    - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
+    - python3 -c "import dolfin; import rbnics"
+  script:
+    - pytest -n auto -vv -k "not time_stepping and not pull_back_to_reference_domain" --html=pytest_tests_serial.html --self-contained-html tests/unit
+  artifacts:
+    paths:
+      - pytest_tests_serial.html
+    when: on_failure
+    
+release:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: release
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker pull $TESTING_IMAGE
+    - docker tag $TESTING_IMAGE $RELEASE_IMAGE
+    - docker push $RELEASE_IMAGE
+  only:
+    - master
