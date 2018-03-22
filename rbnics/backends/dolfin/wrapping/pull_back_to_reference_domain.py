@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, OrderedDict
 import itertools
 import re
 from numpy import allclose, isclose, ones as numpy_ones, zeros as numpy_zeros
@@ -1037,15 +1037,23 @@ def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postproc
         )
     # Collect first with respect to theta factors
     collected_with_respect_to_theta = collect(postprocessed_pulled_back_sum_product, postprocessed_pulled_back_theta_factors_sympy_independents, evaluate=False, exact=True)
+    collected_with_respect_to_theta_ordered = OrderedDict()
+    for postprocessed_pulled_back_theta_factor in postprocessed_pulled_back_theta_factors_sympy_independents:
+        assert postprocessed_pulled_back_theta_factor in collected_with_respect_to_theta
+        collected_with_respect_to_theta_ordered[postprocessed_pulled_back_theta_factor] = collected_with_respect_to_theta[postprocessed_pulled_back_theta_factor]
     collected_sum_product = 0
-    for (collected_theta_factor, collected_form) in collected_with_respect_to_theta.items():
+    for (collected_theta_factor, collected_form) in collected_with_respect_to_theta_ordered.items():
         collected_sum_product += collected_theta_factor*collected_form
     # Collect then with respect to form factors
-    collected_with_respect_to_form = collect(collected_sum_product, collected_with_respect_to_theta.values(), evaluate=False, exact=True)
+    collected_with_respect_to_form = collect(collected_sum_product, collected_with_respect_to_theta_ordered.values(), evaluate=False, exact=True)
+    collected_with_respect_to_form_ordered = OrderedDict()
+    for collected_form in collected_with_respect_to_theta_ordered.values():
+        assert collected_form in collected_with_respect_to_form
+        collected_with_respect_to_form_ordered[collected_form] = collected_with_respect_to_form[collected_form]
     # Convert back to ufl
     collected_forms = list()
     collected_theta_factors = list()
-    for (collected_form, collected_theta_factor) in collected_with_respect_to_form.items():
+    for (collected_form, collected_theta_factor) in collected_with_respect_to_form_ordered.items():
         collected_forms.append(sympy_eval(str(collected_form), postprocessed_pulled_back_forms_sympy_id_to_ufl))
         collected_theta_factors.append(sympy_eval(str(collected_theta_factor), postprocessed_pulled_back_theta_factors_sympy_id_to_ufl))
     # Return
