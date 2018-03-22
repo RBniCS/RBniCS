@@ -18,6 +18,7 @@
 
 import inspect
 import itertools
+from collections import OrderedDict
 from numpy import ndarray as array
 import multipledispatch.conflict
 from multipledispatch.core import dispatch as original_dispatch, ismethod
@@ -194,9 +195,9 @@ class MethodDispatcher_Wrapper(object):
     
     def __init__(self, name, doc=None):
         self.name = name
-        self.standard_funcs = dict()
-        self.lambda_funcs = dict()
-        self.dispatchers = dict()
+        self.standard_funcs = OrderedDict()
+        self.lambda_funcs = OrderedDict()
+        self.dispatchers = OrderedDict()
         
     def add(self, signature, func):
         for types in expand_tuples(signature):
@@ -253,8 +254,8 @@ class MethodDispatcher(Dispatcher):
         self.origin = origin
         self.obj = None
         # Copy standard and lambda functions
-        standard_funcs = dict(origin.standard_funcs)
-        lambda_funcs = dict(origin.lambda_funcs)
+        standard_funcs = origin.standard_funcs.copy()
+        lambda_funcs = origin.lambda_funcs.copy()
         # Add all functions from ancestor classes
         for base_cls in inspect.getmro(cls):
             if base_cls is cls:
