@@ -12,7 +12,7 @@ Several tutorials are provided. This software is also a companion of the introdu
 
 ### 1. Prerequisites
 **RBniCS** requires
-* **FEniCS** (>= 2017.2.0, python 3, SWIG interface), with PETSc, petsc4py and SLEPc, for computations during the offline stage;
+* **FEniCS** (>= 2017.2.0, python 3), with PETSc, SLEPc, petsc4py and slepc4py for computations during the offline stage;
 * **numpy** and **scipy** for computations during the online stage.
 
 Additional requirements are automatically handled during the setup.
@@ -27,22 +27,35 @@ and install the package by typing
 python3 setup.py install
 ```
 
-### 3. RBniCS virtual machine
-If you want to try **RBniCS** out but do not have **FEniCS** already installed, you can:
-* if you have VirtualBox, [download a virtual machine](http://goo.gl/Q4nQ7E) based on Ubuntu 14.04 LTS (username and password: rbnics);
-* if you have docker, [pull our docker image from Docker Hub](https://hub.docker.com/r/rbnics/rbnics/) with `docker pull rbnics/rbnics`.
+### 2.1. RBniCS docker image
+If you want to try **RBniCS** out but do not have **FEniCS** already installed, you can [pull our docker image from Docker Hub](https://hub.docker.com/r/rbnics/rbnics/). All required dependencies are already installed. **RBniCS** tutorials and tests are located at
+```
+$FENICS_HOME/local/share/RBniCS
+```
 
-**RBniCS** software is located in $HOME/RBniCS. All required dependencies are already installed, and a precomputed offline stage is also provided.
-
-### 4. Tutorials
+### 3. Tutorials
 Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials).
-* **Tutorial 1**: introduction to the capabilities of **RBniCS**: reduced basis method for scalar problems.
-* **Tutorial 2**: introduction to the capabilities of **RBniCS**: POD-Galerkin method for vector problems.
-* **Tutorial 3**: geometrical parametrization.
-* **Tutorial 4**: non-compliant problems, successive constraint method.
-* **Tutorial 5**: empirical interpolation method.
+* **Tutorial 01**: introduction to the capabilities of **RBniCS**: reduced basis method for (scalar) elliptic problems.
+* **Tutorial 02**: introduction to the capabilities of **RBniCS**: POD-Galerkin method for (vector) elliptic problems.
+* **Tutorial 03**: geometrical parametrization.
+* **Tutorial 04**: successive constraint method.
+* **Tutorial 05**: empirical interpolation methods for non-affine elliptic problems.
+* **Tutorial 06**: reduced basis and POD-Galerkin methods for parabolic problems.
+* **Tutorial 07**: empirical interpolation methods for nonlinear elliptic problems.
+* **Tutorial 08**: empirical interpolation methods for nonlinear parabolic problems.
+* **Tutorial 09**: reduced order methods for advection dominated elliptic problems.
+* **Tutorial 10**: weighted reduced order methods for uncertainty quantification problems.
+* **Tutorial 11**: POD-Galerkin methods for quasi geostrophic equations, as an example on how to customize and extend RBniCS beyond the set of problems provided in the core of the library.
+* **Tutorial 12**: reduced basis and POD-Galerkin methods for Stokes problems.
+* **Tutorial 13**: reduced basis and POD-Galerkin methods for optimal control problems governed by elliptic equations.
+* **Tutorial 14**: reduced basis and POD-Galerkin methods for optimal control problems governed by Stokes equations.
+* **Tutorial 15**: POD-Galerkin methods for optimal control problems governed by quasi geostrophic equations.
+* **Tutorial 16**: one-way coupling between a fluid dynamics problem based on Stokes and an elliptic equation (e.g., temperature, concentration).
+* **Tutorial 17**: POD-Galerkin and empirical interpolation methods for Navier-Stokes problems.
+* **Tutorial 18**: POD-Galerkin methods for unsteady Stokes problems.
+* **Tutorial 19**: POD-Galerkin methods for unsteady Navier-Stokes problems.
 
-### 5. Authors and contributors
+### 4. Authors and contributors
 **RBniCS** is currently developed and mantained at [SISSA mathLab](http://mathlab.sissa.it/) by
 * [Dr. Francesco Ballarin](http://people.sissa.it/~fballarin/)
 * [Dr. Alberto Sartori](https://scholar.google.it/citations?user=rdoHp_EAAAAJ&hl=en)
@@ -52,7 +65,7 @@ in the framework of the [AROMA-CFD ERC CoG project](http://people.sissa.it/~groz
 
 Contact us by [email](mailto:francesco.ballarin@sissa.it) for further information or questions about **RBniCS**, or open an issue on [our issue tracker](https://gitlab.com/RBniCS/RBniCS/issues). **RBniCS** is at an early development stage, so contributions improving either the code or the documentation are welcome, both as patches or [merge requests](https://gitlab.com/RBniCS/RBniCS/merge_requests).
 
-### 6. How to cite
+### 5. How to cite
 If you use **RBniCS** in your work, please use the following citations to reference **RBniCS**
 ```
 @book{HesthavenRozzaStamm2015,
@@ -68,7 +81,7 @@ and cite the [RBniCS website](http://mathlab.sissa.it/rbnics).
 
 A forthcoming publication will also provide more details on **RBniCS**.
 
-### 7. License
+### 6. License
 Like all core **FEniCS** components, **RBniCS** is freely available under the GNU LGPL, version 3.
 
 ![Google Analytics](https://ga-beacon.appspot.com/UA-66224794-1/rbnics/readme?pixel)
