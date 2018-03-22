@@ -39,12 +39,12 @@ class install(setuptools_install):
     def finalize_options(self):
         if self.additional_backends is not None:
             self.additional_backends = set(self.additional_backends.split())
-        if len(self.additional_backends) > 0 and self.additional_backends_directory is None:
-            self.additional_backends_directory = tempfile.mkdtemp()
-            for additional_backend in self.additional_backends:
-                additional_backend = additional_backend.replace("online/", "")
-                subprocess.check_call(["git", "clone", "git@gitlab.com:RBniCS-backends/" + additional_backend + ".git"], cwd=self.additional_backends_directory)
-            self.additional_backends_directory_cloned = True
+            if len(self.additional_backends) > 0 and self.additional_backends_directory is None:
+                self.additional_backends_directory = tempfile.mkdtemp()
+                for additional_backend in self.additional_backends:
+                    additional_backend = additional_backend.replace("online/", "")
+                    subprocess.check_call(["git", "clone", "git@gitlab.com:RBniCS-backends/" + additional_backend + ".git"], cwd=self.additional_backends_directory)
+                self.additional_backends_directory_cloned = True
         setuptools_install.finalize_options(self)
 
     def run(self):
@@ -54,21 +54,23 @@ class install(setuptools_install):
         setuptools_install.run(self)
         if self.additional_backends_directory_cloned:
             shutil.rmtree(self.additional_backends_directory)
-        for symlink in egg_info.additional_backends_symlinks:
-            os.unlink(symlink)
+        if self.additional_backends is not None:
+            for symlink in egg_info.additional_backends_symlinks:
+                os.unlink(symlink)
             
 class egg_info(setuptools_egg_info):
     def run(self):
-        self.additional_backends_symlinks = list()
-        for additional_backend in self.additional_backends:
-            src = os.path.join(self.additional_backends_directory, additional_backend, additional_backend).replace("online/", "")
-            dst = os.path.join("rbnics", "backends", additional_backend)
-            if not os.path.islink(dst):
-                os.symlink(src, dst)
-                self.additional_backends_symlinks.append(dst)
-            additional_module = additional_backend.replace("/", ".")
-            self.distribution.packages.append("rbnics.backends." + additional_module)
-            self.distribution.packages.append("rbnics.backends." + additional_module + ".wrapping")
+        if self.additional_backends is not None:
+            self.additional_backends_symlinks = list()
+            for additional_backend in self.additional_backends:
+                src = os.path.join(self.additional_backends_directory, additional_backend, additional_backend).replace("online/", "")
+                dst = os.path.join("rbnics", "backends", additional_backend)
+                if not os.path.islink(dst):
+                    os.symlink(src, dst)
+                    self.additional_backends_symlinks.append(dst)
+                additional_module = additional_backend.replace("/", ".")
+                self.distribution.packages.append("rbnics.backends." + additional_module)
+                self.distribution.packages.append("rbnics.backends." + additional_module + ".wrapping")
         setuptools_egg_info.run(self)
 
 setup(name="RBniCS",
@@ -98,7 +100,7 @@ setup(name="RBniCS",
           "mpi4py",
           "multipledispatch>=0.5.0",
           "pytest-runner",
-          "sympy",
+          "sympy>=1.0",
           "toposort"
       ],
       tests_require=[
@@ -114,5 +116,5 @@ setup(name="RBniCS",
       cmdclass={
           "egg_info": egg_info,
           "install": install,
-      },
+      }
       )
