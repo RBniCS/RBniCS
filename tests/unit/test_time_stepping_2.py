@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 from rbnics.backends.abstract import TimeDependentProblem1Wrapper
 from rbnics.backends.dolfin import TimeStepping as SparseTimeStepping
 from rbnics.backends.online.numpy import Function as DenseFunction, Matrix as DenseMatrix, TimeStepping as DenseTimeStepping, Vector as DenseVector
+from rbnics.backends.online.numpy.time_stepping import has_IDA
 
 # Additional command line options for PETSc TS
 PETScOptions.set("ts_bdf_order", "3")
@@ -292,4 +293,5 @@ def test_time_stepping_2():
         error_dense_beuler = _test_time_stepping_2_dense("beuler", V, dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot)
         assert isclose(error_dense_beuler, error_sparse_tensor_callbacks_beuler).all()
         assert isclose(error_dense_beuler, error_sparse_form_callbacks_beuler).all()
-        _test_time_stepping_2_dense("ida", V, dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot)
+        if has_IDA:
+            _test_time_stepping_2_dense("ida", V, dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot)
