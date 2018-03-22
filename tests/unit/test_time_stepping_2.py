@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import pytest
 from numpy import dot, isclose
 from numpy.linalg import norm as monitor_norm
 from dolfin import assemble, Constant, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, Function, FunctionSpace, grad, inner, IntervalMesh, PETScOptions, pi, plot, project, sin, TestFunction, TrialFunction
@@ -282,6 +283,7 @@ def _test_time_stepping_2_dense(integrator_type, V, dt, T, u, u_dot, g, r, j_u, 
     return (dense_error_norm, dense_error_dot_norm)
 
 # ~~~ Test function ~~~ #
+@pytest.mark.time_stepping
 def test_time_stepping_2():
     (error_sparse_tensor_callbacks_beuler, V, dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot) = _test_time_stepping_2_sparse("tensor callbacks", "beuler")
     (error_sparse_form_callbacks_beuler, _, _, _, _, _, _, _, _, _, _, _, _, _) = _test_time_stepping_2_sparse("form callbacks", "beuler")

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import pytest
 from numpy import isclose
 from dolfin import assemble, Constant, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, Function, FunctionSpace, grad, inner, IntervalMesh, pi, plot, project, TestFunction, TrialFunction
 import matplotlib
@@ -179,6 +180,7 @@ def _test_time_stepping_4_sparse(callback_type):
     return (sparse_error_norm, sparse_error_dot_norm, sparse_error_dot_dot_norm)
     
 # ~~~ Test function ~~~ #
+@pytest.mark.time_stepping
 def test_time_stepping_4():
     error_sparse_tensor_callbacks = _test_time_stepping_4_sparse("tensor callbacks")
     error_sparse_form_callbacks = _test_time_stepping_4_sparse("form callbacks")

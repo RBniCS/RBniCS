@@ -84,6 +84,7 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args):
         decorators.append(pytest.mark.parametrize(decorator_arg[0], decorator_arg[1]))
     
     def check_affine_and_non_affine_shape_parametrizations_decorator(original_test):
+        @pytest.mark.pull_back_to_reference_domain
         @functools.wraps(original_test)
         def test_with_exception_check(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, **kwargs):
             with raises(ExceptionType) as excinfo:
