@@ -114,13 +114,13 @@ graetz_problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
 reduced_basis_method = ReducedBasis(graetz_problem)
-reduced_basis_method.set_Nmax(30, dual=30, SCM=50)
-reduced_basis_method.set_tolerance(1e-5, dual=1e-5, SCM=1e-3)
+reduced_basis_method.set_Nmax(30, SCM=50)
+reduced_basis_method.set_tolerance(1e-5, SCM=1e-3)
 
 # 5. Perform the offline phase
 first_mu = (1.0, 1.0, 1.0, 1.0)
 graetz_problem.set_mu(first_mu)
-reduced_basis_method.initialize_training_set(500, dual=500, SCM=250)
+reduced_basis_method.initialize_training_set(500, SCM=250)
 reduced_graetz_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve
@@ -130,7 +130,7 @@ reduced_graetz_problem.solve()
 reduced_graetz_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(100, dual=100, SCM=100)
+reduced_basis_method.initialize_testing_set(100, SCM=100)
 reduced_basis_method.error_analysis(filename="error_analysis")
 
 # 8. Perform a speedup analysis
