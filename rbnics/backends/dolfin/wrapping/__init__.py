@@ -170,6 +170,7 @@ __overridden__ = {
         'compute_theta_for_derivative',
         'compute_theta_for_restriction',
         'ParametrizedExpression',
+        'plot',
         'PullBackFormsToReferenceDomain'
     ],
     'rbnics.utils.mpi': [
