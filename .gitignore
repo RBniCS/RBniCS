@@ -11,5 +11,6 @@
 *.py[cdo]
 *.vtu
 *.xdmf
+.pytest_cache
 build
 dist
