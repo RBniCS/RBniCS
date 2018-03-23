@@ -64,7 +64,7 @@ class EigenSolver(AbstractEigenSolver):
         self.eigv = eigv[:, idx]
     
     def get_eigenvalue(self, i):
-        return real(self.eigs[i]), imag(self.eigs[i])
+        return float(real(self.eigs[i])), float(imag(self.eigs[i]))
     
     def get_eigenvector(self, i):
         eigv_i = self.eigv[:, i]
