@@ -34,6 +34,8 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                 # Initialize private storage
                 if method__name not in _synced_setters:
                     _synced_setters[method__name] = dict()
+                if method__name not in _original_setters:
+                    _original_setters[method__name] = dict()
                 # Detect if either self or other_object are already in sync with somebody else
                 all_synced_setters_for_method_self = None
                 if self in _synced_setters[method__name]:
@@ -53,21 +55,25 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                         and
                     all_synced_setters_for_method_other_object is not None
                 ):
+                    _original_setters[method__name][self] = getattr(self, method__name)
                     all_synced_setters_for_method = all_synced_setters_for_method_other_object
-                    all_synced_setters_for_method.add((self, getattr(self, method__name)))
+                    all_synced_setters_for_method.add(self)
                     _synced_setters[method__name][self] = all_synced_setters_for_method
                 elif (
                     all_synced_setters_for_method_self is not None
                         and
                     all_synced_setters_for_method_other_object is None
                 ):
+                    _original_setters[method__name][other_object] = getattr(other_object, method__name)
                     all_synced_setters_for_method = all_synced_setters_for_method_self
-                    all_synced_setters_for_method.add((other_object, getattr(other_object, method__name)))
+                    all_synced_setters_for_method.add(other_object)
                     _synced_setters[method__name][other_object] = all_synced_setters_for_method
                 else:
+                    _original_setters[method__name][self] = getattr(self, method__name)
+                    _original_setters[method__name][other_object] = getattr(other_object, method__name)
                     all_synced_setters_for_method = set()
-                    all_synced_setters_for_method.add((self, getattr(self, method__name)))
-                    all_synced_setters_for_method.add((other_object, getattr(other_object, method__name)))
+                    all_synced_setters_for_method.add(self)
+                    all_synced_setters_for_method.add(other_object)
                     _synced_setters[method__name][self] = all_synced_setters_for_method
                     _synced_setters[method__name][other_object] = all_synced_setters_for_method
                 # Now both storage and local variable should be consistent between self and other_object,
@@ -77,7 +83,8 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                 def overridden_method(self_, arg):
                     if method__name not in _synced_setters__disabled_methods:
                         all_synced_setters = _synced_setters[method__name][self_]
-                        for (obj, setter) in all_synced_setters:
+                        for obj in all_synced_setters:
+                            setter = _original_setters[method__name][obj]
                             if getattr(obj, private_attribute__name) is not arg:
                                 setter(arg)
                 method__decorator__changed = False
@@ -136,6 +143,7 @@ def set_mu_range__decorator(set_mu_range__method):
         self_.set_mu(tuple([r[0] for r in mu_range]))
     return set_mu_range__decorated
     
+_original_setters = dict()
 _synced_setters = dict()
 _synced_setters__decorators = dict()
 _synced_setters__disabled_methods = set()

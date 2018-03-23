@@ -16,9 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import types
 from numbers import Number
 from dolfin import Expression
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
+from rbnics.utils.decorators.sync_setters import _original_setters
 from rbnics.utils.test import AttachInstanceMethod, PatchInstanceMethod
 
 # This ideally should be a subclass of Expression. However, dolfin manual
@@ -93,13 +95,25 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     
     # Keep mu in sync
     if first_parametrized_expression_for_truth_problem:
-        standard_set_mu = truth_problem.set_mu
-        def overridden_set_mu(self, mu):
-            standard_set_mu(mu)
-            for expression_ in _truth_problem_to_parametrized_expressions[self]:
-                if expression_._mu is not mu:
-                    expression_._set_mu(mu)
-        PatchInstanceMethod(truth_problem, "set_mu", overridden_set_mu).patch()
+        def generate_overridden_set_mu(standard_set_mu):
+            def overridden_set_mu(self, mu):
+                standard_set_mu(mu)
+                for expression_ in _truth_problem_to_parametrized_expressions[self]:
+                    if expression_._mu is not mu:
+                        expression_._set_mu(mu)
+            return overridden_set_mu
+        if (
+            "set_mu" in _original_setters
+                and
+            truth_problem in _original_setters["set_mu"]
+        ): # truth_problem.set_mu was already patched by the decorator @sync_setters
+            standard_set_mu = _original_setters["set_mu"][truth_problem]
+            overridden_set_mu = generate_overridden_set_mu(standard_set_mu)
+            _original_setters["set_mu"][truth_problem] = types.MethodType(overridden_set_mu, truth_problem)
+        else:
+            standard_set_mu = truth_problem.set_mu
+            overridden_set_mu = generate_overridden_set_mu(standard_set_mu)
+            PatchInstanceMethod(truth_problem, "set_mu", overridden_set_mu).patch()
         
     def expression_set_mu(self, mu):
         assert isinstance(mu, tuple)
@@ -122,15 +136,27 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     # Possibly also keep time in sync
     if hasattr(truth_problem, "set_time"):
         if first_parametrized_expression_for_truth_problem:
-            standard_set_time = truth_problem.set_time
-            def overridden_set_time(self, t):
-                standard_set_time(t)
-                for expression_ in _truth_problem_to_parametrized_expressions[self]:
-                    if hasattr(expression_, "t"):
-                        if expression_.t is not t:
-                            assert isinstance(expression_.t, Number)
-                            expression_.t = t
-            PatchInstanceMethod(truth_problem, "set_time", overridden_set_time).patch()
+            def generate_overridden_set_time(standard_set_time):
+                def overridden_set_time(self, t):
+                    standard_set_time(t)
+                    for expression_ in _truth_problem_to_parametrized_expressions[self]:
+                        if hasattr(expression_, "t"):
+                            if expression_.t is not t:
+                                assert isinstance(expression_.t, Number)
+                                expression_.t = t
+                return overridden_set_time
+            if (
+                "set_time" in _original_setters
+                    and
+                truth_problem in _original_setters["set_time"]
+            ): # truth_problem.set_time was already patched by the decorator @sync_setters
+                standard_set_time = _original_setters["set_time"][truth_problem]
+                overridden_set_time = generate_overridden_set_time(standard_set_time)
+                _original_setters["set_time"][truth_problem] = types.MethodType(overridden_set_time, truth_problem)
+            else:
+                standard_set_time = truth_problem.set_time
+                overridden_set_time = generate_overridden_set_time(standard_set_time)
+                PatchInstanceMethod(truth_problem, "set_time", overridden_set_time).patch()
     
     return expression
     
