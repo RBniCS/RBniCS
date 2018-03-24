@@ -35,25 +35,25 @@ $FENICS_HOME/local/share/RBniCS
 
 ### 3. Tutorials
 Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials).
-* **Tutorial 01**: introduction to the capabilities of **RBniCS**: reduced basis method for (scalar) elliptic problems.
-* **Tutorial 02**: introduction to the capabilities of **RBniCS**: POD-Galerkin method for (vector) elliptic problems.
-* **Tutorial 03**: geometrical parametrization.
-* **Tutorial 04**: successive constraint method.
-* **Tutorial 05**: empirical interpolation methods for non-affine elliptic problems.
-* **Tutorial 06**: reduced basis and POD-Galerkin methods for parabolic problems.
-* **Tutorial 07**: empirical interpolation methods for nonlinear elliptic problems.
-* **Tutorial 08**: empirical interpolation methods for nonlinear parabolic problems.
-* **Tutorial 09**: reduced order methods for advection dominated elliptic problems.
-* **Tutorial 10**: weighted reduced order methods for uncertainty quantification problems.
-* **Tutorial 11**: POD-Galerkin methods for quasi geostrophic equations, as an example on how to customize and extend RBniCS beyond the set of problems provided in the core of the library.
-* **Tutorial 12**: reduced basis and POD-Galerkin methods for Stokes problems.
-* **Tutorial 13**: reduced basis and POD-Galerkin methods for optimal control problems governed by elliptic equations.
-* **Tutorial 14**: reduced basis and POD-Galerkin methods for optimal control problems governed by Stokes equations.
-* **Tutorial 15**: POD-Galerkin methods for optimal control problems governed by quasi geostrophic equations.
-* **Tutorial 16**: one-way coupling between a fluid dynamics problem based on Stokes and an elliptic equation (e.g., temperature, concentration).
-* **Tutorial 17**: POD-Galerkin and empirical interpolation methods for Navier-Stokes problems.
-* **Tutorial 18**: POD-Galerkin methods for unsteady Stokes problems.
-* **Tutorial 19**: POD-Galerkin methods for unsteady Navier-Stokes problems.
+* **Tutorial 01**: introduction to the capabilities of **RBniCS**: reduced basis method for (scalar) elliptic problems [[tutorial description](https://rbnics.gitlab.io/RBniCS-jupyter/tutorial_thermal_block.html), [tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/01_thermal_block), [jupyter notebook](https://gitlab.com/RBniCS/RBniCS-jupyter/tree/master/tutorials/01_thermal_block)].
+* **Tutorial 02**: introduction to the capabilities of **RBniCS**: POD-Galerkin method for (vector) elliptic problems [[tutorial description](https://rbnics.gitlab.io/RBniCS-jupyter/tutorial_elastic_block.html), [tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/02_elastic_block), [jupyter notebook](https://gitlab.com/RBniCS/RBniCS-jupyter/tree/master/tutorials/02_elastic_block)].
+* **Tutorial 03**: geometrical parametrization [[tutorial description](https://rbnics.gitlab.io/RBniCS-jupyter/tutorial_hole.html), [tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/03_hole), [jupyter notebook](https://gitlab.com/RBniCS/RBniCS-jupyter/tree/master/tutorials/03_hole)].
+* **Tutorial 04**: successive constraint method [[tutorial description](https://rbnics.gitlab.io/RBniCS-jupyter/tutorial_graetz_1.html), [tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/04_graetz), [jupyter notebook](https://gitlab.com/RBniCS/RBniCS-jupyter/tree/master/tutorials/04_graetz)].
+* **Tutorial 05**: empirical interpolation methods for non-affine elliptic problems [[tutorial description](https://rbnics.gitlab.io/RBniCS-jupyter/tutorial_gaussian_eim.html), [tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/05_gaussian), [jupyter notebook](https://gitlab.com/RBniCS/RBniCS-jupyter/tree/master/tutorials/05_gaussian)].
+* **Tutorial 06**: reduced basis and POD-Galerkin methods for parabolic problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/06_thermal_block_unsteady)].
+* **Tutorial 07**: empirical interpolation methods for nonlinear elliptic problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/07_nonlinear_elliptic)].
+* **Tutorial 08**: empirical interpolation methods for nonlinear parabolic problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/08_nonlinear_parabolic)].
+* **Tutorial 09**: reduced order methods for advection dominated elliptic problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/09_advection_dominated)].
+* **Tutorial 10**: weighted reduced order methods for uncertainty quantification problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/10_weighted_uq)].
+* **Tutorial 11**: POD-Galerkin methods for quasi geostrophic equations, as an example on how to customize and extend RBniCS beyond the set of problems provided in the core of the library [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/11_quasi_geostrophic)].
+* **Tutorial 12**: reduced basis and POD-Galerkin methods for Stokes problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/12_stokes)].
+* **Tutorial 13**: reduced basis and POD-Galerkin methods for optimal control problems governed by elliptic equations [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/13_elliptic_optimal_control)].
+* **Tutorial 14**: reduced basis and POD-Galerkin methods for optimal control problems governed by Stokes equations [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/14_stokes_optimal_control)].
+* **Tutorial 15**: POD-Galerkin methods for optimal control problems governed by quasi geostrophic equations [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/15_quasi_geostrophic_optimal_control)].
+* **Tutorial 16**: one-way coupling between a fluid dynamics problem based on Stokes and an elliptic equation (e.g., temperature, concentration) [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/16_stokes_coupled)].
+* **Tutorial 17**: POD-Galerkin and empirical interpolation methods for Navier-Stokes problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/17_navier_stokes)].
+* **Tutorial 18**: POD-Galerkin methods for unsteady Stokes problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/18_stokes_unsteady)].
+* **Tutorial 19**: POD-Galerkin methods for unsteady Navier-Stokes problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/19_navier_stokes_unsteady)].
 
 ### 4. Authors and contributors
 **RBniCS** is currently developed and mantained at [SISSA mathLab](http://mathlab.sissa.it/) by
