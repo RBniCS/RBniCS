@@ -60,6 +60,13 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
         
     # Get the shape parametrization expression from vertices mappings
     shape_parametrization_expression = [affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping) for vertices_mapping in shape_parametrization_vertices_mappings]
+    if decorator_kwargs.get("debug", False):
+        print("=== DEBUGGING AFFINE SHAPE PARAMETRIZATION ===")
+        for (subdomain, (vertices_mapping, expression)) in enumerate(zip(shape_parametrization_vertices_mappings, shape_parametrization_expression)):
+            print("Subdomain", subdomain + 1)
+            print("\tvertices mapping =", vertices_mapping)
+            print("\tshape parametrization expression =", expression)
+    decorator_kwargs.pop("debug", None)
     
     # Apply the parent decorator
     AffineShapeParametrizationDecoratedProblem_Decorator_Base = ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs)
