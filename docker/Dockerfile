@@ -39,6 +39,7 @@ RUN cat /dev/null > WELCOME && \
     mkdir local/share/RBniCS && \
     mv /tmp/RBniCS/tests local/share/RBniCS/ && \
     mv /tmp/RBniCS/tutorials local/share/RBniCS/ && \
-    rm -rf /tmp/RBniCS
+    rm -rf /tmp/RBniCS && \
+    mkdir -p .local/share
 
 USER root
