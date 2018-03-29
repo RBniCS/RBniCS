@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-FROM quay.io/fenicsproject_dev/dolfin:py3-master
+FROM quay.io/fenicsproject/dev
 MAINTAINER Francesco Ballarin <francesco.ballarin@sissa.it>
 
 USER root
@@ -25,21 +25,22 @@ RUN apt-get -qq update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 -q install --upgrade cvxopt multipledispatch pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-html pytest-instafail pytest-xdist sympy toposort && \
-    sed -i "s/pytest_report_header/DISABLED_pytest_report_header/g" /usr/local/lib/python3.5/dist-packages/pytest_metadata/plugin.py
+    sed -i "s/pytest_report_header/DISABLED_pytest_report_header/g" /usr/local/lib/python3.5/dist-packages/pytest_metadata/plugin.py && \
+    cat /dev/null > $FENICS_HOME/WELCOME
 
 USER fenics
-
 COPY --chown=fenics . /tmp/RBniCS
 
-WORKDIR /tmp/RBniCS
-RUN python3 setup.py -q install --user
-
-WORKDIR $FENICS_HOME
-RUN cat /dev/null > WELCOME && \
-    mkdir local/share/RBniCS && \
-    mv /tmp/RBniCS/tests local/share/RBniCS/ && \
-    mv /tmp/RBniCS/tutorials local/share/RBniCS/ && \
-    rm -rf /tmp/RBniCS && \
-    mkdir -p .local/share
-
 USER root
+WORKDIR /tmp/RBniCS
+RUN python3 setup.py -q install
+
+USER fenics
+WORKDIR $FENICS_HOME
+RUN mkdir RBniCS && \
+    ln -s $FENICS_PREFIX/lib/python3.5/site-packages/rbnics RBniCS/source && \
+    mv /tmp/RBniCS/tests RBniCS/ && \
+    mv /tmp/RBniCS/tutorials RBniCS
+    
+USER root
+RUN rm -rf /tmp/RBniCS
