@@ -19,16 +19,17 @@
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedLinearSolver, DelayedProduct, DelayedSum
 from rbnics.backends.common.affine_expansion_storage import AffineExpansionStorage
+from rbnics.backends.common.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.utils.decorators import array_of, backend_for, list_of, overload, ThetaType
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
-@backend_for("common", inputs=(ThetaType, (AffineExpansionStorage, array_of(DelayedBasisFunctionsMatrix), array_of(DelayedLinearSolver)), ThetaType + (None,)))
+@backend_for("common", inputs=(ThetaType, (AffineExpansionStorage, array_of(DelayedBasisFunctionsMatrix), array_of(DelayedLinearSolver), NonAffineExpansionStorage), ThetaType + (None,)))
 def product(thetas, operators, thetas2=None):
     return _product(thetas, operators, thetas2)
     
 @overload
-def _product(thetas: ThetaType, operators: AffineExpansionStorage, thetas2: None):
+def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExpansionStorage), thetas2: None):
     output = 0.
     assert len(thetas) == len(operators)
     for (theta, operator) in zip(thetas, operators):
@@ -36,7 +37,7 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage, thetas2: None
     return ProductOutput(output)
     
 @overload
-def _product(thetas: ThetaType, operators: AffineExpansionStorage, thetas2: ThetaType):
+def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExpansionStorage), thetas2: ThetaType):
     output = 0.
     # no checks here on the first dimension of operators should be equal to len(thetas), and
     # similarly that the second dimension should be equal to len(thetas2), because the

@@ -85,6 +85,15 @@ def transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFu
                 return _VectorizedMatrix_Transpose(arg)
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
+                
+    if hasattr(backend, "ParametrizedTensorFactory"):
+        assert hasattr(backend, "evaluate")
+        class _Transpose(_Transpose):
+            @overload(backend.ParametrizedTensorFactory, )
+            def __call__(self, arg):
+                tensor = backend.evaluate(arg)
+                return self.__call__(tensor)
+                
     return _Transpose()
 
 # Auxiliary: transpose of a vector
@@ -139,6 +148,15 @@ def Vector_Transpose(backend, wrapping, online_backend, online_wrapping, Additio
                 return self.__mul__(other_vector)
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
+                
+    if hasattr(backend, "ParametrizedTensorFactory"):
+        assert hasattr(backend, "evaluate")
+        class _Vector_Transpose(_Vector_Transpose):
+            @overload(backend.ParametrizedTensorFactory, )
+            def __mul__(self, other):
+                tensor = backend.evaluate(other)
+                return self.__mul__(tensor)
+                
     return _Vector_Transpose
             
 # Auxiliary: multiplication of the transpose of a Vector with a Matrix

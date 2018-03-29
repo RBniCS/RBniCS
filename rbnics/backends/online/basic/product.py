@@ -18,6 +18,7 @@
 
 from itertools import product as cartesian_product
 from numbers import Number
+from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 from rbnics.backends.basic.wrapping import DelayedTranspose
 from rbnics.utils.decorators import overload, ThetaType
 
@@ -59,22 +60,7 @@ def product(backend):
         def __call__(self, thetas, operators, thetas2):
             from rbnics.backends import evaluate, product, sum, transpose
             assert operators._type in ("error_estimation_operators_11", "error_estimation_operators_21", "error_estimation_operators_22", "operators")
-            if operators._type == "operators":
-                assert operators.order() is 1
-                assert thetas2 is None
-                assert "truth_operators_as_expansion_storage" in operators._content
-                sum_product_truth_operators = evaluate(sum(product(thetas, operators._content["truth_operators_as_expansion_storage"])))
-                assert "basis_functions" in operators._content
-                basis_functions = operators._content["basis_functions"]
-                assert len(basis_functions) in (1, 2)
-                if len(basis_functions) is 1:
-                    output = transpose(basis_functions[0])*sum_product_truth_operators
-                else:
-                    output = transpose(basis_functions[0])*sum_product_truth_operators*basis_functions[1]
-                # Return
-                assert not isinstance(output, DelayedTranspose)
-                return ProductOutput(output)
-            elif operators._type.startswith("error_estimation_operators"):
+            if operators._type.startswith("error_estimation_operators"):
                 assert operators.order() is 2
                 assert thetas2 is not None
                 assert "inner_product_matrix" in operators._content
@@ -84,6 +70,33 @@ def product(backend):
                 output = transpose(sum(product(thetas, delayed_functions[0])))*operators._content["inner_product_matrix"]*sum(product(thetas2, delayed_functions[1]))
                 # Return
                 assert not isinstance(output, DelayedTranspose)
+                return ProductOutput(output)
+            elif operators._type == "operators":
+                assert operators.order() is 1
+                assert thetas2 is None
+                assert "truth_operators_as_expansion_storage" in operators._content
+                sum_product_truth_operators = sum(product(thetas, operators._content["truth_operators_as_expansion_storage"]))
+                assert isinstance(sum_product_truth_operators, (AbstractParametrizedTensorFactory, Number))
+                if isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory):
+                    sum_product_truth_operators = evaluate(sum_product_truth_operators)
+                elif isinstance(sum_product_truth_operators, Number):
+                    pass
+                else:
+                    raise TypeError("Invalid operator type")
+                assert "basis_functions" in operators._content
+                basis_functions = operators._content["basis_functions"]
+                assert len(basis_functions) in (0, 1, 2)
+                if len(basis_functions) is 0:
+                    output = sum_product_truth_operators
+                elif len(basis_functions) is 1:
+                    output = transpose(basis_functions[0])*sum_product_truth_operators
+                    assert not isinstance(output, DelayedTranspose)
+                elif len(basis_functions) is 2:
+                    output = transpose(basis_functions[0])*sum_product_truth_operators*basis_functions[1]
+                    assert not isinstance(output, DelayedTranspose)
+                else:
+                    raise ValueError("Invalid length")
+                # Return
                 return ProductOutput(output)
             else:
                 raise ValueError("Invalid type")

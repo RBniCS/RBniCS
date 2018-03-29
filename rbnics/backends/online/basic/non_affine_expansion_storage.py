@@ -17,6 +17,7 @@
 #
 
 import os
+from numbers import Number
 from numpy import empty as NonAffineExpansionStorageContent_Base, nditer as NonAffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList, NonAffineExpansionStorage as AbstractNonAffineExpansionStorage, ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedFunctionsList, DelayedLinearSolver, DelayedTranspose
@@ -77,14 +78,21 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             it = NonAffineExpansionStorageContent_Iterator(self._content["truth_operators"], flags=["c_index", "multi_index", "refs_ok"], op_flags=["readonly"])
             while not it.finished:
                 operator = self._content["truth_operators"][it.multi_index]
-                assert isinstance(operator, AbstractParametrizedTensorFactory)
-                problem_name = get_problem_from_parametrized_operator(operator).name()
-                (term, index) = get_term_and_index_from_parametrized_operator(operator)
-                TruthContentItemIO.save_file((problem_name, term, index), full_directory, "truth_operator_" + str(it.index))
+                assert isinstance(operator, (AbstractParametrizedTensorFactory, NumericForm))
+                if isinstance(operator, AbstractParametrizedTensorFactory):
+                    problem_name = get_problem_from_parametrized_operator(operator).name()
+                    (term, index) = get_term_and_index_from_parametrized_operator(operator)
+                    TruthContentItemIO.save_file("ParametrizedTensorFactory", full_directory, "truth_operator_" + str(it.index) + "_type")
+                    TruthContentItemIO.save_file((problem_name, term, index), full_directory, "truth_operator_" + str(it.index))
+                elif isinstance(operator, NumericForm):
+                    TruthContentItemIO.save_file("NumericForm", full_directory, "truth_operator_" + str(it.index) + "_type")
+                    TruthContentItemIO.save_file(operator, full_directory, "truth_operator_" + str(it.index))
+                else:
+                    raise TypeError("Invalid operator type")
                 it.iternext()
             assert "truth_operators_as_expansion_storage" in self._content
             # Save basis functions content
-            assert len(self._content["basis_functions"]) in (1, 2)
+            assert len(self._content["basis_functions"]) in (0, 1, 2)
             BasisFunctionsContentLengthIO.save_file(len(self._content["basis_functions"]), full_directory, "basis_functions_length")
             for (index, basis_functions) in enumerate(self._content["basis_functions"]):
                 BasisFunctionsProblemNameIO.save_file(get_reduced_problem_from_basis_functions(basis_functions).truth_problem.name(), full_directory, "basis_functions_" + str(index) + "_problem_name")
@@ -174,17 +182,27 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             self._content["truth_operators"] = NonAffineExpansionStorageContent_Base(self._shape, dtype=object)
             it = NonAffineExpansionStorageContent_Iterator(self._content["truth_operators"], flags=["c_index", "multi_index", "refs_ok"])
             while not it.finished:
-                assert TruthContentItemIO.exists_file(full_directory, "truth_operator_" + str(it.index))
-                (problem_name, term, index) = TruthContentItemIO.load_file(full_directory, "truth_operator_" + str(it.index))
-                truth_problem = get_problem_from_problem_name(problem_name)
-                self._content["truth_operators"][it.multi_index] = truth_problem.operator[term][index]
+                assert TruthContentItemIO.exists_file(full_directory, "truth_operator_" + str(it.index) + "_type")
+                operator_type = TruthContentItemIO.load_file(full_directory, "truth_operator_" + str(it.index) + "_type")
+                assert operator_type in ("NumericForm", "ParametrizedTensorFactory")
+                if operator_type == "NumericForm":
+                    assert TruthContentItemIO.exists_file(full_directory, "truth_operator_" + str(it.index))
+                    value = TruthContentItemIO.load_file(full_directory, "truth_operator_" + str(it.index))
+                    self._content["truth_operators"][it.multi_index] = NumericForm(value)
+                elif operator_type == "ParametrizedTensorFactory":
+                    assert TruthContentItemIO.exists_file(full_directory, "truth_operator_" + str(it.index))
+                    (problem_name, term, index) = TruthContentItemIO.load_file(full_directory, "truth_operator_" + str(it.index))
+                    truth_problem = get_problem_from_problem_name(problem_name)
+                    self._content["truth_operators"][it.multi_index] = truth_problem.operator[term][index]
+                else:
+                    raise ValueError("Invalid operator type")
                 it.iternext()
             assert "truth_operators_as_expansion_storage" not in self._content
             self._prepare_truth_operators_as_expansion_storage()
             # Load basis functions content
             assert BasisFunctionsContentLengthIO.exists_file(full_directory, "basis_functions_length")
             basis_functions_length = BasisFunctionsContentLengthIO.load_file(full_directory, "basis_functions_length")
-            assert basis_functions_length in (1, 2)
+            assert basis_functions_length in (0, 1, 2)
             assert "basis_functions" not in self._content
             self._content["basis_functions"] = list()
             for index in range(basis_functions_length):
@@ -228,15 +246,19 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             slice_ = slice_to_array(self._content["delayed_functions_shape"], (empty_slice, empty_slice), self._content["delayed_functions_shape"]._component_name_to_basis_component_length, self._content["delayed_functions_shape"]._component_name_to_basis_component_index)
             self._precomputed_slices[slice_] = self
         elif self._type == "operators":
-            assert len(self._content["basis_functions"]) in (1, 2)
+            assert len(self._content["basis_functions"]) in (0, 1, 2)
             assert "basis_functions_shape" in self._content
             
-            if len(self._content["basis_functions"]) is 2:
+            if len(self._content["basis_functions"]) is 0:
+                pass # nothing to be done (scalar content)
+            elif len(self._content["basis_functions"]) is 1:
+                slice_ = slice_to_array(self._content["basis_functions_shape"], empty_slice, self._content["basis_functions_shape"]._component_name_to_basis_component_length, self._content["basis_functions_shape"]._component_name_to_basis_component_index)
+                self._precomputed_slices[slice_] = self
+            elif len(self._content["basis_functions"]) is 2:
                 slices = slice_to_array(self._content["basis_functions_shape"], (empty_slice, empty_slice), self._content["basis_functions_shape"]._component_name_to_basis_component_length, self._content["basis_functions_shape"]._component_name_to_basis_component_index)
                 self._precomputed_slices[slices] = self
             else:
-                slice_ = slice_to_array(self._content["basis_functions_shape"], empty_slice, self._content["basis_functions_shape"]._component_name_to_basis_component_length, self._content["basis_functions_shape"]._component_name_to_basis_component_index)
-                self._precomputed_slices[slice_] = self
+                raise ValueError("Invalid length")
         else:
             raise ValueError("Invalid type")
         
@@ -474,6 +496,27 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                 self._prepare_trivial_precomputed_slice()
         else:
             raise TypeError("Invalid arguments to NonAffineExpansionStorage")
+            
+    @overload((int, tuple_of(int)), Number)
+    def __setitem__(self, key, item):
+        if self._type != "empty":
+            assert self._type == "operators"
+        else:
+            self._type = "operators"
+        # Reset attributes, similarly to what is done for Vector and Matrix operators
+        if key == self._smallest_key: # this assumes that __getitem__ is not random acces but called for increasing key
+            self._content.pop("truth_operators_as_expansion_storage", None)
+            self._content["truth_operators"] = NonAffineExpansionStorageContent_Base(self._shape, dtype=object)
+            self._content["basis_functions"] = list() # will stay empty
+            self._content.pop("basis_functions_shape", None)
+        # Store
+        self._content["truth_operators"][key] = NumericForm(item)
+        # Recompute (trivial) shape
+        if "basis_functions_shape" not in self._content:
+            self._content["basis_functions_shape"] = DelayedTransposeShape(self._content["basis_functions"])
+        # Compute truth expansion storage and prepare precomputed slices
+        if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
+            self._prepare_truth_operators_as_expansion_storage()
         
     def _prepare_truth_operators_as_expansion_storage(self):
         from rbnics.backends import NonAffineExpansionStorage
@@ -493,16 +536,17 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         return len(self._shape)
         
     def _delay_transpose(self, pre_post, op):
-        assert len(pre_post) in (1, 2)
-        delayed_transpose = DelayedTranspose(pre_post[0])
-        if len(pre_post) is 1:
-            return delayed_transpose*op
+        assert len(pre_post) in (0, 1, 2)
+        if len(pre_post) is 0:
+            return op
+        elif len(pre_post) is 1:
+            return DelayedTranspose(pre_post[0])*op
         else:
-            return delayed_transpose*op*pre_post[1]
+            return DelayedTranspose(pre_post[0])*op*pre_post[1]
         
 class DelayedTransposeShape(object):
     def __init__(self, basis_functions):
-        assert len(basis_functions) in (1, 2)
+        assert len(basis_functions) in (0, 1, 2)
         component_name_to_basis_component_index = list()
         component_name_to_basis_component_length = list()
         found_delayed_linear_solver = False
@@ -535,3 +579,13 @@ class DelayedTransposeShape(object):
                 and
             self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
         )
+        
+class NumericForm(object):
+    def __init__(self, value):
+        self._form = value
+        
+    def __str__(self):
+        return str(self._form)
+        
+    def __repr__(self):
+        return repr(self._form)

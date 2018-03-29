@@ -19,6 +19,7 @@
 from ufl.core.operator import Operator
 from rbnics.backends.basic import transpose as basic_transpose
 from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
+from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.functions_list import FunctionsList
 from rbnics.backends.dolfin.matrix import Matrix
@@ -36,12 +37,12 @@ def ConvertAdditionalFunctionTypes(arg):
     assert isinstance(arg, Operator)
     return function_from_ufl_operators(arg)
 
-backend = ModuleWrapper(BasisFunctionsMatrix, Function, FunctionsList, Matrix, NonAffineExpansionStorage, ParametrizedTensorFactory, TensorsList, Vector)
+backend = ModuleWrapper(BasisFunctionsMatrix, evaluate, Function, FunctionsList, Matrix, NonAffineExpansionStorage, ParametrizedTensorFactory, TensorsList, Vector)
 wrapping = ModuleWrapper(function_to_vector, matrix_mul_vector, vector_mul_vector, vectorized_matrix_inner_vectorized_matrix)
 online_backend = ModuleWrapper(OnlineMatrix=OnlineMatrix, OnlineVector=OnlineVector)
 online_wrapping = ModuleWrapper()
 transpose_base = basic_transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes)
 
-@backend_for("dolfin", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Matrix.Type(), Operator, TensorsList, Vector.Type()), ))
+@backend_for("dolfin", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Matrix.Type(), Operator, ParametrizedTensorFactory, TensorsList, Vector.Type()), ))
 def transpose(arg):
     return transpose_base(arg)
