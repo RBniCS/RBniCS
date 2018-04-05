@@ -97,12 +97,10 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             for (index, basis_functions) in enumerate(self._content["basis_functions"]):
                 BasisFunctionsProblemNameIO.save_file(get_reduced_problem_from_basis_functions(basis_functions).truth_problem.name(), full_directory, "basis_functions_" + str(index) + "_problem_name")
                 BasisFunctionsProblemNameIO.save_file(basis_functions._components_name, full_directory, "basis_functions_" + str(index) + "_components_name")
-                basis_functions.save(full_directory, "basis_functions_" + str(index) + "_content")
         else:
             raise ValueError("Invalid type")
         
     def load(self, directory, filename):
-        from rbnics.backends import BasisFunctionsMatrix
         if self._type != "empty": # avoid loading multiple times
             if self._type in ("basis_functions_matrix", "functions_list"):
                 delayed_functions = self._content[self._type]
@@ -212,10 +210,9 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                 basis_functions_components_name = BasisFunctionsProblemNameIO.load_file(full_directory, "basis_functions_" + str(index) + "_components_name")
                 basis_functions_problem = get_problem_from_problem_name(basis_functions_problem_name)
                 basis_functions_reduced_problem = get_reduced_problem_from_problem(basis_functions_problem)
-                basis_functions = BasisFunctionsMatrix(basis_functions_reduced_problem.basis_functions.space, basis_functions_components_name if basis_functions_components_name != basis_functions_problem.components else None)
-                basis_functions.init(basis_functions_components_name)
-                basis_functions_loaded = basis_functions.load(full_directory, "basis_functions_" + str(index) + "_content")
-                assert basis_functions_loaded
+                basis_functions = basis_functions_reduced_problem.basis_functions
+                if basis_functions_components_name != basis_functions_problem.components:
+                    basis_functions = basis_functions[basis_functions_components_name]
                 self._content["basis_functions"].append(basis_functions)
             # Recompute shape
             self._content["basis_functions_shape"] = DelayedTransposeShape(self._content["basis_functions"])
