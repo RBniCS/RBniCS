@@ -38,7 +38,8 @@ def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecorat
                     def patched_getitem(self_, key):
                         output = original_getitem(self_, key)
                         if isinstance(key, list) and all(isinstance(k, str) for k in key):
-                            add_to_map_from_basis_functions_to_reduced_problem(output, self)
+                            reduced_problem = get_reduced_problem_from_basis_functions(self_)
+                            add_to_map_from_basis_functions_to_reduced_problem(output, reduced_problem)
                         return output
                     # Apply patch
                     Type.__getitem__ = patched_getitem
