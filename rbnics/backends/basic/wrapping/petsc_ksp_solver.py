@@ -33,7 +33,10 @@ def BasicPETScKSPSolver(backend, wrapping):
                     self.ksp.getPC().setType("lu")
                     if value == "default":
                         value = wrapping.get_default_linear_solver()
-                    self.ksp.getPC().setFactorSolverPackage(value)
+                    if hasattr(self.ksp.getPC(), "setFactorSolverType"): # PETSc >= 3.9
+                        self.ksp.getPC().setFactorSolverType(value)
+                    else:
+                        self.ksp.getPC().setFactorSolverPackage(value)
                 else:
                     raise ValueError("Invalid paramater passed to PETSc KSP object.")
             # Finally, read in additional options from the command line

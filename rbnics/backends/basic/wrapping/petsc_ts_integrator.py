@@ -74,7 +74,10 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     ksp.getPC().setType("lu")
                     if value == "default":
                         value = wrapping.get_default_linear_solver()
-                    ksp.getPC().setFactorSolverPackage(value)
+                    if hasattr(ksp.getPC(), "setFactorSolverType"): # PETSc >= 3.9
+                        ksp.getPC().setFactorSolverType(value)
+                    else:
+                        ksp.getPC().setFactorSolverPackage(value)
                 elif key == "max_time_steps":
                     self.ts.setMaxSteps(value)
                 elif key == "monitor":
@@ -113,7 +116,10 @@ def BasicPETScTSIntegrator(backend, wrapping):
                             ksp.getPC().setType("lu")
                             if value == "default":
                                 value = wrapping.get_default_linear_solver()
-                            ksp.getPC().setFactorSolverPackage(value_snes)
+                            if hasattr(ksp.getPC(), "setFactorSolverType"): # PETSc >= 3.9
+                                ksp.getPC().setFactorSolverType(value_snes)
+                            else:
+                                ksp.getPC().setFactorSolverPackage(value_snes)
                         elif key_snes == "line_search":
                             raise ValueError("Line search is not wrapped yet by petsc4py")
                         elif key_snes == "maximum_iterations":

@@ -40,7 +40,10 @@ def BasicSLEPcEPSSolver(backend, wrapping):
                     ksp.getPC().setType("lu")
                     if value == "default":
                         value = wrapping.get_default_linear_solver()
-                    ksp.getPC().setFactorSolverPackage(value)
+                    if hasattr(ksp.getPC(), "setFactorSolverType"): # PETSc >= 3.9
+                        ksp.getPC().setFactorSolverType(value)
+                    else:
+                        ksp.getPC().setFactorSolverPackage(value)
                 elif key == "maximum_iterations":
                     eps_tolerances[1] = value
                 elif key == "problem_type":
