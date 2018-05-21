@@ -75,14 +75,12 @@ def _read_from_xdmf_file(fun, directory, filename, suffix, components=None):
             or
         (fun_rank is 2 and fun_dim not in (4, 9))
     ):
-        fun_V = fun.function_space()
-        for i in range(fun_dim):
+        funs = fun.split(deepcopy=True)
+        for (i, fun_i) in enumerate(funs):
             if components is not None:
                 filename_i = filename + "_subcomponent_" + str(i)
             else:
                 filename_i = filename + "_component_" + str(i)
-            fun_i_V = get_function_subspace(fun_V, i)
-            fun_i = Function(fun_i_V)
             if not _read_from_xdmf_file(fun_i, directory, filename_i, suffix, None):
                 return False
             else:
