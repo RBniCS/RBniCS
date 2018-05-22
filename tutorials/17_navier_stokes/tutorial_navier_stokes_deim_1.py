@@ -142,7 +142,7 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
             ReducedNavierStokes_Base.__init__(self, truth_problem, **kwargs)
             self._nonlinear_solver_parameters.update({
                 "report": True,
-                "line_search": False
+                "line_search": "wolfe"
             })
             
     return ReducedNavierStokes
