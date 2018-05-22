@@ -19,11 +19,14 @@
 from numpy.linalg import solve
 from rbnics.backends.online.basic import LinearSolver as BasicLinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
+from rbnics.backends.online.numpy.product import DelayedTransposeWithArithmetic
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
+from rbnics.utils.decorators import BackendFor, DictOfThetaType, ModuleWrapper, ThetaType
 
-LinearSolver_Base = BasicLinearSolver
+backend = ModuleWrapper(Matrix, Vector)
+wrapping = ModuleWrapper(DelayedTransposeWithArithmetic=DelayedTransposeWithArithmetic)
+LinearSolver_Base = BasicLinearSolver(backend, wrapping)
 
 @BackendFor("numpy", inputs=(Matrix.Type(), Function.Type(), Vector.Type(), ThetaType + DictOfThetaType + (None,)))
 class LinearSolver(LinearSolver_Base):

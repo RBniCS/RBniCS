@@ -22,7 +22,7 @@ from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParame
 from rbnics.backends.basic.wrapping import DelayedTranspose
 from rbnics.utils.decorators import overload, ThetaType
 
-def product(backend):
+def product(backend, wrapping):
     class _Product(object):
         @overload(ThetaType, backend.AffineExpansionStorage, ThetaType + (None,))
         def __call__(self, thetas, operators, thetas2):
@@ -58,7 +58,7 @@ def product(backend):
         
         @overload(ThetaType, backend.NonAffineExpansionStorage, ThetaType + (None, ))
         def __call__(self, thetas, operators, thetas2):
-            from rbnics.backends import evaluate, product, sum, transpose
+            from rbnics.backends import product, sum, transpose
             assert operators._type in ("error_estimation_operators_11", "error_estimation_operators_21", "error_estimation_operators_22", "operators")
             if operators._type.startswith("error_estimation_operators"):
                 assert operators.order() is 2
@@ -76,24 +76,22 @@ def product(backend):
                 assert thetas2 is None
                 assert "truth_operators_as_expansion_storage" in operators._content
                 sum_product_truth_operators = sum(product(thetas, operators._content["truth_operators_as_expansion_storage"]))
-                assert isinstance(sum_product_truth_operators, (AbstractParametrizedTensorFactory, Number))
-                if isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory):
-                    sum_product_truth_operators = evaluate(sum_product_truth_operators)
-                elif isinstance(sum_product_truth_operators, Number):
-                    pass
-                else:
-                    raise TypeError("Invalid operator type")
                 assert "basis_functions" in operators._content
                 basis_functions = operators._content["basis_functions"]
                 assert len(basis_functions) in (0, 1, 2)
                 if len(basis_functions) is 0:
+                    assert isinstance(sum_product_truth_operators, Number)
                     output = sum_product_truth_operators
                 elif len(basis_functions) is 1:
+                    assert isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)
                     output = transpose(basis_functions[0])*sum_product_truth_operators
-                    assert not isinstance(output, DelayedTranspose)
+                    assert isinstance(output, DelayedTranspose)
+                    output = wrapping.DelayedTransposeWithArithmetic(output)
                 elif len(basis_functions) is 2:
+                    assert isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)
                     output = transpose(basis_functions[0])*sum_product_truth_operators*basis_functions[1]
-                    assert not isinstance(output, DelayedTranspose)
+                    assert isinstance(output, DelayedTranspose)
+                    output = wrapping.DelayedTransposeWithArithmetic(output)
                 else:
                     raise ValueError("Invalid length")
                 # Return

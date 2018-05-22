@@ -22,7 +22,14 @@ from scipy.optimize.nonlin import Jacobian, nonlin_solve
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.basic.nonlinear_solver import _NonlinearProblem as _BasicNonlinearProblem
 from rbnics.backends.online.numpy.function import Function
-from rbnics.utils.decorators import BackendFor
+from rbnics.backends.online.numpy.matrix import Matrix
+from rbnics.backends.online.numpy.product import DelayedTransposeWithArithmetic
+from rbnics.backends.online.numpy.vector import Vector
+from rbnics.utils.decorators import BackendFor, ModuleWrapper
+
+backend = ModuleWrapper(Matrix, Vector)
+wrapping = ModuleWrapper(DelayedTransposeWithArithmetic=DelayedTransposeWithArithmetic)
+_NonlinearProblem_Base = _BasicNonlinearProblem(backend, wrapping)
 
 @BackendFor("numpy", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
@@ -76,7 +83,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
                 print("scipy solver diverged due to arithmetic error " + str(error))
         return self.problem.solution
         
-class _NonlinearProblem(_BasicNonlinearProblem):
+class _NonlinearProblem(_NonlinearProblem_Base):
     def residual(self, solution):
         # Store solution
         self.solution.vector()[:] = solution
@@ -85,7 +92,7 @@ class _NonlinearProblem(_BasicNonlinearProblem):
         # Apply BCs, if necessary
         if self.bcs is not None:
             self.bcs.apply_to_vector(residual_vector, self.solution.vector())
-        # Convert to an array, rather than a matrix with one column, and return
+        # Return
         return residual_vector
         
     def jacobian(self, solution):
