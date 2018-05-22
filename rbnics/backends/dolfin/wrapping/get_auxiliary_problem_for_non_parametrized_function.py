@@ -33,27 +33,22 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
         )
         if function not in _basic_get_auxiliary_problem_for_non_parametrized_function._storage_problem:
             assert isinstance(function, (Function, Indexed, ListTensor))
-            if isinstance(function, Function):
-                converted_function = function
+            converted_function = _remove_mute_indices(function)
+            assert isinstance(converted_function, (Function, Indexed, ListTensor))
+            if isinstance(converted_function, Function):
                 component = (None, )
-            elif isinstance(function, Indexed):
-                converted_function = _remove_mute_indices(function)
-                if isinstance(converted_function, Indexed):
-                    assert len(converted_function.ufl_operands) == 2
-                    assert isinstance(converted_function.ufl_operands[0], Function)
-                    assert isinstance(converted_function.ufl_operands[1], MultiIndex)
-                    function_split_to_component = dict()
-                    function_split_to_function = dict()
-                    _split_function(converted_function.ufl_operands[0], function_split_to_component, function_split_to_function)
-                    assert converted_function in function_split_to_component
-                    assert converted_function in function_split_to_function
-                    component = function_split_to_component[converted_function]
-                    converted_function = function_split_to_function[converted_function]
-                else:
-                    assert isinstance(converted_function, Function)
-                    component = (None, )
-            elif isinstance(function, ListTensor):
-                converted_function = _remove_mute_indices(function)
+            elif isinstance(converted_function, Indexed):
+                assert len(converted_function.ufl_operands) == 2
+                assert isinstance(converted_function.ufl_operands[0], Function)
+                assert isinstance(converted_function.ufl_operands[1], MultiIndex)
+                function_split_to_component = dict()
+                function_split_to_function = dict()
+                _split_function(converted_function.ufl_operands[0], function_split_to_component, function_split_to_function)
+                assert converted_function in function_split_to_component
+                assert converted_function in function_split_to_function
+                component = function_split_to_component[converted_function]
+                converted_function = function_split_to_function[converted_function]
+            elif isinstance(converted_function, ListTensor):
                 assert all(isinstance(component, Indexed) for component in converted_function.ufl_operands)
                 assert all(len(component.ufl_operands) == 2 for component in converted_function.ufl_operands)
                 assert all(isinstance(component.ufl_operands[0], Function) for component in converted_function.ufl_operands)
