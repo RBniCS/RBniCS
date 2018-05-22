@@ -17,7 +17,6 @@
 #
 
 import os
-import pytest
 import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa
 from rbnics.utils.test import add_gold_options, disable_matplotlib, enable_matplotlib, PatchInstanceMethod, process_gold_options, run_and_compare_to_gold
 
@@ -27,29 +26,11 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     process_gold_options(config)
 
-def pytest_pycollect_makemodule(path, parent):
-    """
-    Hook into py.test to collect test files.
-    """
-    assert path.ext == ".py"
-    assert path.basename.startswith("test_")
-    return TestFile(path, parent)
+def pytest_collection_modifyitems(session, config, items):
+    for item in items:
+        if item.name.startswith("test_eim_approximation_"):
+            patch_test_item(item)
     
-class TestFile(pytest.Module):
-    """
-    Custom file handler for test files
-    """
-    
-    def makeitem(self, name, obj):
-        test_item = pytest.Module.makeitem(self, name, obj)
-        assert test_item is None or isinstance(test_item, list)
-        if test_item is None:
-            return None
-        else:
-            for test_item_i in test_item:
-                patch_test_item(test_item_i)
-            return test_item
-        
 def patch_test_item(test_item):
     """
     Handle the execution of the test.
