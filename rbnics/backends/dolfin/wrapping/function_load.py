@@ -35,6 +35,7 @@ def function_load(fun, directory, filename, suffix=None):
         return _read_from_xml_file(fun, directory, filename, suffix)
     else:
         if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
+            fun.vector().zero()
             for (index, components) in fun_V._index_to_components.items():
                 sub_fun_V = get_function_subspace(fun_V, components)
                 sub_fun = Function(sub_fun_V)
