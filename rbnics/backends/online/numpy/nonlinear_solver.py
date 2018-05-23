@@ -63,6 +63,8 @@ class NonlinearSolver(AbstractNonlinearSolver):
                 
     def solve(self):
         residual = self.problem.residual
+        if self.problem.bcs is not None:
+            self.problem.bcs.apply_to_vector(self.problem.solution.vector())
         initial_guess_vector = self.problem.solution.vector()
         jacobian = _Jacobian(self.problem.jacobian)
         try:
