@@ -56,15 +56,19 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.reduced_problem = ReducedProblemFactory(self.truth_problem, self, **self._init_kwargs)
         
         # Prepare folders and init reduced problem
-        all_folders = Folders()
-        all_folders.update(self.folder)
+        required_folders = Folders()
+        required_folders.update(self.folder)
         assert self.reduced_problem is not None
-        all_folders.update(self.reduced_problem.folder)
-        all_folders.pop("testing_set") # this is required only in the error/speedup analysis
-        all_folders.pop("error_analysis") # this is required only in the error analysis
-        all_folders.pop("speedup_analysis") # this is required only in the speedup analysis
-        at_least_one_folder_created = all_folders.create()
-        if not at_least_one_folder_created:
+        required_folders.update(self.truth_problem.folder)
+        required_folders.update(self.reduced_problem.folder)
+        optional_folders = Folders()
+        optional_folders["cache"] = required_folders.pop("cache") # this does not affect the availability of offline data
+        optional_folders["testing_set"] = required_folders.pop("testing_set") # this is required only in the error/speedup analysis
+        optional_folders["error_analysis"] = required_folders.pop("error_analysis") # this is required only in the error analysis
+        optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis") # this is required only in the speedup analysis
+        at_least_one_required_folder_created = required_folders.create()
+        at_least_one_optional_folder_created = optional_folders.create()
+        if not at_least_one_required_folder_created:
             return False # offline construction should be skipped, since data are already available
         else:
             self.reduced_problem.init("offline")
