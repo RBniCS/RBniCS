@@ -115,8 +115,7 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
             Nmax = self._load_Nmax(directory, filename)
             for index in range(Nmax):
                 function = backend.Function(self.space)
-                loaded = wrapping.function_load(function, directory, filename + "_" + str(index))
-                assert loaded
+                wrapping.function_load(function, directory, filename + "_" + str(index))
                 self.enrich(function)
             return True
             

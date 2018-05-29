@@ -31,7 +31,7 @@ tensor_load = basic_tensor_load(backend, wrapping_for_wrapping)
 wrapping = ModuleWrapper(function_extend_or_restrict, function_load, get_function_space, get_function_subspace, tensor_load=tensor_load)
 import_base = basic_import_(backend, wrapping)
 
-# Export a solution to file
+# Import a solution from file
 @backend_for("dolfin", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
 def import_(solution, directory, filename, suffix=None, component=None):
-    return import_base(solution, directory, filename, suffix, component)
+    import_base(solution, directory, filename, suffix, component)

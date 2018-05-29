@@ -228,7 +228,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
     def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["v", "p", "u", "w", "q"] # but not "s" and "r"
-        return StokesOptimalControlProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
+        StokesOptimalControlProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
         
     # Custom combination of inner products *not* to add inner product corresponding to supremizers
     def _combine_all_inner_products(self):

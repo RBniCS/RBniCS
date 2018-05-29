@@ -141,8 +141,7 @@ def test_tensor_load(mesh, generate_form_space, generate_form, load_tempdir):
     tensor = ParametrizedTensorFactory(form)
     expected_evaluated_tensor = evaluate(tensor)
     loaded_evaluated_tensor = zero_for_load(form)
-    loaded_successfully = tensor_load(loaded_evaluated_tensor, load_tempdir, "evaluated_tensor")
-    assert loaded_successfully
+    tensor_load(loaded_evaluated_tensor, load_tempdir, "evaluated_tensor")
     assert len(space) in (1, 2)
     if len(space) is 1:
         assert isclose(loaded_evaluated_tensor.get_local(), expected_evaluated_tensor.get_local()).all()

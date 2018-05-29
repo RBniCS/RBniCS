@@ -27,6 +27,5 @@ def import_(solution, directory, filename, suffix=None, component=None):
         assert len(solution) == len(loaded_solution)
         for (i, solution_i) in enumerate(loaded_solution):
             solution[i] = float(solution_i)
-        return True
     else:
-        return False
+        raise OSError

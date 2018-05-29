@@ -61,7 +61,12 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # Test if can import
         import_successful = False
         if enable_import:
-            import_successful = self.training_set.load(self.folder["training_set"], "training_set") and (len(self.training_set) == ntrain)
+            try:
+                self.training_set.load(self.folder["training_set"], "training_set")
+            except OSError:
+                import_successful = False
+            else:
+                import_successful = (len(self.training_set) == ntrain)
         if not import_successful:
             self.training_set.generate(mu_range, ntrain, sampling)
             # Export
@@ -75,7 +80,12 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # Test if can import
         import_successful = False
         if enable_import:
-            import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set") and (len(self.testing_set) == ntest)
+            try:
+                self.testing_set.load(self.folder["testing_set"], "testing_set")
+            except OSError:
+                import_successful = False
+            else:
+                import_successful = (len(self.testing_set) == ntest)
         if not import_successful:
             self.testing_set.generate(mu_range, ntest, sampling)
             # Export

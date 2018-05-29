@@ -264,16 +264,12 @@ class SCMApproximation(ParametrizedProblem):
         
     def import_stability_factor_lower_bound(self, folder, filename):
         eigenvalue_storage = [0.]
-        import_successful = import_(eigenvalue_storage, folder, filename + "_LB")
-        if import_successful:
-            assert len(eigenvalue_storage) == 1
-            self._alpha_LB = eigenvalue_storage[0]
-        return import_successful
+        import_(eigenvalue_storage, folder, filename + "_LB")
+        assert len(eigenvalue_storage) == 1
+        self._alpha_LB = eigenvalue_storage[0]
         
     def import_stability_factor_upper_bound(self, folder, filename):
         eigenvalue_storage = [0.]
-        import_successful = import_(eigenvalue_storage, folder, filename + "_UB")
-        if import_successful:
-            assert len(eigenvalue_storage) == 1
-            self._alpha_UB = eigenvalue_storage[0]
-        return import_successful
+        import_(eigenvalue_storage, folder, filename + "_UB")
+        assert len(eigenvalue_storage) == 1
+        self._alpha_UB = eigenvalue_storage[0]

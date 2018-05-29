@@ -546,9 +546,8 @@ def BasicReducedMesh(backend, wrapping):
                     reduced_dof = self._auxiliary_reduced_dofs__dof_map_reader_mapping[key][reduced_dof_input[0]][reduced_dof_input[1]]
                     auxiliary_dofs_to_reduced_dofs[dof] = reduced_dof
                 self._auxiliary_dofs_to_reduced_dofs[key] = auxiliary_dofs_to_reduced_dofs
-                return True
             else:
-                return False
+                raise OSError
                 
         def _load_auxiliary_basis_functions_matrix(self, key, auxiliary_reduced_problem, auxiliary_reduced_V):
             # Get full directory name
@@ -560,9 +559,8 @@ def BasicReducedMesh(backend, wrapping):
                 auxiliary_basis_functions_matrix = self._init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V)
                 auxiliary_basis_functions_matrix.load(full_directory_plus_key, "auxiliary_basis")
                 self._auxiliary_basis_functions_matrix[key] = auxiliary_basis_functions_matrix
-                return True
             else:
-                return False
+                raise OSError
                 
         @staticmethod
         @abstractmethod
@@ -628,7 +626,9 @@ def BasicReducedMesh(backend, wrapping):
             if key not in self._auxiliary_reduced_function_space:
                 auxiliary_reduced_V = wrapping.convert_functionspace_to_submesh(auxiliary_V, self.reduced_mesh[index], self._get_auxiliary_reduced_function_space_type(auxiliary_V))
                 self._auxiliary_reduced_function_space[key] = auxiliary_reduced_V
-                if not self._load_auxiliary_reduced_function_space(key):
+                try:
+                    self._load_auxiliary_reduced_function_space(key)
+                except OSError:
                     # Get the map between DOFs on auxiliary_V and auxiliary_reduced_V
                     (auxiliary_dofs_to_reduced_dofs, _) = wrapping.map_functionspaces_between_mesh_and_submesh(auxiliary_V, self.mesh, auxiliary_reduced_V, self.reduced_mesh[index])
                     log(DEBUG, "Auxiliary DOFs to reduced DOFs is " + str(auxiliary_dofs_to_reduced_dofs))
@@ -651,7 +651,9 @@ def BasicReducedMesh(backend, wrapping):
             key = (auxiliary_problem, component, index) # the mapping between problem and reduced problem is one to one, so there is no need to store both of them in the key
             if key not in self._auxiliary_basis_functions_matrix:
                 auxiliary_reduced_V = self.get_auxiliary_reduced_function_space(auxiliary_problem, component, index)
-                if not self._load_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V):
+                try:
+                    self._load_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V)
+                except OSError:
                     self._auxiliary_basis_functions_matrix[key] = self._init_auxiliary_basis_functions_matrix(key, auxiliary_reduced_problem, auxiliary_reduced_V)
                     wrapping.evaluate_basis_functions_matrix_at_dofs(
                         auxiliary_reduced_problem.basis_functions, self._auxiliary_dofs_to_reduced_dofs[key].keys(),

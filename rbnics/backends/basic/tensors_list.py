@@ -69,8 +69,7 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             Nmax = self._load_Nmax(directory, filename)
             for index in range(Nmax):
                 tensor = wrapping.tensor_copy(self.empty_tensor)
-                loaded = wrapping.tensor_load(tensor, directory, filename + "_" + str(index))
-                assert loaded
+                wrapping.tensor_load(tensor, directory, filename + "_" + str(index))
                 self.enrich(tensor)
             return True
             

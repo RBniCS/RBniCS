@@ -176,16 +176,12 @@ class DifferentialProblemReductionMethod(ReductionMethod):
             self.reduced_problem._output_cache.clear()
             
             # Disable the capability of importing/exporting truth solutions
-            self.disable_import_solution = PatchInstanceMethod(
-                other_truth_problem,
-                "import_solution",
-                lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: False
-            )
-            self.disable_export_solution = PatchInstanceMethod(
-                other_truth_problem,
-                "export_solution",
-                lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: None
-            )
+            def disable_import_solution_method(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
+                raise OSError
+            self.disable_import_solution = PatchInstanceMethod(other_truth_problem, "import_solution", disable_import_solution_method)
+            def disable_export_solution_method(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
+                pass
+            self.disable_export_solution = PatchInstanceMethod(other_truth_problem, "export_solution", disable_export_solution_method)
             self.disable_import_solution.patch()
             self.disable_export_solution.patch()
         

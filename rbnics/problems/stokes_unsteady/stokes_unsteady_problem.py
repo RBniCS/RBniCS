@@ -54,7 +54,7 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             
         def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             assert suffix is None
-            return AbstractCFDUnsteadyProblem_Base.import_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=int(round(self.t/self.dt)))
+            AbstractCFDUnsteadyProblem_Base.import_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=int(round(self.t/self.dt)))
 
         def export_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if component is None:
@@ -64,7 +64,7 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
         def import_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if component is None:
                 component = ["u", "p"] # but not "s"
-            return AbstractCFDUnsteadyProblem_Base.import_solution(self, folder, filename, solution_over_time, component, suffix)
+            AbstractCFDUnsteadyProblem_Base.import_solution(self, folder, filename, solution_over_time, component, suffix)
             
     return AbstractCFDUnsteadyProblem_Class
         

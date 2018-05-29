@@ -81,8 +81,7 @@ class DelayedFunctionsList(object):
             len_memory = LengthIO.load_file(directory, filename + "_length")
             for index in range(len_memory):
                 memory = DelayedLinearSolver()
-                memory_loaded = memory.load(directory, filename + "_" + str(index))
-                assert memory_loaded
+                memory.load(directory, filename + "_" + str(index))
                 self.enrich(memory)
             return True
             

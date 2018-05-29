@@ -24,19 +24,17 @@ def import_(backend, wrapping):
     class _Import(object):
         @overload(backend.Function.Type(), (Folders.Folder, str), str, (int, None), None)
         def __call__(self, solution, directory, filename, suffix, component):
-            return wrapping.function_load(solution, directory, filename, suffix=suffix)
+            wrapping.function_load(solution, directory, filename, suffix=suffix)
         
         @overload(backend.Function.Type(), (Folders.Folder, str), str, (int, None), (int, str))
         def __call__(self, solution, directory, filename, suffix, component):
             space = wrapping.get_function_space(solution)
             subspace = wrapping.get_function_subspace(solution, component)
             restricted_solution = wrapping.function_extend_or_restrict(solution, component, subspace, None, weight=None, copy=True)
-            restricted_solution_loaded = wrapping.function_load(restricted_solution, directory, filename, suffix=suffix)
-            if restricted_solution_loaded:
-                wrapping.function_extend_or_restrict(restricted_solution, None, space, component, weight=None, copy=True, extended_or_restricted_function=solution)
-            return restricted_solution_loaded
+            wrapping.function_load(restricted_solution, directory, filename, suffix=suffix)
+            wrapping.function_extend_or_restrict(restricted_solution, None, space, component, weight=None, copy=True, extended_or_restricted_function=solution)
         
         @overload((backend.Matrix.Type(), backend.Vector.Type()), (Folders.Folder, str), str, None, None)
         def __call__(self, solution, directory, filename, suffix, component):
-            return wrapping.tensor_load(solution, directory, filename)
+            wrapping.tensor_load(solution, directory, filename)
     return _Import()

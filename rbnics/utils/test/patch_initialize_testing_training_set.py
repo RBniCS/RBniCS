@@ -28,35 +28,41 @@ def patch_initialize_testing_training_set(action):
         pass
     elif action == "compare":
         def initialize_training_set(self, mu_range, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = self.training_set.load(self.folder["training_set"], "training_set")
-            assert import_successful
-            return import_successful
+            try:
+                self.training_set.load(self.folder["training_set"], "training_set")
+            except OSError:
+                raise AssertionError("Loading should have not been failing")
+            return True
         rbnics.reduction_methods.base.ReductionMethod.initialize_training_set = initialize_training_set
             
         def initialize_testing_set(self, mu_range, ntest, enable_import=False, sampling=None, **kwargs):
-            import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set")
-            assert import_successful
-            return import_successful
+            try:
+                self.testing_set.load(self.folder["testing_set"], "testing_set")
+            except OSError:
+                raise AssertionError("Loading should have not been failing")
+            return True
         rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set = initialize_testing_set
     elif action == "regold":
         original_initialize_training_set = rbnics.reduction_methods.base.ReductionMethod.initialize_training_set
         def initialize_training_set(self, mu_range, ntrain, enable_import=True, sampling=None, **kwargs):
             self.folder["training_set"].create()
-            import_successful = self.training_set.load(self.folder["training_set"], "training_set")
-            if not import_successful:
+            try:
+                self.training_set.load(self.folder["training_set"], "training_set")
+            except OSError:
                 return original_initialize_training_set(self, mu_range, ntrain, enable_import, sampling, **kwargs)
             else:
-                return import_successful
+                return True
         rbnics.reduction_methods.base.ReductionMethod.initialize_training_set = initialize_training_set
         
         original_initialize_testing_set = rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set
         def initialize_testing_set(self, mu_range, ntest, enable_import=False, sampling=None, **kwargs):
             self.folder["testing_set"].create()
-            import_successful = self.testing_set.load(self.folder["testing_set"], "testing_set")
-            if not import_successful:
+            try:
+                self.testing_set.load(self.folder["testing_set"], "testing_set")
+            except OSError:
                 return original_initialize_testing_set(self, mu_range, ntest, enable_import, sampling, **kwargs)
             else:
-                return import_successful
+                return True
         rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set = initialize_testing_set
         
     original__time_dependent_eim__initialize_training_set = rbnics.eim.reduction_methods.TimeDependentEIMApproximationReductionMethod.initialize_training_set

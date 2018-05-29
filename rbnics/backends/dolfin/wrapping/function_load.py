@@ -16,15 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os
 from ufl import product
-from dolfin import Function
+from dolfin import assign, Function
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 from rbnics.backends.dolfin.wrapping.function_save import _all_solution_files
 from rbnics.backends.dolfin.wrapping.function_save import SolutionFile
-from rbnics.utils.mpi import is_io_process
-from rbnics.utils.io import TextIO as SuffixIO
 
 def function_load(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
@@ -33,15 +30,12 @@ def function_load(fun, directory, filename, suffix=None):
         for (index, components) in fun_V._index_to_components.items():
             sub_fun_V = get_function_subspace(fun_V, components)
             sub_fun = Function(sub_fun_V)
-            if not _read_from_file(sub_fun, directory, filename, suffix, components):
-                return False
-            else:
-                extended_sub_fun = function_extend_or_restrict(sub_fun, None, fun_V, components[0], weight=None, copy=True)
-                fun.vector().add_local(extended_sub_fun.vector().get_local())
-                fun.vector().apply("add")
-        return True
+            _read_from_file(sub_fun, directory, filename, suffix, components)
+            extended_sub_fun = function_extend_or_restrict(sub_fun, None, fun_V, components[0], weight=None, copy=True)
+            fun.vector().add_local(extended_sub_fun.vector().get_local())
+            fun.vector().apply("add")
     else:
-        return _read_from_file(fun, directory, filename, suffix)
+        _read_from_file(fun, directory, filename, suffix)
     
 def _read_from_file(fun, directory, filename, suffix, components=None):
     if components is not None:
@@ -63,11 +57,8 @@ def _read_from_file(fun, directory, filename, suffix, components=None):
                 filename_i = filename + "_subcomponent_" + str(i)
             else:
                 filename_i = filename + "_component_" + str(i)
-            if not _read_from_file(fun_i, directory, filename_i, suffix, None):
-                return False
-            else:
-                assign(fun.sub(i), fun_i)
-        return True
+            _read_from_file(fun_i, directory, filename_i, suffix, None)
+            assign(fun.sub(i), fun_i)
     else:
         if suffix is not None:
             if suffix is 0:
@@ -78,7 +69,7 @@ def _read_from_file(fun, directory, filename, suffix, components=None):
                     pass
                 _all_solution_files[(directory, filename)] = SolutionFile(directory, filename)
             file_ = _all_solution_files[(directory, filename)]
-            return file_.read(fun, function_name, suffix)
+            file_.read(fun, function_name, suffix)
         else:
             file_ = SolutionFile(directory, filename)
-            return file_.read(fun, function_name, 0)
+            file_.read(fun, function_name, 0)

@@ -49,17 +49,18 @@ class ExportableList(object):
     def save(self, directory, filename):
         self._FileIO.save_file(self._list, directory, filename)
     
-    # Returns True if it was possible to import the list,
-    # or if the list had been already imported so no further
-    # action was needed. Returns False otherwise.
+    # Returns False if the list had been already imported so no further
+    # action was needed.
+    # Returns True if it was possible to import the list.
+    # Raises an error if it was not possible to import the list.
     def load(self, directory, filename):
         if self._list: # avoid loading multiple times
-            return True
+            return False
         if self._FileIO.exists_file(directory, filename):
             self._list = self._FileIO.load_file(directory, filename)
             return True
         else:
-            return False
+            raise OSError
                          
     def __getitem__(self, key):
         return self._list[key]

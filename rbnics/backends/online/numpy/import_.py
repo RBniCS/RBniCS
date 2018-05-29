@@ -28,7 +28,7 @@ backend = ModuleWrapper(Function, Matrix, Vector)
 wrapping = ModuleWrapper(function_load, tensor_load)
 import_base = basic_import_(backend, wrapping)
 
-# Export a solution to file
+# Import a solution from file
 @backend_for("numpy", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str), str, (int, None), (int, str, None)))
 def import_(solution, directory, filename, suffix=None, component=None):
-    return import_base(solution, directory, filename, suffix, component)
+    import_base(solution, directory, filename, suffix, component)

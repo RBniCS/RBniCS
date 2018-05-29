@@ -219,24 +219,21 @@ def AffineExpansionStorage(backend, wrapping):
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.tensor_copy(item)
-                tensor_loaded = wrapping.tensor_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
-                assert tensor_loaded
+                wrapping.tensor_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
         @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.tensor_copy(item)
-                tensor_loaded = wrapping.tensor_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
-                assert tensor_loaded
+                wrapping.tensor_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
         @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.function_copy(item)
-                function_loaded = wrapping.function_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
-                assert function_loaded
+                wrapping.function_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
         @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
@@ -248,15 +245,13 @@ def AffineExpansionStorage(backend, wrapping):
         @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
-                loaded = self._content[it.multi_index].load(full_directory, "content_item_" + str(it.index))
-                assert loaded
+                self._content[it.multi_index].load(full_directory, "content_item_" + str(it.index))
                 it.iternext()
             
         @overload(AbstractBasisFunctionsMatrix, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
-                loaded = self._content[it.multi_index].load(full_directory, "content_item_" + str(it.index))
-                assert loaded
+                self._content[it.multi_index].load(full_directory, "content_item_" + str(it.index))
                 it.iternext()
         
         @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)

@@ -102,14 +102,10 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self.t = 0
             del solution_over_time[:]
             while self.t <= self.T:
-                import_solution = ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component, suffix=k)
-                if import_solution:
-                    solution_over_time.append(copy(solution))
-                    k += 1
-                    self.t += self.dt
-                else:
-                    return False
-            return True
+                ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component, suffix=k)
+                solution_over_time.append(copy(solution))
+                k += 1
+                self.t += self.dt
                 
         # Initialize data structures required for the offline phase
         def init(self):

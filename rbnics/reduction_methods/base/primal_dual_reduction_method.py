@@ -150,16 +150,12 @@ def PrimalDualReductionMethod(DualProblem):
                     other_dual_truth_problem._output_cache.clear()
                     
                     # Disable the capability of importing/exporting dual truth solutions
-                    self.disable_import_dual_solution = PatchInstanceMethod(
-                        other_dual_truth_problem,
-                        "import_solution",
-                        lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: False
-                    )
-                    self.disable_export_dual_solution = PatchInstanceMethod(
-                        other_dual_truth_problem,
-                        "export_solution",
-                        lambda self_, folder=None, filename=None, solution=None, component=None, suffix=None: None
-                    )
+                    def disable_import_solution_method(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
+                        raise OSError
+                    self.disable_import_dual_solution = PatchInstanceMethod(other_dual_truth_problem, "import_solution", disable_import_solution_method)
+                    def disable_export_solution_method(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
+                        pass
+                    self.disable_export_dual_solution = PatchInstanceMethod(other_dual_truth_problem, "export_solution", disable_export_solution_method)
                     self.disable_import_dual_solution.patch()
                     self.disable_export_dual_solution.patch()
                 
@@ -176,7 +172,7 @@ def PrimalDualReductionMethod(DualProblem):
                     self.disable_export_dual_solution.unpatch()
                     del self.disable_import_dual_solution
                     del self.disable_export_dual_solution
-                        
+                    
         # return value (a class) for the decorator
         return PrimalDualReductionMethod_Class
         

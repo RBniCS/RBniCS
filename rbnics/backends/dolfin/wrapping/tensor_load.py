@@ -41,7 +41,7 @@ def basic_tensor_load(backend, wrapping):
             else:
                 load_failed = True
         if mpi_comm.bcast(load_failed, root=is_io_process.root):
-            return False
+            raise OSError
         else:
             generator_string = mpi_comm.bcast(generator_string, root=is_io_process.root)
         # Read in generator mpi size
@@ -54,22 +54,18 @@ def basic_tensor_load(backend, wrapping):
             else:
                 load_failed = True
         if mpi_comm.bcast(load_failed, root=is_io_process.root):
-            return False
+            raise OSError
         else:
             generator_mpi_size_string = mpi_comm.bcast(generator_mpi_size_string, root=is_io_process.root)
         # Read in generator mapping from processor dependent indices (at the time of saving) to processor independent (global_cell_index, cell_dof) tuple
-        (permutation, loaded) = _permutation_load(tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
-        if not loaded:
-            return False
-        else:
-            # Read in content
-            return _tensor_load(tensor, directory, filename, permutation)
+        permutation = _permutation_load(tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
+        _tensor_load(tensor, directory, filename, permutation)
         
     @overload(backend.Matrix.Type(), (Folders.Folder, str), str, object, str, object)
     def _permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
         if form_name not in _permutation_storage:
             if not PickleIO.exists_file(directory, "." + form_name):
-                return (None, False)
+                raise OSError
             else:
                 V_0 = wrapping.form_argument_space(form, 0)
                 V_1 = wrapping.form_argument_space(form, 1)
@@ -78,9 +74,7 @@ def basic_tensor_load(backend, wrapping):
                 (V_0__dof_map_writer_mapping, V_1__dof_map_writer_mapping) = PickleIO.load_file(directory, "." + form_name)
                 matrix_row_permutation = dict() # from row index at time of saving to current row index
                 matrix_col_permutation = dict() # from col index at time of saving to current col index
-                (writer_mat, loaded) = _matrix_load(directory, filename)
-                if not loaded:
-                    return (None, False)
+                writer_mat = _matrix_load(directory, filename)
                 writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
                 for writer_row in range(writer_row_start, writer_row_end):
                     (global_cell_index, cell_dof) = V_0__dof_map_writer_mapping[writer_row]
@@ -92,78 +86,68 @@ def basic_tensor_load(backend, wrapping):
                             matrix_col_permutation[writer_col] = V_1__dof_map_reader_mapping[global_cell_index][cell_dof]
                 _permutation_storage[form_name] = (matrix_row_permutation, matrix_col_permutation)
                 
-        return (_permutation_storage[form_name], True)
+        return _permutation_storage[form_name]
                 
     @overload(backend.Vector.Type(), (Folders.Folder, str), str, object, str, object)
     def _permutation_load(tensor, directory, filename, form, form_name, mpi_comm):
         if form_name not in _permutation_storage:
             if not PickleIO.exists_file(directory, "." + form_name):
-                return (None, False)
+                raise OSError
             else:
                 V_0 = wrapping.form_argument_space(form, 0)
                 V_0__dof_map_reader_mapping = wrapping.build_dof_map_reader_mapping(V_0)
                 V_0__dof_map_writer_mapping = PickleIO.load_file(directory, "." + form_name)
                 vector_permutation = dict() # from index at time of saving to current index
-                (writer_vec, loaded) = _vector_load(directory, filename)
-                if not loaded:
-                    return (None, False)
+                writer_vec = _vector_load(directory, filename)
                 writer_row_start, writer_row_end = writer_vec.getOwnershipRange()
                 for writer_row in range(writer_row_start, writer_row_end):
                     (global_cell_index, cell_dof) = V_0__dof_map_writer_mapping[writer_row]
                     vector_permutation[writer_row] = V_0__dof_map_reader_mapping[global_cell_index][cell_dof]
                 _permutation_storage[form_name] = vector_permutation
                 
-        return (_permutation_storage[form_name], True)
+        return _permutation_storage[form_name]
         
     @overload(backend.Matrix.Type(), (Folders.Folder, str), str, object)
     def _tensor_load(tensor, directory, filename, matrix_permutation):
         (matrix_row_permutation, matrix_col_permutation) = matrix_permutation
-        (writer_mat, loaded) = _matrix_load(directory, filename)
-        if not loaded:
-            return False
-        else:
-            mat = wrapping.to_petsc4py(tensor)
-            writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
-            for writer_row in range(writer_row_start, writer_row_end):
-                row = matrix_row_permutation[writer_row]
-                writer_cols, writer_vals = writer_mat.getRow(writer_row)
-                cols = list()
-                vals = list()
-                for (writer_col, writer_val) in zip(writer_cols, writer_vals):
-                    if writer_val != 0.:
-                        cols.append(matrix_col_permutation[writer_col])
-                        vals.append(writer_val)
-                if len(cols) > 0:
-                    mat.setValues(row, cols, vals, addv=PETSc.InsertMode.INSERT)
-            mat.assemble()
-            return True
-            
+        writer_mat = _matrix_load(directory, filename)
+        mat = wrapping.to_petsc4py(tensor)
+        writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
+        for writer_row in range(writer_row_start, writer_row_end):
+            row = matrix_row_permutation[writer_row]
+            writer_cols, writer_vals = writer_mat.getRow(writer_row)
+            cols = list()
+            vals = list()
+            for (writer_col, writer_val) in zip(writer_cols, writer_vals):
+                if writer_val != 0.:
+                    cols.append(matrix_col_permutation[writer_col])
+                    vals.append(writer_val)
+            if len(cols) > 0:
+                mat.setValues(row, cols, vals, addv=PETSc.InsertMode.INSERT)
+        mat.assemble()
+        
     @overload(backend.Vector.Type(), (Folders.Folder, str), str, object)
     def _tensor_load(tensor, directory, filename, vector_permutation):
-        (writer_vec, loaded) = _vector_load(directory, filename)
-        if not loaded:
-            return False
-        else:
-            vec = wrapping.to_petsc4py(tensor)
-            writer_row_start, writer_row_end = writer_vec.getOwnershipRange()
-            for writer_row in range(writer_row_start, writer_row_end):
-                vec.setValues(vector_permutation[writer_row], writer_vec[writer_row], addv=PETSc.InsertMode.INSERT)
-            vec.assemble()
-            return True
+        writer_vec = _vector_load(directory, filename)
+        vec = wrapping.to_petsc4py(tensor)
+        writer_row_start, writer_row_end = writer_vec.getOwnershipRange()
+        for writer_row in range(writer_row_start, writer_row_end):
+            vec.setValues(vector_permutation[writer_row], writer_vec[writer_row], addv=PETSc.InsertMode.INSERT)
+        vec.assemble()
     
     def _matrix_load(directory, filename):
         if _file_exists(directory, filename + ".dat"):
             viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "r")
-            return (PETSc.Mat().load(viewer), True)
+            return PETSc.Mat().load(viewer)
         else:
-            return (None, False)
+            raise OSError
             
     def _vector_load(directory, filename):
         if _file_exists(directory, filename + ".dat"):
             viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "r")
-            return (PETSc.Vec().load(viewer), True)
+            return PETSc.Vec().load(viewer)
         else:
-            return (None, False)
+            raise OSError
         
     def _file_exists(directory, filename):
         file_exists = False

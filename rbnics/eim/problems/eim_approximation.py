@@ -174,4 +174,4 @@ class EIMApproximation(ParametrizedProblem):
             if self.snapshot is None:
                 self.snapshot = self.parametrized_expression.create_empty_snapshot()
             solution = self.snapshot
-        return import_(solution, folder, filename)
+        import_(solution, folder, filename)

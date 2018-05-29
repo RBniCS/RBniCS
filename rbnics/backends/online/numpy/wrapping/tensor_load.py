@@ -28,6 +28,5 @@ def tensor_load(tensor, directory, filename):
             tensor[:, :] = loaded
         else:
             raise ValueError("Invalid tensor shape")
-        return True
     else:
-        return False
+        raise OSError

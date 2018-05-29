@@ -134,7 +134,7 @@ class StokesProblem(StokesProblem_Base):
         assert component is None or isinstance(component, str)
         if component is None:
             component = "s"
-        return import_(supremizer, folder, filename + "_" + component, suffix, component)
+        import_(supremizer, folder, filename + "_" + component, suffix, component)
         
     # Export solution to file
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
@@ -145,7 +145,7 @@ class StokesProblem(StokesProblem_Base):
     def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
-        return StokesProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
+        StokesProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
         
     # Custom combination of inner products *not* to add inner product corresponding to supremizers
     def _combine_all_inner_products(self):

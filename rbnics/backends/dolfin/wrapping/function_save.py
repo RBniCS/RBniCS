@@ -91,9 +91,8 @@ if not has_hdf5() or not has_hdf5_parallel():
             if index <= self._last_index:
                 restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
                 restart_file >> function
-                return True
             else:
-                return False
+                raise OSError
 else:
     class SolutionFile(SolutionFile_Base):
         # DOLFIN 2018.1.0.dev added (throughout the developement cycle) an optional append
@@ -138,9 +137,8 @@ else:
                 time = float(index)
                 self._restart_file.read_checkpoint(function, name, index)
                 self._visualization_file.write(function, time)
-                return True
             else:
-                return False
+                raise OSError
 
 def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()

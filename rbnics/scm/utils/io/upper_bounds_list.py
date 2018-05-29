@@ -59,7 +59,7 @@ class UpperBoundsList(list):
     
     def load(self, directory, filename):
         if len(self._list) > 0: # avoid loading multiple times
-            return True
+            return False
         else:
             # Get full directory name
             full_directory = Folders.Folder(os.path.join(str(directory), filename))
@@ -83,8 +83,7 @@ class UpperBoundsList(list):
     def _load_list(self, len_, reference_vector, full_directory):
         for index in range(len_):
             item = online_copy(reference_vector)
-            vector_loaded = online_import_(item, full_directory, "item_" + str(index))
-            assert vector_loaded
+            online_import_(item, full_directory, "item_" + str(index))
             self._list.append(item)
             
     def __getitem__(self, key):

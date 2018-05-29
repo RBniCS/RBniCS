@@ -49,7 +49,9 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
         # Solution
         psiq = Function(W)
         # Import solution from file, if possible
-        if not import_(psiq, self.name(), "yd"):
+        try:
+            import_(psiq, self.name(), "yd")
+        except OSError:
             # Fixed problem coefficients (mu[0] is (delta_M/L)**3, mu[1] is C)
             delta_M = 7e4
             L = 1e6

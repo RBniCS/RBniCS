@@ -376,15 +376,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         if component is None and len(self.components) > 1:
             component = self.components
         if component is None:
-            return import_(solution, folder, filename, suffix)
+            import_(solution, folder, filename, suffix)
         elif isinstance(component, str):
-            return import_(solution, folder, filename + "_" + component, suffix, component)
+            import_(solution, folder, filename + "_" + component, suffix, component)
         elif isinstance(component, list):
             for c in component:
                 assert isinstance(c, str)
-                if not import_(solution, folder, filename + "_" + c, suffix, c):
-                    return False
-            return True
+                import_(solution, folder, filename + "_" + c, suffix, c)
         else:
             raise TypeError("Invalid component in import_solution()")
     
