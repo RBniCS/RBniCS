@@ -22,17 +22,14 @@ from rbnics.eim.backends.offline_online_expansion_storage import OfflineOnlineEx
 from rbnics.eim.backends.offline_online_expansion_storage_size import OfflineOnlineExpansionStorageSize
 from rbnics.eim.backends.offline_online_riesz_solver import OfflineOnlineRieszSolver
 from rbnics.eim.backends.offline_online_switch import OfflineOnlineSwitch
+from rbnics.utils.cache import cache
 
+@cache
 def OfflineOnlineBackend(problem_name):
-    if problem_name not in _offline_online_backend_cache:
-        _offline_online_backend_cache[problem_name] = types.SimpleNamespace(
-            OfflineOnlineClassMethod=OfflineOnlineClassMethod(problem_name),
-            OfflineOnlineExpansionStorage=OfflineOnlineExpansionStorage(problem_name),
-            OfflineOnlineExpansionStorageSize=OfflineOnlineExpansionStorageSize(problem_name),
-            OfflineOnlineRieszSolver=OfflineOnlineRieszSolver(problem_name),
-            OfflineOnlineSwitch=OfflineOnlineSwitch(problem_name)
-        )
-        
-    return _offline_online_backend_cache[problem_name]
-    
-_offline_online_backend_cache = dict()
+    return types.SimpleNamespace(
+        OfflineOnlineClassMethod=OfflineOnlineClassMethod(problem_name),
+        OfflineOnlineExpansionStorage=OfflineOnlineExpansionStorage(problem_name),
+        OfflineOnlineExpansionStorageSize=OfflineOnlineExpansionStorageSize(problem_name),
+        OfflineOnlineRieszSolver=OfflineOnlineRieszSolver(problem_name),
+        OfflineOnlineSwitch=OfflineOnlineSwitch(problem_name)
+    )

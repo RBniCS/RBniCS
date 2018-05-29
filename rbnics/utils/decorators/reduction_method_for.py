@@ -18,7 +18,7 @@
 
 import inspect
 import types
-from functools import lru_cache
+from rbnics.utils.cache import cache
 from rbnics.utils.decorators.dispatch import dispatch
 
 def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
@@ -37,7 +37,7 @@ def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
         return ReductionMethod
     return ReductionMethodFor_Decorator
 
-@lru_cache(maxsize=None)
+@cache
 def _ReductionMethodGenerator(ReductionMethod):
     def _ReductionMethodGenerator_Function(truth_problem, **kwargs):
         return ReductionMethod

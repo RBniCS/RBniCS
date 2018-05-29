@@ -18,7 +18,7 @@
 
 import inspect
 import types
-from functools import lru_cache
+from rbnics.utils.cache import cache
 from rbnics.utils.decorators.dispatch import dispatch
 
 def ReducedProblemDecoratorFor(Algorithm, replaces=None, replaces_if=None, exact_decorator_for=None):
@@ -37,7 +37,7 @@ def ReducedProblemDecoratorFor(Algorithm, replaces=None, replaces_if=None, exact
         return ReducedProblemDecorator
     return ReducedProblemDecoratorFor_Decorator
 
-@lru_cache(maxsize=None)
+@cache
 def _ReducedProblemDecoratorGenerator(ReducedProblemDecorator):
     def _ReducedProblemDecoratorGenerator_Function(truth_problem, reduction_method, **kwargs):
         return ReducedProblemDecorator

@@ -16,25 +16,23 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.cache import cache
+
+@cache
 def OfflineOnlineSwitch(problem_name):
-    if problem_name not in _offline_online_switch_cache:
-        class _OfflineOnlineSwitch(object):
-            _current_stage = "offline"
-            
-            def __init__(self):
-                self._content = dict()
-                
-            @classmethod
-            def set_current_stage(cls, current_stage):
-                assert current_stage in ("offline", "online")
-                cls._current_stage = current_stage
-                
-            @classmethod
-            def get_current_stage(cls):
-                return cls._current_stage
-                
-        _offline_online_switch_cache[problem_name] = _OfflineOnlineSwitch
+    class _OfflineOnlineSwitch(object):
+        _current_stage = "offline"
         
-    return _offline_online_switch_cache[problem_name]
-    
-_offline_online_switch_cache = dict()
+        def __init__(self):
+            self._content = dict()
+            
+        @classmethod
+        def set_current_stage(cls, current_stage):
+            assert current_stage in ("offline", "online")
+            cls._current_stage = current_stage
+            
+        @classmethod
+        def get_current_stage(cls):
+            return cls._current_stage
+            
+    return _OfflineOnlineSwitch

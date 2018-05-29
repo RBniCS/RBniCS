@@ -26,34 +26,39 @@
 # Copyright (C) 2011 Garth N. Wells
 
 from dolfin import cells, has_pybind11
+from rbnics.utils.cache import Cache
 
 def build_dof_map_writer_mapping(V, local_dofmap=None):
-    def extract_first_cell(mapping_output):
-        (min_global_cell_index, min_cell_dof) = mapping_output[0]
-        for i in range(1, len(mapping_output)):
-            (current_global_cell_index, current_cell_dof) = mapping_output[i]
-            if current_global_cell_index < min_global_cell_index:
-                min_global_cell_index = current_global_cell_index
-                min_cell_dof = current_cell_dof
-        return (min_global_cell_index, min_cell_dof)
-    if V not in build_dof_map_writer_mapping._storage:
+    try:
+        return _dof_map_writer_mapping_cache[V]
+    except KeyError:
+        def extract_first_cell(mapping_output):
+            (min_global_cell_index, min_cell_dof) = mapping_output[0]
+            for i in range(1, len(mapping_output)):
+                (current_global_cell_index, current_cell_dof) = mapping_output[i]
+                if current_global_cell_index < min_global_cell_index:
+                    min_global_cell_index = current_global_cell_index
+                    min_cell_dof = current_cell_dof
+            return (min_global_cell_index, min_cell_dof)
         if local_dofmap is None:
             local_dofmap = _get_local_dofmap(V)
         dof_map_writer_mapping_original = _build_dof_map_writer_mapping(V, local_dofmap)
         dof_map_writer_mapping_storage = dict()
         for (key, value) in dof_map_writer_mapping_original.items():
             dof_map_writer_mapping_storage[key] = extract_first_cell(value)
-        build_dof_map_writer_mapping._storage[V] = dof_map_writer_mapping_storage
-    return build_dof_map_writer_mapping._storage[V]
-build_dof_map_writer_mapping._storage = dict()
+        _dof_map_writer_mapping_cache[V] = dof_map_writer_mapping_storage
+        return _dof_map_writer_mapping_cache[V]
+_dof_map_writer_mapping_cache = Cache()
 
 def build_dof_map_reader_mapping(V, local_dofmap=None):
-    if V not in build_dof_map_reader_mapping._storage:
+    try:
+        return _dof_map_reader_mapping_cache[V]
+    except KeyError:
         if local_dofmap is None:
             local_dofmap = _get_local_dofmap(V)
-        build_dof_map_reader_mapping._storage[V] = _build_dof_map_reader_mapping(V, local_dofmap)
-    return build_dof_map_reader_mapping._storage[V]
-build_dof_map_reader_mapping._storage = dict()
+        _dof_map_reader_mapping_cache[V] = _build_dof_map_reader_mapping(V, local_dofmap)
+        return _dof_map_reader_mapping_cache[V]
+_dof_map_reader_mapping_cache = Cache()
 
 def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cell_dof in dolfin
     mpi_comm = V.mesh().mpi_comm()

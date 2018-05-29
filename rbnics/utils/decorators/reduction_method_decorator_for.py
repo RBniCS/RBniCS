@@ -18,7 +18,7 @@
 
 import inspect
 import types
-from functools import lru_cache
+from rbnics.utils.cache import cache
 from rbnics.utils.decorators.dispatch import dispatch
 
 def ReductionMethodDecoratorFor(Algorithm, replaces=None, replaces_if=None, exact_decorator_for=None):
@@ -37,7 +37,7 @@ def ReductionMethodDecoratorFor(Algorithm, replaces=None, replaces_if=None, exac
         return ReductionMethodDecorator
     return ReductionMethodDecoratorFor_Decorator
 
-@lru_cache(maxsize=None)
+@cache
 def _ReductionMethodDecoratorGenerator(ReductionMethodDecorator):
     def _ReductionMethodDecoratorGenerator_Function(truth_problem, **kwargs):
         return ReductionMethodDecorator
