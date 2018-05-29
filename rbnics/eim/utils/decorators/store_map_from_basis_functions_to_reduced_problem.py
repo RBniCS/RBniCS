@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
 
 def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
@@ -59,4 +60,4 @@ def get_reduced_problem_from_basis_functions(basis_functions):
     assert basis_functions in _basis_functions_to_reduced_problem_map
     return _basis_functions_to_reduced_problem_map[basis_functions]
     
-_basis_functions_to_reduced_problem_map = dict()
+_basis_functions_to_reduced_problem_map = Cache()

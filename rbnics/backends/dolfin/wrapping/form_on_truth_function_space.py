@@ -18,6 +18,7 @@
 
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import exact_problem
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -200,12 +201,12 @@ def basic_form_on_truth_function_space(backend, wrapping):
         # Return
         return (assembled_form, form_rank)
         
-    form_on_truth_function_space__truth_problems_cache = dict()
-    form_on_truth_function_space__truth_problem_to_components_cache = dict()
-    form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache = dict()
-    form_on_truth_function_space__truth_problem_to_truth_solution_cache = dict()
-    form_on_truth_function_space__reduced_problem_to_components_cache = dict()
-    form_on_truth_function_space__reduced_problem_to_truth_solution_cache = dict()
+    form_on_truth_function_space__truth_problems_cache = Cache()
+    form_on_truth_function_space__truth_problem_to_components_cache = Cache()
+    form_on_truth_function_space__truth_problem_to_exact_truth_problem_cache = Cache()
+    form_on_truth_function_space__truth_problem_to_truth_solution_cache = Cache()
+    form_on_truth_function_space__reduced_problem_to_components_cache = Cache()
+    form_on_truth_function_space__reduced_problem_to_truth_solution_cache = Cache()
     
     return _basic_form_on_truth_function_space
 

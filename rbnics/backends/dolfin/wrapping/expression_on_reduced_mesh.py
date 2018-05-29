@@ -18,6 +18,7 @@
 
 from ufl.geometry import GeometricQuantity
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import exact_problem
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
@@ -223,15 +224,15 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
         wrapping.evaluate_expression(expression, reduced_function, replaced_expression)
         return reduced_function
         
-    expression_on_reduced_mesh__expression_cache = dict()
-    expression_on_reduced_mesh__truth_problems_cache = dict()
-    expression_on_reduced_mesh__truth_problem_to_components_cache = dict()
-    expression_on_reduced_mesh__truth_problem_to_exact_truth_problem_cache = dict()
-    expression_on_reduced_mesh__truth_problem_to_reduced_mesh_solution_cache = dict()
-    expression_on_reduced_mesh__truth_problem_to_reduced_mesh_interpolator_cache = dict()
-    expression_on_reduced_mesh__reduced_problem_to_components_cache = dict()
-    expression_on_reduced_mesh__reduced_problem_to_reduced_mesh_solution_cache = dict()
-    expression_on_reduced_mesh__reduced_problem_to_reduced_basis_functions_cache = dict()
+    expression_on_reduced_mesh__expression_cache = Cache()
+    expression_on_reduced_mesh__truth_problems_cache = Cache()
+    expression_on_reduced_mesh__truth_problem_to_components_cache = Cache()
+    expression_on_reduced_mesh__truth_problem_to_exact_truth_problem_cache = Cache()
+    expression_on_reduced_mesh__truth_problem_to_reduced_mesh_solution_cache = Cache()
+    expression_on_reduced_mesh__truth_problem_to_reduced_mesh_interpolator_cache = Cache()
+    expression_on_reduced_mesh__reduced_problem_to_components_cache = Cache()
+    expression_on_reduced_mesh__reduced_problem_to_reduced_mesh_solution_cache = Cache()
+    expression_on_reduced_mesh__reduced_problem_to_reduced_basis_functions_cache = Cache()
     
     return _basic_expression_on_reduced_mesh
 

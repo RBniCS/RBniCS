@@ -35,7 +35,7 @@ class EigenSolver(AbstractEigenSolver):
         
         self.A = A
         self.B = B
-        self.parameters = {}
+        self.parameters = dict()
         self.eigs = None
         self.eigv = None
         assert bcs is None # the case bcs != None has not been implemented yet

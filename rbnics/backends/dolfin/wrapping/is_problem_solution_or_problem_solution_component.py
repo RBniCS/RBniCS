@@ -31,6 +31,7 @@ else:
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _get_sub_elements__recursive
 from rbnics.eim.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
 from rbnics.utils.decorators import overload
+from rbnics.utils.cache import Cache
 
 def is_problem_solution_or_problem_solution_component(node):
     _prepare_solution_split_storage()
@@ -107,5 +108,5 @@ def _split_from_tuple(input_, index_as_tuple):
             input_ = split(input_)[i]
         return input_
     
-_solution_split_to_component = dict()
-_solution_split_to_solution = dict()
+_solution_split_to_component = Cache()
+_solution_split_to_solution = Cache()

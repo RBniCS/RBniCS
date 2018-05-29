@@ -20,6 +20,7 @@ import types
 from numbers import Number
 from dolfin import Expression
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.sync_setters import _original_setters
 from rbnics.utils.test import AttachInstanceMethod, PatchInstanceMethod
 
@@ -68,7 +69,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
         mesh = truth_problem.V.mesh()
     
     # Prepare a dictionary of mu
-    mu_dict = {}
+    mu_dict = dict()
     for (p, mu_p) in enumerate(mu):
         assert isinstance(mu_p, (Expression, Number))
         if isinstance(mu_p, Number):
@@ -160,4 +161,4 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     
     return expression
     
-_truth_problem_to_parametrized_expressions = dict()
+_truth_problem_to_parametrized_expressions = Cache()

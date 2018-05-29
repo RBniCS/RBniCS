@@ -18,6 +18,7 @@
 
 from rbnics.backends.basic.wrapping.delayed_functions_list import DelayedFunctionsList
 from rbnics.backends.basic.wrapping.delayed_linear_solver import DelayedLinearSolver
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 from rbnics.utils.test import PatchInstanceMethod
@@ -28,8 +29,8 @@ class DelayedBasisFunctionsMatrix(object):
         self._components_name = list()
         self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict()
         self._component_name_to_basis_component_length = OnlineSizeDict()
-        self._enrich_memory = dict()
-        self._precomputed_slices = dict() # from tuple to FunctionsList
+        self._enrich_memory = Cache()
+        self._precomputed_slices = Cache() # from tuple to FunctionsList
         
     def init(self, components_name):
         # Patch DelayedFunctionsList.enrich() to update internal attributes

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
 
 def StoreMapFromParametrizedOperatorsToTermAndIndex(ExactParametrizedFunctionsDecoratedProblem_DerivedClass):
@@ -48,4 +49,4 @@ def get_term_and_index_from_parametrized_operator(operator):
     assert operator in _parametrized_operator_to_term_and_index_map
     return _parametrized_operator_to_term_and_index_map[operator]
     
-_parametrized_operator_to_term_and_index_map = dict()
+_parametrized_operator_to_term_and_index_map = Cache()

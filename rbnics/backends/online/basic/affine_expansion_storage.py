@@ -21,6 +21,7 @@ from numbers import Number
 from numpy import empty as AffineExpansionStorageContent_Base, nditer as AffineExpansionStorageContent_Iterator
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
 from rbnics.backends.online.basic.wrapping import slice_to_array
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload, tuple_of
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as DictIO, TextIO as ScalarContentIO
 
@@ -28,7 +29,7 @@ def AffineExpansionStorage(backend, wrapping):
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):
         def __init__(self, arg1, arg2):
             self._content = None
-            self._precomputed_slices = dict() # from tuple to AffineExpansionStorage
+            self._precomputed_slices = Cache() # from tuple to AffineExpansionStorage
             self._smallest_key = None
             self._previous_key = None
             self._largest_key = None
@@ -182,7 +183,7 @@ def AffineExpansionStorage(backend, wrapping):
             # Load dicts
             self._load_dicts(full_directory)
             # Reset precomputed slices
-            self._precomputed_slices = dict()
+            self._precomputed_slices.clear()
             self._prepare_trivial_precomputed_slice(reference_item)
             # Return
             return True
@@ -384,7 +385,7 @@ def AffineExpansionStorage(backend, wrapping):
                 assert self._component_name_to_basis_component_length is None
             # Reset and prepare precomputed slices
             if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
-                self._precomputed_slices = dict()
+                self._precomputed_slices.clear()
                 self._prepare_trivial_precomputed_slice(item)
              
         @overload(int)

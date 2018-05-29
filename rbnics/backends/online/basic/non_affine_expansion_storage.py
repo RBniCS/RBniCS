@@ -23,6 +23,7 @@ from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFuncti
 from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedFunctionsList, DelayedLinearSolver, DelayedTranspose
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator, get_problem_from_problem_name, get_reduced_problem_from_basis_functions, get_reduced_problem_from_error_estimation_inner_product, get_reduced_problem_from_problem, get_term_and_index_from_parametrized_operator
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload, tuple_of
 from rbnics.utils.io import Folders, TextIO as BasisFunctionsContentLengthIO, TextIO as BasisFunctionsProblemNameIO, TextIO as DelayedFunctionsProblemNameIO, TextIO as DelayedFunctionsTypeIO, TextIO as ErrorEstimationInnerProductIO, TextIO as TruthContentItemIO, TextIO as TypeIO
 
@@ -31,7 +32,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         self._shape = shape
         self._type = "empty"
         self._content = dict()
-        self._precomputed_slices = dict() # from tuple to NonAffineExpansionStorage
+        self._precomputed_slices = Cache() # from tuple to NonAffineExpansionStorage
         assert len(shape) in (1, 2)
         if len(shape) is 1:
             self._smallest_key = 0
@@ -170,7 +171,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             assert "delayed_functions_shape" not in self._content
             self._content["delayed_functions_shape"] = DelayedTransposeShape((self._content["delayed_functions"][0][0], self._content["delayed_functions"][1][0]))
             # Prepare precomputed slices
-            self._precomputed_slices = dict()
+            self._precomputed_slices.clear()
             self._prepare_trivial_precomputed_slice()
         elif self._type == "empty":
             pass
@@ -217,7 +218,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             # Recompute shape
             self._content["basis_functions_shape"] = DelayedTransposeShape(self._content["basis_functions"])
             # Reset precomputed slices
-            self._precomputed_slices = dict()
+            self._precomputed_slices.clear()
             self._prepare_trivial_precomputed_slice()
         else:
             raise ValueError("Invalid type")
@@ -438,7 +439,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             # Compute truth expansion storage and prepare precomputed slices
             if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
                 self._prepare_truth_operators_as_expansion_storage()
-                self._precomputed_slices = dict()
+                self._precomputed_slices.clear()
                 self._prepare_trivial_precomputed_slice()
         elif isinstance(item._args[0], (DelayedBasisFunctionsMatrix, DelayedLinearSolver)):
             assert len(item._args) is 3
@@ -489,7 +490,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                 assert DelayedTransposeShape((item._args[0], item._args[2])) == self._content["delayed_functions_shape"]
             # Prepare precomputed slices
             if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
-                self._precomputed_slices = dict()
+                self._precomputed_slices.clear()
                 self._prepare_trivial_precomputed_slice()
         else:
             raise TypeError("Invalid arguments to NonAffineExpansionStorage")

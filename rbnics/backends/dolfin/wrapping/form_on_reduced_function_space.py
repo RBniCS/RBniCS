@@ -24,6 +24,7 @@ if has_pybind11():
 else:
     from dolfin import Argument
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import exact_problem
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
@@ -258,15 +259,15 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         form_rank = assembled_replaced_form.rank()
         return (assembled_replaced_form, form_rank)
         
-    form_on_reduced_function_space__form_cache = dict()
-    form_on_reduced_function_space__truth_problems_cache = dict()
-    form_on_reduced_function_space__truth_problem_to_components_cache = dict()
-    form_on_reduced_function_space__truth_problem_to_exact_truth_problem_cache = dict()
-    form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache = dict()
-    form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache = dict()
-    form_on_reduced_function_space__reduced_problem_to_components_cache = dict()
-    form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache = dict()
-    form_on_reduced_function_space__reduced_problem_to_reduced_basis_functions_cache = dict()
+    form_on_reduced_function_space__form_cache = Cache()
+    form_on_reduced_function_space__truth_problems_cache = Cache()
+    form_on_reduced_function_space__truth_problem_to_components_cache = Cache()
+    form_on_reduced_function_space__truth_problem_to_exact_truth_problem_cache = Cache()
+    form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache = Cache()
+    form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache = Cache()
+    form_on_reduced_function_space__reduced_problem_to_components_cache = Cache()
+    form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache = Cache()
+    form_on_reduced_function_space__reduced_problem_to_reduced_basis_functions_cache = Cache()
     
     return _basic_form_on_reduced_function_space
 

@@ -18,6 +18,7 @@
 
 import os
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import is_io_process
 
@@ -28,13 +29,13 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             self.empty_tensor = empty_tensor
             self.mpi_comm = wrapping.get_mpi_comm(space)
             self._list = list() # of tensors
-            self._precomputed_slices = dict() # from tuple to TensorsList
+            self._precomputed_slices = Cache() # from tuple to TensorsList
         
         def enrich(self, tensors):
             # Append to storage
             self._enrich(tensors)
             # Reset precomputed slices
-            self._precomputed_slices = dict()
+            self._precomputed_slices.clear()
             # Prepare trivial precomputed slice
             self._precomputed_slices[len(self._list)] = self
         
@@ -50,7 +51,7 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
         def clear(self):
             self._list = list()
             # Reset precomputed slices
-            self._precomputed_slices = dict()
+            self._precomputed_slices.clear()
             
         def save(self, directory, filename):
             self._save_Nmax(directory, filename)

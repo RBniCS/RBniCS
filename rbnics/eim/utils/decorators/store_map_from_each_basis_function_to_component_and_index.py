@@ -17,6 +17,7 @@
 #
 
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
 
 def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
@@ -60,4 +61,4 @@ def get_component_and_index_from_basis_function(basis_function):
     assert basis_function in _basis_function_to_component_and_index_map
     return _basis_function_to_component_and_index_map[basis_function]
     
-_basis_function_to_component_and_index_map = dict()
+_basis_function_to_component_and_index_map = Cache()

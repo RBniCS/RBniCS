@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 from rbnics.utils.decorators.sync_setters import sync_setters
 
@@ -79,4 +80,4 @@ def exact_problem(decorated_problem, preserve_class_name=True):
     # Return
     return _all_exact_problems[(decorated_problem, preserve_class_name)]
         
-_all_exact_problems = dict()
+_all_exact_problems = Cache()

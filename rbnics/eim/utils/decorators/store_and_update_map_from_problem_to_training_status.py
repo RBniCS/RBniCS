@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
 def StoreMapFromProblemToTrainingStatus(ParametrizedDifferentialProblem_DerivedClass):
@@ -85,4 +86,4 @@ def is_training_finished(problem):
         _problem_to_training_status[problem]
     )
     
-_problem_to_training_status = dict()
+_problem_to_training_status = Cache()

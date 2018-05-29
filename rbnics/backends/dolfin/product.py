@@ -27,8 +27,9 @@ from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTenso
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping import function_copy, tensor_copy
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC, ProductOutputDirichletBC
-from rbnics.utils.decorators import backend_for, ComputeThetaType, overload, tuple_of
 from rbnics.eim.utils.decorators import add_to_map_from_parametrized_operator_to_problem, get_problem_from_parametrized_operator
+from rbnics.utils.cache import Cache
+from rbnics.utils.decorators import backend_for, ComputeThetaType, overload, tuple_of
 
 # Need to customize ThetaType in order to also include dolfin' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator:
 # this is the reason why in the following theta coefficients are preprocessed by float().
@@ -95,8 +96,8 @@ def _product(thetas: ThetaType, operators: tuple_of(Form)):
             theta = float(theta)
             constant.assign(theta)
         return output
-_product_forms_output_cache = dict()
-_product_forms_constants_cache = dict()
+_product_forms_output_cache = Cache()
+_product_forms_constants_cache = Cache()
     
 @overload
 def _product(thetas: ThetaType, operators: tuple_of(ParametrizedTensorFactory)):
@@ -120,8 +121,8 @@ def _product(thetas: ThetaType, operators: tuple_of(ParametrizedTensorFactory)):
             theta = float(theta)
             constant.assign(theta)
         return output
-_product_parametrized_tensor_factories_output_cache = dict()
-_product_parametrized_tensor_factories_constants_cache = dict()
+_product_parametrized_tensor_factories_output_cache = Cache()
+_product_parametrized_tensor_factories_constants_cache = Cache()
     
 @overload
 def _product(thetas: ThetaType, operators: tuple_of(Matrix.Type())):

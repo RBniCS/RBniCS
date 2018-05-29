@@ -76,7 +76,7 @@ class _TimeDependentProblem1(object):
         
     def create_solver(self, parameters=None):
         if parameters is None:
-            parameters = {}
+            parameters = dict()
         if "integrator_type" not in parameters:
             integrator_type = "beuler"
         else:

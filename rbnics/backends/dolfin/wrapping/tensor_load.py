@@ -19,9 +19,10 @@
 import os
 from dolfin import has_pybind11
 from petsc4py import PETSc
-from rbnics.utils.mpi import is_io_process
-from rbnics.utils.io import Folders, PickleIO
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
+from rbnics.utils.io import Folders, PickleIO
+from rbnics.utils.mpi import is_io_process
 
 def basic_tensor_load(backend, wrapping):
     def _basic_tensor_load(tensor, directory, filename):
@@ -171,7 +172,7 @@ def basic_tensor_load(backend, wrapping):
         file_exists = is_io_process.mpi_comm.bcast(file_exists, root=is_io_process.root)
         return file_exists
     
-    _permutation_storage = dict()
+    _permutation_storage = Cache()
     
     return _basic_tensor_load
 

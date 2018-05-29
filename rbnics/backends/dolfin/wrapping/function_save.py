@@ -26,8 +26,9 @@ else:
     from dolfin import get_log_level, set_log_level, WARNING
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.cache import Cache
 from rbnics.utils.io import TextIO as IndexIO
+from rbnics.utils.mpi import is_io_process
 
 class SolutionFile_Base(object):
     def __init__(self, directory, filename):
@@ -177,7 +178,10 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
                 # Remove existing files if any, as new functions should not be appended, but rather overwrite existing functions
                 SolutionFile.remove_files(directory, filename)
                 # Remove from storage and re-create
-                _all_solution_files.pop((directory, filename), None)
+                try:
+                    del _all_solution_files[(directory, filename)]
+                except KeyError:
+                    pass
                 _all_solution_files[(directory, filename)] = SolutionFile(directory, filename)
             file_ = _all_solution_files[(directory, filename)]
             file_.write(fun, function_name, suffix)
@@ -188,4 +192,4 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
             file_ = SolutionFile(directory, filename)
             file_.write(fun, function_name, 0)
         
-_all_solution_files = dict()
+_all_solution_files = Cache()

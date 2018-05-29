@@ -18,6 +18,7 @@
 
 from numbers import Number
 from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 from rbnics.utils.test import PatchInstanceMethod
@@ -31,8 +32,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 self.space = space
             self.mpi_comm = wrapping.get_mpi_comm(space)
             self._components = dict() # of FunctionsList
-            self._precomputed_sub_components = dict() # from tuple to FunctionsList
-            self._precomputed_slices = dict() # from tuple to FunctionsList
+            self._precomputed_sub_components = Cache() # from tuple to FunctionsList
+            self._precomputed_slices = Cache() # from tuple to FunctionsList
             self._components_name = list() # filled in by init
             self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict() # filled in by init
             self._component_name_to_basis_component_length = OnlineSizeDict()

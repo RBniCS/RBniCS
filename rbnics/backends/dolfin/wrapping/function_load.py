@@ -72,7 +72,10 @@ def _read_from_file(fun, directory, filename, suffix, components=None):
         if suffix is not None:
             if suffix is 0:
                 # Remove from storage and re-create
-                _all_solution_files.pop((directory, filename), None)
+                try:
+                    del _all_solution_files[(directory, filename)]
+                except KeyError:
+                    pass
                 _all_solution_files[(directory, filename)] = SolutionFile(directory, filename)
             file_ = _all_solution_files[(directory, filename)]
             return file_.read(fun, function_name, suffix)

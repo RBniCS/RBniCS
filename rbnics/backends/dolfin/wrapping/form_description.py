@@ -18,7 +18,7 @@
 
 def basic_form_description(backend, wrapping):
     def _basic_form_description(form):
-        coefficients_repr = {}
+        coefficients_repr = dict()
         for integral in form.integrals():
             coefficients_repr_integral = wrapping.expression_description(integral.integrand())
             # Check consistency

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
 def StoreMapFromProblemToReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -45,4 +46,4 @@ def get_reduced_problem_from_problem(problem):
     assert problem in _problem_to_reduced_problem_map
     return _problem_to_reduced_problem_map[problem]
     
-_problem_to_reduced_problem_map = dict()
+_problem_to_reduced_problem_map = Cache()

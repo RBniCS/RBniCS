@@ -17,6 +17,7 @@
 #
 
 from rbnics.backends.basic.wrapping.delayed_linear_solver import DelayedLinearSolver
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
 from rbnics.utils.io import TextIO as LengthIO
 
@@ -24,7 +25,7 @@ class DelayedFunctionsList(object):
     def __init__(self, space):
         self.space = space
         self._enrich_memory = list()
-        self._precomputed_slices = dict() # from tuple to DelayedFunctionsList
+        self._precomputed_slices = Cache() # from tuple to DelayedFunctionsList
         
     def enrich(self, function, component=None, weight=None, copy=True):
         assert component is None
@@ -33,7 +34,7 @@ class DelayedFunctionsList(object):
         # Append to storage
         self._enrich(function)
         # Reset precomputed slices
-        self._precomputed_slices = dict()
+        self._precomputed_slices.clear()
         # Prepare trivial precomputed slice
         self._precomputed_slices[len(self._enrich_memory)] = self
         

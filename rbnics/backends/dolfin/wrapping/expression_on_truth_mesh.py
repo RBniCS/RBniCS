@@ -18,6 +18,7 @@
 
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import exact_problem
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -201,12 +202,12 @@ def basic_expression_on_truth_mesh(backend, wrapping):
         # Return
         return function
     
-    expression_on_truth_mesh__truth_problems_cache = dict()
-    expression_on_truth_mesh__truth_problem_to_components_cache = dict()
-    expression_on_truth_mesh__truth_problem_to_exact_truth_problem_cache = dict()
-    expression_on_truth_mesh__truth_problem_to_truth_solution_cache = dict()
-    expression_on_truth_mesh__reduced_problem_to_components_cache = dict()
-    expression_on_truth_mesh__reduced_problem_to_truth_solution_cache = dict()
+    expression_on_truth_mesh__truth_problems_cache = Cache()
+    expression_on_truth_mesh__truth_problem_to_components_cache = Cache()
+    expression_on_truth_mesh__truth_problem_to_exact_truth_problem_cache = Cache()
+    expression_on_truth_mesh__truth_problem_to_truth_solution_cache = Cache()
+    expression_on_truth_mesh__reduced_problem_to_components_cache = Cache()
+    expression_on_truth_mesh__reduced_problem_to_truth_solution_cache = Cache()
     
     return _basic_expression_on_truth_mesh
 

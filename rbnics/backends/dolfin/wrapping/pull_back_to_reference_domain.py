@@ -43,6 +43,7 @@ else:
 from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -83,11 +84,12 @@ def sympy_to_parametrized_expression(sympy_expression: (ImmutableMatrix, SympyMa
     
 # ===== Memoization for shape parametrization objects: inspired by ufl/corealg/multifunction.py ===== #
 def shape_parametrization_cache(function):
-    function._cache = dict()
+    function._cache = Cache()
     def _memoized_function(shape_parametrization_expression_on_subdomain, problem):
         cache = getattr(function, "_cache")
-        output = cache.get((shape_parametrization_expression_on_subdomain, problem))
-        if output is None:
+        try:
+            output = cache[shape_parametrization_expression_on_subdomain, problem]
+        except KeyError:
             output = function(shape_parametrization_expression_on_subdomain, problem)
             cache[shape_parametrization_expression_on_subdomain, problem] = output
         return output

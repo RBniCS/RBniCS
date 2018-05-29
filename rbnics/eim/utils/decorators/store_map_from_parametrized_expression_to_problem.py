@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
 
 def StoreMapFromParametrizedExpressionToProblem(EIMApproximation_DerivedClass):
@@ -45,4 +46,4 @@ def get_problem_from_parametrized_expression(parametrized_expression):
     assert parametrized_expression in _parametrized_expression_to_problem_map
     return _parametrized_expression_to_problem_map[parametrized_expression]
     
-_parametrized_expression_to_problem_map = dict()
+_parametrized_expression_to_problem_map = Cache()

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
 
 def StoreMapFromRieszStorageToReducedProblem(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
@@ -76,7 +77,7 @@ def get_reduced_problem_from_error_estimation_inner_product(error_estimation_inn
     assert error_estimation_inner_product in _error_estimation_inner_product_to_reduced_problem_map
     return _error_estimation_inner_product_to_reduced_problem_map[error_estimation_inner_product]
     
-_riesz_solve_storage_to_reduced_problem_map = dict()
-_riesz_solve_inner_product_to_reduced_problem_map = dict()
-_riesz_solve_homogeneous_dirichlet_bc_to_reduced_problem_map = dict()
-_error_estimation_inner_product_to_reduced_problem_map = dict()
+_riesz_solve_storage_to_reduced_problem_map = Cache()
+_riesz_solve_inner_product_to_reduced_problem_map = Cache()
+_riesz_solve_homogeneous_dirichlet_bc_to_reduced_problem_map = Cache()
+_error_estimation_inner_product_to_reduced_problem_map = Cache()

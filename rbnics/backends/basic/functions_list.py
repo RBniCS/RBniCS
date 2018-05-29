@@ -19,6 +19,7 @@
 import os
 from numbers import Number
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType, tuple_of
 from rbnics.utils.mpi import is_io_process
 
@@ -40,13 +41,13 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
                 self.space = wrapping.get_function_subspace(space, component)
             self.mpi_comm = wrapping.get_mpi_comm(space)
             self._list = list() # of functions
-            self._precomputed_slices = dict() # from tuple to FunctionsList
+            self._precomputed_slices = Cache() # from tuple to FunctionsList
         
         def enrich(self, functions, component=None, weights=None, copy=True):
             # Append to storage
             self._enrich(functions, component, weights, copy)
             # Reset precomputed slices
-            self._precomputed_slices = dict()
+            self._precomputed_slices = Cache()
             # Prepare trivial precomputed slice
             self._precomputed_slices[len(self._list)] = self
         
@@ -96,7 +97,7 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
         def clear(self):
             self._list = list()
             # Reset precomputed slices
-            self._precomputed_slices = dict()
+            self._precomputed_slices.clear()
             
         def save(self, directory, filename):
             self._save_Nmax(directory, filename)
