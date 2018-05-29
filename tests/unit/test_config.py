@@ -31,7 +31,7 @@ def test_config(tempdir):
 
     # Change options
     config.set("backends", "online backend", "online")
-    config.set("problems", "cache", {"Disk"})
+    config.set("problems", "cache", {"disk"})
 
     # Write config to stdout
     print("===============")

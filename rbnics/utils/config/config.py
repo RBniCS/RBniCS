@@ -32,17 +32,25 @@ class Config(object):
             "required backends": None
         },
         "EIM": {
-            "cache": {"Disk", "RAM"}
+            "cache": {"disk", "RAM"},
+            "disk cache limit": "unlimited",
+            "RAM cache limit": "unlimited"
         },
         "problems": {
-            "cache": {"Disk", "RAM"}
+            "cache": {"disk", "RAM"},
+            "disk cache limit": "unlimited",
+            "RAM cache limit": "unlimited"
         },
         "reduced problems": {
-            "cache": {"RAM"}
+            "cache": {"RAM"},
+            "disk cache limit": "unlimited",
+            "RAM cache limit": "unlimited"
         },
         "SCM": {
-            "cache": {"Disk", "RAM"}
-        },
+            "cache": {"disk", "RAM"},
+            "disk cache limit": "unlimited",
+            "RAM cache limit": "unlimited"
+        }
     }
     
     # Read in required backends
@@ -58,6 +66,7 @@ class Config(object):
     def __init__(self):
         # Setup configparser from defaults
         self._config_as_parser = configparser.ConfigParser()
+        self._config_as_parser.optionxform = str
         for (section, options_and_values) in self.defaults.items():
             self._config_as_parser.add_section(section)
             for (option, value) in options_and_values.items():
